@@ -16,7 +16,6 @@
 
 package com.android.systemui.scene.domain.startable
 
-import com.android.internal.logging.uiEventLogger
 import com.android.systemui.animation.activityTransitionAnimator
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
@@ -32,7 +31,6 @@ import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.haptics.vibratorHelper
 import com.android.systemui.keyguard.data.windowManagerLockscreenVisibilityManager
 import com.android.systemui.keyguard.dismissCallbackRegistry
-import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
@@ -82,7 +80,6 @@ val Kosmos.sceneContainerStartable by Fixture {
         falsingCollector = falsingCollector,
         falsingManager = falsingManager,
         headsUpInteractor = headsUpNotificationInteractor,
-        keyguardDismissActionInteractor = keyguardDismissActionInteractor,
         keyguardEnabledInteractor = keyguardEnabledInteractor,
         keyguardInteractor = keyguardInteractor,
         keyguardShowWhileAwakeInteractor = keyguardShowWhileAwakeInteractor,
@@ -103,7 +100,6 @@ val Kosmos.sceneContainerStartable by Fixture {
         sysuiStateInteractor = sysuiStateInteractor,
         tableLogBuffer = logcatTableLogBuffer(this, "sceneFrameworkTableLogBuffer"),
         trustInteractor = trustInteractor,
-        uiEventLogger = uiEventLogger,
         vibratorHelper = vibratorHelper,
         wakeDirectlyToGoneInteractor = keyguardWakeDirectlyToGoneInteractor,
         windowController = notificationShadeWindowController,

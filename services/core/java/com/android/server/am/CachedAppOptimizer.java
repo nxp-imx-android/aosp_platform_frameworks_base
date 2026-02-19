@@ -45,6 +45,13 @@ import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UID_IDLE;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UI_VISIBILITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UNBIND_SERVICE;
 import static android.content.ComponentCallbacks2.TRIM_MEMORY_BACKGROUND;
+import static android.os.PerfettoTrace.FREEZER_V3;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.FREEZER_EVENT;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidFreezerEvent.FROZEN_DUR_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidFreezerEvent.UID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidFreezerEvent.PID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidFreezerEvent.UNFROZEN_DUR_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidFreezerEvent.UNFREEZE_REASON;
 
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_COMPACTION;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_FREEZER;
@@ -96,6 +103,7 @@ import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.Keep;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
 import com.android.internal.os.BinderfsStatsReader;
 import com.android.internal.os.KernelAllocationStats;
 import com.android.internal.os.ProcLocksReader;
@@ -2573,6 +2581,18 @@ public class CachedAppOptimizer {
                 unfrozenDuration = opt.getFreezeUnfreezeTime() - unfreezeTime;
                 frozen = opt.isFrozen();
 
+                if (frozen && android.os.Flags.perfettoSdkTracingV3()) {
+                    PerfettoTrace.instant(FREEZER_V3, "freeze")
+                            .beginProto()
+                            .beginNested(FREEZER_EVENT)
+                            .addField(UID, proc.uid)
+                            .addField(PID, proc.getPid())
+                            .addField(UNFROZEN_DUR_MS, unfrozenDuration)
+                            .endNested()
+                            .endProto()
+                            .emit();
+                }
+
                 final UidRecord uidRec = proc.getUidRecord();
                 if (frozen && uidRec != null && uidRec.areAllProcessesFrozen()) {
                     uidRec.setFrozen(true);
@@ -2629,6 +2649,19 @@ public class CachedAppOptimizer {
 
             EventLog.writeEvent(EventLogTags.AM_UNFREEZE, pid, processName, reason);
             app.onProcessUnfrozen();
+
+            if (android.os.Flags.perfettoSdkTracingV3()) {
+                PerfettoTrace.instant(FREEZER_V3, "unfreeze")
+                        .beginProto()
+                        .beginNested(FREEZER_EVENT)
+                        .addField(UID, app.uid)
+                        .addField(PID, pid)
+                        .addField(FROZEN_DUR_MS, frozenDuration)
+                        .addField(UNFREEZE_REASON, reason)
+                        .endNested()
+                        .endProto()
+                        .emit();
+            }
 
             // See above for why we're not taking mPhenotypeFlagLock here
             if (mRandom.nextFloat() < mFreezerStatsdSampleRate

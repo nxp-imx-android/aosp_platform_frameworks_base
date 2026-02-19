@@ -62,7 +62,6 @@ import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_SYSTEM_INIT;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UID_IDLE;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UI_VISIBILITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UNBIND_SERVICE;
-// TODO(b/475548318): Use PerfettoCategories from com.android.internal.dev.perfetto.sdk
 import static android.os.PerfettoTrace.PROC_STATE_CATEGORY;
 import static android.os.Process.THREAD_GROUP_BACKGROUND;
 import static android.os.Process.THREAD_GROUP_DEFAULT;
@@ -71,6 +70,16 @@ import static android.os.Process.THREAD_GROUP_RESTRICTED;
 import static android.os.Process.THREAD_GROUP_TOP_APP;
 import static android.os.Process.THREAD_PRIORITY_DISPLAY;
 import static android.os.Process.THREAD_PRIORITY_TOP_APP_BOOST;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.PROCESS_STATE_CHANGED_EVENT;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.UID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.PID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.PREV_PROC_STATE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.CUR_PROC_STATE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.PREV_OOM_SCORE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.CUR_OOM_SCORE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.PREV_CAPABILITY_FLAGS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.CUR_CAPABILITY_FLAGS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.REASON;
 
 import static com.android.internal.app.procstats.DumpUtils.STATE_PERFETTO_TRACK_NAMES;
 import static com.android.internal.app.procstats.ProcessState.PROCESS_STATE_TO_STATE;
@@ -2434,10 +2443,32 @@ public abstract class OomAdjuster {
             state.setSetProcState(state.getCurProcState());
         }
 
-        if (state.getCurCapability() != state.getSetCapability()) {
+        int oldCapability = state.getSetCapability();
+        if (state.getCurCapability() != oldCapability) {
             state.setSetCapability(state.getCurCapability());
             state.setSetCpuTimeReasons(state.getCurCpuTimeReasons());
             state.setSetImplicitCpuTimeReasons(state.getCurImplicitCpuTimeReasons());
+        }
+
+        if (oldOomAdj != state.getCurAdj() || oldProcState != state.getCurProcState()
+                || oldCapability != state.getCurCapability()) {
+            if (android.os.Flags.perfettoSdkTracingV3()) {
+                PerfettoTrace.instant(PROC_STATE_CATEGORY, "process_state_changed")
+                        .beginProto()
+                        .beginNested(PROCESS_STATE_CHANGED_EVENT)
+                        .addField(UID, state.uid)
+                        .addField(PID, state.getPid())
+                        .addField(PREV_PROC_STATE, oldProcState)
+                        .addField(CUR_PROC_STATE, state.getCurProcState())
+                        .addField(PREV_OOM_SCORE, oldOomAdj)
+                        .addField(CUR_OOM_SCORE, state.getCurAdj())
+                        .addField(PREV_CAPABILITY_FLAGS, oldCapability)
+                        .addField(CUR_CAPABILITY_FLAGS, state.getCurCapability())
+                        .addField(REASON, oomAdjReason)
+                        .endNested()
+                        .endProto()
+                        .emit();
+            }
         }
 
         final boolean curBoundByNonBgRestrictedApp = state.isCurBoundByNonBgRestrictedApp();

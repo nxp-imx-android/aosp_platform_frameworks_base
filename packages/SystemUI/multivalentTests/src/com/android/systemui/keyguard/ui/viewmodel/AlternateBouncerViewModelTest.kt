@@ -76,7 +76,7 @@ class AlternateBouncerViewModelTest : SysuiTestCase() {
     fun onRemovedFromWindow() =
         testScope.runTest {
             underTest.onRemovedFromWindow()
-            verify(statusBarKeyguardViewManager).hideAlternateBouncer(any())
+            verify(statusBarKeyguardViewManager).hideAlternateBouncer(any(), eq(false))
         }
 
     @Test
@@ -93,7 +93,7 @@ class AlternateBouncerViewModelTest : SysuiTestCase() {
 
             underTest.onBackRequested()
             kosmos.fakeExecutor.runAllReady()
-            verify(statusBarKeyguardViewManager).hideAlternateBouncer(any())
+            verify(statusBarKeyguardViewManager).hideAlternateBouncer(any(), eq(true))
             verify(dismissCallback).onDismissCancelled()
             assertThat(kosmos.primaryBouncerInteractor.bouncerDismissAction).isNull()
         }

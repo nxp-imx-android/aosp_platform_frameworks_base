@@ -3529,7 +3529,7 @@ public class BubbleStackView extends FrameLayout
                 // If we have more than 1 bubble and it's the current bubble being dismissed,
                 // we will perform the switch animation
                 mIsBubbleSwitchAnimating = true;
-                if (bubble instanceof Bubble b && Flags.fixFlickersDuringSwitchFromDismiss()) {
+                if (bubble instanceof Bubble b) {
                     // defer bubble clean up until after the animation to avoid IME focus switching
                     b.setIsCleanupDeferred(true);
                 }

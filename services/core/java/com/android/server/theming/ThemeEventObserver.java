@@ -21,7 +21,6 @@ import static android.content.theming.FieldColorSource.VALUE_PRESET;
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
-import android.app.ActivityManagerInternal;
 import android.app.KeyguardManager;
 import android.app.WallpaperColors;
 import android.content.BroadcastReceiver;
@@ -54,10 +53,8 @@ import java.util.concurrent.Executor;
  *     <li>Theme setting changes (style, color source)</li>
  *     <li>User setup completion</li>
  *     <li>Device lock state changes</li>
- *     <li>Profile additions</li>
- *     <li>Overlay application results</li>
  * </ul>
- * It forwards these events to the {@link ThemeStateManager} or {@link ThemeManagerInternal}.
+ * It forwards these events to the {@link ThemeStateManager}.
  *
  * @hide
  */
@@ -66,21 +63,25 @@ public class ThemeEventObserver {
 
     private final Context mContext;
     private final ThemeStateManager mStateManager;
-    private final ThemeManagerInternal mThemeManagerInternal;
+    private final ThemeSettingsManager mThemeSettingsManager;
     private final ThemeUserLifecycle mThemeUserLifecycle;
+    private final ThemeManagerImpl mThemeManagerImpl;
+    private final ThemeEnvironment mEnvironment;
 
     private ThemeWallpaperManager mWallpaperManager;
-    private ActivityManagerInternal mActivityManagerInternal;
     private UiModeManagerInternal mUiModeManagerInternal;
     private KeyguardManager mKeyguardManager;
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    ThemeEventObserver(Context context, ThemeStateManager stateManager,
-            ThemeManagerInternal themeManagerInternal, ThemeUserLifecycle themeUserLifecycle) {
+    public ThemeEventObserver(Context context, ThemeStateManager stateManager,
+            ThemeSettingsManager themeSettingsManager, ThemeUserLifecycle themeUserLifecycle,
+            ThemeManagerImpl themeManagerImpl, ThemeEnvironment environment) {
         mContext = context;
         mStateManager = stateManager;
-        mThemeManagerInternal = themeManagerInternal;
+        mThemeSettingsManager = themeSettingsManager;
         mThemeUserLifecycle = themeUserLifecycle;
+        mThemeManagerImpl = themeManagerImpl;
+        mEnvironment = environment;
     }
 
     /**
@@ -89,28 +90,21 @@ public class ThemeEventObserver {
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     @RequiresPermission(Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)
     public void onServicesReady(ThemeWallpaperManager wallpaperManager,
-            ActivityManagerInternal activityManager,
             UiModeManagerInternal uiModeManager, KeyguardManager keyguardManager) {
         mWallpaperManager = wallpaperManager;
-        mActivityManagerInternal = activityManager;
         mUiModeManagerInternal = uiModeManager;
         mKeyguardManager = keyguardManager;
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+    public final BroadcastReceiver mOverlayReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-
-            if (Intent.ACTION_PROFILE_ADDED.equals(action)) {
-                handleProfileAdded(intent);
-            } else if (Intent.ACTION_OVERLAY_CHANGED.equals(action)) {
+            if (Intent.ACTION_OVERLAY_CHANGED.equals(intent.getAction())) {
                 handleOverlayChanged(intent);
             }
         }
     };
-
 
     /**
      * Registers various listeners for system events and settings changes.
@@ -121,19 +115,11 @@ public class ThemeEventObserver {
         Executor bgExecutor = BackgroundThread.getExecutor();
         Handler bgHandler = BackgroundThread.getHandler();
 
-        // Profile and overlay changes
-        final IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_PROFILE_ADDED);
-        filter.addAction(Intent.ACTION_OVERLAY_CHANGED);
-        filter.addDataScheme("package");
-
-        mContext.registerReceiver(mBroadcastReceiver, filter, null, bgHandler);
-
         // Wallpaper Color Change
         mWallpaperManager.addOnColorsChangedListener(
-                (wallpaperColors, which, displayId, userId, fromForegroundApp) -> {
-                    handleWallpaperColorsChanged(wallpaperColors, userId, fromForegroundApp);
-                }, bgHandler);
+                (wallpaperColors, which, displayId, userId, fromForegroundApp)
+                        -> handleWallpaperColorsChanged(wallpaperColors, userId, fromForegroundApp),
+                bgHandler);
 
         // Contrast Change
         mUiModeManagerInternal.addContrastListener(this::handleContrastChanged, bgExecutor);
@@ -151,25 +137,15 @@ public class ThemeEventObserver {
         resolver.registerContentObserver(
                 Settings.Secure.getUriFor(Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES),
                 false, mThemeSettingsObserver, UserHandle.USER_ALL);
+
+        // Overlay Changes
+        final IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_OVERLAY_CHANGED);
+        filter.addDataScheme("package");
+        mContext.registerReceiver(mOverlayReceiver, filter, null, bgHandler);
     }
 
     // Event Handlers
-
-    private void handleProfileAdded(Intent intent) {
-        UserHandle newUserHandle = intent.getParcelableExtra(Intent.EXTRA_USER, UserHandle.class);
-        int newUserOrProfileId = newUserHandle.getIdentifier();
-
-        // Load the new user/profile's theme state immediately
-        mThemeUserLifecycle.loadUserStateAndNotifyStateManager(newUserOrProfileId);
-
-        Integer parentId = mStateManager.parentOf(newUserOrProfileId);
-        if (parentId == null || shouldIgnoreEventForUser(parentId, "onProfileAdd")) {
-            return;
-        }
-
-        Slog.d(TAG, "User: " + newUserOrProfileId + " added to parent: " + parentId);
-        mStateManager.onProfileAdd(parentId, newUserOrProfileId);
-    }
 
     private void handleOverlayChanged(Intent intent) {
         final Uri data = intent.getData();
@@ -178,12 +154,12 @@ public class ThemeEventObserver {
         if ("android".equals(changedPackage)) {
             final int userId = intent.getIntExtra(Intent.EXTRA_USER_ID, UserHandle.USER_NULL);
 
-            if (shouldIgnoreEventForUser(userId, "onOverlayChanged")) {
+            if (userId == UserHandle.USER_NULL || !mEnvironment.isManagedUser(userId)) {
                 return;
             }
 
             Slog.i(TAG, "Theme overlays successfully applied for user " + userId);
-            mThemeManagerInternal.notifyThemeChanged(userId);
+            mThemeManagerImpl.notifyThemeChanged(userId);
         }
     }
 
@@ -192,7 +168,8 @@ public class ThemeEventObserver {
         if (shouldIgnoreEventForUser(userId, "onColorsChanged")) {
             return;
         }
-        ThemeSettings userSettings = mThemeManagerInternal.getThemeSettingsOrDefault(userId);
+        ThemeSettings userSettings = mThemeSettingsManager.getSettingsOrDefault(userId,
+                mContext.getContentResolver());
         if (userSettings.colorSource().equals(VALUE_PRESET)) {
             Slog.d(TAG, "Wallpaper color change ignored due to preset color source");
             return;
@@ -233,7 +210,8 @@ public class ThemeEventObserver {
         }
     };
 
-    private void handleUserSetupChanged(int userId) {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    void handleUserSetupChanged(int userId) {
         if (shouldIgnoreEventForUser(userId, "onFinishSetup")) {
             return;
         }
@@ -251,16 +229,17 @@ public class ThemeEventObserver {
         }
     };
 
-    private void handleThemeCustomizationChanged(int userId) {
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+    void handleThemeCustomizationChanged(int userId) {
         if (shouldIgnoreEventForUser(userId, "onThemeSettingsChanged")) {
             return;
         }
 
         Slog.d(TAG, "User: " + userId + " updated Secure Setting directly");
-        // The settings have changed on disk, invalidate the local cache.
-        mThemeManagerInternal.forceReloadSettings(userId);
+        mThemeSettingsManager.invalidateCache(userId);
 
-        ThemeSettings userSettings = mThemeManagerInternal.getThemeSettingsOrDefault(userId);
+        ThemeSettings userSettings = mThemeSettingsManager.getSettingsOrDefault(userId,
+                mContext.getContentResolver());
 
         int newSeed = userSettings.systemPalette().toArgb();
         mStateManager.onSeedColorChange(userId, newSeed, true);
@@ -270,9 +249,10 @@ public class ThemeEventObserver {
     // Helper Methods
 
     private boolean shouldIgnoreEventForUser(int userId, String methodName) {
-        // Bypass profiles explicitly. Unified theme drive events only come from Full Users.
-        if (mStateManager.parentOf(userId) != null) {
-            Slog.d(TAG, "Bypassing '" + methodName + "' for profile " + userId);
+        // Use unified environment policy
+        if (!mEnvironment.isManagedUser(userId)) {
+            Slog.d(TAG,
+                    "Bypassing '" + methodName + "' for user " + userId + " per system policy.");
             return true;
         }
 

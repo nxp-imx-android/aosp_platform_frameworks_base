@@ -151,7 +151,7 @@
     <string name="bluetooth_profile_pbap_summary" msgid="402819589201138227">"Мэдээллийг дуудлагын мэдэгдэл болон бусад зүйлд ашиглана"</string>
     <string name="bluetooth_profile_pan_nap" msgid="7871974753822470050">"Интернэт холболтыг хуваалцах"</string>
     <string name="bluetooth_profile_map" msgid="8907204701162107271">"Мессеж"</string>
-    <string name="bluetooth_profile_sap" msgid="8304170950447934386">"SIM Хандалт"</string>
+    <string name="bluetooth_profile_sap" msgid="8304170950447934386">"SIM хандалт"</string>
     <string name="bluetooth_profile_a2dp_high_quality" msgid="4739440941324792775">"HD аудио: <xliff:g id="CODEC_NAME">%1$s</xliff:g>"</string>
     <string name="bluetooth_profile_a2dp_high_quality_unknown_codec" msgid="2477639096903834374">"HD аудио"</string>
     <string name="bluetooth_profile_hearing_aid" msgid="2607867572569689732">"Сонсголын төхөөрөмж"</string>

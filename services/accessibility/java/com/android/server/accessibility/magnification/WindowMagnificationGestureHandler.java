@@ -140,11 +140,6 @@ public class WindowMagnificationGestureHandler extends MagnificationGestureHandl
     }
 
     @Override
-    void handleMouseOrStylusEvent(MotionEvent event, MotionEvent rawEvent, int policyFlags) {
-        // Window Magnification viewport doesn't move with mouse events (yet).
-    }
-
-    @Override
     void onMotionEventInternal(MotionEvent event, MotionEvent rawEvent, int policyFlags) {
         if (event.getSource() != SOURCE_TOUCHSCREEN) {
             return;

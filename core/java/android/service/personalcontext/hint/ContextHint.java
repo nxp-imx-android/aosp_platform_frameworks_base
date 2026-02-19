@@ -22,6 +22,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -49,7 +50,9 @@ import java.util.UUID;
  * for kicking off an understanding flow.
  *
  * <p>Users of this class can use instanceof to determine the type of the hint.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public abstract class ContextHint {
     private static final String TAG = "ContextHint";

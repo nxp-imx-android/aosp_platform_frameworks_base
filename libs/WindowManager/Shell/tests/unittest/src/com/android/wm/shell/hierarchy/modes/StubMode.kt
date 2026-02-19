@@ -74,7 +74,7 @@ open class StubMode(
         updates.add(container to snapshot.getChanges(container))
     }
 
-    override fun displayChanging(
+    override fun requestUpdateForDisplayChange(
         directlyAssignedContainer: Container,
         curProps: DisplayContainerProperties,
         newProps: DisplayContainerProperties,

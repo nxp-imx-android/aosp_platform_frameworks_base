@@ -475,6 +475,9 @@
     <!-- The maximum size of the image in the expanded media notification -->
     <dimen name="media_notification_expanded_image_margin_bottom">20dp</dimen>
 
+    <!-- The vertical padding for cast to other button in the MediaRouteChooserDialog -->
+    <dimen name="media_route_cast_to_other_vertical_padding">8dp</dimen>
+
     <!-- The padding at the end of actions when the snooze and bubble buttons are gone-->
     <dimen name="snooze_and_bubble_gone_padding_end">12dp</dimen>
 

@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.quickactions.assistant.ui.viewmodel
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -44,7 +45,9 @@ constructor(assistantIconInteractor: AssistantIconInteractor) :
             initialValue = QuickActionChipUiState.Hidden(QuickActionChipId.AssistantIcon),
             source =
                 assistantIconInteractor.assistantIconSharedModel.map {
-                    it.toPopupChipModel({ assistantIconInteractor.startAssistant() })
+                    it.toPopupChipModel { context ->
+                        assistantIconInteractor.startAssistant(context)
+                    }
                 },
         )
 
@@ -58,7 +61,9 @@ constructor(assistantIconInteractor: AssistantIconInteractor) :
     }
 }
 
-fun AssistantIconSharedModel.toPopupChipModel(startAssistant: () -> Unit): QuickActionChipUiState {
+fun AssistantIconSharedModel.toPopupChipModel(
+    startAssistant: (Context) -> Unit
+): QuickActionChipUiState {
     // Hide the icon if assistInfo is null or is not the configured package.
     return if (assistInfo == null || !isStatusBarAssistantPackage) {
         QuickActionChipUiState.Hidden(QuickActionChipId.AssistantIcon)

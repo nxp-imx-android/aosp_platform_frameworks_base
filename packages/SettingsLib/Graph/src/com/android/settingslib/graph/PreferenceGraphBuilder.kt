@@ -575,6 +575,12 @@ fun PreferenceMetadata.toProto(
             }
         }
         val metadataIcon = metadata.getPreferenceIcon(context)
+        writable = if (metadata is ApiPreference<*>) {
+            metadata.set != null
+        } else {
+            false // Legacy preferences are not writable
+        }
+
         if (metadataIcon != 0) icon = metadataIcon
         if (metadata.keywords != 0) keywords = metadata.keywords
         val preferenceExtras = metadata.extras(context)

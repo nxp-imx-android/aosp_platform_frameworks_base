@@ -20,6 +20,8 @@ import android.annotation.MainThread;
 import android.annotation.SuppressLint
 import android.app.motioncues.MotionCuesVisualStyle
 import android.app.motioncues.MotionCuesSettings
+import android.content.ComponentCallbacks
+import android.content.res.Configuration
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
@@ -40,6 +42,7 @@ import com.android.internal.annotations.GuardedBy
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.motioncues.nano.MotionCueState
 import com.android.systemui.motioncues.nano.MotionBubble
+import com.android.systemui.statusbar.policy.ConfigurationController
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -58,8 +61,9 @@ import kotlin.math.min
 @SuppressLint("ClickableViewAccessibility")
 class MotionCuesUi(
     private val context: Context,
-    private val windowManager: WindowManager
-) {
+    private val windowManager: WindowManager,
+    private val configurationController: ConfigurationController
+) : ConfigurationController.ConfigurationListener {
 
     private var clientPackageName: String? = null
     private var userId: Int = 0
@@ -68,6 +72,7 @@ class MotionCuesUi(
     private lateinit var motionCuesSettings: MotionCuesSettings
     private var bubbleShape: Drawable? = null
     private var bubbleShapeResId: Int = 0
+    private lateinit var lastConfiguration: Configuration
 
     @GuardedBy("lock")
     private val motionCues = mutableListOf<MotionCue>()
@@ -99,6 +104,8 @@ class MotionCuesUi(
         updateScreenDimensions()
         makeOverlayView()
         makeBubbles()
+        lastConfiguration = Configuration(context.resources.configuration)
+        configurationController.addCallback(this)
     }
 
     /** Stops the motion cue overlay and removes the view. */
@@ -124,6 +131,7 @@ class MotionCuesUi(
             motionCues.clear()
         }
         paint.color = DEFAULT_BUBBLE_COLOR
+        configurationController.removeCallback(this)
     }
 
     /** Updates the position of all motion cues. */
@@ -331,6 +339,21 @@ class MotionCuesUi(
                 } ?: canvas.drawCircle(x, y, adjustedRadius, paint) // Fallback
             }
         }
+    }
+
+    override fun onConfigChanged(newConfig: Configuration?) {
+        if (newConfig == null) return
+
+        if (lastConfiguration.orientation != newConfig.orientation) {
+            if (isStarted) {
+                Log.i(TAG, "Recreating overlay due to orientation change.")
+                stopDrawingAndRemoveView()
+                updateScreenDimensions()
+                makeOverlayView()
+                makeBubbles()
+            }
+        }
+        lastConfiguration = Configuration(newConfig)
     }
 
     /**

@@ -53,6 +53,7 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ResolveInfoFlags;
 import android.content.pm.ResolveInfo;
+import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.VirtualDisplay;
@@ -69,12 +70,14 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.text.TextUtils;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.view.DisplayInfo;
 import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.SurfaceControl;
+import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
@@ -182,6 +185,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final int mVirtualDisplayId;
     private final int mVirtualDeviceId;
     private final int mMainDisplayId;
+    @Nullable
+    private final String mReferenceDisplayAddress;
     private final VirtualTouchscreen mVirtualTouchscreen;
     private final VirtualDpad mVirtualDpad;
     private final ComputerControlAudioCapture mAudioCapture;
@@ -297,11 +302,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             ComputerControlSessionParams params, IApplicationThread appThread,
             AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
-            Consumer<ComputerControlSessionImpl> onClosedListener) {
+            Consumer<ComputerControlSessionImpl> onClosedListener,
+            @Nullable String referenceDisplayAddress) {
         this(context, DisplayManagerGlobal.getInstance(), allowlistController,
                 ViewConfiguration.get(context), DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS,
                 SurfaceControl.Transaction::new, appToken, params, appThread, attributionSource,
-                virtualDeviceFactory, onClosedListener, FgThread.getExecutor());
+                virtualDeviceFactory, onClosedListener, FgThread.getExecutor(),
+                referenceDisplayAddress);
     }
 
     @VisibleForTesting
@@ -312,7 +319,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             ComputerControlSessionParams params, IApplicationThread appThread,
             AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
-            Consumer<ComputerControlSessionImpl> onClosedListener, Executor fgThreadExecutor) {
+            Consumer<ComputerControlSessionImpl> onClosedListener, Executor fgThreadExecutor,
+            @Nullable String referenceDisplayAddress) {
         Trace.asyncTraceForTrackBegin(mTraceTrack, "Session", TRACE_COOKIE_SESSION);
         mFgThreadExecutor = fgThreadExecutor;
         mViewConfiguration = viewConfiguration;
@@ -324,6 +332,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mPreviewIntent = params.getPreviewIntent();
         mAppThread = appThread;
         mAttributionTag = attributionSource.getAttributionTag();
+        mReferenceDisplayAddress = referenceDisplayAddress;
 
         mOwnerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
         mOwnerContext = context.createContextAsUser(mOwnerUser, /* flags = */ 0);
@@ -371,8 +380,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final VirtualDeviceParams virtualDeviceParams = virtualDeviceParamsBuilder.build();
 
         final VirtualDisplayConfig virtualDisplayConfig = createSessionDisplayConfig(
-                mParams.getName() + "-display",
-                mDisplayManagerGlobal.getDisplayInfo(mMainDisplayId));
+                mParams.getName() + "-display", getTargetDisplayInfo());
         final int displayWidth = virtualDisplayConfig.getWidth();
         final int displayHeight = virtualDisplayConfig.getHeight();
 
@@ -436,32 +444,79 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAppOpsManager = mOwnerContext.getSystemService(AppOpsManager.class);
         mAppOpsManager.startWatchingMode(AppOpsManager.OP_COMPUTER_CONTROL, mOwnerPackageName,
                 this);
+
+        addVirtualDisplayOverlay(context);
     }
 
     /**
-     * Create the session's display to have the same size and density as that of the main display
-     * when it is in its natural orientation.
+     * Add a transparent 1x1 overlay view to the virtual display as a short-term workaround for
+     * handling screenshot timeouts resulting from not being able to force native activities and
+     * windows to draw a new frame. Adding this view ensures there will be at least one window on
+     * the display that will produce a new frame when a screenshot is taken that will result in SF
+     * composition to produce a VirtualDisplay frame.
+     */
+    // TODO: b/484055252 - Remove after a long-term solution is in place.
+    private void addVirtualDisplayOverlay(Context context) {
+        final var displayContext = context.createDisplayContext(mVirtualDisplay.getDisplay());
+        final var wm = displayContext.getSystemService(WindowManager.class);
+
+        final var lp = new WindowManager.LayoutParams(1, 1,
+                WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                PixelFormat.TRANSPARENT);
+        wm.addView(new View(displayContext), lp);
+    }
+
+    private DisplayInfo getTargetDisplayInfo() {
+        if (TextUtils.isEmpty(mReferenceDisplayAddress)) {
+            Slog.i(TAG, "No configured reference display, using main display " + mMainDisplayId
+                    + " for Computer Control virtual display dimensions");
+            return mDisplayManagerGlobal.getDisplayInfo(mMainDisplayId);
+        }
+        long configAddress = Long.parseLong(mReferenceDisplayAddress);
+        int[] displayIds = mDisplayManagerGlobal.getDisplayIds(/* includeDisabled= */ true);
+        for (int i = 0; i < displayIds.length; i++) {
+            DisplayInfo info = mDisplayManagerGlobal.getDisplayInfo(displayIds[i]);
+            if (info != null && info.address != null) {
+                long physicalId = info.address.getPhysicalDisplayId();
+                if (physicalId == configAddress) {
+                    Slog.i(TAG,
+                            "Using configured reference display " + displayIds[i]
+                                    + " (physical address: " + mReferenceDisplayAddress
+                                    + ") for Computer Control virtual display dimensions");
+                    return info;
+                }
+            }
+        }
+        return mDisplayManagerGlobal.getDisplayInfo(mMainDisplayId);
+    }
+
+    /**
+     * Create the session's display to have the same size and density as that of the
+     * {@code refDisplayInfo} when it is in its natural orientation.
      */
     private static VirtualDisplayConfig createSessionDisplayConfig(String name,
-            DisplayInfo mainDisplayInfo) {
+            DisplayInfo refDisplayInfo) {
         final int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED;
 
         final int displayWidth;
         final int displayHeight;
-        if (mainDisplayInfo.rotation == Surface.ROTATION_90
-                || mainDisplayInfo.rotation == Surface.ROTATION_270) {
-            displayWidth = mainDisplayInfo.logicalHeight;
-            displayHeight = mainDisplayInfo.logicalWidth;
+        if (refDisplayInfo.rotation == Surface.ROTATION_90
+                || refDisplayInfo.rotation == Surface.ROTATION_270) {
+            displayWidth = refDisplayInfo.logicalHeight;
+            displayHeight = refDisplayInfo.logicalWidth;
         } else {
-            displayWidth = mainDisplayInfo.logicalWidth;
-            displayHeight = mainDisplayInfo.logicalHeight;
+            displayWidth = refDisplayInfo.logicalWidth;
+            displayHeight = refDisplayInfo.logicalHeight;
         }
 
         return new VirtualDisplayConfig.Builder(
                 name, displayWidth, displayHeight,
-                mainDisplayInfo.logicalDensityDpi)
+                refDisplayInfo.logicalDensityDpi)
                 .setFlags(displayFlags)
                 .setIgnoreActivitySizeRestrictions(true)
                 .build();

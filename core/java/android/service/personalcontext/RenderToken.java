@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -36,7 +37,10 @@ import java.util.UUID;
  * included in a hint, indicates that insights generated from the hint should only go to the
  * specific renderer associated with this token. If included in an insight, indicates the insight
  * should only be sent to the specific renderer associated with this token.
+ *
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class RenderToken implements Parcelable, Comparable<RenderToken> {
     /**
@@ -54,19 +58,6 @@ public final class RenderToken implements Parcelable, Comparable<RenderToken> {
      * Unique identifier of the renderer this token is associated with.
      */
     private final UUID mRendererComponentId;
-
-    /**
-     * Creates a new {@link RenderToken} for the renderer with the given ID.
-     *
-     * @param rendererComponentId The {@link UUID} of the renderer as identified by the
-     *                            PersonalContext service.
-     * @see #RenderToken(UUID, String)
-     * @hide
-     */
-    @TestApi
-    public RenderToken(@NonNull UUID rendererComponentId) {
-        this(rendererComponentId, null);
-    }
 
     /**
      * Creates a new {@link RenderToken} for the renderer with the given ID and tag.

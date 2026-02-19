@@ -58,6 +58,13 @@ constructor(
             it?.cameraStreamSize
         }
 
+    val outputStreamSize: Size? by
+        screenRecordCameraInteractor.streamConfiguration.mapHydrate(
+            "ScreenCaptureCameraViewModel#outputStreamSize"
+        ) {
+            it?.outputStreamSize
+        }
+
     override suspend fun onActivated() {
         super.onActivated()
         coroutineScope {

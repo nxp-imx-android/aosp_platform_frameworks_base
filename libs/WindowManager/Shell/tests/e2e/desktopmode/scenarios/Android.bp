@@ -74,7 +74,6 @@ test_module_config {
         "com.android.wm.shell.functional.appcompat.ResizeActivityEmbeddedAppToMinimumWindowTest",
         "com.android.wm.shell.functional.appcompat.RestartSizeCompatAppInDesktopMode",
         "com.android.wm.shell.functional.appcompat.ShowAppDialogInDesktopModeTest",
-        "com.android.wm.shell.functional.appcompat.ShowQuickShareDialogFromQuickSettingsTest",
         "com.android.wm.shell.functional.apptoweb.AppToWebFirstRunDialogTest",
         "com.android.wm.shell.functional.clientfullscreenrequest.FullscreenModeRequestFromDesktopAndBackTest",
         "com.android.wm.shell.functional.drag.DragAppWindowMultiWindowAndPipTest",
@@ -203,13 +202,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.appcompat.ShowAppDialogInDesktopModeTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-appcompat-ShowQuickShareDialogFromQuickSettingsTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.appcompat.ShowQuickShareDialogFromQuickSettingsTest"],
 }
 
 test_module_config {

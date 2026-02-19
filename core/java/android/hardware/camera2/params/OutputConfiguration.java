@@ -161,12 +161,18 @@ public final class OutputConfiguration implements Parcelable {
      */
     public static final int SURFACE_GROUP_ID_NONE = -1;
 
-    private static final int MULTI_RES_OFF = 0;
+    /**
+     * @hide
+     */
+    public static final int MULTI_RES_OFF = 0;
     /**
      * @hide
      */
     public static final int MULTI_RES_ON = 1;
-    private static final int MULTI_RES_ON_CONCURRENT = 2;
+    /**
+     * @hide
+     */
+    public static final int MULTI_RES_ON_CONCURRENT = 2;
 
     /**
      * Default timestamp base.

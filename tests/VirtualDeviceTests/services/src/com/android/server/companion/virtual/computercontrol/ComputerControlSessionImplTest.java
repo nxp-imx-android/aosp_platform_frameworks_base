@@ -49,7 +49,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
@@ -105,6 +107,7 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
+import android.view.DisplayAddress;
 import android.view.DisplayInfo;
 import android.view.KeyEvent;
 import android.view.Surface;
@@ -192,6 +195,8 @@ public class ComputerControlSessionImplTest {
     private PackageManager mOwnerPackageManager;
     @Mock
     private AppOpsManager mAppOpsManager;
+    @Mock
+    private WindowManager mWindowManager;
     @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
@@ -288,6 +293,11 @@ public class ComputerControlSessionImplTest {
                 .thenReturn(ownerContext);
         when(ownerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
         when(ownerContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
+
+        final Context displayContext = spy(new ContextWrapper(
+                InstrumentationRegistry.getInstrumentation().getTargetContext()));
+        doReturn(displayContext).when(mContext).createDisplayContext(any());
+        doReturn(mWindowManager).when(displayContext).getSystemService(WindowManager.class);
 
         LocalServices.removeAllServicesForTest();
         LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);
@@ -434,6 +444,32 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
+    public void createSession_usesConfiguredDisplayDimensions() throws Exception {
+        // Setup: Define a secondary display with a specific physical address and dimensions
+        final long physicalAddress = 123456789L;
+        final int secondaryDisplayId = 55;
+        final int secondaryWidth = 1234;
+        final int secondaryHeight = 5678;
+        DisplayInfo secondaryInfo = new DisplayInfo();
+        secondaryInfo.logicalWidth = secondaryWidth;
+        secondaryInfo.logicalHeight = secondaryHeight;
+        secondaryInfo.logicalDensityDpi = DISPLAY_DPI;
+        secondaryInfo.address = DisplayAddress.fromPhysicalDisplayId(physicalAddress);
+        when(mDisplayManager.getDisplayIds(true)).thenReturn(
+                new int[]{MAIN_DISPLAY_ID, secondaryDisplayId});
+        when(mDisplayManager.getDisplayInfo(secondaryDisplayId)).thenReturn(secondaryInfo);
+
+        createComputerControlSession(mDefaultParams, GLOBAL_TIMEOUT_MILLIS,
+                String.valueOf(physicalAddress));
+
+        verify(mVirtualDevice).createVirtualDisplay(
+                mVirtualDisplayConfigArgumentCaptor.capture(), any(), any());
+        VirtualDisplayConfig config = mVirtualDisplayConfigArgumentCaptor.getValue();
+        assertThat(config.getWidth()).isEqualTo(secondaryWidth);
+        assertThat(config.getHeight()).isEqualTo(secondaryHeight);
+    }
+
+    @Test
     public void createSession_doesNotSetAllowedUsers() throws Exception {
         createComputerControlSession(mDefaultParams);
 
@@ -454,7 +490,8 @@ public class ComputerControlSessionImplTest {
 
     @Test
     public void createSession_canCloseSessionBeforeInitializing() throws Exception {
-        createComputerControlSessionWithoutInitializing(mDefaultParams, GLOBAL_TIMEOUT_MILLIS);
+        createComputerControlSessionWithoutInitializing(mDefaultParams,
+                GLOBAL_TIMEOUT_MILLIS, /* referenceDisplayAddress= */ null);
         mSession.close();
 
         verify(mOnClosedListener).accept(eq(mSession));
@@ -475,7 +512,8 @@ public class ComputerControlSessionImplTest {
         // ensuring that creation failures are propagated to the caller.
         final RuntimeException thrown = assertThrows(RuntimeException.class,
                 () -> createComputerControlSessionWithoutInitializing(
-                        mDefaultParams, GLOBAL_TIMEOUT_MILLIS));
+                        mDefaultParams, GLOBAL_TIMEOUT_MILLIS,
+                        /* referenceDisplayAddress= */ null));
         assertThat(thrown).isEqualTo(expectedException);
     }
 
@@ -715,6 +753,87 @@ public class ComputerControlSessionImplTest {
         mSession.tap(500, 600);
         verify(mVirtualTouchscreen, times(4)).sendTouchEvent(
                 argThat(new MatchesTouchEvent(VirtualTouchEvent.ACTION_CANCEL)));
+    }
+
+
+    private enum CancelingAction {
+        TAP {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                session.tap(1, 1);
+            }
+        },
+        INSERT_TEXT {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                session.insertText("text", false, false);
+            }
+        },
+        PERFORM_ACTION {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                session.performAction(ComputerControlSession.ACTION_GO_BACK);
+            }
+        },
+        LAUNCH_APPLICATION {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                when(test.mOwnerPackageManager.queryIntentActivities(any(), any()))
+                        .thenReturn(List.of(new ResolveInfo()));
+                session.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS);
+            }
+        },
+        ENTERING_BLOCKED_STATE {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                verify(test.mVirtualDevice).addActivityListener(any(),
+                        test.mActivityListenerArgumentCaptor.capture());
+                test.mActivityListenerArgumentCaptor.getValue()
+                        .onSecureWindowShown(
+                                VIRTUAL_DISPLAY_ID, TEST_COMPONENT, test.mUserHandle);
+            }
+        },
+        CLOSE {
+            @Override
+            void execute(ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+                    throws Exception {
+                session.close();
+            }
+        };
+
+        abstract void execute(
+                ComputerControlSessionImplTest test, ComputerControlSessionImpl session)
+            throws Exception;
+    }
+
+    private static List<CancelingAction> getCancelingActionsForSwipe() {
+        return List.of(CancelingAction.values());
+    }
+
+    private static List<CancelingAction> getCancelingActionsForInsertText() {
+        return List.of(
+                CancelingAction.TAP,
+                CancelingAction.PERFORM_ACTION,
+                CancelingAction.LAUNCH_APPLICATION,
+                CancelingAction.ENTERING_BLOCKED_STATE,
+                CancelingAction.CLOSE);
+    }
+
+    @Test
+    @Parameters(method = "getCancelingActionsForInsertText")
+    public void action_cancelsOngoingInsertText(CancelingAction action) throws Exception {
+        assertActionCancelsOngoingInsertText(session -> action.execute(this, session));
+    }
+
+    @Test
+    @Parameters(method = "getCancelingActionsForSwipe")
+    public void action_cancelsOngoingSwipe(CancelingAction action) throws Exception {
+        assertActionCancelsOngoingSwipe(session -> action.execute(this, session));
     }
 
     @Test
@@ -1159,9 +1278,9 @@ public class ComputerControlSessionImplTest {
     }
 
     @Test
-    public void notifyActivityListener_beforeInitialization_doesNotSetSurface()
-            throws RemoteException {
-        createComputerControlSessionWithoutInitializing(mDefaultParams, GLOBAL_TIMEOUT_MILLIS);
+    public void notifyActivityListener_beforeInitialization_doesNotSetSurface() {
+        createComputerControlSessionWithoutInitializing(mDefaultParams, GLOBAL_TIMEOUT_MILLIS,
+                /* referenceDisplayAddress= */ null);
         verify(mVirtualDevice).addActivityListener(any(),
                 mActivityListenerArgumentCaptor.capture());
 
@@ -1517,12 +1636,21 @@ public class ComputerControlSessionImplTest {
 
     private void createComputerControlSession(
             ComputerControlSessionParams params, long globalSessionTimeoutDurationMs) {
-        createComputerControlSessionWithoutInitializing(params, globalSessionTimeoutDurationMs);
+        createComputerControlSession(params,
+                globalSessionTimeoutDurationMs, /* referenceDisplayAddress = */ null);
+    }
+
+    private void createComputerControlSession(
+            ComputerControlSessionParams params, long globalSessionTimeoutDurationMs,
+            String referenceDisplayAddress) {
+        createComputerControlSessionWithoutInitializing(params, globalSessionTimeoutDurationMs,
+                referenceDisplayAddress);
         mSession.initialize(mLifecycleCallback, mClientSurface);
     }
 
     private void createComputerControlSessionWithoutInitializing(
-            ComputerControlSessionParams params, long globalSessionTimeoutDurationMs) {
+            ComputerControlSessionParams params, long globalSessionTimeoutDurationMs,
+            String referenceDisplayAddress) {
         DisplayManagerGlobal displayManagerGlobal = new DisplayManagerGlobal(mDisplayManager);
         displayManagerGlobal.disableLocalDisplayInfoCaches();
         mSession = new ComputerControlSessionImpl(
@@ -1530,7 +1658,37 @@ public class ComputerControlSessionImplTest {
                 globalSessionTimeoutDurationMs, () -> mTransaction, mAppToken, params, mAppThread,
                 new AttributionSource(UserHandle.getUid(USER_ID, 0), AGENT_PACKAGE,
                         ATTRIBUTION_TAG),
-                mVirtualDeviceFactory, mOnClosedListener, Runnable::run);
+                mVirtualDeviceFactory, mOnClosedListener, Runnable::run, referenceDisplayAddress);
+    }
+
+    private void assertActionCancelsOngoingSwipe(Interactor action) throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        // Start a swipe, which is asynchronous.
+        mSession.swipe(100, 200, 300, 400);
+
+        // Perform the action.
+        action.interact(mSession);
+
+        // Verify the ongoing swipe was cancelled.
+        verify(mVirtualTouchscreen).sendTouchEvent(
+                argThat(new MatchesTouchEvent(VirtualTouchEvent.ACTION_CANCEL)));
+    }
+
+    private void assertActionCancelsOngoingInsertText(Interactor action) throws Exception {
+        createComputerControlSession(mDefaultParams);
+        mEditorInfo.imeOptions = EditorInfo.IME_ACTION_DONE;
+
+        // Start an insertText with a delayed commit action.
+        mSession.insertText("text", false /* replaceExisting */, true /* commit */);
+
+        // Perform the action.
+        action.interact(mSession);
+
+        // Verify the commit action was cancelled.
+        verify(mRemoteComputerControlInputConnection, after(KEY_EVENT_DELAY_MS * 2).never())
+                .performEditorAction(any(), anyInt());
+        verify(mRemoteComputerControlInputConnection, never()).sendKeyEvent(any(), any());
     }
 
     @SuppressLint("MissingPermission")

@@ -408,7 +408,7 @@ class HierarchyUpdater(
         val containers = listOf(hierarchy.root) + HierarchyUtils.toContainersList(display)
         for (c in containers) {
             if (c.mode != null) {
-                c.mode!!.displayChanging(
+                c.mode!!.requestUpdateForDisplayChange(
                     c,
                     display.props<DisplayContainerProperties>(),
                     newDisplayProps,
@@ -416,8 +416,6 @@ class HierarchyUpdater(
                 )
             }
         }
-
-        notifyModes(Mode.UpdateContext(), snapshot)
     }
 
     /**

@@ -18,6 +18,7 @@ package android.hardware;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.params.ColorSpaceProfiles;
 import android.hardware.camera2.params.DynamicRangeProfiles;
+import android.hardware.camera2.params.OutputConfiguration;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
@@ -53,6 +54,7 @@ public class CameraStreamStats implements Parcelable {
     private long mStreamUseCase;
     private int mColorSpace;
     private int mCurrentSurfaceId;
+    private int mMultiResMode;
 
     private static final String TAG = "CameraStreamStats";
 
@@ -73,12 +75,13 @@ public class CameraStreamStats implements Parcelable {
         mStreamUseCase = CameraMetadata.SCALER_AVAILABLE_STREAM_USE_CASES_DEFAULT;
         mColorSpace = ColorSpaceProfiles.UNSPECIFIED;
         mCurrentSurfaceId = 0;
+        mMultiResMode = OutputConfiguration.MULTI_RES_OFF;
     }
 
     public CameraStreamStats(int width, int height, int format, float maxPreviewFps,
             int dataSpace, long usage, long requestCount, long errorCount,
             int startLatencyMs, int maxHalBuffers, int maxAppBuffers, long dynamicRangeProfile,
-            long streamUseCase, int colorSpace, int currentSurfaceId) {
+            long streamUseCase, int colorSpace, int currentSurfaceId, int multiResMode) {
         mWidth = width;
         mHeight = height;
         mFormat = format;
@@ -95,6 +98,7 @@ public class CameraStreamStats implements Parcelable {
         mStreamUseCase = streamUseCase;
         mColorSpace = colorSpace;
         mCurrentSurfaceId = currentSurfaceId;
+        mMultiResMode = multiResMode;
     }
 
     public static final @android.annotation.NonNull Parcelable.Creator<CameraStreamStats> CREATOR =
@@ -145,6 +149,7 @@ public class CameraStreamStats implements Parcelable {
         dest.writeLong(mStreamUseCase);
         dest.writeInt(mColorSpace);
         dest.writeInt(mCurrentSurfaceId);
+        dest.writeInt(mMultiResMode);
     }
 
     public void readFromParcel(Parcel in) {
@@ -166,6 +171,7 @@ public class CameraStreamStats implements Parcelable {
         mStreamUseCase = in.readLong();
         mColorSpace = in.readInt();
         mCurrentSurfaceId = in.readInt();
+        mMultiResMode = in.readInt();
     }
 
     public int getWidth() {
@@ -237,4 +243,8 @@ public class CameraStreamStats implements Parcelable {
     }
 
     public int getCurrentSurfaceId() { return mCurrentSurfaceId; }
+
+    public int getMultiResMode() {
+        return mMultiResMode;
+    }
 }

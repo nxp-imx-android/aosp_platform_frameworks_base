@@ -641,8 +641,8 @@ internal class MutableSceneTransitionLayoutStateImpl(
             addTransitionToTransitionStates(transition, chain)
 
             // Run the transition until it is finished.
-            onTransitionStart(transition)
-            transition.runInternal()
+            // We call onTransitionStart() only when the transition is ready.
+            transition.runInternal(onTransitionReady = { onTransitionStart(transition) })
         } finally {
             finishTransition(transition)
             onTransitionEnd(transition)

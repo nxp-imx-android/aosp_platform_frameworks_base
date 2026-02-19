@@ -1705,6 +1705,21 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
         }
 
+    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION, FLAG_DUAL_SHADE)
+    @Test
+    fun onStatusBarLongPressed_expandsShade() =
+        kosmos.runTest {
+            enableDualShade()
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
+
+            underTest.onStatusBarLongPressed()
+
+            assertThat(currentOverlays).contains(Overlays.QuickSettingsShade)
+        }
+
     @Test
     @EnableFlags(FLAG_SCENE_CONTAINER, StatusBarForDesktop.FLAG_NAME, FLAG_DUAL_SHADE)
     fun onNotificationIconChipClicked_notificationsShadeIsClosed_expandsShade() =

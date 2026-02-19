@@ -21,6 +21,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.os.IBinder;
+import android.service.dreams.IDreamManagerListener;
+import android.service.dreams.DreamPlaylist;
 
 /** @hide */
 interface IDreamManager {
@@ -67,4 +69,10 @@ interface IDreamManager {
     oneway void finishSelfOneway(in IBinder token, boolean immediate);
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS)")
     void setScreensaverEnabled(boolean enabled);
+    @EnforcePermission("READ_DREAM_STATE")
+    void registerListener(in IDreamManagerListener listener, int userId);
+    @EnforcePermission("READ_DREAM_STATE")
+    void unregisterListener(in IDreamManagerListener listener, int userId);
+    @EnforcePermission("READ_DREAM_STATE")
+    DreamPlaylist getDreamPlaylist(int userId);
 }

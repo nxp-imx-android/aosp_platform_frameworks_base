@@ -462,11 +462,12 @@ sealed interface TransitionState {
          */
         abstract fun freezeAndAnimateToCurrentState()
 
-        internal suspend fun runInternal() {
+        internal suspend fun runInternal(onTransitionReady: () -> Unit) {
             check(_coroutineScope == null) { "A Transition can be started only once." }
             coroutineScope {
                 _coroutineScope = this
                 try {
+                    onTransitionReady()
                     run()
                 } finally {
                     isProgressStable = true

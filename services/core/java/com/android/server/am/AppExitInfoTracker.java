@@ -18,6 +18,16 @@ package com.android.server.am;
 
 import static android.app.ActivityManager.RunningAppProcessInfo.procStateToImportance;
 import static android.app.ActivityManagerInternal.ALLOW_NON_FULL;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.PROCESS_DIED_EVENT;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.PROCESS_NAME;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.UID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.PID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.REASON;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.SUB_REASON;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.IMPORTANCE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.RSS_KB;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.HAS_FOREGROUND_SERVICES;
+import static android.os.PerfettoTrace.PROC_STATE_CATEGORY;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROCESSES;
@@ -61,6 +71,8 @@ import android.util.proto.WireTypeMismatchException;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.ProcessMap;
+import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
+import com.android.internal.dev.perfetto.sdk.PerfettoTrackEventBuilder;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.function.pooled.PooledLambda;
@@ -943,6 +955,25 @@ public final class AppExitInfoTracker {
             return;
         }
         info.setLoggedInStatsd(true);
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            PerfettoTrackEventBuilder builder =
+                    PerfettoTrace.instant(PROC_STATE_CATEGORY, "process_died").beginProto()
+                            .beginNested(PROCESS_DIED_EVENT);
+
+            if (info.getRss() != 0) {
+                builder = builder.addField(RSS_KB, info.getRss());
+            }
+            builder.addField(UID, info.getPackageUid())
+                    .addField(PID, info.getPid())
+                    .addField(PROCESS_NAME, info.getProcessName())
+                    .addField(REASON, info.getReason())
+                    .addField(SUB_REASON, info.getSubReason())
+                    .addField(IMPORTANCE, info.getImportance())
+                    .addField(HAS_FOREGROUND_SERVICES, info.hasForegroundServices() ? 1 : 0)
+                    .endNested()
+                    .endProto()
+                    .emit();
+        }
         FrameworkStatsLog.write(FrameworkStatsLog.APP_PROCESS_DIED,
                 info.getPackageUid(), info.getProcessName(), info.getReason(),
                 info.getSubReason(), info.getImportance(), (int) info.getPss(),

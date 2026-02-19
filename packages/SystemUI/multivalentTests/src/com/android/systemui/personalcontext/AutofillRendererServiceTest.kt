@@ -78,15 +78,16 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                     )
                     .build()
             val originHint =
-                AutofillInlineRequestHint.Builder()
-                    .setSessionId(sessionId)
-                    .setTaskId(0)
-                    .setRequestTimestamp(Instant.now())
-                    .setActivityComponent(ComponentName("test_package", "test_component"))
-                    .setFocusedId(AutofillId(0))
-                    .setAutofillValue(AutofillValue.forText("test"))
-                    .setInlineSuggestionsRequest(inlineSuggestionsRequest)
-                    .setAugmentedAutofillManagerClient(Binder())
+                AutofillInlineRequestHint.Builder(
+                        sessionId,
+                        0,
+                        Instant.now(),
+                        ComponentName("test_package", "test_component"),
+                        AutofillId(0),
+                        AutofillValue.forText("test"),
+                        inlineSuggestionsRequest,
+                        Binder(),
+                    )
                     .build()
             underTest.onRender(
                 DisplayInsight.Builder(InsightDisplayDetails.Builder("title").build())
@@ -96,7 +97,7 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                     )
                     .build()
                     .fakePublish(),
-                RenderToken(UUID.randomUUID()),
+                RenderToken(UUID.randomUUID(), null),
             )
 
             val datasetCaptor = argumentCaptor<MutableList<Dataset>>()
@@ -115,15 +116,16 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                     )
                     .build()
             val originHint =
-                AutofillInlineRequestHint.Builder()
-                    .setSessionId(sessionId)
-                    .setTaskId(0)
-                    .setRequestTimestamp(Instant.now())
-                    .setActivityComponent(ComponentName("test_package", "test_component"))
-                    .setFocusedId(AutofillId(0))
-                    .setAutofillValue(AutofillValue.forText("test"))
-                    .setInlineSuggestionsRequest(inlineSuggestionsRequest)
-                    .setAugmentedAutofillManagerClient(Binder())
+                AutofillInlineRequestHint.Builder(
+                        sessionId,
+                        0,
+                        Instant.now(),
+                        ComponentName("test_package", "test_component"),
+                        AutofillId(0),
+                        AutofillValue.forText("test"),
+                        inlineSuggestionsRequest,
+                        Binder(),
+                    )
                     .build()
             val inlineSuggestionHints = arrayOf("inline_hint1", "inline_hint2")
             val bundleHint =
@@ -149,7 +151,7 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                     )
                     .build()
                     .fakePublish(),
-                RenderToken(UUID.randomUUID()),
+                RenderToken(UUID.randomUUID(), null),
             )
 
             val datasetCaptor = argumentCaptor<MutableList<Dataset>>()

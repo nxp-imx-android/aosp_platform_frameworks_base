@@ -549,7 +549,7 @@ private fun positionInScreen(desiredSize: Size, stableBounds: Rect): Rect =
  * compatibility treatment. Returns 0 if no compatibility treatment was applied.
  */
 fun TaskInfo.freeformCaptionInsets(displayLayout: DisplayLayout): Int {
-    if (com.android.window.flags.Flags.refactorCaptionSandboxingToCore()) {
+    if (Flags.refactorCaptionSandboxingToCore()) {
         if (appCompatTaskInfo.hasIsExcludeCaptionInsets()) {
             return displayLayout.captionBarHeight()
         }

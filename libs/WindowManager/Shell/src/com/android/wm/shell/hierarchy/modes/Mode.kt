@@ -102,28 +102,6 @@ interface Mode {
         container: Container
     ) {}
 
-    /**
-     * Notification that the display is changing and allows this mode to update the given
-     * {@param wct} to ensure that its associated containers are updated before the display change
-     * completes (ie. sets up tasks in new bounds post-rotation, etc).
-     *
-     * This is called with the directly assigned container for this given mode for containers that
-     * are direct ancestors or descendants of the display, and the change tracker provides
-     * change information.
-     *
-     * The caller is expected to apply the transaction.
-     *
-     * FUTURE: Revisit to see if we need intermediate containers to be updated as well (ie. if there
-     *         are roots who are built within parent containers, updating the display may require
-     *         the parents to be updated before the roots themselves can be properly/easily updated.
-     */
-    fun displayChanging(
-        directlyAssignedContainer: Container,
-        curDisplayProps: DisplayContainerProperties,
-        newDisplayProps: DisplayContainerProperties,
-        wct: WindowContainerTransaction
-    ) {}
-
     //
     // Requests (ie. when someone needs to manipulate containers in the hierarchy and needs to know
     // how to move something into/out of a mode.
@@ -150,6 +128,24 @@ interface Mode {
     ): Boolean {
         throw IllegalStateException("Not supported")
     }
+
+    /**
+     * Requests this mode to update the given {@param wct} to layout the containers under this mode
+     * in the new display configuration. This happens prior to the display change being applied
+     * to the hierarchy.
+     *
+     * The mode is NOT expected to apply the transaction.
+     *
+     * FUTURE: Revisit to see if we need intermediate containers to be updated as well (ie. if there
+     *         are roots who are built within parent containers, updating the display may require
+     *         the parents to be updated before the roots themselves can be properly/easily updated.
+     */
+    fun requestUpdateForDisplayChange(
+        directlyAssignedContainer: Container,
+        curDisplayProps: DisplayContainerProperties,
+        newDisplayProps: DisplayContainerProperties,
+        wct: WindowContainerTransaction
+    ) {}
 
     //
     // Transitions (ie. post-update transition resolution for containers associated with this mode)

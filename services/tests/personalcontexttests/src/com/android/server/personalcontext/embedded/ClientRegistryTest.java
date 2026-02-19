@@ -53,7 +53,7 @@ public class ClientRegistryTest {
 
     @Test
     public void testAddClient() {
-        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID(), null);
         final InsightSurfaceClientInfo client = createClient();
         mClientRegistry.addClient(client, renderToken);
         assertThat(mClientRegistry.getClients().size()).isEqualTo(1);
@@ -62,7 +62,7 @@ public class ClientRegistryTest {
 
     @Test
     public void testRemoveClient() {
-        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID(), null);
         final InsightSurfaceClientInfo client = createClient();
         mClientRegistry.addClient(client, renderToken);
         mClientRegistry.removeClient(client.getId());
@@ -71,8 +71,8 @@ public class ClientRegistryTest {
 
     @Test
     public void testClientForTokenHint_hasClient() {
-        final RenderToken renderToken1 = new RenderToken(UUID.randomUUID());
-        final RenderToken renderToken2 = new RenderToken(UUID.randomUUID());
+        final RenderToken renderToken1 = new RenderToken(UUID.randomUUID(), null);
+        final RenderToken renderToken2 = new RenderToken(UUID.randomUUID(), null);
 
         final InsightSurfaceClientInfo client = createClient();
         mClientRegistry.addClient(client, renderToken1);
@@ -82,7 +82,7 @@ public class ClientRegistryTest {
 
     @Test
     public void testGetClientsContainsClient() {
-        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID(), null);
         final InsightSurfaceClientInfo client = createClient();
         mClientRegistry.addClient(client, renderToken);
         assertThat(mClientRegistry.getClients()).containsExactly(client);

@@ -137,7 +137,7 @@
     <string name="handle_menu_error_icon_text" msgid="7200375184879808684">"Error Icon"</string>
     <string name="close_text" msgid="4986518933445178928">"Close"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"Close Menu"</string>
-    <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (Desktop windowing)"</string>
+    <string name="desktop_mode_header_chip_text" msgid="7171700244998923330">"<xliff:g id="APP_NAME">%1$s</xliff:g> (Desktop windowing)"</string>
     <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"Maximize Screen"</string>
     <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"Resize"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"App can\'t be moved here"</string>
@@ -159,7 +159,10 @@
     <string name="app_handle_menu_accessibility_announce" msgid="7928858564852785398">"Enter <xliff:g id="WINDOWING_MODE">%1$s</xliff:g>"</string>
     <string name="layout_menu_talkback_action_snap_left_text" msgid="8141501620544883986">"Resize window to left"</string>
     <string name="layout_menu_talkback_action_snap_right_text" msgid="7819760135716721943">"Resize window to right"</string>
-    <string name="layout_menu_talkback_action_maximize_restore_text" msgid="4164150689697006287">"Maximize or restore window size"</string>
+    <string name="layout_menu_talkback_action_maximize_restore_text" msgid="132471919764977708">"Maximize app window size"</string>
+    <string name="layout_menu_talkback_action_restore_text" msgid="1791365751744400881">"Restore window size"</string>
+    <string name="layout_menu_talkback_action_immersive_enter_text" msgid="1753945477839147586">"Enter immersive mode"</string>
+    <string name="layout_menu_talkback_action_immersive_restore_text" msgid="6913341567930893074">"Restore window size"</string>
     <string name="app_header_talkback_action_maximize_button_text" msgid="8776156791095878638">"Maximize app window size"</string>
     <string name="app_header_talkback_action_restore_button_text" msgid="2153022340772980863">"Restore window size"</string>
     <string name="app_header_talkback_action_minimize_button_text" msgid="7491054416186901764">"Minimize app window"</string>

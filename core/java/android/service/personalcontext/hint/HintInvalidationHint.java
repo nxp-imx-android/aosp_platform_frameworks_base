@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
@@ -48,7 +49,9 @@ import java.util.UUID;
  *
  * <p>Components must not rely on hint invalidation, and must be tolerant of receiving hints and
  * insights with a hint that has been invalidated.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class HintInvalidationHint extends ContextHint {
     private static final String KEY_HINT_ID = "hint_id";

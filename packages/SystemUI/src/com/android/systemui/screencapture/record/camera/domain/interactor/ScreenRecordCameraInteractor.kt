@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -148,6 +149,9 @@ constructor(
                     Log.d(TAG, "Waiting for a properly sized surface")
                     return@combine
                 }
+                if (state.value == CameraState.Started || state.value == CameraState.Starting) {
+                    stopStream()
+                }
                 Log.d(TAG, "Starting the stream: ${params.size}")
                 repository.startStream(
                     surface = params.surface,
@@ -173,7 +177,7 @@ constructor(
 
     suspend fun stopStream() {
         repository.stopStream()
-        Log.i(TAG, "Stopped the stream")
+        Log.d(TAG, "Stopped the stream")
     }
 
     fun setBackgroundColor(@ColorInt color: Int) {

@@ -22,6 +22,7 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.motioncues.MotionCuesCommand
 import com.android.systemui.motioncues.MotionCuesManager
 import com.android.systemui.motioncues.MotionCuesUi
+import com.android.systemui.statusbar.policy.ConfigurationController
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -45,9 +46,10 @@ abstract class MotionCuesModule {
         @Provides
         fun provideMotionCuesUi(
             context: Context,
-            windowManager: WindowManager
+            windowManager: WindowManager,
+            configurationController: ConfigurationController
         ): MotionCuesUi {
-            return MotionCuesUi(context, windowManager)
+            return MotionCuesUi(context, windowManager, configurationController)
         }
     }
 }

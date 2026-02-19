@@ -15,6 +15,7 @@
  */
 package com.android.server.appfunctions
 
+import android.app.appfunctions.AppFunctionAidlSearchSpec
 import android.app.appfunctions.AppFunctionName
 import android.app.appfunctions.AppFunctionSearchSpec
 import android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB
@@ -45,14 +46,29 @@ class InternalObserverCallbackRouterTest {
 
     private fun createRouter(
         debounceExecutor: ScheduledExecutorService,
-        debounceMs: Int = 0,
+        metadataDebounceMs: Int = 0,
+        enabledStateDebounceMs: Long = 0,
+        enabledStateMaxDebounceMs: Long = 0,
     ): InternalObserverCallbackRouter {
         whenever(mockServiceConfig.getAppFunctionMetadataChangeDebounceMilliseconds())
-            .thenReturn(debounceMs)
-        return InternalObserverCallbackRouter(
-            mockServiceConfig,
-            debounceExecutor,
-        )
+            .thenReturn(metadataDebounceMs)
+        whenever(mockServiceConfig.getAppFunctionEnabledStateChangeDebounceMilliseconds())
+            .thenReturn(enabledStateDebounceMs)
+        whenever(mockServiceConfig.getAppFunctionEnabledStateChangeMaxDebounceMilliseconds())
+            .thenReturn(enabledStateMaxDebounceMs)
+
+        return if (debounceExecutor is FakeScheduledExecutorService) {
+            InternalObserverCallbackRouter(
+                mockServiceConfig,
+                debounceExecutor,
+                InternalObserverCallbackRouter.TimeSource { debounceExecutor.clockTimeNanos }
+            )
+        } else {
+            InternalObserverCallbackRouter(
+                mockServiceConfig,
+                debounceExecutor,
+            )
+        }
     }
 
     @Test
@@ -61,7 +77,7 @@ class InternalObserverCallbackRouterTest {
         val callback1 = TestInternalCallback()
         val callback2 = TestInternalCallback()
 
-        val callbacksRouter = createRouter(fakeDebounceExecutor, debounceMs = 100)
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 100)
         callbacksRouter.addCallback(callback1)
         callbacksRouter.addCallback(callback2)
 
@@ -84,7 +100,7 @@ class InternalObserverCallbackRouterTest {
         val fakeDebounceExecutor = FakeScheduledExecutorService()
         val callback1 = TestInternalCallback()
 
-        val callbacksRouter = createRouter(fakeDebounceExecutor, debounceMs = 100)
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 100)
         callbacksRouter.addCallback(callback1)
 
         // First change
@@ -124,7 +140,7 @@ class InternalObserverCallbackRouterTest {
         val fakeDebounceExecutor = FakeScheduledExecutorService()
         val callback1 = TestInternalCallback()
 
-        val callbacksRouter = createRouter(fakeDebounceExecutor, debounceMs = 100)
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 100)
         callbacksRouter.addCallback(callback1)
 
         // First change
@@ -167,7 +183,7 @@ class InternalObserverCallbackRouterTest {
         val callback2 = TestInternalCallback()
         val callback3 = TestInternalCallback()
 
-        val callbacksRouter = createRouter(fakeDebounceExecutor, debounceMs = 100)
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 100)
         callbacksRouter.addCallback(callback1)
         callbacksRouter.addCallback(callback2)
         callbacksRouter.addCallback(callback3)
@@ -203,7 +219,7 @@ class InternalObserverCallbackRouterTest {
         val fakeDebounceExecutor = FakeScheduledExecutorService()
         val callback1 = TestInternalCallback()
 
-        val callbacksRouter = createRouter(fakeDebounceExecutor, debounceMs = 100)
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 100)
         callbacksRouter.addCallback(callback1)
 
         callbacksRouter.onDocumentChanged(
@@ -225,7 +241,7 @@ class InternalObserverCallbackRouterTest {
         val fakeDebounceExecutor = FakeScheduledExecutorService()
         val callback1 = TestInternalCallback()
 
-        val callbacksRouter = createRouter(fakeDebounceExecutor, debounceMs = 100)
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 100)
         callbacksRouter.addCallback(callback1)
 
         // First change
@@ -269,7 +285,7 @@ class InternalObserverCallbackRouterTest {
         val fakeDebounceExecutor = FakeScheduledExecutorService()
         val callback1 = TestInternalCallback()
 
-        val callbacksRouter = createRouter(fakeDebounceExecutor, debounceMs = 100)
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 100)
         callbacksRouter.addCallback(callback1)
 
         // First change
@@ -314,7 +330,7 @@ class InternalObserverCallbackRouterTest {
         val fakeDebounceExecutor = FakeScheduledExecutorService()
         val callback1 = TestInternalCallback()
 
-        val callbacksRouter = createRouter(fakeDebounceExecutor, debounceMs = 100)
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 100)
         callbacksRouter.addCallback(callback1)
 
         // First change (schema)
@@ -358,7 +374,7 @@ class InternalObserverCallbackRouterTest {
         val callback1 = TestInternalCallback()
         val callback2 = TestInternalCallback()
 
-        val callbacksRouter = createRouter(fakeDebounceExecutor, debounceMs = 100)
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 100)
         callbacksRouter.addCallback(callback1)
         callbacksRouter.addCallback(callback2)
         callbacksRouter.removeCallback(callback1)
@@ -394,9 +410,10 @@ class InternalObserverCallbackRouterTest {
     @Test
     fun shutdown_attemptInvokingCallback_failsGracefully() {
         val callback1 = TestInternalCallback()
+        val fakeDebounceExecutor = FakeScheduledExecutorService()
 
         val callbacksRouter =
-            createRouter(Executors.newSingleThreadScheduledExecutor(), debounceMs = 0)
+            createRouter(fakeDebounceExecutor, metadataDebounceMs = 0)
         callbacksRouter.addCallback(callback1)
 
         callbacksRouter.shutDown()
@@ -417,15 +434,21 @@ class InternalObserverCallbackRouterTest {
                 setOf("testPackage1/id1"),
             )
         )
+        callbacksRouter.onEnabledStatesChanged(
+            setOf(AppFunctionName("testPackage1", "id1"))
+        )
+
         assertThat(callback1.changedPackageNames).isNull()
+        assertThat(callback1.stateChangedFunctionNames).isNull()
     }
 
     @Test
     fun onEnabledStatesChanged_routesToAllCallbacks() {
         val callback1 = TestInternalCallback()
         val callback2 = TestInternalCallback()
+        val fakeExecutor = FakeScheduledExecutorService()
 
-        val callbacksRouter = createRouter(FakeScheduledExecutorService())
+        val callbacksRouter = createRouter(fakeExecutor, enabledStateDebounceMs = 0)
         callbacksRouter.addCallback(callback1)
         callbacksRouter.addCallback(callback2)
 
@@ -435,6 +458,7 @@ class InternalObserverCallbackRouterTest {
                 AppFunctionName("testPackage2", "id2"),
             )
         callbacksRouter.onEnabledStatesChanged(changedFunctions)
+        fakeExecutor.fastForwardTime(1)
 
         assertThat(callback1.stateChangedFunctionNames)
             .containsExactlyElementsIn(changedFunctions)
@@ -442,10 +466,102 @@ class InternalObserverCallbackRouterTest {
             .containsExactlyElementsIn(changedFunctions)
     }
 
+    @Test
+    fun onEnabledStatesChanged_consequentUpdates_debouncedCorrectly() {
+        val callback1 = TestInternalCallback()
+        val fakeExecutor = FakeScheduledExecutorService()
+
+        val callbacksRouter =
+            createRouter(
+                fakeExecutor,
+                enabledStateDebounceMs = 100,
+                enabledStateMaxDebounceMs = 200,
+            )
+        callbacksRouter.addCallback(callback1)
+
+        val changedFunctions1 = setOf(AppFunctionName("testPackage1", "id1"))
+        val changedFunctions2 = setOf(AppFunctionName("testPackage1", "id2"))
+
+        // First change
+        callbacksRouter.onEnabledStatesChanged(changedFunctions1)
+
+        // Fast forward time, but not enough to trigger debounce
+        fakeExecutor.fastForwardTime(50L)
+        assertThat(callback1.stateChangedFunctionNames).isNull()
+
+        // Second change
+        callbacksRouter.onEnabledStatesChanged(changedFunctions2)
+
+        // Fast forward time beyond initial debounce duration but within new debounce duration
+        fakeExecutor.fastForwardTime(51L)
+        assertThat(callback1.stateChangedFunctionNames).isNull()
+
+        // Fast forward time beyond new debounce duration
+        fakeExecutor.fastForwardTime(50L)
+        val expectedFunctions =
+            setOf(
+                AppFunctionName("testPackage1", "id1"),
+                AppFunctionName("testPackage1", "id2"),
+            )
+        assertThat(callback1.stateChangedFunctionNames).containsExactlyElementsIn(expectedFunctions)
+    }
+
+    @Test
+    fun onEnabledStatesChanged_consequentUpdates_maxDebounceReached() {
+        val callback1 = TestInternalCallback()
+        val fakeExecutor = FakeScheduledExecutorService()
+
+        val callbacksRouter =
+            createRouter(
+                fakeExecutor,
+                enabledStateDebounceMs = 100,
+                enabledStateMaxDebounceMs = 200,
+            )
+        callbacksRouter.addCallback(callback1)
+
+        val changedFunctions1 = setOf(AppFunctionName("testPackage1", "id1"))
+        val changedFunctions2 = setOf(AppFunctionName("testPackage1", "id2"))
+        val changedFunctions3 = setOf(AppFunctionName("testPackage1", "id3"))
+
+        // First change. Deadline at 200ms.
+        callbacksRouter.onEnabledStatesChanged(changedFunctions1)
+
+        // Forward 80ms.
+        fakeExecutor.fastForwardTime(80L)
+
+        // Second change. Timer would reset to +100ms (180ms total), which is < 200ms deadline.
+        callbacksRouter.onEnabledStatesChanged(changedFunctions2)
+
+        // Forward 80ms. Total 160ms.
+        fakeExecutor.fastForwardTime(80L)
+
+        // Third change. Timer would reset to +100ms (260ms total).
+        // But deadline is at 200ms. So it should be scheduled at 200ms (40ms from now).
+        callbacksRouter.onEnabledStatesChanged(changedFunctions3)
+
+        // Forward 50ms. Total 210ms. Deadline passed.
+        fakeExecutor.fastForwardTime(50L)
+
+        val expectedFunctions =
+            setOf(
+                AppFunctionName("testPackage1", "id1"),
+                AppFunctionName("testPackage1", "id2"),
+                AppFunctionName("testPackage1", "id3"),
+            )
+        assertThat(callback1.stateChangedFunctionNames).containsExactlyElementsIn(expectedFunctions)
+    }
+
     private fun InternalObserverCallbackRouter.addCallback(
         callback: IObserveAppFunctionChangesCallback
     ) {
-        addCallback(callback, mock<AppFunctionSearchSpec>())
+        addCallback(
+            callback,
+            AppFunctionAidlSearchSpec(
+                "testPackage",
+                mock<AppFunctionSearchSpec>(),
+                0
+            )
+        )
     }
 
     class TestInternalCallback : IObserveAppFunctionChangesCallback {

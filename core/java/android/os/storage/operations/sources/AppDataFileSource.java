@@ -19,8 +19,7 @@ package android.os.storage.operations.sources;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.os.Bundle;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.io.File;
@@ -36,8 +35,8 @@ import java.util.regex.Pattern;
  *
  * <h3>Operation Rejection</h3>
  *
- * <p>To ensure system security and integrity, operations using an {@code AppDataFileSource} will
- * be <b>rejected</b> with {@link
+ * <p>To ensure system security and integrity, operations using an {@code AppDataFileSource} will be
+ * <b>rejected</b> with {@link
  * android.os.storage.operations.FileOperationResult#ERROR_UNSUPPORTED_SOURCE} or {@link
  * android.os.storage.operations.FileOperationResult#ERROR_INVALID_REQUEST} if:
  *
@@ -65,9 +64,10 @@ import java.util.regex.Pattern;
  * @see android.content.Context#getDataDir()
  */
 @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-@SuppressLint("ParcelNotFinal")
 @RavenwoodKeepWholeClass
 public final class AppDataFileSource extends OperationSource {
+    private static final String KEY_PATH = "key_path";
+
     /**
      * Pattern to detect "suspicious" characters in file paths.
      *
@@ -113,13 +113,47 @@ public final class AppDataFileSource extends OperationSource {
         mPath = file.getAbsolutePath();
     }
 
+    /**
+     * Reconstructs an {@link AppDataFileSource} from a Bundle.
+     *
+     * @param b The Bundle containing the source data.
+     * @hide
+     */
+    AppDataFileSource(@NonNull Bundle b) {
+        super(b);
+        mPath = b.getString(KEY_PATH);
+    }
+
+    /** @hide */
+    @Override
+    public int getSourceType() {
+        return TYPE_APP_DATA_FILE;
+    }
+
+    /** @hide */
+    @Override
+    @NonNull
+    Bundle getDataBundle() {
+        Bundle b = super.getDataBundle();
+        b.putString(KEY_PATH, mPath);
+        return b;
+    }
+
     /** Returns the file associated with this source. */
     @NonNull
     public File getFile() {
         return new File(mPath);
     }
 
-    /** @hide */
+    /**
+     * Checks if the source path is valid and safe.
+     *
+     * <p>This performs a syntactic check to ensure the path is absolute, does not contain traversal
+     * elements or unsafe characters, and resides within the application's internal data directory.
+     *
+     * @return {@code true} if the path is valid; {@code false} otherwise.
+     * @hide
+     */
     @Override
     public boolean isValid() {
         // Use Path API for robust syntactic validation (no disk I/O)
@@ -151,28 +185,11 @@ public final class AppDataFileSource extends OperationSource {
         return true;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeString8(mPath);
-    }
-
-    @NonNull
-    public static final Parcelable.Creator<AppDataFileSource> CREATOR =
-            new Parcelable.Creator<AppDataFileSource>() {
-                public AppDataFileSource createFromParcel(Parcel in) {
-                    return new AppDataFileSource(new File(in.readString8()));
-                }
-
-                public AppDataFileSource[] newArray(int size) {
-                    return new AppDataFileSource[size];
-                }
-            };
-
+    /**
+     * Returns a string representation of this source for debugging.
+     *
+     * @return A string containing the source type and path.
+     */
     @Override
     @NonNull
     public String toString() {

@@ -46,8 +46,6 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -96,7 +94,8 @@ public class ThemeManagerServiceTests {
             getInstrumentation().getContext(), null);
 
     private ThemeManagerService mThemeManagerService;
-    ThemeStateManager mThemeStateManager;
+    private ThemeStateManager mThemeStateManager;
+    private ThemeEnvironment mEnvironment;
 
     private final HashMap<Integer, Object> mUserResourceOverrides = new HashMap<>(
             new ImmutableMap.Builder<Integer, Object>()
@@ -150,9 +149,11 @@ public class ThemeManagerServiceTests {
         when(mUserManager.getProfileParentId(eq(PROFILE_ID))).thenReturn(DEFAULT_USER_ID);
         when(mUserManager.getUserIds()).thenReturn(new int[]{DEFAULT_USER_ID});
 
+        mEnvironment = new ThemeEnvironment(mMainContext, mUserManager,
+                mHardwareColorRule.sysPropReader);
+
         FakeScheduledExecutorService schedulerExecutor = new FakeScheduledExecutorService();
-        mThemeStateManager = new ThemeStateManager(mMainContext, schedulerExecutor,
-                Platform.PHONE, SpecVersion.SPEC_2025);
+        mThemeStateManager = new ThemeStateManager(mMainContext, schedulerExecutor, mEnvironment);
         mThemeStateManager.onServicesReady();
     }
 
@@ -174,7 +175,7 @@ public class ThemeManagerServiceTests {
                 pair.getCurrentState().timeStamp());
 
         verify(mThemeUserLifecycle).onServicesReady(any(), any(), any());
-        verify(mThemeEventObserver).onServicesReady(any(), any(), any(), any());
+        verify(mThemeEventObserver).onServicesReady(any(), any(), any());
         verify(mThemeEventObserver).registerListeners();
     }
 
@@ -188,17 +189,6 @@ public class ThemeManagerServiceTests {
         verify(mThemeUserLifecycle).onUserStarting(user);
     }
 
-    @Test
-    public void test_onUserSwitching_delegatesToLifecycle() {
-        mThemeManagerService = testableServiceStart();
-        SystemService.TargetUser from = new SystemService.TargetUser(new UserInfo(0, "from", 0));
-        SystemService.TargetUser to = new SystemService.TargetUser(new UserInfo(10, "to", 0));
-
-        mThemeManagerService.onUserSwitching(from, to);
-
-        verify(mThemeUserLifecycle).onUserSwitching(from, to);
-    }
-
     private ThemeStatePair startProvisionedUser() {
         mThemeStateManager.onUserStart(UserHandle.of(DEFAULT_USER_ID), true, DEFAULT_SEED_COLOR,
                 DEFAULT_CONTRAST, DEFAULT_STYLE);
@@ -208,7 +198,7 @@ public class ThemeManagerServiceTests {
     private ThemeManagerService testableServiceStart() {
         // The context used here should match the one used for resource overrides.
         return new ThemeManagerService(mMainContext, mHardwareColorRule.sysPropReader,
-                mThemeStateManager, mWallpaperManager, mOverlayManager, mThemeUserLifecycle,
-                mThemeEventObserver, Platform.PHONE, SpecVersion.SPEC_2025);
+                mWallpaperManager, mOverlayManager, mUserManager, mThemeStateManager,
+                mThemeUserLifecycle, mThemeEventObserver);
     }
 }

@@ -69,6 +69,7 @@ package android {
     field public static final String BIND_CONTENT_CAPTURE_SERVICE = "android.permission.BIND_CONTENT_CAPTURE_SERVICE";
     field @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public static final String BIND_CONTENT_SAFETY_SERVICE = "android.permission.BIND_CONTENT_SAFETY_SERVICE";
     field public static final String BIND_CONTENT_SUGGESTIONS_SERVICE = "android.permission.BIND_CONTENT_SUGGESTIONS_SERVICE";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String BIND_CONTEXT_COMPONENT_SERVICE = "android.permission.BIND_CONTEXT_COMPONENT_SERVICE";
     field @Deprecated @FlaggedApi("android.content.pm.sdk_dependency_installer_deprecation") public static final String BIND_DEPENDENCY_INSTALLER = "android.permission.BIND_DEPENDENCY_INSTALLER";
     field @FlaggedApi("android.content.pm.verification_service") public static final String BIND_DEVELOPER_VERIFICATION_AGENT = "android.permission.BIND_DEVELOPER_VERIFICATION_AGENT";
     field public static final String BIND_DIRECTORY_SEARCH = "android.permission.BIND_DIRECTORY_SEARCH";
@@ -82,6 +83,7 @@ package android {
     field public static final String BIND_GBA_SERVICE = "android.permission.BIND_GBA_SERVICE";
     field public static final String BIND_HOTWORD_DETECTION_SERVICE = "android.permission.BIND_HOTWORD_DETECTION_SERVICE";
     field public static final String BIND_IMS_SERVICE = "android.permission.BIND_IMS_SERVICE";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String BIND_INSIGHT_RENDERER_SERVICE = "android.permission.BIND_INSIGHT_RENDERER_SERVICE";
     field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE = "android.permission.BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE";
     field @FlaggedApi("android.security.afl_api") public static final String BIND_INTRUSION_DETECTION_EVENT_TRANSPORT_SERVICE = "android.permission.BIND_INTRUSION_DETECTION_EVENT_TRANSPORT_SERVICE";
     field public static final String BIND_KEYGUARD_APPWIDGET = "android.permission.BIND_KEYGUARD_APPWIDGET";
@@ -140,6 +142,7 @@ package android {
     field public static final String CHANGE_APP_IDLE_STATE = "android.permission.CHANGE_APP_IDLE_STATE";
     field public static final String CHANGE_APP_LAUNCH_TIME_ESTIMATE = "android.permission.CHANGE_APP_LAUNCH_TIME_ESTIMATE";
     field public static final String CHANGE_DEVICE_IDLE_TEMP_WHITELIST = "android.permission.CHANGE_DEVICE_IDLE_TEMP_WHITELIST";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String CHANGE_PERSONAL_CONTEXT_MODE = "android.permission.CHANGE_PERSONAL_CONTEXT_MODE";
     field @FlaggedApi("android.app.contentsafety.flags.enable_contentsafety") public static final String CHECK_CONTENT_SAFETY = "android.permission.CHECK_CONTENT_SAFETY";
     field public static final String CHECK_REMOTE_LOCKSCREEN = "android.permission.CHECK_REMOTE_LOCKSCREEN";
     field public static final String CLEAR_APP_USER_DATA = "android.permission.CLEAR_APP_USER_DATA";
@@ -527,6 +530,7 @@ package android {
     field @FlaggedApi("android.content.res.manifest_flagging") public static final int featureFlag = 16844428; // 0x101068c
     field public static final int gameSessionService = 16844373; // 0x1010655
     field public static final int hotwordDetectionService = 16844326; // 0x1010626
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final int iconColor;
     field @FlaggedApi("android.companion.virtual.flags.vdm_custom_ime") public static final int isVirtualDeviceOnly = 16844425; // 0x1010689
     field public static final int isVrOnly = 16844152; // 0x1010578
     field public static final int minExtensionVersion = 16844305; // 0x1010611
@@ -534,6 +538,8 @@ package android {
     field public static final int requiredSystemPropertyName = 16844133; // 0x1010565
     field public static final int requiredSystemPropertyValue = 16844134; // 0x1010566
     field public static final int sdkVersion = 16844304; // 0x1010610
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final int suggestionBackgroundColor;
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final int suggestionCornerRadius;
     field public static final int supportsAmbientMode = 16844173; // 0x101058d
     field public static final int userRestriction = 16844164; // 0x1010584
     field @FlaggedApi("android.service.dreams.user_selectable_metadata") public static final int userSelectable;
@@ -3887,8 +3893,8 @@ package android.apphibernation {
 package android.attention {
 
   @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public final class AttentionManager {
-    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void registerInteractionListener(int, @NonNull java.time.Duration, @NonNull java.util.concurrent.Executor, @NonNull android.attention.InteractionListener);
-    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void unregisterInteractionListener();
+    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void clearInteractionListener();
+    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") @RequiresPermission(android.Manifest.permission.ACCESS_ATTENTION_LISTENER) public void setInteractionListener(int, @NonNull java.time.Duration, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<android.attention.InteractionInfo>);
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_ALL = -1; // 0xffffffff
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_GESTURE = 4; // 0x4
     field @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public static final int INTERACTION_TYPE_HOVER = 2; // 0x2
@@ -3899,10 +3905,6 @@ package android.attention {
   @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public final class InteractionInfo {
     method public long getInteractionTimeMillis();
     method public int getInteractionTypes();
-  }
-
-  @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public interface InteractionListener {
-    method @FlaggedApi("com.android.input.flags.enable_attention_service_apis") public void onInteraction(@NonNull android.attention.InteractionInfo);
   }
 
 }
@@ -4574,6 +4576,7 @@ package android.content {
     field public static final String ACTION_PACKAGE_NEEDS_INTEGRITY_VERIFICATION = "android.intent.action.PACKAGE_NEEDS_INTEGRITY_VERIFICATION";
     field public static final String ACTION_PACKAGE_UNSUSPENDED_MANUALLY = "android.intent.action.PACKAGE_UNSUSPENDED_MANUALLY";
     field public static final String ACTION_PENDING_INCIDENT_REPORTS_CHANGED = "android.intent.action.PENDING_INCIDENT_REPORTS_CHANGED";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String ACTION_PERSONAL_CONTEXT_MODE_CHANGED = "android.intent.action.PERSONAL_CONTEXT_MODE_CHANGED";
     field public static final String ACTION_PRE_BOOT_COMPLETED = "android.intent.action.PRE_BOOT_COMPLETED";
     field public static final String ACTION_QUERY_PACKAGE_RESTART = "android.intent.action.QUERY_PACKAGE_RESTART";
     field public static final String ACTION_RESOLVE_INSTANT_APP_PACKAGE = "android.intent.action.RESOLVE_INSTANT_APP_PACKAGE";
@@ -13009,11 +13012,11 @@ package android.os.allowlist {
     method @RequiresPermission(android.Manifest.permission.QUERY_ALLOWLIST) public void removeOnAllowlistChangedListener(@NonNull java.util.function.Consumer<android.os.allowlist.AllowlistRequest>);
     field public static final int ALLOWLIST_ID_APP_FUNCTION = 2; // 0x2
     field public static final int ALLOWLIST_ID_COMPUTER_CONTROL = 3; // 0x3
-    field public static final String REQUEST_DATA_FILTER_PACKAGES = "android.allowlist.request.data.FILTER_PACKAGES";
-    field public static final String REQUEST_DATA_FILTER_TARGETS = "android.allowlist.request.data.FILTER_TARGETS";
-    field public static final String REQUEST_DATA_INSTALLED_PACKAGES_ONLY = "android.allowlist.request.data.INSTALLED_PACKAGES_ONLY";
-    field public static final String RESPONSE_DATA_ALLOWED_PACKAGES = "android.allowlist.response.data.ALLOWED_PACKAGES";
-    field public static final String RESPONSE_DATA_ALLOWED_PACKAGE_MULTI_MAP = "android.allowlist.response.data.ALLOWED_PACKAGE_MULTI_MAP";
+    field public static final String REQUEST_KEY_FILTER_PACKAGES = "android.allowlist.request.key.FILTER_PACKAGES";
+    field public static final String REQUEST_KEY_FILTER_TARGETS = "android.allowlist.request.key.FILTER_TARGETS";
+    field public static final String REQUEST_KEY_INSTALLED_PACKAGES_ONLY = "android.allowlist.request.key.INSTALLED_PACKAGES_ONLY";
+    field public static final String RESPONSE_KEY_ALLOWED_PACKAGES = "android.allowlist.response.key.ALLOWED_PACKAGES";
+    field public static final String RESPONSE_KEY_ALLOWED_PACKAGE_MULTI_MAP = "android.allowlist.response.key.ALLOWED_PACKAGE_MULTI_MAP";
     field public static final int RESPONSE_STATUS_ERROR_INVALID_REQUEST = 3; // 0x3
     field public static final int RESPONSE_STATUS_ERROR_NETWORK = 4; // 0x4
     field public static final int RESPONSE_STATUS_ERROR_PROVIDER = 2; // 0x2
@@ -15048,12 +15051,33 @@ package android.service.personalcontext {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
     method public boolean isEnabled();
+    method @RequiresPermission(android.Manifest.permission.QUERY_ALL_PACKAGES) public boolean isPersonalContextModeEnabled(@NonNull String);
     method @NonNull public android.service.personalcontext.Token mintToken();
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
+    method public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
     method public void setEnabled(boolean);
     method @RequiresPermission(android.Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE) public void setPersonalContextModeEnabled(@NonNull String, boolean);
+    method public void showAttribution(@NonNull android.service.personalcontext.insight.ContextInsight);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature signHint(@NonNull android.service.personalcontext.hint.ContextHint, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
+    field public static final String ACTION_PERSONAL_CONTEXT_ENABLED_CHANGED = "android.service.personalcontext.action.PERSONAL_CONTEXT_ENABLED_CHANGED";
+    field public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RenderToken implements java.lang.Comparable<android.service.personalcontext.RenderToken> android.os.Parcelable {
+    method public int compareTo(@NonNull android.service.personalcontext.RenderToken);
+    method public int describeContents();
+    method @NonNull public java.util.UUID getRendererComponentId();
+    method @Nullable public String getTag();
+    method @NonNull public java.util.UUID getTokenId();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.RenderToken> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class Token implements android.os.Parcelable {
+    method public int describeContents();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.Token> CREATOR;
   }
 
 }
@@ -15191,12 +15215,195 @@ package android.service.personalcontext.embedded {
 
 package android.service.personalcontext.hint {
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class AutofillInlineRequestHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public android.content.ComponentName getActivityComponent();
+    method @NonNull public android.view.autofill.AutofillValue getAutofillValue();
+    method @Nullable public android.service.autofill.FillEventHistory getFillEventHistory();
+    method @NonNull public android.view.autofill.AutofillId getFocusedId();
+    method @NonNull public android.view.inputmethod.InlineSuggestionsRequest getInlineSuggestionsRequest();
+    method @NonNull public java.time.Instant getRequestTimestamp();
+    method public int getSessionId();
+    method public int getTaskId();
+  }
+
+  public static final class AutofillInlineRequestHint.Builder {
+    ctor public AutofillInlineRequestHint.Builder(int, int, @NonNull java.time.Instant, @NonNull android.content.ComponentName, @NonNull android.view.autofill.AutofillId, @NonNull android.view.autofill.AutofillValue, @NonNull android.view.inputmethod.InlineSuggestionsRequest, @NonNull android.os.IBinder);
+    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint build();
+    method @NonNull public android.service.personalcontext.hint.AutofillInlineRequestHint.Builder setFillEventHistory(@Nullable android.service.autofill.FillEventHistory);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public android.os.Bundle getDataBundle();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class BundleHint.Builder {
+    ctor public BundleHint.Builder();
+    method @NonNull public android.service.personalcontext.hint.BundleHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.BundleHint build();
+    method @NonNull public android.service.personalcontext.hint.BundleHint.Builder setDataBundle(@NonNull android.os.Bundle);
+    method @NonNull public android.service.personalcontext.hint.BundleHint.Builder setHintTypeName(@Nullable String);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class CallHint extends android.service.personalcontext.hint.ContextHint {
+    method public int getModality();
+    method @NonNull public java.util.Set<android.app.Person> getParticipants();
+    field public static final int MODALITY_AUDIO = 1; // 0x1
+    field public static final int MODALITY_UNKNOWN = -1; // 0xffffffff
+    field public static final int MODALITY_VIDEO = 2; // 0x2
+  }
+
+  public static final class CallHint.Builder {
+    ctor public CallHint.Builder(int, @NonNull java.util.Set<android.app.Person>);
+    method @NonNull public android.service.personalcontext.hint.CallHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.CallHint build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class CapturedText implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public String getResourceId();
+    method @NonNull public String getViewId();
+    method @NonNull public android.graphics.Rect getViewNodeBoundingBox();
+    method @NonNull public String getViewNodeDescription();
+    method @Nullable public java.time.Instant getViewNodeLastSeen();
+    method @NonNull public java.time.Instant getViewNodeLastUpdated();
+    method @NonNull public String getViewNodeText();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.CapturedText> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class CapturedText.Builder {
+    ctor public CapturedText.Builder();
+    method @NonNull public android.service.personalcontext.hint.CapturedText build();
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setResourceId(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewId(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeBoundingBox(@NonNull android.graphics.Rect);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeDescription(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeLastSeen(@Nullable java.time.Instant);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeLastUpdated(@NonNull java.time.Instant);
+    method @NonNull public android.service.personalcontext.hint.CapturedText.Builder setViewNodeText(@NonNull String);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ChatMessageContentCaptureData implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public android.view.autofill.AutofillId getAutofillId();
+    method @NonNull public String getRawDateString();
+    method @NonNull public String getRawTimeString();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ChatMessageContentCaptureData> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ChatMessageContentCaptureData.Builder {
+    ctor public ChatMessageContentCaptureData.Builder();
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData build();
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setAutofillId(@NonNull android.view.autofill.AutofillId);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setRawDateString(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageContentCaptureData.Builder setRawTimeString(@NonNull String);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ChatMessageData implements android.os.Parcelable {
+    method public int describeContents();
+    method @NonNull public String getAuthor();
+    method @Nullable public android.service.personalcontext.hint.ChatMessageContentCaptureData getContentCaptureData();
+    method @NonNull public java.time.Instant getReferenceTime();
+    method @NonNull public String getText();
+    method public boolean isOutgoingMessage();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ChatMessageData> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ChatMessageData.Builder {
+    ctor public ChatMessageData.Builder();
+    method @NonNull public android.service.personalcontext.hint.ChatMessageData build();
+    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setAuthor(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setContentCaptureData(@NonNull android.service.personalcontext.hint.ChatMessageContentCaptureData);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setOutgoingMessage(boolean);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setReferenceTime(@NonNull java.time.Instant);
+    method @NonNull public android.service.personalcontext.hint.ChatMessageData.Builder setText(@NonNull String);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContentCaptureConversationEvent {
+    method @NonNull public java.time.Instant getClientEventTimestamp();
+    method @NonNull public String getConversationSessionId();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationEnterEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
+    ctor public ContentCaptureConversationEvent.ConversationEnterEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
+    method @NonNull public java.time.Instant getTimestamp();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationExitEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
+    ctor public ContentCaptureConversationEvent.ConversationExitEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
+    method @NonNull public java.time.Instant getTimestamp();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationProcessingEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
+    ctor public ContentCaptureConversationEvent.ConversationProcessingEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant, @NonNull android.view.autofill.AutofillId);
+    method @NonNull public android.view.autofill.AutofillId getMessageAutofillId();
+    method @NonNull public java.time.Instant getStartProcessingTimestamp();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationUpdateEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
+    ctor public ContentCaptureConversationEvent.ConversationUpdateEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant, @NonNull android.service.personalcontext.hint.ConversationData);
+    method @NonNull public android.service.personalcontext.hint.ConversationData getConversationData();
+    method @NonNull public java.time.Instant getConversationUpdateTimestamp();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContentCaptureConversationHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public android.service.personalcontext.hint.ContentCaptureConversationEvent getConversationEvent();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationHint.Builder {
+    ctor public ContentCaptureConversationHint.Builder(@NonNull android.service.personalcontext.hint.ContentCaptureConversationEvent);
+    method @NonNull public android.service.personalcontext.hint.ContentCaptureConversationHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.ContentCaptureConversationHint build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextHint {
+    method @NonNull public final java.time.Instant getCreationTime();
+    method @NonNull public final java.util.UUID getHintId();
+    method @NonNull public String getHintTypeName();
+    method @NonNull public final java.util.Set<android.service.personalcontext.Token> getTokens();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature {
+    method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getAttributionHints();
+    method @NonNull public android.service.personalcontext.hint.ContextHint getContextHint();
+    method @NonNull public String getOriginatingPackage();
+    method @NonNull public java.util.Set<android.service.personalcontext.RenderToken> getRenderTokens();
+  }
+
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ConversationData implements android.os.Parcelable {
+    method public int describeContents();
     method @Nullable public android.app.assist.ActivityId getActivityId();
+    method @NonNull public java.util.List<android.service.personalcontext.hint.ChatMessageData> getChatMessages();
+    method @NonNull public android.content.ComponentName getComponentName();
+    method @NonNull public String getConversationTitle();
+    method @Nullable public android.view.autofill.AutofillId getInputBoxAutofillId();
+    method @NonNull public String getInputBoxText();
+    method @NonNull public java.time.Instant getProcessingEndTimestamp();
+    method @NonNull public java.time.Instant getProcessingStartTimestamp();
+    method public boolean hasNewMessage();
+    method public boolean isKeyboardShown();
+    method public boolean isLastMessageFromTheUser();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ConversationData> CREATOR;
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ConversationData.Builder {
+    ctor public ConversationData.Builder();
+    method @NonNull public android.service.personalcontext.hint.ConversationData build();
     method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setActivityId(@Nullable android.app.assist.ActivityId);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setChatMessages(@NonNull java.util.List<android.service.personalcontext.hint.ChatMessageData>);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setComponentName(@NonNull android.content.ComponentName);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setConversationTitle(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setHasNewMessage(boolean);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setInputBoxAutofillId(@Nullable android.view.autofill.AutofillId);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setInputBoxText(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setKeyboardShown(boolean);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setLastMessageFromTheUser(boolean);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setProcessingEndTimestamp(@NonNull java.time.Instant);
+    method @NonNull public android.service.personalcontext.hint.ConversationData.Builder setProcessingStartTimestamp(@NonNull java.time.Instant);
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
@@ -15222,6 +15429,125 @@ package android.service.personalcontext.hint {
     method @NonNull public android.service.personalcontext.hint.HintFilter build();
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintInvalidationHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public java.util.UUID getInvalidatedHintId();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class HintInvalidationHint.Builder {
+    ctor public HintInvalidationHint.Builder(@NonNull java.util.UUID);
+    ctor public HintInvalidationHint.Builder(@NonNull android.service.personalcontext.hint.ContextHint);
+    method @NonNull public android.service.personalcontext.hint.HintInvalidationHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.HintInvalidationHint build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightReferenceHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public java.util.UUID getInsightId();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class MessagesHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public java.util.List<android.service.personalcontext.hint.ChatMessageData> getChatMessages();
+    method @NonNull public String getPackageName();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class MessagesHint.Builder {
+    ctor public MessagesHint.Builder(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.MessagesHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.MessagesHint build();
+    method @NonNull public android.service.personalcontext.hint.MessagesHint.Builder setChatMessages(@NonNull java.util.List<android.service.personalcontext.hint.ChatMessageData>);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class NotificationEvent {
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class NotificationEvent.NotificationEnqueuedEvent extends android.service.personalcontext.hint.NotificationEvent {
+    ctor public NotificationEvent.NotificationEnqueuedEvent(@NonNull android.service.notification.StatusBarNotification, @NonNull android.app.NotificationChannel, @NonNull android.service.notification.NotificationListenerService.RankingMap);
+    method public int getEventType();
+    method @NonNull public android.app.NotificationChannel getNotificationChannel();
+    method @NonNull public android.service.notification.NotificationListenerService.RankingMap getRankingMap();
+    method @NonNull public android.service.notification.StatusBarNotification getStatusBarNotification();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class NotificationEvent.NotificationRemovedEvent extends android.service.personalcontext.hint.NotificationEvent {
+    ctor public NotificationEvent.NotificationRemovedEvent(@NonNull android.service.notification.StatusBarNotification, @NonNull android.service.notification.NotificationListenerService.RankingMap, int);
+    method public int getEventType();
+    method @NonNull public android.service.notification.NotificationListenerService.RankingMap getRankingMap();
+    method public int getReason();
+    method @NonNull public android.service.notification.StatusBarNotification getStatusBarNotification();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class NotificationHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public android.service.personalcontext.hint.NotificationEvent getNotificationEvent();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class NotificationHint.Builder {
+    ctor public NotificationHint.Builder(@NonNull android.service.personalcontext.hint.NotificationEvent);
+    method @NonNull public android.service.personalcontext.hint.NotificationHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.NotificationHint build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class RecentViewHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public java.util.List<android.service.personalcontext.hint.CapturedText> getCapturedTexts();
+    method @Nullable public String getLocusId();
+    method @NonNull public android.content.ComponentName getSourceAppActivityComponentName();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class RecentViewHint.Builder {
+    ctor public RecentViewHint.Builder();
+    method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder addCapturedText(@NonNull android.service.personalcontext.hint.CapturedText);
+    method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.RecentViewHint build();
+    method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder setLocusId(@Nullable String);
+    method @NonNull public android.service.personalcontext.hint.RecentViewHint.Builder setSourceAppActivityComponentName(@NonNull android.content.ComponentName);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public class TextClassificationHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public String getSessionId();
+    method @NonNull public android.view.textclassifier.TextClassification.Request getTextClassificationRequest();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class TextClassificationHint.Builder {
+    ctor public TextClassificationHint.Builder(@NonNull android.view.textclassifier.TextClassification.Request, @NonNull String);
+    method @NonNull public android.service.personalcontext.hint.TextClassificationHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.TextClassificationHint build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class UserInputHint extends android.service.personalcontext.hint.ContextHint {
+    method @NonNull public android.content.ComponentName getSourceAppActivityComponentName();
+    method @NonNull public android.service.personalcontext.hint.UserInputText getUserInputText();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class UserInputHint.Builder {
+    ctor public UserInputHint.Builder(@NonNull android.service.personalcontext.hint.UserInputText);
+    method @NonNull public android.service.personalcontext.hint.UserInputHint.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.hint.UserInputHint build();
+    method @NonNull public android.service.personalcontext.hint.UserInputHint.Builder setSourceAppActivityComponentName(@NonNull android.content.ComponentName);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class UserInputText implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getFieldType();
+    method @NonNull public String getText();
+    method public int getUserInputTextSource();
+    method @NonNull public android.graphics.Rect getViewNodeBoundingBox();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.UserInputText> CREATOR;
+    field public static final int FIELD_TYPE_SEARCH_BOX = 1; // 0x1
+    field public static final int FIELD_TYPE_UNKNOWN = 0; // 0x0
+    field public static final int USER_INPUT_TEXT_SOURCE_CLICKED = 3; // 0x3
+    field public static final int USER_INPUT_TEXT_SOURCE_INFERRED = 2; // 0x2
+    field public static final int USER_INPUT_TEXT_SOURCE_TYPED = 1; // 0x1
+    field public static final int USER_INPUT_TEXT_SOURCE_UNKNOWN = 0; // 0x0
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class UserInputText.Builder {
+    ctor public UserInputText.Builder();
+    method @NonNull public android.service.personalcontext.hint.UserInputText build();
+    method @NonNull public android.service.personalcontext.hint.UserInputText.Builder setFieldType(int);
+    method @NonNull public android.service.personalcontext.hint.UserInputText.Builder setText(@NonNull String);
+    method @NonNull public android.service.personalcontext.hint.UserInputText.Builder setUserInputTextSource(int);
+    method @NonNull public android.service.personalcontext.hint.UserInputText.Builder setViewNodeBoundingBox(@NonNull android.graphics.Rect);
+  }
+
 }
 
 package android.service.personalcontext.hint.autofill {
@@ -15235,6 +15561,107 @@ package android.service.personalcontext.hint.autofill {
 }
 
 package android.service.personalcontext.insight {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ActionableInsight extends android.service.personalcontext.insight.ContextInsight {
+    method @NonNull public android.service.personalcontext.insight.interaction.ReturnHintReport createReturnHintReport();
+    method @NonNull public android.service.personalcontext.insight.InsightActionDetails getActionDetails();
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails getDisplayDetails();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ActionableInsight.Builder {
+    ctor public ActionableInsight.Builder(@NonNull android.service.personalcontext.insight.InsightActionDetails, @NonNull android.service.personalcontext.insight.InsightDisplayDetails);
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.insight.ActionableInsight build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class BundleInsight extends android.service.personalcontext.insight.ContextInsight {
+    method @NonNull public android.os.Bundle getDataBundle();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class BundleInsight.Builder {
+    ctor public BundleInsight.Builder();
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.insight.BundleInsight build();
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setDataBundle(@NonNull android.os.Bundle);
+    method @NonNull public android.service.personalcontext.insight.BundleInsight.Builder setInsightTypeName(@Nullable String);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContextInsight {
+    method @NonNull public final java.time.Instant getCreationTime();
+    method @NonNull public final java.util.UUID getInsightId();
+    method @NonNull public String getInsightTypeName();
+    method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getOriginHints();
+    method @NonNull public java.util.Set<android.service.personalcontext.Token> getTokens();
+    method public boolean hasAttribution();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class DisplayInsight extends android.service.personalcontext.insight.ContextInsight {
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails getDetails();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class DisplayInsight.Builder {
+    ctor public DisplayInsight.Builder(@NonNull android.service.personalcontext.insight.InsightDisplayDetails);
+    method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder addOriginHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+    method @NonNull public android.service.personalcontext.insight.DisplayInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
+    method @NonNull public android.service.personalcontext.insight.DisplayInsight build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintInvalidationInsight extends android.service.personalcontext.insight.ContextInsight {
+    method @NonNull public java.util.UUID getInvalidatedHintId();
+    method public boolean isHintInvalidated(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightActionDetails implements android.os.Parcelable {
+    method @Nullable public android.content.Intent createActionIntent();
+    method public int describeContents();
+    method public int getActionTypes();
+    method @Nullable public android.app.RemoteAction getRemoteAction();
+    method public boolean hasActionType(int);
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field public static final int ACTION_TYPE_INTENT = 1; // 0x1
+    field public static final int ACTION_TYPE_REMOTE_ACTION = 2; // 0x2
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.InsightActionDetails> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class InsightActionDetails.Builder {
+    ctor public InsightActionDetails.Builder();
+    method @NonNull public android.service.personalcontext.insight.InsightActionDetails build();
+    method @NonNull public android.service.personalcontext.insight.InsightActionDetails.Builder setIntent(@NonNull android.content.Intent);
+    method @NonNull public android.service.personalcontext.insight.InsightActionDetails.Builder setRemoteAction(@NonNull android.app.RemoteAction);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightCollection extends android.service.personalcontext.insight.ContextInsight implements java.lang.Iterable<android.service.personalcontext.insight.ContextInsight> {
+    method @NonNull public java.util.List<android.service.personalcontext.insight.ContextInsight> getInsights();
+    method @NonNull public java.util.Iterator<android.service.personalcontext.insight.ContextInsight> iterator();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class InsightCollection.Builder {
+    ctor public InsightCollection.Builder();
+    ctor public InsightCollection.Builder(@NonNull java.util.Collection<android.service.personalcontext.insight.ContextInsight>);
+    method @NonNull public android.service.personalcontext.insight.InsightCollection.Builder addInsight(@NonNull android.service.personalcontext.insight.ContextInsight);
+    method @NonNull public android.service.personalcontext.insight.InsightCollection build();
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightDisplayDetails implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public CharSequence getContentDescription();
+    method @Nullable public android.graphics.drawable.Icon getIcon();
+    method @Nullable public CharSequence getSubtitle();
+    method @Nullable public CharSequence getTitle();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.InsightDisplayDetails> CREATOR;
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class InsightDisplayDetails.Builder {
+    ctor public InsightDisplayDetails.Builder(@NonNull CharSequence);
+    ctor public InsightDisplayDetails.Builder(@NonNull android.graphics.drawable.Icon);
+    ctor public InsightDisplayDetails.Builder(@NonNull CharSequence, @NonNull android.graphics.drawable.Icon);
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails build();
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setContentDescription(@Nullable CharSequence);
+    method @NonNull public android.service.personalcontext.insight.InsightDisplayDetails.Builder setSubtitle(@Nullable CharSequence);
+  }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightFilter implements android.os.Parcelable {
     method public int describeContents();
@@ -15251,9 +15678,34 @@ package android.service.personalcontext.insight {
     method @NonNull public android.service.personalcontext.insight.InsightFilter build();
   }
 
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PublishedContextInsight {
+    method @NonNull public android.service.personalcontext.insight.ContextInsight getInsight();
+    method @NonNull public java.util.UUID getPublisherComponentId();
+    method public void reportEvent(@NonNull android.content.Context, int, @NonNull android.service.personalcontext.RenderToken, @Nullable android.os.Bundle);
+  }
+
 }
 
 package android.service.personalcontext.insight.interaction {
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class AttributionDetails implements android.os.Parcelable {
+    ctor public AttributionDetails(@NonNull java.util.Collection<android.service.personalcontext.insight.interaction.AttributionDetails.AttributionLine>);
+    method public int describeContents();
+    method @NonNull public java.util.List<android.service.personalcontext.insight.interaction.AttributionDetails.AttributionLine> getLines();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.interaction.AttributionDetails> CREATOR;
+  }
+
+  public static final class AttributionDetails.AttributionLine implements android.os.Parcelable {
+    ctor public AttributionDetails.AttributionLine(@Nullable CharSequence, @Nullable android.graphics.drawable.Icon, @Nullable CharSequence, @Nullable CharSequence);
+    method public int describeContents();
+    method @Nullable public CharSequence getContentDescription();
+    method @Nullable public android.graphics.drawable.Icon getIcon();
+    method @Nullable public CharSequence getSubtitle();
+    method @Nullable public CharSequence getTitle();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.interaction.AttributionDetails.AttributionLine> CREATOR;
+  }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightEvent implements android.os.Parcelable {
     method public int describeContents();
@@ -15273,6 +15725,12 @@ package android.service.personalcontext.insight.interaction {
     field public static final int EVENT_USER_FEEDBACK_POSITIVE = 7; // 0x7
     field public static final int EVENT_USER_LONG_PRESS = 4; // 0x4
     field public static final int EVENT_USER_TAP = 3; // 0x3
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ReturnHintReport implements android.os.Parcelable {
+    method public int describeContents();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.interaction.ReturnHintReport> CREATOR;
   }
 
 }

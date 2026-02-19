@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.Nullable;
-import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.app.assist.AssistStructure;
 import android.content.ComponentName;
@@ -55,7 +55,9 @@ import java.util.Objects;
  * registered {@link AugmentedAutofillService} both receive requests in parallel. This hint provides
  * the same information as the request to {@link AugmentedAutofillService#handleOnFillRequest} so
  * that personal context can also generate suggestions.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public class AutofillInlineRequestHint extends ContextHint {
     private static final String KEY_SESSION_ID = "session_id";
@@ -356,135 +358,75 @@ public class AutofillInlineRequestHint extends ContextHint {
         private final ConstructorParams.Builder mBaseBuilder = new ConstructorParams.Builder();
         private int mSessionId;
         private int mTaskId;
-        private Instant mRequestTimestamp;
-        private ComponentName mActivityComponent;
-        private AutofillId mFocusedId;
-        private AutofillValue mAutofillValue;
-        private InlineSuggestionsRequest mInlineSuggestionsRequest;
-        private AugmentedAutofillProxy mAugmentedAutofillProxy;
+        private final Instant mRequestTimestamp;
+        private final ComponentName mActivityComponent;
+        private final AutofillId mFocusedId;
+        private final AutofillValue mAutofillValue;
+        private final InlineSuggestionsRequest mInlineSuggestionsRequest;
+        private final AugmentedAutofillProxy mAugmentedAutofillProxy;
         private FillEventHistory mFillEventHistory;
 
-        /** Creates an instance of {@link AutofillInlineRequestHint.Builder}. */
-        public Builder() {}
+        /**
+         * Creates an instance of {@link AutofillInlineRequestHint.Builder}.
+         * @param sessionId ID of the autofill session this request is associated with
+         * @param taskId ID of the task of the activity associated with this request
+         * @param requestTimestamp the timestamp of the request
+         * @param activityComponent component name of the activity involved in autofill
+         * @param focusedId ID for the node focused by autofill
+         * @param autofillValue information on the view to be filled
+         * @param inlineSuggestionsRequest request data for this hint
+         * @param augmentedAutofillProxy the {@link IBinder} used for requesting information from
+         *                               the augmented autofill service.
+         */
+        public Builder(int sessionId,
+                int taskId,
+                @NonNull Instant requestTimestamp,
+                @NonNull ComponentName activityComponent,
+                @NonNull AutofillId focusedId,
+                @NonNull AutofillValue autofillValue,
+                @NonNull InlineSuggestionsRequest inlineSuggestionsRequest,
+                @NonNull IBinder augmentedAutofillProxy) {
+            this(sessionId,
+                    taskId,
+                    requestTimestamp,
+                    activityComponent,
+                    focusedId,
+                    autofillValue,
+                    inlineSuggestionsRequest,
+                    new AugmentedAutofillProxyImpl(requireNonNull(augmentedAutofillProxy)));
+        }
 
         /**
-         * Sets the autofill session ID this request is associated with. This is an internal ID used
-         * by the renderer to identify what autofill session to associate a produced insight with.
+         * Creates an instance of {@link AutofillInlineRequestHint.Builder}.
          *
          * @param sessionId ID of the autofill session this request is associated with
-         */
-        @NonNull
-        public Builder setSessionId(int sessionId) {
-            mSessionId = sessionId;
-            return this;
-        }
-
-        /**
-         * Sets the ID of the task of the activity associated with this request.
-         *
          * @param taskId ID of the task of the activity associated with this request
-         * @see android.app.TaskInfo#taskId
-         * @see FillRequest#getTaskId()
-         */
-        @NonNull
-        public Builder setTaskId(int taskId) {
-            mTaskId = taskId;
-            return this;
-        }
-
-        /**
-         * Sets the timestamp of the request.
-         *
          * @param requestTimestamp the timestamp of the request
-         */
-        @NonNull
-        public Builder setRequestTimestamp(@NonNull Instant requestTimestamp) {
-            mRequestTimestamp = requestTimestamp;
-            return this;
-        }
-
-        /**
-         * Sets the component name of the activity involved in autofill.
-         *
          * @param activityComponent component name of the activity involved in autofill
-         */
-        @NonNull
-        public Builder setActivityComponent(@NonNull ComponentName activityComponent) {
-            mActivityComponent = activityComponent;
-            return this;
-        }
-
-        /**
-         * Sets the ID for the node focused by autofill.
-         *
          * @param focusedId ID for the node focused by autofill
-         */
-        @NonNull
-        public Builder setFocusedId(@NonNull AutofillId focusedId) {
-            mFocusedId = focusedId;
-            return this;
-        }
-
-        /**
-         * Sets the {@link AutofillValue} associated with the view to be filled.
-         *
          * @param autofillValue information on the view to be filled
-         */
-        @NonNull
-        public Builder setAutofillValue(@NonNull AutofillValue autofillValue) {
-            mAutofillValue = autofillValue;
-            return this;
-        }
-
-        /**
-         * Sets the {@link InlineSuggestionsRequest} associated with this hint.
-         *
          * @param inlineSuggestionsRequest request data for this hint
-         */
-        @NonNull
-        public Builder setInlineSuggestionsRequest(
-                @NonNull InlineSuggestionsRequest inlineSuggestionsRequest) {
-            mInlineSuggestionsRequest = inlineSuggestionsRequest;
-            return this;
-        }
-
-        /**
-         * Sets the {@link IAugmentedAutofillManagerClient} used for requesting information from the
-         * augmented autofill service.
-         *
-         * <p>Provide this hint to {@link PersonalContextManager} to fetch information.
-         *
-         * @param binder binder interface for communication with augmented autofill service
-         * @see PersonalContextManager#getFocusedViewNode(AutofillInlineRequestHint)
-         * @see PersonalContextManager#getViewCoordinates(AutofillInlineRequestHint)
-         */
-        // The binder is wrapped in a AugmentedAutofillProxyImpl and is not useful for a public user
-        // of the API.
-        @SuppressLint("MissingGetterMatchingBuilder")
-        @NonNull
-        public Builder setAugmentedAutofillManagerClient(@NonNull IBinder binder) {
-            mAugmentedAutofillProxy = new AugmentedAutofillProxyImpl(binder);
-            return this;
-        }
-
-        /**
-         * Sets the {@link AugmentedAutofillProxy} used for requesting information from the
-         * augmented autofill service.
-         *
-         * <p>Allows providing a custom implementation of the interface for testing purposes.
-         *
-         * @param augmentedAutofillProxy proxy for communication with augmented autofill service
+         * @param augmentedAutofillProxy the {@link IAugmentedAutofillManagerClient} used for
+         *                               requesting information from the augmented autofill service.
          * @hide
          */
-        // The AugmentedAutofillProxy object is not useful for a public user of the API. There is a
-        // package-private getter for testing.
-        @SuppressLint("MissingGetterMatchingBuilder")
         @TestApi
-        @NonNull
-        public Builder setAugmentedAutofillProxy(
+        public Builder(int sessionId,
+                int taskId,
+                @NonNull Instant requestTimestamp,
+                @NonNull ComponentName activityComponent,
+                @NonNull AutofillId focusedId,
+                @NonNull AutofillValue autofillValue,
+                @NonNull InlineSuggestionsRequest inlineSuggestionsRequest,
                 @NonNull AugmentedAutofillProxy augmentedAutofillProxy) {
-            mAugmentedAutofillProxy = augmentedAutofillProxy;
-            return this;
+            mSessionId = sessionId;
+            mTaskId = taskId;
+            mRequestTimestamp = requireNonNull(requestTimestamp);
+            mActivityComponent = requireNonNull(activityComponent);
+            mFocusedId = requireNonNull(focusedId);
+            mAutofillValue = requireNonNull(autofillValue);
+            mInlineSuggestionsRequest = requireNonNull(inlineSuggestionsRequest);
+            mAugmentedAutofillProxy  = requireNonNull(augmentedAutofillProxy);
         }
 
         /**
@@ -517,12 +459,12 @@ public class AutofillInlineRequestHint extends ContextHint {
                     mBaseBuilder.build(),
                     mSessionId,
                     mTaskId,
-                    requireNonNull(mRequestTimestamp),
-                    requireNonNull(mActivityComponent),
-                    requireNonNull(mFocusedId),
-                    requireNonNull(mAutofillValue),
-                    requireNonNull(mInlineSuggestionsRequest),
-                    requireNonNull(mAugmentedAutofillProxy),
+                    mRequestTimestamp,
+                    mActivityComponent,
+                    mFocusedId,
+                    mAutofillValue,
+                    mInlineSuggestionsRequest,
+                    mAugmentedAutofillProxy,
                     mFillEventHistory);
         }
     }

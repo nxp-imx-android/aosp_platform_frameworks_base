@@ -15,11 +15,9 @@
  */
 package android.hardware.camera2.extension;
 
-import android.view.Surface;
-
 /** @hide */
 oneway interface IOnActiveOutputSurfaceCallback
 {
-    void onActiveOutputSurfacesCallback(in List<Surface> activeOutputSurfaces, long timestamp,
-             long frameNumber);
+    void onActiveOutputSurfacesCallback(in long[] activeSurfaceIds,
+            long timestamp, long frameNumber);
 }

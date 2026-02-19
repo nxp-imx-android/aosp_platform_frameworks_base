@@ -21,8 +21,10 @@ import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.companion.CompanionDeviceManager;
+import android.companion.DeviceId;
 import android.content.Context;
 import android.hardware.biometrics.BiometricManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.os.UserHandle;
@@ -69,7 +71,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
     private int mCurrentUserId = UserHandle.USER_NULL;
 
     // session list, writes must be done on the Handler
-    private AgentSessionMap<Integer> mAgentSessionList;
+    private AgentSessionMap mAgentSessionList;
 
     AgentAuthService(@NonNull Context context, @NonNull Handler handler,
             @NonNull Clock clock, @IntRange(from = 0) long lastAuthTimeIntervalMillis) {
@@ -77,14 +79,37 @@ public class AgentAuthService implements AgentAuthServiceInternal {
         mHandler = handler;
         mClock = clock;
         mLastAuthTimeIntervalMillis = lastAuthTimeIntervalMillis;
-        mAgentSessionList = new AgentSessionMap<>(mContext, ActivityManager.getCurrentUser());
+        mAgentSessionList = new AgentSessionMap(mContext, ActivityManager.getCurrentUser());
         mStrongAuthListener = new StrongAuthListener(mHandler, this::onStrongAuthForUser);
     }
 
     @Override
-    public boolean isAgentAuthorized(int userId, int associationId) {
+    public boolean isAgentAuthorized(int userId, DeviceId deviceId) {
+        final var association = mCompanionDeviceManager != null ?
+                mCompanionDeviceManager.getAssociationByDeviceId(deviceId) : null;
+        if (association == null) {
+            Slog.w(TAG, "No matching association found for deviceId: " + deviceId);
+            return false;
+        }
+
+        return isAgentAuthorizedByAssociationId(userId, association.getId());
+    }
+
+    @Override
+    public boolean isAgentAuthorizedByAssociationId(int userId, int associationId) {
         final var info = mAgentSessionList.get(associationId);
         return info != null && (info.getUserId() == userId) && info.isAllowed();
+    }
+
+    @Override
+    public boolean setOverride(int userId, int associationId, boolean authorized) {
+        if (Build.IS_DEBUGGABLE) {
+            final AgentSession result = authorized ?
+                mAgentSessionList.authorizeIfPresent(userId, associationId) :
+                    mAgentSessionList.revokeIfPresent(userId, associationId);
+            return result != null && result.isAllowed();
+        }
+        return false;
     }
 
     /** Start the service start monitoring for connected agents and init for current user. */
@@ -131,7 +156,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
         // reset list to an initial state
         mCurrentUserId = userId;
         mAgentSessionList.clear();
-        mAgentSessionList = new AgentSessionMap<>(mContext, mCurrentUserId);
+        mAgentSessionList = new AgentSessionMap(mContext, mCurrentUserId);
         mHandler.removeCallbacksAndMessages(null);
         Slog.d(TAG, "Reset sessions / dropped all pending updates");
 
@@ -142,23 +167,25 @@ public class AgentAuthService implements AgentAuthServiceInternal {
             mAgentMonitor = new CDMAgentMonitor(mHandler, userId,
                     mCompanionDeviceManager, new CDMAgentMonitor.Listener() {
                 @Override
-                public void onAgentConnectionStarted(int id) {
+                public void onAgentConnectionStarted(int associationId) {
                     // no custom interval yet, but this may need to become dynamic
                     // instead of relying only on the overlay config
                     final boolean authorized = hasRecentStrongAuth(0);
                     if (authorized) {
-                        Slog.d(TAG, "Start session (authorized): " + id);
-                        mAgentSessionList.put(id, AgentSession.authorized(userId, id));
+                        Slog.d(TAG, "Start session (authorized): " + associationId);
+
+                        mAgentSessionList.put(associationId, AgentSession.authorized(userId));
                     } else {
-                        Slog.d(TAG, "Start session (not authorized): " + id);
-                        mAgentSessionList.put(id, AgentSession.notAuthorized(userId, id));
+                        Slog.d(TAG, "Start session (not authorized): " + associationId);
+
+                        mAgentSessionList.put(associationId, AgentSession.notAuthorized(userId));
                     }
                 }
 
                 @Override
-                public void onAgentConnectionStopped(int id) {
-                    Slog.d(TAG, "End session: " + id);
-                    mAgentSessionList.remove(id);
+                public void onAgentConnectionStopped(int associationId) {
+                    Slog.d(TAG, "End session: " + associationId);
+                    mAgentSessionList.remove(associationId);
                 }
             });
             mAgentMonitor.start();
@@ -199,7 +226,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
             mService = new AgentAuthService(context,
                     new Handler(BackgroundThread.getHandler().getLooper()),
                     SystemClock.elapsedRealtimeClock(),
-                    TimeUnit.MINUTES.toMillis(30));
+                    TimeUnit.MINUTES.toMillis(10));
         }
 
         @Override

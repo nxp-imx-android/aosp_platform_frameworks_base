@@ -21,17 +21,13 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
-import android.app.ActivityManagerInternal;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.os.SystemProperties;
-import android.provider.Settings;
-import android.text.TextUtils;
 import android.util.Slog;
 
 import androidx.annotation.VisibleForTesting;
 
-import com.android.internal.pm.RoSystemFeatures;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.UiModeManagerInternal;
@@ -39,12 +35,7 @@ import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
-import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
-
 import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * ThemeManagerService is the main entry point for the theming system in Android.
@@ -60,7 +51,7 @@ import java.util.Objects;
  *     <li>{@link ThemeUserLifecycle}: Handles user-related events (start, switch, setup).</li>
  *     <li>{@link ThemeEventObserver}: Listens for system events (wallpaper, settings, lock
  *     state).</li>
- *     <li>{@link ThemeManagerInternal}: Provides a local interface for other system services.</li>
+ *     <li>{@link ThemeManagerImpl}: Provides a local interface for other system services.</li>
  *     <li>{@link ThemeBinderService}: Provides the public Binder interface for apps.</li>
  * </ul>
  *
@@ -70,9 +61,7 @@ import java.util.Objects;
 public class ThemeManagerService extends SystemService {
     private static final String TAG = "ThemeManagerService";
 
-    private static final String KEY_COLOR_PALETTE_VERSION = "global_color_palette_version";
-
-    private final ThemeManagerInternal mInternal;
+    private final ThemeManagerInternal mImpl;
     private final ThemeBinderService mPublic;
     private final Context mContext;
     private final ThemeSettingsManager mThemeSettingsManager;
@@ -80,67 +69,51 @@ public class ThemeManagerService extends SystemService {
     private final ThemeUserLifecycle mUserLifecycle;
     private final ThemeEventObserver mEventObserver;
     private final ThemeOverlayHelper mOverlayHelper;
-    private final SystemPropertiesReader mSystemPropertiesReader;
     private final ThemeWallpaperManager mThemeWallpaperManager;
-
-
-    private static boolean isWatch(Context context) {
-        return RoSystemFeatures.hasFeatureWatch(context);
-    }
-
-    /**
-     * Detects the device platform to ensure accurate color generation by `libmonet`.
-     * <p>
-     * Watch devices (Wear OS) require distinct color palette logic compared to phones or tablets.
-     * Since `libmonet` is platform-agnostic and does not automatically detect the running
-     * environment, we must explicitly provide the {@link Platform} signal here.
-     */
-    private static Platform getPlatform(Context context) {
-        return isWatch(context) ? Platform.WATCH : DynamicScheme.DEFAULT_PLATFORM;
-    }
-
-    private static SpecVersion getSpecVersion(Context context) {
-        boolean hasNewSpec = context.getResources().getIdentifier("system_primary_dim_light",
-                "color", "android") != 0;
-        return hasNewSpec ? SpecVersion.SPEC_2025 : SpecVersion.SPEC_2021;
-    }
+    private final ThemeEnvironment mEnvironment;
 
     public ThemeManagerService(@NonNull Context context) {
         this(context, SystemProperties::get,
-                new ThemeStateManager(context, getPlatform(context), getSpecVersion(context)),
                 LocalServices.getService(WallpaperManagerInternal.class),
-                LocalServices.getService(OverlayManagerInternal.class), null, null,
-                getPlatform(context), getSpecVersion(context));
+                LocalServices.getService(OverlayManagerInternal.class),
+                LocalServices.getService(UserManagerInternal.class),
+                null, null, null);
     }
 
     @VisibleForTesting
     ThemeManagerService(@NonNull Context context,
             @NonNull SystemPropertiesReader systemPropertiesReader,
-            ThemeStateManager themeStateManager, WallpaperManagerInternal wallpaperManagerInternal,
+            WallpaperManagerInternal wallpaperManagerInternal,
             OverlayManagerInternal overlayManagerInternal,
-            @Nullable ThemeUserLifecycle userLifecycle, @Nullable ThemeEventObserver eventObserver,
-            Platform platform, SpecVersion specVersion) {
+            UserManagerInternal userManagerInternal,
+            @Nullable ThemeStateManager themeStateManager,
+            @Nullable ThemeUserLifecycle userLifecycle,
+            @Nullable ThemeEventObserver eventObserver) {
         super(context);
         mContext = context;
-        mStateManager = themeStateManager;
+        mEnvironment = new ThemeEnvironment(context, userManagerInternal, systemPropertiesReader);
+        mStateManager = themeStateManager != null ? themeStateManager
+                : new ThemeStateManager(context, mEnvironment);
         mThemeWallpaperManager = new ThemeWallpaperManager(wallpaperManagerInternal);
-        mThemeSettingsManager = new ThemeSettingsManager(mThemeWallpaperManager);
-        mSystemPropertiesReader = systemPropertiesReader;
+        mThemeSettingsManager = new ThemeSettingsManager(mThemeWallpaperManager,
+                systemPropertiesReader, mEnvironment);
         mOverlayHelper = new ThemeOverlayHelper(overlayManagerInternal);
 
-        mInternal = new ThemeManagerInternal(mContext, mThemeSettingsManager,
-                mSystemPropertiesReader, mStateManager, mOverlayHelper, platform, specVersion);
-        mPublic = new ThemeBinderService(mContext, mInternal);
+        mImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
+                mStateManager, mOverlayHelper, mEnvironment);
+        mPublic = new ThemeBinderService(mContext, mImpl);
 
         mUserLifecycle = userLifecycle != null ? userLifecycle : new ThemeUserLifecycle(mContext,
-                mStateManager, mInternal);
+                mStateManager, mThemeSettingsManager, mEnvironment);
+
         mEventObserver = eventObserver != null ? eventObserver : new ThemeEventObserver(mContext,
-                mStateManager, mInternal, mUserLifecycle);
+                mStateManager, mThemeSettingsManager, mUserLifecycle, (ThemeManagerImpl) mImpl,
+                mEnvironment);
     }
 
     @Override
     public void onStart() {
-        publishLocalService(ThemeManagerInternal.class, mInternal);
+        publishLocalService(ThemeManagerInternal.class, mImpl);
         publishBinderService(Context.THEME_SERVICE, mPublic.asBinder());
     }
 
@@ -150,21 +123,21 @@ public class ThemeManagerService extends SystemService {
         Slog.d(TAG, "onBootPhase: " + phase);
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
             mStateManager.onServicesReady();
-            String[] legacyOverlays = mContext.getResources().getStringArray(
-                    com.android.internal.R.array.theming_legacy_overlays);
-            mOverlayHelper.cleanupLegacyOverlays(Arrays.asList(legacyOverlays));
+            mOverlayHelper.cleanupLegacyOverlays(Arrays.asList(mEnvironment.legacyOverlays));
             mUserLifecycle.onServicesReady(LocalServices.getService(UserManagerInternal.class),
                     LocalServices.getService(UiModeManagerInternal.class), mThemeWallpaperManager);
             mUserLifecycle.onBootCompleteLoadUsers();
             mEventObserver.onServicesReady(mThemeWallpaperManager,
-                    LocalServices.getService(ActivityManagerInternal.class),
                     LocalServices.getService(UiModeManagerInternal.class),
                     mContext.getSystemService(KeyguardManager.class));
+
+            // Register component listeners
+            mUserLifecycle.registerListeners();
             mEventObserver.registerListeners();
         }
 
         if (phase == SystemService.PHASE_ACTIVITY_MANAGER_READY) {
-            mStateManager.onBootComplete(/*isPaletteOutdated*/ shouldForceReloadForVersion());
+            mStateManager.onBootComplete(/*isPaletteOutdated*/ mEnvironment.isPaletteOutdated);
         }
 
     }
@@ -177,24 +150,5 @@ public class ThemeManagerService extends SystemService {
     @Override
     public void onUserSwitching(@Nullable TargetUser from, @NonNull TargetUser to) {
         mUserLifecycle.onUserSwitching(from, to);
-    }
-
-
-    private boolean shouldForceReloadForVersion() {
-        String storedVersion = Settings.Global.getString(mContext.getContentResolver(),
-                KEY_COLOR_PALETTE_VERSION);
-        String currentVersion = mSystemPropertiesReader.get("ro.build.date.utc", null);
-
-        if (TextUtils.isEmpty(currentVersion)) {
-            Slog.i(TAG, "Palette version missing. Refreshing overlays");
-            return true;
-        }
-
-        if (storedVersion != null && Objects.equals(storedVersion, currentVersion)) return false;
-
-        Slog.i(TAG, "Palette version bumped from " + storedVersion + " to " + currentVersion);
-        Settings.Global.putString(mContext.getContentResolver(), KEY_COLOR_PALETTE_VERSION,
-                currentVersion);
-        return true;
     }
 }

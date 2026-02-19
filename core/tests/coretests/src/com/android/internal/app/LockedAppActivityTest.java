@@ -521,6 +521,29 @@ public class LockedAppActivityTest {
 
     @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
     @Test
+    public void completeUnlockAndFinish_calledMultipleTimes_sendsTargetIntentOnlyOnce() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.INTERCEPT);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Trigger authentication success.
+            captureAuthenticationCallback().onAuthenticationSucceeded(
+                    mock(BiometricPrompt.AuthenticationResult.class));
+
+            // Manually trigger the package locked state listener to simulate a race condition
+            // or another event that calls completeUnlockAndFinish().
+            verify(mAppLockInternal).registerPackageLockedStateListener(
+                    mPackageLockedListenerCaptor.capture());
+            AppLockInternal.PackageLockedStateListener listener =
+                    mPackageLockedListenerCaptor.getValue();
+            listener.onPackageLockedStateChanged(TEST_PACKAGE_NAME, TEST_USER_ID, false);
+
+            assertThat(mTestInjector.getTargetIntentSentCount()).isEqualTo(1);
+            scenario.onActivity(activity -> assertThat(activity.isFinishing()).isTrue());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
     public void authError_inInterceptMode_finishesWithoutUnlockingAndSendingIntent() {
         Intent intent = createTestLockedAppActivityIntent(ActivityMode.INTERCEPT);
 
@@ -641,6 +664,62 @@ public class LockedAppActivityTest {
 
             // Verify that authenticate was called a second time.
             verify(mBiometricPrompt, times(2)).authenticate(any(), any(), any());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onResume_inLockedTaskMode_withoutWindowFocus_doesNotShowPrompt() {
+        mTestInjector.setHasWindowFocus(false);
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Initial launch triggers onResume, but focus is false.
+            verify(mBiometricPrompt, never()).authenticate(any(), any(), any());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onWindowFocusChanged_inLockedTaskMode_afterResumeWithoutFocus_showsPrompt() {
+        mTestInjector.setHasWindowFocus(false);
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Verify it hasn't shown yet.
+            verify(mBiometricPrompt, never()).authenticate(any(), any(), any());
+
+            // Simulate gaining focus.
+            mTestInjector.setHasWindowFocus(true);
+            scenario.onActivity(activity -> activity.onWindowFocusChanged(true));
+
+            // Now it should show.
+            verify(mBiometricPrompt, times(1)).authenticate(any(), any(), any());
+        }
+    }
+
+    @EnableFlags({Flags.FLAG_APP_LOCK_APIS, Flags.FLAG_APP_LOCK_CORE})
+    @Test
+    public void onWindowFocusChanged_inLockedTaskMode_withoutRecentResume_doesNotShowPrompt() {
+        Intent intent = createTestLockedAppActivityIntent(ActivityMode.LOCKED_TASK);
+
+        try (ActivityScenario<LockedAppActivity> scenario = ActivityScenario.launch(intent)) {
+            // Initial show during launch.
+            verify(mBiometricPrompt, times(1)).authenticate(any(), any(), any());
+
+            // Clear the first prompt.
+            captureAuthenticationCallback().onAuthenticationError(
+                    BiometricPrompt.BIOMETRIC_ERROR_CANCELED, "User canceled");
+
+            // Simulate losing and gaining focus (like a notification shade).
+            // onResume is NOT called during this.
+            scenario.onActivity(activity -> {
+                activity.onWindowFocusChanged(false);
+                activity.onWindowFocusChanged(true);
+            });
+
+            // Should still only have been called once (the initial one).
+            verify(mBiometricPrompt, times(1)).authenticate(any(), any(), any());
         }
     }
 
@@ -926,7 +1005,7 @@ public class LockedAppActivityTest {
     }
 
     private class TestLockedAppActivityInjector extends LockedAppActivity.Injector {
-        private boolean mTargetIntentSent = false;
+        private int mTargetIntentSentCount = 0;
         private int mThemeResId = 0;
         private boolean mIsTranslucent = false;
         private int mSetContentViewCount = 0;
@@ -934,6 +1013,7 @@ public class LockedAppActivityTest {
         private int mDisplayId = Display.INVALID_DISPLAY;
         private IntentSender mOriginalIntentSender;
         private boolean mReturnNullForRootView = false;
+        private boolean mHasWindowFocus = true;
 
         @Override
         public void setTheme(Activity activity, int resId) {
@@ -950,6 +1030,11 @@ public class LockedAppActivityTest {
             mContentViewId = layoutResID;
             mSetContentViewCount++;
             activity.setContentView(layoutResID);
+        }
+
+        @Override
+        public boolean hasWindowFocus(Activity activity) {
+            return mHasWindowFocus;
         }
 
         @Override
@@ -999,11 +1084,17 @@ public class LockedAppActivityTest {
 
         @Override
         public void sendTargetIntent(Activity activity, @NonNull IntentSender target) {
-            mTargetIntentSent = target.equals(mOriginalIntentSender);
+            if (target.equals(mOriginalIntentSender)) {
+                mTargetIntentSentCount++;
+            }
         }
 
         boolean wasTargetIntentSent() {
-            return mTargetIntentSent;
+            return mTargetIntentSentCount > 0;
+        }
+
+        int getTargetIntentSentCount() {
+            return mTargetIntentSentCount;
         }
 
         int getThemeResId() {
@@ -1032,6 +1123,10 @@ public class LockedAppActivityTest {
 
         void setReturnNullForRootView(boolean returnNull) {
             mReturnNullForRootView = returnNull;
+        }
+
+        void setHasWindowFocus(boolean hasFocus) {
+            mHasWindowFocus = hasFocus;
         }
     }
 }

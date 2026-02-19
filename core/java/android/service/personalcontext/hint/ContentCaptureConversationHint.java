@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.service.personalcontext.Flags;
@@ -33,7 +34,9 @@ import java.util.Objects;
  * <p>The data encapsulated in this hint originates from the Android Content Capture API and
  * represents the state of a conversation from on-screen content, primarily from messaging
  * applications. It captures messages and metadata at a specific moment.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ContentCaptureConversationHint extends ContextHint {
     private static final String KEY_CONVERSATION_EVENT = "key_conversation_event";

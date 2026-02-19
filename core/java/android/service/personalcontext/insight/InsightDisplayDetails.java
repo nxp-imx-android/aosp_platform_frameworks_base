@@ -19,6 +19,7 @@ package android.service.personalcontext.insight;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.graphics.drawable.Icon;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -38,7 +39,9 @@ import java.util.Objects;
  * content. For example, a text suggestion as an insight might have a title and icon within a
  * {@link InsightDisplayDetails}, which the appropriate input suggestion renderer would
  * display to the user.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class InsightDisplayDetails implements Parcelable {
     private final CharSequence mTitle;

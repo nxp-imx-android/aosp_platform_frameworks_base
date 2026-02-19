@@ -18,6 +18,7 @@ package com.android.systemui.scene.shared.logger
 
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.backgroundCoroutineContext
 import com.android.systemui.log.logcatLogBuffer
 
 var Kosmos.sceneLogger by
@@ -25,5 +26,6 @@ var Kosmos.sceneLogger by
         SceneLogger(
             uiEventLogger = uiEventLoggerFake,
             logBuffer = logcatLogBuffer("SceneLoggerKosmos"),
+            backgroundContext = backgroundCoroutineContext,
         )
     }

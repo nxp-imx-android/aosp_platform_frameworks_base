@@ -2054,6 +2054,7 @@
         <enum name="KEYCODE_F23" value="336" />
         <enum name="KEYCODE_F24" value="337" />
         <enum name="KEYCODE_ACCESSIBILITY" value="338" />
+        <enum name="KEYCODE_CONTEXTUAL_SEARCH" value="339" />
     </attr>
 
     <!-- @hide same as keycode enum defined above, but to be used to define keycode output.
@@ -2398,6 +2399,7 @@
         <enum name="KEYCODE_F23" value="336" />
         <enum name="KEYCODE_F24" value="337" />
         <enum name="KEYCODE_ACCESSIBILITY" value="338" />
+        <enum name="KEYCODE_CONTEXTUAL_SEARCH" value="339" />
     </attr>
 
     <!-- ***************************************************************** -->
@@ -10775,17 +10777,17 @@
         <attr name="inlineSuggestion" format="reference" />
     </declare-styleable>
 
-    <!-- Styleable resource for an inline suggestion embedded view. -->
+    <!-- Styleable resource for an inline suggestion embedded view. @hide @SystemApi -->
     <declare-styleable name="InlineSuggestion">
-        <!-- Color used for strokes and outlines. -->
+        <!-- Color used for strokes and outlines. @hide @SystemApi -->
         <attr name="strokeColor" />
-        <!-- Color used for text. -->
+        <!-- Color used for text. @hide @SystemApi -->
         <attr name="textColor" />
-        <!-- Color used for icons. -->
+        <!-- Color used for icons. @hide @SystemApi -->
         <attr name="iconColor" format="reference|color" />
-        <!-- Suggestion background color. -->
+        <!-- Suggestion background color. @hide @SystemApi -->
         <attr name="suggestionBackgroundColor" format="reference|color" />
-        <!-- Suggestion corner radius. -->
+        <!-- Suggestion corner radius. @hide @SystemApi -->
         <attr name="suggestionCornerRadius" format="integer" />
     </declare-styleable>
 </resources>

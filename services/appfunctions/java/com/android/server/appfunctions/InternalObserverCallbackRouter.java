@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
@@ -28,6 +29,7 @@ import android.app.appsearch.observer.DocumentChangeInfo;
 import android.app.appsearch.observer.SchemaChangeInfo;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.util.ArraySet;
 import android.util.Slog;
 
@@ -60,6 +62,8 @@ class InternalObserverCallbackRouter {
             new RemoteCallbackList<>();
 
     private final int mMetadataChangeDebounceMs;
+    private final long mEnabledStateDebounceMs;
+    private final long mEnabledStateMaxDebounceMs;
     private final ScheduledExecutorService mExecutor;
     private final Object mDebounceLock = new Object();
 
@@ -71,19 +75,53 @@ class InternalObserverCallbackRouter {
     @NonNull
     private final Set<String> mPendingPackageChanges = new ArraySet<>();
 
+    private final Object mEnabledStateDebounceLock = new Object();
+
+    @GuardedBy("mEnabledStateDebounceLock")
+    @Nullable
+    private ScheduledFuture<?> mEnabledStateDebounceFuture;
+
+    @GuardedBy("mEnabledStateDebounceLock")
+    @NonNull
+    private final Set<AppFunctionName> mPendingEnabledStateChanges = new ArraySet<>();
+
+    @GuardedBy("mEnabledStateDebounceLock")
+    private long mFirstEnabledStateChangeTimestampNanos;
+
+    private final TimeSource mTimeSource;
+
     InternalObserverCallbackRouter(@NonNull ServiceConfig serviceConfig) {
         this(
                 serviceConfig,
                 Executors.newSingleThreadScheduledExecutor(
-                        new NamedThreadFactory("AppFunctionsObserverRouter")));
+                        new NamedThreadFactory("AppFunctionsObserverRouter")),
+                SystemClock::elapsedRealtimeNanos);
     }
 
     @VisibleForTesting
     InternalObserverCallbackRouter(
             @NonNull ServiceConfig serviceConfig, @NonNull ScheduledExecutorService executor) {
+        this(serviceConfig, executor, SystemClock::elapsedRealtimeNanos);
+    }
+
+    @VisibleForTesting
+    InternalObserverCallbackRouter(
+            @NonNull ServiceConfig serviceConfig,
+            @NonNull ScheduledExecutorService executor,
+            @NonNull TimeSource timeSource) {
         mMetadataChangeDebounceMs =
                 serviceConfig.getAppFunctionMetadataChangeDebounceMilliseconds();
+        mEnabledStateDebounceMs =
+                serviceConfig.getAppFunctionEnabledStateChangeDebounceMilliseconds();
+        mEnabledStateMaxDebounceMs =
+                serviceConfig.getAppFunctionEnabledStateChangeMaxDebounceMilliseconds();
         mExecutor = executor;
+        mTimeSource = timeSource;
+    }
+
+    @VisibleForTesting
+    interface TimeSource {
+        long elapsedRealtimeNanos();
     }
 
     public void onDocumentChanged(@NonNull DocumentChangeInfo documentChangeInfo) {
@@ -111,13 +149,59 @@ class InternalObserverCallbackRouter {
      * <p>This is used for the runtime enabled state changes, which do not originate from app
      * search.
      */
-    // TODO(b/438413081): Consider batching enabled state updates. Their frequency can be high for
-    //  example in case of dynamic app functions that are registered/unregistered in a composable.
     public void onEnabledStatesChanged(@NonNull Set<AppFunctionName> changedFunctionNames) {
-        try {
-            var unused = mExecutor.submit(() -> onAppFunctionStatesChanged(changedFunctionNames));
-        } catch (RejectedExecutionException ex) {
-            Slog.w(TAG, "Failed to run onEnabledStateChanged due to executor shutdown.", ex);
+        scheduleEnabledStateChanges(changedFunctionNames);
+    }
+
+    private void scheduleEnabledStateChanges(@NonNull Set<AppFunctionName> changedFunctionNames) {
+        if (changedFunctionNames.isEmpty()) {
+            return;
+        }
+
+        synchronized (mEnabledStateDebounceLock) {
+            if (mPendingEnabledStateChanges.isEmpty()) {
+                // Use elapsedRealtimeNanos to ensure we account for time spent in deep sleep.
+                mFirstEnabledStateChangeTimestampNanos = mTimeSource.elapsedRealtimeNanos();
+            }
+            mPendingEnabledStateChanges.addAll(changedFunctionNames);
+
+            if (mEnabledStateDebounceFuture != null) {
+                mEnabledStateDebounceFuture.cancel(false);
+            }
+
+            long now = mTimeSource.elapsedRealtimeNanos();
+            // We impose a maximum deadline to prevent the scenario where the debounce is
+            // extended indefinitely by incoming changes.
+            long maxDeadline =
+                    mFirstEnabledStateChangeTimestampNanos
+                            + TimeUnit.MILLISECONDS.toNanos(mEnabledStateMaxDebounceMs);
+            long targetTime = now + TimeUnit.MILLISECONDS.toNanos(mEnabledStateDebounceMs);
+
+            long delayNanos = Math.min(targetTime, maxDeadline) - now;
+            delayNanos = Math.max(0, delayNanos);
+
+            Runnable scheduledRunnable =
+                    () -> {
+                        Set<AppFunctionName> functionsToNotify;
+                        synchronized (mEnabledStateDebounceLock) {
+                            functionsToNotify = new ArraySet<>(mPendingEnabledStateChanges);
+                            mPendingEnabledStateChanges.clear();
+                            mEnabledStateDebounceFuture = null;
+                        }
+                        if (!functionsToNotify.isEmpty()) {
+                            onAppFunctionStatesChanged(functionsToNotify);
+                        }
+                    };
+
+            try {
+                mEnabledStateDebounceFuture =
+                        mExecutor.schedule(scheduledRunnable, delayNanos, TimeUnit.NANOSECONDS);
+            } catch (RejectedExecutionException ex) {
+                Slog.w(
+                        TAG,
+                        "Failed to schedule enabled state change due to executor shutdown.",
+                        ex);
+            }
         }
     }
 
@@ -195,7 +279,7 @@ class InternalObserverCallbackRouter {
 
     void addCallback(
             @NonNull IObserveAppFunctionChangesCallback callbackToAdd,
-            @NonNull AppFunctionSearchSpec searchSpec) {
+            @NonNull AppFunctionAidlSearchSpec searchSpec) {
         mInternalCallbacks.register(callbackToAdd, searchSpec);
     }
 

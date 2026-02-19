@@ -1191,13 +1191,13 @@ public class AttentionManagerService extends SystemService {
 
         @EnforcePermission(Manifest.permission.ACCESS_ATTENTION_LISTENER)
         @Override // Binder call
-        public void registerListener(@AttentionManager.InteractionType int interactionTypes,
+        public void setListener(@AttentionManager.InteractionType int interactionTypes,
                 @DurationMillisLong long debounceTimeMills,
                 IInteractionListener listener) {
-            super.registerListener_enforcePermission();
+            super.setListener_enforcePermission();
             if (mInteractionProviderService != null) {
                 int callingPid = Binder.getCallingPid();
-                mInteractionProviderService.registerListener(callingPid, interactionTypes,
+                mInteractionProviderService.setListener(callingPid, interactionTypes,
                         debounceTimeMills, listener);
             } else {
                 throw new IllegalStateException("InteractionProviderService is not available");
@@ -1206,11 +1206,11 @@ public class AttentionManagerService extends SystemService {
 
         @EnforcePermission(Manifest.permission.ACCESS_ATTENTION_LISTENER)
         @Override // Binder call
-        public void unregisterListener() {
-            super.unregisterListener_enforcePermission();
+        public void clearListener() {
+            super.clearListener_enforcePermission();
             if (mInteractionProviderService != null) {
                 int callingPid = Binder.getCallingPid();
-                mInteractionProviderService.unregisterListener(callingPid);
+                mInteractionProviderService.clearListener(callingPid);
             } else {
                 throw new IllegalStateException("InteractionProviderService is not available");
             }

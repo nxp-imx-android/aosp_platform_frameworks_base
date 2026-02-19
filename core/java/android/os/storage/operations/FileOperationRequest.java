@@ -25,7 +25,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.storage.FileManager;
 import android.os.storage.operations.sources.OperationSource;
+import android.os.storage.operations.sources.OperationSourceWrapper;
 import android.os.storage.operations.targets.OperationTarget;
+import android.os.storage.operations.targets.OperationTargetWrapper;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -80,8 +82,22 @@ public final class FileOperationRequest implements Parcelable {
 
     private FileOperationRequest(Parcel in) {
         mMode = in.readInt();
-        mSource = in.readParcelable(OperationSource.class.getClassLoader(), OperationSource.class);
-        mTarget = in.readParcelable(OperationTarget.class.getClassLoader(), OperationTarget.class);
+        OperationSourceWrapper sourceWrapper =
+                in.readParcelable(
+                        OperationSourceWrapper.class.getClassLoader(),
+                        OperationSourceWrapper.class);
+        mSource =
+                sourceWrapper != null
+                        ? sourceWrapper.getWrappedSource()
+                        : OperationSource.getInvalidSource();
+        OperationTargetWrapper targetWrapper =
+                in.readParcelable(
+                        OperationTargetWrapper.class.getClassLoader(),
+                        OperationTargetWrapper.class);
+        mTarget =
+                targetWrapper != null
+                        ? targetWrapper.getWrappedTarget()
+                        : OperationTarget.getInvalidTarget();
         mShouldRegisterListener = in.readBoolean();
     }
 
@@ -140,10 +156,8 @@ public final class FileOperationRequest implements Parcelable {
     @SuppressWarnings("AndroidFrameworkEfficientParcelable")
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeInt(mMode);
-        // We use writeParcelable (which includes the class name) rather than writeTypedObject
-        // to correctly handle polymorphic types for OperationSource and OperationTarget.
-        dest.writeParcelable(mSource, flags);
-        dest.writeParcelable(mTarget, flags);
+        dest.writeParcelable(new OperationSourceWrapper(mSource), flags);
+        dest.writeParcelable(new OperationTargetWrapper(mTarget), flags);
         dest.writeBoolean(mShouldRegisterListener);
     }
 
@@ -228,7 +242,6 @@ public final class FileOperationRequest implements Parcelable {
          * @return This builder instance.
          */
         @NonNull
-
         @SuppressLint("MissingGetterMatchingBuilder")
         public Builder setRegisterCompletionListener(boolean shouldRegister) {
             mShouldRegisterListener = shouldRegister;

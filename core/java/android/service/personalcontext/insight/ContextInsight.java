@@ -20,6 +20,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
+import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
@@ -53,7 +54,9 @@ import java.util.UUID;
  * renderers, where they will be rendered as UI to the user.
  *
  * <p>Users of this class can use instanceof to determine the type of the insight.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public abstract class ContextInsight {
     private static final String TAG = "ContextInsight";

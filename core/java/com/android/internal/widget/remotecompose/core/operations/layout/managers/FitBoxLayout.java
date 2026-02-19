@@ -25,6 +25,7 @@ import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
+import com.android.internal.widget.remotecompose.core.operations.Header;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.layout.LayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.ComponentMeasure;
@@ -108,8 +109,8 @@ public class FitBoxLayout extends LayoutManager {
         return "FITBOX";
     }
 
-    @Override
-    public void computeWrapSize(
+    @SuppressWarnings("UnusedVariable")
+    private void computeWrapSizeOriginal(
             @NonNull PaintContext context,
             float minWidth, float maxWidth,
             float minHeight, float maxHeight,
@@ -159,7 +160,88 @@ public class FitBoxLayout extends LayoutManager {
     }
 
     @Override
+    public void computeWrapSize(
+            @NonNull PaintContext context,
+            float minWidth, float maxWidth,
+            float minHeight, float maxHeight,
+            boolean horizontalWrap,
+            boolean verticalWrap,
+            @NonNull MeasurePass measure,
+            @NonNull Size size) {
+
+        if (context.useFeature(Header.FEATURE_PRIORITY_FIX)) {
+            computeWrapSizePriorityFix(context, minWidth, maxWidth, minHeight, maxHeight,
+                    horizontalWrap, verticalWrap, measure, size);
+        } else {
+            computeWrapSizeOriginal(context, minWidth, maxWidth, minHeight, maxHeight,
+                    horizontalWrap, verticalWrap, measure, size);
+        }
+    }
+
+    @SuppressWarnings("UnusedVariable")
+    private void computeWrapSizePriorityFix(
+            @NonNull PaintContext context,
+            float minWidth, float maxWidth,
+            float minHeight, float maxHeight,
+            boolean horizontalWrap,
+            boolean verticalWrap,
+            @NonNull MeasurePass measure,
+            @NonNull Size size) {
+
+        boolean found = false;
+        ComponentMeasure self = measure.get(this);
+        self.clearVisibilityOverride();
+
+        for (Component c : mChildrenComponents) {
+            ComponentMeasure m = measure.get(c);
+            m.clearVisibilityOverride();
+
+            if (!found) {
+                float childMinWidth = c.minIntrinsicWidth(context.getContext());
+                float childMinHeight = c.minIntrinsicHeight(context.getContext());
+
+                if (childMinWidth <= maxWidth && childMinHeight <= maxHeight) {
+                    // Measure with actual constraints
+                    c.measure(context, childMinWidth, maxWidth, childMinHeight, maxHeight, measure);
+                    // Check if it fits (without shrinking)
+                    if (m.getW() <= maxWidth && m.getH() <= maxHeight) {
+                        found = true;
+                        m.addVisibilityOverride(Visibility.OVERRIDE_VISIBLE);
+                        size.setWidth(m.getW());
+                        size.setHeight(m.getH());
+                    } else {
+                        m.addVisibilityOverride(Visibility.OVERRIDE_GONE);
+                    }
+                } else {
+                    m.addVisibilityOverride(Visibility.OVERRIDE_GONE);
+                }
+            } else {
+                m.addVisibilityOverride(Visibility.OVERRIDE_GONE);
+            }
+        }
+
+        if (!found) {
+            self.addVisibilityOverride(Visibility.OVERRIDE_GONE);
+        } else {
+            self.addVisibilityOverride(Visibility.OVERRIDE_VISIBLE);
+        }
+    }
+
+    @Override
     public void computeSize(
+            @NonNull PaintContext context,
+            float minWidth, float maxWidth,
+            float minHeight, float maxHeight,
+            @NonNull MeasurePass measure) {
+        if (context.useFeature(Header.FEATURE_PRIORITY_FIX)) {
+            computeSizePriorityFix(context, minWidth, maxWidth, minHeight, maxHeight, measure);
+        } else {
+            computeSizeOriginal(context, minWidth, maxWidth, minHeight, maxHeight, measure);
+        }
+    }
+
+
+    private void computeSizeOriginal(
             @NonNull PaintContext context,
             float minWidth,
             float maxWidth,
@@ -202,6 +284,48 @@ public class FitBoxLayout extends LayoutManager {
             } else {
                 m.addVisibilityOverride(Visibility.OVERRIDE_GONE);
             }
+        }
+    }
+
+    @SuppressWarnings("UnusedVariable")
+    private void computeSizePriorityFix(
+            @NonNull PaintContext context,
+            float minWidth, float maxWidth,
+            float minHeight, float maxHeight,
+            @NonNull MeasurePass measure) {
+        boolean found = false;
+        ComponentMeasure self = measure.get(this);
+        self.clearVisibilityOverride();
+
+        for (Component c : mChildrenComponents) {
+            ComponentMeasure m = measure.get(c);
+            m.clearVisibilityOverride();
+
+            if (!found) {
+                float childMinWidth = c.minIntrinsicWidth(context.getContext());
+                float childMinHeight = c.minIntrinsicHeight(context.getContext());
+
+                if (childMinWidth <= maxWidth && childMinHeight <= maxHeight) {
+                    // Measure with actual constraints
+                    c.measure(context, childMinWidth, maxWidth, childMinHeight, maxHeight, measure);
+                    if (m.getW() <= maxWidth && m.getH() <= maxHeight) {
+                        found = true;
+                        m.addVisibilityOverride(Visibility.OVERRIDE_VISIBLE);
+                    } else {
+                        m.addVisibilityOverride(Visibility.OVERRIDE_GONE);
+                    }
+                } else {
+                    m.addVisibilityOverride(Visibility.OVERRIDE_GONE);
+                }
+            } else {
+                m.addVisibilityOverride(Visibility.OVERRIDE_GONE);
+            }
+        }
+
+        if (!found) {
+            self.addVisibilityOverride(Visibility.OVERRIDE_GONE);
+        } else {
+            self.addVisibilityOverride(Visibility.OVERRIDE_VISIBLE);
         }
     }
 
@@ -264,11 +388,11 @@ public class FitBoxLayout extends LayoutManager {
     /**
      * Write the operation to the buffer
      *
-     * @param buffer a WireBuffer
-     * @param componentId the component id
-     * @param animationId the component animation id
+     * @param buffer                a WireBuffer
+     * @param componentId           the component id
+     * @param animationId           the component animation id
      * @param horizontalPositioning the horizontal positioning rules
-     * @param verticalPositioning the vertical positioning rules
+     * @param verticalPositioning   the vertical positioning rules
      */
     public static void apply(
             @NonNull WireBuffer buffer,
@@ -286,7 +410,7 @@ public class FitBoxLayout extends LayoutManager {
     /**
      * Read this operation and add it to the list of operations
      *
-     * @param buffer the buffer to read
+     * @param buffer     the buffer to read
      * @param operations the list of operations that will be added to
      */
     public static void read(@NonNull WireBuffer buffer, @NonNull List<Operation> operations) {
@@ -313,8 +437,9 @@ public class FitBoxLayout extends LayoutManager {
                 .additionalDocumentation("fitbox")
                 .description(
                         "FitBox layout implementation.\n\n"
-                            + "Only displays the first child component that fits in the available"
-                            + " space.")
+                                + "Only displays the first child component that fits in the "
+                                + "available"
+                                + " space.")
                 .field(INT, "componentId", "Unique ID for this component")
                 .field(
                         INT,

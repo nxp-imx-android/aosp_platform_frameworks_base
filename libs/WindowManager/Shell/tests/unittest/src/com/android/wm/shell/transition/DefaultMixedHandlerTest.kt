@@ -86,45 +86,47 @@ class DefaultMixedHandlerTest : ShellTestCase() {
     private val bubbleController = mock<BubbleController>()
     private val bubbleRootTask = mock<BubbleRootTask>()
     private val bubbleHelper = spy(BubbleHelperImpl(bubbleRootTask = bubbleRootTask))
-    private val bubbleTransitions =
-        spy(
-            BubbleTransitions(
-                mContext,
-                transitions,
-                mock(),
-                mock(),
-                mock(),
-                mock(),
-                mock(),
-                bubbleHelper,
-            )
-        )
     private val pinnedLayerHandler = mock<PinnedLayerHandler>()
     private val normalAppLayerHandler = mock<NormalAppLayerHandler>()
     private val pipScheduler = mock<PipScheduler>()
-
     private val shellInit: ShellInit = ShellInit(TestShellExecutor())
-    private val mixedHandler =
-        DefaultMixedHandler(
-            shellInit,
-            transitions,
-            Optional.of(splitScreenController),
-            pipTransitionController,
-            Optional.of(pipScheduler),
-            normalAppLayerHandler,
-            pinnedLayerHandler,
-            Optional.of(recentsTransitionHandler),
-            keyguardTransitionHandler,
-            Optional.of(desktopTasksController),
-            desktopTasksTransitionHandler,
-            Optional.of(unfoldTransitionHandler),
-            Optional.of(activityEmbeddingController),
-            bubbleTransitions,
-            bubbleHelper,
-        )
+
+    private lateinit var bubbleTransitions: BubbleTransitions
+    private lateinit var mixedHandler: DefaultMixedHandler
 
     @Before
     fun setUp() {
+        bubbleTransitions =
+            spy(
+                BubbleTransitions(
+                    mContext,
+                    transitions,
+                    mock(),
+                    mock(),
+                    mock(),
+                    mock(),
+                    mock(),
+                    bubbleHelper,
+                )
+            )
+        mixedHandler =
+            DefaultMixedHandler(
+                shellInit,
+                transitions,
+                Optional.of(splitScreenController),
+                pipTransitionController,
+                Optional.of(pipScheduler),
+                normalAppLayerHandler,
+                pinnedLayerHandler,
+                Optional.of(recentsTransitionHandler),
+                keyguardTransitionHandler,
+                Optional.of(desktopTasksController),
+                desktopTasksTransitionHandler,
+                Optional.of(unfoldTransitionHandler),
+                Optional.of(activityEmbeddingController),
+                bubbleTransitions,
+                bubbleHelper,
+            )
         shellInit.init()
         bubbleTransitions.setBubbleController(bubbleController)
     }

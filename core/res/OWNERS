@@ -97,3 +97,6 @@ per-file res/res/values-night/colors_dynamic.xml= file:platform/frameworks/base:
 
 # Serial ports
 per-file res/values/config_serial.xml = file:/services/serial/OWNERS
+
+# Locales
+per-file res/values/locale_config.xml = file:/platform/external/icu:/OWNERS

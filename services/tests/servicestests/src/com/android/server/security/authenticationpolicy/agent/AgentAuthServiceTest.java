@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
+import android.companion.DeviceId;
 import android.companion.DevicePresenceEvent;
 import android.companion.ICompanionDeviceManager;
 import android.companion.IOnAssociationsChangedListener;
@@ -138,7 +139,7 @@ public class AgentAuthServiceTest {
 
     @Test
     public void testIsAgentAuthorized_noSession_returnsFalse() {
-        assertThat(mService.isAgentAuthorized(USER_ID, 1)).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID, createDeviceId("1"))).isFalse();
     }
 
     @Test
@@ -148,9 +149,10 @@ public class AgentAuthServiceTest {
         when(mBiometricManager.getLastAuthenticationTime(anyInt()))
                 .thenReturn(TimeUnit.HOURS.toMillis(1) - 1000);
 
-        triggerAgentConnected(123);
+        DeviceId deviceId = createDeviceId("123");
+        triggerAgentConnected(123, deviceId);
 
-        assertThat(mService.isAgentAuthorized(USER_ID, 123)).isTrue();
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
     }
 
     @Test
@@ -160,9 +162,10 @@ public class AgentAuthServiceTest {
         when(mBiometricManager.getLastAuthenticationTime(anyInt()))
                 .thenReturn(TimeUnit.HOURS.toMillis(1) - AUTH_INTERVAL - 1000);
 
-        triggerAgentConnected(123);
+        DeviceId deviceId = createDeviceId("123");
+        triggerAgentConnected(123, deviceId);
 
-        assertThat(mService.isAgentAuthorized(USER_ID, 123)).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
     }
 
     @Test
@@ -171,9 +174,10 @@ public class AgentAuthServiceTest {
         when(mBiometricManager.getLastAuthenticationTime(anyInt()))
                 .thenReturn(TimeUnit.HOURS.toMillis(1) - 1000);
 
-        triggerAgentConnected(123);
+        DeviceId deviceId = createDeviceId("123");
+        triggerAgentConnected(123, deviceId);
 
-        assertThat(mService.isAgentAuthorized(USER_ID + 1, 123)).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID + 1, deviceId)).isFalse();
     }
 
     @Test
@@ -182,14 +186,15 @@ public class AgentAuthServiceTest {
         when(mBiometricManager.getLastAuthenticationTime(anyInt()))
                 .thenReturn(TimeUnit.HOURS.toMillis(1) - 1000);
 
-        triggerAgentConnected(123);
-        assertThat(mService.isAgentAuthorized(USER_ID, 123)).isTrue();
+        DeviceId deviceId = createDeviceId("123");
+        triggerAgentConnected(123, deviceId);
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
 
         // Switch user
         mService.initInBackgroundForUser(USER_ID + 1);
         TestableLooper.get(this).processAllMessages();
 
-        assertThat(mService.isAgentAuthorized(USER_ID, 123)).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
     }
 
     @Test
@@ -205,8 +210,9 @@ public class AgentAuthServiceTest {
         when(mBiometricManager.getLastAuthenticationTime(anyInt()))
                 .thenReturn(TimeUnit.HOURS.toMillis(1) - AUTH_INTERVAL - 1000);
 
-        triggerAgentConnected(123);
-        assertThat(mService.isAgentAuthorized(USER_ID, 123)).isFalse();
+        DeviceId deviceId = createDeviceId("123");
+        triggerAgentConnected(123, deviceId);
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
 
         // Now simulate strong auth
         when(mBiometricManager.getLastAuthenticationTime(anyInt()))
@@ -215,16 +221,42 @@ public class AgentAuthServiceTest {
         listener.onAuthenticationSucceeded(USER_ID);
         TestableLooper.get(this).processAllMessages();
 
-        assertThat(mService.isAgentAuthorized(USER_ID, 123)).isTrue();
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
     }
 
-    private void triggerAgentConnected(int associationId) throws RemoteException {
+    @Test
+    public void testSetOverride_updatesSession() throws RemoteException {
+        DeviceId deviceId = createDeviceId("123");
+        triggerAgentConnected(123, deviceId);
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
+
+        // Override to true
+        boolean result = mService.setOverride(USER_ID, 123, true);
+        assertThat(result).isTrue();
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
+
+        // Override to false
+        result = mService.setOverride(USER_ID, 123, false);
+        assertThat(result).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
+    }
+
+    @Test
+    public void testSetOverride_nonExistentSession_returnsFalse() {
+        boolean result = mService.setOverride(USER_ID, 999, true);
+        assertThat(result).isFalse();
+    }
+
+    private void triggerAgentConnected(int associationId, DeviceId deviceId) throws RemoteException {
         assertThat(mAssocListener).isNotNull();
 
         AssociationInfo association = new AssociationInfo.Builder(associationId, USER_ID, "pkg")
                 .setDisplayName("Device")
                 .setRemoteAiAgentSupported(true)
+                .setDeviceId(deviceId)
                 .build();
+
+        when(mMockCDMService.getAssociationByDeviceId(USER_ID, deviceId)).thenReturn(association);
 
         mAssocListener.onAssociationsChanged(List.of(association));
         TestableLooper.get(this).processAllMessages();
@@ -238,6 +270,10 @@ public class AgentAuthServiceTest {
 
         mPresenceListener.onDevicePresence(event);
         TestableLooper.get(this).processAllMessages();
+    }
+
+    private DeviceId createDeviceId(String customId) {
+        return new DeviceId.Builder().setCustomId(customId).build();
     }
 
     private static class FakeClock extends Clock {

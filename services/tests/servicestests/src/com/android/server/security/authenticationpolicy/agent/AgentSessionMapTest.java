@@ -48,7 +48,7 @@ public class AgentSessionMapTest {
 
     private MockContentResolver mContentResolver;
     private Context mContext;
-    private AgentSessionMap<Integer> mAgentSessionMap;
+    private AgentSessionMap mAgentSessionMap;
 
     @Before
     public void setUp() {
@@ -65,50 +65,50 @@ public class AgentSessionMapTest {
 
     @Test
     public void testConstructor_clearsSetting() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
         assertThat(getSetting()).isEmpty();
     }
 
     @Test
     public void testPut_allowedSession_doesNotUpdateSetting() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.authorized(USER_ID, 1));
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.authorized(USER_ID));
 
         assertThat(getSetting()).isEmpty();
     }
 
     @Test
     public void testPut_notAllowedSession_updatesSetting() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID, 123));
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
 
-        assertThat(getSetting()).containsExactly("123");
+        assertThat(getSetting()).containsExactly("1");
     }
 
     @Test
     public void testPut_multipleSessions_updatesSetting() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID, 111));
-        mAgentSessionMap.put(2, AgentSession.authorized(USER_ID, 222));
-        mAgentSessionMap.put(3, AgentSession.notAuthorized(USER_ID, 333));
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(2, AgentSession.authorized(USER_ID));
+        mAgentSessionMap.put(3, AgentSession.notAuthorized(USER_ID));
 
-        assertThat(getSetting()).containsExactly("111", "333");
+        assertThat(getSetting()).containsExactly("1", "3");
     }
 
     @Test
     public void testRemove_updatesSetting() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID, 111));
-        mAgentSessionMap.put(2, AgentSession.notAuthorized(USER_ID, 222));
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(2, AgentSession.notAuthorized(USER_ID));
 
         mAgentSessionMap.remove(1);
-        assertThat(getSetting()).containsExactly("222");
+        assertThat(getSetting()).containsExactly("2");
     }
 
     @Test
     public void testClear_updatesSetting() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID, 111));
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
 
         mAgentSessionMap.clear();
         assertThat(getSetting()).isEmpty();
@@ -116,66 +116,66 @@ public class AgentSessionMapTest {
 
     @Test
     public void testGet_returnsCorrectSession() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        AgentSession session = AgentSession.authorized(USER_ID, 1);
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        AgentSession session = AgentSession.authorized(USER_ID);
         mAgentSessionMap.put(1, session);
-        mAgentSessionMap.put(2, AgentSession.authorized(USER_ID, 2));
+        mAgentSessionMap.put(2, AgentSession.authorized(USER_ID));
 
         assertThat(mAgentSessionMap.get(1)).isEqualTo(session);
     }
 
     @Test
     public void testPut_overwriteExistingSession_updatesSetting() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID, 111));
-        assertThat(getSetting()).containsExactly("111");
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
+        assertThat(getSetting()).containsExactly("1");
 
         // Overwrite with authorized
-        mAgentSessionMap.put(1, AgentSession.authorized(USER_ID, 111));
+        mAgentSessionMap.put(1, AgentSession.authorized(USER_ID));
         assertThat(getSetting()).isEmpty();
 
         // Overwrite back to not authorized
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID, 111));
-        assertThat(getSetting()).containsExactly("111");
+        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
+        assertThat(getSetting()).containsExactly("1");
     }
 
     @Test
     public void testMultipleUsers_separateSettings() {
         int otherUser = USER_ID + 1;
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        AgentSessionMap<Integer> otherMap = new AgentSessionMap<>(mContext, otherUser);
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        AgentSessionMap otherMap = new AgentSessionMap(mContext, otherUser);
 
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID, 111));
-        otherMap.put(1, AgentSession.notAuthorized(otherUser, 999));
+        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
+        otherMap.put(1, AgentSession.notAuthorized(otherUser));
 
-        assertThat(getSetting()).containsExactly("111");
-        assertThat(getSetting(otherUser)).containsExactly("999");
+        assertThat(getSetting()).containsExactly("1");
+        assertThat(getSetting(otherUser)).containsExactly("1");
     }
 
     @Test
     public void testPut_wrongUserId_doesNotUpdateSetting() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID + 1, 111));
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID + 1));
 
         assertThat(getSetting()).isEmpty();
     }
 
     @Test
     public void testRemove_nonExistentKey_updatesSetting() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID, 111));
-        assertThat(getSetting()).containsExactly("111");
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
+        assertThat(getSetting()).containsExactly("1");
 
         mAgentSessionMap.remove(2); // non-existent
-        assertThat(getSetting()).containsExactly("111");
+        assertThat(getSetting()).containsExactly("1");
     }
 
     @Test
     public void testAuthorizeAll_updatesSetting() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID, 111));
-        mAgentSessionMap.put(2, AgentSession.notAuthorized(USER_ID, 222));
-        assertThat(getSetting()).containsExactly("111", "222");
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(2, AgentSession.notAuthorized(USER_ID));
+        assertThat(getSetting()).containsExactly("1", "2");
 
         mAgentSessionMap.authorizeAll();
 
@@ -186,16 +186,30 @@ public class AgentSessionMapTest {
 
     @Test
     public void testAuthorizeIfPresent_updatesSetting() {
-        mAgentSessionMap = new AgentSessionMap<>(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID, 111));
-        mAgentSessionMap.put(2, AgentSession.notAuthorized(USER_ID, 222));
-        assertThat(getSetting()).containsExactly("111", "222");
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(2, AgentSession.notAuthorized(USER_ID));
+        assertThat(getSetting()).containsExactly("1", "2");
 
-        mAgentSessionMap.authorizeIfPresent(1);
+        mAgentSessionMap.authorizeIfPresent(USER_ID, 1);
 
         assertThat(mAgentSessionMap.get(1).isAllowed()).isTrue();
         assertThat(mAgentSessionMap.get(2).isAllowed()).isFalse();
-        assertThat(getSetting()).containsExactly("222");
+        assertThat(getSetting()).containsExactly("2");
+    }
+
+    @Test
+    public void testRevokeIfPresent_updatesSetting() {
+        mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
+        mAgentSessionMap.put(1, AgentSession.authorized(USER_ID));
+        mAgentSessionMap.put(2, AgentSession.authorized(USER_ID));
+        assertThat(getSetting()).isEmpty();
+
+        mAgentSessionMap.revokeIfPresent(USER_ID, 1);
+
+        assertThat(mAgentSessionMap.get(1).isAllowed()).isFalse();
+        assertThat(mAgentSessionMap.get(2).isAllowed()).isTrue();
+        assertThat(getSetting()).containsExactly("1");
     }
 
     private List<String> getSetting() {

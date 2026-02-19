@@ -34,7 +34,7 @@ import java.util.TreeSet;
  * <li>An allowlist ID. This ID represents the allowlist that will be queried for.</li>
  * <li>A Bundle containing data for querying. Different lists may take different keys as a filter.
  * For example, the App Function allowlist can take a list of signed packages as the value of
- * {@link AllowlistManager#REQUEST_DATA_FILTER_TARGETS}, and the returned target apps will be
+ * {@link AllowlistManager#REQUEST_KEY_FILTER_TARGETS}, and the returned target apps will be
  * filtered down to only those specified. If an invalid key is given, or the type for the key is
  * incorrect, a {@link AllowlistManager#RESPONSE_STATUS_ERROR_INVALID_REQUEST} will be returned.
  * </li>

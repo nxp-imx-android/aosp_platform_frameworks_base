@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.content.ComponentName;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
@@ -35,7 +36,9 @@ import java.util.Objects;
  * the user's screen.
  *
  * <p>This data originates from the Android Content Capture framework.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class RecentViewHint extends ContextHint {
     private static final String KEY_CAPTURED_TEXTS = "key_captured_texts";

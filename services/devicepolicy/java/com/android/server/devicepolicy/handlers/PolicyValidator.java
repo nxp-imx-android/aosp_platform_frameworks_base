@@ -51,7 +51,20 @@ public abstract class PolicyValidator<T> {
     private static final PolicyValidator<Long> LONG_POLICY_VALIDATOR =
             new PolicyValidator<Long>() {
                 @Override
-                public void validate(@NonNull Long value, @NonNull PolicyMetadata<Long> policy) {}
+                public void validate(@NonNull Long value, @NonNull PolicyMetadata<Long> policy) {
+                    var longPolicy = (LongPolicyMetadata) policy;
+                    if (value < longPolicy.getMinValue() || value > longPolicy.getMaxValue()) {
+                        throw new IllegalArgumentException(
+                                "Value "
+                                        + value
+                                        + " is not within range ["
+                                        + longPolicy.getMinValue()
+                                        + ", "
+                                        + longPolicy.getMaxValue()
+                                        + "] for policy "
+                                        + policy.getId().getId());
+                    }
+                }
             };
 
     private static final PolicyValidator<String> STRING_POLICY_VALIDATOR =

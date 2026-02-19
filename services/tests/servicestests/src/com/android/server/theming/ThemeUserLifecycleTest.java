@@ -22,8 +22,8 @@ import static android.content.theming.FieldColorSource.VALUE_PRESET;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManagerInternal;
@@ -31,6 +31,7 @@ import android.app.KeyguardManager;
 import android.app.WallpaperColors;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.UserInfo;
 import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeStyle;
@@ -49,9 +50,6 @@ import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
-import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -65,14 +63,14 @@ public class ThemeUserLifecycleTest {
 
     private static final int USER_ID_1 = 10;
     private static final int USER_ID_2 = 11;
+    private static final int PROFILE_ID = 12;
 
     @Rule
     public final TestableContext mContext = new TestableContext(
             InstrumentationRegistry.getInstrumentation().getContext(), null);
 
     private ThemeStateManager mThemeStateManager;
-    @Mock
-    private ThemeManagerInternal mThemeManagerInternal;
+    private ThemeSettingsManager mThemeSettingsManager;
     @Mock
     private WallpaperManagerInternal mWallpaperManagerInternal;
     @Mock
@@ -88,6 +86,7 @@ public class ThemeUserLifecycleTest {
 
     private ThemeUserLifecycle mThemeUserLifecycle;
     private ContentResolver mContentResolver;
+    private ThemeEnvironment mEnvironment;
 
     @Before
     public void setUp() {
@@ -109,15 +108,26 @@ public class ThemeUserLifecycleTest {
         // Stub UserManager to behave like a standard user (parent of self) by default
         when(mUserManagerInternal.getProfileParentId(anyInt()))
                 .thenAnswer(invocation -> invocation.getArgument(0));
+        when(mUserManagerInternal.getProfileIds(anyInt(), anyBoolean())).thenAnswer(invocation -> {
+            int requestedUserId = invocation.getArgument(0);
+            return new int[]{requestedUserId};
+        });
+
+        mEnvironment = new ThemeEnvironment(mContext, mUserManagerInternal, (key, def) -> def);
 
         mThemeStateManager = new ThemeStateManager(mContext, new FakeScheduledExecutorService(),
-                Platform.PHONE, SpecVersion.SPEC_2025);
+                mEnvironment);
         mThemeStateManager.onServicesReady();
 
+        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(
+                mWallpaperManagerInternal);
+        mThemeSettingsManager = new ThemeSettingsManager(themeWallpaperManager,
+                (key, def) -> def, mEnvironment);
+
         mThemeUserLifecycle = new ThemeUserLifecycle(mContext, mThemeStateManager,
-                mThemeManagerInternal);
+                mThemeSettingsManager, mEnvironment);
         mThemeUserLifecycle.onServicesReady(mUserManagerInternal, mUiModeManagerInternal,
-                new ThemeWallpaperManager(mWallpaperManagerInternal));
+                themeWallpaperManager);
     }
 
     @After
@@ -134,7 +144,7 @@ public class ThemeUserLifecycleTest {
         ThemeSettings settings = new ThemeSettings.Builder().setColorSource(
                 VALUE_PRESET).setSystemPalette(Color.valueOf(Color.RED)).setThemeStyle(
                 ThemeStyle.EXPRESSIVE).build();
-        when(mThemeManagerInternal.getThemeSettingsOrDefault(USER_ID_1)).thenReturn(settings);
+        mThemeSettingsManager.setSettings(USER_ID_1, mContentResolver, settings);
         when(mUiModeManagerInternal.getContrast(USER_ID_1)).thenReturn(0.5f);
         Settings.Secure.putIntForUser(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1,
                 USER_ID_1);
@@ -159,9 +169,9 @@ public class ThemeUserLifecycleTest {
         // Setup
         ThemeSettings settings = new ThemeSettings.Builder().setColorSource(
                         VALUE_HOME_WALLPAPER).setSystemPalette(
-                        Color.valueOf(Color.BLUE)) // This color is used by the builder validation
+                        Color.valueOf(Color.BLUE))
                 .setThemeStyle(ThemeStyle.TONAL_SPOT).build();
-        when(mThemeManagerInternal.getThemeSettingsOrDefault(USER_ID_1)).thenReturn(settings);
+        mThemeSettingsManager.setSettings(USER_ID_1, mContentResolver, settings);
         WallpaperColors wallpaperColors = new WallpaperColors(Color.valueOf(Color.GREEN), null,
                 null);
         when(mWallpaperManagerInternal.getWallpaperColors(FLAG_SYSTEM, USER_ID_1)).thenReturn(
@@ -195,8 +205,7 @@ public class ThemeUserLifecycleTest {
         // Action
         mThemeUserLifecycle.onUserStarting(systemUser);
 
-        // Verify state: If we try to access the state for USER_SYSTEM, it should throw
-        // IllegalStateException because the user was never loaded (ignored).
+        // Verify state
         mThemeStateManager.getState(UserHandle.USER_SYSTEM);
     }
 
@@ -206,10 +215,14 @@ public class ThemeUserLifecycleTest {
         int fromUserId = 10;
         int toUserId = 11;
 
-        ThemeSettings settings = new ThemeSettings.Builder().setColorSource(
-                VALUE_PRESET).setSystemPalette(Color.valueOf(Color.RED)).setThemeStyle(
-                ThemeStyle.EXPRESSIVE).build();
-        when(mThemeManagerInternal.getThemeSettingsOrDefault(anyInt())).thenReturn(settings);
+        // Stub settings for users
+        ThemeSettings settings = new ThemeSettings.Builder()
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
+                .build();
+        mThemeSettingsManager.setSettings(fromUserId, mContentResolver, settings);
+        mThemeSettingsManager.setSettings(toUserId, mContentResolver, settings);
 
         mThemeUserLifecycle.onUserStarting(
                 new SystemService.TargetUser(new UserInfo(fromUserId, "from", 0)));
@@ -227,7 +240,7 @@ public class ThemeUserLifecycleTest {
         // Action
         mThemeUserLifecycle.onUserSwitching(fromUser, toUser);
 
-        // Verify - User switching forces an update, so timestamp should change in pending state
+        // Verify
         ThemeState pendingState = mThemeStateManager.getState(toUserId).getPendingState();
         assertThat(pendingState).isNotNull();
         assertThat(pendingState.timeStamp()).isNotEqualTo(initialTimestamp);
@@ -242,9 +255,6 @@ public class ThemeUserLifecycleTest {
         SystemService.TargetUser toSystemUser = new SystemService.TargetUser(
                 new UserInfo(UserHandle.USER_SYSTEM, "system", UserInfo.FLAG_MAIN));
 
-        // Action
-        // If onUserSwitching wasn't ignored, it would try to call onUserSwitching on StateManager,
-        // which would throw exception because system user is not loaded.
         mThemeUserLifecycle.onUserSwitching(fromUser, toSystemUser);
     }
 
@@ -256,7 +266,7 @@ public class ThemeUserLifecycleTest {
                 .setSystemPalette(Color.valueOf(Color.GREEN))
                 .setThemeStyle(ThemeStyle.VIBRANT)
                 .build();
-        when(mThemeManagerInternal.getThemeSettingsOrDefault(USER_ID_1)).thenReturn(settings);
+        mThemeSettingsManager.setSettings(USER_ID_1, mContentResolver, settings);
         when(mUiModeManagerInternal.getContrast(USER_ID_1)).thenReturn(0.2f);
         Settings.Secure.putIntForUser(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1,
                 USER_ID_1);
@@ -277,12 +287,14 @@ public class ThemeUserLifecycleTest {
     public void onBootCompleteLoadUsers_loadsAllUsers() {
         // Setup
         when(mUserManagerInternal.getUserIds()).thenReturn(new int[]{USER_ID_1, USER_ID_2});
+
         ThemeSettings settings = new ThemeSettings.Builder()
                 .setColorSource(VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(Color.GREEN))
-                .setThemeStyle(ThemeStyle.VIBRANT)
+                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
                 .build();
-        when(mThemeManagerInternal.getThemeSettingsOrDefault(anyInt())).thenReturn(settings);
+        mThemeSettingsManager.setSettings(USER_ID_1, mContentResolver, settings);
+        mThemeSettingsManager.setSettings(USER_ID_2, mContentResolver, settings);
 
         // Action
         mThemeUserLifecycle.onBootCompleteLoadUsers();
@@ -290,9 +302,72 @@ public class ThemeUserLifecycleTest {
         // Verify that states are loaded for both users
         assertThat(mThemeStateManager.getState(USER_ID_1)).isNotNull();
         assertThat(mThemeStateManager.getState(USER_ID_2)).isNotNull();
+    }
 
-        // Also verify getThemeSettingsOrDefault was called
-        verify(mThemeManagerInternal).getThemeSettingsOrDefault(USER_ID_1);
-        verify(mThemeManagerInternal).getThemeSettingsOrDefault(USER_ID_2);
+    @Test
+    public void testProfileAdded_notifiesStateManager() {
+        // Setup - load parent user
+        ThemeSettings settings = new ThemeSettings.Builder()
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
+                .build();
+        mThemeSettingsManager.setSettings(USER_ID_1, mContentResolver, settings);
+        mThemeSettingsManager.setSettings(PROFILE_ID, mContentResolver, settings);
+
+        mThemeUserLifecycle.loadUserStateAndNotifyStateManager(USER_ID_1);
+
+        when(mUserManagerInternal.getProfileParentId(PROFILE_ID)).thenReturn(USER_ID_1);
+
+        Intent intent = new Intent(Intent.ACTION_PROFILE_ADDED);
+        intent.putExtra(Intent.EXTRA_USER, UserHandle.of(PROFILE_ID));
+
+        // Action
+        mThemeUserLifecycle.mUserLifecycleReceiver.onReceive(mContext, intent);
+
+        // Verify: profiles are aggregated into parent state, not separate states.
+        assertThat(mThemeStateManager.getState(USER_ID_1).getPendingState().childProfiles())
+                .contains(PROFILE_ID);
+    }
+
+    @Test
+    public void testProfileAdded_lazyLoadsState_ifMissing() {
+        // Setup - parent user NOT loaded
+        ThemeSettings settings = new ThemeSettings.Builder()
+                .setColorSource(VALUE_PRESET)
+                .setSystemPalette(Color.valueOf(Color.BLUE))
+                .setThemeStyle(ThemeStyle.TONAL_SPOT)
+                .build();
+        mThemeSettingsManager.setSettings(USER_ID_1, mContentResolver, settings);
+        mThemeSettingsManager.setSettings(PROFILE_ID, mContentResolver, settings);
+
+        when(mUserManagerInternal.getProfileParentId(PROFILE_ID)).thenReturn(USER_ID_1);
+
+        Intent intent = new Intent(Intent.ACTION_PROFILE_ADDED);
+        intent.putExtra(Intent.EXTRA_USER, UserHandle.of(PROFILE_ID));
+
+        // Action
+        mThemeUserLifecycle.mUserLifecycleReceiver.onReceive(mContext, intent);
+
+        // Verify: parent was lazy-loaded and profile was added
+        assertThat(mThemeStateManager.hasState(USER_ID_1)).isTrue();
+        assertThat(mThemeStateManager.getState(USER_ID_1).getPendingState().childProfiles())
+                .contains(PROFILE_ID);
+    }
+
+    @Test
+    public void testProfileAdded_hsumSystemUser_ignored() {
+        // Setup HSUM
+        when(mUserManagerInternal.isHeadlessSystemUserMode()).thenReturn(true);
+        when(mUserManagerInternal.getProfileParentId(PROFILE_ID)).thenReturn(
+                UserHandle.USER_SYSTEM);
+
+        Intent intent = new Intent(Intent.ACTION_PROFILE_ADDED);
+        intent.putExtra(Intent.EXTRA_USER, UserHandle.of(PROFILE_ID));
+
+        mThemeUserLifecycle.mUserLifecycleReceiver.onReceive(mContext, intent);
+
+        // Should NOT have state for system user profile in HSUM, and parent (system) has no state.
+        assertThat(mThemeStateManager.hasState(UserHandle.USER_SYSTEM)).isFalse();
     }
 }

@@ -102,7 +102,10 @@ public abstract class InsightRendererService extends Service {
      * @param tag An optional {@link String} value that can be associated with the token for future
      *            identification.
      *
+     * @throws IllegalStateException if called before {@link #onConnected} has been called.
+     *
      * @return a token that uniquely identifies this renderer
+     * @throws IllegalStateException if {@link #onConnected()} has not yet been called
      */
     @NonNull
     public final RenderToken mintRenderToken(@Nullable String tag) {
@@ -118,6 +121,7 @@ public abstract class InsightRendererService extends Service {
      *
      * @see #mintRenderToken(String)
      * @return a token that uniquely identifies this renderer
+     * @throws IllegalStateException if {@link #onConnected()} has not yet been called
      */
     @NonNull
     public final RenderToken mintRenderToken() {
@@ -139,7 +143,7 @@ public abstract class InsightRendererService extends Service {
     }
 
     /**
-     * The renderer should return a {@link RendererFilter} that will be used to filter the insights
+     * The renderer should return an {@link InsightFilter} that will be used to filter the insights
      * that this renderer's {@link #onRender} method will be called with.
      *
      * The result of this method will be cached and re-used between service bindings. If the filter
@@ -154,6 +158,9 @@ public abstract class InsightRendererService extends Service {
     /**
      * This method will be called when the given
      * {@link android.service.personalcontext.insight.PublishedContextInsight} needs to be rendered.
+     * Typically the renderer would use the insight provided to prompt the user with information,
+     * or to interact in some way. For example, a notification renderer might use the insight to
+     * modify an existing notification with actions the user might want to take.
      *
      * @param insight the {@link android.service.personalcontext.insight.PublishedContextInsight}
      *                to render

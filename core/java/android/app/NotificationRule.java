@@ -924,9 +924,19 @@ public final class NotificationRule implements Parcelable {
                 mSoundHapticOverride = null;
             }
             mLightColor = in.readInt();
-            in.readStringList(mModeBreakthroughs);
-            mBundleName = in.readString8();
-            mEmojiIcon = in.readString8();
+            if (in.readByte() != 0) {
+                in.readStringList(mModeBreakthroughs);
+            }
+            if (in.readByte() != 0) {
+                mBundleName = in.readString8();
+            } else {
+                mBundleName = null;
+            }
+            if (in.readByte() != 0) {
+                mEmojiIcon = in.readString8();
+            } else {
+                mEmojiIcon = null;
+            }
         }
 
         @Override
@@ -935,11 +945,28 @@ public final class NotificationRule implements Parcelable {
             if (mSoundHapticOverride != null) {
                 dest.writeByte((byte) 1);
                 mSoundHapticOverride.writeToParcel(dest, flags);
+            } else {
+                dest.writeByte((byte) 0);
             }
             dest.writeInt(mLightColor);
-            dest.writeStringList(mModeBreakthroughs);
-            dest.writeString8(mBundleName);
-            dest.writeString8(mEmojiIcon);
+            if (!mModeBreakthroughs.isEmpty()) {
+                dest.writeByte((byte) 1);
+                dest.writeStringList(mModeBreakthroughs);
+            } else {
+                dest.writeByte((byte) 0);
+            }
+            if (mBundleName != null) {
+                dest.writeByte((byte) 1);
+                dest.writeString8(mBundleName);
+            } else {
+                dest.writeByte((byte) 0);
+            }
+            if (mEmojiIcon != null) {
+                dest.writeByte((byte) 1);
+                dest.writeString8(mEmojiIcon);
+            } else {
+                dest.writeByte((byte) 0);
+            }
         }
 
         @NonNull

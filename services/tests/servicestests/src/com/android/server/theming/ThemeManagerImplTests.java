@@ -23,7 +23,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -51,10 +50,6 @@ import com.android.server.om.OverlayManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 
-import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,7 +59,7 @@ import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidJUnit4.class)
 @HardwareColors(color = "", options = {"*|TONAL_SPOT|#00FF00"})
-public class ThemeManagerInternalTests {
+public class ThemeManagerImplTests {
     @Rule
     public final HardwareColorRule mHardwareColorRule = new HardwareColorRule();
 
@@ -81,15 +76,14 @@ public class ThemeManagerInternalTests {
     };
 
     private final int mUserId = 0;
-    private ThemeManagerInternal mUnderTest;
+    private ThemeManagerImpl mUnderTest;
     private TestableContext mContext;
     private ThemeSettingsManager mThemeSettingsManager;
+    private ThemeEnvironment mEnvironment;
 
     private static final int TEST_SEED_COLOR = Color.BLUE;
     private static final float TEST_CONTRAST = 0.5f;
     private static final int TEST_STYLE = ThemeStyle.VIBRANT;
-    private static final String TEST_SPEC_VERSION = DynamicScheme.DEFAULT_SPEC_VERSION.name();
-    private static final String TEST_PLATFORM = DynamicScheme.DEFAULT_PLATFORM.name();
 
     @Mock
     private UserManagerInternal mUserManager;
@@ -126,21 +120,30 @@ public class ThemeManagerInternalTests {
         Settings.Secure.putStringForUser(mContext.getContentResolver(),
                 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, null, mUserId);
 
-        when(mUserManager.getProfileParentId(eq(mUserId))).thenReturn(mUserId);
+        when(mUserManager.getProfileParentId(anyInt())).thenAnswer(
+                invocation -> invocation.getArgument(0));
         when(mUserManager.getProfileIds(anyInt(), anyBoolean())).thenAnswer(invocation -> {
             int requestedUserId = invocation.getArgument(0);
             return new int[]{requestedUserId};
         });
 
+        mEnvironment = new ThemeEnvironment(mContext, mUserManager,
+                mHardwareColorRule.sysPropReader);
+
         ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager(
                 mWallpaperManagerInternal);
-        mThemeSettingsManager = new ThemeSettingsManager(themeWallpaperManager);
+        mThemeSettingsManager = new ThemeSettingsManager(themeWallpaperManager,
+                mHardwareColorRule.sysPropReader, mEnvironment);
         mSchedulerExecutor = new FakeScheduledExecutorService();
-        mStateManager = new ThemeStateManager(mContext, mSchedulerExecutor,
-                Platform.PHONE, SpecVersion.SPEC_2025);
-        mUnderTest = new ThemeManagerInternal(mContext, mThemeSettingsManager,
-                mHardwareColorRule.sysPropReader, mStateManager, mOverlayHelper,
-                Platform.PHONE, SpecVersion.SPEC_2025);
+
+        mStateManager = new ThemeStateManager(mContext, mSchedulerExecutor, mEnvironment);
+        mUnderTest = new ThemeManagerImpl(mContext, mThemeSettingsManager,
+                mStateManager, mOverlayHelper, mEnvironment) {
+            @Override
+            public void onBootAnimationDismissing() {
+            }
+        };
+
         mStateManager.onServicesReady();
     }
 
@@ -228,7 +231,7 @@ public class ThemeManagerInternalTests {
         final ThemeSettings[] returnedOldSettings = {null};
         final ThemeSettings[] returnedNewSettings = {null};
 
-        // Set an initial theme setting. This also updates the internal cache.
+        // Set an initial theme setting.
         mUnderTest.updateThemeSettings(mUserId, oldPayload);
 
         boolean didRegister = mUnderTest.registerThemeSettingsCallback(mUserId,
@@ -280,8 +283,8 @@ public class ThemeManagerInternalTests {
         assertThat(returnedValue[0].seedColor.toArgb()).isEqualTo(TEST_SEED_COLOR);
         assertThat(returnedValue[0].style).isEqualTo(TEST_STYLE);
         assertThat(returnedValue[0].contrast).isEqualTo(TEST_CONTRAST);
-        assertThat(returnedValue[0].specVersion).isEqualTo(TEST_SPEC_VERSION);
-        assertThat(returnedValue[0].platform).isEqualTo(TEST_PLATFORM);
+        assertThat(returnedValue[0].specVersion).isEqualTo(mEnvironment.specVersion.name());
+        assertThat(returnedValue[0].platform).isEqualTo(mEnvironment.platform.name());
     }
 
     @Test
@@ -318,8 +321,7 @@ public class ThemeManagerInternalTests {
         when(mWallpaperManagerInternal.getWallpaperColors(anyInt(), anyInt()))
                 .thenReturn(wallpaperColors);
 
-        ThemeSettings expectedDefault = mThemeSettingsManager.createDefaultThemeSettings(
-                mContext.getResources(), mHardwareColorRule.sysPropReader, mUserId);
+        ThemeSettings expectedDefault = mThemeSettingsManager.createDefaultThemeSettings(mUserId);
         ThemeSettings settings = mUnderTest.getThemeSettingsOrDefault(mUserId);
 
         assertThat(settings.themeStyle()).isEqualTo(expectedDefault.themeStyle());
@@ -360,8 +362,8 @@ public class ThemeManagerInternalTests {
         assertThat(info.seedColor.toArgb()).isEqualTo(TEST_SEED_COLOR);
         assertThat(info.style).isEqualTo(TEST_STYLE);
         assertThat(info.contrast).isEqualTo(TEST_CONTRAST);
-        assertThat(info.specVersion).isEqualTo(TEST_SPEC_VERSION);
-        assertThat(info.platform).isEqualTo(TEST_PLATFORM);
+        assertThat(info.specVersion).isEqualTo(mEnvironment.specVersion.name());
+        assertThat(info.platform).isEqualTo(mEnvironment.platform.name());
     }
 
     @Test
@@ -427,4 +429,6 @@ public class ThemeManagerInternalTests {
 
         assertThat(overlay).isNotNull();
     }
+
+
 }

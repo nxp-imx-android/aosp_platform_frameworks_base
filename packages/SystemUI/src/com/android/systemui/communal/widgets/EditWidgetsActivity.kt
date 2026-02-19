@@ -389,7 +389,9 @@ constructor(
     override fun onDestroy() {
         super.onDestroy()
         communalViewModel.cleanupEditModeState()
-        communalViewModel.setEditModeOpen(false)
+        if (!isChangingConfigurations) {
+            communalViewModel.setEditModeOpen(false)
+        }
     }
 
     private fun lockNow() {

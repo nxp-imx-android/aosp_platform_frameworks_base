@@ -20,6 +20,7 @@ import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_E
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
+import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
@@ -135,7 +136,7 @@ public class AppFunctionMetadataObserver {
      */
     void registerClientAppCallback(
             @NonNull UserHandle userHandle,
-            @NonNull AppFunctionSearchSpec searchSpec,
+            @NonNull AppFunctionAidlSearchSpec searchSpec,
             @NonNull IObserveAppFunctionChangesCallback proxyCallback)
             throws RemoteException {
         requireNonNull(userHandle);

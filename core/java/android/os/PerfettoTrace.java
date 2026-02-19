@@ -135,6 +135,22 @@ public final class PerfettoTrace {
         return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("big_locks");
     }
 
+    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category BROADCAST_V3 =
+            getBroadcastV3();
+
+    @RavenwoodIgnore // Just use null on Ravenwood.
+    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category getBroadcastV3() {
+        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("broadcast");
+    }
+
+    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category FREEZER_V3 =
+            getFreezerV3();
+
+    @RavenwoodIgnore // Just use null on Ravenwood.
+    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category getFreezerV3() {
+        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("freezer");
+    }
+
     /**
      * This is temporary wrapper to check if either new or old APIs "mq" category is enabled, should
      * be called only from the MessageQueue.java and Looper.java.
@@ -499,6 +515,8 @@ public final class PerfettoTrace {
         }
         if (android.os.Flags.perfettoSdkTracingV3()) {
             PROC_STATE_CATEGORY.register();
+            BROADCAST_V3.register();
+            FREEZER_V3.register();
         }
     }
 

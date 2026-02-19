@@ -2850,8 +2850,13 @@ public class CameraDeviceImpl extends CameraDevice
                     multiResImageReader.postOnActiveOutputSurfacesCallback(
                             activeOutputSurfaces, chosenTimestamp, frameNumber);
                 } else {
+                    long[] activeOutputIds = new long[activeOutputSurfaces.size()];
+                    int idx = 0;
+                    for (Surface s : activeOutputSurfaces) {
+                        activeOutputIds[idx++] = SurfaceUtils.getSurfaceUniqueId(s);
+                    }
                     try {
-                        cb.onActiveOutputSurfacesCallback(activeOutputSurfaces, chosenTimestamp,
+                        cb.onActiveOutputSurfacesCallback(activeOutputIds, chosenTimestamp,
                                 frameNumber);
                     } catch (RemoteException e) {
                         Log.e(TAG, "Remote client doesn't respond when calling " +

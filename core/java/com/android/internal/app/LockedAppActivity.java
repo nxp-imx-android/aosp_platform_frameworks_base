@@ -51,6 +51,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * An activity that presents a {@link BiometricPrompt} to the user for authenticating actions
@@ -66,12 +67,12 @@ import java.util.Objects;
  *     <li><b>Intercept Mode (target exists):</b> The activity acts as a transparent overlay that
  *         intercepts the launch of a locked app. It immediately shows a {@link BiometricPrompt},
  *         and upon successful authentication, it launches the original target intent. This mode is
- *         identified by {@link #EXTRA_INTENT} being non {@code null}.
+ *         identified by {@link Intent#EXTRA_INTENT} being non {@code null}.
  *     <li><b>Locked Task Mode (target is {@code null}):</b> The activity provides a default UI that
  *         acts as a locked task overlay. It automatically shows a {@link BiometricPrompt} on
  *         creation and when resumed, and allows the user to re-trigger the prompt by tapping the
  *         background. The back button is disabled in this mode. This mode is identified by
- *         {@link #EXTRA_INTENT} being {@code null}.
+ *         {@link Intent#EXTRA_INTENT} being {@code null}.
  *     <li><b>Uninstall Mode:</b> The activity acts as a transparent overlay that intercepts the
  *         uninstallation of an App Lock enabled app. It immediately shows a {@link BiometricPrompt}
  *         and upon successful authentication, it initiates the uninstallation. This mode is
@@ -135,11 +136,7 @@ public final class LockedAppActivity extends Activity {
                     }
                     mAppLockInternal.setAppLockEnabledPackageSuccessfullyAuthenticated(
                             mPackageName, mUserId);
-                    // In intercept mode, send the original target intent after unlocking.
-                    if (isInterceptMode()) {
-                        mInjector.sendTargetIntent(LockedAppActivity.this, mTarget);
-                    }
-                    finish();
+                    completeUnlockAndFinish();
                 }
 
                 @Override
@@ -166,6 +163,17 @@ public final class LockedAppActivity extends Activity {
 
     private boolean mIsPackageUnlocked;
     private boolean mIsBiometricPromptShowing;
+    /**
+     * Tracks whether a request to show the biometric prompt is waiting for window focus. This flag
+     * is set by lifecycle events (e.g., onResume) or user interaction (e.g., clicking the
+     * background) and is cleared once the window gains focus and the prompt is shown.
+     */
+    private boolean mIsPromptPending;
+    /**
+     * Tracks whether the target intent has already been sent in intercept mode to avoid duplicate
+     * launches.
+     */
+    private final AtomicBoolean mTargetIntentSent = new AtomicBoolean(false);
 
     // Member variables initialized in onCreate for performance.
     private String mPackageName;
@@ -407,11 +415,10 @@ public final class LockedAppActivity extends Activity {
         }
         rootView.setOnClickListener(v -> {
             if (DEBUG) {
-                Slog.d(TAG, "Root view clicked in locked task mode");
+                Slog.d(TAG, "Root view clicked in locked task mode, requesting to show biometric"
+                        + " prompt if needed");
             }
-            if (!mIsBiometricPromptShowing) {
-                showBiometricPrompt();
-            }
+            requestShowBiometricPromptForLockedTask();
         });
 
         // Set up the external display message.
@@ -443,12 +450,12 @@ public final class LockedAppActivity extends Activity {
         if (DEBUG) {
             Slog.d(TAG, "onResume: " + (isInterceptMode() ? "intercept" : "locked task") + " mode");
         }
-        // Show the biometric prompt when the activity resumes in Locked Task Mode.
-        if (!isInterceptMode() && !mIsBiometricPromptShowing) {
+
+        if (!isInterceptMode() && !mIsUninstall) {
             if (DEBUG) {
-                Slog.d(TAG, "onResume: showing biometric prompt in locked task mode");
+                Slog.d(TAG, "onResume: requesting to show biometric prompt in locked task mode");
             }
-            showBiometricPrompt();
+            requestShowBiometricPromptForLockedTask();
         }
     }
 
@@ -467,6 +474,10 @@ public final class LockedAppActivity extends Activity {
 
         if (!mIsUninstall && finishIfUnlocked(mPackageName, mUserId)) {
             return;
+        }
+
+        if (hasFocus) {
+            maybeShowBiometricPromptForLockedTask();
         }
     }
 
@@ -501,6 +512,62 @@ public final class LockedAppActivity extends Activity {
         }
 
         return false;
+    }
+
+    /**
+     * Sets a pending request to show the biometric prompt for the locked task mode and then
+     * attempts to show it.
+     *
+     * <p>This method is called from lifecycle events (e.g., {@link #onResume()}) or user
+     * interactions (e.g., clicking the background) that should trigger the biometric prompt. It
+     * marks that a prompt is pending and then calls
+     * {@link #maybeShowBiometricPromptForLockedTask()} to check if the conditions are currently met
+     * to show it.
+     */
+    private void requestShowBiometricPromptForLockedTask() {
+        mIsPromptPending = true;
+        maybeShowBiometricPromptForLockedTask();
+    }
+
+    /**
+     * Attempts to show the biometric prompt for the locked task mode if a request is pending and
+     * the activity is in a state where it can reliably interact with the user (resumed and
+     * focused).
+     *
+     * <p>This method acts as a gatekeeper to ensure that the prompt is only presented when the
+     * activity is fully visible and ready for interaction, preventing it from appearing during
+     * transient states like device sleep transitions.
+     */
+    private void maybeShowBiometricPromptForLockedTask() {
+        if (isInterceptMode() || mIsUninstall) {
+            if (DEBUG) {
+                Slog.d(TAG, "maybeShowBiometricPromptForLockedTask: intercept or uninstall mode,"
+                        + " returning");
+            }
+            return;
+        }
+
+        if (!mIsPromptPending || !isResumed() || !mInjector.hasWindowFocus(this)) {
+            if (DEBUG) {
+                Slog.d(TAG, "maybeShowBiometricPromptForLockedTask: not ready for prompt,"
+                        + " returning");
+            }
+            return;
+        }
+
+        mIsPromptPending = false;
+        if (mIsBiometricPromptShowing) {
+            if (DEBUG) {
+                Slog.d(TAG, "maybeShowBiometricPromptForLockedTask: prompt is already shown,"
+                        + " returning");
+            }
+            return;
+        }
+
+        if (DEBUG) {
+            Slog.d(TAG, "maybeShowBiometricPromptForLockedTask: showing biometric prompt");
+        }
+        showBiometricPrompt();
     }
 
     /**
@@ -603,13 +670,26 @@ public final class LockedAppActivity extends Activity {
                 if (mActivity.mCancellationSignal != null) {
                     mActivity.mCancellationSignal.cancel();
                 }
-                // In intercept mode, send the original target intent before finishing.
-                if (mActivity.isInterceptMode()) {
-                    mActivity.mInjector.sendTargetIntent(mActivity, mTarget);
-                }
-                mActivity.finish();
+                mActivity.completeUnlockAndFinish();
             }
         }
+    }
+
+    /**
+     * Finishes the activity and, if in intercept mode, sends the original target intent.
+     * This method ensures that the target intent is sent only once, even if called multiple times
+     * (e.g., from both authentication success and a locked state listener).
+     */
+    private void completeUnlockAndFinish() {
+        if (isInterceptMode()) {
+            // compareAndSet atomically checks if the value is currently 'false' (expected) and, if
+            // so, updates it to 'true' (update). It returns 'true' if the update was successful,
+            // ensuring the intent is sent only once.
+            if (mTargetIntentSent.compareAndSet(/* expectedValue= */ false, /* newValue= */ true)) {
+                mInjector.sendTargetIntent(this, mTarget);
+            }
+        }
+        finish();
     }
 
     /**
@@ -689,6 +769,16 @@ public final class LockedAppActivity extends Activity {
          */
         public void setContentView(Activity activity, int layoutResId) {
             activity.setContentView(layoutResId);
+        }
+
+        /**
+         * Returns whether the activity's window currently has focus.
+         *
+         * @param activity the activity to check for window focus.
+         * @return {@code true} if the window has focus, {@code false} otherwise.
+         */
+        public boolean hasWindowFocus(Activity activity) {
+            return activity.hasWindowFocus();
         }
 
         /**
@@ -772,6 +862,10 @@ public final class LockedAppActivity extends Activity {
          */
         public void sendTargetIntent(Activity activity, @NonNull IntentSender target) {
             Objects.requireNonNull(target);
+
+            if (DEBUG) {
+                Slog.d(TAG, "Sending target intent: " + target);
+            }
             try {
                 // Use MODE_BACKGROUND_ACTIVITY_START_ALLOW_IF_VISIBLE to allow PendingIntents to
                 // be launched even if the creator app is in the background.

@@ -582,7 +582,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
     @VisibleForTesting
     void consumeFromAlternateBouncerTransitionSteps(TransitionStep step) {
         SceneContainerFlag.assertInLegacyMode();
-        hideAlternateBouncer(false);
+        hideAlternateBouncer(/* updateScrim */ false, /* clearDismissAction */ false);
     }
 
     /**
@@ -593,7 +593,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
     void consumeKeyguardAuthenticatedBiometricsHandled(Unit handled) {
         SceneContainerFlag.assertInLegacyMode();
         if (mAlternateBouncerInteractor.isVisibleState()) {
-            hideAlternateBouncer(false);
+            hideAlternateBouncer(/* updateScrim */ false, /* clearDismissAction */ false);
         }
     }
 
@@ -1044,18 +1044,13 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
                 showBouncerOrKeyguard(hideBouncerWhenShowing, isFalsingReset, "reset");
             }
             if (!SceneContainerFlag.isEnabled() && hideBouncerWhenShowing && isBouncerShowing()) {
-                hideAlternateBouncer(true);
+                hideAlternateBouncer(/* updateScrim */ true, /* clearDismissAction */ true);
                 mDismissCallbackRegistry.notifyDismissCancelled();
                 mPrimaryBouncerInteractor.setDismissAction(null, null);
             }
             mKeyguardUpdateManager.sendKeyguardReset();
             updateStates();
         }
-    }
-
-    @Override
-    public void hideAlternateBouncer(boolean updateScrim) {
-        hideAlternateBouncer(updateScrim, /* clearDismissAction= */ true);
     }
 
     @Override

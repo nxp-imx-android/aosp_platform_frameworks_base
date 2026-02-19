@@ -26,6 +26,10 @@ import android.telecom.TelecomManager;
  */
 public class DependencyAdapter {
 
+    public static boolean isMainlineBuildFlagEnabled() {
+        return true;
+    }
+
     /**
      * This method should not be called when building as a Telecom mainline module
      */
@@ -38,11 +42,6 @@ public class DependencyAdapter {
      * Registers the TELECOM_SERVICE Service using mainline APIs.
      */
     public static void registerServiceWrapper() {
-        if (android.telecom.flags.Flags.telecomMainlineApi()) {
-            TelecomFrameworkInitializer.registerServiceWrapper();
-        } else {
-            throw new UnsupportedOperationException("telecomMainlineApi disabled while release flag"
-                    + " is enabled");
-        }
+        TelecomFrameworkInitializer.registerServiceWrapper();
     }
 }

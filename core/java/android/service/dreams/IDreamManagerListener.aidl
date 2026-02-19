@@ -14,28 +14,19 @@
  * limitations under the License.
  */
 
-package android.attention;
+package android.service.dreams;
 
-import android.annotation.FlaggedApi;
-import android.annotation.NonNull;
-import android.annotation.SystemApi;
-
-import com.android.input.flags.Flags;
+import android.content.ComponentName;
+import android.service.dreams.DreamPlaylist;
 
 /**
- * Listener for interaction state changes.
- * @see AttentionManager
+ * Listener for changes to the dream playlist.
+ *
  * @hide
  */
-@SystemApi
-@FlaggedApi(Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
-public interface InteractionListener {
+oneway interface IDreamManagerListener {
     /**
-     * Called when the interaction state changes.
-     * @hide
-     * @param interactionInfo current interaction info.
+     * Called when the dream playlist or active dream changes.
      */
-    @SystemApi
-    @FlaggedApi(Flags.FLAG_ENABLE_ATTENTION_SERVICE_APIS)
-    void onInteraction(@NonNull InteractionInfo interactionInfo);
+    void onPlaylistChanged(in DreamPlaylist playlist);
 }

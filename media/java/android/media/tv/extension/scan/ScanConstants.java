@@ -27,7 +27,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @hide
  */
-final class ScanConstants {
+public final class ScanConstants {
     /*************************************** Broadcast Type****************************************/
     @IntDef({
             TYPE_DVB_T,
@@ -121,87 +121,6 @@ final class ScanConstants {
     public static final int RESULT_SUCCEEDED = 0;
     public static final int RESULT_FAILED = 2;
 
-    /************************************OperatorType**********************************************/
-    @StringDef({
-            OPERATOR_GENERAL_TERRESTRIAL,
-            OPERATOR_GENERAL_CABLE,
-            OPERATOR_GENERAL_SATELLITE,
-            OPERATOR_GENERAL_ATSC_1_0,
-            OPERATOR_GENERAL_ATSC_3_0,
-            OPERATOR_GENERAL_INTERNET,
-            OPERATOR_NORDIG,
-            OPERATOR_UK_DTG,
-            OPERATOR_ITALY_DGTV,
-            OPERATOR_GERMANY_DTVP,
-            OPERATOR_CI_PLUS_CAM,
-            OPERATOR_ATSC3_INTERACTIVE,
-            OPERATOR_DVB_I_CSR,
-            OPERATOR_OTHERS
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface OperatorType {}
-    // Generic DVB-T/T2 (Terrestrial)
-    public static final String OPERATOR_GENERAL_TERRESTRIAL = "STD_DVB_T";
-    // Generic DVB-C (Cable)
-    public static final String OPERATOR_GENERAL_CABLE = "STD_DVB_C";
-    // Generic DVB-S/S2 (Satellite)
-    public static final String OPERATOR_GENERAL_SATELLITE = "STD_DVB_S";
-    // Generic ATSC 1.0 (Legacy US/Korea/Mexico)
-    public static final String OPERATOR_GENERAL_ATSC_1_0 = "STD_ATSC_1_0";
-    // Generic ATSC 3.0
-    public static final String OPERATOR_GENERAL_ATSC_3_0 = "STD_ATSC_3_0";
-    // Generic DVB-I (Internet)
-    public static final String OPERATOR_GENERAL_INTERNET = "STD_DVB_I";
-    // ==========================================
-    // REGIONAL CERTIFICATION PROFILES
-    // ==========================================
-    /**
-     * NorDig Unified Specification.
-     * Include: YouSee, Stofa, ComHem, Boxer, Telenor, DNA.
-     * Region: Scandinavia, Ireland.
-     */
-    public static final String OPERATOR_NORDIG = "NORDIG";
-    /**
-     * DTG D-Book Specification.
-     * Include: Freesat, Freeview.
-     * Region: United Kingdom.
-     */
-    public static final String OPERATOR_UK_DTG = "UK_DTG";
-    /**
-     * DGTVi / Tivù Certification.
-     * Include: Tivùsat, Mediaset.
-     * Region: Italy.
-     */
-    public static final String OPERATOR_ITALY_DGTV = "IT_DGTV";
-    /**
-     * Deutsche TV-Platform.
-     * Include: HD+, Sky Deutschland, Freenet.
-     * Region: Germany.
-     */
-    public static final String OPERATOR_GERMANY_DTVP = "DE_DTVP";
-    /**
-     * CI+ Operator Profile (V1.4 / V2.0).
-     * Include: Canal+, Fransat.
-     * The CAM card dictates the scan entirely.
-     */
-    public static final String OPERATOR_CI_PLUS_CAM = "CI_PLUS";
-    // ==========================================
-    // HYBRID / IP DISCOVERY PROFILES
-    // Specific logical modes for DVB-I and ATSC 3.0
-    // ==========================================
-    /**
-     * ATSC 3.0 Broadcaster Application.
-     * Scan for interactive runtime environments (HbbTV).
-     */
-    public static final String OPERATOR_ATSC3_INTERACTIVE = "ATSC3_INTERACTIVE";
-    /**
-     * DVB-I Central Service Registry.
-     * Connect to the CSR URL for the current country.
-     */
-    public static final String OPERATOR_DVB_I_CSR = "DVBI_CSR";
-    // Unknown type
-    public static final String OPERATOR_OTHERS = "OTHERS";
-
     /*******************************Scan Session Setting*******************************************/
     @StringDef({
             KEY_CHANNEL_NUMBER,
@@ -282,6 +201,7 @@ final class ScanConstants {
     public @interface ClearServiceListBundleKey {}
     // Value should be one of the following from @BroadcastType.
     public static final String KEY_BROADCAST_TYPE = "BROADCAST_TYPE";
+    // Value should be one of the following from @TvExtensionContract.TunerOperators.OperatorType.
     public static final String KEY_OPERATOR_ID = "OPERATOR_ID";
     public static final String KEY_SLOT_NUMBER = "SLOT_NUMBER";
     public static final String KEY_COUNTRY_CODE = "COUNTRY_CODE";

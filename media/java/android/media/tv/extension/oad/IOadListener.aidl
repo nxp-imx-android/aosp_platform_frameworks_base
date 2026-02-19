@@ -43,6 +43,10 @@ oneway interface IOadListener {
      */
     void onFileFound(int version);
     /**
+     * Triggered when no file is found after detection or scan is complete.
+     */
+    void onFileNotFound();
+    /**
      * Triggered when discovered that no update needed.
      */
     void onSystemUpToDate();

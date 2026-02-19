@@ -83,7 +83,7 @@ public class ContextInsightTest {
 
     @Test
     public void testLoggingEvent() {
-        final RenderToken renderToken = new RenderToken(UUID.randomUUID());
+        final RenderToken renderToken = new RenderToken(UUID.randomUUID(), null);
         final Bundle extras = new Bundle();
 
         extras.putString("hello", "world");

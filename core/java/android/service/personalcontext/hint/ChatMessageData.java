@@ -21,6 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
@@ -33,7 +34,9 @@ import java.util.Objects;
  *
  * <p>If this chat message originated from the Content Capture API, it will contain additional
  * metadata in {@link #getContentCaptureData()}.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ChatMessageData implements Parcelable {
 
@@ -41,7 +44,6 @@ public final class ChatMessageData implements Parcelable {
     private final @NonNull String mAuthor;
     private final @NonNull Instant mReferenceTime;
     private final boolean mIsOutgoingMessage;
-    private final @Nullable String mContentDescription;
     private final @Nullable ChatMessageContentCaptureData mContentCaptureData;
 
     private ChatMessageData(
@@ -49,13 +51,11 @@ public final class ChatMessageData implements Parcelable {
             @NonNull String author,
             @NonNull Instant referenceTime,
             boolean isOutgoingMessage,
-            @Nullable String contentDescription,
             @Nullable ChatMessageContentCaptureData contentCaptureData) {
         mText = text;
         mAuthor = author;
         mReferenceTime = referenceTime;
         mIsOutgoingMessage = isOutgoingMessage;
-        mContentDescription = contentDescription;
         mContentCaptureData = contentCaptureData;
     }
 
@@ -64,7 +64,6 @@ public final class ChatMessageData implements Parcelable {
         mAuthor = in.readString8();
         mReferenceTime = Instant.ofEpochMilli(in.readLong());
         mIsOutgoingMessage = in.readBoolean();
-        mContentDescription = in.readString8();
         mContentCaptureData = in.readTypedObject(ChatMessageContentCaptureData.CREATOR);
     }
 
@@ -80,7 +79,12 @@ public final class ChatMessageData implements Parcelable {
         return mAuthor;
     }
 
-    /** Returns the reference timestamp of the message. */
+    /**
+     * returns the timestamp of when the message was sent or received.
+     *
+     * <p>If originating from the Content Capture API, this timestamp represents when the
+     * message content was detected by content capture.
+     */
     @NonNull
     public Instant getReferenceTime() {
         return mReferenceTime;
@@ -89,15 +93,6 @@ public final class ChatMessageData implements Parcelable {
     /** Returns {@code true} if this is an outgoing message, and {@code false} otherwise. */
     public boolean isOutgoingMessage() {
         return mIsOutgoingMessage;
-    }
-
-    /**
-     * Returns the content description of the view that this message corresponds to. This may be
-     * {@code null} if the view does not have a content description.
-     */
-    @Nullable
-    public String getContentDescription() {
-        return mContentDescription;
     }
 
     /** Returns the content capture metadata associated with this message, if any. */
@@ -112,7 +107,6 @@ public final class ChatMessageData implements Parcelable {
         dest.writeString8(mAuthor);
         dest.writeLong(mReferenceTime.toEpochMilli());
         dest.writeBoolean(mIsOutgoingMessage);
-        dest.writeString8(mContentDescription);
         dest.writeTypedObject(mContentCaptureData, flags);
     }
 
@@ -130,7 +124,6 @@ public final class ChatMessageData implements Parcelable {
                 && Objects.equals(mText, that.mText)
                 && Objects.equals(mAuthor, that.mAuthor)
                 && Objects.equals(mReferenceTime, that.mReferenceTime)
-                && Objects.equals(mContentDescription, that.mContentDescription)
                 && Objects.equals(mContentCaptureData, that.mContentCaptureData);
     }
 
@@ -141,7 +134,6 @@ public final class ChatMessageData implements Parcelable {
                 mAuthor,
                 mReferenceTime,
                 mIsOutgoingMessage,
-                mContentDescription,
                 mContentCaptureData);
     }
 
@@ -158,9 +150,6 @@ public final class ChatMessageData implements Parcelable {
                 + mReferenceTime
                 + ", mIsOutgoingMessage="
                 + mIsOutgoingMessage
-                + ", mContentDescription='"
-                + mContentDescription
-                + "'"
                 + ", mContentCaptureData="
                 + mContentCaptureData
                 + "}";
@@ -199,17 +188,15 @@ public final class ChatMessageData implements Parcelable {
             return this;
         }
 
-        /** Sets the reference timestamp of the message. */
+        /**
+         * Sets the timestamp of when the message was sent or received.
+         *
+         * <p>If originating from the Content Capture API, this timestamp represents when the
+         * message content was detected by content capture.
+         */
         @NonNull
         public Builder setReferenceTime(@NonNull Instant referenceTime) {
             mReferenceTime = requireNonNull(referenceTime);
-            return this;
-        }
-
-        /** Sets the content description of the view that this message corresponds to. */
-        @NonNull
-        public Builder setContentDescription(@NonNull String contentDescription) {
-            mContentDescription = requireNonNull(contentDescription);
             return this;
         }
 
@@ -229,7 +216,6 @@ public final class ChatMessageData implements Parcelable {
                     requireNonNull(mAuthor),
                     requireNonNull(mReferenceTime),
                     requireNonNull(mIsOutgoingMessage),
-                    mContentDescription,
                     mContentCaptureData);
         }
     }

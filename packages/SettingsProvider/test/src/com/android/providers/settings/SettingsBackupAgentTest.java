@@ -41,6 +41,7 @@ import android.app.backup.BackupAnnotations.OperationType;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.app.backup.BackupRestoreEventLogger.DataTypeResult;
+import android.compat.testing.PlatformCompatChangeRule;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -64,9 +65,12 @@ import android.security.Flags;
 import android.telephony.SubscriptionManager;
 import android.test.mock.MockContentProvider;
 import android.test.mock.MockContentResolver;
+import android.text.ShowSecretsSetting;
 
 import androidx.annotation.NonNull;
 import androidx.test.runner.AndroidJUnit4;
+
+import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -131,6 +135,10 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     @Rule
     public final MockitoRule mockito = MockitoJUnit.rule();
+
+    @Rule
+    public final PlatformCompatChangeRule mPlatformCompatChangeRule =
+            new PlatformCompatChangeRule();
 
     @Mock private BackupDataInput mBackupDataInput;
     @Mock private BackupDataOutput mBackupDataOutput;
@@ -885,6 +893,7 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
 
     @Test
     @EnableFlags(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
+    @EnableCompatChanges(ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
     public void testRestore_onlyLegacyPasswordSetting_migratesToTouch() {
         mAgentUnderTest.onCreate(UserHandle.SYSTEM, BackupDestination.CLOUD, OperationType.RESTORE);
         TestSettingsHelper settingsHelper = new TestSettingsHelper(mContext);
@@ -912,6 +921,7 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
 
     @Test
     @EnableFlags(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
+    @EnableCompatChanges(ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
     public void testRestore_onlyTouchPasswordSetting_migratesToLegacy() {
         mAgentUnderTest.onCreate(UserHandle.SYSTEM, BackupDestination.CLOUD, OperationType.RESTORE);
         TestSettingsHelper settingsHelper = new TestSettingsHelper(mContext);
@@ -941,6 +951,7 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
 
     @Test
     @EnableFlags(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
+    @EnableCompatChanges(ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
     public void testRestore_bothPasswordSettings_touchArrivesFirst_prioritizesTouch() {
         mAgentUnderTest.onCreate(UserHandle.SYSTEM, BackupDestination.CLOUD, OperationType.RESTORE);
         TestSettingsHelper settingsHelper = new TestSettingsHelper(mContext);
@@ -986,6 +997,7 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
 
     @Test
     @EnableFlags(com.android.text.flags.Flags.FLAG_SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
+    @EnableCompatChanges(ShowSecretsSetting.SPLIT_SHOW_PASSWORDS_TO_TOUCH_AND_PHYSICAL)
     public void testRestore_bothPasswordSettings_legacyArrivesFirst_prioritizesTouch() {
         mAgentUnderTest.onCreate(UserHandle.SYSTEM, BackupDestination.CLOUD, OperationType.RESTORE);
         TestSettingsHelper settingsHelper = new TestSettingsHelper(mContext);

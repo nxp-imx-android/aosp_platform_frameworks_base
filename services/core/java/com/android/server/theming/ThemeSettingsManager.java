@@ -24,7 +24,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.ContentResolver;
-import android.content.res.Resources;
 import android.content.theming.FieldColor;
 import android.content.theming.FieldColorSource;
 import android.content.theming.FieldThemeStyle;
@@ -58,7 +57,7 @@ import java.util.Set;
  * @hide
  */
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
-class ThemeSettingsManager {
+public class ThemeSettingsManager {
     private static final String TAG = "ThemeSettingsManager";
 
     public static final String TIMESTAMP = "_applied_timestamp";
@@ -67,12 +66,10 @@ class ThemeSettingsManager {
     public static final String OVERLAY_CATEGORY_SYSTEM_PALETTE = KEY_PREFIX + "system_palette";
     public static final String OVERLAY_CATEGORY_THEME_STYLE = KEY_PREFIX + "theme_style";
     public static final String OVERLAY_COLOR_SOURCE = KEY_PREFIX + "color_source";
+
     private final ThemeWallpaperManager mWallpaperManager;
-    private static final ThemeSettings HARDCODED_FALLBACK = new ThemeSettings.Builder()
-            .setThemeStyle(ThemeStyle.TONAL_SPOT)
-            .setColorSource(VALUE_PRESET)
-            .setSystemPalette(Color.valueOf(0xFF1b6ef3))
-            .build();
+    private final SystemPropertiesReader mSystemPropertiesReader;
+    private final ThemeEnvironment mEnvironment;
 
     static final Map<String, ThemeSettingsField<?, ?>> ALL_FIELDS = Map.ofEntries(
             Map.entry(OVERLAY_CATEGORY_SYSTEM_PALETTE, new FieldColor()),
@@ -91,8 +88,11 @@ class ThemeSettingsManager {
     @GuardedBy("mLock")
     private final Set<Integer> mMigratedUserIds = new HashSet<>();
 
-    ThemeSettingsManager(ThemeWallpaperManager wallpaperManager) {
+    public ThemeSettingsManager(ThemeWallpaperManager wallpaperManager,
+            SystemPropertiesReader systemPropertiesReader, ThemeEnvironment environment) {
         mWallpaperManager = wallpaperManager;
+        mSystemPropertiesReader = systemPropertiesReader;
+        mEnvironment = environment;
     }
 
     /**
@@ -103,7 +103,8 @@ class ThemeSettingsManager {
      * @return The {@link ThemeSettings} for the user, or null if none exist.
      */
     @Nullable
-    ThemeSettings getSettings(@UserIdInt int userId, @NonNull ContentResolver contentResolver) {
+    public ThemeSettings getSettings(@UserIdInt int userId,
+            @NonNull ContentResolver contentResolver) {
         synchronized (mLock) {
             int idx = mSettingsCache.indexOfKey(userId);
             if (idx >= 0) {
@@ -122,6 +123,23 @@ class ThemeSettingsManager {
     }
 
     /**
+     * Retrieves the theme settings for the specified user, or the default settings if no
+     * custom settings are found.
+     *
+     * @param userId          The ID of a Full User to retrieve theme settings for.
+     * @param contentResolver The content resolver to use.
+     * @return The {@link ThemeSettings} object containing the current or default theme settings.
+     */
+    @NonNull
+    public ThemeSettings getSettingsOrDefault(int userId, ContentResolver contentResolver) {
+        ThemeSettings storedSettings = getSettings(userId, contentResolver);
+        if (storedSettings != null) {
+            return storedSettings;
+        }
+        return createDefaultThemeSettings(userId);
+    }
+
+    /**
      * Saves the specified theme settings for the given user to persistent storage and updates
      * the cache.
      *
@@ -130,7 +148,7 @@ class ThemeSettingsManager {
      * @param newSettings     The {@link ThemeSettings} to save.
      * @return true if the settings were successfully written to storage.
      */
-    boolean setSettings(@UserIdInt int userId, @NonNull ContentResolver contentResolver,
+    public boolean setSettings(@UserIdInt int userId, @NonNull ContentResolver contentResolver,
             @NonNull ThemeSettings newSettings) {
 
         boolean success = writeToDisk(userId, contentResolver, newSettings);
@@ -149,7 +167,7 @@ class ThemeSettingsManager {
      * Invalidates the settings cache for a specific user.
      * This forces the next getSettings call to read from disk.
      */
-    void invalidateCache(@UserIdInt int userId) {
+    public void invalidateCache(@UserIdInt int userId) {
         synchronized (mLock) {
             mSettingsCache.remove(userId);
         }
@@ -158,7 +176,7 @@ class ThemeSettingsManager {
     /**
      * Writes any pending migrated settings to disk.
      */
-    void updateMigratedSettings(ContentResolver contentResolver) {
+    public void updateMigratedSettings(ContentResolver contentResolver) {
         final Set<Integer> usersToSave;
         synchronized (mLock) {
             if (mMigratedUserIds.isEmpty()) return;
@@ -202,16 +220,19 @@ class ThemeSettingsManager {
         }
     }
 
-    ThemeSettings createDefaultThemeSettings(Resources resources,
-            SystemPropertiesReader systemPropertiesReader, @UserIdInt int userId) {
+    /**
+     * Creates the default theme settings for a given user based on device configuration.
+     *
+     * @param userId The ID of the user.
+     * @return The default theme settings.
+     */
+    public ThemeSettings createDefaultThemeSettings(@UserIdInt int userId) {
         String deviceColorProperty = "ro.boot.hardware.color";
-        String[] themeData = resources.getStringArray(
-                com.android.internal.R.array.theming_defaults);
 
         // The 'theming_defaults' resource is a string array where each entry is formatted as:
         // "hardware_color_name|STYLE_NAME|#hex_color_or_home_wallpaper"
         HashMap<String, Pair<Integer, String>> themeMap = new HashMap<>();
-        for (String themeEntry : themeData) {
+        for (String themeEntry : mEnvironment.defaultThemeData) {
             String[] themeComponents = themeEntry.split("\\|");
             if (themeComponents.length != 3) {
                 continue;
@@ -231,12 +252,13 @@ class ThemeSettingsManager {
                     + " wildcard ('*') entry for fallback.");
         }
 
-        String deviceColorPropertyValue = systemPropertiesReader.get(deviceColorProperty, "");
+        String deviceColorPropertyValue = mSystemPropertiesReader.get(deviceColorProperty, "");
         Pair<Integer, String> styleAndSource = themeMap.get(deviceColorPropertyValue);
         if (styleAndSource == null) {
             Slog.d(TAG, "Sysprop `" + deviceColorProperty + "` of value '"
                     + deviceColorPropertyValue
-                    + "' not found in theming_defaults: " + Arrays.toString(themeData)
+                    + "' not found in theming_defaults: " + Arrays.toString(
+                    mEnvironment.defaultThemeData)
                     + ". Using wildcard fallback.");
             styleAndSource = fallbackTheme;
         }
@@ -250,7 +272,7 @@ class ThemeSettingsManager {
             } catch (Exception e2) {
                 Slog.e(TAG, "Wildcard fallback theme is also invalid! Using hardcoded default.",
                         e2);
-                return HARDCODED_FALLBACK;
+                return mEnvironment.hardcodedFallback;
             }
         }
     }
@@ -267,7 +289,7 @@ class ThemeSettingsManager {
             if (wallpaperSeed == null) {
                 Slog.i(TAG, "User's " + userId + " Wallpaper colors not yet available. "
                         + "Using fallback palette for HOME_WALLPAPER source.");
-                seedColor = HARDCODED_FALLBACK.systemPalette();
+                seedColor = mEnvironment.hardcodedFallback.systemPalette();
             } else {
                 seedColor = Color.valueOf(wallpaperSeed);
             }
@@ -334,7 +356,7 @@ class ThemeSettingsManager {
             if (seed != null) {
                 systemPalette = Color.valueOf(seed);
             } else {
-                systemPalette = HARDCODED_FALLBACK.systemPalette();
+                systemPalette = mEnvironment.hardcodedFallback.systemPalette();
                 Slog.d(TAG, "Legacy settings for user " + userId + " missing palette. "
                         + "Wallpaper color missing, using fallback.");
             }

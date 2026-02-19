@@ -25,6 +25,14 @@ import android.telecom.TelecomManager;
  * @hide
  */
 public class TelecomDependencies {
+
+    /**
+     * @return true if the telecom mainline build flag is enabled, false if it is not.
+     */
+    public static boolean isMainlineBuildFlagEnabled() {
+        return DependencyAdapter.isMainlineBuildFlagEnabled();
+    }
+
     /**
      * Create the TelecomManager
      * @param context The context used to create the TelecomManager

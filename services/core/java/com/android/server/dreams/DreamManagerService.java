@@ -27,9 +27,11 @@ import static android.service.dreams.Flags.cleanupDreamSettingsOnUninstall;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
 import static android.service.dreams.Flags.dreamsV2;
 import static android.service.dreams.Flags.systemDreamDeathRecipient;
+import static android.service.dreams.Flags.dreamsSwitcher;
 
 import static com.android.server.wm.ActivityInterceptorCallback.DREAM_MANAGER_ORDERED_ID;
 
+import android.annotation.EnforcePermission;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
@@ -60,8 +62,10 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.PermissionEnforcer;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
@@ -73,6 +77,8 @@ import android.provider.Settings;
 import android.service.dreams.DreamManagerInternal;
 import android.service.dreams.DreamService;
 import android.service.dreams.IDreamManager;
+import android.service.dreams.IDreamManagerListener;
+import android.service.dreams.DreamPlaylist;
 import android.text.TextUtils;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -99,6 +105,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -165,6 +172,13 @@ public final class DreamManagerService extends SystemService {
 
     private final CopyOnWriteArrayList<DreamManagerInternal.DreamManagerStateListener>
             mDreamManagerStateListeners = new CopyOnWriteArrayList<>();
+
+    @GuardedBy("mLock")
+    private final SparseArray<RemoteCallbackList<IDreamManagerListener>> mPlaylistListeners =
+            new SparseArray<>();
+
+    @GuardedBy("mLock")
+    private final SparseArray<DreamPlaylist> mCachedPlaylists = new SparseArray<>();
 
     @GuardedBy("mLock")
     private DreamRecord mCurrentDream;
@@ -264,8 +278,23 @@ public final class DreamManagerService extends SystemService {
         }
 
         @Override
-        public void onChange(boolean selfChange, Uri uri) {
-            updateWhenToDreamSettings();
+        public void onChange(boolean selfChange, Uri uri, int userId) {
+            refreshSettings(userId, uri);
+        }
+    }
+
+    @VisibleForTesting
+    void refreshSettings(int userId, @Nullable Uri uri) {
+        updateWhenToDreamSettings();
+        if (dreamsSwitcher()) {
+            if (uri == null
+                    || Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_COMPONENTS).equals(uri)
+                    || Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_ACTIVE_COMPONENT)
+                            .equals(uri)
+                    || Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT)
+                            .equals(uri)) {
+                notifyPlaylistChanged(userId);
+            }
         }
     }
 
@@ -275,6 +304,41 @@ public final class DreamManagerService extends SystemService {
             super.onPackageRemoved(packageName, uid);
             final int userId = getChangingUserId();
             updateDreamOnPackageRemoved(packageName, userId);
+            if (dreamsSwitcher()) {
+                notifyPlaylistChanged(userId);
+            }
+        }
+
+        @Override
+        public void onPackageAdded(String packageName, int uid) {
+            super.onPackageAdded(packageName, uid);
+            if (dreamsSwitcher()) {
+                notifyPlaylistChanged(getChangingUserId());
+            }
+        }
+
+        @Override
+        public void onPackageModified(String packageName) {
+            super.onPackageModified(packageName);
+            if (dreamsSwitcher()) {
+                notifyPlaylistChanged(getChangingUserId());
+            }
+        }
+
+        @Override
+        public void onPackagesSuspended(String[] packages) {
+            super.onPackagesSuspended(packages);
+            if (dreamsSwitcher()) {
+                notifyPlaylistChanged(getChangingUserId());
+            }
+        }
+
+        @Override
+        public void onPackagesUnsuspended(String[] packages) {
+            super.onPackagesUnsuspended(packages);
+            if (dreamsSwitcher()) {
+                notifyPlaylistChanged(getChangingUserId());
+            }
         }
     }
 
@@ -336,7 +400,7 @@ public final class DreamManagerService extends SystemService {
 
     @Override
     public void onStart() {
-        publishBinderService(DreamService.DREAM_SERVICE, new BinderService());
+        publishBinderService(DreamService.DREAM_SERVICE, new BinderService(mContext));
         publishLocalService(DreamManagerInternal.class, new LocalService());
     }
 
@@ -383,6 +447,12 @@ public final class DreamManagerService extends SystemService {
             mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
                             Settings.Secure.SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING),
                     false, mSettingsObserver, UserHandle.USER_ALL);
+            mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
+                            Settings.Secure.SCREENSAVER_COMPONENTS),
+                    false, mSettingsObserver, UserHandle.USER_ALL);
+            mContext.getContentResolver().registerContentObserver(Settings.Secure.getUriFor(
+                            Settings.Secure.SCREENSAVER_ACTIVE_COMPONENT),
+                    false, mSettingsObserver, UserHandle.USER_ALL);
 
             if (!allowDreamWithChargeLimit()) {
                 // We don't get an initial broadcast for the battery state, so we have to initialize
@@ -428,10 +498,20 @@ public final class DreamManagerService extends SystemService {
     @Override
     public void onUserStopping(@NonNull TargetUser user) {
         super.onUserStopping(user);
+        final int userId = user.getUserIdentifier();
+        synchronized (mLock) {
+            mCachedPlaylists.remove(userId);
+            final RemoteCallbackList<IDreamManagerListener> listeners =
+                    mPlaylistListeners.get(userId);
+            if (listeners != null) {
+                listeners.kill();
+                mPlaylistListeners.remove(userId);
+            }
+        }
         if (cleanupDreamSettingsOnUninstall()) {
             mHandler.post(() -> {
                 final PackageMonitor monitor = mPackageMonitors.removeReturnOld(
-                        user.getUserIdentifier());
+                        userId);
                 if (monitor != null) {
                     monitor.unregister();
                 }
@@ -810,9 +890,8 @@ public final class DreamManagerService extends SystemService {
     }
 
     /**
-     * If doze is true, returns the doze component for the user.
-     * Otherwise, returns the system dream component, if present.
-     * Otherwise, returns the first valid user configured dream component.
+     * If doze is true, returns the doze component for the user. Otherwise, returns the system dream
+     * component, if present. Otherwise, returns the first valid user configured dream component.
      */
     private ComponentName chooseDreamForUser(boolean doze, int userId) {
         return mDreamComponentsResolver.resolve(doze, userId, mForceAmbientDisplayEnabled,
@@ -918,6 +997,11 @@ public final class DreamManagerService extends SystemService {
     @GuardedBy("mLock")
     private void handleSystemDreamChangedLocked() {
         reportKeepDreamingWhenUnpluggingChanged(shouldKeepDreamingWhenUnplugging());
+
+        if (dreamsSwitcher()) {
+            final int userId = mInjector.getCurrentUser();
+            mHandler.post(() -> notifyPlaylistChanged(userId));
+        }
 
         // Switch dream if currently dreaming and not dozing.
         if (isDreamingInternal() && !currentDreamCanDozeLocked()) {
@@ -1142,7 +1226,20 @@ public final class DreamManagerService extends SystemService {
         }
     }
 
+    private DreamPlaylist getDreamPlaylistInternal(int userId) {
+        ComponentName systemDreamComponent;
+        synchronized (mLock) {
+            systemDreamComponent = mSystemDreamComponent;
+        }
+        return mDreamComponentsResolver.getDreamPlaylist(userId, systemDreamComponent);
+    }
+
     private final class BinderService extends IDreamManager.Stub {
+
+        BinderService(Context context) {
+            super(PermissionEnforcer.fromContext(context));
+        }
+
         @Override // Binder call
         protected void dump(FileDescriptor fd, PrintWriter pw, String[] args) {
             if (!DumpUtils.checkDumpPermission(mContext, TAG, pw)) return;
@@ -1502,6 +1599,92 @@ public final class DreamManagerService extends SystemService {
             }
         }
 
+        @EnforcePermission(android.Manifest.permission.READ_DREAM_STATE)
+        @Override // Binder call
+        public void registerListener(IDreamManagerListener listener, int userId) {
+            registerListener_enforcePermission();
+
+            if (!dreamsSwitcher()) {
+                Slog.e(TAG, "Dreams switcher flag is not enabled, ignoring register request.");
+                return;
+            }
+
+            // Validate the incoming user id, also checks if the caller has permission to
+            // query this user id.
+            userId =
+                    ActivityManager.handleIncomingUser(
+                            Binder.getCallingPid(),
+                            Binder.getCallingUid(),
+                            userId,
+                            /* allowAll= */ false,
+                            /* requireFull= */ false,
+                            /* name= */ "registerListener",
+                            /* callerPackage= */ null);
+
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                DreamManagerService.this.registerListener(listener, userId);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+
+        @EnforcePermission(android.Manifest.permission.READ_DREAM_STATE)
+        @Override // Binder call
+        public void unregisterListener(IDreamManagerListener listener, int userId) {
+            unregisterListener_enforcePermission();
+
+            if (!dreamsSwitcher()) {
+                Slog.e(TAG, "Dreams switcher flag is not enabled, ignoring unregister request.");
+                return;
+            }
+
+            userId =
+                    ActivityManager.handleIncomingUser(
+                            Binder.getCallingPid(),
+                            Binder.getCallingUid(),
+                            userId,
+                            /* allowAll= */ false,
+                            /* requireFull= */ false,
+                            /* name= */ "unregisterListener",
+                            /* callerPackage= */ null);
+
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                DreamManagerService.this.unregisterListener(listener, userId);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+
+        @EnforcePermission(android.Manifest.permission.READ_DREAM_STATE)
+        @Override // Binder call
+        public DreamPlaylist getDreamPlaylist(int userId) {
+            getDreamPlaylist_enforcePermission();
+
+            if (!dreamsSwitcher()) {
+                Slog.e(TAG, "Dreams switcher flag is not enabled, ignoring playlist request.");
+                return null;
+            }
+
+            userId =
+                    ActivityManager.handleIncomingUser(
+                            Binder.getCallingPid(),
+                            Binder.getCallingUid(),
+                            userId,
+                            /* allowAll= */ false,
+                            /* requireFull= */ false,
+                            /* name= */ "getDreamPlaylist",
+                            /* callerPackage= */ null);
+
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                return getDreamPlaylistInternal(userId);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+
         boolean canLaunchDreamActivity(String dreamPackageName, String packageName,
                 int callingUid) {
             if (dreamPackageName == null || packageName == null) {
@@ -1623,5 +1806,53 @@ public final class DreamManagerService extends SystemService {
             Slog.w(TAG, "System dream component client died. Clearing system dream.");
             setSystemDreamComponentInternal(null, null);
         }
+    }
+
+    void registerListener(IDreamManagerListener listener, int userId) {
+        synchronized (mLock) {
+            RemoteCallbackList<IDreamManagerListener> listeners = mPlaylistListeners.get(userId);
+            if (listeners == null) {
+                listeners = new RemoteCallbackList<>();
+                mPlaylistListeners.put(userId, listeners);
+            }
+            listeners.register(listener);
+        }
+    }
+
+    void unregisterListener(IDreamManagerListener listener, int userId) {
+        synchronized (mLock) {
+            final RemoteCallbackList<IDreamManagerListener> listeners =
+                    mPlaylistListeners.get(userId);
+            if (listeners != null) {
+                listeners.unregister(listener);
+            }
+        }
+    }
+
+    private void notifyPlaylistChanged(int userId) {
+        mHandler.post(() -> {
+            final DreamPlaylist playlist = getDreamPlaylistInternal(userId);
+            final RemoteCallbackList<IDreamManagerListener> listeners;
+            synchronized (mLock) {
+                final DreamPlaylist cached = mCachedPlaylists.get(userId);
+                if (Objects.equals(cached, playlist)) {
+                    return;
+                }
+                mCachedPlaylists.put(userId, playlist);
+                listeners = mPlaylistListeners.get(userId);
+            }
+            if (listeners == null) {
+                return;
+            }
+            int n = listeners.beginBroadcast();
+            for (int i = 0; i < n; i++) {
+                try {
+                    listeners.getBroadcastItem(i).onPlaylistChanged(playlist);
+                } catch (RemoteException e) {
+                    // ignore
+                }
+            }
+            listeners.finishBroadcast();
+        });
     }
 }

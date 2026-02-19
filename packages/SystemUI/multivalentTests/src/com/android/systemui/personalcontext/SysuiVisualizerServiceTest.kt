@@ -73,7 +73,7 @@ class SysuiVisualizerServiceTest : SysuiTestCase() {
             val clientId = UUID.randomUUID()
             val clientInfo = createClient(clientId)
             val insight = BundleInsight.Builder().build()
-            val renderToken = RenderToken(UUID.randomUUID())
+            val renderToken = RenderToken(UUID.randomUUID(), null)
 
             val view =
                 underTest.onCreateEmbeddedView(
@@ -92,7 +92,7 @@ class SysuiVisualizerServiceTest : SysuiTestCase() {
             val clientId = UUID.randomUUID()
             val clientInfo = createClient(clientId)
             val insight = BundleInsight.Builder().build()
-            val renderToken = RenderToken(UUID.randomUUID())
+            val renderToken = RenderToken(UUID.randomUUID(), null)
 
             underTest.onCreateEmbeddedView(context, insight.fakePublish(), renderToken, clientInfo)
             assertThat(underTest.sessions.size).isEqualTo(0)
@@ -108,7 +108,7 @@ class SysuiVisualizerServiceTest : SysuiTestCase() {
             val clientId = UUID.randomUUID()
             val clientInfo = createClient(clientId)
             val insight = BundleInsight.Builder().build()
-            val renderToken = RenderToken(UUID.randomUUID())
+            val renderToken = RenderToken(UUID.randomUUID(), null)
 
             underTest.onCreateEmbeddedView(context, insight.fakePublish(), renderToken, clientInfo)
             underTest.onClientConnected(clientInfo)

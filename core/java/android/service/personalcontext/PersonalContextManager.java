@@ -99,9 +99,11 @@ import java.util.UUID;
  *     should any {@link ContextInsight} generated from the hint.</li>
  *  </ul>
  *
+ * @hide
  */
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 @SystemService(Context.PERSONAL_CONTEXT_SERVICE)
+@SystemApi
 public final class PersonalContextManager {
     /** The name of the Personal Context service. */
     public static final String PERSONAL_CONTEXT_SERVICE = "personal_context";
@@ -131,9 +133,7 @@ public final class PersonalContextManager {
 
     /**
      * Returns whether the Personal Context service is enabled.
-     * @hide
      */
-    @SystemApi
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public boolean isEnabled() {
@@ -148,9 +148,7 @@ public final class PersonalContextManager {
     /**
      * Set whether the Personal Context service is enabled.
      * @param enable whether to enable or disable the service
-     * @hide
      */
-    @SystemApi
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void setEnabled(boolean enable) {
@@ -188,9 +186,7 @@ public final class PersonalContextManager {
      * @param enabled value for whether data collection is enabled
      * @see #isPersonalContextModeEnabled(String)
      *
-     * @hide
      */
-    @SystemApi
     @RequiresPermission(Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE)
     public void setPersonalContextModeEnabled(@NonNull String packageName, boolean enabled) {
         try {
@@ -207,9 +203,7 @@ public final class PersonalContextManager {
      * @param renderTokens optional tokens indicating which renderers should be used to render
      *                     results of this flow to the user; if empty, then this flow can be
      *                     rendered by any Personal Context renderer
-     * @hide
      */
-    @SystemApi
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishTriggeringHint(
@@ -231,9 +225,7 @@ public final class PersonalContextManager {
      *     results of this flow to the user; if {@code null} or empty, then this flow can be
      *     rendered by any Personal Context renderer
      * @param attributionHints optional hints to use as attribution for {@code hints}
-     * @hide
      */
-    @SystemApi
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishTriggeringHint(
@@ -317,10 +309,7 @@ public final class PersonalContextManager {
      * @param hint raw data to be signed
      * @param attributionHints optional hints to use as attribution for {@code hint}
      * @return signed version of hint annotated with caller's package
-     *
-     * @hide
      */
-    @SystemApi
     @NonNull
     public ContextHintWithSignature signHint(
             @NonNull ContextHint hint, @Nullable List<ContextHint> attributionHints) {
@@ -374,10 +363,7 @@ public final class PersonalContextManager {
     /**
      * Mints a {@link Token} that can be attached to {@link ContextHint}, {@link ContextInsight}, or
      * used in filters to filter for hints and insights.
-     *
-     * @hide
      */
-    @SystemApi
     @NonNull
     public Token mintToken() {
         try {

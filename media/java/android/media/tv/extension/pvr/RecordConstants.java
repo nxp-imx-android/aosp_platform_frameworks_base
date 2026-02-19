@@ -25,7 +25,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @hide
  */
-final class RecordConstants {
+public final class RecordConstants {
     @IntDef({
             DELETION_RESULT_SUCCESS,
             DELETION_RESULT_FAILED_STORAGE_IO_ERROR,

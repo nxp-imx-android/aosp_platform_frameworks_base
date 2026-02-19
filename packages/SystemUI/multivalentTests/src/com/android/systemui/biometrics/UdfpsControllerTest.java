@@ -310,7 +310,7 @@ public class UdfpsControllerTest extends SysuiTestCase {
         mFgExecutor.runAllReady();
 
         // THEN the udfps bouncer is reset
-        verify(mStatusBarKeyguardViewManager).hideAlternateBouncer(eq(true));
+        verify(mStatusBarKeyguardViewManager).hideAlternateBouncer(eq(true), eq(false));
     }
 
     @Test

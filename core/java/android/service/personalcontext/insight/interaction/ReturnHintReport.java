@@ -19,6 +19,7 @@ package android.service.personalcontext.insight.interaction;
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.FlaggedApi;
+import android.annotation.SystemApi;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.service.personalcontext.Flags;
@@ -40,7 +41,9 @@ import java.util.List;
  * <p>Typically this is handed off to another piece of code that uses it to look up additional data.
  * Once the lookup is complete, the new data is encapsulated in one or more {@link ContextHint}s
  * and sent back via {@link PersonalContextManager#publishTriggeringHint(ReturnHintReport, List)}.
+ * @hide
  */
+@SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public final class ReturnHintReport implements Parcelable {
     private final InsightReferenceHint mInsightReferenceHint;

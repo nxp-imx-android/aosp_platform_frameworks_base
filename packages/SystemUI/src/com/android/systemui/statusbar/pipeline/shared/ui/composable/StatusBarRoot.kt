@@ -70,6 +70,7 @@ import com.android.systemui.clock.ClockModernization
 import com.android.systemui.clock.ui.composable.Clock
 import com.android.systemui.clock.ui.viewmodel.AmPmStyle
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
+import com.android.systemui.communal.ui.compose.extensions.detectLongPressGesture
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
@@ -326,13 +327,17 @@ fun StatusBarRoot(
             },
             modifier =
                 modifier.thenIf(StatusBarEventForwardingModernization.isEnabled) {
-                    Modifier.forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
-                        position,
-                        size ->
-                        // This call is needed to make sure the shade is preemptively moved to the
-                        // display that the user is currently interacting with.
-                        statusBarViewModel.onShadeExpansionIntent(position.x, size.width)
-                    }
+                    Modifier.pointerInput(Unit) {
+                            detectLongPressGesture { statusBarViewModel.onStatusBarLongPressed() }
+                        }
+                        .forwardDragAndSwipeToShadeRootView(shadeWindowRootView, touchSlop) {
+                            position,
+                            size ->
+                            // This call is needed to make sure the shade is preemptively moved to
+                            // the
+                            // display that the user is currently interacting with.
+                            statusBarViewModel.onShadeExpansionIntent(position.x, size.width)
+                        }
                 },
             onRelease = { touchableExclusionRegionDisposableHandle?.dispose() },
         )

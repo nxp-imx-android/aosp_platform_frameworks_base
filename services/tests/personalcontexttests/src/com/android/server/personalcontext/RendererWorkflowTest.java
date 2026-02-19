@@ -113,7 +113,7 @@ public class RendererWorkflowTest {
         final RendererWorkflow.ComponentProvider provider =
                 mock(RendererWorkflow.ComponentProvider.class);
         final PublishedContextInsight publishedInsight = buildPublishedInsight(
-                List.of(new RenderToken(UUID.randomUUID())),
+                List.of(new RenderToken(UUID.randomUUID(), null)),
                 key, componentId);
 
         doReturn(null).when(provider).getRendererById(any());
@@ -137,7 +137,7 @@ public class RendererWorkflowTest {
         final UUID componentId = UUID.randomUUID();
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
         final Renderer renderer = mock(Renderer.class);
-        final RenderToken renderToken = new RenderToken(componentId);
+        final RenderToken renderToken = new RenderToken(componentId, null);
         final RendererWorkflow.EventListener listener = mock(RendererWorkflow.EventListener.class);
         final RendererWorkflow.ComponentProvider provider =
                 mock(RendererWorkflow.ComponentProvider.class);
@@ -234,11 +234,11 @@ public class RendererWorkflowTest {
         final ContextInsight insight = new BundleInsight.Builder()
                 .addOriginHint(
                         new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
-                                .addRenderTokens(List.of(new RenderToken(UUID.randomUUID())))
+                                .addRenderTokens(List.of(new RenderToken(UUID.randomUUID(), null)))
                                 .build())
                 .addOriginHint(
                         new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
-                                .addRenderTokens(List.of(new RenderToken(UUID.randomUUID())))
+                                .addRenderTokens(List.of(new RenderToken(UUID.randomUUID(), null)))
                                 .build())
                 .build();
         final PublishedContextInsight publishedInsight = new PublishedContextInsight(insight,

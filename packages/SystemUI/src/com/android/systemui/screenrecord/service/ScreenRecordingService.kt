@@ -59,7 +59,6 @@ open class ScreenRecordingService : ComponentService() {
             notificationManager = getSystemService(NotificationManager::class.java)!!,
             strings = RecordingServiceStrings(resources),
             channelId = CHANNEL_ID,
-            tag = TAG,
             serviceClass = ScreenRecordingService::class.java,
             screenCaptureRecordFeaturesInteractor = featuresInteractor,
         )
@@ -139,7 +138,7 @@ open class ScreenRecordingService : ComponentService() {
             } else {
                 recorder.start()
                 val notificationManager = getSystemService(NotificationManager::class.java)
-                notificationManager?.notify(tag, notificationId, notification)
+                notificationManager?.notify(null, notificationId, notification)
             }
         } catch (e: Exception) {
             screenRecordingPreferenceRepository.maybeRestoreSetting()
