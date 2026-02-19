@@ -1491,6 +1491,8 @@ public class DreamService extends Service implements Window.Callback {
                                 packageManager),
                         rawMetadata.getDrawable(
                                 com.android.internal.R.styleable.Dream_previewImage),
+                        rawMetadata.getResourceId(
+                                com.android.internal.R.styleable.Dream_previewImage, 0),
                         rawMetadata.getBoolean(R.styleable.Dream_showClockAndComplications,
                                 DEFAULT_SHOW_COMPLICATIONS),
                         rawMetadata.getInt(R.styleable.Dream_dreamCategory, DREAM_CATEGORY_DEFAULT),
@@ -1999,6 +2001,13 @@ public class DreamService extends Service implements Window.Callback {
         public final Drawable previewImage;
 
         /**
+         * The resource identifier for the preview image.
+         *
+         * @hide
+         */
+        public final int previewImageResId;
+
+        /**
          * Indicates whether the dream supports complications.
          */
         @NonNull
@@ -2024,11 +2033,13 @@ public class DreamService extends Service implements Window.Callback {
         public DreamMetadata(
                 ComponentName settingsActivity,
                 Drawable previewImage,
+                int previewImageResId,
                 boolean showComplications,
                 int dreamCategory,
                 boolean userSelectable) {
             this.settingsActivity = settingsActivity;
             this.previewImage = previewImage;
+            this.previewImageResId = previewImageResId;
             this.showComplications = showComplications;
             if (Flags.homePanelDream()) {
                 this.dreamCategory = dreamCategory;
