@@ -2973,26 +2973,29 @@ class DesktopTasksController(
                 )
             val sourceDisplayId = task.displayId
             val sourceDeskId = repository.getDeskIdForTask(task.taskId)
-            val shouldExitDesktopIfNeeded =
-                ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY.isTrue ||
-                    DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
             val isLastTask =
                 sourceDeskId?.let { repository.isOnlyTaskInDesk(task.taskId, it) } ?: false
-            deactivationRunnable =
-                if (shouldExitDesktopIfNeeded) {
-                    performDesktopExitCleanupIfNeeded(
-                        taskId = task.taskId,
-                        deskId = sourceDeskId,
-                        displayId = sourceDisplayId,
-                        userId = userId,
-                        wct = wct,
-                        removingLastTaskId = if (isLastTask) task.taskId else null,
-                        forceToFullscreen = false,
-                        exitReason = ExitReason.TASK_MOVED_FROM_DESK,
-                    )
-                } else {
-                    null
-                }
+            val willExitDesktop =
+                willExitDesktop(
+                    triggerTaskId = task.taskId,
+                    displayId = sourceDisplayId,
+                    userId = userId,
+                    forceExitDesktop = false,
+                )
+            deactivationRunnable = if (willExitDesktop) {
+                performDesktopExitCleanUp(
+                    wct = wct,
+                    deskId = sourceDeskId,
+                    displayId = sourceDisplayId,
+                    userId = userId,
+                    willExitDesktop = true,
+                    removingLastTaskId = if (isLastTask) task.taskId else null,
+                    shouldEndUpAtHome = true,
+                    exitReason = ExitReason.TASK_MOVED_FROM_DESK,
+                )
+            } else {
+                null
+            }
         }
         // Bring the destination display to top with includingParents=true, so that the
         // destination display gains the display focus, which makes the top task in the display
@@ -3625,11 +3628,18 @@ class DesktopTasksController(
             // explicitly going fullscreen, so there's no point in checking the desktop state.
             return true
         }
-        return isOnlyVisibleNonClosingTask(
+        val isLastTask = isOnlyVisibleNonClosingTask(
             taskId = triggerTaskId,
             displayId = displayId,
             userId = userId,
         )
+        if (!isLastTask) {
+            return false
+        }
+        // Do not exit desktop on last task removal on secondary displays because it is preferable
+        // to stay in an empty desk that in the secondary home launcher that has no workspace and
+        // looks like an empty desk but won't behave like one. See b/448829063.
+        return displayId == DEFAULT_DISPLAY
     }
 
     private fun isOnlyVisibleNonClosingTask(taskId: Int, displayId: Int, userId: Int): Boolean {

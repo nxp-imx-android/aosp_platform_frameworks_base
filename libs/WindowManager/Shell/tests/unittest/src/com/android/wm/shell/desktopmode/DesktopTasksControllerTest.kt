@@ -4444,7 +4444,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    fun moveToNextDesktopDisplay_projectedMode_cleansUpSourceDisplay() {
+    fun moveToNextDesktopDisplay_projectedMode_fromSecondaryDisplay_doesNotCleanUpSourceDisplay() {
         // Setup state where a desktop task is running on a secondary display while the device is in
         // projected mode
         desktopState.isProjected = true
@@ -4458,7 +4458,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = deskId)
         val task = setUpFreeformTask(displayId = SECOND_DISPLAY)
         // Explicitly add task to the desk because removing the last task in a desk triggers desktop
-        // mode cleanup.
+        // mode cleanup on default displays, but should not do so on secondary displays.
         taskRepository.addTaskToDesk(
             displayId = SECOND_DISPLAY,
             deskId = deskId,
@@ -4479,10 +4479,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
             )
 
-        // Verify that cleanup (e.g. resetting the launcher) is performed on the source display
-        // where the task originated from.
-        wct.assertPendingIntent(launchHomeIntent(SECOND_DISPLAY))
-        wct.assertPendingIntentActivityOptionsLaunchDisplayId(SECOND_DISPLAY)
+        // Verify that cleanup (e.g. resetting the launcher) is NOT performed on the source
+        // secondary display
+        wct.assertWithoutPendingIntent(launchHomeIntent(SECOND_DISPLAY))
     }
 
     @Test
@@ -4897,6 +4896,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == 0
                 }
             )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onDesktopWindowClose_lastWindowOnSecondaryDisplay_doesNotExitDesktop() {
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = 2)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = 2)
+        val task = setUpFreeformTask(displayId = SECOND_DISPLAY, deskId = 2)
+        val wct = WindowContainerTransaction()
+
+        val transition = Binder()
+        val runOnTransitStart =
+            controller.onDesktopWindowClose(wct, displayId = SECOND_DISPLAY, task)
+        runOnTransitStart?.invoke(transition)
+
+        verify(desksOrganizer, never()).deactivateDesk(any(), any(), any())
+        verify(desksOrganizer, never()).removeDesk(any(), any(), any())
+        verifyNoInteractions(desksTransitionsObserver)
     }
 
     @Test
