@@ -101,6 +101,7 @@ public class AmbientState implements Dumpable {
     private float mHideAmount;
     private float mPulseHeight = MAX_PULSE_HEIGHT;
     private boolean mApplyHunTranslation;
+    private boolean mCurrentSceneLockscreen;
 
     /**
      * Sets whether HUN translation should be applied to viewState.yTranslation
@@ -672,6 +673,16 @@ public class AmbientState implements Dumpable {
     public void setLockscreenStackFadeInProgress(float lockscreenStackFadeInProgress) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         mLockscreenStackFadeInProgress = lockscreenStackFadeInProgress;
+    }
+
+    public void setCurrentSceneLockscreen(boolean isCurrentSceneLockscreen) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        mCurrentSceneLockscreen = isCurrentSceneLockscreen;
+    }
+
+    public boolean isCurrentSceneLockscreen() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return false;
+        return mCurrentSceneLockscreen;
     }
 
     public void setStatusBarState(int statusBarState) {

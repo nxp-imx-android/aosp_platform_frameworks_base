@@ -347,6 +347,9 @@ constructor(
     /** The alpha of the Notification Stack for lockscreen fade-in */
     val alphaForLockscreenFadeIn = stackAppearanceInteractor.alphaForLockscreenFadeIn
 
+    /** Whether the current scene is lockscreen */
+    val isCurrentSceneLockscreen = sceneInteractor.currentScene.map { it == Scenes.Lockscreen }.distinctUntilChanged()
+
     val allowScrimClipping: Flow<Boolean> =
         shadeModeInteractor.shadeMode
             .flatMapLatestConflated { shadeMode ->

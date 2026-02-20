@@ -5785,10 +5785,18 @@ public class NotificationStackScrollLayout
     }
 
     @Override
+    public void setCurrentSceneLockscreen(boolean isCurrentLockscreen) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        mAmbientState.setCurrentSceneLockscreen(isCurrentLockscreen);
+        if (isCurrentLockscreen) {
+            requestChildrenUpdate();
+        }
+    }
+
+    @Override
     public void setAlphaForLockscreenFadeIn(float alphaForLockscreenFadeIn) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
         mAmbientState.setLockscreenStackFadeInProgress(alphaForLockscreenFadeIn);
-        requestChildrenUpdate();
     }
 
     void onStatePostChange(boolean fromShadeLocked) {
@@ -6952,11 +6960,17 @@ public class NotificationStackScrollLayout
                                 .hasDelays(),
 
                 // ANIMATION_TYPE_TOP_PADDING_CHANGED
-                new AnimationFilter()
-                        .animateHeight()
-                        .animateTopInset()
-                        .animateY()
-                        .animateZ(),
+                SceneContainerFlag.isEnabled()
+                        ? new AnimationFilter()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateAlpha()
+                                .animateZ()
+                        : new AnimationFilter()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ(),
 
                 // ANIMATION_TYPE_ACTIVATED_CHILD
                 new AnimationFilter()
