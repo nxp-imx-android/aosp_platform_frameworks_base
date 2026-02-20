@@ -1143,62 +1143,17 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         UserHandle callingUserHandle = Binder.getCallingUserHandle();
         mCallerValidator.validateCallingPackage(packageName);
-        // TODO(b/343261179): Remove this reference when the activity is destroyed to avoid leaking
-        // the activity token.
-        List<RegistrationScopeId> scopeIds =
-                verifyDynamicRegistrationRequestsAndCollectScopeIds(
-                        packageName,
-                        functionIdentifiers,
-                        callingUserHandle,
-                        activityToken,
-                        /* operationName= */ "register");
 
-        mDynamicAppFunctionRegistry.registerAppFunctions(
-                packageName, functionIdentifiers, executor, callingUserHandle, scopeIds);
-
-        onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
-    }
-
-    @Override
-    public void unregisterAppFunctions(
-            @NonNull String packageName,
-            @NonNull List<String> functionIdentifiers,
-            @NonNull IAppFunctionExecutor session,
-            @Nullable IBinder activityToken) {
-        UserHandle callingUserHandle = Binder.getCallingUserHandle();
-        mCallerValidator.validateCallingPackage(packageName);
-        List<RegistrationScopeId> activityTokens =
-                verifyDynamicRegistrationRequestsAndCollectScopeIds(
-                        packageName,
-                        functionIdentifiers,
-                        callingUserHandle,
-                        activityToken,
-                        /* operationName= */ "unregister");
-        mDynamicAppFunctionRegistry.unregisterAppFunctions(
-                packageName, functionIdentifiers, session, callingUserHandle, activityTokens);
-
-        onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
-    }
-
-    private List<RegistrationScopeId> verifyDynamicRegistrationRequestsAndCollectScopeIds(
-            @NonNull String packageName,
-            @NonNull List<String> functionIdentifiers,
-            @NonNull UserHandle callingUserHandle,
-            @Nullable IBinder activityToken,
-            @NonNull String operationName) {
-        ArrayList<RegistrationScopeId> scopeIds = new ArrayList<>(functionIdentifiers.size());
+        List<RegistrationScopeId> scopeIds = new ArrayList<>();
         RegistrationScopeId passedScopeId =
-                (activityToken != null)
-                        ? new RegistrationScopeId(getAppFunctionActivityId(activityToken))
-                        : RegistrationScopeId.GLOBAL_SCOPE;
+            (activityToken != null)
+                    ? new RegistrationScopeId(getAppFunctionActivityId(activityToken))
+                    : RegistrationScopeId.GLOBAL_SCOPE;
         for (String functionIdentifier : functionIdentifiers) {
             if (!mAppFunctionMetadataReader.isDynamicFunction(
                     packageName, functionIdentifier, callingUserHandle)) {
                 throw new IllegalArgumentException(
-                        "Unable to "
-                                + operationName
-                                + " AppFunction "
-                                + functionIdentifier
+                        "Unable to register AppFunction " + functionIdentifier
                                 + ". Ensure this function is declared in the XML resource"
                                 + " referenced by the property within the <application> tag of your"
                                 + " AndroidManifest.xml.");
@@ -1216,7 +1171,24 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 scopeIds.add(RegistrationScopeId.GLOBAL_SCOPE);
             }
         }
-        return scopeIds;
+
+        mDynamicAppFunctionRegistry.registerAppFunctions(
+                packageName, functionIdentifiers, executor, callingUserHandle, scopeIds);
+
+        onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
+    }
+
+    @Override
+    public void unregisterAppFunctions(
+            @NonNull String packageName,
+            @NonNull List<String> functionIdentifiers,
+            @NonNull IAppFunctionExecutor session) {
+        UserHandle callingUserHandle = Binder.getCallingUserHandle();
+        mCallerValidator.validateCallingPackage(packageName);
+        mDynamicAppFunctionRegistry.unregisterAppFunctions(
+                packageName, functionIdentifiers, session, callingUserHandle);
+
+        onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
     }
 
     @Nullable

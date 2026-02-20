@@ -124,7 +124,7 @@ interface IAppFunctionManager {
 
     void registerAppFunctions(in String packageName, in List<String> functionIds, in IAppFunctionExecutor executor, in IBinder activityToken);
 
-    void unregisterAppFunctions(in String packageName, in List<String> functionIds, in IAppFunctionExecutor executor, in IBinder activityToken);
+    void unregisterAppFunctions(in String packageName, in List<String> functionIds, in IAppFunctionExecutor executor);
 
     void revokeSelfAccess(in String targetPackageName);
 

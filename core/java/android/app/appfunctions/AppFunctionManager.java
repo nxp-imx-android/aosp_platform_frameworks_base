@@ -1432,8 +1432,7 @@ public final class AppFunctionManager {
                     mService.unregisterAppFunctions(
                             mContext.getPackageName(),
                             functionIdsToUnregister,
-                            mExecutor,
-                            mActivityToken);
+                            mExecutor);
                 } catch (RemoteException e) {
                     throw e.rethrowFromSystemServer();
                 }
