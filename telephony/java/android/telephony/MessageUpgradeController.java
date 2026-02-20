@@ -22,6 +22,7 @@ import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -29,7 +30,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Binder;
-import android.provider.Telephony;
 import android.service.messaging.AlternativeMessageTransportService;
 import android.service.messaging.AlternativeMessageTransportServiceWrapper;
 import android.text.TextUtils;
@@ -74,11 +74,7 @@ public final class MessageUpgradeController {
             if (SmsApplication.ACTION_DEFAULT_SMS_PACKAGE_CHANGED_INTERNAL.equals(
                     intent.getAction())) {
                 mScheduler.execute(() -> {
-                    String currentSmsPackage = Telephony.Sms.getDefaultSmsPackage(mContext);
-                    if (!Objects.equals(getCachedDefaultSmsAppPackage(), currentSmsPackage)) {
-                        Log.d(TAG, "SMS app changed. current:" + currentSmsPackage);
-                        updateCachedDefaultSmsPackageData(currentSmsPackage);
-                    }
+                    updateCachedDefaultSmsPackageData();
                 });
             }
         }
@@ -95,7 +91,7 @@ public final class MessageUpgradeController {
     /** @hide */
     public MessageUpgradeController(@NonNull Context context) {
         mContext = Objects.requireNonNull(context);
-        updateCachedDefaultSmsPackageData(null);
+        updateCachedDefaultSmsPackageData();
         registerOnSmsAppChangedReceiver();
     }
 
@@ -235,16 +231,24 @@ public final class MessageUpgradeController {
         mContext.registerReceiver(mDefaultSmsAppChangedReceiver, smsAppChangedFilter);
     }
 
-    private void updateCachedDefaultSmsPackageData(@Nullable String defaultSmsPackage) {
-        String smsAppPackage = defaultSmsPackage;
-        if (TextUtils.isEmpty(smsAppPackage)) {
-            smsAppPackage = Telephony.Sms.getDefaultSmsPackage(mContext);
+    private void updateCachedDefaultSmsPackageData() {
+        String cachedSmsPackage = getCachedDefaultSmsAppPackage();
+        String currentSmsPackage = null;
+        ComponentName component = SmsApplication.getDefaultSmsApplicationAsUser(
+                mContext, false, mContext.getUser());
+        if (component != null) {
+            currentSmsPackage = component.getPackageName();
         }
 
+        if (Objects.equals(cachedSmsPackage, currentSmsPackage)) {
+            return;
+        }
+
+        Log.d(TAG, "SMS app changed, updating cache. current sms app:" + currentSmsPackage);
         boolean isSupported = false;
-        if (!TextUtils.isEmpty(smsAppPackage)) {
+        if (!TextUtils.isEmpty(currentSmsPackage)) {
             Intent intent = new Intent(AlternativeMessageTransportService.SERVICE_INTERFACE);
-            intent.setPackage(smsAppPackage);
+            intent.setPackage(currentSmsPackage);
 
             List<ResolveInfo> services = mContext.getPackageManager().queryIntentServices(
                     intent, PackageManager.GET_META_DATA);
@@ -262,10 +266,10 @@ public final class MessageUpgradeController {
         }
 
         synchronized (mMessageUpgradeLock) {
-            mCachedDefaultSmsPackage = smsAppPackage;
+            mCachedDefaultSmsPackage = currentSmsPackage;
             mCachedIsUpgradeSupported = isSupported;
             Log.i(TAG, "Updated cached data for user " + mContext.getUserId() + ": package="
-                    + smsAppPackage + ", supported=" + isSupported);
+                    + currentSmsPackage + ", supported=" + isSupported);
         }
     }
 
