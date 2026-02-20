@@ -16,7 +16,7 @@
 
 package com.android.server.audio
 
-import android.content.AttributionSourceState
+import android.content.AttributionSource
 import android.media.AudioDeviceAttributes.ROLE_OUTPUT
 import android.media.AudioDeviceInfo
 import android.media.AudioDevicePort
@@ -25,6 +25,7 @@ import android.media.AudioDeviceInfo.TYPE_BLUETOOTH_SCO
 import android.media.AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
 import android.media.AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
 import android.media.AudioDeviceInfo.TYPE_WIRED_HEADSET
+import android.media.AudioManager
 import android.media.AudioManager.MODE_IN_COMMUNICATION
 import android.media.AudioManager.MODE_NORMAL
 import android.media.AudioManager.MODE_RINGTONE
@@ -34,7 +35,6 @@ import android.media.audio.AudioModeSessionRequest
 import android.media.audio.DeviceIdentity
 import android.media.audio.IAudioModeSession
 import android.media.audio.IAudioModeSessionCallback
-import android.os.Binder
 import android.os.IBinder
 import android.platform.test.annotations.Presubmit
 import android.platform.test.ravenwood.RavenwoodRule
@@ -47,6 +47,7 @@ import org.mockito.kotlin.argThat
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -71,24 +72,20 @@ class AudioModeSessionTest {
         AudioDevicePort.createForTesting(AudioSystem.DEVICE_OUT_BLUETOOTH_SCO, "", "sco_address")
     )
 
-    private val mAudioService: AudioService = mock()
+    private val mAttributionSource = AttributionSource(1000, 1234, "com.test", null)
+    private val mAudioService: AudioService = mock {
+        on { requestAudioFocusForModeSession(any(), any(), any(), any(), any()) } doReturn
+            AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+    }
     private val mCallbackBinder: IBinder = mock()
     private val mCallback: IAudioModeSessionCallback = mock {
         on { asBinder() } doReturn mCallbackBinder
     }
     private val mDeviceBroker: AudioDeviceBroker = mock()
 
-    private val mAttributionSource =
-        AttributionSourceState().apply {
-            packageName = "com.test"
-            uid = 1000
-            pid = 1234
-            token = Binder()
-        }
-
     private fun createDefaultRequest() =
         AudioModeSessionRequest().apply {
-            attributionSource = mAttributionSource
+            attributionSource = mAttributionSource.asState()
             mode = MODE_IN_COMMUNICATION
             isDisplayActiveUseCase = true
             noFocusModes = intArrayOf()
@@ -101,17 +98,47 @@ class AudioModeSessionTest {
     }
 
     @Test
-    fun setup_initializeMode() {
+    fun createSession_initializesState() {
         createSession()
-        verify(mAudioService).setMode(eq(MODE_IN_COMMUNICATION), any(), any())
+        val inOrderService = inOrder(mAudioService)
+        inOrderService.verify(mAudioService)
+            .requestAudioFocusForModeSession(
+                eq(mAttributionSource),
+                eq(mCallbackBinder),
+                any(),
+                eq(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT),
+                any(),
+            )
+        inOrderService.verify(mAudioService).setMode(eq(MODE_IN_COMMUNICATION), any(), any())
     }
 
     @Test
-    fun close_cleanup() {
+    fun createSession_noFocusMode_neverGainsFocus() {
+        val request =
+            createDefaultRequest().apply { noFocusModes = intArrayOf(MODE_IN_COMMUNICATION) }
+
+        createSession(request)
+
+        verify(mAudioService, never())
+            .requestAudioFocusForModeSession(any(), any(), any(), any(), any())
+    }
+
+
+    @Test
+    fun close_cleansUp() {
         val session = createSession()
         session.close()
         verify(mDeviceBroker).removeAudioModeSession(session)
         verify(mCallback).onClosed()
+        val inOrderService = inOrder(mAudioService)
+        inOrderService.verify(mAudioService).setMode(eq(MODE_NORMAL), any(), any())
+        inOrderService.verify(mAudioService)
+            .abandonAudioFocusForModeSession(
+                eq(mAttributionSource),
+                eq(mCallbackBinder),
+                any(),
+                any(),
+            )
     }
 
     @Test
@@ -299,9 +326,17 @@ class AudioModeSessionTest {
     @Test
     fun setClientPaused_true_pauses() {
         val session = createSession()
+        val inOrderService = inOrder(mAudioService)
         session.setClientPaused(true)
-        verify(mAudioService).setMode(eq(MODE_NORMAL), any(), any())
+        inOrderService.verify(mAudioService).setMode(eq(MODE_NORMAL), any(), any())
         verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), any())
+        inOrderService.verify(mAudioService)
+            .abandonAudioFocusForModeSession(
+                eq(mAttributionSource),
+                eq(mCallbackBinder),
+                any(),
+                any(),
+            )
         verify(mCallback).onPaused()
     }
 
@@ -330,7 +365,7 @@ class AudioModeSessionTest {
                 any(),
             )
         clearInvocations(mDeviceBroker)
-        clearInvocations(mAudioService)
+        val inOrderService = inOrder(mAudioService)
 
         session.setClientPaused(true)
         verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), any())
@@ -338,13 +373,21 @@ class AudioModeSessionTest {
         clearInvocations(mAudioService)
 
         session.setClientPaused(false)
-        verify(mAudioService)
+        inOrderService.verify(mAudioService)
+            .requestAudioFocusForModeSession(
+                eq(mAttributionSource),
+                eq(mCallbackBinder),
+                any(),
+                eq(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT),
+                any(),
+            )
+        inOrderService.verify(mAudioService)
             .setMode(eq(MODE_IN_COMMUNICATION), any(), eq(mAttributionSource.packageName))
         verify(mDeviceBroker)
             .setCommunicationDevice(
                 any(),
                 any(),
-                argThat { device -> matchesRoute(device, route) },
+                eq(mSpeaker),
                 eq(true),
                 any(),
             )
@@ -354,11 +397,19 @@ class AudioModeSessionTest {
     @Test
     fun serverPause_releasesControl() {
         val session = createSession()
+        val inOrderService = inOrder(mAudioService)
         // Pause from server side (e.g. higher priority session active)
         session.pause()
 
-        verify(mAudioService).setMode(eq(MODE_NORMAL), any(), any())
+        inOrderService.verify(mAudioService).setMode(eq(MODE_NORMAL), any(), any())
         verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), any())
+        inOrderService.verify(mAudioService)
+            .abandonAudioFocusForModeSession(
+                eq(mAttributionSource),
+                eq(mCallbackBinder),
+                any(),
+                any(),
+            )
         verify(mCallback).onPaused()
     }
 
@@ -379,22 +430,31 @@ class AudioModeSessionTest {
                     }
             }
         session.setRequestedRoute(route)
-        clearInvocations(mDeviceBroker, mAudioService)
+        val inOrderService = inOrder(mAudioService)
 
-        // Pause first
+        // Server pause
         session.pause()
         verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), any())
         clearInvocations(mDeviceBroker, mAudioService)
 
-        // Resume from server
+        // Server resume
         session.resume()
 
-        verify(mAudioService).setMode(eq(MODE_IN_COMMUNICATION), any(), eq(mAttributionSource.packageName))
+        inOrderService.verify(mAudioService)
+            .requestAudioFocusForModeSession(
+                eq(mAttributionSource),
+                eq(mCallbackBinder),
+                any(),
+                eq(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT),
+                any(),
+            )
+        inOrderService.verify(mAudioService)
+            .setMode(eq(MODE_IN_COMMUNICATION), any(), eq(mAttributionSource.packageName))
         verify(mDeviceBroker)
             .setCommunicationDevice(
                 any(),
                 any(),
-                argThat { device -> matchesRoute(device, route) },
+                eq(mSpeaker),
                 eq(true),
                 any(),
             )
@@ -451,6 +511,59 @@ class AudioModeSessionTest {
         assert(requestId != 0)
 
         // TODO
+    }
+
+    @Test
+    fun setMode_focusMode_requestFocus() {
+        // Use a session that starts in a NO_FOCUS mode
+        val request =
+            createDefaultRequest().apply {
+                mode = MODE_NORMAL
+                noFocusModes = intArrayOf(MODE_NORMAL)
+            }
+        val session = createSession(request)
+
+        // Should NOT have requested focus initially
+        verify(mAudioService, never())
+            .requestAudioFocusForModeSession(any(), any(), any(), any(), any())
+
+        // Switch to IN_COMMUNICATION (should acquire focus)
+        session.setMode(MODE_IN_COMMUNICATION)
+        verify(mAudioService)
+            .requestAudioFocusForModeSession(
+                eq(mAttributionSource),
+                eq(mCallbackBinder),
+                any(),
+                eq(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT),
+                any(),
+            )
+    }
+
+    @Test
+    fun setMode_noFocusMode_abandonsFocus() {
+        // Start in IN_COMMUNICATION (default, gains focus)
+        val request = createDefaultRequest().apply { noFocusModes = intArrayOf(MODE_NORMAL) }
+        val session = createSession(request)
+        verify(mAudioService)
+            .requestAudioFocusForModeSession(
+                eq(mAttributionSource),
+                eq(mCallbackBinder),
+                any(),
+                eq(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT),
+                any(),
+            )
+
+        clearInvocations(mAudioService)
+
+        // Switch to NORMAL (configured as no-focus)
+        session.setMode(MODE_NORMAL)
+        verify(mAudioService)
+            .abandonAudioFocusForModeSession(
+                eq(mAttributionSource),
+                eq(mCallbackBinder),
+                any(),
+                any(),
+            )
     }
 
     private fun matchesRoute(device: AudioDeviceInfo?, route: IAudioModeSession.Route) =
