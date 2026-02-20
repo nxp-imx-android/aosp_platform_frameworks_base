@@ -229,9 +229,12 @@ static jint android_view_RenderNode_getAmbientShadowColor(CRITICAL_JNI_PARAMS_CO
 static jboolean android_view_RenderNode_setClipToOutline(CRITICAL_JNI_PARAMS_COMMA jlong renderNodePtr,
         jboolean clipToOutline) {
     RenderNode* renderNode = reinterpret_cast<RenderNode*>(renderNodePtr);
-    renderNode->mutateStagingProperties().mutableOutline().setShouldClip(clipToOutline);
-    renderNode->setPropertyFieldsDirty(RenderNode::GENERIC);
-    return true;
+    if (renderNode->mutateStagingProperties().mutableOutline().getShouldClip() != clipToOutline) {
+        renderNode->mutateStagingProperties().mutableOutline().setShouldClip(clipToOutline);
+        renderNode->setPropertyFieldsDirty(RenderNode::GENERIC);
+        return true;
+    }
+    return false;
 }
 
 static jboolean android_view_RenderNode_setRevealClip(CRITICAL_JNI_PARAMS_COMMA jlong renderNodePtr, jboolean shouldClip,
