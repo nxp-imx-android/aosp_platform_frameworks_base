@@ -22,6 +22,4 @@
     <string name="spa_learn_more">Learn more</string>
     <!-- Content description for the selected item of Spinner. [CHAR LIMIT=NONE]-->
     <string name="spa_spinner_selected_item">Selected</string>
-    <!-- Content description for the disabled item of action button. [CHAR LIMIT=NONE]-->
-    <string name="spa_action_button_disabled_item">disabled</string>
 </resources>
