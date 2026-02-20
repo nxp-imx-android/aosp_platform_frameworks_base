@@ -34,6 +34,7 @@ import static android.os.Process.INVALID_UID;
 import static android.os.Process.SYSTEM_UID;
 
 import static com.android.internal.app.LockedAppActivity.createLockedAppActivityUninstallIntent;
+import static com.android.internal.pm.pkg.component.ParsedAttribution.MAX_ATTRIBUTION_TAG_LEN;
 import static com.android.server.pm.PackageArchiver.isArchivingEnabled;
 import static com.android.server.pm.PackageInstallerSession.isValidVerificationPolicy;
 import static com.android.server.pm.PackageManagerService.SHELL_PACKAGE_NAME;
@@ -1081,6 +1082,12 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
             throw new IllegalArgumentException(
                     "Permissions states exceeds total size limit "
                             + MAX_PERMISSION_STATES_SIZE + " in length");
+        }
+
+        if (installerAttributionTag != null
+                && installerAttributionTag.length() > MAX_ATTRIBUTION_TAG_LEN) {
+            throw new IllegalArgumentException(
+                    "Attribution tag exceeds " + MAX_ATTRIBUTION_TAG_LEN + " length limit");
         }
 
         int requestedInstallerPackageUid = INVALID_UID;

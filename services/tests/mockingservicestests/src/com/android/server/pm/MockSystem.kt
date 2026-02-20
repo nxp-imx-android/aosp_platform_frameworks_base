@@ -57,6 +57,7 @@ import com.android.dx.mockito.inline.extended.ExtendedMockito.spy
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.dx.mockito.inline.extended.StaticMockitoSessionBuilder
 import com.android.internal.R
+import com.android.internal.content.InstallLocationUtils
 import com.android.internal.pm.parsing.PackageParser2
 import com.android.internal.pm.parsing.pkg.PackageImpl
 import com.android.internal.pm.parsing.pkg.ParsedPackage
@@ -159,6 +160,7 @@ class MockSystem(withSession: (StaticMockitoSessionBuilder) -> Unit = {}) {
                 .mockStatic(HexEncoding::class.java)
                 .mockStatic(DeveloperVerifierController::class.java)
                 .mockStatic(IoThread::class.java)
+                .mockStatic(InstallLocationUtils::class.java)
                 .apply(withSession)
         session = apply.startMocking()
         whenever(mocks.settings.insertPackageSettingLPw(

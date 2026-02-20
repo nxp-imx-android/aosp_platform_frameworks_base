@@ -52,6 +52,7 @@ import android.util.ArrayMap;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.internal.content.InstallLocationUtils;
 import com.android.server.IoThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemServiceManager;
@@ -330,6 +331,27 @@ public class PackageInstallerServiceTest {
                         /* installerPackageName= */ null,
                         /* installerAttributionTag= */ null,
                         /* callingUid= */ myUid(),
+                        /* userId= */ UserHandle.USER_SYSTEM));
+    }
+
+    @Test
+    public void createSession_withLongAttributionTag_throwsException() throws Exception {
+        doReturn(new int[]{UserHandle.USER_SYSTEM}).when(mPms.mUserManager).getUserIds();
+        doReturn(null).when(() -> InstallLocationUtils.resolveInstallVolume(any(), any()));
+        final PackageInstallerService service = new PackageInstallerService(
+                rule.mocks().getContext(), mPms, null,
+                new ComponentName(mPackageName, this.getClass().getName()));
+        service.systemReady();
+
+        PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(
+                PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+        final String longAttributionTag = new String(new char[51]).replace('\0', 'a');
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.createSession(
+                        params,
+                        /* installerPackageName= */ null,
+                        longAttributionTag,
                         /* userId= */ UserHandle.USER_SYSTEM));
     }
 }
