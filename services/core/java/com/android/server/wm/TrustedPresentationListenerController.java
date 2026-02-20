@@ -16,13 +16,13 @@
 
 package com.android.server.wm;
 
+import static android.companion.virtualdevice.flags.Flags.computerControlAccess;
 import static android.graphics.Matrix.MSCALE_X;
 import static android.graphics.Matrix.MSCALE_Y;
 import static android.graphics.Matrix.MSKEW_X;
 import static android.graphics.Matrix.MSKEW_Y;
 import static android.view.Display.INVALID_DISPLAY;
 
-import static android.companion.virtualdevice.flags.Flags.computerControlAccess;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TPL;
 
 import android.graphics.Matrix;
@@ -210,17 +210,63 @@ public class TrustedPresentationListenerController {
         pw.println("TrustedPresentationListenerController:");
         pw.println(innerPrefix + "Active unique listeners ("
                 + mRegisteredListeners.mUniqueListeners.size() + "):");
-        for (int i = 0; i < mRegisteredListeners.mWindowToListeners.size(); i++) {
-            pw.println(
-                    innerPrefix + "  window=" + mRegisteredListeners.mWindowToListeners.keyAt(i));
-            final var listeners = mRegisteredListeners.mWindowToListeners.valueAt(i);
-            for (int j = 0; j < listeners.size(); j++) {
-                final var listener = listeners.get(j);
-                pw.println(innerPrefix + innerPrefix + "  listener=" + listener.mListener.asBinder()
-                        + " id=" + listener.mId
-                        + " thresholds=" + listener.mThresholds);
-            }
+
+        if (mHandler == null) {
+            return;
         }
+
+        mHandler.runWithScissors(() -> {
+            for (int i = 0; i < mRegisteredListeners.mWindowToListeners.size(); i++) {
+                IBinder windowToken = mRegisteredListeners.mWindowToListeners.keyAt(i);
+                String windowName = "unknown";
+                if (mLastWindowHandles != null && mLastWindowHandles.first != null) {
+                    for (int k = 0; k < mLastWindowHandles.first.length; ++k) {
+                        InputWindowHandle handle = mLastWindowHandles.first[k];
+                        if (handle.getWindowToken() != null
+                                && handle.getWindowToken().equals(windowToken)) {
+                            windowName = handle.name;
+                            break;
+                        }
+                    }
+                }
+                pw.println(
+                        innerPrefix + "  window=" + windowToken + " name=" + windowName);
+                final var listeners = mRegisteredListeners.mWindowToListeners.valueAt(i);
+                for (int j = 0; j < listeners.size(); j++) {
+                    final var listener = listeners.get(j);
+                    pw.println(innerPrefix + innerPrefix
+                            + "  listener=" + listener.mListener.asBinder()
+                            + " id=" + listener.mId
+                            + " thresholds=" + listener.mThresholds);
+                    pw.println(innerPrefix + innerPrefix + "    lastComputedState="
+                            + listener.mLastComputedTrustedPresentationState);
+                    pw.println(innerPrefix + innerPrefix + "    lastReportedState="
+                            + listener.mLastReportedTrustedPresentationState);
+                    pw.println(innerPrefix + innerPrefix + "    lastAlpha=" + listener.mLastAlpha);
+                    pw.println(innerPrefix + innerPrefix + "    lastFractionRendered="
+                            + listener.mLastFractionRendered);
+                }
+            }
+            pw.println(innerPrefix + "Window Infos:");
+            if (mLastWindowHandles != null && mLastWindowHandles.first != null) {
+                for (int k = 0; k < mLastWindowHandles.first.length; ++k) {
+                    InputWindowHandle handle = mLastWindowHandles.first[k];
+                    pw.println(innerPrefix + innerPrefix + "name=" + handle.name);
+                    pw.println(innerPrefix + innerPrefix + "  displayId=" + handle.displayId);
+                    pw.println(innerPrefix + innerPrefix + "  token=" + handle.getWindowToken());
+                    pw.println(innerPrefix + innerPrefix + "  frame=" + handle.frame);
+                    pw.println(innerPrefix + innerPrefix + "  alpha=" + handle.alpha);
+                    pw.println(innerPrefix + innerPrefix + "  canOcclude="
+                            + handle.canOccludePresentation);
+                    pw.println(innerPrefix + innerPrefix + "  layoutParamsType="
+                            + handle.layoutParamsType);
+                    pw.println(innerPrefix + innerPrefix + "  layoutParamsFlags="
+                            + handle.layoutParamsFlags);
+                }
+            } else {
+                pw.println(innerPrefix + innerPrefix + "none");
+            }
+        }, 0 /* timeout */);
     }
 
     private void registerWindowInfosListener() {
@@ -267,7 +313,8 @@ public class TrustedPresentationListenerController {
 
         ArrayMap<ITrustedPresentationListener, Pair<IntArray, IntArray>> listenerUpdates =
                 new ArrayMap<>();
-        for (var windowHandle : mLastWindowHandles.first) {
+        for (int i = 0; i < mLastWindowHandles.first.length; ++i) {
+            var windowHandle = mLastWindowHandles.first[i];
             var isInvisible = ((windowHandle.inputConfig & InputConfig.NOT_VISIBLE)
                     == InputConfig.NOT_VISIBLE);
             if (!windowHandle.canOccludePresentation || isInvisible) {
@@ -275,7 +322,8 @@ public class TrustedPresentationListenerController {
             }
             int displayId = INVALID_DISPLAY;
             tmpRectF.set(windowHandle.frame);
-            for (var displayHandle : mLastWindowHandles.second) {
+            for (int j = 0; j < mLastWindowHandles.second.length; ++j) {
+                var displayHandle = mLastWindowHandles.second[j];
                 if (displayHandle.mDisplayId == windowHandle.displayId) {
                     // Transform the window frame into display logical space and then
                     // crop by the logical display size
@@ -366,6 +414,8 @@ public class TrustedPresentationListenerController {
                 fractionRendered, alpha, currTimeMs);
         for (int i = 0; i < listeners.size(); i++) {
             var trustedPresentationInfo = listeners.get(i);
+            trustedPresentationInfo.mLastAlpha = alpha;
+            trustedPresentationInfo.mLastFractionRendered = fractionRendered;
             var listener = trustedPresentationInfo.mListener;
             boolean lastState = trustedPresentationInfo.mLastComputedTrustedPresentationState;
             boolean newState =
@@ -451,6 +501,8 @@ public class TrustedPresentationListenerController {
     }
 
     private static class TrustedPresentationInfo {
+        float mLastAlpha = -1;
+        float mLastFractionRendered = -1;
         boolean mLastComputedTrustedPresentationState = false;
         boolean mLastReportedTrustedPresentationState = false;
         long mEnteredTrustedPresentationStateTime = -1;
