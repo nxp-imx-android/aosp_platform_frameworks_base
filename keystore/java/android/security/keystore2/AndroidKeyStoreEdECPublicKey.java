@@ -61,7 +61,6 @@ public class AndroidKeyStoreEdECPublicKey extends AndroidKeyStorePublicKey
     };
     private static final int ED25519_KEY_SIZE_BYTES = 32;
 
-    private byte[] mEncodedKey;
     private EdECPoint mPoint;
 
     public AndroidKeyStoreEdECPublicKey(
@@ -71,7 +70,6 @@ public class AndroidKeyStoreEdECPublicKey extends AndroidKeyStorePublicKey
             @NonNull KeyStoreSecurityLevel iSecurityLevel,
             @NonNull byte[] encodedKey) {
         super(descriptor, metadata, encodedKey, algorithm, iSecurityLevel);
-        mEncodedKey = encodedKey;
 
         int preambleLength = matchesPreamble(DER_KEY_PREFIX, encodedKey);
         if (preambleLength == 0) {
@@ -136,10 +134,5 @@ public class AndroidKeyStoreEdECPublicKey extends AndroidKeyStorePublicKey
             start++;
             end--;
         }
-    }
-
-    @Override
-    public byte[] getEncoded() {
-        return mEncodedKey.clone();
     }
 }
