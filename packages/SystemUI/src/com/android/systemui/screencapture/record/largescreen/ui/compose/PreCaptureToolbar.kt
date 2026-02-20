@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toAndroidRect
@@ -74,25 +73,23 @@ fun PreCaptureToolbar(
         )
 
     val captureTypeButtonItems =
-        remember(selectedCaptureType) {
-            listOf(
-                RadioButtonGroupItem(
-                    icon = recordIcon,
-                    label = recordButtonLabel,
-                    isSelected = selectedCaptureType == ScreenCaptureType.RECORDING,
-                    onClick = { onCaptureTypeSelected(ScreenCaptureType.RECORDING) },
-                    hasTooltip = false,
-                ),
-                RadioButtonGroupItem(
-                    selectedIcon = screenshotSelectedIcon,
-                    unselectedIcon = screenshotUnselectedIcon,
-                    label = screenshotButtonLabel,
-                    isSelected = selectedCaptureType == ScreenCaptureType.SCREENSHOT,
-                    onClick = { onCaptureTypeSelected(ScreenCaptureType.SCREENSHOT) },
-                    hasTooltip = false,
-                ),
-            )
-        }
+        listOf(
+            RadioButtonGroupItem(
+                icon = recordIcon,
+                label = recordButtonLabel,
+                isSelected = selectedCaptureType == ScreenCaptureType.RECORDING,
+                onClick = { onCaptureTypeSelected(ScreenCaptureType.RECORDING) },
+                hasTooltip = false,
+            ),
+            RadioButtonGroupItem(
+                selectedIcon = screenshotSelectedIcon,
+                unselectedIcon = screenshotUnselectedIcon,
+                label = screenshotButtonLabel,
+                isSelected = selectedCaptureType == ScreenCaptureType.SCREENSHOT,
+                onClick = { onCaptureTypeSelected(ScreenCaptureType.SCREENSHOT) },
+                hasTooltip = false,
+            ),
+        )
 
     val appWindowButtonContentDescription =
         stringResource(
@@ -141,47 +138,44 @@ fun PreCaptureToolbar(
             contentDescription = null,
         )
 
-    val captureRegionButtonItems =
-        remember(selectedCaptureType, selectedCaptureRegion) {
-            buildList {
-                if (viewModel.appWindowRegionSupported) {
-                    add(
-                        RadioButtonGroupItem(
-                            icon = appWindowIcon,
-                            isSelected = (selectedCaptureRegion == ScreenCaptureRegion.APP_WINDOW),
-                            onClick = { onCaptureRegionSelected(ScreenCaptureRegion.APP_WINDOW) },
-                            contentDescription = appWindowButtonContentDescription,
-                            hasTooltip = true,
-                        )
-                    )
-                }
-
-                if (
-                    selectedCaptureType == ScreenCaptureType.SCREENSHOT ||
-                        viewModel.regionRecordingSupported
-                ) {
-                    add(
-                        RadioButtonGroupItem(
-                            icon = partialRegionIcon,
-                            isSelected = (selectedCaptureRegion == ScreenCaptureRegion.PARTIAL),
-                            onClick = { onCaptureRegionSelected(ScreenCaptureRegion.PARTIAL) },
-                            contentDescription = partialButtonContentDescription,
-                            hasTooltip = true,
-                        )
-                    )
-                }
-
-                add(
-                    RadioButtonGroupItem(
-                        icon = fullscreenIcon,
-                        isSelected = (selectedCaptureRegion == ScreenCaptureRegion.FULLSCREEN),
-                        onClick = { onCaptureRegionSelected(ScreenCaptureRegion.FULLSCREEN) },
-                        contentDescription = fullscreenButtonContentDescription,
-                        hasTooltip = true,
-                    )
+    val captureRegionButtonItems = buildList {
+        if (viewModel.appWindowRegionSupported) {
+            add(
+                RadioButtonGroupItem(
+                    icon = appWindowIcon,
+                    isSelected = (selectedCaptureRegion == ScreenCaptureRegion.APP_WINDOW),
+                    onClick = { onCaptureRegionSelected(ScreenCaptureRegion.APP_WINDOW) },
+                    contentDescription = appWindowButtonContentDescription,
+                    hasTooltip = true,
                 )
-            }
+            )
         }
+
+        if (
+            selectedCaptureType == ScreenCaptureType.SCREENSHOT ||
+                viewModel.regionRecordingSupported
+        ) {
+            add(
+                RadioButtonGroupItem(
+                    icon = partialRegionIcon,
+                    isSelected = (selectedCaptureRegion == ScreenCaptureRegion.PARTIAL),
+                    onClick = { onCaptureRegionSelected(ScreenCaptureRegion.PARTIAL) },
+                    contentDescription = partialButtonContentDescription,
+                    hasTooltip = true,
+                )
+            )
+        }
+
+        add(
+            RadioButtonGroupItem(
+                icon = fullscreenIcon,
+                isSelected = (selectedCaptureRegion == ScreenCaptureRegion.FULLSCREEN),
+                onClick = { onCaptureRegionSelected(ScreenCaptureRegion.FULLSCREEN) },
+                contentDescription = fullscreenButtonContentDescription,
+                hasTooltip = true,
+            )
+        )
+    }
 
     Toolbar(
         expanded = true,
