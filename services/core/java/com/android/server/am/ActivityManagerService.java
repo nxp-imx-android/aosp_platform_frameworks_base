@@ -77,6 +77,7 @@ import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.crashrecovery.flags.Flags.refactorCrashrecovery;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.BINDER_DIED_EVENT;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.PROCESS_START_EVENT;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.PROCESS_NAME;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStartEvent.UID;
@@ -371,6 +372,7 @@ import android.database.ContentObserver;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerInternal;
+import android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBinderDiedEvent;
 import android.net.Uri;
 import android.os.AppZygote;
 import android.os.BatteryStats;
@@ -3961,6 +3963,18 @@ public class ActivityManagerService extends IActivityManager.Stub
         final int setProcState = app.getSetProcState();
         if (app.getPid() == pid && (appThread = app.getThread()) != null
                 && appThread.asBinder() == thread.asBinder()) {
+            if (android.os.Flags.perfettoSdkTracingV3()) {
+                PerfettoTrace.instant(PROC_STATE_CATEGORY, "binder_died")
+                        .beginProto()
+                        .beginNested(BINDER_DIED_EVENT)
+                        .addField(AndroidBinderDiedEvent.UID, app.info.uid)
+                        .addField(AndroidBinderDiedEvent.PID, pid)
+                        .addField(AndroidBinderDiedEvent.PROCESS_NAME, app.processName)
+                        .endNested()
+                        .endProto()
+                        .emit();
+            }
+
             boolean doLowMem = app.getActiveInstrumentation() == null;
             boolean doOomAdj = doLowMem;
             if (!app.isKilledByAm()) {
