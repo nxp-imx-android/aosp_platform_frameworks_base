@@ -44,7 +44,10 @@ constructor(shellInit: ShellInit, private val recentsTransitionHandler: RecentsT
     private fun onInit() {
         recentsTransitionHandler.addTransitionStateListener(
             object : RecentsTransitionStateListener {
-                override fun onTransitionStateChanged(@RecentsTransitionState state: Int) {
+                override fun onTransitionStateChanged(
+                    @RecentsTransitionState state: Int,
+                    displayId: Int,
+                ) {
                     recentsTransitionState = state
                 }
             }

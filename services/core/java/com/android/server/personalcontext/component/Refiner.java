@@ -26,6 +26,8 @@ import android.service.personalcontext.insight.interaction.InsightEvent;
 
 import androidx.annotation.NonNull;
 
+import com.android.server.personalcontext.RefinerWorkflow;
+
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -52,7 +54,8 @@ public interface Refiner extends Component {
     /** Refines hints into more hints. */
     void refine(
             @NonNull Set<ContextHintWithSignature> inputHints,
-            @NonNull Consumer<Set<ContextHint>> callback);
+            @NonNull Consumer<Set<ContextHint>> callback,
+            @NonNull RefinerWorkflow.InsightConsumer insightCallback);
 
     /** Reports an event for logging. */
     void handleEvent(@NonNull String packageName, @NonNull InsightEvent event);

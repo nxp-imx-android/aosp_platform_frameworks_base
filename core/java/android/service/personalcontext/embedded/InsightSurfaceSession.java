@@ -26,6 +26,7 @@ import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.service.personalcontext.Flags;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.PersonalContextManager;
 import android.util.Log;
 import android.view.SurfaceControlViewHost;
@@ -134,8 +135,14 @@ public class InsightSurfaceSession implements AutoCloseable {
                                 }
                             }
                         } : null;
+            // TODO(b/485403335): Track connection lifetime.
+            final IOpCallback opCallback = new IOpCallback.Stub() {
+                @Override
+                public void signalCompletion() throws RemoteException {
 
-            mSession.onClientUpdated(oldClientInfo, newClientInfo, receiver);
+                }
+            };
+            mSession.onClientUpdated(oldClientInfo, newClientInfo, receiver, opCallback);
         } catch (RemoteException e) {
             Log.e(TAG, "Error updating session client", e);
         }

@@ -47,6 +47,7 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.FakeShellDesktopState
 import com.android.wm.shell.desktopmode.ShellDesktopState
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
+import com.android.wm.shell.recents.PerDisplayRecentsTransitionStateListener
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
@@ -135,6 +136,7 @@ object WindowDecorationTestHelper {
             AppHeaderViewHolder.DefaultFactory(),
         windowDecorationExclusionTracker: WindowDecorationGestureExclusionTracker = mock(),
         pinnedLayerController: PinnedLayerController = mock(),
+        recentsTransitionStateListener: PerDisplayRecentsTransitionStateListener = mock(),
     ): TestWindowDecoration {
         val viewHostSupplier = TestWindowDecorViewHostSupplier(scope)
         val decoration =
@@ -175,6 +177,7 @@ object WindowDecorationTestHelper {
                 appHeaderViewHolderFactory = appHeaderViewHolderFactory,
                 pinnedLayerController = pinnedLayerController,
                 focusTransitionObserver = mock<FocusTransitionObserver>(),
+                recentsTransitionStateListener = recentsTransitionStateListener,
             )
         val wrapped = decoration.wrapped()
         val positioner =

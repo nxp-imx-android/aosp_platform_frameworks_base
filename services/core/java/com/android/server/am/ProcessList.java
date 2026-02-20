@@ -4888,7 +4888,7 @@ public final class ProcessList extends ProcessListInternal
                         r.mProfile.getLastCachedPss() * BYTES_IN_KB, new StringBuilder()));
                 proto.write(ProcessOomProto.Detail.CACHED, state.isCached());
                 proto.write(ProcessOomProto.Detail.EMPTY, state.isEmpty());
-                proto.write(ProcessOomProto.Detail.HAS_ABOVE_CLIENT, psr.isHasAboveClient());
+                proto.write(ProcessOomProto.Detail.HAS_ABOVE_CLIENT, psr.hasBindAboveClient());
 
                 if (state.getSetProcState() >= ActivityManager.PROCESS_STATE_SERVICE) {
                     long lastCpuTime = r.mProfile.mLastCpuTime.get();
@@ -5036,7 +5036,7 @@ public final class ProcessList extends ProcessListInternal
                 pw.print("    ");
                 pw.print("cached="); pw.print(state.isCached());
                 pw.print(" empty="); pw.print(state.isEmpty());
-                pw.print(" hasAboveClient="); pw.println(psr.isHasAboveClient());
+                pw.print(" hasAboveClient="); pw.println(psr.hasBindAboveClient());
 
                 if (state.getSetProcState() >= ActivityManager.PROCESS_STATE_SERVICE) {
                     long lastCpuTime = r.mProfile.mLastCpuTime.get();

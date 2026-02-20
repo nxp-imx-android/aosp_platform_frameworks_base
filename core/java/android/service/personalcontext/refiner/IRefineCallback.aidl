@@ -17,6 +17,7 @@
 package android.service.personalcontext.refiner;
 
 import android.service.personalcontext.hint.ContextHintWrapper;
+import android.service.personalcontext.insight.ContextInsightWrapper;
 
 /**
  * Callback for IRefiner#refine.
@@ -25,4 +26,6 @@ import android.service.personalcontext.hint.ContextHintWrapper;
  */
 interface IRefineCallback {
     oneway void onHintsRefined(in List<ContextHintWrapper> hints);
+
+    oneway void onUnderstood(in List<ContextInsightWrapper> insights);
 }

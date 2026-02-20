@@ -20,6 +20,10 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.service.personalcontext.Token;
+import android.service.personalcontext.hint.BundleHint;
+import android.service.personalcontext.hint.ContextHintTestUtils;
+import android.service.personalcontext.hint.ContextHintWithSignature;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -28,11 +32,6 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import android.service.personalcontext.Token;
-import android.service.personalcontext.hint.BundleHint;
-import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
 
 
 /** Tests for {@link InsightCollection}. */
@@ -117,7 +116,7 @@ public class InsightCollectionTest {
     public void testIterator() {
         final ActionableInsight actionableInsight =
                 new ActionableInsight.Builder(
-                                new InsightActionDetails.Builder().build(),
+                                new InsightActionDetails.Builder().setIntent(new Intent()).build(),
                                 new InsightDisplayDetails.Builder("title").build())
                         .build();
         final DisplayInsight displayInsight =
@@ -151,7 +150,7 @@ public class InsightCollectionTest {
 
         final ActionableInsight actionableInsight =
                 new ActionableInsight.Builder(
-                                new InsightActionDetails.Builder().build(),
+                                new InsightActionDetails.Builder().setIntent(new Intent()).build(),
                                 new InsightDisplayDetails.Builder("title").build())
                         .addOriginHint(signedHint1)
                         .addToken(token1)

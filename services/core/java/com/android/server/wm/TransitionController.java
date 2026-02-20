@@ -1702,7 +1702,7 @@ class TransitionController {
             for (int j = 0; j < mLegacyListeners.size(); ++j) {
                 final var listener = mLegacyListeners.get(j);
                 if (shouldDispatchLegacyListener(listener, displayId)) {
-                    listener.onAppTransitionCancelledLocked(false /* keyguardGoingAwayCancelled */);
+                    listener.onAppTransitionCancelledLocked();
                 }
             }
         }

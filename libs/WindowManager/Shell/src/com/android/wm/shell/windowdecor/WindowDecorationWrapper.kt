@@ -286,20 +286,6 @@ private constructor(
             else -> error("Expected Non-null window decoration")
         }
 
-    /** Declares whether a Recents transition is currently active. */
-    fun setIsRecentsTransitionRunning(isRecentsRunning: Boolean) =
-        when {
-            defaultWindowDecor != null -> {
-                requireDefaultWindowDecor().isRecentsTransitionRunning = isRecentsRunning
-            }
-
-            desktopWindowDecor != null -> {
-                requireDesktopWindowDecor().setIsRecentsTransitionRunning(isRecentsRunning)
-            }
-
-            else -> error("Expected Non-null default or desktop window decoration")
-        }
-
     /** Closes the window decoration. */
     fun close() =
         when {

@@ -241,7 +241,6 @@ class InternetTileNewImplTest : SysuiTestCase() {
 
     companion object {
         const val WIFI_SSID = "test ssid"
-        val ACTIVE_WIFI =
-            WifiNetworkModel.Active.of(isValidated = true, level = 4, ssid = WIFI_SSID)
+        val ACTIVE_WIFI = WifiNetworkModel.Active.of(level = 4, ssid = WIFI_SSID)
     }
 }

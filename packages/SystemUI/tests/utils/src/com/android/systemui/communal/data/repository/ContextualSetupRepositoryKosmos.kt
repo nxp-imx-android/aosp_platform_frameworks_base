@@ -19,10 +19,13 @@ package com.android.systemui.communal.data.repository
 import com.android.systemui.domain.interactor.sharedPreferencesInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.util.time.systemClock
 
-val Kosmos.contextualSetupRepository: ContextualSetupRepository by Kosmos.Fixture {
-    ContextualSetupRepositoryImpl(
-        sharedPreferencesInteractor = sharedPreferencesInteractor,
-        backgroundDispatcher = testDispatcher,
-    )
-}
+val Kosmos.contextualSetupRepository: ContextualSetupRepository by
+    Kosmos.Fixture {
+        ContextualSetupRepositoryImpl(
+            sharedPreferencesInteractor = sharedPreferencesInteractor,
+            backgroundDispatcher = testDispatcher,
+            systemClock = systemClock,
+        )
+    }

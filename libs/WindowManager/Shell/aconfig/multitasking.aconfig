@@ -323,6 +323,16 @@ flag {
 }
 
 flag {
+    name: "update_bubble_bar_taskbar_intersection"
+    namespace: "multitasking"
+    description: "Update the logic to determine if the expanded  bubble bar will intersect the persistent taskbar"
+    bug: "478462570"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "update_bubble_bounds_during_rotation"
     namespace: "multitasking"
     description: "Update the bounds of the expanded bubble task as part of the rotation transition"

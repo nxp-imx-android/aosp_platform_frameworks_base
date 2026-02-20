@@ -195,6 +195,15 @@ private fun RichSwitch(
     val disabledMessage: String? = if (enabled) null else stringResource(disabledMessageRes)
     SettingsRow(
         modifier
+            .clickable(
+                onClick = {
+                    if (enabled) {
+                        onCheckedChange(!checked)
+                    } else {
+                        Toast.makeText(context, disabledMessage, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
             .clearAndSetSemantics {
                 role = Role.Switch
                 toggleableState = if (checked) ToggleableState.On else ToggleableState.Off
@@ -205,15 +214,6 @@ private fun RichSwitch(
                     disabled()
                 }
             }
-            .clickable(
-                onClick = {
-                    if (enabled) {
-                        onCheckedChange(!checked)
-                    } else {
-                        Toast.makeText(context, disabledMessage, Toast.LENGTH_SHORT).show()
-                    }
-                }
-            )
     ) {
         LoadingIcon(icon = icon.value, modifier = Modifier.size(40.dp).padding(8.dp))
         Text(

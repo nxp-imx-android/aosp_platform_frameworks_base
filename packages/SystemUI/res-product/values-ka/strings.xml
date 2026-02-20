@@ -73,4 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"გამოჩნდეს საათი, ფოტოები და ამინდის ინფორმაცია, როცა ტელეფონი იტენება"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"გამოჩნდეს საათი, ფოტოები და ამინდის ინფორმაცია, როცა ტაბლეტი იტენება"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"გამოჩნდეს საათი, ფოტოები და ამინდის ინფორმაცია, როცა მოწყობილობა იტენება"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"ხელახლა ცადეთ სახით განბლოკვა"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"ხელახლა ცადეთ სახით განბლოკვა"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"ხელახლა დააყენეთ სახით განბლოკვა"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"ხელახლა დააყენეთ სახით განბლოკვა"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"განიბლოკა სახით"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"განიბლოკა სახით"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"განიბლოკა სახით. დააჭირეთ გასაგრძელებლად."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"განიბლოკა სახით. დააჭირეთ გასაგრძელებლად."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"განიბლოკა სახით. შეეხეთ გასაგრძელებლად."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"განიბლოკა სახით. შეეხეთ გასაგრძელებლად."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"სახით განბლოკვა"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"სახით განბლოკვა"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"სახით განბლოკვის დაყენება"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"სახით განბლოკვის დაყენება"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"სახით განბლოკვის ისევ დასაყენებლად თქვენი ამჟამინდელი სახის მოდელი წაიშლება.\n\nთქვენ მოგიწევთ ამ ფუნქციის ხელახლა დაყენება სახის მეშვეობით ტელეფონის განსაბლოკად."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"სახით განბლოკვის ისევ დასაყენებლად თქვენი ამჟამინდელი სახის მოდელი წაიშლება.\n\nთქვენ მოგიწევთ ამ ფუნქციის ხელახლა დაყენება სახის მეშვეობით მოწყობილობის განსაბლოკად."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"სახით განბლოკვის დაყენება ვერ მოხერხდა. გადადით პარამეტრებზე და ცადეთ ხელახლა."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"სახით განბლოკვის დაყენება ვერ მოხერხდა. ცადეთ ხელახლა პარამეტრებიდან."</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"სახით განბლოკვა მიუწვდომელია"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"სახით განბლოკვა მიუწვდომელია"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"გადაფურცლეთ ზემოთ, რომ ხელახლა ცადოთ სახით განბლოკვა"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"გადაფურცლეთ ზემოთ, რომ ხელახლა ცადოთ სახით განბლოკვა"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"განიბლოკა სახით. გასახსნელად გადაფურცლეთ ზემოთ."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"განიბლოკა სახით. გასახსნელად გადაფურცლეთ ზემოთ."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"განიბლოკა სახით. დააჭირეთ დადასტურებას გასაგრძელებლად."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"განიბლოკა სახით. დააჭირეთ დადასტურებას გასაგრძელებლად."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"განიბლოკა სახით. გასახსნელად დააჭირეთ განბლოკვის ხატულას."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"განიბლოკა სახით. გასახსნელად დააჭირეთ განბლოკვის ხატულას."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"განიბლოკა სახით. დააჭირეთ გასახსნელად."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"განიბლოკა სახით. დააჭირეთ გასახსნელად."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"განიბლოკა სახით"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"განიბლოკა სახით"</string>
 </resources>

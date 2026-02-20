@@ -36,8 +36,10 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Ինքնապտտվող էկրան"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"Թույլատրե՞լ <xliff:g id="APPLICATION">%1$s</xliff:g> հավելվածին օգտագործել <xliff:g id="USB_DEVICE">%2$s</xliff:g> լրասարքը։"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"Թույլատրե՞լ <xliff:g id="APPLICATION">%1$s</xliff:g> հավելվածին օգտագործել <xliff:g id="USB_DEVICE">%2$s</xliff:g>ը։\nՀավելվածը ձայնագրելու թույլտվություն չունի, սակայն կկարողանա գրանցել ձայնն այս USB սարքի միջոցով։"</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"Հասանելի դարձնե՞լ <xliff:g id="APPLICATION">%1$s</xliff:g> հավելվածին <xliff:g id="USB_DEVICE">%2$s</xliff:g> սարքը"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"Բացե՞լ <xliff:g id="APPLICATION">%1$s</xliff:g>-ը՝ <xliff:g id="USB_DEVICE">%2$s</xliff:g>-ը կառավարելու համար"</string>
+    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
+    <skip />
+    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
+    <skip />
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Հավելվածը ձայնագրելու թույլտվություն չունի, սակայն կկարողանա գրանցել ձայնն այս USB սարքի միջոցով։ <xliff:g id="APPLICATION">%1$s</xliff:g> հավելվածն այս սարքի հետ օգտագործելիս հնարավոր է, որ չլսեք զանգերի, ծանուցումների և զարթուցիչների ձայները։"</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"<xliff:g id="APPLICATION">%1$s</xliff:g> հավելվածն այս սարքի հետ օգտագործելիս հնարավոր է, որ չլսեք զանգերի, ծանուցումների և զարթուցիչների ձայները։"</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"Թույլատրե՞լ <xliff:g id="APPLICATION">%1$s</xliff:g> հավելվածին օգտագործել <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> լրասարքը։"</string>
@@ -58,24 +60,15 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"Թույլատրել"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"USB-ով վրիպազերծումը թույլատրված չէ"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"Ընթացիկ հաշվի օգտատերը չի կարող միացնել USB վրիպազերծումը։ Այս գործառույթը միացնելու համար մուտք գործեք ադմինիստրատորի հաշիվ"</string>
-    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
-    <skip />
-    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
-    <skip />
-    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
-    <skip />
-    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
-    <skip />
-    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
-    <skip />
+    <string name="usb_authorization_title" msgid="3332796080113535331">"Թույլատրե՞լ USB սարքի միացումը"</string>
+    <string name="usb_authorization_title_multi" msgid="1966181648363433366">"Թույլատրե՞լ USB սարքերի միացումը"</string>
+    <string name="usb_authorization_message" msgid="1107567912094941105">"Հետևյալ սարքը միացված է ձեր «<xliff:g id="NAME">%1$s</xliff:g>» սարքին՝"</string>
+    <string name="usb_authorization_message_multi" msgid="4867596373922923637">"Հետևյալ սարքերը միացված են ձեր «<xliff:g id="NAME">%1$s</xliff:g>» սարքին՝"</string>
+    <string name="usb_authorization_message_untrusted" msgid="4407977362840907960">"Հետևյալ սարքը միացված է ձեր «<xliff:g id="NAME">%1$s</xliff:g>» սարքին։ Այս սարքը կհամարվի վստահելի միայն այն բանից հետո, երբ դուք մուտք գործեք հաշիվ։"</string>
+    <string name="usb_authorization_message_multi_untrusted" msgid="85055448435495205">"Հետևյալ սարքերը միացված են ձեր «<xliff:g id="NAME">%1$s</xliff:g>» սարքին։ Այս սարքերը կհամարվեն վստահելի միայն այն բանից հետո, երբ դուք մուտք գործեք հաշիվ։"</string>
+    <string name="usb_authorization_unknown_device" msgid="1107933381080189970">"Անհայտ պրոդուկտ (<xliff:g id="VENDOR_ID">%1$04X</xliff:g>․<xliff:g id="PRODUCT_ID">%2$04X</xliff:g>)"</string>
+    <string name="usb_authorization_allow" msgid="5517449937301874244">"Թույլատրել"</string>
+    <string name="usb_authorization_deny" msgid="8156333001876101456">"Չթույլատրել"</string>
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"Դարձնե՞լ համակարգի լեզուն <xliff:g id="LANGUAGE">%1$s</xliff:g>"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"Մեկ այլ սարք համակարգի լեզվի փոփոխության հարցում է ուղարկել"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"Փոխել լեզուն"</string>
@@ -121,10 +114,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Մեծացնել սքրինշոթի տարածքը"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Փակել սքրինշոթը"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Փակել աշխատանքային պրոֆիլի հաղորդագրությունը"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"Դիտել"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"«Դիտել սքրինշոթը Files հավելվածում» կոճակ"</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"Սքրինշոթի նախադիտում"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"Վերևի եզրագիծը՝ <xliff:g id="PERCENT">%1$d</xliff:g> տոկոս"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"Ներքևի սահմանագիծը՝ <xliff:g id="PERCENT">%1$d</xliff:g>%%"</string>
@@ -196,6 +187,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Անջատել ձայնը"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Միացնել ձայնը"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="DURATION">%2$s</xliff:g>"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Էկրանի տեսագրումն արգելափակվել է ձեր ՏՏ ադմինիստրատորի կողմից"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Ամբողջ էկրանի սքրինշոթ անել"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Տեսագրել ամբողջ էկրանը"</string>
@@ -208,7 +201,12 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Նշիչ ներքևի աջ անկյունում – Չափը փոխելու համար օգտագործեք սլաքների ստեղները"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Նշիչ ներքևի ձախ անկյունում – Չափը փոխելու համար օգտագործեք սլաքների ստեղները"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Կիսվել"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Ընտրեք, թե որ հավելվածը ցուցադրել"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
+    <skip />
+    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
+    <skip />
+    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
+    <skip />
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Աուդիոյի փոխանցում"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Հավելվածի պատուհանի ցուցադրում"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Կիսվեք ներդիրով"</string>
@@ -226,11 +224,14 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"«<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>» էկրանի ցուցադրումը կանգնեցվել է։ Էկրանը ոչ ոք չի տեսնում։"</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"«Փակել» կոճակ։ Սեղմեք Enter, որպեսզի փակեք երկխոսության պատուհանը, որը հայտնվում է բովանդակության ցուցադրումից առաջ։"</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Ներդիրի ցուցադրման կոճակ։ Սեղմված չէ։ Ցուցադրումը սկսելու համար սեղմեք Enter։"</string>
-    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"Ներդիրի ցուցադրում։ Սեղմեք այս կոճակը՝ հասանելի ներդիրները տեսնելու համար։"</string>
+    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
+    <skip />
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Կոճակ, որը թույլ է տալիս ցուցադրել հավելվածի էկրանը։ Սեղմված չէ։ Ցուցադրումը սկսելու համար սեղմեք Enter։"</string>
-    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"Հավելվածի ցուցադրում։ Սեղմեք այս կոճակը՝ հասանելի հավելվածները տեսնելու համար։"</string>
+    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
+    <skip />
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Լիաէկրան ռեժիմի կոճակ։ Սեղմված չէ։ Ամբողջ էկրանը ցուցադրելու համար սեղմեք Enter։"</string>
-    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"Ցուցադրում լիաէկրան ռեժիմում։ Սեղմեք այս կոճակը՝ հասանելի էկրանները տեսնելու համար։"</string>
+    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
+    <skip />
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Բովանդակությունը ցուցադրելու կոճակ։ Անջատված է։ Ընտրեք այն հավելվածը, ներդիրը կամ էկրանը, որը ցանկանում եք ցուցադրել։"</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Բովանդակության ցուցադրումը միացված է։ Ընտրված է <xliff:g id="ITEM">%1$s</xliff:g> տարրը։ Սեղմեք Enter՝ ցուցադրումը սկսելու համար։"</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>։ Ընտրված չէ։ Ընտրելու համար սեղմեք Enter։"</string>
@@ -247,8 +248,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Կիսվել էկրանի տեսագրությամբ"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Բացել էկրանի տեսագրությունը ֆայլերի կառավարչում"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Ջնջել էկրանի տեսագրությունը"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"Բացել էկրանի տեսագրությունը դիտման հավելվածում"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Ցույց տալ սեղմումները և ստեղները"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Սարքի աուդիո"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Խոսափող"</string>
@@ -303,7 +303,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Ապակողպված է"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Սարքը կողպված է"</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"Հաստատել և սարքը ապակողպել"</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"Կրկնեք դեմքով ապակողպումը"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"Դեմքի սկանավորում"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Ուղարկել"</string>
     <string name="cancel" msgid="1089011503403416730">"Չեղարկել"</string>
@@ -316,11 +315,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"Դեմքը ճանաչվեց"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"Հաստատվեց"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"Ավարտելու համար հպեք «Հաստատել»"</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"Ապակողպվեց դեմքով"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"Ապակողպվել է դեմքով։ Սեղմեք շարունակելու համար։"</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"Դեմքը ճանաչվեց։ Սեղմեք շարունակելու համար։"</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"Դեմքը ճանաչվեց։ Սեղմեք ապակողպման պատկերակը։"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"Ապակողպվել է դեմքով։ Հպեք շարունակելու համար:"</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Նույնականացված է"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Չեղարկել իսկորոշումը"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Լրացուցիչ ընտրանքներ"</string>
@@ -365,11 +361,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"Մատնահետքով ապակողպումը նորից կարգավորելու համար ձեր մատնահետքի ընթացիկ պատկերներն ու նմուշները կջնջվեն։\n\nԴուք նորից պետք է կարգավորեք մատնահետքով ապակողպումը, որպեսզի օգտագործեք ձեր մատնահետքը՝ հեռախոսն ապակողպելու կամ ձեր ինքնությունը հաստատելու համար։"</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"Մատնահետքով ապակողպումը նորից կարգավորելու համար ձեր մատնահետքի ընթացիկ պատկերներն ու նմուշը կջնջվեն։\n\nԴուք նորից պետք է կարգավորեք մատնահետքով ապակողպումը, որպեսզի օգտագործեք ձեր մատնահետքը՝ հեռախոսն ապակողպելու կամ ձեր ինքնությունը հաստատելու համար։"</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"Չհաջողվեց կարգավորել մատնահետքով ապակողպումը։ Անցեք Կարգավորումներ և նորից փորձեք։"</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"Նորից կարգավորեք դեմքով ապակողպումը"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"Դեմքով ապակողպում"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"Կարգավորեք դեմքով ապակողպումը"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"Դեմքով ապակողպումը նորից կարգավորելու համար ձեր ընթացիկ դեմքի նմուշը կջնջվի։\n\nԴուք պետք է նորից կարգավորեք այս գործառույթը, որպեսզի դեմքի միջոցով ապակողպեք ձեր հեռախոսը։"</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"Չհաջողվեց կարգավորել դեմքով ապակողպումը։ Անցեք Կարգավորումներ և նորից փորձեք։"</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"Հպեք մատնահետքի սկաներին"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"Շարունակելու համար սեղմեք ապակողպման պատկերակը"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"Դեմքը չի ճանաչվել։ Օգտագործեք մատնահետքը։"</string>
@@ -377,7 +368,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"Դեմքը չի ճանաչվել"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"Օգտագործեք մատնահետք"</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"Դեմքով ապակողպումն անհասանելի է"</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth-ը միացված է:"</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth սարքի պատկերակ"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Սեղմեք՝ սարքի մանրամասները կազմաձևելու համար"</string>
@@ -553,6 +543,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"NFC-ն անջատված է"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"NFC-ն միացված է"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"Էկրանի տեսագրում"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"Էկրանի տեսագրում"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"Սկսել"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"Կանգնեցնել"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"Խնդրի տեսագրում"</string>
@@ -648,16 +639,10 @@
     <string name="tap_again" msgid="1315420114387908655">"Նորից հպեք"</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"Բացելու համար սահեցրեք վերև"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Բացեք՝ սեղմելով ապակողպման պատկերակը"</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Ապակողպվել է դեմքով։ Բացելու համար սահեցրեք մատը վերև։"</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Ապակողպվել է դեմքով։ Սեղմեք «Հաստատել»՝ շարունակելու համար։"</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Ապակողպվել է դեմքով։ Բացեք՝ սեղմելով ապակողպման պատկերակը։"</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Ապակողպվել է դեմքով։ Սեղմեք բացելու համար։"</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Դեմքը ճանաչվեց։ Սեղմեք բացելու համար։"</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"Դեմքը ճանաչվեց։ Բացելու համար սեղմեք ապակողպման պատկերակը։"</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"Ապակողպվեց դեմքով"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"Դեմքը ճանաչվեց"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"Սահեցրեք վերև՝ նորից փորձելու համար"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"Սահեցրեք վերև՝ դեմքով ապակողպումը նորից փորձելու համար"</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"Ապակողպեք՝ NFC-ն օգտագործելու համար"</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"Այս սարքը պատկանում է ձեր ընկերությանը"</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"Այս սարքը պատկանում է «<xliff:g id="ORGANIZATION_NAME">%s</xliff:g>» կազմակերպությանը"</string>
@@ -1263,10 +1248,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Հատուկ գործառույթների ստեղն"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Դուք կարող եք սեղմել հատուկ գործառույթների ստեղնը՝ դրանք օգտագործելու համար։"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Ավելացնել գործառույթներ"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Կարգավորեք <xliff:g id="ID_1">%1$s</xliff:g>ը"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Պատրաստ է"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Ընտրեք գործառույթ"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Փոփոխել"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Հատուկ գործառույթներ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Կողպէկրան"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Անջատվում է…"</string>
@@ -1416,7 +1407,7 @@
     <string name="controls_number_of_favorites" msgid="4481806788981836355">"{count,plural, =1{Ավելացվեց կառավարման # տարր։}one{Ավելացվեց կառավարման # տարր։}other{Ավելացվեց կառավարման # տարր։}}"</string>
     <string name="controls_removed" msgid="3731789252222856959">"Հեռացված է"</string>
     <string name="controls_panel_authorization_title" msgid="267429338785864842">"Ավելացնե՞լ <xliff:g id="APPNAME">%s</xliff:g> հավելվածը"</string>
-    <string name="controls_panel_authorization" msgid="7045551688535104194">"<xliff:g id="APPNAME">%s</xliff:g> հավելվածը կարող է ընտրել, թե որ կարգավորումները և ինչ բովանդակություն ցուցադրվեն այստեղ։"</string>
+    <string name="controls_panel_authorization" msgid="7045551688535104194">"<xliff:g id="APPNAME">%s</xliff:g> հավելվածը կարող է ընտրել, թե որ կարգավորումները և ինչ բովանդակություն ցուցադրվի այստեղ։"</string>
     <string name="controls_panel_remove_app_authorization" msgid="5920442084735364674">"Հեռացնե՞լ <xliff:g id="APPNAME">%s</xliff:g> հավելվածի համար կարգավորումները։"</string>
     <string name="accessibility_control_favorite" msgid="8694362691985545985">"Ավելացված է ընտրանիում"</string>
     <string name="accessibility_control_favorite_position" msgid="54220258048929221">"Ավելացված է ընտրանիում, դիրքը՝ <xliff:g id="NUMBER">%d</xliff:g>"</string>
@@ -1876,6 +1867,8 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d էֆեկտ"</string>
     <string name="av_blur" msgid="405131343487260171">"Շաղել"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Կենդանի ենթագրեր"</string>
+    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
+    <skip />
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Մարտկոցի լիցքը՝ %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Ձախ ականջակալի մարտկոցի լիցքը՝ %1$s    Աջ ականջակալի մարտկոցի լիցքը՝ %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Ձախ ականջակալի մարտկոցի լիցքը՝ %1$s"</string>

@@ -424,6 +424,10 @@
     <string name="screen_record_should_show_touches_label">Show touches</string>
     <!-- Header for the carousel to choose an app for screen recording. [CHAR LIMIT=50] -->
     <string name="screen_record_capture_target_choose_app">Choose an app to record</string>
+    <!-- Label for accessibility action to show the next app to choose. [CHAR LIMIT=NONE] -->
+    <string name="screen_record_accessibility_label_show_next">Show next</string>
+    <!-- Label for accessibility action to show the previous app to choose. [CHAR LIMIT=NONE] -->
+    <string name="screen_record_accessibility_label_show_previous">Show previous</string>
     <!-- Header for the carousel to choose an app for screen recording. [CHAR LIMIT=NONE] -->
     <string name="screen_record_settings">Screen recording settings</string>
     <!-- Label for markup functionality in screen recording. [CHAR LIMIT=NONE] -->
@@ -4577,7 +4581,7 @@
     <!-- Label for button proceeding touchpad tutorial [CHAR LIMIT=NONE] -->
     <string name="touchpad_tutorial_next_button">Next</string>
     <!-- Screen title after gesture was not done correctly [CHAR LIMIT=NONE] -->
-    <string name="gesture_error_title">Try again!</string>
+    <string name="gesture_error_title">Try again</string>
     <!-- BACK GESTURE -->
     <!-- Touchpad back gesture action name in tutorial [CHAR LIMIT=NONE] -->
     <string name="touchpad_back_gesture_action_title">Go back</string>
@@ -4594,23 +4598,33 @@
     <string name="touchpad_home_gesture_action_title">Go home</string>
     <!-- Touchpad home gesture guidance in gestures tutorial [CHAR LIMIT=NONE] -->
     <string name="touchpad_home_gesture_guidance">Swipe up with three fingers on your touchpad</string>
+    <!-- Touchpad home gesture guidance in the updated gestures tutorial [CHAR LIMIT=NONE] -->
+    <string name="touchpad_home_gesture_updated_guidance">First, swipe up with three fingers to view your recent apps</string>
     <!-- Screen title after home gesture was done successfully [CHAR LIMIT=NONE] -->
     <string name="touchpad_home_gesture_success_title">Great job!</string>
     <!-- Text shown to the user after they complete home gesture tutorial [CHAR LIMIT=NONE] -->
     <string name="touchpad_home_gesture_success_body">You completed the go home gesture</string>
     <!-- Text shown to the user after home gesture was not done correctly [CHAR LIMIT=NONE] -->
     <string name="touchpad_home_gesture_error_body">Swipe up with three fingers on your touchpad to go to your home screen</string>
+    <!-- Screen title after first part of home gesture was done successfully [CHAR LIMIT=NONE] -->
+    <string name="touchpad_home_gesture_partial_success_title">Almost there!</string>
+    <!-- Text shown to the user after they complete first part of home gesture tutorial [CHAR LIMIT=NONE] -->
+    <string name="touchpad_home_gesture_partial_success_body">Next, swipe up with three fingers again to go to your home screen</string>
     <!-- RECENT APPS GESTURE -->
     <!-- Touchpad recent apps gesture action name in tutorial [CHAR LIMIT=NONE] -->
     <string name="touchpad_recent_apps_gesture_action_title">View recent apps</string>
     <!-- Touchpad recent apps gesture guidance in gestures tutorial [CHAR LIMIT=NONE] -->
     <string name="touchpad_recent_apps_gesture_guidance">Swipe up and hold using three fingers on your touchpad</string>
+    <!-- Touchpad recent apps gesture guidance in the updated gestures tutorial [CHAR LIMIT=NONE] -->
+    <string name="touchpad_recent_apps_updated_gesture_guidance">Swipe up with three fingers on your touchpad</string>
     <!-- Screen title after recent apps gesture was done successfully [CHAR LIMIT=NONE] -->
     <string name="touchpad_recent_apps_gesture_success_title">Great job!</string>
     <!-- Text shown to the user after they complete recent apps gesture tutorial [CHAR LIMIT=NONE] -->
-    <string name="touchpad_recent_apps_gesture_success_body">You completed the view recent apps gesture.</string>
+    <string name="touchpad_recent_apps_gesture_success_body">You completed the view recent apps gesture</string>
     <!-- Text shown to the user after recent gesture was not done correctly [CHAR LIMIT=NONE] -->
     <string name="touchpad_recent_gesture_error_body">To view recent apps, swipe up and hold using three fingers on your touchpad</string>
+    <!-- Text shown to the user in the updated tutorial after recent gesture was not done correctly [CHAR LIMIT=NONE] -->
+    <string name="touchpad_recent_updated_gesture_error_body">Swipe up with three fingers on your touchpad to go to your recent apps screen</string>
     <!-- SWITCH APPS GESTURE -->
     <!-- Touchpad switch apps gesture action name in tutorial [CHAR LIMIT=NONE] -->
     <string name="touchpad_switch_apps_gesture_action_title">Switch apps</string>

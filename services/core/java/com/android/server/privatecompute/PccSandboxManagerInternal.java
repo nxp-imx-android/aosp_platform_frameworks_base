@@ -18,6 +18,11 @@ package com.android.server.privatecompute;
 
 import static android.app.role.RoleManager.ROLE_ASSISTANT;
 
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PROXY_TRANSACTION_REPORTED__FAILURE_REASON__INCORRECT_PACKAGE_NAME;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PROXY_TRANSACTION_REPORTED__FAILURE_REASON__REMOTE_SERVICE_TERMINATED;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PROXY_TRANSACTION_REPORTED__FAILURE_REASON__REMOTE_SERVICE_UNREACHABLE;
+import static com.android.os.privatecompute.PrivateComputeAtomsLog.PCC_BINDER_PROXY_TRANSACTION_REPORTED__FAILURE_REASON__UNSAFE_PARCEL;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
@@ -66,6 +71,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+
 /**
  * Local interface for the PccSandboxManager that is used by other system services to interact with
  * the PCC sandbox.
@@ -91,7 +97,7 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
     final Set<String> mPccAllowedPackagesForTesting = new ArraySet<>();
 
     @VisibleForTesting
-    static final int[] TRUSTED_UIDS = new int[] {
+    static final int[] TRUSTED_UIDS = new int[]{
             Process.BLUETOOTH_UID,
             Process.SYSTEM_UID,
             Process.PHONE_UID
@@ -335,7 +341,7 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
      *     <li>Explicitly allowlisted system packages</li>
      * </ul>
      *
-     * @param appUid The UID of the application.
+     * @param appUid     The UID of the application.
      * @param appPackage The package name of the application.
      */
     public boolean isPccTrustedSystemComponent(int appUid, String appPackage) {
@@ -667,6 +673,8 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
                 if (mRealBinder == null) {
                     callback.onFailure(new ParcelableException(
                             new IllegalStateException("PCC service is already closed.")));
+                    PrivateComputeStatsLogUtil.logPccBinderProxyTransactionFailure(
+                            PCC_BINDER_PROXY_TRANSACTION_REPORTED__FAILURE_REASON__REMOTE_SERVICE_TERMINATED);
                     return;
                 }
 
@@ -689,10 +697,19 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
                                 "PccSandboxManagerInternal.realService#sendData()");
                         try {
                             realService.sendData(data, packageName, null);
+
+                            PrivateComputeStatsLogUtil.logPccBinderProxyTransactionSuccess();
                         } finally {
                             Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
                         }
                     } catch (RemoteException | IllegalArgumentException e) {
+                        if (e instanceof RemoteException) {
+                            PrivateComputeStatsLogUtil.logPccBinderProxyTransactionFailure(
+                                    PCC_BINDER_PROXY_TRANSACTION_REPORTED__FAILURE_REASON__REMOTE_SERVICE_UNREACHABLE);
+                        } else {
+                            PrivateComputeStatsLogUtil.logPccBinderProxyTransactionFailure(
+                                    PCC_BINDER_PROXY_TRANSACTION_REPORTED__FAILURE_REASON__UNSAFE_PARCEL);
+                        }
                         callback.onFailure(new ParcelableException(e));
                         return;
                     } finally {
@@ -701,6 +718,8 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
 
                     callback.onSuccess();
                 } else {
+                    PrivateComputeStatsLogUtil.logPccBinderProxyTransactionFailure(
+                            PCC_BINDER_PROXY_TRANSACTION_REPORTED__FAILURE_REASON__INCORRECT_PACKAGE_NAME);
                     callback.onFailure(new ParcelableException(new SecurityException(
                             "Calling UID: " + callingUid + " is not associated with package: "
                                     + packageName)));

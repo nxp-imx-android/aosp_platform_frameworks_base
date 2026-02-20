@@ -52,6 +52,7 @@ constructor(
         view: View? = null,
         userHandle: UserHandle? = null,
         token: MediaSession.Token? = null,
+        useSystemColors: Boolean = false,
     ) {
         createAndShowWithController(
             packageName,
@@ -68,6 +69,7 @@ constructor(
                 },
             userHandle = userHandle,
             token = token,
+            useSystemColors = useSystemColors,
         )
     }
 
@@ -83,6 +85,7 @@ constructor(
         token: MediaSession.Token? = null,
         onDialogEventListener: MediaOutputDialog.OnDialogEventListener? = null,
         mediaSwitchingType: MediaSwitchingType? = null,
+        useSystemColors: Boolean = false,
     ) {
         createAndShow(
             packageName,
@@ -93,6 +96,7 @@ constructor(
             token = token,
             onDialogEventListener = onDialogEventListener,
             mediaSwitchingType = mediaSwitchingType,
+            useSystemColors = useSystemColors,
         )
     }
 
@@ -109,6 +113,7 @@ constructor(
             userHandle = null,
             onDialogEventListener = onDialogEventListener,
             mediaSwitchingType = mediaSwitchingType,
+            useSystemColors = true,
         )
     }
 
@@ -124,6 +129,7 @@ constructor(
         token: MediaSession.Token? = null,
         onDialogEventListener: MediaOutputDialog.OnDialogEventListener? = null,
         mediaSwitchingType: MediaSwitchingType? = null,
+        useSystemColors: Boolean = false,
     ) {
         // Dismiss the previous dialog, if any.
         mediaOutputDialog?.dismiss()
@@ -146,6 +152,7 @@ constructor(
                 uiEventLogger,
                 includePlaybackAndAppMetadata,
                 onDialogEventListener,
+                useSystemColors,
             )
 
         // Show the dialog.

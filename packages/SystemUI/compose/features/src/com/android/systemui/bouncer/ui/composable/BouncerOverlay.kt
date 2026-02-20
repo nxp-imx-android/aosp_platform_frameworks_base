@@ -139,7 +139,8 @@ private fun ContentScope.BouncerOverlay(
             // Background is defined in a separate Composable from BouncerContent to be able to
             // animate it differently.
             Background(
-                Modifier.element(Bouncer.Elements.Background),
+                Modifier.element(Bouncer.Elements.Background)
+                    .testTag(Bouncer.Elements.Background.testTag),
                 color = backgroundColor,
                 isContainerized = isContainerized,
             )

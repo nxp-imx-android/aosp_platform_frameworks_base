@@ -696,7 +696,7 @@ class MemoryLimiter implements AutoCloseable {
     /**
      * Create the default MemoryLimiter, based on the feature flag and the enclosing process.
      */
-    static MemoryLimiter getDefaultMemoryLimiter(@Nullable ActivityManagerService ams) {
+    static MemoryLimiter getDefaultMemoryLimiter() {
         return new MemoryLimiter(getDefaultController());
     }
 

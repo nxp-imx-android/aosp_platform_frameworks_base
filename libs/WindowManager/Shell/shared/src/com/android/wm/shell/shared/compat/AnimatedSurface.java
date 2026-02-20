@@ -17,6 +17,8 @@
 package com.android.wm.shell.shared.compat;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+import static android.view.RemoteAnimationTarget.MODE_CLOSING;
+import static android.view.RemoteAnimationTarget.MODE_OPENING;
 import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
 
 import android.annotation.Nullable;
@@ -110,6 +112,15 @@ public class AnimatedSurface {
      */
     public final boolean allowEnterPip;
 
+    /**
+     * The index of the element in the tree in prefix order. This should be used for z-layering
+     * to preserve original z-layer order in the hierarchy tree assuming no "boosting" needs to
+     * happen.
+     * Note: WindowManager may set a z-order different from the prefix order, and has set the
+     * correct layer for the animation leash already, so this should not be used for layer any more.
+     */
+    public final int order;
+
     public AnimatedSurface(
             SurfaceControl leash, @Nullable WindowAnimationState startState,
             WindowAnimationState endState, int backgroundColor, boolean isTranslucent,
@@ -117,7 +128,7 @@ public class AnimatedSurface {
             Rect localBounds, Point position, int rotationChange,
             WindowConfiguration windowConfiguration, int taskId, int windowType,
             SurfaceControl startLeash, Rect startBounds, Rect contentInsets,
-            boolean willShowImeOnTarget, boolean isNotInRecents, boolean allowEnterPip) {
+            boolean willShowImeOnTarget, boolean isNotInRecents, boolean allowEnterPip, int order) {
         this.leash = leash;
         this.startState = startState;
         this.endState = endState;
@@ -138,6 +149,7 @@ public class AnimatedSurface {
         this.willShowImeOnTarget = willShowImeOnTarget;
         this.isNotInRecents = isNotInRecents;
         this.allowEnterPip = allowEnterPip;
+        this.order = order;
     }
 
     /** See {@link AnimatedSurface#from(RemoteAnimationTarget, WindowAnimationState)}. */
@@ -184,17 +196,18 @@ public class AnimatedSurface {
                 /* contentInsets = */ target.contentInsets,
                 /* willShowImeOnTarget = */ target.willShowImeOnTarget,
                 /* isNotInRecents = */ target.isNotInRecents,
-                /* allowEnterPip = */ target.allowEnterPip);
+                /* allowEnterPip = */ target.allowEnterPip,
+                /* order = */ target.prefixOrderIndex);
     }
 
-    /** See {@link AnimatedSurface#from(TransitionInfo.Change, WindowAnimationState)}. */
-    public static AnimatedSurface from(TransitionInfo.Change change) {
-        return from(change, null /* startState */);
+    /** See {@link AnimatedSurface#from(TransitionInfo.Change, WindowAnimationState, int)}. */
+    public static AnimatedSurface from(TransitionInfo.Change change, int order) {
+        return from(change, null /* startState */, order);
     }
 
     /** Factory for direct use with the Shell APIs. */
     public static AnimatedSurface from(
-            TransitionInfo.Change change, @Nullable WindowAnimationState startState) {
+            TransitionInfo.Change change, @Nullable WindowAnimationState startState, int order) {
         WindowAnimationState endState = new WindowAnimationState();
         endState.bounds = new RectF(change.getEndAbsBounds());
 
@@ -246,7 +259,21 @@ public class AnimatedSurface {
                 /* contentInsets = */ new Rect(0, 0, 0, 0),
                 /* willShowImeOnTarget = */ willShowImeOnTarget,
                 /* isNotInRecents = */ isNotInRecents,
-                /* allowEnterPip = */ change.isAllowEnterPip());
+                /* allowEnterPip = */ change.isAllowEnterPip(),
+                /* order = */ order);
+    }
+
+    /**
+     * Util to obtain mapped {@link AnimatedSurface.Mode} from {@link RemoteAnimationTarget.Mode}.
+     */
+    public static Mode mappedModeFromTarget(@RemoteAnimationTarget.Mode int mode) {
+        final Mode mappedMode;
+        switch (mode) {
+            case MODE_OPENING -> mappedMode = Mode.OPENING;
+            case MODE_CLOSING -> mappedMode = Mode.CLOSING;
+            default -> mappedMode = Mode.OTHER;
+        }
+        return mappedMode;
     }
 
     /** Checks whether this surface is closing based on its mode. */

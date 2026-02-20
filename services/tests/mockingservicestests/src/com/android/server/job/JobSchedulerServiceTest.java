@@ -30,7 +30,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.job.Flags.FLAG_BATCH_ACTIVE_BUCKET_JOBS;
 import static com.android.server.job.Flags.FLAG_BATCH_CONNECTIVITY_JOBS_PER_NETWORK;
-import static com.android.server.job.Flags.FLAG_USE_PERFETTO_SDK_FOR_TRACING;
 import static com.android.server.job.JobSchedulerService.ACTIVE_INDEX;
 import static com.android.server.job.JobSchedulerService.RARE_INDEX;
 import static com.android.server.job.JobSchedulerService.sElapsedRealtimeClock;
@@ -2841,8 +2840,7 @@ public class JobSchedulerServiceTest {
     }
 
     @Test
-    @EnableFlags(FLAG_USE_PERFETTO_SDK_FOR_TRACING)
-    public void testPerfettoTracing_ScheduleJob_FlagEnabled() {
+    public void testPerfettoTracing_ScheduleJob() {
         // Given the job has been scheduled.
         when(mMockPerfettoTracer.isTraceEnabled()).thenReturn(true);
         final JobInfo job =
@@ -2928,8 +2926,7 @@ public class JobSchedulerServiceTest {
 
 
     @Test
-    @EnableFlags(FLAG_USE_PERFETTO_SDK_FOR_TRACING)
-    public void testPerfettoTracing_CancelJob_FlagEnabled() {
+    public void testPerfettoTracing_CancelJob() {
         when(mMockPerfettoTracer.isTraceEnabled()).thenReturn(true);
         // Given the job has been scheduled.
         final JobInfo job =

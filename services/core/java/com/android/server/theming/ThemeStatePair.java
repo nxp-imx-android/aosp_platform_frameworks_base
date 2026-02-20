@@ -22,6 +22,7 @@ import android.content.theming.ThemeStyle;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.systemui.monet.ColorScheme;
 
 import java.io.PrintWriter;
@@ -49,6 +50,8 @@ import java.util.concurrent.ScheduledFuture;
  *
  * @hide
  */
+@VisibleForTesting(visibility =
+        VisibleForTesting.Visibility.PACKAGE)
 public class ThemeStatePair {
     private static final String TAG = "ThemeStatePair";
 
@@ -84,7 +87,7 @@ public class ThemeStatePair {
      * @param environment The system-wide theme environment.
      */
     @SuppressLint("WrongConstant")
-    public ThemeStatePair(
+    ThemeStatePair(
             int userId,
             boolean isSetup,
             int seedColor,
@@ -112,7 +115,7 @@ public class ThemeStatePair {
      *
      * @param newSeedColor The new seed color to apply.
      */
-    public void applySeedColor(int newSeedColor) {
+    void applySeedColor(int newSeedColor) {
         synchronized (mLock) {
             mPending = mPending.withSeedColor(newSeedColor);
         }
@@ -123,7 +126,7 @@ public class ThemeStatePair {
      *
      * @param newStyle The new style to apply.
      */
-    public void applyStyle(@ThemeStyle.Type Integer newStyle) {
+    void applyStyle(@ThemeStyle.Type Integer newStyle) {
         synchronized (mLock) {
             mPending = mPending.withStyle(newStyle);
         }
@@ -134,7 +137,7 @@ public class ThemeStatePair {
      *
      * @param newContrast The new contrast value to apply.
      */
-    public void applyContrast(float newContrast) {
+    void applyContrast(float newContrast) {
         synchronized (mLock) {
             mPending = mPending.withContrast(newContrast);
         }
@@ -143,7 +146,7 @@ public class ThemeStatePair {
     /**
      * Marks the pending theme state as setup complete.
      */
-    public void applySetupComplete() {
+    void applySetupComplete() {
         synchronized (mLock) {
             mPending = mPending.withSetupComplete();
         }
@@ -154,7 +157,7 @@ public class ThemeStatePair {
      *
      * @param profileId The ID of the new profile.
      */
-    public void addProfile(int profileId) {
+    void addProfile(int profileId) {
         synchronized (mLock) {
             mPending = mPending.addProfile(profileId);
         }
@@ -164,7 +167,7 @@ public class ThemeStatePair {
      * Forces an update to the theme by applying a new timestamp to the pending state.
      * This ensures that the theme will be reevaluated and overlays will be updated.
      */
-    public void forceUpdate() {
+    void forceUpdate() {
         synchronized (mLock) {
             mPending = mPending.withTimeStamp();
         }
@@ -178,7 +181,7 @@ public class ThemeStatePair {
      *
      * @return The current state.
      */
-    public ThemeState getCurrentState() {
+    ThemeState getCurrentState() {
         synchronized (mLock) {
             return mCurrent;
         }
@@ -190,7 +193,7 @@ public class ThemeStatePair {
      * @return The pending state, or {@code null} if there are no scheduled updates.
      */
     @Nullable
-    public ThemeState getPendingState() {
+    ThemeState getPendingState() {
         synchronized (mLock) {
             return mPending.equals(mCurrent) ? null : mPending;
         }
@@ -201,7 +204,7 @@ public class ThemeStatePair {
      * or {@code null} if there is no task scheduled.
      */
     @Nullable
-    public ScheduledFuture<?> getFuture() {
+    ScheduledFuture<?> getFuture() {
         synchronized (mLock) {
             return mFuture;
         }
@@ -212,7 +215,7 @@ public class ThemeStatePair {
      *
      * @param newTask The new task to set.
      */
-    public void setFuture(ScheduledFuture<?> newTask) {
+    void setFuture(ScheduledFuture<?> newTask) {
         synchronized (mLock) {
             mFuture = newTask;
         }
@@ -221,7 +224,7 @@ public class ThemeStatePair {
     /**
      * Clears the current theme update task, effectively cancelling any pending updates.
      */
-    public void clearTimer() {
+    void clearTimer() {
         synchronized (mLock) {
             mFuture = null;
         }
@@ -233,7 +236,7 @@ public class ThemeStatePair {
      * @return {@code true} if updates are deferred, {@code false} otherwise.
      * @see #setDeferUpdatesOnLock(boolean)
      */
-    public boolean areUpdatesDeferredOnLock() {
+    boolean areUpdatesDeferredOnLock() {
         synchronized (mLock) {
             return mThemeUpdatesDeferredOnLock;
         }
@@ -250,7 +253,7 @@ public class ThemeStatePair {
      * @param defer {@code true} to defer updates until the next lock, {@code false} to allow
      *              immediate updates.
      */
-    public void setDeferUpdatesOnLock(boolean defer) {
+    void setDeferUpdatesOnLock(boolean defer) {
         synchronized (mLock) {
             mThemeUpdatesDeferredOnLock = defer;
         }
@@ -259,7 +262,7 @@ public class ThemeStatePair {
     /**
      * Returns the set of child profile IDs associated with the pending theme state.
      */
-    public Set<Integer> getPendingChildProfiles() {
+    Set<Integer> getPendingChildProfiles() {
         synchronized (mLock) {
             return mPending.childProfiles();
         }
@@ -268,7 +271,7 @@ public class ThemeStatePair {
     /**
      * Returns the current dark color scheme.
      */
-    public ColorScheme getDarkScheme() {
+    ColorScheme getDarkScheme() {
         synchronized (mLock) {
             return mDarkScheme;
         }
@@ -277,7 +280,7 @@ public class ThemeStatePair {
     /**
      * Returns the current light color scheme.
      */
-    public ColorScheme getLightScheme() {
+    ColorScheme getLightScheme() {
         synchronized (mLock) {
             return mLightScheme;
         }
@@ -291,7 +294,7 @@ public class ThemeStatePair {
      * @return A snapshot of the theme state for overlay application.
      */
     @Nullable
-    public OverlaySnapshot commitAndGetOverlayData() {
+    OverlaySnapshot commitAndGetOverlayData() {
         ThemeState stateToCommit;
         synchronized (mLock) {
             if (!shouldUpdateOverlaysLocked()) {
@@ -339,7 +342,7 @@ public class ThemeStatePair {
      *
      * @return {@code true} if an update is necessary, {@code false} otherwise.
      */
-    public boolean shouldUpdateOverlays() {
+    boolean shouldUpdateOverlays() {
         synchronized (mLock) {
             return shouldUpdateOverlaysLocked();
         }
@@ -373,10 +376,9 @@ public class ThemeStatePair {
      * - Whether the theme state has changed.
      * - Whether the ColorScheme requires a new overlay.
      *
-     * @param isBooting {@code true} if the system is currently in the boot phase.
      * @return {@code true} if an update is necessary, {@code false} otherwise.
      */
-    public boolean shouldUpdate(boolean isBooting) {
+    boolean shouldUpdate() {
         synchronized (mLock) {
             // force update in case of different timeStamp
             if (mCurrent.timeStamp() != mPending.timeStamp()) {
@@ -391,7 +393,7 @@ public class ThemeStatePair {
 
             // If we are booting (in bootanimation), we want to allow updates even if setup is not
             // complete or if updates would otherwise be deferred.
-            if (isBooting) {
+            if (mEnvironment.isBooting()) {
                 return true;
             }
 
@@ -415,8 +417,8 @@ public class ThemeStatePair {
     /**
      * Immutable snapshot of the data required to apply overlays.
      */
-    public record OverlaySnapshot(int userId, Set<Integer> profiles, ColorScheme lightScheme,
-                                  ColorScheme darkScheme, boolean contentChanged) {
+    record OverlaySnapshot(int userId, Set<Integer> profiles, ColorScheme lightScheme,
+                           ColorScheme darkScheme, boolean contentChanged) {
     }
 
     /**
@@ -424,7 +426,7 @@ public class ThemeStatePair {
      *
      * @param pw The PrintWriter to dump the state to.
      */
-    public void dump(PrintWriter pw) {
+    void dump(PrintWriter pw) {
         synchronized (mLock) {
             pw.println("    userId: " + userId);
             pw.println("    isDeferred: " + mThemeUpdatesDeferredOnLock);

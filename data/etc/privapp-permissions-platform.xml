@@ -58,6 +58,7 @@ applications that come with the platform
         <permission name="android.permission.READ_SYSTEM_GRAMMATICAL_GENDER"/>
         <permission name="android.permission.READ_REMOTE_TASKS"/>
         <permission name="android.permission.REQUEST_TASK_HANDOFF"/>
+        <permission name="android.permission.INTERNAL_SYSTEM_WINDOW"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.location.fused">
@@ -717,8 +718,10 @@ applications that come with the platform
         <permission name="android.permission.MANAGE_CONTACTS_PICKER_SESSION" />
         <!-- Permission required for App Lock CTS tests -->
         <permission name="android.permission.TEST_LOCK_APPS"/>
-        <!-- Permission required for personal context settings testing  -->
+        <!-- Permissions required for personal context settings testing  -->
         <permission name="android.permission.CHANGE_PERSONAL_CONTEXT_MODE" />
+        <permission name="android.permission.PERSONAL_CONTEXT_READ_SETTINGS" />
+        <permission name="android.permission.PERSONAL_CONTEXT_WRITE_SETTINGS" />
         <!-- Permission required for CTS test - CtsAttentionServiceDeviceTestCases -->
         <permission name="android.permission.ACCESS_ATTENTION_LISTENER" />
     </privapp-permissions>

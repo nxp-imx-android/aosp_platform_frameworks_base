@@ -66,6 +66,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayController
@@ -286,8 +287,12 @@ class LayoutMenu(
     ) : OnClickListener, OnTouchListener {
         val rootView =
             LayoutInflater.from(context)
-                .inflate(R.layout.desktop_mode_window_decor_layout_menu, null /* root */)
-                as CaptionMenuLayout
+                .inflate(
+                    if (Flags.enableConsolidatedWindowOptions())
+                        R.layout.desktop_mode_window_decor_layout_menu
+                    else R.layout.desktop_mode_window_decor_layout_menu_legacy,
+                    null, /* root */
+                ) as CaptionMenuLayout
         private val container = requireViewById(R.id.container)
         private val immersiveToggleContainer =
             requireViewById(R.id.layout_menu_immersive_toggle_container) as View
@@ -304,6 +309,10 @@ class LayoutMenu(
         private val snapContainer = requireViewById(R.id.layout_menu_snap_container) as View
         private val snapWindowText = requireViewById(R.id.layout_menu_snap_window_text) as TextView
         private val snapButtonsLayout = requireViewById(R.id.layout_menu_snap_menu_layout)
+        private val windowingPillView =
+            if (Flags.enableConsolidatedWindowOptions())
+                requireViewById(R.id.windowing_pill) as WindowingPillView
+            else null
 
         // If layout direction is RTL, layout menu will be mirrored, switching the order of the
         // snap right/left buttons.
@@ -613,6 +622,16 @@ class LayoutMenu(
             sizeToggleButtonText.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
             immersiveToggleButton.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
             immersiveToggleButtonText.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+
+            if (Flags.enableConsolidatedWindowOptions()) {
+                requireWindowingPillView()
+                    .initialize(
+                        windowDecorationActions,
+                        desktopModeUiEventLogger,
+                        /* shouldShowDesktopModeButton= */ true,
+                        onPillItemClicked = { onLayoutMenuClickedListener?.invoke() },
+                    )
+            }
         }
 
         override fun onClick(v: View) {
@@ -647,7 +666,11 @@ class LayoutMenu(
             this.taskInfo = taskInfo
             this.style = calculateMenuStyle(taskInfo)
 
-            rootView.background.setTint(style.backgroundColor)
+            if (Flags.enableConsolidatedWindowOptions()) {
+                container.background.setTint(style.backgroundColor)
+            } else {
+                rootView.background.setTint(style.backgroundColor)
+            }
 
             // Maximize option.
             sizeToggleButton.background = style.maximizeOption.drawable
@@ -660,10 +683,16 @@ class LayoutMenu(
             // Snap options.
             snapWindowText.setTextColor(style.textColor)
             updateSplitSnapSelection(SnapToHalfSelection.NONE)
+
+            if (Flags.enableConsolidatedWindowOptions()) {
+                requireWindowingPillView().bind(taskInfo)
+                requireWindowingPillView().background.setTint(style.backgroundColor)
+            }
         }
 
         /** Animate the opening of the menu */
         fun animateOpenMenu(onEnd: () -> Unit) {
+            // TODO: b/452576193 - Consider animating WindowingPillView.
             sizeToggleButton.setLayerType(View.LAYER_TYPE_HARDWARE, null)
             sizeToggleButtonText.setLayerType(View.LAYER_TYPE_HARDWARE, null)
             immersiveToggleButton.setLayerType(View.LAYER_TYPE_HARDWARE, null)
@@ -745,6 +774,7 @@ class LayoutMenu(
 
         /** Animate the closing of the menu */
         fun animateCloseMenu(onEnd: (() -> Unit)) {
+            // TODO: b/452576193 - Consider animating WindowingPillView.
             sizeToggleButton.setLayerType(View.LAYER_TYPE_HARDWARE, null)
             sizeToggleButtonText.setLayerType(View.LAYER_TYPE_HARDWARE, null)
             immersiveToggleButton.setLayerType(View.LAYER_TYPE_HARDWARE, null)
@@ -1108,6 +1138,11 @@ class LayoutMenu(
         }
 
         private fun requireViewById(id: Int) = rootView.requireViewById<View>(id)
+
+        private fun requireWindowingPillView() =
+            checkNotNull(windowingPillView) {
+                "windowingPillView should not be null with flag enabled"
+            }
 
         /** The style to apply to the menu. */
         data class MenuStyle(

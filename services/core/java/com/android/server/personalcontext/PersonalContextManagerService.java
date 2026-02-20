@@ -342,7 +342,9 @@ public class PersonalContextManagerService extends SystemService {
                         renderTokens,
                         HINT_SIGNING_KEY,
                         mLogger,
-                        mExecutor);
+                        mExecutor,
+                        (componentId, insights)
+                                -> startInsightWorkflow(userId, componentId, insights));
             } else {
                 Log.w(TAG, "Hint processing disabled by "
                         + "enable_personal_context_service_breaking_bug_fixes flag");
@@ -352,7 +354,8 @@ public class PersonalContextManagerService extends SystemService {
         }
     }
 
-    private void startInsightWorkflow(@UserIdInt int userId, UUID componentId,
+    @VisibleForTesting
+    void startInsightWorkflow(@UserIdInt int userId, UUID componentId,
             Set<ContextInsight> insights) {
         final HashSet<PublishedContextInsight> publishedInsights = new HashSet<>();
         for (ContextInsight insight : insights) {
@@ -365,14 +368,12 @@ public class PersonalContextManagerService extends SystemService {
     private void startPublishedInsightWorkflow(@UserIdInt int userId, UUID componentId,
             Set<PublishedContextInsight> insights) {
         final ContextComponentManager componentManager = getComponentManagerForUser(userId);
-        final HashSet<PublishedContextInsight> publishedInsights = new HashSet<>();
-
         if (componentManager == null) {
             Slog.w(TAG, "Cannot start renderer workflow, no component manager for user " + userId);
             return;
         }
 
-        RendererWorkflow.start(componentManager, publishedInsights, HINT_SIGNING_KEY, mLogger,
+        RendererWorkflow.start(componentManager, insights, HINT_SIGNING_KEY, mLogger,
                 mExecutor);
     }
 
@@ -551,13 +552,59 @@ public class PersonalContextManagerService extends SystemService {
                     });
         }
 
-        @PermissionManuallyEnforced
+        // Suppressing warning as enforcement is currently behind a flag
+        @SuppressWarnings("MissingEnforcePermissionHelper")
+        @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS)
+        @Override
+        public boolean isEnabled(int userId) {
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
+                isEnabled_enforcePermission();
+            }
+            verifyUser(userId);
+            return Boolean.TRUE.equals(
+                    Binder.withCleanCallingIdentity(
+                            () -> {
+                                // TODO(b/477958468): Correctly handle enabling/disabling the
+                                //  service and then make the default "disabled".
+                                final Context context = getService().getContext();
+                                return Settings.Secure.getIntForUser(
+                                        context.getContentResolver(),
+                                        Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+                                        1, userId) == 1;
+                            }));
+        }
+
+        // Suppressing warning as enforcement is currently behind a flag
+        @SuppressWarnings("MissingEnforcePermissionHelper")
+        @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_WRITE_SETTINGS)
+        @Override
+        public void setEnabled(int userId, boolean enabled) {
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
+                setEnabled_enforcePermission();
+            }
+            verifyUser(userId);
+            Binder.withCleanCallingIdentity(
+                    () -> {
+                        final Context context = getService().getContext();
+                        Settings.Secure.putIntForUser(
+                                context.getContentResolver(),
+                                Settings.Secure.PERSONAL_CONTEXT_ENABLED,
+                                enabled ? 1 : 0, userId);
+                    });
+        }
+
+        // Suppressing warning as enforcement is currently behind a flag
+        @SuppressWarnings("MissingEnforcePermissionHelper")
+        @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS)
         @Override
         public void publishTriggeringHint(
                 List<ContextHintWrapper> hints,
                 List<RenderToken> renderTokens,
                 List<ContextHintWrapper> attributionHints,
                 int userId) {
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
+                publishTriggeringHint_enforcePermission();
+            }
             verifyUser(userId);
 
             final int callingPid = Binder.getCallingPid();
@@ -574,13 +621,17 @@ public class PersonalContextManagerService extends SystemService {
                                             new HashSet<>())));
         }
 
-        @PermissionManuallyEnforced
+        // Suppressing warning as enforcement is currently behind a flag
+        @SuppressWarnings("MissingEnforcePermissionHelper")
+        @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS)
         @Override
         public void publishInsight(List<ContextInsightWrapper> insights, ParcelUuid componentId,
                 int userId) {
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
+                publishInsight_enforcePermission();
+            }
             verifyUser(userId);
 
-            // TODO(b/450547433): Add security checks.
             Binder.withCleanCallingIdentity(
                     () ->
                             getService()
@@ -619,11 +670,16 @@ public class PersonalContextManagerService extends SystemService {
                     });
         }
 
-        @PermissionManuallyEnforced
+        // Suppressing warning as enforcement is currently behind a flag
+        @SuppressWarnings("MissingEnforcePermissionHelper")
+        @EnforcePermission(android.Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE)
         @Override
         public void registerInsightSurfaceClient(
                 InsightSurfaceClientInfo clientInfo,
                 int userId) {
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
+                registerInsightSurfaceClient_enforcePermission();
+            }
             verifyUser(userId);
 
             final int callingPid = Binder.getCallingPid();

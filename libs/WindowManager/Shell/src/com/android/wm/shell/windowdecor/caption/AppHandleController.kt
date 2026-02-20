@@ -49,6 +49,7 @@ import com.android.wm.shell.desktopmode.CaptionState
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
+import com.android.wm.shell.recents.PerDisplayRecentsTransitionStateListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
@@ -111,6 +112,7 @@ class AppHandleController(
     private val decorWindowContext: Context,
     private val onCaptionTouchListener: View.OnTouchListener,
     private val appToWebRepository: AppToWebRepository,
+    private val recentsTransitionStateListener: PerDisplayRecentsTransitionStateListener,
     private val handleMenuFactory: HandleMenuFactory = HandleMenuFactory,
     private val appHandleViewHolderFactory: AppHandleViewHolder.Factory =
         AppHandleViewHolder.Factory(),
@@ -146,6 +148,10 @@ class AppHandleController(
 
     private val isOpenByDefaultDialogActive
         get() = openByDefaultDialog != null
+
+    private val isRecentsTransitionRunning
+        get() =
+            display.let { recentsTransitionStateListener.isRecentsAnimationActive(it.displayId) }
 
     private val showInputLayer
         // Don't show the input layer during the recents transition, otherwise it could become

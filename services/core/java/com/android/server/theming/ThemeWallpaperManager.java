@@ -23,6 +23,7 @@ import android.app.WallpaperManager;
 import android.os.Handler;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalServices;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 
@@ -31,11 +32,17 @@ import com.android.systemui.monet.ColorScheme;
  * <p>
  * This class handles cases where WallpaperManager might be missing (for example in Android Auto).
  */
+@VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 public class ThemeWallpaperManager implements WallpaperColorsReader {
 
     @Nullable
     private final WallpaperManagerInternal mService;
 
+    ThemeWallpaperManager() {
+        this(LocalServices.getService(WallpaperManagerInternal.class));
+    }
+
+    @VisibleForTesting
     ThemeWallpaperManager(@Nullable WallpaperManagerInternal service) {
         mService = service;
     }
@@ -44,6 +51,7 @@ public class ThemeWallpaperManager implements WallpaperColorsReader {
      * Registers a listener for wallpaper color changes.
      * If the WallpaperManager is not available, this is a no-op.
      */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public void addOnColorsChangedListener(
             @NonNull WallpaperManagerInternal.ColorsChangedCallbackInternal listener,
             @NonNull Handler handler) {
@@ -75,6 +83,7 @@ public class ThemeWallpaperManager implements WallpaperColorsReader {
      * @return The seed color, or null if no wallpaper color is available.
      */
     @Nullable
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public Integer getSeedColor(int userId) {
         WallpaperColors colors = getWallpaperColors(WallpaperManager.FLAG_SYSTEM, userId);
         if (colors == null) {
@@ -87,7 +96,7 @@ public class ThemeWallpaperManager implements WallpaperColorsReader {
      * Checks if the WallpaperManager is available on this device.
      */
     @VisibleForTesting
-    boolean isWallpaperManagerAvailable() {
+    public boolean isWallpaperManagerAvailable() {
         return mService != null;
     }
 }

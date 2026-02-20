@@ -67,6 +67,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
+import com.android.wm.shell.recents.PerDisplayRecentsTransitionStateListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.annotations.ShellMainThreadImmediate
@@ -140,6 +141,7 @@ constructor(
     private val appToWebRepository: AppToWebRepository,
     private val captionVisibilityHelper: CaptionVisibilityHelper,
     private val focusTransitionObserver: FocusTransitionObserver,
+    private val recentsTransitionStateListener: PerDisplayRecentsTransitionStateListener,
     private val windowManagerWrapper: WindowManagerWrapper =
         WindowManagerWrapper(context.getSystemService(WindowManager::class.java)),
     private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder = {
@@ -240,11 +242,10 @@ constructor(
      * corner radius of its task surfaces, so each window decoration should stop updating the corner
      * radius of its task surface during that time.
      */
-    var isRecentsTransitionRunning = false
-        set(running) {
-            field = running
-            captionController?.isRecentsTransitionRunning = running
-        }
+    private val isRecentsTransitionRunning
+        get() =
+            display?.let { recentsTransitionStateListener.isRecentsAnimationActive(it.displayId) }
+                ?: false
 
     /** Adds the [dragResizeListener] which gets notified on the task being drag resized. */
     fun addDragResizeListener(dragResizeListener: DragEventListener?) {
@@ -1094,6 +1095,7 @@ constructor(
                     decorWindowContext,
                     onTouchListener,
                     appToWebRepository,
+                    recentsTransitionStateListener,
                 )
             }
 

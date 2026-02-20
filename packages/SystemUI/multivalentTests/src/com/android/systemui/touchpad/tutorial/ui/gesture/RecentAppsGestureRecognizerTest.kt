@@ -84,6 +84,14 @@ class RecentAppsGestureRecognizerTest : SysuiTestCase() {
         assertProgressWhileMovingFingers(deltaY = -SWIPE_DISTANCE * 2, expectedProgress = 1f)
     }
 
+    @Test
+    fun triggersFinishedGestureOnFirstSwipe() {
+        val events = ThreeFingerGesture.swipeUp()
+
+        events.forEach { gestureRecognizer.accept(it) }
+        assertThat(gestureState).isEqualTo(GestureState.Finished)
+    }
+
     private fun assertStateAfterEvents(events: List<MotionEvent>, expectedState: GestureState) {
         events.forEach { gestureRecognizer.accept(it) }
         assertThat(gestureState).isEqualTo(expectedState)

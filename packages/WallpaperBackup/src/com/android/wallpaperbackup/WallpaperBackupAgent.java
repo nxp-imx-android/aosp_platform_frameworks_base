@@ -967,10 +967,12 @@ public class WallpaperBackupAgent extends BackupAgent {
 
     /**
      * This method computes the original crop of the user without parallax.
-     *
+     * <p>
      * NOTE: When the user sets the wallpaper with a specific crop, there may additional image added
      * to the crop to support parallax. In order to determine the user's actual crop the parallax
      * must be removed if it exists.
+     * <p>
+     * If instead the display is wider than the crop, remove height from both sides of the crop.
      */
     Rect withoutParallax(Rect crop, Point displaySize, boolean rtl, Point bitmapSize) {
         if (DEBUG) {
@@ -978,7 +980,17 @@ public class WallpaperBackupAgent extends BackupAgent {
         }
 
         Rect adjustedCrop = new Rect(crop);
+        float cropRatio = (float) crop.width() / crop.height();
         float suggestedDisplayRatio = (float) displaySize.x / displaySize.y;
+
+        if (fixLargeScreenWallpaperCropsOnRestore()  && cropRatio < suggestedDisplayRatio) {
+            // if the display is wider than the crop, remove height from crop to match display ratio
+            int actualCropHeight = (int) (0.5f + crop.width() / suggestedDisplayRatio);
+            int heightToRemove = crop.height() - actualCropHeight;
+            adjustedCrop.top += heightToRemove / 2;
+            adjustedCrop.bottom -= heightToRemove / 2 + heightToRemove % 2;
+            return adjustedCrop;
+        }
 
         // here we calculate the width of the wallpaper image such that it has the same aspect ratio
         // as the given display i.e. the width of the image on a single page of the device without
@@ -1099,7 +1111,7 @@ public class WallpaperBackupAgent extends BackupAgent {
             if (adjustedCrop.left < 0) {
                 adjustedCrop.offset(-adjustedCrop.left, 0);
             } else if (adjustedCrop.right > bitmapSize.x) {
-                adjustedCrop.offset(adjustedCrop.right - bitmapSize.x, 0);
+                adjustedCrop.offset(bitmapSize.x - adjustedCrop.right, 0);
             }
 
             // If we couldn't add enough width to match the new aspect ratio, remove height

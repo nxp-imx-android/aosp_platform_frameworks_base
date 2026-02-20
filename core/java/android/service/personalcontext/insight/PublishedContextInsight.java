@@ -15,18 +15,14 @@
  */
 package android.service.personalcontext.insight;
 
-import static java.util.Objects.requireNonNull;
-
 import android.annotation.FlaggedApi;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.RenderToken;
-import android.service.personalcontext.insight.interaction.InsightEvent;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -79,7 +75,7 @@ public final class PublishedContextInsight {
      * {@link PersonalContextManager}, such as event reporting. In these cases, the id helps route
      * back the {@link ContextInsight} to the original publisher.
      *
-     * @see PublishedContextInsight#reportEvent(Context, int, RenderToken, Bundle)
+     * @see PersonalContextManager#reportInsightEvent(PublishedContextInsight, int, RenderToken)
      * @return the component id of the original publisher
      */
     public @NonNull UUID getPublisherComponentId() {
@@ -121,31 +117,5 @@ public final class PublishedContextInsight {
         b.putBundle(KEY_INSIGHT, mInsight.toBundle());
 
         return b;
-    }
-
-    /**
-     * Reports an event that occurred on this insight from a Renderer back to the Understander that
-     * published it.
-     *
-     * @param context Context
-     * @param eventType Type of event that occurred (see {@code InsightEvent.EVENT_*})
-     * @param renderToken RenderToken supplied to the Renderer
-     * @param extras Bundle of additional data that should be delivered along with the event
-     */
-    public void reportEvent(
-            @NonNull Context context,
-            @InsightEvent.EventType int eventType,
-            @NonNull RenderToken renderToken,
-            @Nullable Bundle extras) {
-        final PersonalContextManager personalContextManager = requireNonNull(
-                context.getSystemService(PersonalContextManager.class),
-                "Personal Context Manager service is not running");
-
-        personalContextManager.reportEvent(new InsightEvent(
-                eventType,
-                this,
-                System.currentTimeMillis(),
-                renderToken,
-                extras));
     }
 }

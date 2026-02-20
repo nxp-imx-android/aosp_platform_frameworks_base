@@ -20,7 +20,12 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.notificationRulesInteractor
 
 val Kosmos.notificationRulesScreenViewModel by
-    Kosmos.Fixture { NotificationRulesScreenViewModelImpl(notificationRulesInteractor) }
+    Kosmos.Fixture {
+        NotificationRulesScreenViewModelImpl(
+            notificationRulesInteractor,
+            notificationRuleEditViewModelFactory,
+        )
+    }
 
 val Kosmos.notificationRulesScreenViewModelFactory by
     Kosmos.Fixture {

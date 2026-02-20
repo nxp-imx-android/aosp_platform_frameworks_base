@@ -73,4 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"ನಿಮ್ಮ ಫೋನ್‌ ಚಾರ್ಜ್‌ ಆಗುತ್ತಿರುವಾಗ ಗಡಿಯಾರ, ಫೋಟೋಗಳು ಅಥವಾ ಹವಾಮಾನವನ್ನು ತೋರಿಸಿ"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"ನಿಮ್ಮ ಟ್ಯಾಬ್ಲೆಟ್‌‌ ಚಾರ್ಜ್‌ ಆಗುತ್ತಿರುವಾಗ ಗಡಿಯಾರ, ಫೋಟೋಗಳು ಅಥವಾ ಹವಾಮಾನವನ್ನು ತೋರಿಸಿ"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"ನಿಮ್ಮ ಫೋನ್‌ ಚಾರ್ಜ್ ಟ್‌ ಆಗುತ್ತಿರುವಾಗ ಗಡಿಯಾರ, ಫೋಟೋಗಳು ಅಥವಾ ಹವಾಮಾನವನ್ನು ತೋರಿಸಿ"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"ಪುನಃ ಫೇಸ್‌ ಅನ್‌ಲಾಕ್‌ ಪ್ರಯತ್ನಿಸಿ"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"ಫೇಸ್‌ ಅನ್‌ಲಾಕ್‌ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್‌ ಮಾಡಿ"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"ಫೇಸ್‌ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡುವಿಕೆಯನ್ನು ಪುನಃ ಸೆಟಪ್‌ ಮಾಡಿ"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"ಮುಖವನ್ನು ಬಳಸಿ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"ಮುಖವನ್ನು ಬಳಸಿ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ಮುಂದುವರಿಯಲು ಒತ್ತಿ."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ಮುಂದುವರಿಯಲು ಒತ್ತಿ."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"ಮುಖವನ್ನು ಬಳಸಿ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ಮುಂದುವರಿಯಲು ಟ್ಯಾಪ್‌ ಮಾಡಿ."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ಮುಂದುವರಿಯಲು ಟ್ಯಾಪ್‌ ಮಾಡಿ."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"ಫೇಸ್‌ ಅನ್‌ಲಾಕ್‌"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"ಫೇಸ್‌ ಅನ್‌ಲಾಕ್‌ ಅನ್ನು ಸೆಟಪ್‌ ಮಾಡಿ"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡುವಿಕೆಯನ್ನು ಸೆಟಪ್‌ ಮಾಡಿ"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"ಫೇಸ್ ಅನ್‌ಲಾಕ್‌ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್‌ ಮಾಡಲು, ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಫೇಸ್‌ ಮಾಡೆಲ್‌ ಅನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ.\n\nನಿಮ್ಮ ಫೋನ್‌ ಅನ್ನು ಅನ್‌ಲಾಕ್‌ ಮಾಡುವುದಕ್ಕೆ ನಿಮ್ಮ ಫೇಸ್‌ ಅನ್ನು ಬಳಸಲು ನೀವು ಈ ಫೀಚರ್‌ ಅನ್ನು ಮತ್ತೊಮ್ಮೆ ಸೆಟಪ್‌ ಮಾಡುವ ಅಗತ್ಯವಿದೆ."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡುವಿಕೆಯನ್ನು ಪುನಃ ಸೆಟಪ್‌ ಮಾಡಲು, ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಫೇಸ್‌ ಮಾಡೆಲ್‌ ಅನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ.\n\nನಿಮ್ಮ ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್‌ ಮಾಡಲು ನಿಮ್ಮ ಮುಖವನ್ನು ಬಳಸಲು ನೀವು ಈ ಫೀಚರ್‌ ಅನ್ನು ಪುನಃ ಸೆಟಪ್‌ ಮಾಡಬೇಕಾಗುತ್ತದೆ."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"ಫೇಸ್‌ ಅನ್‌ಲಾಕ್‌ ಅನ್ನು ಸೆಟಪ್‌ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಲು, ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡುವುದನ್ನು ಸೆಟಪ್‌ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ."</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"ಫೇಸ್‌ ಅನ್‌ಲಾಕ್‌ ಲಭ್ಯವಿಲ್ಲ"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"ಫೇಸ್‌ ಅನ್‌ಲಾಕ್‌ ಅನ್ನು ಪುನಃ ಪ್ರಯತ್ನಿಸಲು ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್‌ ಮಾಡಿ"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"ಫೇಸ್‌ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲು ಪುನಃ ಪ್ರಯತ್ನಿಸಲು ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್‌ ಮಾಡಿ"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"ಮುಖವನ್ನು ಬಳಸಿ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ತೆರೆಯಲು ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್‌ ಮಾಡಿ."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ತೆರೆಯಲು ಮೇಲಕ್ಕೆ ಸ್ವೈಪ್‌ ಮಾಡಿ."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"ಮುಖವನ್ನು ಬಳಸಿ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ಮುಂದುವರಿಸಲು ದೃಢೀಕರಿಸಿ ಎಂಬುದನ್ನು ಒತ್ತಿ."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ಮುಂದುವರಿಸಲು ದೃಢೀಕರಿಸಿ ಎಂಬುದನ್ನು ಒತ್ತಿ."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"ಮುಖವನ್ನು ಬಳಸಿ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ತೆರೆಯಲು ಅನ್‌ಲಾಕ್‌ ಐಕಾನ್‌ ಎಂಬುದನ್ನು ಒತ್ತಿ."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ತೆರೆಯಲು ಅನ್‌ಲಾಕ್‌ ಐಕಾನ್‌ ಎಂಬುದನ್ನು ಒತ್ತಿ."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"ಮುಖವನ್ನು ಬಳಸಿ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ತೆರೆಯಲು ಒತ್ತಿ."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ. ತೆರೆಯಲು ಒತ್ತಿ."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"ಮುಖವನ್ನು ಬಳಸಿ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್‌ ಮಾಡಲಾಗಿದೆ"</string>
 </resources>

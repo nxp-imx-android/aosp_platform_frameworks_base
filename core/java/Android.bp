@@ -554,14 +554,7 @@ filegroup {
         "android/util/XmlPullAttributes.java",
         "android/util/Xml.java",
         "com/android/internal/util/ArrayUtils.java",
-        "com/android/internal/util/ArtFastDataInput.java",
-        "com/android/internal/util/ArtFastDataOutput.java",
-        "com/android/internal/util/ArtBinaryXmlPullParser.java",
-        "com/android/internal/util/ArtBinaryXmlSerializer.java",
         "com/android/internal/util/HexDump.java",
-        "com/android/internal/util/XmlSerializerWrapper.java",
-        "com/android/internal/util/XmlPullParserWrapper.java",
-        "com/android/internal/util/XmlUtils.java",
     ],
 }
 
@@ -581,7 +574,6 @@ filegroup {
         "com/android/internal/util/ParseUtils.java",
         "com/android/internal/util/RingBufferIndices.java",
         "com/android/internal/util/StatLogger.java",
-        "com/android/internal/util/XmlUtils.java",
     ],
 }
 

@@ -16,8 +16,6 @@
 
 package com.android.server.power.stats;
 
-import static android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -36,15 +34,19 @@ import android.os.HandlerThread;
 import android.os.PersistableBundle;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.power.PowerStatsInternal;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.os.PowerStats;
+import com.android.server.power.optimization.Flags;
 import com.android.server.power.stats.format.PowerStatsLayout;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -60,6 +62,9 @@ public class PowerStatsCollectorTest {
     private PowerStatsCollector mCollector;
     private PowerStats mCollectedStats;
     private PowerStatsUidResolver mUidResolver;
+
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Before
     public void setup() {
@@ -127,17 +132,15 @@ public class PowerStatsCollectorTest {
     }
 
     @Test
-    @RequiresFlagsEnabled(FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
-    public void consumedEnergyRetriever_pcc() throws Exception {
+    public void checkUidStatsConsumedEnergy_singleChildUid() throws Exception {
+        // Arrange block
         int voltageMv = 3500;
         int energyConsumerId = 1;
-        int pccEnergyUWs = 1000;
+        int childUidEnergyUWs = 1000;
         int appUid = 10000;
-        int pccUid = 30000;
-
-        // Establish the mapping from PCC UID to App UID
-        when(mUidResolver.getOwnerUid(pccUid)).thenReturn(appUid);
-
+        int childUid = 30000;
+        // Establish the mapping from child UID to app UID
+        when(mUidResolver.getOwnerUid(childUid)).thenReturn(appUid);
         // Mock Energy Consumers
         PowerStatsInternal powerStatsInternal = mock(PowerStatsInternal.class);
         when(powerStatsInternal.getEnergyConsumerInfo())
@@ -149,7 +152,6 @@ public class PowerStatsCollectorTest {
                             name = "CPU0";
                         }}
                 });
-
         // Mock Energy Consumption with Attribution
         CompletableFuture<EnergyConsumerResult[]> future = mock(CompletableFuture.class);
         when(future.get(anyLong(), any(TimeUnit.class)))
@@ -159,7 +161,7 @@ public class PowerStatsCollectorTest {
                             this.energyUWs = 0;
                             attribution = new EnergyConsumerAttribution[]{
                                     new EnergyConsumerAttribution() {{
-                                        uid = pccUid;
+                                        uid = childUid;
                                         this.energyUWs = 0;
                                     }}
                             };
@@ -168,39 +170,127 @@ public class PowerStatsCollectorTest {
                 .thenReturn(new EnergyConsumerResult[]{
                         new EnergyConsumerResult() {{
                             id = energyConsumerId;
-                            this.energyUWs = pccEnergyUWs;
+                            this.energyUWs = childUidEnergyUWs;
                             attribution = new EnergyConsumerAttribution[]{
                                     new EnergyConsumerAttribution() {{
-                                        uid = pccUid;
-                                        this.energyUWs = pccEnergyUWs;
+                                        uid = childUid;
+                                        this.energyUWs = childUidEnergyUWs;
                                     }}
                             };
                         }}
                 });
         when(powerStatsInternal.getEnergyConsumedAsync(eq(new int[]{energyConsumerId})))
                 .thenReturn(future);
-
         PowerStatsCollector.ConsumedEnergyRetrieverImpl retriever =
                 new PowerStatsCollector.ConsumedEnergyRetrieverImpl(powerStatsInternal,
                         () -> voltageMv);
-
         TestPowerStatsLayout layout = new TestPowerStatsLayout();
         PowerStats.Descriptor descriptor = new PowerStats.Descriptor(
                 0, 1, null, 0, 1, new PersistableBundle());
         layout.toExtras(descriptor.extras);
         PowerStats powerStats = new PowerStats(descriptor);
-
         PowerStatsCollector.ConsumedEnergyHelper helper = mCollector.new ConsumedEnergyHelper(
                 retriever, energyConsumerId, true);
+
+        // Act block
         helper.collectConsumedEnergy(powerStats, layout);
         helper.collectConsumedEnergy(powerStats, layout);
 
-        // Verify that the energy was attributed to the App UID, not the PCC UID
+        // Assert block
+        // Verify that the energy was attributed to the app UID, not the child UID
         long[] uidStats = powerStats.uidStats.get(appUid);
         assertThat(uidStats).isNotNull();
         assertThat(layout.getUidConsumedEnergy(uidStats, 0))
-                .isEqualTo(PowerStatsCollector.uJtoUc(pccEnergyUWs, voltageMv));
-        assertThat(powerStats.uidStats.get(pccUid)).isNull();
+                .isEqualTo(PowerStatsCollector.uJtoUc(childUidEnergyUWs, voltageMv));
+        assertThat(powerStats.uidStats.get(childUid)).isNull();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_UID_PARENT_ATTRIBUTION_PREVENT_OVERWRITE)
+    public void checkUidStatsConsumedEnergy_multiChildUid() throws Exception {
+        // Arrange block
+        int voltageMv = 3500;
+        int energyConsumerId = 1;
+        int childUid1EnergyUWs = 1000;
+        int childUid2EnergyUWs = 1500;
+        int appUid = 10000;
+        int childUid1 = 30000;
+        int childUid2 = 35000;
+        // Establish the mapping from child UID to app UID
+        when(mUidResolver.getOwnerUid(childUid1)).thenReturn(appUid);
+        when(mUidResolver.getOwnerUid(childUid2)).thenReturn(appUid);
+        // Mock Energy Consumers
+        PowerStatsInternal powerStatsInternal = mock(PowerStatsInternal.class);
+        when(powerStatsInternal.getEnergyConsumerInfo())
+                .thenReturn(new EnergyConsumer[]{
+                        new EnergyConsumer() {{
+                            id = energyConsumerId;
+                            type = EnergyConsumerType.CPU_CLUSTER;
+                            ordinal = 0;
+                            name = "CPU0";
+                        }}
+                });
+        // Mock Energy Consumption with Attribution
+        CompletableFuture<EnergyConsumerResult[]> future = mock(CompletableFuture.class);
+        when(future.get(anyLong(), any(TimeUnit.class)))
+                .thenReturn(new EnergyConsumerResult[]{
+                        new EnergyConsumerResult() {{
+                            id = energyConsumerId;
+                            this.energyUWs = 0;
+                            attribution = new EnergyConsumerAttribution[]{
+                                    new EnergyConsumerAttribution() {{
+                                        uid = childUid1;
+                                        this.energyUWs = 0;
+                                    }},
+                                    new EnergyConsumerAttribution() {{
+                                        uid = childUid2;
+                                        this.energyUWs = 0;
+                                    }}
+                            };
+                        }}
+                })
+                .thenReturn(new EnergyConsumerResult[]{
+                        new EnergyConsumerResult() {{
+                            id = energyConsumerId;
+                            this.energyUWs = childUid1EnergyUWs + childUid2EnergyUWs;
+                            attribution = new EnergyConsumerAttribution[]{
+                                    new EnergyConsumerAttribution() {{
+                                        uid = childUid1;
+                                        this.energyUWs = childUid1EnergyUWs;
+                                    }},
+                                    new EnergyConsumerAttribution() {{
+                                        uid = childUid2;
+                                        this.energyUWs = childUid2EnergyUWs;
+                                    }}
+                            };
+                        }}
+                });
+        when(powerStatsInternal.getEnergyConsumedAsync(eq(new int[]{energyConsumerId})))
+                .thenReturn(future);
+        PowerStatsCollector.ConsumedEnergyRetrieverImpl retriever =
+                new PowerStatsCollector.ConsumedEnergyRetrieverImpl(powerStatsInternal,
+                        () -> voltageMv);
+        TestPowerStatsLayout layout = new TestPowerStatsLayout();
+        PowerStats.Descriptor descriptor = new PowerStats.Descriptor(
+                0, 1, null, 0, 1, new PersistableBundle());
+        layout.toExtras(descriptor.extras);
+        PowerStats powerStats = new PowerStats(descriptor);
+        PowerStatsCollector.ConsumedEnergyHelper helper = mCollector.new ConsumedEnergyHelper(
+                retriever, energyConsumerId, true);
+
+        // Act block
+        helper.collectConsumedEnergy(powerStats, layout);
+        helper.collectConsumedEnergy(powerStats, layout);
+
+        // Assert block
+        // Verify that the energy was attributed to the app UID, not the child UID
+        long[] uidStats = powerStats.uidStats.get(appUid);
+        assertThat(uidStats).isNotNull();
+        assertThat(layout.getUidConsumedEnergy(uidStats, 0)).isEqualTo(
+                PowerStatsCollector.uJtoUc(childUid1EnergyUWs, voltageMv)
+                + PowerStatsCollector.uJtoUc(childUid2EnergyUWs, voltageMv));
+        assertThat(powerStats.uidStats.get(childUid1)).isNull();
+        assertThat(powerStats.uidStats.get(childUid2)).isNull();
     }
 
     @SuppressWarnings("unchecked")

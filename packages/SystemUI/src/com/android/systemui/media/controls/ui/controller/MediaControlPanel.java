@@ -780,10 +780,11 @@ public class MediaControlPanel {
                     } else {
                         mMediaOutputDialogManager.createAndShow(
                                 mPackageName,
-                                /* aboveStatusBar */ true,
+                                /* aboveStatusBar= */ true,
                                 mMediaViewHolder.getSeamlessButton(),
                                 UserHandle.getUserHandleForUid(mUid),
-                                mToken);
+                                mToken,
+                                /* useSystemColors= */ false);
                     }
                 });
     }

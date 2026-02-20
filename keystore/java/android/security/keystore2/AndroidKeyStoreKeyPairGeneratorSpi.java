@@ -169,6 +169,8 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
         }
     }
 
+    private static final int NO_KEY_SIZE = -1;
+
     /* EC */
     private static final int EC_DEFAULT_KEY_SIZE = 256;
 
@@ -384,7 +386,7 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
 
             mKeySizeBits = spec.getKeySize();
             initAlgorithmSpecificParameters();
-            if (mKeySizeBits == -1) {
+            if (mKeySizeBits == NO_KEY_SIZE) {
                 mKeySizeBits = getDefaultKeySize(keymasterAlgorithm);
             }
             checkValidKeySize(keymasterAlgorithm, mKeySizeBits, mSpec.isStrongBoxBacked(),
@@ -644,7 +646,7 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                         "Unsupported algorithm: " + mKeymasterAlgorithm);
         }
 
-        if (legacySpec.getKeySize() != -1) {
+        if (legacySpec.getKeySize() != NO_KEY_SIZE) {
             specBuilder.setKeySize(legacySpec.getKeySize());
         }
         if (legacySpec.getAlgorithmParameterSpec() != null) {
@@ -686,7 +688,7 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                 BigInteger publicExponent = null;
                 if (algSpecificSpec instanceof RSAKeyGenParameterSpec) {
                     RSAKeyGenParameterSpec rsaSpec = (RSAKeyGenParameterSpec) algSpecificSpec;
-                    if (mKeySizeBits == -1) {
+                    if (mKeySizeBits == NO_KEY_SIZE) {
                         mKeySizeBits = rsaSpec.getKeysize();
                     } else if (mKeySizeBits != rsaSpec.getKeysize()) {
                         throw new InvalidAlgorithmParameterException("RSA key size must match "
@@ -735,7 +737,7 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                                 "Unsupported EC curve name: " + mEcCurveName
                                         + ". Supported: " + SUPPORTED_EC_CURVE_NAMES);
                     }
-                    if (mKeySizeBits == -1) {
+                    if (mKeySizeBits == NO_KEY_SIZE) {
                         mKeySizeBits = ecSpecKeySizeBits;
                     } else if (mKeySizeBits != ecSpecKeySizeBits) {
                         throw new InvalidAlgorithmParameterException("EC key size must match "
@@ -973,7 +975,10 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
             throws DeviceIdAttestationException, IllegalArgumentException,
             InvalidAlgorithmParameterException {
         List<KeyParameter> params = new ArrayList<>();
-        params.add(KeyStore2ParameterUtils.makeInt(KeymasterDefs.KM_TAG_KEY_SIZE, mKeySizeBits));
+        if (mKeySizeBits != NO_KEY_SIZE) {
+            params.add(
+                    KeyStore2ParameterUtils.makeInt(KeymasterDefs.KM_TAG_KEY_SIZE, mKeySizeBits));
+        }
         params.add(KeyStore2ParameterUtils.makeEnum(
                 KeymasterDefs.KM_TAG_ALGORITHM, mKeymasterAlgorithm
         ));
@@ -1128,11 +1133,11 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                 return EC_DEFAULT_KEY_SIZE;
             case KeymasterDefs.KM_ALGORITHM_RSA:
                 return RSA_DEFAULT_KEY_SIZE;
+            // TODO(b/462036047): Use KeymasterDefs constant when KeyMint V5 is frozen.
             case KeyProperties.KM_ALGORITHM_ML_DSA:
-                // TODO(b/462036047): Use KeymasterDefs constant when KeyMint V5 is frozen.
-                // Android Keystore and KeyMint ignore the key size for ML-DSA, so return an
-                // arbitrary value.
-                return -1;
+                // Android Keystore and KeyMint do not use a key size for ML-DSA, so return an
+                // sentinel value.
+                return NO_KEY_SIZE;
             default:
                 throw new ProviderException("Unsupported algorithm: " + keymasterAlgorithm);
         }
@@ -1168,7 +1173,12 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                 break;
             // TODO(b/462036047): Use KeymasterDefs constant when KeyMint V5 is frozen.
             case KeyProperties.KM_ALGORITHM_ML_DSA:
-                // Key size is not needed for ML-DSA, so the provided key size is ignored.
+                // Key size is not needed for ML-DSA, so the provided key size should be the
+                // sentinel value.
+                if (keySize != NO_KEY_SIZE) {
+                    throw new InvalidAlgorithmParameterException(
+                            "ML-DSA key size unexpectedly specified (as " + keySize + ")");
+                }
                 break;
             default:
                 throw new ProviderException("Unsupported algorithm: " + keymasterAlgorithm);

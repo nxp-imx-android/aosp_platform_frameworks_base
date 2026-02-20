@@ -16,12 +16,20 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.annotation.Px
 import android.content.ContentResolver
+import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 
 /** A view model for editing a specific notification rule. Work-in-progress. */
 public interface NotificationRuleEditViewModel {
+    /** The rule being edited. */
+    public val rule: DraftRuleModel
+
     /**
      * Fetches all contacts whose name matches [searchQuery].
      *
@@ -32,10 +40,21 @@ public interface NotificationRuleEditViewModel {
         contentResolver: ContentResolver,
     ): List<ContactModel>
 
+    /**
+     * Loads the photo thumbnail for a contact from the given [uri].
+     *
+     * @param userContext a context specific to the user that owns the notification rule.
+     */
+    public suspend fun loadContactBitmapFromUri(
+        uri: Uri,
+        userContext: Context,
+        @Px sizePx: Int,
+    ): Bitmap?
+
     /** Fetches all apps installed on the device. */
     public suspend fun fetchInstalledApps(): List<AppModel>
 
     public interface Factory {
-        public fun create(): NotificationRuleEditViewModel
+        public fun create(rule: DraftRuleModel): NotificationRuleEditViewModel
     }
 }

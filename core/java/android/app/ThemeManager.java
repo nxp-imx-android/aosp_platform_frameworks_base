@@ -101,9 +101,11 @@ public class ThemeManager {
     /**
      * Retrieves the current theme information for the calling user.
      *
-     * @return A {@link ThemeInfo} object with the current theme settings.
+     * @return A {@link ThemeInfo} object with the current theme settings, or {@code null} if the
+     * theming service is not yet fully initialized (e.g., during early boot).
      * @hide
      */
+    @Nullable
     public ThemeInfo getUserThemeInfo() {
         try {
             return mService.getUserThemeInfo();
@@ -117,6 +119,9 @@ public class ThemeManager {
      *
      * <p>This method allows clients to register an {@link IThemeSettingsCallback}
      * to be notified whenever the theme settings for the current user are changed.
+     *
+     * <p>If the service is not yet fully initialized (e.g., during early boot), the callback
+     * will be registered and will start receiving events once initialization is complete.
      *
      * @param callback The {@link IThemeSettingsCallback} to register.
      * @return {@code true} if the callback was successfully registered, {@code false} otherwise.
@@ -150,6 +155,9 @@ public class ThemeManager {
 
     /**
      * Registers a callback for theme changed events.
+     *
+     * <p>If the service is not yet fully initialized (e.g., during early boot), the callback
+     * will be registered and will start receiving events once initialization is complete.
      *
      * @param callback The callback to add.
      */
@@ -207,7 +215,7 @@ public class ThemeManager {
      * <p>This method allows clients to retrieve the current theme settings the calling user.
      *
      * @return The {@link ThemeSettings} object containing the current theme settings,
-     * or {@code null} if an error occurs or no settings are found.
+     * or {@code null} if an error occurs, no settings are found, or the service is not yet ready.
      * @hide
      */
     @Nullable

@@ -448,7 +448,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 () -> {
                     SupervisionManager.invalidateGetPoliciesCache();
                     applyPolicy(userId, policy);
-                    dispatchSupervisionAppServiceEvent(
+                    dispatchSupervisionEvent(
                             userId, listener -> listener.onPolicyChanged(policy));
                 });
     }

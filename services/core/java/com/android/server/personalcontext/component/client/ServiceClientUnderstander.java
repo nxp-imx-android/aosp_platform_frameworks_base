@@ -38,12 +38,14 @@ public class ServiceClientUnderstander extends ServiceClientRefiner {
         super(context, componentId, serviceInfo, userHandle);
     }
 
-
     @Override
     public void handleFeedback(PublishedContextInsight insight, Bundle feedback) {
-        runWithBinder(binder -> {
+        runWithScopedBinder((binder, opCallback) -> {
             try {
-                binder.handleFeedback(new PublishedContextInsightWrapper(insight), feedback);
+                binder.handleFeedback(getParcelComponentId(),
+                        new PublishedContextInsightWrapper(insight),
+                        feedback,
+                        opCallback);
             } catch (RemoteException e) {
                 Slog.w(TAG, this + " handleFeedback() failed", e);
             }

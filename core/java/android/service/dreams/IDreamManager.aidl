@@ -75,4 +75,6 @@ interface IDreamManager {
     void unregisterListener(in IDreamManagerListener listener, int userId);
     @EnforcePermission("READ_DREAM_STATE")
     DreamPlaylist getDreamPlaylist(int userId);
+    @EnforcePermission("WRITE_DREAM_STATE")
+    boolean setActiveDream(in ComponentName componentName, int userId);
 }

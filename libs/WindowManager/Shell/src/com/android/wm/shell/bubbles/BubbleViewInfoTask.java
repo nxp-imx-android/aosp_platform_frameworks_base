@@ -370,6 +370,7 @@ public class BubbleViewInfoTask {
         }
 
         Drawable appIcon = appInfo.getAppIcon();
+        Drawable badgeIcon = appInfo.getBadgeIcon();
         if (appInfo.getAppName() != null) {
             info.appName = appInfo.getAppName();
         }
@@ -378,16 +379,16 @@ public class BubbleViewInfoTask {
         info.userType = bubbleUserInfo.getUserType();
         UserIconInfo userIconInfo =
                 new UserIconInfo(b.getUser(), bubbleUserInfo.getUserType());
-        info.bubbleIcon = getBubbleIcon(info, c, b, iconFactory, appIcon, userIconInfo);
+        info.bubbleIcon = getBubbleIcon(info, c, b, iconFactory, appIcon, badgeIcon, userIconInfo);
 
         BitmapInfo badgeBitmapInfo = iconFactory.getBadgeBitmap(
-                appIcon,
+                badgeIcon,
                 userIconInfo,
                 b.isImportantConversation());
         info.badgeBitmap = badgeBitmapInfo;
         // Raw badge bitmap never includes the important conversation ring
         info.rawBadgeBitmap = b.isImportantConversation()
-                ? iconFactory.getBadgeBitmap(appIcon, userIconInfo, false)
+                ? iconFactory.getBadgeBitmap(badgeIcon, userIconInfo, false)
                 : badgeBitmapInfo;
 
         info.dotColor = ColorUtils.blendARGB(badgeBitmapInfo.color,
@@ -396,8 +397,13 @@ public class BubbleViewInfoTask {
     }
 
     private static BubbleIcon getBubbleIcon(BubbleViewInfo info, Context c, Bubble b,
-            BubbleIconFactory iconFactory, Drawable appIcon, UserIconInfo userIconInfo) {
+            BubbleIconFactory iconFactory, Drawable appIcon, Drawable badgeIcon,
+                                            UserIconInfo userIconInfo) {
         if (b.isApp()) {
+            if (b.showAppBadge()) {
+                return new BubbleIcon.AppIcon(
+                        iconFactory.getAppBubbleBitmapInfo(badgeIcon, userIconInfo));
+            }
             return new BubbleIcon.AppIcon(
                     iconFactory.getAppBubbleBitmapInfo(appIcon, userIconInfo));
         } else {

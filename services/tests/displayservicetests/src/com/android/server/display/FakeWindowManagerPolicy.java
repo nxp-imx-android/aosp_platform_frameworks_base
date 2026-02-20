@@ -50,8 +50,7 @@ class FakeWindowManagerPolicy implements WindowManagerPolicy {
     }
 
     @Override
-    public int applyKeyguardOcclusionChange() {
-        return 0;
+    public void applyKeyguardOcclusionChange() {
     }
 
     @Override
@@ -321,16 +320,6 @@ class FakeWindowManagerPolicy implements WindowManagerPolicy {
 
     @Override
     public void enableScreenAfterBoot() {
-
-    }
-
-    @Override
-    public void keepScreenOnStartedLw() {
-
-    }
-
-    @Override
-    public void keepScreenOnStoppedLw() {
 
     }
 

@@ -95,7 +95,20 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     @Test
+    @EnableFlags({
+        android.security.Flags.FLAG_APP_LOCK_APIS,
+        android.security.Flags.FLAG_MOVE_NOTIFY_LOCK_CREDENTIAL_CALLS,
+    })
     public void testSetPasswordPrimaryUser() throws RemoteException {
+        setAndVerifyCredential(PRIMARY_USER_ID, newPassword("password"));
+    }
+
+    @Test
+    @DisableFlags({
+        android.security.Flags.FLAG_APP_LOCK_APIS,
+        android.security.Flags.FLAG_MOVE_NOTIFY_LOCK_CREDENTIAL_CALLS,
+    })
+    public void testSetPasswordPrimaryUser_flagsOff() throws RemoteException {
         setAndVerifyCredential(PRIMARY_USER_ID, newPassword("password"));
     }
 
@@ -1301,7 +1314,13 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
 
     private void setCredential(int userId, LockscreenCredential newCredential,
             LockscreenCredential oldCredential) throws RemoteException {
+        reset(mMockWindowManager, mMockPackageManagerInternal);
         assertTrue(mService.setLockCredential(newCredential, oldCredential, userId));
+        flushHandlerTasks();
+        verify(mMockWindowManager).reportPasswordChanged(userId);
+        if (android.security.Flags.appLockApis()) {
+            verify(mMockPackageManagerInternal).reportLockCredentialChanged(userId);
+        }
         assertEquals(newCredential.getType(), mService.getCredentialType(userId));
         if (newCredential.isNone()) {
             assertEquals(0, mGateKeeperService.getSecureUserId(userId));

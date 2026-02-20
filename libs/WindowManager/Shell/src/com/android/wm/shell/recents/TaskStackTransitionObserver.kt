@@ -57,8 +57,6 @@ class TaskStackTransitionObserver(
     // Set of listeners to notify when the visible tasks change
     private val taskStackTransitionObserverListeners =
         ArrayMap<TaskStackTransitionObserverListener, Executor>()
-    // Used to filter out leaf-tasks
-    private val leafTaskFilter: TransitionUtil.LeafTaskFilter = TransitionUtil.LeafTaskFilter()
 
     init {
         shellInit.addInitCallback(::onInit, this)
@@ -110,6 +108,7 @@ class TaskStackTransitionObserver(
 
         // Filter out non-leaf tasks (we will likely need them later, but visible task tracking
         // is currently used only for visible leaf tasks)
+        val leafTaskFilter = TransitionUtil.LeafTaskFilter(info)
         val changesReversed = mutableListOf<TransitionInfo.Change>()
         for (change in info.changes) {
             if (!leafTaskFilter.test(change)) {

@@ -23,8 +23,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import javax.inject.Inject
@@ -36,19 +34,11 @@ class NotificationRulesRepositoryImpl @Inject constructor() : NotificationRulesR
         mutableStateListOf(
             RuleModel(
                 action = ActionModel.Bundle,
-                filter =
-                    FilterModel(
-                        contacts = ContactsModel(listOf(ContactModel("spam"))),
-                        includedApps = null,
-                    ),
+                filter = FilterModel(contacts = null, includedApps = null),
             ),
             RuleModel(
                 action = ActionModel.Highlight,
-                filter =
-                    FilterModel(
-                        contacts = ContactsModel(listOf(ContactModel("mom"), ContactModel("dad"))),
-                        includedApps = null,
-                    ),
+                filter = FilterModel(contacts = null, includedApps = null),
             ),
         )
         private set

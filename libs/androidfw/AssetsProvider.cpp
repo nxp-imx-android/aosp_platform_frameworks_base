@@ -194,6 +194,23 @@ std::unique_ptr<Asset> ZipAssetsProvider::OpenInternal(const std::string& path,
     return {};
   }
 
+  // There's a few apps that do a crazy thing and patch libziparchive's exports to search their
+  // separate resource files when the currently configured ones don't have the path.
+  // E.g. |com.ataaw.tianyi| just calls FindEntry() again in a different zip_handle, returning
+  // an entry that may have offsets pointing out of the current file. Then they want to also
+  // replace the extraction call to extract out of their file. Unfortunately, if we try accessing
+  // those offsets using the 'proper' zip file's mmap, it crashes, not letting the patched code
+  // to extract their data.
+  // To not crash at least we should make sure the offsets are correct before going any further.
+  const auto array_info = GetArchiveInfo(zip_handle_.get());
+  if (entry.offset + entry.compressed_length > array_info.archive_size) {
+    LOG(ERROR) << "Found zip entry outside of zip file?? Offset " << entry.offset << " + length "
+               << entry.compressed_length << " = " << entry.offset + entry.compressed_length
+               << " is greater than the archive size " << array_info.archive_size << ", for file '"
+               << path << "' in APK '" << name_.GetDebugName();
+    return {};
+  }
+
   if (file_exists != nullptr) {
     *file_exists = true;
   }

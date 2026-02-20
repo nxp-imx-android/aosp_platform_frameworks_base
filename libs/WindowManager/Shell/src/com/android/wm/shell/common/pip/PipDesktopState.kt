@@ -47,7 +47,10 @@ class PipDesktopState(
     init {
         recentsTransitionHandler.addTransitionStateListener(
             object : RecentsTransitionStateListener {
-                override fun onTransitionStateChanged(@RecentsTransitionState state: Int) {
+                override fun onTransitionStateChanged(
+                    @RecentsTransitionState state: Int,
+                    displayId: Int,
+                ) {
                     logD(
                         "Recents transition state changed: %s",
                         RecentsTransitionStateListener.stateToString(state),

@@ -106,6 +106,7 @@ constructor(
                         controller = expandable?.dialogController(),
                         onDialogEventListener = onDialogEventListener,
                         mediaSwitchingType = mediaSwitchingType,
+                        useSystemColors = true,
                     )
                     continuation.invokeOnCancellation { mediaOutputDialogManager.dismiss() }
                 }

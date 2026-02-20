@@ -689,16 +689,6 @@ flag {
 }
 
 flag {
-    name: "fix_canceled_notification_launch_animation"
-    namespace: "systemui"
-    description: "Fix an issue where the Shade ends up in the wrong state if a launch animation controller receives the intent started callback after the animation is cancelled."
-    bug: "461158751"
-    metadata {
-       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "fix_dialog_anim_collapse_flicker"
     namespace: "systemui"
     description: "Fix a flicker in bluetooth tile when it is tapping during dialog collapse animation"
@@ -746,16 +736,6 @@ flag {
   metadata {
     purpose: PURPOSE_BUGFIX
   }
-}
-
-flag {
-    name: "fix_shade_header_wrong_dnd_icon_size"
-    namespace: "lse_desktop_experience"
-    description: "Fix DnD icon size in shade header on connected displays"
-    bug: "445347372"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1014,6 +994,17 @@ flag {
     bug: "425987324"
     metadata {
        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "launcher_proxy_service_short_reconnect"
+    namespace: "systemui"
+    description: "Marks previous launcher proxy service as cleanup when it gets disconnected"
+            " the connection to the service had time to get established."
+    bug: "459609903"
+    metadata {
+      purpose: PURPOSE_BUGFIX
     }
 }
 

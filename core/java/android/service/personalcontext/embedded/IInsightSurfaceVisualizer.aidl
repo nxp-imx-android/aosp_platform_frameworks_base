@@ -18,6 +18,8 @@ package android.service.personalcontext.embedded;
 
 import android.service.personalcontext.embedded.IVisualizationResult;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
+import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.RenderToken;
 import android.view.SurfaceControlViewHost;
@@ -32,6 +34,8 @@ interface IInsightSurfaceVisualizer {
         in PublishedContextInsightWrapper insight,
         in InsightSurfaceClientInfo clientInfo,
         in RenderToken renderToken,
-        in IVisualizationResult result);
-    oneway void onClientDisconnected(in InsightSurfaceClientInfo clientInfo);
+        in IVisualizationResult result,
+        in IOpCallback opCallback);
+    oneway void onClientDisconnected(in InsightSurfaceClientInfo clientInfo,
+    in IOpCallback opCallback);
 }

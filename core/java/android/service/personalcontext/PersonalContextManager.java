@@ -31,13 +31,13 @@ import android.annotation.UserHandleAware;
 import android.content.Context;
 import android.os.ParcelUuid;
 import android.os.RemoteException;
-import android.provider.Settings;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
+import android.service.personalcontext.insight.PublishedContextInsight;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.insight.interaction.ReturnHintReport;
 import android.util.Log;
@@ -136,26 +136,28 @@ public final class PersonalContextManager {
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS)
     public boolean isEnabled() {
-        // TODO(b/477958468): Correctly handle enabling/disabling the service and then make the
-        // default "disabled".
-        return Settings.Secure.getIntForUser(
-                mContext.getContentResolver(),
-                Settings.Secure.PERSONAL_CONTEXT_ENABLED,
-                1, mContext.getUserId()) == 1;
+        try {
+            return mService.isEnabled(mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**
      * Set whether the Personal Context service is enabled.
-     * @param enable whether to enable or disable the service
+     * @param enabled whether to enable or disable the service
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
-    public void setEnabled(boolean enable) {
-        Settings.Secure.putIntForUser(
-                mContext.getContentResolver(),
-                Settings.Secure.PERSONAL_CONTEXT_ENABLED,
-                enable ? 1 : 0, mContext.getUserId());
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_WRITE_SETTINGS)
+    public void setEnabled(boolean enabled) {
+        try {
+            mService.setEnabled(mContext.getUserId(), enabled);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**
@@ -251,6 +253,7 @@ public final class PersonalContextManager {
      * @param returnHintReport Routing information from an insight that these hints are related to
      * @param hints raw data to be injected into the context flow
      */
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS)
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishTriggeringHint(
@@ -287,6 +290,7 @@ public final class PersonalContextManager {
      *                    {@link ContextInsight} back to the publisher.
      * @hide
      */
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS)
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
     public void publishInsight(@NonNull List<ContextInsight> insights, @NonNull UUID componentId) {
@@ -333,6 +337,7 @@ public final class PersonalContextManager {
      */
     @UserHandleAware(
             requiresPermissionIfNotCaller = android.Manifest.permission.INTERACT_ACROSS_USERS)
+    @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE)
     @Nullable
     public void registerInsightSurfaceClient(@NonNull InsightSurfaceClientInfo clientInfo) {
         try {
@@ -429,13 +434,27 @@ public final class PersonalContextManager {
     }
 
     /**
-     * Reports an InsightEvent back to the Understander that generated the Insight.
+     * Reports an event that occurred on this insight from a Renderer back to the Understander that
+     * published it.
+     *
+     * @param insight Insight the event occurred on
+     * @param eventType Type of event that occurred (see {@code InsightEvent.EVENT_*})
+     * @param renderToken RenderToken supplied to the Renderer
      *
      * @hide
      */
-    public void reportEvent(@NonNull InsightEvent event) {
+    @SystemApi
+    public void reportInsightEvent(
+            @NonNull PublishedContextInsight insight,
+            @InsightEvent.EventType int eventType,
+            @NonNull RenderToken renderToken) {
         try {
-            mService.reportEvent(event, mContext.getUserId());
+            mService.reportEvent(new InsightEvent(
+                            eventType,
+                            insight,
+                            System.currentTimeMillis(),
+                            renderToken),
+                    mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

@@ -94,6 +94,14 @@ import static com.android.server.am.ActivityManagerService.TAG_LRU;
 import static com.android.server.am.ActivityManagerService.TAG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
 import static com.android.server.am.AppProfiler.TAG_PSS;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_ADDED_APPLICATION;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_BACKUP;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_BROADCAST;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_LINK_FAIL;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_ON_HOLD;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_RESTART;
+import static com.android.server.am.HostingRecord.HOSTING_TYPE_SYSTEM;
+import static com.android.server.am.psc.Constants.BACKUP_APP_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_IMPORTANCE_LEVELS;
 import static com.android.server.am.psc.Constants.CACHED_APP_MAX_ADJ;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
@@ -340,6 +348,7 @@ public abstract class OomAdjuster {
 
     final Callback mCallback;
     final StateGetter mStateGetter;
+    final HostingTypeProvider mHostingTypeProvider;
     final Injector mInjector;
     protected final Constants mOomConstants;
     final GlobalState mGlobalState;
@@ -537,6 +546,15 @@ public abstract class OomAdjuster {
         int getFrozenProcessCount();
     }
 
+
+    /**
+     * An interface for providing hosting type information for a given process.
+     */
+    public interface HostingTypeProvider {
+        /** Returns the hosting type for the given process. */
+        String getHostingType(ProcessRecordInternal app);
+    }
+
     /**
      * Injects dependencies into the OomAdjuster, allowing for easier testing by substituting
      * mocks for external dependencies.
@@ -583,6 +601,7 @@ public abstract class OomAdjuster {
      * Holds various constant values used by the OomAdjuster, which are duplicated from
      * {@link com.android.server.am.ActivityManagerConstants}.
      */
+    @android.ravenwood.annotation.RavenwoodKeepWholeClass
     public static final class Constants {
         /**
          * The timeout duration (in milliseconds) for a service binding to be considered
@@ -773,10 +792,10 @@ public abstract class OomAdjuster {
     OomAdjuster(Object serviceLock, Object procLock, ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread adjusterThread, Constants oomConstants,
             GlobalState globalState, Injector injector, Callback callback,
-            StateGetter stateGetter, Handler updateHandler) {
+            StateGetter stateGetter, Handler updateHandler,
+            HostingTypeProvider hostingTypeProvider) {
         mServiceLock = serviceLock;
         mProcLock = procLock;
-
         mUpdateHandler = updateHandler;
         mCallback = callback;
         mOomConstants = oomConstants;
@@ -785,6 +804,7 @@ public abstract class OomAdjuster {
         mProcessList = processList;
         mActiveUids = activeUids;
         mStateGetter = stateGetter;
+        mHostingTypeProvider = hostingTypeProvider;
 
         mLogger = new OomAdjusterDebugLogger(this, mOomConstants);
 
@@ -1276,7 +1296,7 @@ public abstract class OomAdjuster {
                         final int rawAdj = curCachedAdj + curCachedImpAdj;
                         app.setCurRawAdj(rawAdj);
                         app.setCurAdj(
-                                applyBindAboveClientToAdj(psr.isHasAboveClient(), rawAdj));
+                                applyBindAboveClientToAdj(psr.hasBindAboveClient(), rawAdj));
                         if (DEBUG_LRU) {
                             Slog.d(TAG_LRU, "Assigning activity LRU #" + i
                                     + " adj: " + app.getCurAdj()
@@ -1303,7 +1323,7 @@ public abstract class OomAdjuster {
                         // cached level will be treated as empty (since their process
                         // state is still as a service), which is what we want.
                         app.setCurRawAdj(curEmptyAdj);
-                        app.setCurAdj(applyBindAboveClientToAdj(psr.isHasAboveClient(),
+                        app.setCurAdj(applyBindAboveClientToAdj(psr.hasBindAboveClient(),
                                 curEmptyAdj));
                         if (DEBUG_LRU) {
                             Slog.d(TAG_LRU, "Assigning empty LRU #" + i
@@ -1991,7 +2011,7 @@ public abstract class OomAdjuster {
             @SchedGroup int schedGroup) {
         app.setCurRawAdj(adj);
 
-        adj = applyBindAboveClientToAdj(app.getServices().isHasAboveClient(), adj);
+        adj = applyBindAboveClientToAdj(app.getServices().hasBindAboveClient(), adj);
         if (adj > app.getMaxAdj()) {
             adj = app.getMaxAdj();
             if (adj <= PERCEPTIBLE_LOW_APP_ADJ) {
@@ -2544,13 +2564,54 @@ public abstract class OomAdjuster {
             app.getGraphNode().setHasIntrinsicImplicitCpuTime(true);
         }
 
-        app.setCurAdj(FOREGROUND_APP_ADJ);
-        app.setCurRawAdj(FOREGROUND_APP_ADJ);
+        if (!Flags.setInitialOomScoreAdj()) {
+            // Original behavior (flag disabled)
+            app.setCurRawAdj(FOREGROUND_APP_ADJ);
+            app.setCurAdj(FOREGROUND_APP_ADJ);
+        } else {
+            String hostingType = mHostingTypeProvider.getHostingType(app);
+            int prevSetRawAdj = app.getPrevSetRawAdj();
+            int targetOomScore = getInitialRawAdjForHostingRecord(hostingType, prevSetRawAdj);
+            app.setCurRawAdj(targetOomScore);
+            app.setCurAdj(targetOomScore);
+        }
+
         app.setForcingToImportant(null);
         app.setHasShownUi(false);
 
         onProcessStateChanged(app, prevProcState);
         onProcessOomAdjChanged(app, prevAdj);
+    }
+
+    private int getInitialRawAdjForHostingRecord(String hostingType, int prevAdj) {
+        return switch (hostingType) {
+            // Broadcast receiver: Time-sensitive, should run with reasonable priority.
+            case HOSTING_TYPE_BROADCAST -> !Flags.setInitialOomScoreAdjForTypeBroadcast()
+                    ? FOREGROUND_APP_ADJ : PERCEPTIBLE_APP_ADJ; // 200
+
+            // Backup process.
+            case HOSTING_TYPE_BACKUP -> BACKUP_APP_ADJ; // 300
+
+            // Restarting process: Use its previous score to avoid thrashing.
+            case HOSTING_TYPE_RESTART -> prevAdj == INVALID_ADJ ? FOREGROUND_APP_ADJ : prevAdj;
+
+            // Process started for package management (added app).
+            case HOSTING_TYPE_ADDED_APPLICATION ->
+                    !Flags.setInitialOomScoreAdjForTypeAddedApplication()
+                            ? FOREGROUND_APP_ADJ : PREVIOUS_APP_ADJ; // 700
+
+            // Low priority types.
+            case HOSTING_TYPE_LINK_FAIL -> !Flags.setInitialOomScoreAdjForTypeLinkFailed()
+                    ? FOREGROUND_APP_ADJ : CACHED_APP_MIN_ADJ; // 900
+            case HOSTING_TYPE_ON_HOLD -> !Flags.setInitialOomScoreAdjForTypeOnHold()
+                    ? FOREGROUND_APP_ADJ : CACHED_APP_MIN_ADJ; // 900
+
+            // System process: Should use the defined system adjustment.
+            case HOSTING_TYPE_SYSTEM -> SYSTEM_ADJ; // -900
+
+            // Other cases: Default to FOREGROUND_APP_ADJ, matching the original behavior.
+            default -> FOREGROUND_APP_ADJ; // 0
+        };
     }
 
     private void maybeUpdateLastTopTime(ProcessRecordInternal state, long nowUptime) {

@@ -232,7 +232,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         }
 
         for (int i = 0; i < mStateListeners.size(); i++) {
-            mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_REQUESTED);
+            mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_REQUESTED, displayId);
         }
         if (isSyntheticRequest) {
             transition = startSyntheticRecentsTransition(listener, displayId);
@@ -681,7 +681,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             mPendingFinishTransaction = null;
             mControllers.remove(this);
             for (int i = 0; i < mStateListeners.size(); i++) {
-                mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_NOT_RUNNING);
+                mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_NOT_RUNNING,
+                        mDisplayId);
             }
         }
 
@@ -717,7 +718,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         apps.toArray(new RemoteAnimationTarget[apps.size()]),
                         new RemoteAnimationTarget[0], new Rect(), new Bundle(), null);
                 for (int i = 0; i < mStateListeners.size(); i++) {
-                    mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_ANIMATING);
+                    mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_ANIMATING,
+                            displayId);
                 }
             } catch (RemoteException e) {
                 Slog.e(TAG, "Error starting recents animation", e);
@@ -855,7 +857,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             int closingSplitTaskId = INVALID_TASK_ID;
             final ArrayList<RemoteAnimationTarget> apps = new ArrayList<>();
             final ArrayList<RemoteAnimationTarget> wallpapers = new ArrayList<>();
-            TransitionUtil.LeafTaskFilter leafTaskFilter = new TransitionUtil.LeafTaskFilter();
+            TransitionUtil.LeafTaskFilter leafTaskFilter = new TransitionUtil.LeafTaskFilter(info);
             // About layering: we divide up the "layer space" into 3 regions (each the size of
             // the change count). This lets us categorize things into above/below/between
             // while maintaining their relative ordering.
@@ -991,7 +993,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                         wallpapers.toArray(new RemoteAnimationTarget[wallpapers.size()]),
                         new Rect(), b, info);
                 for (int i = 0; i < mStateListeners.size(); i++) {
-                    mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_ANIMATING);
+                    mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_ANIMATING,
+                            mDisplayId);
                 }
             } catch (RemoteException e) {
                 Slog.e(TAG, "Error starting recents animation", e);
@@ -1185,7 +1188,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             boolean foundRecentsClosing = false;
             boolean hasChangingApp = false;
             final TransitionUtil.LeafTaskFilter leafTaskFilter =
-                    new TransitionUtil.LeafTaskFilter();
+                    new TransitionUtil.LeafTaskFilter(info);
             boolean hasTaskChange = false;
             for (int i = 0; i < info.getChanges().size(); ++i) {
                 final TransitionInfo.Change change = info.getChanges().get(i);

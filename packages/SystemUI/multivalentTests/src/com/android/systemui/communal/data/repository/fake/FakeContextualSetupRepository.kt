@@ -18,6 +18,8 @@ package com.android.systemui.communal.data.repository.fake
 
 import com.android.systemui.communal.data.repository.ContextualSetupRepository
 import com.android.systemui.communal.data.repository.SetupState
+import java.time.Instant
+import kotlin.time.Duration
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -29,8 +31,26 @@ class FakeContextualSetupRepository : ContextualSetupRepository {
         return setupState.getOrPut(id) { MutableStateFlow(SetupState.NotStarted) }
     }
 
-    override suspend fun updateState(id: String, state: SetupState) {
+    // For testing purposes
+    suspend fun updateState(id: String, state: SetupState) {
         setupState.getOrPut(id) { MutableStateFlow(SetupState.NotStarted) }.value = state
+    }
+
+    override suspend fun snooze(id: String, duration: Duration) {
+        val expirationTime = Instant.now().plusMillis(duration.inWholeMilliseconds)
+        updateState(id, SetupState.Snoozed(expirationTime))
+    }
+
+    override suspend fun dismiss(id: String) {
+        updateState(id, SetupState.Dismissed)
+    }
+
+    override suspend fun complete(id: String) {
+        updateState(id, SetupState.Completed)
+    }
+
+    override suspend fun reset(id: String) {
+        updateState(id, SetupState.NotStarted)
     }
 
     override suspend fun incrementFailureCount(id: String): Int {

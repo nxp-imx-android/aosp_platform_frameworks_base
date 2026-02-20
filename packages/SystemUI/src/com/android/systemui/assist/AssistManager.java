@@ -480,7 +480,11 @@ public class AssistManager {
     }
 
     private void startVoiceInteractor(Context context, Bundle args) {
-        args.putInt(Intent.EXTRA_ASSIST_DISPLAY_ID, context.getDisplayId());
+        if (!args.containsKey(Intent.EXTRA_ASSIST_DISPLAY_ID)) {
+            // If a display id was not explicitly specified, let's use the display associated with
+            // the Context.
+            args.putInt(Intent.EXTRA_ASSIST_DISPLAY_ID, context.getDisplayId());
+        }
         // Use background thread to prevent the binder call from blocking the UI thread
         mBgHandler.post(() -> mAssistUtils.showSessionForActiveService(args,
                 VoiceInteractionSession.SHOW_SOURCE_ASSIST_GESTURE,

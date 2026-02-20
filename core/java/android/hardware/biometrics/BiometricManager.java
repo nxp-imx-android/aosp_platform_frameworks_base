@@ -38,6 +38,7 @@ import android.annotation.RestrictedForEnvironment;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
+import android.annotation.UserIdInt;
 import android.app.KeyguardManager;
 import android.content.Context;
 import android.os.Build;
@@ -1051,6 +1052,19 @@ public class BiometricManager {
     @ElapsedRealtimeLong
     public long getLastAuthenticationTime(
             @BiometricManager.Authenticators.Types int authenticators) {
+        return getLastAuthenticationTime(UserHandle.myUserId(), authenticators);
+    }
+
+    /**
+     * Per-user variant of {@link BiometricManager#getLastAuthenticationTime(int)} for
+     * internal system use.
+     *
+     * @hide
+     */
+    @RequiresPermission(USE_BIOMETRIC_INTERNAL)
+    @ElapsedRealtimeLong
+    public long getLastAuthenticationTime(@UserIdInt int userId,
+            @BiometricManager.Authenticators.Types int authenticators) {
         if (authenticators == 0
                 || (GET_LAST_AUTH_TIME_ALLOWED_AUTHENTICATORS & authenticators) != authenticators) {
             throw new IllegalArgumentException(
@@ -1059,7 +1073,7 @@ public class BiometricManager {
 
         if (mService != null) {
             try {
-                return mService.getLastAuthenticationTime(UserHandle.myUserId(), authenticators);
+                return mService.getLastAuthenticationTime(userId, authenticators);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }

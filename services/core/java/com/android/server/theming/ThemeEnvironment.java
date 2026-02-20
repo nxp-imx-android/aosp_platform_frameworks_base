@@ -17,6 +17,9 @@
 package com.android.server.theming;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.app.ActivityManagerInternal;
+import android.app.KeyguardManager;
 import android.content.Context;
 import android.content.theming.FieldColorSource;
 import android.content.theming.ThemeSettings;
@@ -27,7 +30,9 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Slog;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.pm.RoSystemFeatures;
+import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
 
 import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
@@ -36,40 +41,54 @@ import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
 import java.util.Objects;
 
 /**
- * Immutable system-wide configuration and environment signals for the Theme Service.
+ * Centralized configuration, system signals, and policy for the Theme Service.
  *
- * <p>Calculated once at boot, these values provide a single source of truth for the
- * entire theming ecosystem.
+ * <p>This class encapsulates:
+ * <ul>
+ *   <li>Immutable system configuration determined at service start (e.g., platform, specs).</li>
+ *   <li>Dynamic system state queries (e.g., boot status, device lock state).</li>
+ *   <li>Shared policy decisions (e.g., whether to process user events).</li>
+ * </ul>
+ *
+ * <p>It serves as a single source of truth for environmental factors affecting theming logic.
  *
  * @hide
  */
+@VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 public final class ThemeEnvironment {
     private static final String TAG = "ThemeEnvironment";
     private static final String KEY_COLOR_PALETTE_VERSION = "global_color_palette_version";
 
-    UserManagerInternal mUserManager;
+    private ThemeUserLifecycle mThemeUserLifecycle;
+
+    private final UserManagerInternal mUserManager;
+    private final ActivityManagerInternal mActivityManager;
+    private KeyguardManager mKeyguardManager;
 
     // --- IMMUTABLE SYSTEM SIGNALS ---
 
     /** The target platform for color generation (e.g., PHONE, WATCH). */
-    public final Platform platform;
+    final Platform platform;
 
     /** The version of the color specification being used. */
-    public final SpecVersion specVersion;
+    final SpecVersion specVersion;
 
     /** Whether the system palette is outdated and needs a forced refresh. */
-    public final boolean isPaletteOutdated;
+    final boolean isPaletteOutdated;
+
+    /** The hardware color code for the device. */
+    final String hardwareColorCode;
 
     // --- STATIC RESOURCE CONFIGURATION ---
 
     /** List of legacy overlay packages that should be cleaned up on boot. */
-    public final String[] legacyOverlays;
+    final String[] legacyOverlays;
 
     /** Device-specific default theme data from resources. */
-    public final String[] defaultThemeData;
+    final String[] defaultThemeData;
 
     /** The ultimate fallback theme settings when no user or device defaults are available. */
-    public final ThemeSettings hardcodedFallback;
+    final ThemeSettings hardcodedFallback;
 
     // --- DYNAMIC GLOBAL STATE ---
 
@@ -79,12 +98,11 @@ public final class ThemeEnvironment {
      */
     private volatile boolean mIsBooting = true;
 
-
-    public ThemeEnvironment(@NonNull Context context,
-            @NonNull UserManagerInternal userManager,
+    ThemeEnvironment(@NonNull Context context,
             @NonNull SystemPropertiesReader reader) {
 
-        mUserManager = userManager;
+        mUserManager = LocalServices.getService(UserManagerInternal.class);
+        mActivityManager = LocalServices.getService(ActivityManagerInternal.class);
 
         // 1. Detect Hardware/Software Capabilities
         platform = RoSystemFeatures.hasFeatureWatch(context)
@@ -108,21 +126,34 @@ public final class ThemeEnvironment {
 
         // 3. One-time check for version updates (determined at start)
         isPaletteOutdated = checkPaletteOutdated(context, reader);
+
+        // 4. Read hardware color code
+        hardwareColorCode = reader.get("ro.boot.hardware.color", "");
     }
 
     /**
      * Returns whether the system is currently in the boot phase.
      */
-    public boolean isBooting() {
+    boolean isBooting() {
         return mIsBooting;
     }
 
     /**
      * Marks the boot phase as complete. This should be called when the boot animation dismisses.
      */
-    public void setBootingComplete() {
-        Slog.d(TAG, "Boot phase complete.");
+    void setBootingComplete(ThemeUserLifecycle userLifecycle) {
+        if (!isBooting()) return;
+        mThemeUserLifecycle = userLifecycle;
         mIsBooting = false;
+        Slog.d(TAG, "Boot phase complete.");
+    }
+
+    void onServicesReady(KeyguardManager keyguardManager) {
+        mKeyguardManager = keyguardManager;
+    }
+
+    int getCurrentUserId() {
+        return mActivityManager.getCurrentUserId();
     }
 
     /**
@@ -131,7 +162,7 @@ public final class ThemeEnvironment {
      * Returns false for the system user in HSUM, or for profiles (which are handled via their
      * parents).
      */
-    public boolean isManagedUser(int userId) {
+    boolean isManagedUser(int userId) {
         if (mUserManager.isHeadlessSystemUserMode() && userId == UserHandle.USER_SYSTEM) {
             return false;
         }
@@ -144,7 +175,50 @@ public final class ThemeEnvironment {
         return true;
     }
 
-    private boolean checkPaletteOutdated(Context context, SystemPropertiesReader reader) {
+    /**
+     * Determines if a theme-related event should be ignored for a specific user.
+     *
+     * @param userId     The ID of the user to check.
+     * @param methodName The name of the calling method for logging purposes.
+     * @return {@code true} if the event should be ignored because the user is not managed
+     * or their state could not be loaded; {@code false} otherwise.
+     */
+    boolean shouldIgnoreEventForUser(int userId, String methodName) {
+        return shouldIgnoreEventForUser(userId, methodName, false /* skipLazyLoad */);
+    }
+
+    boolean shouldIgnoreEventForUser(int userId, String methodName, boolean skipLazyLoad) {
+        if (isBooting()) {
+            return true;
+        }
+
+        // Use unified environment policy
+        if (!isManagedUser(userId)) {
+            Slog.d(TAG,
+                    "Bypassing '" + methodName + "' for user " + userId + " per system policy.");
+            return true;
+        }
+
+        if (!skipLazyLoad && mThemeUserLifecycle != null) {
+            // Lazy load the user state if it's missing. This handles race conditions where
+            // settings/events for a user arrive before the user lifecycle "START" event.
+            if (!mThemeUserLifecycle.loadUserStateAndNotifyStateManager(userId)) {
+                Slog.d(TAG, "Ignoring '" + methodName + "' for user " + userId
+                        + " (State load failed)");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Nullable
+    Integer parentOf(int userId) {
+        int possibleParentID = mUserManager.getProfileParentId(userId);
+        return possibleParentID == userId ? null : possibleParentID;
+    }
+
+    private static boolean checkPaletteOutdated(Context context, SystemPropertiesReader reader) {
         String storedVersion = Settings.Global.getString(context.getContentResolver(),
                 KEY_COLOR_PALETTE_VERSION);
         String currentVersion = reader.get("ro.build.date.utc", null);
@@ -162,5 +236,9 @@ public final class ThemeEnvironment {
         Settings.Global.putString(context.getContentResolver(), KEY_COLOR_PALETTE_VERSION,
                 currentVersion);
         return true;
+    }
+
+    boolean isDeviceLocked() {
+        return mKeyguardManager.isDeviceLocked();
     }
 }

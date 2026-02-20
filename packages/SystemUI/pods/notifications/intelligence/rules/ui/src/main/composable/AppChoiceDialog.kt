@@ -33,12 +33,10 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,26 +45,22 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
-import kotlinx.coroutines.launch
 
 /** Renders a menu to select 1 or more apps matching a search string. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppChoiceDialog(viewModel: NotificationRuleEditViewModel) {
-    val scope = rememberCoroutineScope()
-
     // All apps on the device. Null while the apps are being fetched.
-    var allApps by remember { mutableStateOf<List<AppModel>?>(null) }
-    // When the dialog first opens, fetch all apps.
-    LaunchedEffect(Unit) { scope.launch { allApps = viewModel.fetchInstalledApps() } }
+    val allApps by
+        produceState<List<AppModel>?>(initialValue = null, key1 = viewModel) {
+            value = viewModel.fetchInstalledApps()
+        }
 
     var currentQuery by remember { mutableStateOf("") }
     var isExpanded by rememberSaveable { mutableStateOf(true) }
 
     val currentSearchResults =
-        remember(allApps, currentQuery) {
-            derivedStateOf { getSearchResults(allApps, currentQuery) }
-        }
+        remember(allApps, currentQuery) { getSearchResults(allApps, currentQuery) }
 
     SearchBar(
         inputField = {
@@ -82,10 +76,9 @@ fun AppChoiceDialog(viewModel: NotificationRuleEditViewModel) {
         expanded = isExpanded,
         onExpandedChange = { isExpanded = it },
     ) {
-        val searchResults = currentSearchResults.value
         val modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
-        if (searchResults != null) {
-            AppSearchResults(searchResults, modifier = modifier)
+        if (currentSearchResults != null) {
+            AppSearchResults(currentSearchResults, modifier = modifier)
         } else {
             LoadingIcon(modifier = modifier)
         }

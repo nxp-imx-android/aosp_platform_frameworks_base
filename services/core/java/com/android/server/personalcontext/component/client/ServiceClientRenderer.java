@@ -16,11 +16,13 @@
 
 package com.android.server.personalcontext.component.client;
 
+import android.Manifest;
 import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.os.Handler;
 import android.os.IBinder;
-import android.os.ParcelUuid;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.service.personalcontext.RenderToken;
@@ -36,6 +38,8 @@ import androidx.annotation.NonNull;
 import com.android.server.personalcontext.component.Renderer;
 
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Client for renderer services.
@@ -48,17 +52,28 @@ public class ServiceClientRenderer
 
     public ServiceClientRenderer(Context context, UUID componentId, ServiceInfo serviceInfo,
             UserHandle userHandle) {
-        super(context, componentId, serviceInfo, userHandle);
+        this(
+                context,
+                componentId,
+                serviceInfo,
+                userHandle,
+                Executors.newSingleThreadExecutor(),
+                new Handler(Looper.getMainLooper()));
+    }
 
-        runWithBinder(binder -> {
+    protected ServiceClientRenderer(Context context, UUID componentId, ServiceInfo serviceInfo,
+            UserHandle userHandle, Executor executor, Handler handler) {
+        super(context, componentId, serviceInfo, userHandle, executor, handler);
+
+        runWithScopedBinder((binder, callback) -> {
             try {
-                binder.getFilter(new IGetFilterCallback.Stub() {
+                binder.getFilter(getParcelComponentId(), new IGetFilterCallback.Stub() {
                     @PermissionManuallyEnforced
                     @Override
                     public void updateFilter(InsightFilter filter) {
                         mFilter = filter;
                     }
-                });
+                }, callback);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to get renderer filter", e);
             }
@@ -71,8 +86,7 @@ public class ServiceClientRenderer
     }
 
     @Override
-    protected void initializeClient(IInsightRenderer client) throws RemoteException {
-        client.configure(new ParcelUuid(getComponentId()));
+    protected void initializeClient(IInsightRenderer client) {
     }
 
     @Override
@@ -83,10 +97,22 @@ public class ServiceClientRenderer
     @Override
     public void render(@NonNull PublishedContextInsight publishedContextInsight,
             RenderToken renderToken) {
-        runWithBinder(binder -> {
+        if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()
+                && !checkPermission(Manifest.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS)) {
+            Slog.w(
+                    TAG,
+                    "Service "
+                            + getComponentName()
+                            + " missing permission "
+                            + Manifest.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS);
+            return;
+        }
+        runWithScopedBinder((binder, opCallback) -> {
             try {
-                binder.render(new PublishedContextInsightWrapper(publishedContextInsight),
-                        renderToken);
+                binder.render(getParcelComponentId(),
+                        new PublishedContextInsightWrapper(publishedContextInsight),
+                        renderToken,
+                        opCallback);
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to render insight", e);
             }

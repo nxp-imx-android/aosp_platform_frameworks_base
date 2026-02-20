@@ -272,14 +272,6 @@ class TestWindowManagerPolicy implements WindowManagerPolicy {
     }
 
     @Override
-    public void keepScreenOnStartedLw() {
-    }
-
-    @Override
-    public void keepScreenOnStoppedLw() {
-    }
-
-    @Override
     public boolean hasNavigationBar() {
         return false;
     }
@@ -327,8 +319,7 @@ class TestWindowManagerPolicy implements WindowManagerPolicy {
     }
 
     @Override
-    public int applyKeyguardOcclusionChange() {
-        return 0;
+    public void applyKeyguardOcclusionChange() {
     }
 
     @Override

@@ -28,5 +28,8 @@ interface IPccSandboxManager {
     boolean isPccTrustedSystemComponent(int uid, String packageName);
 
     oneway void writeToAuditLog(in PersistableBundle data, in String packageName);
+
+    oneway void batchWriteToAuditLog(in List<PersistableBundle> data, in String packageName);
+
     oneway void startNonPccProcessForDataMigration(in IMigrationRequestResultReceiver callback);
 }

@@ -36,8 +36,10 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"自动旋转屏幕"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"要允许<xliff:g id="APPLICATION">%1$s</xliff:g>访问<xliff:g id="USB_DEVICE">%2$s</xliff:g>吗？"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"是否允许<xliff:g id="APPLICATION">%1$s</xliff:g>访问<xliff:g id="USB_DEVICE">%2$s</xliff:g>？\n此应用未获得录音权限，但能通过此 USB 设备录制音频。"</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"允许“<xliff:g id="APPLICATION">%1$s</xliff:g>”访问<xliff:g id="USB_DEVICE">%2$s</xliff:g>吗？"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"打开“<xliff:g id="APPLICATION">%1$s</xliff:g>”来处理<xliff:g id="USB_DEVICE">%2$s</xliff:g>吗？"</string>
+    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
+    <skip />
+    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
+    <skip />
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"此应用未获得录音权限，但能通过此 USB 设备录制音频。如果在此设备上使用“<xliff:g id="APPLICATION">%1$s</xliff:g>”，您可能无法听见来电、通知和闹钟的音效。"</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"如果在此设备上使用“<xliff:g id="APPLICATION">%1$s</xliff:g>”，您可能无法听见来电、通知和闹钟的音效。"</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"要允许<xliff:g id="APPLICATION">%1$s</xliff:g>访问<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>吗？"</string>
@@ -58,24 +60,15 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"允许"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"不允许使用 USB 调试功能"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"当前已登录此设备的用户无法开启 USB 调试功能。要使用此功能，请切换为管理员用户。"</string>
-    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
-    <skip />
-    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
-    <skip />
-    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
-    <skip />
-    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
-    <skip />
-    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
-    <skip />
+    <string name="usb_authorization_title" msgid="3332796080113535331">"允许连接 USB 设备吗？"</string>
+    <string name="usb_authorization_title_multi" msgid="1966181648363433366">"允许连接 USB 设备吗？"</string>
+    <string name="usb_authorization_message" msgid="1107567912094941105">"以下设备已连接到您的 <xliff:g id="NAME">%1$s</xliff:g>："</string>
+    <string name="usb_authorization_message_multi" msgid="4867596373922923637">"以下设备已连接到您的 <xliff:g id="NAME">%1$s</xliff:g>："</string>
+    <string name="usb_authorization_message_untrusted" msgid="4407977362840907960">"以下设备已连接到您的 <xliff:g id="NAME">%1$s</xliff:g>。只有在您登录后，此设备才会被信任。"</string>
+    <string name="usb_authorization_message_multi_untrusted" msgid="85055448435495205">"以下设备已连接到您的 <xliff:g id="NAME">%1$s</xliff:g>。只有在您登录后，这些设备才会被信任。"</string>
+    <string name="usb_authorization_unknown_device" msgid="1107933381080189970">"未知商品（<xliff:g id="VENDOR_ID">%1$04X</xliff:g>：<xliff:g id="PRODUCT_ID">%2$04X</xliff:g>）"</string>
+    <string name="usb_authorization_allow" msgid="5517449937301874244">"允许"</string>
+    <string name="usb_authorization_deny" msgid="8156333001876101456">"不允许"</string>
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"是否要将系统语言更改为<xliff:g id="LANGUAGE">%1$s</xliff:g>？"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"另一台设备请求更改系统语言"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"更改语言"</string>
@@ -121,10 +114,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"截取更多内容"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"关闭屏幕截图"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"关闭工作资料消息"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"查看"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"“在 Google 文件极客中查看屏幕截图”按钮"</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"屏幕截图预览"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"顶部边界百分之 <xliff:g id="PERCENT">%1$d</xliff:g>"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"底部边界百分之 <xliff:g id="PERCENT">%1$d</xliff:g>"</string>
@@ -196,6 +187,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"静音"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"取消静音"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>（共 <xliff:g id="DURATION">%2$s</xliff:g>）"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"IT 管理员已禁止屏幕截图"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"全屏截图"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"录制整个屏幕"</string>
@@ -208,7 +201,12 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"右下角手柄 - 使用箭头键可调整大小"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"左下角手柄 - 使用箭头键可调整大小"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"分享"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"选择要分享的应用"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
+    <skip />
+    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
+    <skip />
+    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
+    <skip />
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"共享音频"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"共享应用窗口"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"分享标签页"</string>
@@ -226,11 +224,14 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"已停止共享“<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>”显示屏，未与任何人共享屏幕。"</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"“关闭”按钮。按 Enter 键可关闭分享前对话框。"</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"标签页分享按钮。未选择。按 Enter 键即可分享标签页。"</string>
-    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"正在分享标签页。前往查看可分享的标签页。"</string>
+    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
+    <skip />
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"应用分享按钮。未选择。按 Enter 键即可分享应用。"</string>
-    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"正在分享应用。前往查看可分享的应用。"</string>
+    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
+    <skip />
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"全屏按钮。未选择。按 Enter 键即可分享全屏。"</string>
-    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"正在分享全屏。前往查看可分享的显示屏。"</string>
+    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
+    <skip />
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"“分享”按钮。已关闭。选择要分享的应用、标签页或显示屏。"</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"分享设置已开启。已选择“<xliff:g id="ITEM">%1$s</xliff:g>”。按 Enter 键即可开始分享。"</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"未选择“<xliff:g id="ITEM_NAME">%1$s</xliff:g>”。按 Enter 键进行选择。"</string>
@@ -247,8 +248,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"分享屏幕录制内容"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"在文件管理器中打开屏幕录制内容"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"删除屏幕录制内容"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"在媒体播放器应用中打开屏幕录制内容"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"显示点击操作和按键"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"设备音频"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"麦克风"</string>
@@ -303,7 +303,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"已解锁"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"设备已锁定"</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"确认并解锁设备"</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"重新尝试人脸解锁"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"正在扫描面孔"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"发送"</string>
     <string name="cancel" msgid="1089011503403416730">"取消"</string>
@@ -316,11 +315,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"面孔身份验证成功"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"已确认"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"点按“确认”即可完成"</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"已用面孔解锁"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"已通过面孔解锁，点按即可继续。"</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"识别出面孔。点按即可继续。"</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"识别出面孔。按下解锁图标即可继续。"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"已通过面孔识别解锁。点按即可继续。"</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"已经过身份验证"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"取消身份验证"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"更多选项"</string>
@@ -334,10 +330,10 @@
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"使用 PIN 码"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"使用解锁图案"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"使用密码"</string>
-    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"输入 PIN 码"</string>
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"输入数字密码"</string>
     <string name="biometric_dialog_enter_password" msgid="200503318983048202">"输入密码"</string>
     <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"绘制解锁图案"</string>
-    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"由于生物识别尝试失败次数过多，您需要输入 PIN 码，才能恢复生物识别功能"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"由于生物识别尝试失败次数过多，您需要输入锁屏数字密码，才能恢复生物识别功能"</string>
     <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"由于生物识别尝试失败次数过多，您需要绘制解锁图案，才能恢复生物识别功能"</string>
     <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"由于生物识别尝试失败次数过多，您需要输入密码，才能恢复生物识别功能"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"PIN 码错误"</string>
@@ -365,11 +361,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"如需重新设置“指纹解锁”功能，系统将删除当前所用的指纹图像和模型。\n\n删除后，您需要重新设置“指纹解锁”功能，才能使用指纹解锁手机或验证身份。"</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"如需重新设置“指纹解锁”功能，系统将删除当前所用的指纹图像和模型。\n\n删除后，您需要重新设置“指纹解锁”功能，才能使用指纹解锁手机或验证身份。"</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"无法设置“指纹解锁”功能。请前往“设置”重试。"</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"重新设置“人脸解锁”功能"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"人脸解锁"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"设置“人脸解锁”功能"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"如需重新设置“人脸解锁”功能，系统将删除当前所用的脸部模型。\n\n您需要重新设置此功能，才能通过刷脸来解锁手机。"</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"无法设置“人脸解锁”功能。请前往“设置”重试。"</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"请触摸指纹传感器"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"按下解锁图标即可继续"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"无法识别面孔，请改用指纹。"</string>
@@ -377,7 +368,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"无法识别面孔"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"改用指纹"</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"无法使用人脸解锁功能"</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"蓝牙已连接。"</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"蓝牙设备图标"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"点击以配置设备详情"</string>
@@ -553,6 +543,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"NFC 已停用"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"NFC 已启用"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"屏幕录制"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"屏幕截取"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"开始"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"停止"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"录制问题"</string>
@@ -648,16 +639,10 @@
     <string name="tap_again" msgid="1315420114387908655">"请再点按一次"</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"向上滑动即可打开"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"按下解锁图标即可打开"</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"已通过面孔识别解锁。向上滑动即可打开。"</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"已通过人脸识别解锁。按“确认”即可继续。"</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"已通过面孔识别解锁。按下解锁图标即可打开。"</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"已通过面孔识别解锁。点按即可打开。"</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"识别出面孔。点按即可打开。"</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"识别出面孔。按下解锁图标即可打开。"</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"已用面孔解锁"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"已识别出面孔"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"向上滑动即可重试"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"向上滑动即可再次尝试人脸解锁"</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"需要解锁才能使用 NFC"</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"此设备归贵组织所有"</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"此设备归<xliff:g id="ORGANIZATION_NAME">%s</xliff:g>所有"</string>
@@ -800,7 +785,7 @@
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"解锁即可查看旧通知"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="9196246842317344981">"家长控制功能已启用"</string>
     <string name="quick_settings_disclosure_parental_controls_legacy" msgid="4116797775361496057">"此设备由家长管理"</string>
-    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"部分设备设置受 PIN 码保护。"</string>
+    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"部分设备设置受锁屏数字密码保护。"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"贵单位拥有此设备，且可能会监控网络流量"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g>拥有此设备，且可能会监控网络流量"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"此设备由<xliff:g id="ORGANIZATION_NAME">%s</xliff:g>提供"</string>
@@ -841,7 +826,7 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"打开 VPN 设置"</string>
     <string name="monitoring_description_parental_controls_legacy" msgid="3331029441820725897">"此设备由家长管理。家长可以查看和管理相关信息，例如你使用的应用、你的位置信息和屏幕使用时间。"</string>
-    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"设备上的一些控制设置（例如每日上限和休息时间）只能通过输入 PIN 码进行更改。"</string>
+    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"设备上的一些控制设置（例如每日上限和休息时间）只能通过输入锁屏数字密码进行更改。"</string>
     <string name="monitoring_description_parental_controls" msgid="4255592993669461543">"某些控制设置只能由家长更改"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"由 TrustAgent 保持解锁状态"</string>
@@ -1263,10 +1248,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"无障碍键"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"按下无障碍键即可开始使用无障碍功能。"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"添加功能"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"设置<xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"完成"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"选择功能"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"修改"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"无障碍"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"锁定屏幕"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"正在关机…"</string>
@@ -1450,7 +1441,7 @@
     <string name="controls_pin_use_alphanumeric" msgid="8478371861023048414">"PIN 码由字母或符号组成"</string>
     <string name="controls_pin_verify" msgid="3452778292918877662">"验证<xliff:g id="DEVICE">%s</xliff:g>"</string>
     <string name="controls_pin_wrong" msgid="6162694056042164211">"PIN 码错误"</string>
-    <string name="controls_pin_instructions" msgid="6363309783822475238">"输入 PIN 码"</string>
+    <string name="controls_pin_instructions" msgid="6363309783822475238">"输入数字密码"</string>
     <string name="controls_pin_instructions_retry" msgid="1566667581012131046">"试试其他 PIN 码"</string>
     <string name="controls_confirmation_message" msgid="7744104992609594859">"确认<xliff:g id="DEVICE">%s</xliff:g>的更改"</string>
     <string name="controls_structure_tooltip" msgid="4355922222944447867">"滑动可查看更多结构"</string>
@@ -1513,7 +1504,7 @@
     <string name="basic_status" msgid="2315371112182658176">"开放式对话"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"对话微件"</string>
     <string name="select_conversation_text" msgid="3376048251434956013">"点按对话即可将其添加到主屏幕"</string>
-    <string name="no_conversations_text" msgid="5354115541282395015">"您近期的对话将显示在此处"</string>
+    <string name="no_conversations_text" msgid="5354115541282395015">"近期对话将显示在此处"</string>
     <string name="priority_conversations" msgid="3967482288896653039">"优先对话"</string>
     <string name="recent_conversations" msgid="8531874684782574622">"近期对话"</string>
     <string name="days_timestamp" msgid="5821854736213214331">"<xliff:g id="DURATION">%1$s</xliff:g> 天前"</string>
@@ -1876,6 +1867,8 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d 个特效"</string>
     <string name="av_blur" msgid="405131343487260171">"模糊处理"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"实时字幕"</string>
+    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
+    <skip />
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"电量：%s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"左侧电量：%1$s    右侧电量：%2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"左侧电量：%1$s"</string>

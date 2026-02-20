@@ -151,6 +151,7 @@ constructor(
                 }
                 if (state.value == CameraState.Started || state.value == CameraState.Starting) {
                     stopStream()
+                    state.first { it == CameraState.Stopped }
                 }
                 Log.d(TAG, "Starting the stream: ${params.size}")
                 repository.startStream(

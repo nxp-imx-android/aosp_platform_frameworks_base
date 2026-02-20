@@ -16,18 +16,37 @@
 
 package com.android.systemui.notifications.intelligence.rules.domain.interactor
 
+import android.annotation.Px
 import android.content.ContentResolver
+import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.graphics.ImageLoader
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepository
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import javax.inject.Inject
 
 @SysUISingleton
-public class ContactsInteractorImpl(private val contactsRepository: ContactsRepository) :
-    ContactsInteractor {
+public class ContactsInteractorImpl
+@Inject
+constructor(
+    private val contactsRepository: ContactsRepository,
+    private val imageLoader: ImageLoader,
+) : ContactsInteractor {
     override suspend fun fetchContacts(
         searchQuery: String,
         contentResolver: ContentResolver,
     ): List<ContactModel> {
         return contactsRepository.fetchContacts(searchQuery, contentResolver)
+    }
+
+    override suspend fun loadBitmapFromUri(
+        uri: Uri,
+        userContext: Context,
+        @Px sizePx: Int,
+    ): Bitmap? {
+        val source = ImageLoader.Uri(uri, userContext)
+        return imageLoader.loadBitmap(source, maxWidth = sizePx, maxHeight = sizePx)
     }
 }

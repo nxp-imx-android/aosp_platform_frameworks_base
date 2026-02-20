@@ -51,6 +51,7 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 import static android.media.audio.Flags.roForegroundAudioControl;
+import static com.android.media.audio.Flags.hardeningBfgs;
 
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_BACKUP;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ_REASON;
@@ -606,9 +607,10 @@ public class OomAdjusterImpl extends OomAdjuster {
     public OomAdjusterImpl(Object serviceLock, Object procLock, ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread adjusterThread, Constants oomConstants,
             GlobalState globalState, Injector injector, Callback callback,
-            StateGetter stateGetter, Handler updateHandler) {
+            StateGetter stateGetter, Handler updateHandler,
+            HostingTypeProvider hostingTypeProvider) {
         super(serviceLock, procLock, processList, activeUids, adjusterThread, oomConstants,
-                globalState, injector, callback, stateGetter, updateHandler);
+                globalState, injector, callback, stateGetter, updateHandler, hostingTypeProvider);
     }
 
     private final ProcessRecordNodes mProcessRecordProcStateNodes = new ProcessRecordNodes(
@@ -2162,9 +2164,12 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         capability |= getDefaultCapability(app, procState);
 
-        // Procstates below BFGS should never have this capability.
+        // Procstates below BFGS should never have these capabilities
         if (procState > PROCESS_STATE_BOUND_FOREGROUND_SERVICE) {
             capability &= ~PROCESS_CAPABILITY_BFSL;
+            if (hardeningBfgs()) {
+                capability &= ~PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
+            }
         }
         if (!updated) {
             if (adj < prevRawAdj || procState < prevProcState || schedGroup > prevSchedGroup) {

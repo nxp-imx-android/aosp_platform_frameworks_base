@@ -16,18 +16,25 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.annotation.Px
 import android.content.ContentResolver
+import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.ContactsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.InstalledAppsInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
 class NotificationRuleEditViewModelImpl
 @AssistedInject
 constructor(
+    @Assisted override val rule: DraftRuleModel,
     private val contactsInteractor: ContactsInteractor,
     private val installedAppsInteractor: InstalledAppsInteractor,
 ) : NotificationRuleEditViewModel {
@@ -42,12 +49,20 @@ constructor(
         return contactsInteractor.fetchContacts(searchQuery, contentResolver)
     }
 
+    override suspend fun loadContactBitmapFromUri(
+        uri: Uri,
+        userContext: Context,
+        @Px sizePx: Int,
+    ): Bitmap? {
+        return contactsInteractor.loadBitmapFromUri(uri, userContext, sizePx)
+    }
+
     override suspend fun fetchInstalledApps(): List<AppModel> {
         return installedAppsInteractor.fetchInstalledApps()
     }
 
     @AssistedFactory
     interface Factory : NotificationRuleEditViewModel.Factory {
-        override fun create(): NotificationRuleEditViewModelImpl
+        override fun create(rule: DraftRuleModel): NotificationRuleEditViewModelImpl
     }
 }

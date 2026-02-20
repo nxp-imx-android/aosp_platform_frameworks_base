@@ -678,7 +678,8 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
                 Rect() /* contentInsets */,
                 false /* willShowImeOnTarget */,
                 true /* isNotInRecents */,
-                false, /* allowEnterPip */
+                false /* allowEnterPip */,
+                -1, /* order */
             )
         }
     }

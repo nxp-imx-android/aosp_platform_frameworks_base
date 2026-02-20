@@ -21,6 +21,7 @@ import android.content.ComponentName;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.insight.ContextInsight;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
@@ -53,6 +54,13 @@ public final class RefinerWorkflow {
     private static final int WORKFLOW_TIMEOUT_MS = 5_000;
     private static final AtomicLong FLOW_COUNTER = new AtomicLong(0);
 
+    public interface InsightConsumer {
+        /**
+         * Called when new {@link ContextInsight}s are available.
+         */
+        void accept(UUID componentId, Set<ContextInsight> insights);
+    }
+
     /** Starts a new pass of the refiner workflow with a seeded set of hints. */
     public static RefinerWorkflow start(
             ComponentProvider provider,
@@ -60,10 +68,11 @@ public final class RefinerWorkflow {
             Set<RenderToken> renderTokens,
             SecretKeySpec secretKey,
             EventListener eventListener,
-            ScheduledExecutorService executor) {
+            ScheduledExecutorService executor,
+            InsightConsumer insightConsumer) {
         // Build a new workflow instance.
         final RefinerWorkflow workflow = new RefinerWorkflow(
-                provider, renderTokens, secretKey, eventListener, executor);
+                provider, renderTokens, secretKey, eventListener, executor, insightConsumer);
 
         // Seed it with the first round of hints.
         workflow.seedHints(initialHints);
@@ -82,17 +91,21 @@ public final class RefinerWorkflow {
     private final ScheduledExecutorService mExecutor;
     private final FragileReference<RefinerWorkflow> mFragileSelf = new FragileReference<>(this);
 
+    private final InsightConsumer mInsightConsumer;
+
     private RefinerWorkflow(
             ComponentProvider provider,
             Set<RenderToken> renderTokens,
             SecretKeySpec secretKey,
             EventListener eventListener,
-            ScheduledExecutorService executor) {
+            ScheduledExecutorService executor,
+            InsightConsumer insightConsumer) {
         mProvider = provider;
         mRenderTokens = renderTokens;
         mSecretKey = secretKey;
         mEventListener = eventListener != null ? eventListener : new EventListener() {};
         mExecutor = executor;
+        mInsightConsumer = insightConsumer;
 
         // Auto-expire the workflow after the timeout is up.
         mExecutor.schedule(this::expire, WORKFLOW_TIMEOUT_MS, TimeUnit.MILLISECONDS);
@@ -316,7 +329,7 @@ public final class RefinerWorkflow {
             mPendingRefinerCallbacks.add(callback);
 
             // Finally, actually call the refiner.
-            refiner.refine(hintCluster, callback);
+            refiner.refine(hintCluster, callback, mInsightConsumer);
         }
     }
 

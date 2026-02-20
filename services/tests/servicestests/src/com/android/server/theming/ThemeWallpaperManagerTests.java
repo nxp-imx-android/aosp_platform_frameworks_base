@@ -29,6 +29,7 @@ import android.os.Handler;
 
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.server.LocalServices;
 import com.android.server.wallpaper.WallpaperManagerInternal;
 import com.android.systemui.monet.ColorScheme;
 
@@ -53,23 +54,26 @@ public class ThemeWallpaperManagerTests {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
+        LocalServices.removeServiceForTest(WallpaperManagerInternal.class);
     }
 
     @Test
     public void isWallpaperManagerAvailable_withService_returnsTrue() {
-        ThemeWallpaperManager manager = new ThemeWallpaperManager(mWallpaperManagerInternal);
+        LocalServices.addService(WallpaperManagerInternal.class, mWallpaperManagerInternal);
+        ThemeWallpaperManager manager = new ThemeWallpaperManager();
         assertThat(manager.isWallpaperManagerAvailable()).isTrue();
     }
 
     @Test
     public void isWallpaperManagerAvailable_nullService_returnsFalse() {
-        ThemeWallpaperManager manager = new ThemeWallpaperManager(null);
+        ThemeWallpaperManager manager = new ThemeWallpaperManager();
         assertThat(manager.isWallpaperManagerAvailable()).isFalse();
     }
 
     @Test
     public void getWallpaperColors_withService_delegatesToService() {
-        ThemeWallpaperManager manager = new ThemeWallpaperManager(mWallpaperManagerInternal);
+        LocalServices.addService(WallpaperManagerInternal.class, mWallpaperManagerInternal);
+        ThemeWallpaperManager manager = new ThemeWallpaperManager();
         WallpaperColors expectedColors = new WallpaperColors(Color.valueOf(Color.RED), null, null);
 
         when(mWallpaperManagerInternal.getWallpaperColors(eq(WallpaperManager.FLAG_SYSTEM),
@@ -84,7 +88,7 @@ public class ThemeWallpaperManagerTests {
 
     @Test
     public void getWallpaperColors_nullService_returnsNull() {
-        ThemeWallpaperManager manager = new ThemeWallpaperManager(null);
+        ThemeWallpaperManager manager = new ThemeWallpaperManager();
 
         WallpaperColors result = manager.getWallpaperColors(WallpaperManager.FLAG_SYSTEM, USER_ID);
 
@@ -93,7 +97,8 @@ public class ThemeWallpaperManagerTests {
 
     @Test
     public void getSeedColor_withService_returnsCorrectSeed() {
-        ThemeWallpaperManager manager = new ThemeWallpaperManager(mWallpaperManagerInternal);
+        LocalServices.addService(WallpaperManagerInternal.class, mWallpaperManagerInternal);
+        ThemeWallpaperManager manager = new ThemeWallpaperManager();
         WallpaperColors colors = new WallpaperColors(Color.valueOf(Color.BLUE), null, null);
 
         when(mWallpaperManagerInternal.getWallpaperColors(eq(WallpaperManager.FLAG_SYSTEM),
@@ -106,7 +111,7 @@ public class ThemeWallpaperManagerTests {
 
     @Test
     public void getSeedColor_nullService_returnsNull() {
-        ThemeWallpaperManager manager = new ThemeWallpaperManager(null);
+        ThemeWallpaperManager manager = new ThemeWallpaperManager();
 
         Integer result = manager.getSeedColor(USER_ID);
 
@@ -115,7 +120,8 @@ public class ThemeWallpaperManagerTests {
 
     @Test
     public void addOnColorsChangedListener_withService_delegatesToService() {
-        ThemeWallpaperManager manager = new ThemeWallpaperManager(mWallpaperManagerInternal);
+        LocalServices.addService(WallpaperManagerInternal.class, mWallpaperManagerInternal);
+        ThemeWallpaperManager manager = new ThemeWallpaperManager();
 
         manager.addOnColorsChangedListener(mMockListener, mMockHandler);
 

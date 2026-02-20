@@ -25,6 +25,7 @@ import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryHapticsInteractor
+import com.android.systemui.deviceentry.domain.interactor.OccludingAppDeviceEntryInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.ui.binder.KeyguardBlueprintViewBinder
 import com.android.systemui.keyguard.ui.binder.KeyguardJankBinder
@@ -38,7 +39,6 @@ import com.android.systemui.keyguard.ui.viewmodel.KeyguardJankViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LightRevealScrimViewModel
-import com.android.systemui.keyguard.ui.viewmodel.OccludingAppDeviceEntryMessageViewModel
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.dagger.KeyguardBlueprintLog
 import com.android.systemui.plugins.FalsingManager
@@ -65,7 +65,7 @@ constructor(
     private val keyguardRootView: KeyguardRootView,
     private val keyguardRootViewModel: KeyguardRootViewModel,
     private val keyguardJankViewModel: KeyguardJankViewModel,
-    private val occludingAppDeviceEntryMessageViewModel: OccludingAppDeviceEntryMessageViewModel,
+    private val occludingAppDeviceEntryInteractor: OccludingAppDeviceEntryInteractor,
     private val chipbarCoordinator: ChipbarCoordinator,
     private val keyguardBlueprintViewModel: KeyguardBlueprintViewModel,
     @ShadeDisplayAware private val configuration: ConfigurationState,
@@ -136,8 +136,6 @@ constructor(
                 keyguardRootViewModel,
                 keyguardBlueprintViewModel,
                 configuration,
-                occludingAppDeviceEntryMessageViewModel,
-                chipbarCoordinator,
                 shadeInteractor,
                 smartspaceViewModel,
                 deviceEntryHapticsInteractor,

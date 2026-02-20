@@ -173,12 +173,7 @@ public final class DreamManagerService extends SystemService {
     private final CopyOnWriteArrayList<DreamManagerInternal.DreamManagerStateListener>
             mDreamManagerStateListeners = new CopyOnWriteArrayList<>();
 
-    @GuardedBy("mLock")
-    private final SparseArray<RemoteCallbackList<IDreamManagerListener>> mPlaylistListeners =
-            new SparseArray<>();
-
-    @GuardedBy("mLock")
-    private final SparseArray<DreamPlaylist> mCachedPlaylists = new SparseArray<>();
+    private final DreamPlaylistUpdater mDreamPlaylistUpdater;
 
     @GuardedBy("mLock")
     private DreamRecord mCurrentDream;
@@ -396,6 +391,29 @@ public final class DreamManagerService extends SystemService {
         mDreamComponentsResolver = injector.getDreamComponentsResolver(mContext, mDreamValidator,
                 mDozeConfig, LocalServices.getService(UserManagerInternal.class),
                 mDreamsOnlyEnabledForDockUser);
+        mDreamPlaylistUpdater = new DreamPlaylistUpdater(mDreamComponentsResolver, mHandler,
+                this::onDreamPlaylistChanged);
+    }
+
+    @VisibleForTesting
+    void onDreamPlaylistChanged(int userId, DreamPlaylist playlist) {
+        if (userId == mInjector.getCurrentUser()) {
+            synchronized (mLock) {
+                final ComponentName activeDream = playlist.getActiveDream();
+                if (activeDream != null
+                        && isDreamingInternal()
+                        && !currentDreamCanDozeLocked()
+                        && mCurrentDream.userId == userId
+                        && !Objects.equals(mCurrentDream.name, activeDream)) {
+                    startDreamLocked(
+                            activeDream,
+                            false /*isPreviewMode*/,
+                            false /*canDoze*/,
+                            userId,
+                            "playlist changed");
+                }
+            }
+        }
     }
 
     @Override
@@ -499,15 +517,7 @@ public final class DreamManagerService extends SystemService {
     public void onUserStopping(@NonNull TargetUser user) {
         super.onUserStopping(user);
         final int userId = user.getUserIdentifier();
-        synchronized (mLock) {
-            mCachedPlaylists.remove(userId);
-            final RemoteCallbackList<IDreamManagerListener> listeners =
-                    mPlaylistListeners.get(userId);
-            if (listeners != null) {
-                listeners.kill();
-                mPlaylistListeners.remove(userId);
-            }
-        }
+        mDreamPlaylistUpdater.clearCache(userId);
         if (cleanupDreamSettingsOnUninstall()) {
             mHandler.post(() -> {
                 final PackageMonitor monitor = mPackageMonitors.removeReturnOld(
@@ -543,6 +553,11 @@ public final class DreamManagerService extends SystemService {
             pw.println("mDreamOverlayServiceName="
                     + ComponentName.flattenToShortString(mDreamOverlayServiceName));
             pw.println();
+
+            if (dreamsSwitcher()) {
+                mDreamPlaylistUpdater.dump(pw);
+                mDreamComponentsResolver.dump(pw, mInjector.getCurrentUser());
+            }
 
             DumpUtils.dumpAsync(mHandler, (pw1, prefix) -> mController.dump(pw1), pw, "", 200);
         }
@@ -821,6 +836,63 @@ public final class DreamManagerService extends SystemService {
         stopDreamInternal(false, "stopping dream from shell");
     }
 
+    void requestGetDreamPlaylistFromShell(PrintWriter pw) {
+        if (!dreamsSwitcher()) {
+            pw.println("Dream switcher feature not enabled");
+            return;
+        }
+        final int userId = mInjector.getCurrentUser();
+        final DreamPlaylist playlist = getDreamPlaylistInternal(userId);
+        pw.println("Dream Playlist for user " + userId + ":");
+        pw.println(playlist);
+    }
+
+    void requestNextDreamFromShell(PrintWriter pw) {
+        if (!dreamsSwitcher()) {
+            pw.println("Dream switcher feature not enabled");
+            return;
+        }
+        final int userId = mInjector.getCurrentUser();
+        final DreamPlaylist playlist = getDreamPlaylistInternal(userId);
+        if (playlist == null || playlist.getDreams().isEmpty()) {
+            pw.println("No dreams in playlist");
+            return;
+        }
+        final ComponentName nextDream = playlist.getNextDream();
+        if (nextDream == null) {
+            pw.println("No next dream");
+            return;
+        }
+        if (setActiveDreamInternal(nextDream, userId)) {
+            pw.println("Set active dream to: " + nextDream.flattenToShortString());
+        } else {
+            pw.println("Failed to set active dream to: " + nextDream.flattenToShortString());
+        }
+    }
+
+    void requestPreviousDreamFromShell(PrintWriter pw) {
+        if (!dreamsSwitcher()) {
+            pw.println("Dream switcher feature not enabled");
+            return;
+        }
+        final int userId = mInjector.getCurrentUser();
+        final DreamPlaylist playlist = getDreamPlaylistInternal(userId);
+        if (playlist == null || playlist.getDreams().isEmpty()) {
+            pw.println("No dreams in playlist");
+            return;
+        }
+        final ComponentName prevDream = playlist.getPreviousDream();
+        if (prevDream == null) {
+            pw.println("No previous dream");
+            return;
+        }
+        if (setActiveDreamInternal(prevDream, userId)) {
+            pw.println("Set active dream to: " + prevDream.flattenToShortString());
+        } else {
+            pw.println("Failed to set active dream to: " + prevDream.flattenToShortString());
+        }
+    }
+
     @VisibleForTesting
     void stopDreamInternal(boolean immediate, String reason) {
         synchronized (mLock) {
@@ -935,6 +1007,32 @@ public final class DreamManagerService extends SystemService {
     }
 
     @VisibleForTesting
+    boolean setActiveDreamInternal(ComponentName componentName, int userId) {
+        if (componentName != null) {
+            final DreamPlaylist playlist =
+                    mDreamComponentsResolver.getDreamPlaylist(userId, mSystemDreamComponent);
+            if (!playlist.getDreams().contains(componentName)) {
+                Slog.w(
+                        TAG,
+                        "Attempted to set active dream component that is not in the playlist: "
+                                + componentName
+                                + " (playlist="
+                                + playlist
+                                + ", userId="
+                                + userId
+                                + ")");
+                return false;
+            }
+        }
+
+        return Settings.Secure.putStringForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.SCREENSAVER_ACTIVE_COMPONENT,
+                componentName != null ? componentName.flattenToString() : null,
+                userId);
+    }
+
+    @VisibleForTesting
     void setSystemDreamComponentInternal(ComponentName component, IBinder token) {
         if (systemDreamDeathRecipient() && component != null && token == null) {
             throw new IllegalArgumentException("System dream component requires a non-null token.");
@@ -1000,14 +1098,15 @@ public final class DreamManagerService extends SystemService {
 
         if (dreamsSwitcher()) {
             final int userId = mInjector.getCurrentUser();
-            mHandler.post(() -> notifyPlaylistChanged(userId));
-        }
-
-        // Switch dream if currently dreaming and not dozing.
-        if (isDreamingInternal() && !currentDreamCanDozeLocked()) {
-            startDreamInternal(false /*doze*/,
-                    (mSystemDreamComponent == null ? "clear" : "set")
-                            + " system dream component");
+            mHandler.post(() -> notifyPlaylistChanged(userId, true /* immediate */));
+        } else {
+            // Switch dream if currently dreaming and not dozing.
+            if (isDreamingInternal() && !currentDreamCanDozeLocked()) {
+                startDreamInternal(
+                        false /*doze*/,
+                        (mSystemDreamComponent == null ? "clear" : "set")
+                                + " system dream component");
+            }
         }
     }
 
@@ -1300,6 +1399,26 @@ public final class DreamManagerService extends SystemService {
             final long ident = Binder.clearCallingIdentity();
             try {
                 DreamManagerService.this.setDreamComponentsForUser(userId, componentNames);
+                if (dreamsSwitcher()) {
+                    // Also clear the active dream if one exists, to force the dream to fallback to
+                    // the first available dream in the playlist.
+                    DreamManagerService.this.setActiveDreamInternal(null, userId);
+                }
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
+        }
+
+        @EnforcePermission(android.Manifest.permission.WRITE_DREAM_STATE)
+        @Override // Binder call
+        public boolean setActiveDream(ComponentName componentName, int userId) {
+            setActiveDream_enforcePermission();
+            userId = ActivityManager.handleIncomingUser(Binder.getCallingPid(),
+                    Binder.getCallingUid(), userId, false, true, "setActiveDream", null);
+
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                return DreamManagerService.this.setActiveDreamInternal(componentName, userId);
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
@@ -1809,50 +1928,26 @@ public final class DreamManagerService extends SystemService {
     }
 
     void registerListener(IDreamManagerListener listener, int userId) {
-        synchronized (mLock) {
-            RemoteCallbackList<IDreamManagerListener> listeners = mPlaylistListeners.get(userId);
-            if (listeners == null) {
-                listeners = new RemoteCallbackList<>();
-                mPlaylistListeners.put(userId, listeners);
-            }
-            listeners.register(listener);
-        }
+        mDreamPlaylistUpdater.registerListener(listener, userId);
     }
 
     void unregisterListener(IDreamManagerListener listener, int userId) {
-        synchronized (mLock) {
-            final RemoteCallbackList<IDreamManagerListener> listeners =
-                    mPlaylistListeners.get(userId);
-            if (listeners != null) {
-                listeners.unregister(listener);
-            }
-        }
+        mDreamPlaylistUpdater.unregisterListener(listener, userId);
     }
 
     private void notifyPlaylistChanged(int userId) {
-        mHandler.post(() -> {
-            final DreamPlaylist playlist = getDreamPlaylistInternal(userId);
-            final RemoteCallbackList<IDreamManagerListener> listeners;
-            synchronized (mLock) {
-                final DreamPlaylist cached = mCachedPlaylists.get(userId);
-                if (Objects.equals(cached, playlist)) {
-                    return;
-                }
-                mCachedPlaylists.put(userId, playlist);
-                listeners = mPlaylistListeners.get(userId);
-            }
-            if (listeners == null) {
-                return;
-            }
-            int n = listeners.beginBroadcast();
-            for (int i = 0; i < n; i++) {
-                try {
-                    listeners.getBroadcastItem(i).onPlaylistChanged(playlist);
-                } catch (RemoteException e) {
-                    // ignore
-                }
-            }
-            listeners.finishBroadcast();
-        });
+        notifyPlaylistChanged(userId, false /* immediate */);
+    }
+
+    private void notifyPlaylistChanged(int userId, boolean immediate) {
+        ComponentName systemDreamComponent;
+        synchronized (mLock) {
+            systemDreamComponent = mSystemDreamComponent;
+        }
+        if (immediate) {
+            mDreamPlaylistUpdater.refreshImmediately(userId, systemDreamComponent);
+        } else {
+            mDreamPlaylistUpdater.refresh(userId, systemDreamComponent);
+        }
     }
 }

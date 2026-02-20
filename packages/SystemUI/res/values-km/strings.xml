@@ -36,8 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"បង្វិល​អេក្រង់​ស្វ័យ​ប្រវត្តិ"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"អនុញ្ញាត <xliff:g id="APPLICATION">%1$s</xliff:g> ឱ្យចូលប្រើ <xliff:g id="USB_DEVICE">%2$s</xliff:g> មែនទេ?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"អនុញ្ញាតឱ្យ <xliff:g id="APPLICATION">%1$s</xliff:g> ចូលប្រើ <xliff:g id="USB_DEVICE">%2$s</xliff:g>?\nកម្មវិធីនេះ​មិនទាន់បាន​ទទួលសិទ្ធិ​ថតសំឡេងនៅឡើយទេ ប៉ុន្តែ​អាចថត​សំឡេង​តាមរយៈ​ឧបករណ៍ USB នេះបាន។"</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"អនុញ្ញាតឱ្យ <xliff:g id="APPLICATION">%1$s</xliff:g> ចូលប្រើ <xliff:g id="USB_DEVICE">%2$s</xliff:g> ឬ?"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"បើក <xliff:g id="APPLICATION">%1$s</xliff:g> ដើម្បីគ្រប់គ្រង <xliff:g id="USB_DEVICE">%2$s</xliff:g> ឬ?"</string>
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"អនុញ្ញាតឱ្យ &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; ចូលប្រើ &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; ឬ?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"បើក &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; ដើម្បីចាត់ចែង &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; ឬ?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"កម្មវិធីនេះ​មិនទាន់បាន​ទទួលសិទ្ធិ​ថតសំឡេង​នៅឡើយទេ ប៉ុន្តែអាច​ថតសំឡេង​តាមរយៈ​ឧបករណ៍ USB នេះបាន។ ការប្រើ <xliff:g id="APPLICATION">%1$s</xliff:g> ជាមួយឧបករណ៍នេះអាចនឹងបិទសំឡេងការហៅទូរសព្ទ ការជូនដំណឹង និងម៉ោងរោទ៍។"</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"ការប្រើ <xliff:g id="APPLICATION">%1$s</xliff:g> ជាមួយឧបករណ៍នេះអាចនឹងបិទសំឡេងការហៅទូរសព្ទ ការជូនដំណឹង និងម៉ោងរោទ៍។"</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"អនុញ្ញាត <xliff:g id="APPLICATION">%1$s</xliff:g> ឱ្យចូលប្រើ <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> មែនទេ?"</string>
@@ -58,24 +58,15 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"អនុញ្ញាត"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"មិនអនុញ្ញាតការកែកំហុសតាម USB ទេ"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"អ្នកប្រើ​ប្រាស់ដែលបច្ចុប្បន្ន​បានចូលគណនី​នៅលើឧបករណ៍នេះ​មិនអាចបើកការ​ជួសជុលតាម USB បានទេ។ ដើម្បីប្រើប្រាស់មុខងារនេះ សូមប្ដូរទៅអ្នកប្រើប្រាស់​ដែលជាអ្នកគ្រប់គ្រង។"</string>
-    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
-    <skip />
-    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
-    <skip />
-    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
-    <skip />
-    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
-    <skip />
-    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
-    <skip />
+    <string name="usb_authorization_title" msgid="3332796080113535331">"អនុញ្ញាតឱ្យឧបករណ៍ USB ភ្ជាប់ឬ?"</string>
+    <string name="usb_authorization_title_multi" msgid="1966181648363433366">"អនុញ្ញាតឱ្យឧបករណ៍ USB ភ្ជាប់ឬ?"</string>
+    <string name="usb_authorization_message" msgid="1107567912094941105">"ឧបករណ៍ខាងក្រោមត្រូវបានភ្ជាប់ទៅ <xliff:g id="NAME">%1$s</xliff:g> របស់អ្នក៖"</string>
+    <string name="usb_authorization_message_multi" msgid="4867596373922923637">"ឧបករណ៍ខាងក្រោមត្រូវបានភ្ជាប់ទៅ <xliff:g id="NAME">%1$s</xliff:g> របស់អ្នក៖"</string>
+    <string name="usb_authorization_message_untrusted" msgid="4407977362840907960">"ឧបករណ៍ខាងក្រោមត្រូវបានភ្ជាប់ទៅ <xliff:g id="NAME">%1$s</xliff:g> របស់អ្នក។ ឧបករណ៍នេះនឹងទទួលបានការទុកចិត្ត បន្ទាប់ពីអ្នកចូលគណនីតែប៉ុណ្ណោះ។"</string>
+    <string name="usb_authorization_message_multi_untrusted" msgid="85055448435495205">"ឧបករណ៍ខាងក្រោមត្រូវបានភ្ជាប់ទៅ <xliff:g id="NAME">%1$s</xliff:g> របស់អ្នក។ ឧបករណ៍ទាំងនេះនឹងទទួលបានការទុកចិត្ត បន្ទាប់ពីអ្នកចូលគណនីតែប៉ុណ្ណោះ។"</string>
+    <string name="usb_authorization_unknown_device" msgid="1107933381080189970">"ផលិតផលមិនស្គាល់ (<xliff:g id="VENDOR_ID">%1$04X</xliff:g>:<xliff:g id="PRODUCT_ID">%2$04X</xliff:g>)"</string>
+    <string name="usb_authorization_allow" msgid="5517449937301874244">"អនុញ្ញាត"</string>
+    <string name="usb_authorization_deny" msgid="8156333001876101456">"កុំអនុញ្ញាត"</string>
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"តើអ្នកចង់ប្ដូរ​ភាសាប្រព័ន្ធ​ទៅភាសា​<xliff:g id="LANGUAGE">%1$s</xliff:g>​ដែរទេ?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"ការប្ដូរភាសា​ប្រព័ន្ធដែលបានស្នើសុំ​ដោយ​ឧបករណ៍ផ្សេងទៀត"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"​ប្ដូរ​ភាសា"</string>
@@ -121,10 +112,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"ថត​ច្រើនទៀត"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"ច្រានចោល​រូបថត​អេក្រង់"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"ច្រានចោល​សារ​កម្រងព័ត៌មានការងារ"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"មើល"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"ប៊ូតុង \"មើលរូបថត​អេក្រង់នៅក្នុង Files\""</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"ការមើល​រូបថត​អេក្រង់​សាកល្បង"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"បន្ទាត់បែងចែក​ខាងលើ <xliff:g id="PERCENT">%1$d</xliff:g> ភាគរយ"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"បន្ទាត់បែងចែក​ខាងក្រោម <xliff:g id="PERCENT">%1$d</xliff:g> ភាគរយ"</string>
@@ -196,6 +185,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"បិទសំឡេង"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"បើក​សំឡេង"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> នៃ <xliff:g id="DURATION">%2$s</xliff:g>"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"ការថត​អេក្រង់​ត្រូវបាន​ទប់ស្កាត់​ដោយ​អ្នកគ្រប់គ្រង​ផ្នែកព័ត៌មានវិទ្យា​របស់អ្នក"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ថតរូបអេក្រង់ទាំងមូល"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ថតអេក្រង់ទាំងមូល"</string>
@@ -208,7 +199,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"ដង​ខាងស្ដាំ​ផ្នែកខាងក្រោម - ប្រើគ្រាប់ចុចព្រួញ ដើម្បីប្ដូរទំហំ"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"ដង​ខាងឆ្វេង​ផ្នែកខាងក្រោម - ប្រើគ្រាប់ចុចព្រួញ ដើម្បីប្ដូរទំហំ"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ចែករំលែក"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"ជ្រើសរើសកម្មវិធីដើម្បីចែករំលែក"</string>
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"ជ្រើសរើសវិនដូកម្មវិធីដែលត្រូវបង្ហាញ"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"ជ្រើសរើសផ្ទាំងដែលត្រូវបង្ហាញ"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"ជ្រើសរើសផ្ទាំងអេក្រង់ដែលត្រូវបង្ហាញ"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ស្ដាប់សំឡេងរួមគ្នា"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"បង្ហាញវិនដូកម្មវិធី"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ចែករំលែកផ្ទាំង"</string>
@@ -226,11 +219,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"បានឈប់បង្ហាញអេក្រង់៖ <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>។ មិនបានបង្ហាញអេក្រង់ទៅនរណាម្នាក់ទេ។"</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"ប៊ូតុងបិទ។ ចុច enter ដើម្បីបិទប្រអប់មុនពេលបង្ហាញ។"</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"ប៊ូតុងបង្ហាញផ្ទាំង។ មិនបាន​ជ្រើសរើស។ ចុច enter ដើម្បីបង្ហាញផ្ទាំង។"</string>
-    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"កំពុងបង្ហាញផ្ទាំង។ ចូលទៅមើលផ្ទាំងដែលមាន។"</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"កំពុងបង្ហាញផ្ទាំង។ ចូលទៅពិនិត្យមើលផ្ទាំងដែលមាន។"</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"ប៊ូតុងបង្ហាញកម្មវិធី។ មិនបាន​ជ្រើសរើស។ ចុច enter ដើម្បីបង្ហាញកម្មវិធី។"</string>
-    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"កំពុងបង្ហាញកម្មវិធី។ ចូលទៅមើលកម្មវិធីដែលមាន។"</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"កំពុងបង្ហាញកម្មវិធី។ ចូលទៅពិនិត្យមើលកម្មវិធីដែលមាន។"</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"ប៊ូតុង​អេក្រង់​ពេញ។ មិនបាន​ជ្រើសរើស។ ចុច enter ដើម្បីបង្ហាញ​អេក្រង់​ពេញ។"</string>
-    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"កំពុងបង្ហាញ​អេក្រង់​ពេញ។ ចូលទៅមើលផ្ទាំងអេក្រង់ដែលមាន។"</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"កំពុងបង្ហាញ​អេក្រង់​ពេញ។ ចូលទៅពិនិត្យមើលផ្ទាំងអេក្រង់ដែលមាន។"</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"ប៊ូតុងបង្ហាញ។ បិទ។ ជ្រើសរើសកម្មវិធី ផ្ទាំង ឬផ្ទាំងអេក្រង់ដើម្បីបង្ហាញ។"</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"ការបង្ហាញត្រូវបានបើក។ បាន​ជ្រើសរើស <xliff:g id="ITEM">%1$s</xliff:g>។ ចុច enter ដើម្បីចាប់ផ្ដើមបង្ហាញ។"</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>។ មិនបាន​ជ្រើសរើស។ ចុច enter ដើម្បីជ្រើសរើស។"</string>
@@ -247,8 +240,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"ចែករំលែកវីដេអូអេក្រង់"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"បើកវីដេអូអេក្រង់នៅក្នុងកម្មវិធីគ្រប់គ្រងឯកសារ"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"លុបវីដេអូអេក្រង់"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"បើកវីដេអូអេក្រង់នៅក្នុងកម្មវិធីមើល"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"បង្ហាញការចុច និងគ្រាប់ចុច"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"សំឡេង​ឧបករណ៍"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"មីក្រូហ្វូន"</string>
@@ -303,7 +295,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"បានដោះសោ"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"បានចាក់សោ​ឧបករណ៍"</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"បញ្ជាក់ និងដោះ​សោឧបករណ៍"</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"សាកល្បងប្រើការដោះសោដោយស្កេនមុខម្ដងទៀត"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"ការ​ស្កេន​មុខ"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"ផ្ញើ"</string>
     <string name="cancel" msgid="1089011503403416730">"បោះបង់"</string>
@@ -316,11 +307,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"បានផ្ទៀងផ្ទាត់​មុខ"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"បានបញ្ជាក់"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"ចុច \"បញ្ជាក់\" ដើម្បីបញ្ចប់"</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"បានដោះសោដោយប្រើមុខ"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"បានដោះសោដោយប្រើមុខ។ សូមចុច ដើម្បីបន្ត។"</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"បានស្គាល់មុខ។ សូមចុច ដើម្បីបន្ត។"</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"បានស្គាល់មុខ។ សូមចុចរូបដោះសោ ដើម្បីបន្ត។"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"បានដោះសោដោយប្រើមុខ។ ចុច​ ដើម្បី​បន្ត។"</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"បាន​ផ្ទៀងផ្ទាត់"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"បោះបង់ការផ្ទៀងផ្ទាត់"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"ជម្រើស​ច្រើន​ទៀត"</string>
@@ -365,11 +353,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"ដើម្បីរៀបចំការដោះសោដោយប្រើស្នាមម្រាមដៃម្ដងទៀត គំរូ និងរូបភាពស្នាមម្រាមដៃបច្ចុប្បន្នរបស់អ្នកនឹងត្រូវបានលុប។\n\nបន្ទាប់ពីលុបគំរូនិងរូបភាពស្នាមម្រាមដៃទាំងនោះ អ្នកនឹងត្រូវរៀបចំការដោះសោដោយប្រើស្នាមម្រាមដៃម្ដងទៀត ដើម្បីដោះសោទូរសព្ទរបស់អ្នក ឬផ្ទៀងផ្ទាត់ថាជាអ្នក។"</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"ដើម្បីរៀបចំការដោះសោដោយប្រើស្នាមម្រាមដៃម្ដងទៀត គំរូ និងរូបភាពស្នាមម្រាមដៃបច្ចុប្បន្នរបស់អ្នកនឹងត្រូវបានលុប។\n\nបន្ទាប់ពីលុបគំរូនិងរូបភាពស្នាមម្រាមដៃទាំងនោះ អ្នកនឹងត្រូវរៀបចំការដោះសោដោយប្រើស្នាមម្រាមដៃម្ដងទៀត ដើម្បីដោះសោទូរសព្ទរបស់អ្នក ឬផ្ទៀងផ្ទាត់ថាជាអ្នក។"</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"មិនអាចរៀបចំការដោះសោដោយប្រើស្នាមម្រាមដៃបានទេ។ សូមចូលទៅកាន់​ការកំណត់​ ដើម្បីព្យាយាមម្ដងទៀត។"</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"រៀបចំ​ការដោះសោតាមទម្រង់មុខ​ម្ដងទៀត"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"ការដោះ​សោ​ដោយស្កេន​មុខ"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"រៀបចំ​ការដោះសោ​ដោយស្កេនមុខ"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"ដើម្បីរៀបចំ​ដោះសោតាមទម្រង់មុខ​ម្ដងទៀត គំរូមុខបច្ចុប្បន្ន​របស់អ្នក​នឹងត្រូវបានលុប។\n\nអ្នកនឹងត្រូវ​រៀបចំមុខងារនេះ​ម្ដងទៀត ដើម្បីប្រើមុខរបស់អ្នក​សម្រាប់ដោះសោទូរសព្ទរបស់អ្នក។"</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"មិនអាច​រៀបចំ​ការដោះសោតាមទម្រង់មុខបានទេ។ សូមចូលទៅកាន់​ការកំណត់​ ដើម្បីព្យាយាមម្ដងទៀត។"</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"ប៉ះ​សេនស័រចាប់ស្នាមម្រាមដៃ"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"សូមចុចរូបដោះសោ ដើម្បីបន្ត"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"មិន​ស្គាល់​មុខទេ។ សូមប្រើស្នាមម្រាមដៃជំនួសវិញ។"</string>
@@ -377,7 +360,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"មិន​ស្គាល់​មុខ"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"ប្រើស្នាមម្រាមដៃជំនួសវិញ​"</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"មិនអាចប្រើការដោះសោតាមទម្រង់មុខបានទេ"</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"បាន​តភ្ជាប់​ប៊្លូធូស។"</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"រូបឧបករណ៍​ប៊្លូធូស"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ចុចដើម្បីកំណត់រចនាសម្ព័ន្ធព័ត៌មានលម្អិតអំពីឧបករណ៍"</string>
@@ -553,6 +535,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"បាន​បិទ NFC"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"បាន​បើក NFC"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"ការថត​វីដេអូ​អេក្រង់"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"ការថត​អេក្រង់"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"ចាប់ផ្ដើម"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"ឈប់"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"កត់ត្រាបញ្ហា"</string>
@@ -648,16 +631,10 @@
     <string name="tap_again" msgid="1315420114387908655">"ចុច​ម្ដងទៀត"</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"អូសឡើងលើ​ដើម្បីបើក"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"ចុចរូបដោះសោ ដើម្បីបើក"</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"បានដោះសោដោយប្រើមុខ។ អូសឡើងលើ​ដើម្បីបើក។"</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"បានដោះសោដោយប្រើមុខ។ ចុចបញ្ជាក់ដើម្បីបន្ត។"</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"បានដោះសោ​ដោយប្រើមុខ។ សូមចុចរូបដោះសោ ដើម្បីបើក។"</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"បានដោះសោដោយប្រើមុខ។ សូមចុច ដើម្បីបើក។"</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"បានស្គាល់មុខ។ សូមចុច ដើម្បីបើក។"</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"បានស្គាល់មុខ។ សូមចុចរូបដោះសោ ដើម្បីបើក។"</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"បានដោះសោដោយប្រើមុខ"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"បានស្គាល់មុខ"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"អូសឡើងលើ ដើម្បី​ព្យាយាម​ម្ដងទៀត"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"អូសឡើងលើ ដើម្បីសាកល្បងប្រើការដោះ​សោ​ដោយស្កេន​មុខម្ដងទៀត"</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"ដោះសោ ដើម្បីប្រើ NFC"</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"ឧបករណ៍​នេះគឺជា​កម្មសិទ្ធិរបស់​ស្ថាប័ន​អ្នក"</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"ឧបករណ៍នេះ​គឺជា​កម្មសិទ្ធិ​របស់ <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>"</string>
@@ -1263,10 +1240,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"គ្រាប់ចុចភាពងាយស្រួល"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"អ្នកអាចចុចគ្រាប់ចុចភាពងាយស្រួល ដើម្បីចាប់ផ្ដើមប្រើមុខងារភាពងាយស្រួល។"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"បញ្ចូលមុខងារ"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"រៀបចំ <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"រួចរាល់"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"ជ្រើសរើស​មុខងារ"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"កែ"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ភាពងាយស្រួល"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"អេក្រង់​ចាក់សោ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"កំពុង​បិទ…"</string>
@@ -1876,6 +1859,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"បែបផែន %d"</string>
     <string name="av_blur" msgid="405131343487260171">"ព្រាល"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"អក្សររត់ក្នុងពេលជាក់ស្ដែង"</string>
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"ថយក្រោយ"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"ថ្ម %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"ថ្មខាងឆ្វេង %1$s    ថ្មខាងស្ដាំ %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"ថ្មខាងឆ្វេង %1$s"</string>

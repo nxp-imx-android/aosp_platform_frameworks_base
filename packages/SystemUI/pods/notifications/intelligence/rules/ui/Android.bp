@@ -35,6 +35,7 @@ java_library {
     defaults: ["sysui_main"],
     visibility: [
         "//frameworks/base/packages/SystemUI/pods/bundle/phone",
+        "//frameworks/base/packages/SystemUI/notifications/intelligence/rules/ui",
         "//vendor:__subpackages__",
     ],
     static_libs: [
@@ -47,6 +48,7 @@ java_library {
         "androidx.compose.material3_material3",
         "androidx.compose.material_material-icons-core",
         "androidx.compose.runtime_runtime",
+        "androidx.activity_activity-compose",
     ],
 }
 
@@ -54,6 +56,15 @@ java_library {
     name: "com.android.systemui.notifications.intelligence.rules.ui_dagger",
     defaults: ["sysui_dagger"],
     static_libs: [
+        "com.android.systemui.notifications.intelligence.rules.ui_main",
+    ],
+}
+
+java_library {
+    name: "com.android.systemui.notifications.intelligence.rules.ui_testlib",
+    defaults: ["sysui_testlib"],
+    static_libs: [
+        "com.android.systemui.notifications.intelligence.rules.ui_api",
         "com.android.systemui.notifications.intelligence.rules.ui_main",
     ],
 }

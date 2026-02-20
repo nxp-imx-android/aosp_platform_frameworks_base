@@ -73,4 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"നിങ്ങളുടെ ഫോൺ ചാർജ് ചെയ്യുമ്പോൾ ക്ലോക്ക്, ഫോട്ടോകൾ അല്ലെങ്കിൽ കാലാവസ്ഥ കാണിക്കുക"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"നിങ്ങളുടെ ടാബ്‌ലെറ്റ് ചാർജ് ചെയ്യുമ്പോൾ ക്ലോക്ക്, ഫോട്ടോകൾ അല്ലെങ്കിൽ കാലാവസ്ഥ കാണിക്കുക"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"നിങ്ങളുടെ ഉപകരണം ചാർജ് ചെയ്യുമ്പോൾ ക്ലോക്ക്, ഫോട്ടോകൾ അല്ലെങ്കിൽ കാലാവസ്ഥ കാണിക്കുക"</string>
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"ഫെയ്‌സ് അൺലോക്ക് പരീക്ഷിക്കൂ"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"മുഖം ഉപയോഗിച്ച് വീണ്ടും അൺലോക്ക് ചെയ്യാൻ ശ്രമിക്കൂ"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"ഫെയ്‌സ് അൺലോക്ക് വീണ്ടും സജ്ജീകരിക്കുക"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്യൽ വീണ്ടും സജ്ജീകരിക്കുക"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തു"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"മുഖം വഴി അൺലോക്ക് ചെയ്തു"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"മുഖം വഴി അൺലോക്ക് ചെയ്തു. തുടരാൻ അമർത്തുക."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"മുഖം വഴി അൺലോക്ക് ചെയ്തു. തുടരാൻ അമർത്തുക."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"മുഖം വഴി അൺലോക്ക് ചെയ്തു. തുടരാൻ ടാപ്പ് ചെയ്യുക."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"മുഖം വഴി അൺലോക്ക് ചെയ്തു. തുടരാൻ ടാപ്പ് ചെയ്യുക."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"ഫെയ്‌സ് അൺലോക്ക്"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്യുന്നു"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"ഫെയ്‌സ് അൺലോക്ക് സജ്ജീകരിക്കുക"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്യൽ സജ്ജീകരിക്കുക"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"ഫെയ്‌സ് അൺലോക്ക് വീണ്ടും സജ്ജീകരിക്കാൻ, നിങ്ങളുടെ നിലവിലുള്ള മുഖ മോഡൽ ഇല്ലാതാക്കും.\n\nഫോൺ അൺലോക്ക് ചെയ്യാൻ നിങ്ങളുടെ മുഖം ഉപയോഗിക്കുന്നതിന് ഈ ഫീച്ചർ വീണ്ടും സജ്ജീകരിക്കേണ്ടതുണ്ട്."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്യുന്നത് വീണ്ടും സജ്ജീകരിക്കാൻ, നിങ്ങളുടെ നിലവിലെ മുഖ മോഡൽ ഇല്ലാതാക്കും.\n\nഉപകരണം അൺലോക്ക് ചെയ്യാൻ നിങ്ങളുടെ മുഖം ഉപയോഗിക്കുന്നതിന് ഈ ഫീച്ചർ വീണ്ടും സജ്ജീകരിക്കേണ്ടതുണ്ട്."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"ഫെയ്‌സ് അൺലോക്ക് സജ്ജീകരിക്കാനായില്ല. വീണ്ടും ശ്രമിക്കാൻ ക്രമീകരണത്തിലേക്ക് പോവുക."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്യൽ സജ്ജീകരിക്കാനായില്ല. ക്രമീകരണത്തിൽ വീണ്ടും ശ്രമിക്കുക."</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"ഫെയ്‌സ് അൺലോക്ക് ലഭ്യമല്ല"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"മുഖം ഉപയോഗിച്ചുള്ള അൺലോക്ക് ലഭ്യമല്ല"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"വീണ്ടും ഫെയ്‌സ് അൺലോക്ക് നോക്കാൻ മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്യൂ"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"മുഖം ഉപയോഗിച്ച് വീണ്ടും അൺലോക്ക് ചെയ്യാൻ ശ്രമിക്കാൻ മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്യുക"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"മുഖം വഴി അൺലോക്കുചെയ്തു. മുകളിലേക്ക് സ്വൈപ്പുചെയ്ത് തുറക്കൂ."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"മുഖം വഴി അൺലോക്കുചെയ്തു. മുകളിലേക്ക് സ്വൈപ്പുചെയ്ത് തുറക്കൂ."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"മുഖം വഴി അൺലോക്ക് ചെയ്തു. തുടരാൻ സ്ഥിരീകരിക്കുക."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"മുഖം വഴി അൺലോക്ക് ചെയ്തു. തുടരാൻ സ്ഥിരീകരിക്കുക."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"മുഖം വഴി അൺലോക്ക് ചെയ്തു. തുറക്കാൻ അൺലോക്ക് ഐക്കൺ അമർത്തുക."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"മുഖം വഴി അൺലോക്ക് ചെയ്തു. തുറക്കാൻ അൺലോക്ക് ഐക്കൺ അമർത്തുക."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"മുഖം വഴി അൺലോക്ക് ചെയ്തു. തുറക്കാൻ അമർത്തുക."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"മുഖം വഴി അൺലോക്ക് ചെയ്തു. തുറക്കാൻ അമർത്തുക."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"മുഖം ഉപയോഗിച്ച് അൺലോക്ക് ചെയ്‌തു"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"മുഖം വഴി അൺലോക്ക് ചെയ്തു"</string>
 </resources>

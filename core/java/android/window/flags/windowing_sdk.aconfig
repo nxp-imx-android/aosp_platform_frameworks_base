@@ -231,3 +231,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "inherit_consecutive_launch_caller_uid"
+    description: "Allows the original caller UID to be inherited from a previous launching state when a consecutive launch is detected."
+    bug: "477475375"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -118,42 +118,40 @@ fun RecordDetailsAppSelector(
                     viewModel.createTaskViewModel(task)
                 }
             val currentIndex = pagerState.settledPage
+            val description =
+                if (index == currentIndex) {
+                    taskViewModel.label?.getOrNull()?.toString() ?: ""
+                } else {
+                    if (index > currentIndex) {
+                        stringResource(R.string.screen_record_accessibility_label_show_next)
+                    } else {
+                        stringResource(R.string.screen_record_accessibility_label_show_previous)
+                    }
+                }
             AppPreview(
                 viewModel = taskViewModel,
-                onClick = {
-                    if (index == currentIndex) {
-                        onTaskSelected(task)
-                    } else {
-                        coroutineScope.launch { pagerState.animateScrollToPage(index) }
-                    }
-                },
                 modifier =
-                    Modifier.fillMaxWidth().semantics {
-                        role = Role.Button
-                        if (index == currentIndex) {
-                            focused = true
-                            contentDescription = taskViewModel.label?.getOrNull()?.toString() ?: ""
-                        } else {
-                            focused = false
-                            contentDescription =
-                                if (index > currentIndex) {
-                                    "Next"
+                    Modifier.fillMaxWidth()
+                        .clickable(
+                            onClick = {
+                                if (index == currentIndex) {
+                                    onTaskSelected(task)
                                 } else {
-                                    "Previous"
+                                    coroutineScope.launch { pagerState.animateScrollToPage(index) }
                                 }
-                        }
-                    },
+                            }
+                        )
+                        .semantics(true) {
+                            focused = index == currentIndex
+                            contentDescription = description
+                        },
             )
         }
     }
 }
 
 @Composable
-private fun AppPreview(
-    viewModel: RecentTaskViewModel,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+private fun AppPreview(viewModel: RecentTaskViewModel, modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -198,7 +196,6 @@ private fun AppPreview(
                             ambientColor = shadowColor,
                         )
                         .clip(shape)
-                        .clickable(onClick = onClick)
                         .background(MaterialTheme.colorScheme.surfaceContainer),
             ) { thumbnail ->
                 val sizeModifier = Modifier.fillMaxSize()

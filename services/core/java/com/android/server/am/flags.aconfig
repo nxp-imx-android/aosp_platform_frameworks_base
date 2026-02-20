@@ -229,6 +229,41 @@ flag {
 }
 
 flag {
+    name: "set_initial_oom_score_adj"
+    namespace: "backstage_power"
+    description: "Set inital oom_score_adj for a process being started"
+    bug: "458135219"
+}
+
+flag {
+    name: "set_initial_oom_score_adj_for_type_broadcast"
+    namespace: "backstage_power"
+    description: "Set inital oom_score_adj for a process being started for type broadcast"
+    bug: "458135219"
+}
+
+flag {
+    name: "set_initial_oom_score_adj_for_type_added_application"
+    namespace: "backstage_power"
+    description: "Set inital oom_score_adj for a process being started for type added application"
+    bug: "458135219"
+}
+
+flag {
+    name: "set_initial_oom_score_adj_for_type_link_failed"
+    namespace: "backstage_power"
+    description: "Set inital oom_score_adj for a process being started for type link failed"
+    bug: "458135219"
+}
+
+flag {
+    name: "set_initial_oom_score_adj_for_type_on_hold"
+    namespace: "backstage_power"
+    description: "Set inital oom_score_adj for a process being started for type on hold"
+    bug: "458135219"
+}
+
+flag {
     name: "rollout_pixel_faceauth"
     namespace: "core_experiments_team_internal"
     description: "Rolls out the pixel_faceauth namespace."
@@ -387,4 +422,14 @@ flag {
     namespace: "backstage_power"
     description: "Defer service restart if all its binding clients are frozen."
     bug: "478967958"
+}
+
+flag {
+    name: "incremental_has_above_client"
+    namespace: "backstage_power"
+    description: "Enable incremental reference counting (O(1)) for hasAboveClient state management for shadow-verification against existing connection scanning (O(N))."
+    bug: "434001398"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

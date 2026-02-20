@@ -498,7 +498,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
         private boolean verifyCaller(String reason) {
             final int callerId = Binder.getCallingUserHandle().getIdentifier();
-            if (callerId != mCurrentBoundedUserId) {
+            if (callerId != mCurrentBoundedUserId || mLauncherProxy == null) {
                 Log.w(TAG_OPS, "Launcher called sysui with invalid user: " + callerId + ", reason: "
                         + reason);
                 return false;
@@ -604,7 +604,11 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                 return;
             }
 
-            mCurrentBoundedUserId = mUserTracker.getUserId();
+            if (!Flags.launcherProxyServiceShortReconnect()) {
+                // NOTE: When the flag is enabled, `mCurrentBoundedUSerId` is set when service
+                // binding starts.
+                mCurrentBoundedUserId = mUserTracker.getUserId();
+            }
             mLauncherProxy = ILauncherProxy.Stub.asInterface(service);
 
             Bundle params = new Bundle();
@@ -702,6 +706,10 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             new UserTracker.Callback() {
                 @Override
                 public void onUserChanged(int newUser, @NonNull Context userContext) {
+                    if (Flags.launcherProxyServiceShortReconnect()
+                            && newUser == mCurrentBoundedUserId) {
+                        return;
+                    }
                     mConnectionBackoffAttempts = 0;
                     internalConnectToCurrentUser("User changed");
                 }
@@ -1040,6 +1048,9 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             Log.e(TAG_OPS, "Unable to bind because of security error", e);
         }
         if (mBound) {
+            if (Flags.launcherProxyServiceShortReconnect()) {
+                mCurrentBoundedUserId = mUserTracker.getUserId();
+            }
             mIsPrevServiceCleanedUp = false;
             // Ensure that connection has been established even if it thinks it is bound
             mHandler.postDelayed(mDeferredConnectionCallback, DEFERRED_CALLBACK_MILLIS);
@@ -1094,6 +1105,9 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             // Always unbind the service (ie. if called through onNullBinding or onBindingDied)
             mContext.unbindService(mLauncherServiceConnection);
             mBound = false;
+            if (Flags.launcherProxyServiceShortReconnect()) {
+                mCurrentBoundedUserId = -1;
+            }
             if (mLauncherProxy != null) {
                 try {
                     mLauncherProxy.onUnbind(new IRemoteCallback.Stub() {
@@ -1111,6 +1125,9 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                     Log.w(TAG_OPS, "disconnectFromLauncherService failed to notify Launcher");
                     mIsPrevServiceCleanedUp = true;
                 }
+            } else if (Flags.launcherProxyServiceShortReconnect()) {
+                mHandler.removeCallbacks(mDeferredConnectionCallback);
+                mIsPrevServiceCleanedUp = true;
             }
         }
 

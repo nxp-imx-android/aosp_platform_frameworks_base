@@ -82,4 +82,19 @@ public final class HostingRecordTest {
         assertThat(record.getCallerUid()).isEqualTo(CALLER_UID);
         assertThat(record.getCallerProcessName()).isEqualTo(CALLER_PROCESS_NAME);
     }
+
+    @Test
+    public void testContentProviderInfo() {
+        String authority = "com.android.authority";
+        boolean stable = true;
+        HostingRecord record = HostingRecord.forContentProvider(COMPONENT_NAME,
+                /* isPcc */ false, CALLER_UID, CALLER_PROCESS_NAME, authority, stable);
+
+        assertThat(record.getType()).isEqualTo(HostingRecord.HOSTING_TYPE_CONTENT_PROVIDER);
+        assertThat(record.getHostingAuthority()).isEqualTo(authority);
+        assertThat(record.isProviderStable()).isEqualTo(stable);
+        assertThat(record.getCallerUid()).isEqualTo(CALLER_UID);
+        assertThat(record.getCallerProcessName()).isEqualTo(CALLER_PROCESS_NAME);
+        assertThat(record.isPcc()).isFalse();
+    }
 }

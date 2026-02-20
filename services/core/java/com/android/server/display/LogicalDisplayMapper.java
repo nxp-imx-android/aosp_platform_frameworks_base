@@ -17,9 +17,9 @@
 package com.android.server.display;
 
 import static android.hardware.devicestate.DeviceState.PROPERTY_EMULATED_ONLY;
+import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_INNER_PRIMARY;
+import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_OUTER_PRIMARY;
 import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED;
-import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_HALF_OPEN;
-import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_OPEN;
 import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_DOCKED;
 import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_CLOSED;
 import static android.hardware.devicestate.DeviceState.PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_OPEN;
@@ -607,9 +607,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
                 final int wakeReason;
                 final String wakeDetails;
                 if (!Flags.changeDefaultDisplayLidClosed() || state.hasProperty(
-                        PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_HALF_OPEN)
-                        || state.hasProperty(
-                        PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_OPEN)) {
+                        PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_INNER_PRIMARY)) {
                     wakeReason = PowerManager.WAKE_REASON_UNFOLD_DEVICE;
                     wakeDetails = "server.display:unfold";
                 } else if (state.hasProperty(PROPERTY_LAPTOP_HARDWARE_CONFIGURATION_LID_OPEN)) {
@@ -627,7 +625,7 @@ class LogicalDisplayMapper implements DisplayDeviceRepository.Listener {
                 final int goToSleepReason;
                 final int goToSleepFlag;
                 if (!Flags.changeDefaultDisplayLidClosed() || state.hasProperty(
-                        PROPERTY_FOLDABLE_HARDWARE_CONFIGURATION_FOLD_IN_CLOSED)) {
+                        PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_OUTER_PRIMARY)) {
                     goToSleepReason = PowerManager.GO_TO_SLEEP_REASON_DEVICE_FOLD;
                     goToSleepFlag = mFoldSettingProvider.shouldSleepOnFold() ? 0
                             : PowerManager.GO_TO_SLEEP_FLAG_SOFT_SLEEP;

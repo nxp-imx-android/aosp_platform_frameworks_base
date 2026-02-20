@@ -4386,11 +4386,6 @@ public final class ActiveServices {
             }
             mAm.mProcessStateController.addConnection(clientPsr, c);
             c.startAssociationIfNeeded();
-            // Don't set hasAboveClient if binding to self to prevent modifyRawOomAdj() from
-            // dropping the process' adjustment level.
-            if (b.client != s.getHostProcess() && c.hasFlag(Context.BIND_ABOVE_CLIENT)) {
-                mAm.mProcessStateController.setHasAboveClient(clientPsr, true);
-            }
             if (c.hasFlag(BIND_ALLOW_WHITELIST_MANAGEMENT)) {
                 s.allowlistManager = true;
             }
@@ -7051,9 +7046,6 @@ public final class ActiveServices {
         if (b.client != skipApp) {
             final ProcessServiceRecord psr = b.client.mServices;
             mAm.mProcessStateController.removeConnection(psr, c);
-            if (c.hasFlag(Context.BIND_ABOVE_CLIENT)) {
-                mAm.mProcessStateController.updateHasAboveClientLocked(psr);
-            }
             // If this connection requested allowlist management, see if we should
             // now clear that state.
             if (c.hasFlag(BIND_ALLOW_WHITELIST_MANAGEMENT)) {

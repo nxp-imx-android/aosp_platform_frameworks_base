@@ -95,7 +95,7 @@ public class FocusTransitionObserver {
 
         // Find all leaf tasks in the transition.
         final List<Integer> leafTasks = new ArrayList<>();
-        final LeafTaskFilter leafTaskFilter = new LeafTaskFilter();
+        final LeafTaskFilter leafTaskFilter = new LeafTaskFilter(info);
         for (int i = 0; i < info.getChanges().size(); i++) {
             final TransitionInfo.Change change = info.getChanges().get(i);
             if (leafTaskFilter.test(change)) {

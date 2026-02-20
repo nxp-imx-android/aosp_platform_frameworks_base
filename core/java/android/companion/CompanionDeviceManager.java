@@ -2363,10 +2363,23 @@ public final class CompanionDeviceManager {
     @RequiresPermission(Manifest.permission.ACCESS_COMPANION_INFO)
     @Nullable
     public AssociationInfo getAssociationByDeviceId(@NonNull DeviceId deviceId) {
+        return getAssociationByDeviceId(mContext.getUserId(), deviceId);
+    }
+
+    /**
+     * Per-user variant of {@link CompanionDeviceManager#getAssociationByDeviceId(DeviceId)}
+     * for internal system use.
+     *
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.ACCESS_COMPANION_INFO)
+    @Nullable
+    public AssociationInfo getAssociationByDeviceId(@UserIdInt int userId,
+            @NonNull DeviceId deviceId) {
         Objects.requireNonNull(deviceId, "DeviceId can not be null.");
 
         try {
-            return mService.getAssociationByDeviceId(mContext.getUserId(), deviceId);
+            return mService.getAssociationByDeviceId(userId, deviceId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

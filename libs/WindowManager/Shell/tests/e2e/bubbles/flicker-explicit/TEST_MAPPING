@@ -1,10 +1,6 @@
 {
   "wm": [
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-CatchAll",
-      "keywords": ["device"]
-    },
-    {
       "name": "WMShellExplicitFlickerTestsBubbles-BubbleBarMovesTest",
       "keywords": ["device"]
     },
@@ -70,6 +66,10 @@
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleFromOverviewTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleFromOverviewSingleAppWithImeTest",
       "keywords": ["device"]
     },
     {

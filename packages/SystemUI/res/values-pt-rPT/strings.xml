@@ -36,8 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Rodar ecrã automaticamente"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"Permitir que a app <xliff:g id="APPLICATION">%1$s</xliff:g> aceda ao dispositivo <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"Permitir que <xliff:g id="APPLICATION">%1$s</xliff:g> aceda a <xliff:g id="USB_DEVICE">%2$s</xliff:g>?\nEsta app não recebeu autorização de gravação, mas pode capturar áudio através deste dispositivo USB."</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"Permitir que a app <xliff:g id="APPLICATION">%1$s</xliff:g> aceda a <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"Abrir a app <xliff:g id="APPLICATION">%1$s</xliff:g> para controlar <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"Permitir que a app &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; aceda ao dispositivo &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"Abrir a app &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; para processar &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Esta app não recebeu autorização de gravação, mas pode capturar áudio através deste dispositivo USB. A utilização da app <xliff:g id="APPLICATION">%1$s</xliff:g> neste dispositivo pode impedir a audição de chamadas, notificações e alarmes."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"A utilização da app <xliff:g id="APPLICATION">%1$s</xliff:g> neste dispositivo pode impedir a audição de chamadas, notificações e alarmes."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"Permitir que a app <xliff:g id="APPLICATION">%1$s</xliff:g> aceda ao acessório <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
@@ -112,10 +112,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"Capturar mais"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"Ignorar captura de ecrã"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"Ignore a mensagem do perfil de trabalho"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"Ver"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"Botão Ver captura de ecrã na app Files"</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"Pré-visualização da captura de ecrã"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"Limite superior de <xliff:g id="PERCENT">%1$d</xliff:g> por cento"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"Limite inferior de <xliff:g id="PERCENT">%1$d</xliff:g> por cento"</string>
@@ -187,6 +185,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Desativar som"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Reativar som"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> de <xliff:g id="DURATION">%2$s</xliff:g>"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"A captura de ecrã foi bloqueada pelo administrador de TI"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Fazer captura de todo o ecrã"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Gravar ecrã inteiro"</string>
@@ -199,7 +199,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Indicador inferior direito: use as teclas de seta para redimensionar"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Indicador inferior esquerdo: use as teclas de seta para redimensionar"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partilhar"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"Selecionar uma app para partilhar"</string>
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Selec. a janela da app a partilhar"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Selecione o separador a partilhar"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Selecione o ecrã a partilhar"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Partilhe o áudio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Partilhe a janela da app"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Partilhe o separador"</string>
@@ -217,11 +219,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Parou de partilhar o ecrã: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. O ecrã não é partilhado com ninguém."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Botão Fechar. Prima Enter para fechar a caixa de diálogo de pré-partilha."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Botão de partilha de separadores. Não selecionado. Prima Enter para partilhar o separador."</string>
-    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"A partilhar o separador. Navegue para ver os separadores disponíveis."</string>
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"A partilhar o separador. Navegue para verificar os separadores disponíveis."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Botão de partilha de apps. Não selecionado. Prima Enter para partilhar a app."</string>
-    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"A partilhar a app. Navegue para ver as apps disponíveis."</string>
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"A partilhar a app. Navegue para verificar as apps disponíveis."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Botão de ecrã inteiro. Não selecionado. Prima Enter para partilhar o ecrã inteiro."</string>
-    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"A partilhar o ecrã inteiro. Navegue para ver os ecrãs disponíveis."</string>
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"A partilhar o ecrã inteiro. Navegue para verificar os ecrãs disponíveis."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Botão Partilhar. Desativado. Selecione a app, o separador ou o ecrã a partilhar."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Partilha ativada. Item <xliff:g id="ITEM">%1$s</xliff:g> selecionado. Prima Enter para começar a partilhar."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"Item <xliff:g id="ITEM_NAME">%1$s</xliff:g>. Não selecionado. Prima Enter para selecionar."</string>
@@ -238,8 +240,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"Partilhar gravação de ecrã"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"Abrir gravação de ecrã no gestor de ficheiros"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"Eliminar gravação de ecrã"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"Abra a gravação de ecrã na app de visualização"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"Mostrar cliques e teclas"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"Áudio do dispositivo"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Microfone"</string>
@@ -294,7 +295,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"Desbloqueado"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"Dispositivo bloqueado"</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"Confirme e desbloqueie o disp."</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"Use Desbloqueio facial de novo"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"A analisar o rosto…"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"Enviar"</string>
     <string name="cancel" msgid="1089011503403416730">"Cancelar"</string>
@@ -307,11 +307,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"Rosto autenticado"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"Confirmado"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"Toque em Confirmar para concluir."</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"Desbloqueado com o rosto"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"Desbloqueado com o rosto. Prima para continuar."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"Rosto reconhecido. Prima para continuar."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"Rosto reconhecido. Prima ícone de desbloqueio para continuar"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"Desbloqueado com o rosto. Toque para continuar."</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"Autenticado"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"Cancelar autenticação"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"Mais opções"</string>
@@ -356,11 +353,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"Para configurar o Desbloqueio por impressão digital novamente, os seus modelos e imagens de impressões digitais atuais vão ser eliminados.\n\nApós a eliminação, vai ter de configurar novamente o Desbloqueio por impressão digital para desbloquear o telemóvel ou validar a sua identidade com a impressão digital."</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"Para configurar o Desbloqueio por impressão digital novamente, o seu modelo e imagens de impressões digitais atuais vão ser eliminados.\n\nApós a eliminação, vai ter de configurar novamente o Desbloqueio por impressão digital para desbloquear o telemóvel ou validar a sua identidade com a impressão digital."</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"Não foi possível configurar o Desbloqueio por impressão digital. Aceda às Definições para tentar novamente."</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"Configure o Desbloqueio facial novamente"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"Desbloqueio facial"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"Configure o Desbloqueio facial"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"Para configurar o Desbloqueio facial novamente, o seu modelo de rosto atual vai ser eliminado.\n\nVai ter de configurar novamente esta funcionalidade para desbloquear o telemóvel com o rosto."</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"Não foi possível configurar o Desbloqueio facial. Aceda às Definições para tentar novamente."</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"Toque no sensor de impressões digitais"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"Prima o ícone de desbloqueio para continuar"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"Rosto não reconhecido. Use a impressão digital."</string>
@@ -368,7 +360,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"Rosto não reconhecido"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"Usar impressão digital"</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"Desbloqueio facial indisponível"</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth ligado."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ícone de dispositivo Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Clique para configurar o detalhe do dispositivo"</string>
@@ -544,6 +535,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"O NFC está desativado"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"O NFC está ativado"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"Gravação de ecrã"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"Captura de ecrã"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"Iniciar"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"Parar"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"Registar problema"</string>
@@ -639,16 +631,10 @@
     <string name="tap_again" msgid="1315420114387908655">"Toque novamente"</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"Deslize rapidamente para cima para abrir"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Prima o ícone de desbloqueio para abrir"</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Desbloqueado com o rosto. Deslize para cima para abrir."</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"Desbloqueado com o rosto. Prima Confirmar para continuar."</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Desbloqueio com a face. Prima ícone de desbloqueio p/ abrir."</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"Desbloqueado com o rosto. Prima para abrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"Rosto reconhecido. Prima para abrir."</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"Rosto reconhecido. Prima o ícone de desbloqueio para abrir."</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"Desbloqueado com o rosto"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"Rosto reconhecido"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"Deslize rapidamente para cima para tentar novamente."</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"Deslize para cima para tentar o Desbloqueio facial novamente"</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"Desbloquear para utilizar o NFC"</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"Este dispositivo pertence à sua organização."</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"Este dispositivo pertence à entidade <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>."</string>
@@ -1012,8 +998,8 @@
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;Estado:&lt;/b&gt; passou para classificação inferior"</string>
     <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"Aparece na parte superior das notificações de conversas e como uma imagem do perfil no ecrã de bloqueio"</string>
     <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"Aparece na parte superior das notificações de conversas e como uma imagem do perfil no ecrã de bloqueio, surge como um balão"</string>
-    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Aparece na parte superior das notificações de conversas e como uma imagem do perfil no ecrã de bloqueio, interrompe o modo Não incomodar"</string>
-    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Aparece na parte superior das notificações de conversas e como uma imagem do perfil no ecrã de bloqueio, surge como um balão, interrompe o modo Não incomodar"</string>
+    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Aparece na parte superior das notificações de conversas e como uma imagem do perfil no ecrã de bloqueio; interrompe o modo Não incomodar"</string>
+    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Aparece na parte superior das notificações de conversas e como uma imagem do perfil no ecrã de bloqueio, surge como um balão; interrompe o modo Não incomodar"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioridade"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"A app <xliff:g id="APP_NAME">%1$s</xliff:g> não suporta funcionalidades de conversa."</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
@@ -1186,7 +1172,7 @@
     <string name="right_keycode" msgid="2480715509844798438">"Código de tecla direito"</string>
     <string name="left_icon" msgid="5036278531966897006">"Ícone esquerdo"</string>
     <string name="right_icon" msgid="1103955040645237425">"Ícone direito"</string>
-    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Selecione os mosaicos para reorganizar e redimensionar"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Selecione mosaicos para os reorganizar e redimensionar"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"Toque para remover os mosaicos"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Redimensione e reordene o esquema"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"Editar"</string>
@@ -1254,10 +1240,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Tecla de acessibilidade"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Pode premir a tecla de acessibilidade para começar a usar as funcionalidades de acessibilidade."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Adicionar funcionalidades"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Configure a <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Concluído"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Selecione uma funcionalidade"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Editar"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Acessibilidade"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ecrã de bloqueio"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"A encerrar…"</string>
@@ -1867,6 +1859,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d efeitos"</string>
     <string name="av_blur" msgid="405131343487260171">"Esbater"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Legendas instantâneas"</string>
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Anterior"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Bateria: %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Bateria do E: %1$s    Bateria do D: %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Bateria do E: %1$s"</string>

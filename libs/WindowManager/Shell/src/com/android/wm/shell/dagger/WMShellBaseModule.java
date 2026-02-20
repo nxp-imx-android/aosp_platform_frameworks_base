@@ -108,6 +108,7 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.api.DesktopMode;
 import com.android.wm.shell.desktopmode.common.DefaultHomePackageSupplier;
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.displayareahelper.DisplayAreaHelper;
 import com.android.wm.shell.displayareahelper.DisplayAreaHelperController;
 import com.android.wm.shell.freeform.FreeformComponents;
@@ -151,6 +152,7 @@ import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.HomeTransitionObserver;
+import com.android.wm.shell.transition.InteractiveTasksTransitionObserver;
 import com.android.wm.shell.transition.MixedTransitionHandler;
 import com.android.wm.shell.transition.TransitionLeashManager;
 import com.android.wm.shell.transition.Transitions;
@@ -874,9 +876,12 @@ public abstract class WMShellBaseModule {
     static HomeTransitionObserver provideHomeTransitionObserver(Context context,
             @ShellMainThread ShellExecutor mainExecutor,
             DisplayInsetsController displayInsetsController,
-            ShellInit shellInit) {
+            ShellController shellController,
+            ShellInit shellInit,
+            DesktopState desktopState,
+            Optional<DesksOrganizer> desksOrganizer) {
         return new HomeTransitionObserver(context, mainExecutor, displayInsetsController,
-                shellInit);
+                shellController, shellInit, desktopState, desksOrganizer);
     }
 
     @WMSingleton
@@ -885,6 +890,23 @@ public abstract class WMShellBaseModule {
             ShellInit shellInit,
             ShellCommandHandler shellCommandHandler) {
         return new FocusTransitionObserver(shellInit, shellCommandHandler);
+    }
+
+    @BindsOptionalOf
+    @DynamicOverride
+    abstract InteractiveTasksTransitionObserver optionalInteractiveTasksTransitionObserver();
+
+    @WMSingleton
+    @Provides
+    static Optional<InteractiveTasksTransitionObserver>
+                provideInteractiveTasksTransitionObserver(
+            @DynamicOverride Optional<Lazy<InteractiveTasksTransitionObserver>> observer) {
+        return observer.flatMap((lazy) -> {
+            if (Flags.allowDragAndDropWhenInteractiveBugfix()) {
+                return Optional.of(lazy.get());
+            }
+            return Optional.empty();
+        });
     }
 
     @WMSingleton
@@ -1175,6 +1197,26 @@ public abstract class WMShellBaseModule {
     }
 
     @BindsOptionalOf
+    @DynamicOverride
+    abstract DesksOrganizer optionalDesksOrganizer();
+
+    @WMSingleton
+    @Provides
+    static Optional<DesksOrganizer> provideDesksOrganizer(
+            DesktopState desktopState,
+            @DynamicOverride Optional<Lazy<DesksOrganizer>> desksOrganizer) {
+        // Use optional-of-lazy for the dependency that this provider relies on.
+        // Lazy ensures that this provider will not be the cause the dependency is created
+        // when it will not be returned due to the condition below.
+        return desksOrganizer.flatMap((lazy) -> {
+            if (desktopState.canEnterDesktopMode()) {
+                return Optional.of(lazy.get());
+            }
+            return Optional.empty();
+        });
+    }
+
+    @BindsOptionalOf
     abstract DesktopWallpaperActivityTokenProvider optionalDesktopWallpaperActivityTokenProvider();
 
 
@@ -1278,6 +1320,7 @@ public abstract class WMShellBaseModule {
             DisplayImeController displayImeController,
             DisplayInsetsController displayInsetsController,
             ShellTaskOrganizer shellTaskOrganizer,
+            Optional<InteractiveTasksTransitionObserver> resumedTaskTransitionObserver,
             Optional<BubbleController> bubblesOptional,
             Optional<SplitScreenController> splitScreenOptional,
             FullscreenTaskListener fullscreenTaskListener,

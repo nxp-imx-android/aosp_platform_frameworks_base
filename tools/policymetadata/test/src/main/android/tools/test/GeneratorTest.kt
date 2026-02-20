@@ -20,6 +20,7 @@ import android.processor.devicepolicy.protos.FullyQualifiedFieldName
 import android.processor.devicepolicy.protos.PolicyMetadata
 import android.processor.devicepolicy.protos.PolicyMetadataList
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata
 import android.tools.policymetadata.Generator
 import com.google.common.truth.Truth.assertThat
 import com.squareup.javapoet.JavaFile
@@ -33,15 +34,13 @@ private fun trimLines(string: String) =
 class GeneratorTest {
     private fun fillInFile(
         code: String,
-        includes: String =
-            """
-            import java.util.ArrayList;
-            import java.util.List;
-            import java.util.Set;
-        """,
+        includes: List<String> = listOf(),
         staticImports: List<String> = listOf(),
-    ) =
-        trimLines(
+    ): String {
+        var allIncludes =
+            includes + listOf("java.util.ArrayList", "java.util.List", "java.util.Set")
+
+        return trimLines(
             """
         package android.app.admin.metadata;
 
@@ -52,7 +51,13 @@ class GeneratorTest {
                 postfix = ";",
             )
         }
-        $includes
+        ${
+            allIncludes.sorted().joinToString(
+                separator = ";\nimport ",
+                prefix = "import ",
+                postfix = ";",
+            )
+        }
 
         /**
          * Generated class that contains metadata on all known policies.
@@ -71,6 +76,7 @@ class GeneratorTest {
         }
         """
         )
+    }
 
     private fun javaFileToString(file: JavaFile): String {
         val writer = CharArrayWriter()
@@ -298,7 +304,11 @@ class GeneratorTest {
             )
     }
 
-    private fun longTestPolicy(name: String, minValue: Long? = null, maxValue: Long? = null): PolicyMetadata.Builder {
+    private fun longTestPolicy(
+        name: String,
+        minValue: Long? = null,
+        maxValue: Long? = null,
+    ): PolicyMetadata.Builder {
         val longMetadata = TypeSpecificPolicyMetadata.LongPolicyMetadata.newBuilder()
         if (minValue != null) {
             longMetadata.setMinValue(minValue)
@@ -310,8 +320,7 @@ class GeneratorTest {
         return PolicyMetadata.newBuilder()
             .setIdentifier(simpleNameToFieldName(name))
             .setTypeSpecificMetadata(
-                TypeSpecificPolicyMetadata.newBuilder()
-                    .setLongMetadata(longMetadata)
+                TypeSpecificPolicyMetadata.newBuilder().setLongMetadata(longMetadata)
             )
     }
 
@@ -356,9 +365,11 @@ class GeneratorTest {
         val policyList =
             PolicyMetadataList.newBuilder()
                 .addPolicyMetadata(
-                    longTestPolicy("test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE",
-                        minValue = 10,
-                        maxValue = 100)
+                    longTestPolicy(
+                            "test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE",
+                            minValue = 10,
+                            maxValue = 100,
+                        )
                         .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
                         .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
                 )
@@ -369,7 +380,8 @@ class GeneratorTest {
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
                 fillInFile(
-                    staticImports = listOf("test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE"),
+                    staticImports =
+                        listOf("test.package.PolicyContainer.SIMPLE_LONG_POLICY_WITH_RANGE"),
                     code =
                         """
                 policies.add(new LongPolicyMetadata(
@@ -389,21 +401,26 @@ class GeneratorTest {
             )
     }
 
-    private fun enumTestPolicy(name: String, allowedValues: Set<Int>): PolicyMetadata.Builder =
+    private fun enumTestPolicy(
+        name: String,
+        allowedValues: Set<Int>,
+        resolutionMechanism: EnumPolicyMetadata.ResolutionMechanism =
+            EnumPolicyMetadata.ResolutionMechanism.newBuilder().setCustom(true).build(),
+    ): PolicyMetadata.Builder =
         PolicyMetadata.newBuilder()
             .setIdentifier(simpleNameToFieldName(name))
             .setTypeSpecificMetadata(
                 TypeSpecificPolicyMetadata.newBuilder()
                     .setEnumMetadata(
-                        TypeSpecificPolicyMetadata.EnumPolicyMetadata.newBuilder()
+                        EnumPolicyMetadata.newBuilder()
                             .addAllValues(
                                 allowedValues.map {
-                                    TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue
-                                        .newBuilder()
+                                    EnumPolicyMetadata.EnumValue.newBuilder()
                                         .setIntValue(it)
                                         .build()
                                 }
                             )
+                            .setResolutionMechanism(resolutionMechanism)
                     )
             )
 
@@ -438,6 +455,7 @@ class GeneratorTest {
                     /* requiredPermission= */ null,
                     /* requiredCrossUserPermission= */ null,
                     /* allowedDpcTypes= */ Set.of(),
+                    /* resolutionMechanism= */ null,
                     /* allowedValues= */ Set.of(
                         1,
                         5,
@@ -445,6 +463,64 @@ class GeneratorTest {
                     )
                 ));
                 """,
+                )
+            )
+    }
+
+    @Test
+    fun test_enumPolicyWithMostRestrictive_outputMatches() {
+        val policyList =
+            PolicyMetadataList.newBuilder()
+                .addPolicyMetadata(
+                    enumTestPolicy(
+                            "test.package.PolicyContainer.MY_TEST_ENUM_POLICY",
+                            setOf(1, 5, 7),
+                            resolutionMechanism =
+                                EnumPolicyMetadata.ResolutionMechanism.newBuilder()
+                                    .setMostRestrictive(
+                                        EnumPolicyMetadata.ResolutionMechanism.MostRestrictive
+                                            .newBuilder()
+                                            .addAllMostToLeastRestrictive(listOf(1, 7, 5))
+                                    )
+                                    .build(),
+                        )
+                        .addAllAllowedScopes(listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE))
+                        .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                )
+                .build()
+
+        val javaFile = Generator.generate(policyList)
+
+        assertThat(javaFileToString(javaFile))
+            .isEqualTo(
+                fillInFile(
+                    staticImports = listOf("test.package.PolicyContainer.MY_TEST_ENUM_POLICY"),
+                    includes = listOf("java.lang.Integer"),
+                    code =
+                        """
+                          policies.add(new EnumPolicyMetadata(
+                              /* id= */ MY_TEST_ENUM_POLICY,
+                              /* allowedScopes= */ Set.of(
+                                  2
+                              ),
+                              /* affectedResource= */ 1,
+                              /* requiredPermission= */ null,
+                              /* requiredCrossUserPermission= */ null,
+                              /* allowedDpcTypes= */ Set.of(),
+                              /* resolutionMechanism= */ new ResolutionMechanismMetadata.MostRestrictive<Integer>(
+                                  List.of(
+                                      new Integer(1),
+                                      new Integer(7),
+                                      new Integer(5)
+                                  )
+                              ),
+                              /* allowedValues= */ Set.of(
+                                  1,
+                                  5,
+                                  7
+                              )
+                          ));
+                        """,
                 )
             )
     }
@@ -523,14 +599,7 @@ class GeneratorTest {
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
                 fillInFile(
-                    includes =
-                        """
-                import android.app.admin.PolicyIdentifier;
-                import java.lang.String;
-                import java.util.ArrayList;
-                import java.util.List;
-                import java.util.Set;
-                """,
+                    includes = listOf("android.app.admin.PolicyIdentifier", "java.lang.String"),
                     staticImports =
                         listOf("test.package.PolicyContainer.MY_TEST_STRING_LIST_POLICY"),
                     code =
@@ -591,14 +660,7 @@ class GeneratorTest {
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
                 fillInFile(
-                    includes =
-                        """
-                import android.app.admin.PolicyIdentifier;
-                import java.lang.Integer;
-                import java.util.ArrayList;
-                import java.util.List;
-                import java.util.Set;
-                """,
+                    includes = listOf("android.app.admin.PolicyIdentifier", "java.lang.Integer"),
                     staticImports =
                         listOf("test.package.PolicyContainer.MY_TEST_INTEGER_LIST_POLICY"),
                     code =
@@ -632,14 +694,18 @@ class GeneratorTest {
                     .setListMetadata(
                         TypeSpecificPolicyMetadata.ListPolicyMetadata.newBuilder()
                             .setEnumMetadata(
-                                TypeSpecificPolicyMetadata.EnumPolicyMetadata.newBuilder()
+                                EnumPolicyMetadata.newBuilder()
                                     .addAllValues(
                                         enumValues.map {
-                                            TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue
-                                                .newBuilder()
+                                            EnumPolicyMetadata.EnumValue.newBuilder()
                                                 .setIntValue(it)
                                                 .build()
                                         }
+                                    )
+                                    .setResolutionMechanism(
+                                        EnumPolicyMetadata.ResolutionMechanism.newBuilder()
+                                            .setCustom(true)
+                                            .build()
                                     )
                             )
                     )
@@ -664,14 +730,7 @@ class GeneratorTest {
         assertThat(javaFileToString(javaFile))
             .isEqualTo(
                 fillInFile(
-                    includes =
-                        """
-                import android.app.admin.PolicyIdentifier;
-                import java.lang.Integer;
-                import java.util.ArrayList;
-                import java.util.List;
-                import java.util.Set;
-                """,
+                    includes = listOf("android.app.admin.PolicyIdentifier", "java.lang.Integer"),
                     staticImports = listOf("test.package.PolicyContainer.MY_TEST_ENUM_LIST_POLICY"),
                     code =
                         """
@@ -686,6 +745,7 @@ class GeneratorTest {
                         /* requiredPermission= */ null,
                         /* requiredCrossUserPermission= */ null,
                         /* allowedDpcTypes= */ Set.of(),
+                        /* resolutionMechanism= */ null,
                         /* allowedValues= */ Set.of(
                           1,
                           9,
@@ -779,6 +839,7 @@ class GeneratorTest {
                         1, // DEVICE_OWNER
                         5  // MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE
                     ),
+                    /* resolutionMechanism= */ null,
                     /* allowedValues= */ Set.of()
                 ));
                 """,
@@ -836,6 +897,7 @@ class GeneratorTest {
                         6, // UNAFFILIATED_FULL_USER_PROFILE_OWNER
                         7  // AFFILIATED_FULL_USER_PROFILE_OWNER
                     ),
+                    /* resolutionMechanism= */ null,
                     /* allowedValues= */ Set.of()
                 ));
                 """,

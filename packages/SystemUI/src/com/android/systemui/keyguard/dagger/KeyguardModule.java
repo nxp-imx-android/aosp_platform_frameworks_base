@@ -66,6 +66,7 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionBootInteractor;
 import com.android.systemui.keyguard.domain.interactor.StartKeyguardTransitionModule;
+import com.android.systemui.keyguard.ui.binder.KeyguardChipbarViewBinder;
 import com.android.systemui.keyguard.ui.binder.SideFpsProgressBarViewBinder;
 import com.android.systemui.keyguard.ui.transitions.BlurConfig;
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransitionModule;
@@ -103,9 +104,9 @@ import dagger.Provides;
 import dagger.multibindings.ClassKey;
 import dagger.multibindings.IntoMap;
 
-import java.util.concurrent.Executor;
-
 import kotlinx.coroutines.CoroutineScope;
+
+import java.util.concurrent.Executor;
 
 /**
  * Dagger Module providing keyguard.
@@ -296,4 +297,10 @@ public interface KeyguardModule {
     @IntoMap
     @ClassKey(KeyguardLoggerStartable.class)
     CoreStartable keyguardLoggerStartable(KeyguardLoggerStartable impl);
+
+    /***/
+    @Binds
+    @IntoMap
+    @ClassKey(KeyguardChipbarViewBinder.class)
+    CoreStartable keyguardChipbarViewBinder(KeyguardChipbarViewBinder impl);
 }

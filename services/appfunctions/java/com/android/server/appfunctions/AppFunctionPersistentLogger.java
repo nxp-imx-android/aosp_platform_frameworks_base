@@ -16,6 +16,7 @@
 
 package com.android.server.appfunctions;
 
+import android.annotation.WorkerThread;
 import android.os.Handler;
 import android.util.Slog;
 import com.android.internal.annotations.VisibleForTesting;
@@ -77,24 +78,16 @@ public class AppFunctionPersistentLogger {
      * @param baseLogFileName The base name of the log file (e.g., app_functions_execution.log). The
      *     file will be rotated and archived as log.1, log.2, etc.
      */
-    AppFunctionPersistentLogger(File baseDir, String baseLogFileName) throws IOException {
+    AppFunctionPersistentLogger(File baseDir, String baseLogFileName) {
         this(baseDir, baseLogFileName, BackgroundThread.getHandler());
     }
 
     @VisibleForTesting
-    AppFunctionPersistentLogger(File baseDir, String baseLogFileName, Handler backgroundHandler)
-            throws IOException {
+    AppFunctionPersistentLogger(File baseDir, String baseLogFileName, Handler backgroundHandler) {
         mLogDir = baseDir;
         mDateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.US);
         mBaseLogFileName = baseLogFileName;
         mBackgroundHandler = backgroundHandler;
-
-        // Ensure directory exists
-        if (!mLogDir.exists()) {
-            if (!mLogDir.mkdirs()) {
-                throw new IOException("Failed to create log directory: " + mLogDir);
-            }
-        }
 
         // Start the maintenance loop
         mBackgroundHandler.post(mCleanupTask);
@@ -104,8 +97,13 @@ public class AppFunctionPersistentLogger {
      * Logs a message with a timestamp to the persistent log file. Rotates files if the message
      * would exceed the size limit.
      */
+    @WorkerThread
     public void log(String message) {
         synchronized (mLock) {
+            if (!mLogDir.exists() && !mLogDir.mkdirs()) {
+                Slog.e(TAG, "Failed to create log directory: " + mLogDir);
+                return;
+            }
             File currentLogFile = new File(mLogDir, mBaseLogFileName);
 
             // Truncate massive messages to avoid a single entry from exceeding the file size limit.
@@ -180,6 +178,11 @@ public class AppFunctionPersistentLogger {
 
     /** Rotates logs: .n -> .n+1, ..., .1 -> .2, current -> .1 */
     private void rotateLogs() {
+        if (!mLogDir.exists()) {
+            Slog.w(TAG, "Log directory does not exist, skipping rotation.");
+            return;
+        }
+
         // Delete the oldest file if it exists
         File oldestFile = getArchivedLogFile(MAX_FILE_COUNT);
         if (oldestFile.exists()) {
@@ -216,6 +219,8 @@ public class AppFunctionPersistentLogger {
 
     /** Deletes log files older than the specified time-to-live. */
     private void pruneOldLogs(long ttlMillis) {
+        if (!mLogDir.exists()) return;
+
         synchronized (mLock) {
             File[] files = mLogDir.listFiles();
             if (files == null) return;

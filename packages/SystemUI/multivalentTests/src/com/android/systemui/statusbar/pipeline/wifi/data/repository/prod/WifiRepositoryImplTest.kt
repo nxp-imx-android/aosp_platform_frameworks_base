@@ -573,35 +573,35 @@ class WifiRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun wifiNetwork_notValidated_networkNotValidated() =
+    fun wifiNetwork_shouldShowExclamation_networkShowsExclamtion() =
         testScope.runTest {
             val latest by collectLastValue(underTest.wifiNetwork)
 
             val wifiEntry =
                 mock<WifiEntry>().apply {
                     whenever(this.isPrimaryNetwork).thenReturn(true)
-                    whenever(this.hasInternetAccess()).thenReturn(false)
+                    whenever(this.shouldShowXLevelIcon()).thenReturn(true)
                 }
             whenever(wifiPickerTracker.connectedWifiEntry).thenReturn(wifiEntry)
             getCallback().onWifiEntriesChanged()
 
-            assertThat((latest as WifiNetworkModel.Active).isValidated).isFalse()
+            assertThat((latest as WifiNetworkModel.Active).showExclamation).isTrue()
         }
 
     @Test
-    fun wifiNetwork_validated_networkValidated() =
+    fun wifiNetwork_shouldNotShowExclamation_networkDoesNotShowExclamation() =
         testScope.runTest {
             val latest by collectLastValue(underTest.wifiNetwork)
 
             val wifiEntry =
                 mock<WifiEntry>().apply {
                     whenever(this.isPrimaryNetwork).thenReturn(true)
-                    whenever(this.hasInternetAccess()).thenReturn(true)
+                    whenever(this.shouldShowXLevelIcon()).thenReturn(false)
                 }
             whenever(wifiPickerTracker.connectedWifiEntry).thenReturn(wifiEntry)
             getCallback().onWifiEntriesChanged()
 
-            assertThat((latest as WifiNetworkModel.Active).isValidated).isTrue()
+            assertThat((latest as WifiNetworkModel.Active).showExclamation).isFalse()
         }
 
     @Test

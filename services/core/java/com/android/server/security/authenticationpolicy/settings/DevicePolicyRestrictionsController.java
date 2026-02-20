@@ -122,13 +122,12 @@ public class DevicePolicyRestrictionsController implements SettingController<Set
             @NonNull String settingKey) throws IOException, XmlPullParserException {
         parser.next();
         String[] setTag = new String[1];
-        HashSet<String> hashSet = XmlUtils.readThisSetXml(parser,
-                XML_TAG_SETTING_ORIGINAL_VALUE, setTag);
+        Set<String> set = XmlUtils.readThisSetXml(parser, XML_TAG_SETTING_ORIGINAL_VALUE, setTag);
         if (!setTag[0].equals(DEVICE_POLICY_RESTRICTIONS_KEY)) {
             Slog.w(TAG, "Tag mismatch. Expected " + DEVICE_POLICY_ELEMENT_KEY + ", but got "
                     + setTag[0]);
         }
-        return hashSet;
+        return set;
     }
 
     /**

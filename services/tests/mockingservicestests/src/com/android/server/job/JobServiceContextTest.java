@@ -25,7 +25,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.job.Flags.FLAG_INCLUDE_JOB_NAME_IN_ANR_MESSAGE;
-import static com.android.server.job.Flags.FLAG_USE_PERFETTO_SDK_FOR_TRACING;
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_BACK_OFF_POLICY_TYPE;
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_DEADLINE_MS;
 import static com.android.server.job.controllers.JobStatus.PERFETTO_TRACE_FIELD_DELAY_MS;
@@ -419,8 +418,7 @@ public class JobServiceContextTest {
     }
 
     @Test
-    @EnableFlags(FLAG_USE_PERFETTO_SDK_FOR_TRACING)
-    public void testPerfettoTracing_Execute_FlagEnabled() throws Exception {
+    public void testPerfettoTracing_Execute() throws Exception {
         when(mMockPerfettoTracer.isTraceEnabled()).thenReturn(true);
         final int jobId = JOB_ID;
         final JobInfo job = createJobInfo(jobId, mComponentName).build();
@@ -512,8 +510,7 @@ public class JobServiceContextTest {
     }
 
     @Test
-    @EnableFlags(FLAG_USE_PERFETTO_SDK_FOR_TRACING)
-    public void testPerfettoTracing_Cleanup_FlagEnabled() throws Exception {
+    public void testPerfettoTracing_Cleanup() throws Exception {
         when(mMockPerfettoTracer.isTraceEnabled()).thenReturn(true);
         final int jobId = JOB_ID;
         final JobInfo job = createJobInfo(jobId, mComponentName).build();

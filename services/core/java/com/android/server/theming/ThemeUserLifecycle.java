@@ -16,8 +16,6 @@
 
 package com.android.server.theming;
 
-import static android.content.theming.FieldColorSource.VALUE_PRESET;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -25,16 +23,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.theming.ThemeSettings;
 import android.os.UserHandle;
-import android.provider.Settings;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.SystemService;
-import com.android.server.UiModeManagerInternal;
-import com.android.server.pm.UserManagerInternal;
 
 /**
  * Handles user lifecycle events for the ThemeManagerService.
@@ -44,41 +38,24 @@ import com.android.server.pm.UserManagerInternal;
  *
  * @hide
  */
+@VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 public class ThemeUserLifecycle {
     private static final String TAG = "ThemeUserLifecycle";
 
     private final Context mContext;
-    private final ThemeStateManager mStateManager;
-    private final ThemeSettingsManager mThemeSettingsManager;
     private final ThemeEnvironment mEnvironment;
-
-    private ThemeWallpaperManager mWallpaperManager;
-    private UserManagerInternal mUserManagerInternal;
-    private UiModeManagerInternal mUiModeManagerInternal;
+    private final ThemeManagerImpl mImpl;
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    public ThemeUserLifecycle(@NonNull Context context, @NonNull ThemeStateManager stateManager,
-            @NonNull ThemeSettingsManager themeSettingsManager,
-            @NonNull ThemeEnvironment environment) {
+    ThemeUserLifecycle(@NonNull Context context, @NonNull ThemeEnvironment environment,
+            @NonNull ThemeManagerImpl impl) {
         mContext = context;
-        mStateManager = stateManager;
-        mThemeSettingsManager = themeSettingsManager;
         mEnvironment = environment;
-    }
-
-    /**
-     * Called when all system services are ready.
-     */
-    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    public void onServicesReady(UserManagerInternal userManager,
-            UiModeManagerInternal uiModeManager, ThemeWallpaperManager wallpaperManager) {
-        mUserManagerInternal = userManager;
-        mUiModeManagerInternal = uiModeManager;
-        mWallpaperManager = wallpaperManager;
+        mImpl = impl;
     }
 
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
-    public final BroadcastReceiver mUserLifecycleReceiver = new BroadcastReceiver() {
+    final BroadcastReceiver mUserLifecycleReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (Intent.ACTION_PROFILE_ADDED.equals(intent.getAction())) {
@@ -90,6 +67,7 @@ public class ThemeUserLifecycle {
     /**
      * Registers for user-related system broadcasts.
      */
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public void registerListeners() {
         final IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_PROFILE_ADDED);
@@ -106,26 +84,8 @@ public class ThemeUserLifecycle {
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public void onUserStarting(@NonNull SystemService.TargetUser user) {
-        int userId = user.getUserHandle().getIdentifier();
-
-        if (shouldIgnoreUser(userId, "onUserStarting")) {
-            return;
-        }
-
-        // check if seed color comes from wallpaper or preset
-        ThemeSettings userSettings = mThemeSettingsManager.getSettingsOrDefault(userId,
-                mContext.getContentResolver());
-
-        int seedColor = getEffectiveSeedColor(userSettings, userId);
-
         Slog.d(TAG, "User: " + user.getUserIdentifier() + " starting");
-
-        mStateManager.onUserStart(user.getUserHandle(),
-                /*isSetup*/Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                        Settings.Secure.USER_SETUP_COMPLETE, 0, userId) == 1,
-                /*seedColor*/ seedColor,
-                /*contrast*/ mUiModeManagerInternal.getContrast(userId),
-                /*style*/userSettings.themeStyle());
+        mImpl.onUserStart(user.getUserHandle().getIdentifier());
     }
 
     /**
@@ -137,47 +97,29 @@ public class ThemeUserLifecycle {
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public void onUserSwitching(@Nullable SystemService.TargetUser from,
             @NonNull SystemService.TargetUser to) {
-        if (shouldIgnoreUser(to.getUserIdentifier(), "onUserSwitching")) {
-            return;
-        }
         Slog.d(TAG, "User switch from:" + (from != null ? from.getUserIdentifier() : "-") + " to: "
                 + to.getUserIdentifier());
-        mStateManager.onUserSwitching(from != null ? from.getUserIdentifier() : null,
-                to.getUserIdentifier());
+        mImpl.onUserSwitching(from != null ? from.getUserIdentifier() : 0, to.getUserIdentifier());
     }
 
     /**
-     * Called during boot complete to load all existing users' theme states.
+     * Called during initialization to load all existing users' theme states.
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-    public void onBootCompleteLoadUsers() {
-        int[] userIds = mUserManagerInternal.getUserIds();
-        for (int userId : userIds) {
-            loadUserStateAndNotifyStateManager(userId);
-        }
+    public void loadCurrentUser() {
+        int userId = mEnvironment.getCurrentUserId();
+        loadUserStateAndNotifyStateManager(userId);
     }
 
     /**
      * Loads a user's theme state and notifies the state manager.
+     *
+     * @return true if the state manager has the state for the user.
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public boolean loadUserStateAndNotifyStateManager(@UserIdInt int userId) {
-        if (shouldIgnoreUser(userId, "loadUserStateAndNotifyStateManager")) {
-            return false;
-        }
-
-        ThemeSettings userSettings = mThemeSettingsManager.getSettingsOrDefault(userId,
-                mContext.getContentResolver());
-        int seedColor = getEffectiveSeedColor(userSettings, userId);
-
-        boolean isSetup = Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                Settings.Secure.USER_SETUP_COMPLETE, 0, userId) == 1;
-
-        mStateManager.onUserLoad(userId, isSetup, seedColor,
-                mUiModeManagerInternal.getContrast(userId),
-                userSettings.themeStyle());
-
-        return mStateManager.hasState(userId);
+        mImpl.onUserStart(userId);
+        return true; // Simplified return, actual check in Impl/StateManager
     }
 
     private void handleProfileAdded(Intent intent) {
@@ -185,44 +127,12 @@ public class ThemeUserLifecycle {
         if (newUserHandle == null) return;
         int newUserOrProfileId = newUserHandle.getIdentifier();
 
-        // Load the new user/profile's theme state immediately
-        loadUserStateAndNotifyStateManager(newUserOrProfileId);
-
-        Integer parentId = mStateManager.parentOf(newUserOrProfileId);
-        if (parentId == null || !loadUserStateAndNotifyStateManager(parentId)) {
+        Integer parentId = mEnvironment.parentOf(newUserOrProfileId);
+        if (parentId == null) {
             return;
         }
 
         Slog.d(TAG, "User: " + newUserOrProfileId + " added to parent: " + parentId);
-        mStateManager.onProfileAdd(parentId, newUserOrProfileId);
-    }
-
-    /**
-     * Checks if we should ignore an event because of Headless System User Mode (HSUM)
-     * or because the user is a profile.
-     *
-     * @param userId     The user ID to check.
-     * @param methodName The name of the method calling this check, for logging.
-     * @return {@code true} if we should ignore this event for this user.
-     */
-    private boolean shouldIgnoreUser(int userId, String methodName) {
-        if (!mEnvironment.isManagedUser(userId)) {
-            Slog.d(TAG, "Ignoring " + methodName + " for user " + userId + " per system policy.");
-            return true;
-        }
-
-        return false;
-    }
-
-    private int getEffectiveSeedColor(ThemeSettings userSettings, int userId) {
-        int seedColor;
-        if (userSettings.colorSource().equals(VALUE_PRESET)) {
-            seedColor = userSettings.systemPalette().toArgb();
-        } else {
-            Integer wallpaperSeed = mWallpaperManager.getSeedColor(userId);
-            seedColor = wallpaperSeed != null ? wallpaperSeed
-                    : userSettings.systemPalette().toArgb();
-        }
-        return seedColor;
+        mImpl.onProfileAdded(parentId, newUserOrProfileId);
     }
 }

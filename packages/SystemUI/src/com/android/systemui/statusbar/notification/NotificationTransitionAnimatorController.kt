@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.notification
 import android.util.Log
 import android.view.ViewGroup
 import com.android.internal.jank.InteractionJankMonitor
-import com.android.systemui.Flags.fixCanceledNotificationLaunchAnimation
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.statusbar.notification.collection.GroupEntry
@@ -149,7 +148,7 @@ class NotificationTransitionAnimatorController(
         if (ActivityTransitionAnimator.DEBUG_TRANSITION_ANIMATION) {
             Log.d(TAG, reason)
         }
-        if (fixCanceledNotificationLaunchAnimation() && isCancelled) return
+        if (isCancelled) return
 
         notificationLaunchAnimationInteractor.setIsLaunchAnimationRunning(willAnimate)
         notification.isLaunchAnimationRunning = willAnimate
@@ -186,7 +185,7 @@ class NotificationTransitionAnimatorController(
             Log.d(TAG, "onLaunchAnimationCancelled()")
         }
 
-        if (fixCanceledNotificationLaunchAnimation()) isCancelled = true
+        isCancelled = true
         // TODO(b/184121838): Should we call InteractionJankMonitor.cancel if the animation started
         // here?
         notificationLaunchAnimationInteractor.setIsLaunchAnimationRunning(false)

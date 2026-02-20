@@ -26,17 +26,20 @@ interface IThemeManager {
     /** @hide */
     FabricatedOverlayInternal generateDynamicColorOverlay(in ThemeInfo options);
     /** @hide */
+    @nullable
     ThemeInfo getUserThemeInfo();
+
     /** @hide */
     boolean registerThemeSettingsCallback(in IThemeSettingsCallback callback);
+
     /** @hide */
     boolean unregisterThemeSettingsCallback(in IThemeSettingsCallback callback);
 
     /** @hide */
-    void registerThemeChangedCallback(in IThemeChangedCallback callback);
+    boolean registerThemeChangedCallback(in IThemeChangedCallback callback);
 
     /** @hide */
-    void unregisterThemeChangedCallback(in IThemeChangedCallback callback);
+    boolean unregisterThemeChangedCallback(in IThemeChangedCallback callback);
 
     /** @hide */
     @EnforcePermission("UPDATE_THEME_SETTINGS")
@@ -44,8 +47,10 @@ interface IThemeManager {
     boolean updateThemeSettings(in ThemeSettings newSettings);
 
     /** @hide */
+    @nullable
     ThemeSettings getThemeSettings();
 
     /** @hide */
+    @nullable
     ThemeSettings getThemeSettingsOrDefault();
 }

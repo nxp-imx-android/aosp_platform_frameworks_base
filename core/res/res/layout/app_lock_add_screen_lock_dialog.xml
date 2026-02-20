@@ -29,6 +29,7 @@
         android:tint="@color/materialColorPrimary" />
 
     <TextView
+        android:fontFamily="@*android:string/config_headlineFontFamily"
         android:id="@+id/app_lock_dialog_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -43,6 +44,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/dialog_title_divider_material"
         android:text="@string/app_lock_add_screen_lock_message"
+        android:textColor="@color/materialColorOnSurfaceVariant"
+        android:lineHeight="@dimen/app_lock_line_height_small"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textAlignment="viewStart"
         android:gravity="start" />

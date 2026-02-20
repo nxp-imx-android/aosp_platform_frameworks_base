@@ -16,25 +16,34 @@
 
 package com.android.server.personalcontext.component.client;
 
+import android.annotation.RequiresNoPermission;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.ParcelUuid;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.permission.PermissionManager;
+import android.service.personalcontext.IOpCallback;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
 
 import com.android.server.personalcontext.component.Component;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Base class for component service clients.
@@ -43,6 +52,8 @@ import java.util.concurrent.Executors;
  * @hide
  */
 public abstract class BaseServiceClientComponent<C> implements Component {
+    // TODO(b/484984634): Determine the optimal timeout value for binder connections.
+    private static final long BINDER_CONNECTION_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(30);
     protected static final String TAG = "PersonalContextClient";
     private final Executor mExecutor;
 
@@ -53,9 +64,13 @@ public abstract class BaseServiceClientComponent<C> implements Component {
     private final Intent mServiceIntent;
     private final ComponentName mComponentName;
     private final List<RunWithBinderCallback<C>> mPendingCalls = new ArrayList<>();
+    private final List<RunWithScopedBinderCallback<C>> mScopedPendingCalls = new ArrayList<>();
     private boolean mServiceStarted = false;
     private C mClient;
 
+    private final Handler mHandler;
+
+    private final List<IOpCallback> mActiveScopedCallbacks = new ArrayList<>();
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
@@ -84,12 +99,68 @@ public abstract class BaseServiceClientComponent<C> implements Component {
         }
     };
 
+    private static class OpCallback extends IOpCallback.Stub {
+        private final WeakReference<BaseServiceClientComponent> mComponent;
+
+        private final Runnable mRunnable = () -> {
+            try {
+                signalCompletion();
+            } catch (RemoteException e) {
+                Log.d(TAG, "could not complete signal");
+            }
+        };
+
+        OpCallback(BaseServiceClientComponent component) {
+            mComponent = new WeakReference(component);
+
+        }
+
+        private Runnable getCompletionRunnable() {
+            return mRunnable;
+        }
+
+        @RequiresNoPermission
+        @Override
+        public void signalCompletion() throws RemoteException {
+            final BaseServiceClientComponent serviceClient = mComponent.get();
+            if (serviceClient != null) {
+                serviceClient.completeCall(this);
+            }
+        }
+    }
+
+    /**
+     * Creates tracking for a call. Note that this must be called from within the executor.
+     */
+    private IOpCallback initiateCall() {
+        final OpCallback callback = new OpCallback(this);
+        mHandler.postDelayed(callback.getCompletionRunnable(), BINDER_CONNECTION_TIMEOUT_MS);
+        mActiveScopedCallbacks.add(callback);
+
+        return callback;
+    }
+
+    private void completeCall(OpCallback callback) {
+        mExecutor.execute(() -> {
+            if (!mActiveScopedCallbacks.contains(callback)) {
+                // It's already been cleaned up
+                return;
+            }
+            mHandler.removeCallbacks(callback.getCompletionRunnable());
+            mActiveScopedCallbacks.remove(callback);
+
+            // Attempt to cleanup.
+            stop();
+        });
+    }
+
     public BaseServiceClientComponent(Context context, UUID componentId, ServiceInfo serviceInfo,
             UserHandle userHandle) {
-        this(context, componentId, serviceInfo, userHandle, Executors.newSingleThreadExecutor());
+        this(context, componentId, serviceInfo, userHandle, Executors.newSingleThreadExecutor(),
+                new Handler(Looper.getMainLooper()));
     }
     protected BaseServiceClientComponent(Context context, UUID componentId, ServiceInfo serviceInfo,
-            UserHandle userHandle, Executor executor) {
+            UserHandle userHandle, Executor executor, Handler handler) {
         mExecutor = executor;
         mContext = context;
         mUserHandle = userHandle;
@@ -97,11 +168,16 @@ public abstract class BaseServiceClientComponent<C> implements Component {
         mComponentName = new ComponentName(serviceInfo.packageName, serviceInfo.name);
         mServiceIntent = new Intent();
         mServiceIntent.setComponent(mComponentName);
+        mHandler = handler;
     }
 
     @Override
     public UUID getComponentId() {
         return mComponentId;
+    }
+
+    public ParcelUuid getParcelComponentId() {
+        return new ParcelUuid(mComponentId);
     }
 
     public ComponentName getComponentName() {
@@ -117,14 +193,26 @@ public abstract class BaseServiceClientComponent<C> implements Component {
                 mComponentName.flattenToShortString());
     }
 
-    protected void runWithBinder(RunWithBinderCallback<C> callback) {
+    /** Returns true if this service client has the given permission. */
+    protected boolean checkPermission(String permission) {
+        return mContext.getSystemService(PermissionManager.class)
+                        .checkPackageNamePermission(
+                                permission,
+                                getComponentName().getPackageName(),
+                                Context.DEVICE_ID_DEFAULT,
+                                mUserHandle.getIdentifier())
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    protected void runWithScopedBinder(RunWithScopedBinderCallback<C> callback) {
         mExecutor.execute(() -> {
             start();
 
             if (mClient != null) {
-                callback.run(mClient);
+                final IOpCallback opCallback = initiateCall();
+                callback.run(mClient, opCallback);
             } else {
-                mPendingCalls.add(callback);
+                mScopedPendingCalls.add(callback);
             }
         });
     }
@@ -160,12 +248,23 @@ public abstract class BaseServiceClientComponent<C> implements Component {
                 callback.run(client);
             }
             mPendingCalls.clear();
+
+            for (RunWithScopedBinderCallback<C> callback : mScopedPendingCalls) {
+                final IOpCallback opCallback = initiateCall();
+                callback.run(client, opCallback);
+            }
+
+            mScopedPendingCalls.clear();
             stop();
         });
     }
 
     protected final void stop() {
         mExecutor.execute(() -> {
+            if (!mActiveScopedCallbacks.isEmpty() || mClient == null) {
+                return;
+            }
+
             mServiceStarted = false;
             mClient = null;
 
@@ -189,5 +288,16 @@ public abstract class BaseServiceClientComponent<C> implements Component {
     public interface RunWithBinderCallback<C> {
         /** Runs the callback with a connected client. */
         void run(C client);
+    }
+
+    /**
+     * Callback interface for calls made on a client.
+     *
+     * @param <C> type of client interface
+     * @hide
+     */
+    public interface RunWithScopedBinderCallback<C> {
+        /** Runs the callback with a connected client. */
+        void run(C client, IOpCallback opCallback);
     }
 }

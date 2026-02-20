@@ -853,6 +853,9 @@
     <!-- Component name for the setup activity shown when the device is upright and charging. -->
     <string name="config_communalUprightChargingSetupActivityComponent" translatable="false" />
 
+    <!-- Priority of the Upright Charging setup flow. Higher values are prioritized. -->
+    <integer name="config_communalUprightChargingPriority">1</integer>
+
     <!-- This value is used when calculating whether the device is in ambient light mode. It is
         light mode when the light sensor sample value exceeds above this value. -->
     <item name="config_ambientLightModeThreshold" translatable="false" format="float" type="dimen">

@@ -20,10 +20,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.app.KeyguardManager;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
 import android.companion.DeviceId;
@@ -80,6 +82,8 @@ public class AgentAuthServiceTest {
     @Mock
     private BiometricManager mBiometricManager;
     @Mock
+    private KeyguardManager mKeyguardManager;
+    @Mock
     private LockSettingsInternal mLockSettings;
     private CompanionDeviceManager mCompanionDeviceManager;
     private Handler mHandler;
@@ -117,6 +121,8 @@ public class AgentAuthServiceTest {
             return null;
         }).when(mMockCDMService).setOnDevicePresenceEventListener(any(), any(), any(), anyInt());
 
+        when(mKeyguardManager.isDeviceLocked(anyInt())).thenReturn(true);
+
         mCompanionDeviceManager = new CompanionDeviceManager(mMockCDMService, mMockContext);
         mHandler = new Handler(TestableLooper.get(this).getLooper());
 
@@ -125,7 +131,7 @@ public class AgentAuthServiceTest {
         mService = new AgentAuthService(mMockContext, mHandler, mClock, AUTH_INTERVAL);
 
         // Initialize for USER_ID, flushing each step to avoid task removal
-        mService.start(mLockSettings, mBiometricManager, mCompanionDeviceManager);
+        mService.start(mLockSettings, mBiometricManager, mKeyguardManager, mCompanionDeviceManager);
         TestableLooper.get(this).processAllMessages();
 
         mService.initInBackgroundForUser(USER_ID);
@@ -143,10 +149,21 @@ public class AgentAuthServiceTest {
     }
 
     @Test
+    public void testIsAgentAuthorized_unlockedConnection_returnsTrue() throws RemoteException {
+        // Simulate device is UNLOCKED
+        when(mKeyguardManager.isDeviceLocked(USER_ID)).thenReturn(false);
+
+        DeviceId deviceId = createDeviceId("123");
+        triggerAgentConnected(123, deviceId);
+
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
+    }
+
+    @Test
     public void testIsAgentAuthorized_authorizedSession_returnsTrue() throws RemoteException {
         // Simulate connection with recent auth
         mClock.setNow(TimeUnit.HOURS.toMillis(1));
-        when(mBiometricManager.getLastAuthenticationTime(anyInt()))
+        when(mBiometricManager.getLastAuthenticationTime(eq(USER_ID), anyInt()))
                 .thenReturn(TimeUnit.HOURS.toMillis(1) - 1000);
 
         DeviceId deviceId = createDeviceId("123");
@@ -159,7 +176,7 @@ public class AgentAuthServiceTest {
     public void testIsAgentAuthorized_staleAuth_returnsFalse() throws RemoteException {
         // Simulate connection with stale auth
         mClock.setNow(TimeUnit.HOURS.toMillis(1));
-        when(mBiometricManager.getLastAuthenticationTime(anyInt()))
+        when(mBiometricManager.getLastAuthenticationTime(eq(USER_ID), anyInt()))
                 .thenReturn(TimeUnit.HOURS.toMillis(1) - AUTH_INTERVAL - 1000);
 
         DeviceId deviceId = createDeviceId("123");
@@ -171,7 +188,7 @@ public class AgentAuthServiceTest {
     @Test
     public void testIsAgentAuthorized_wrongUser_returnsFalse() throws RemoteException {
         mClock.setNow(TimeUnit.HOURS.toMillis(1));
-        when(mBiometricManager.getLastAuthenticationTime(anyInt()))
+        when(mBiometricManager.getLastAuthenticationTime(eq(USER_ID), anyInt()))
                 .thenReturn(TimeUnit.HOURS.toMillis(1) - 1000);
 
         DeviceId deviceId = createDeviceId("123");
@@ -183,7 +200,7 @@ public class AgentAuthServiceTest {
     @Test
     public void testUserSwitch_clearsSessions() throws RemoteException {
         mClock.setNow(TimeUnit.HOURS.toMillis(1));
-        when(mBiometricManager.getLastAuthenticationTime(anyInt()))
+        when(mBiometricManager.getLastAuthenticationTime(eq(USER_ID), anyInt()))
                 .thenReturn(TimeUnit.HOURS.toMillis(1) - 1000);
 
         DeviceId deviceId = createDeviceId("123");
@@ -207,7 +224,7 @@ public class AgentAuthServiceTest {
 
         // Simulate connection with stale auth (unauthorized)
         mClock.setNow(TimeUnit.HOURS.toMillis(1));
-        when(mBiometricManager.getLastAuthenticationTime(anyInt()))
+        when(mBiometricManager.getLastAuthenticationTime(eq(USER_ID), anyInt()))
                 .thenReturn(TimeUnit.HOURS.toMillis(1) - AUTH_INTERVAL - 1000);
 
         DeviceId deviceId = createDeviceId("123");
@@ -215,7 +232,7 @@ public class AgentAuthServiceTest {
         assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
 
         // Now simulate strong auth
-        when(mBiometricManager.getLastAuthenticationTime(anyInt()))
+        when(mBiometricManager.getLastAuthenticationTime(eq(USER_ID), anyInt()))
                 .thenReturn(TimeUnit.HOURS.toMillis(1));
 
         listener.onAuthenticationSucceeded(USER_ID);

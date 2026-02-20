@@ -25,10 +25,12 @@ import android.content.Context;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.provider.Settings;
 import android.service.dreams.DreamPlaylist;
+import android.util.IndentingPrintWriter;
 import android.util.Slog;
 
 import com.android.server.pm.UserManagerInternal;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -199,5 +201,19 @@ final class DreamComponentsResolver {
         }
         final int mainUserId = mUserManagerInternal.getMainUserId();
         return userId == mainUserId;
+    }
+
+    void dump(PrintWriter pw, int userId) {
+        IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "  ");
+        ipw.println("DreamComponentsResolver (userId=" + userId + "):");
+        ipw.increaseIndent();
+
+        ipw.println("dreamsEnabledForUser=" + dreamsEnabledForUser(userId));
+        ipw.println(
+                "getDreamComponentsForUser=" + Arrays.toString(getDreamComponentsForUser(userId)));
+        ipw.println("getDefaultDreamComponentForUser=" + getDefaultDreamComponentForUser(userId));
+        ipw.println("getSettingsActiveDream=" + getSettingsActiveDream(userId));
+
+        ipw.decreaseIndent();
     }
 }

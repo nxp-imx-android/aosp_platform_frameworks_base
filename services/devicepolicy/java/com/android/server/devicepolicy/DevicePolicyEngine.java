@@ -138,6 +138,18 @@ final class DevicePolicyEngine {
     @GuardedBy("mLock")
     private final Map<PolicyKey, PolicyState<?>> mGlobalPolicies;
 
+    public interface PolicyChangeListener {
+        void onPolicyChanged(
+            PolicyDefinition<?> policyDefinition,
+            int userId,
+            PolicyValue<?> newPolicyValue,
+            PolicyValue<?> oldPolicyValue
+        );
+    }
+
+    @GuardedBy("mLock")
+    private PolicyChangeListener mPolicyChangeListener = null;
+
     /**
      * Map containing the current set of admins in each user with active policies.
      */
@@ -178,6 +190,12 @@ final class DevicePolicyEngine {
         } catch (Throwable e) {
             // Catch any possible exceptions just to be on the safe side
             Log.e(TAG, "Exception thrown during forceEnforcementRefreshIfUserRestrictionLocked", e);
+        }
+    }
+
+    public void setPolicyChangedListener(PolicyChangeListener listener) {
+        synchronized (mLock) {
+            mPolicyChangeListener = listener;
         }
     }
 
@@ -258,6 +276,9 @@ final class DevicePolicyEngine {
         Objects.requireNonNull(enforcingAdmin);
 
         synchronized (mLock) {
+            PolicyValue<V> oldResolvedPolicyValue =
+                    getResolvedPolicyValue(policyDefinition, userId);
+
             PolicyState<V> localPolicyState = getLocalPolicyStateLocked(policyDefinition, userId);
             if (!handleAdminPolicySizeLimit(localPolicyState, enforcingAdmin, value,
                     policyDefinition, userId)) {
@@ -293,6 +314,13 @@ final class DevicePolicyEngine {
                 policyEnforcementFuture = policyChanged
                         ? onLocalPolicyChangedLocked(policyDefinition, enforcingAdmin, userId)
                         : AndroidFuture.completedFuture(false);
+
+                if (policyChanged) {
+                    PolicyValue<V> resolvedPolicyValue =
+                            getResolvedPolicyValue(policyDefinition, userId);
+                    sendPolicyChangedNotification(
+                            policyDefinition, userId, resolvedPolicyValue, oldResolvedPolicyValue);
+                }
 
                 policyApplied = isPolicyApplied(policyDefinition, localPolicyState, value);
                 sendPolicyResultToAdmin(
@@ -418,6 +446,9 @@ final class DevicePolicyEngine {
         Objects.requireNonNull(enforcingAdmin);
 
         synchronized (mLock) {
+            PolicyValue<V> oldResolvedPolicyValue =
+                    getResolvedPolicyValue(policyDefinition, userId);
+
             forceEnforcementRefreshIfUserRestrictionLocked(policyDefinition);
             if (!hasLocalPolicyLocked(policyDefinition, userId)) {
                 return AndroidFuture.completedFuture(RESULT_FAILURE_UNKNOWN);
@@ -444,6 +475,13 @@ final class DevicePolicyEngine {
             CompletableFuture<Boolean> enforcementFuture = policyChanged
                     ? onLocalPolicyChangedLocked(policyDefinition, enforcingAdmin, userId)
                     : AndroidFuture.completedFuture(false);
+
+            if (policyChanged) {
+                PolicyValue<V> resolvedPolicyValue =
+                        getResolvedPolicyValue(policyDefinition, userId);
+                sendPolicyChangedNotification(
+                        policyDefinition, userId, resolvedPolicyValue, oldResolvedPolicyValue);
+            }
 
             // For a removePolicy to be enforced, it means no current policy exists
             sendPolicyResultToAdmin(
@@ -622,6 +660,9 @@ final class DevicePolicyEngine {
         Objects.requireNonNull(value);
 
         synchronized (mLock) {
+            PolicyValue<V> oldResolvedPolicyValue =
+                    getResolvedPolicyValue(policyDefinition, UserHandle.USER_ALL);
+
             PolicyState<V> globalPolicyState = getGlobalPolicyStateLocked(policyDefinition);
             if (!handleAdminPolicySizeLimit(globalPolicyState, enforcingAdmin, value,
                     policyDefinition, UserHandle.USER_ALL)) {
@@ -650,22 +691,39 @@ final class DevicePolicyEngine {
                         : AndroidFuture.completedFuture(false);
 
                 boolean policyApplied = isPolicyApplied(policyDefinition, globalPolicyState, value);
-                policyApplicationFuture = policyApplicationFuture.thenCombine(enforcementFuture,
-                        (previousStatus, policyEnforced) -> {
-                    int currentStatus = computePolicyUpdateResult(
-                            policyChanged, policyApplied, policyEnforced);
-                    currentStatus = combinePolicyUpdateResults(previousStatus, currentStatus);
+                policyApplicationFuture =
+                        policyApplicationFuture.thenCombine(
+                                enforcementFuture,
+                                (previousStatus, policyEnforced) -> {
+                                    int currentStatus =
+                                            computePolicyUpdateResult(
+                                                    policyChanged, policyApplied, policyEnforced);
+                                    currentStatus =
+                                            combinePolicyUpdateResults(
+                                                    previousStatus, currentStatus);
 
-                    sendPolicyResultToAdmin(
-                            enforcingAdmin,
-                            policyDefinition,
-                            // TODO: we're always sending this for now, should properly handle
-                            //  errors.
-                            currentStatus,
-                            UserHandle.USER_ALL);
+                                    if (policyChanged) {
+                                        PolicyValue<V> resolvedPolicyValue =
+                                                getResolvedPolicyValue(
+                                                        policyDefinition, UserHandle.USER_ALL);
+                                        sendPolicyChangedNotification(
+                                                policyDefinition,
+                                                UserHandle.USER_ALL,
+                                                resolvedPolicyValue,
+                                                oldResolvedPolicyValue);
+                                    }
 
-                    return currentStatus;
-                });
+                                    sendPolicyResultToAdmin(
+                                            enforcingAdmin,
+                                            policyDefinition,
+                                            // TODO: we're always sending this for now, should
+                                            // properly handle
+                                            //  errors.
+                                            currentStatus,
+                                            UserHandle.USER_ALL);
+
+                                    return currentStatus;
+                                });
             }
 
             updateDeviceAdminServiceOnPolicyAddLocked(enforcingAdmin);
@@ -692,6 +750,9 @@ final class DevicePolicyEngine {
         Objects.requireNonNull(enforcingAdmin);
 
         synchronized (mLock) {
+            PolicyValue<V> oldResolvedPolicyValue =
+                    getResolvedPolicyValue(policyDefinition, UserHandle.USER_ALL);
+
             PolicyState<V> policyState = getGlobalPolicyStateLocked(policyDefinition);
 
             decreasePolicySizeForAdmin(policyState, enforcingAdmin);
@@ -709,27 +770,45 @@ final class DevicePolicyEngine {
                             /* value= */ null,
                             /* skipEnforcePolicy= */ false);
 
-            applyGlobalPolicyFuture = applyGlobalPolicyFuture.thenCombine(enforcementFuture,
-                    (Integer previousStatus, Boolean policyEnforced) -> {
-                        // Setting policyApplied value to true since it's a removal operation and
-                        // it's always possible for an admin to remove its own value.
-                        int currentStatus = computePolicyUpdateResult(
-                                policyChanged, true, policyEnforced);
-                        currentStatus =
-                                combinePolicyUpdateResults(previousStatus, currentStatus);
-                        currentStatus = currentStatus == RESULT_POLICY_SET ?
-                                RESULT_POLICY_CLEARED : currentStatus;
+            applyGlobalPolicyFuture =
+                    applyGlobalPolicyFuture.thenCombine(
+                            enforcementFuture,
+                            (Integer previousStatus, Boolean policyEnforced) -> {
+                                // Setting policyApplied value to true since it's a removal
+                                // operation and
+                                // it's always possible for an admin to remove its own value.
+                                int currentStatus =
+                                        computePolicyUpdateResult(
+                                                policyChanged, true, policyEnforced);
+                                currentStatus =
+                                        combinePolicyUpdateResults(previousStatus, currentStatus);
+                                currentStatus =
+                                        currentStatus == RESULT_POLICY_SET
+                                                ? RESULT_POLICY_CLEARED
+                                                : currentStatus;
 
-                        sendPolicyResultToAdmin(
-                                enforcingAdmin,
-                                policyDefinition,
-                                // TODO: we're always sending this for now, should properly handle
-                                // errors.
-                                currentStatus,
-                                UserHandle.USER_ALL);
+                                if (policyChanged) {
+                                    PolicyValue<V> resolvedPolicyValue =
+                                            getResolvedPolicyValue(
+                                                    policyDefinition, UserHandle.USER_ALL);
+                                    sendPolicyChangedNotification(
+                                            policyDefinition,
+                                            UserHandle.USER_ALL,
+                                            resolvedPolicyValue,
+                                            oldResolvedPolicyValue);
+                                }
 
-                        return currentStatus;
-                    });
+                                sendPolicyResultToAdmin(
+                                        enforcingAdmin,
+                                        policyDefinition,
+                                        // TODO: we're always sending this for now, should properly
+                                        // handle
+                                        // errors.
+                                        currentStatus,
+                                        UserHandle.USER_ALL);
+
+                                return currentStatus;
+                            });
 
             if (policyState.getPoliciesSetByAdmins().isEmpty()) {
                 removeGlobalPolicyStateLocked(policyDefinition);
@@ -801,8 +880,16 @@ final class DevicePolicyEngine {
             PolicyState<V> localPolicyState = getLocalPolicyStateLocked(policyDefinition, userId);
             PolicyState<V> globalPolicyState = getGlobalPolicyStateLocked(policyDefinition);
 
+            PolicyValue<V> oldResolvedPolicyValue = localPolicyState.getCurrentResolvedPolicy();
+
             boolean policyChanged = localPolicyState.resolvePolicy(
                     globalPolicyState.getPoliciesSetByAdmins());
+
+            if (policyChanged) {
+                PolicyValue<V> resolvedPolicyValue = localPolicyState.getCurrentResolvedPolicy();
+                sendPolicyChangedNotification(
+                        policyDefinition, userId, resolvedPolicyValue, oldResolvedPolicyValue);
+            }
 
             CompletableFuture<Boolean> enforcementFuture = AndroidFuture.completedFuture(false);
             if (policyChanged && !skipEnforcePolicy) {
@@ -1297,6 +1384,28 @@ final class DevicePolicyEngine {
                 new UserHandle(userId),
                 /* receiverPermissions= */ null,
                 options));
+    }
+
+    private <V> void sendPolicyChangedNotification(
+            PolicyDefinition<V> policyDefinition,
+            int userId,
+            PolicyValue<V> newResolvedPolicyValue,
+            PolicyValue<V> oldResolvedPolicyValue
+            ) {
+        PolicyChangeListener listener;
+
+        synchronized (mLock) {
+            listener = mPolicyChangeListener;
+        }
+
+        if (listener != null) {
+            listener.onPolicyChanged(
+                policyDefinition,
+                userId,
+                newResolvedPolicyValue,
+                oldResolvedPolicyValue
+            );
+        }
     }
 
     private <V> void sendPolicyResultToAdmin(

@@ -2085,7 +2085,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                     return false;
                 }
                 setSeparateProfileChallengeEnabledLocked(userId, true, /* unused */ null);
-                notifyPasswordChanged(credential, userId);
+                notifyPasswordMetricsChanged(credential, userId);
             }
             if (isCredentialShareableWithParent(userId)) {
                 // Make sure the profile doesn't get locked straight after setting challenge.
@@ -2198,6 +2198,13 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     private void onPostLockCredentialChanged(LockscreenCredential newCredential, int userId) {
+        if (android.security.Flags.moveNotifyLockCredentialCalls()) {
+            LocalServices.getService(WindowManagerInternal.class).reportPasswordChanged(userId);
+            if (android.security.Flags.appLockApis()) {
+                LocalServices.getService(PackageManagerInternal.class)
+                        .reportLockCredentialChanged(userId);
+            }
+        }
         updatePasswordHistory(newCredential, userId);
         mContext.getSystemService(TrustManager.class).reportEnabledTrustAgentsChanged(userId);
         sendMainUserCredentialChangedNotificationIfNeeded(userId);
@@ -2799,9 +2806,9 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     /**
-     * Keep track of the given user's latest password metric. This should be called
-     * when the user is authenticating or when a new password is being set. In comparison,
-     * {@link #notifyPasswordChanged} only needs to be called when the user changes the password.
+     * Keep track of the given user's latest password metric. This should be called when the user is
+     * authenticating or when a new password is being set. In comparison, {@link
+     * #notifyPasswordMetricsChanged} only needs to be called when the user changes the password.
      */
     private void setUserPasswordMetrics(LockscreenCredential password, @UserIdInt int userHandle) {
         synchronized (this) {
@@ -2839,22 +2846,31 @@ public class LockSettingsService extends ILockSettings.Stub {
     }
 
     /**
-     * Call after {@link #setUserPasswordMetrics} so metrics are updated before
-     * reporting the password changed.
+     * Notifies consumers of the new {@link PasswordMetrics} after {@link #setUserPasswordMetrics}
+     * has been called after lock credentials have been changed for a user.
+     *
+     * <p>Note: this method is intended to be used for operations relating to the {@link
+     * PasswordMetrics} for the new credentials. New calls to services wishing to be notified should
+     * go into {@link #onPostLockCredentialChanged} instead.
      */
-    private void notifyPasswordChanged(LockscreenCredential newCredential, @UserIdInt int userId) {
+    private void notifyPasswordMetricsChanged(
+            LockscreenCredential newCredential, @UserIdInt int userId) {
         // Must compute the PasswordMetrics for newCredential outside the mHandler asynchronous
         // call, as once the handler actually runs the thread the newCredential parameter may be
         // zeroized by the caller.
         PasswordMetrics newMetrics = PasswordMetrics.computeForCredential(newCredential);
-        mHandler.post(() -> {
-            mInjector.getDevicePolicyManager().reportPasswordChanged(newMetrics, userId);
-            LocalServices.getService(WindowManagerInternal.class).reportPasswordChanged(userId);
-            if (android.security.Flags.appLockApis()) {
-                LocalServices.getService(
-                        PackageManagerInternal.class).reportLockCredentialChanged(userId);
-            }
-        });
+        mHandler.post(
+                () -> {
+                    mInjector.getDevicePolicyManager().reportPasswordChanged(newMetrics, userId);
+                    if (!android.security.Flags.moveNotifyLockCredentialCalls()) {
+                        LocalServices.getService(WindowManagerInternal.class)
+                                .reportPasswordChanged(userId);
+                        if (android.security.Flags.appLockApis()) {
+                            LocalServices.getService(PackageManagerInternal.class)
+                                    .reportLockCredentialChanged(userId);
+                        }
+                    }
+                });
     }
 
     private void createNewUser(@UserIdInt int userId, int userSerialNumber) {
@@ -3691,7 +3707,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 // the caller like DPMS), otherwise it can lead to deadlock.
                 mHandler.post(() -> unlockUser(userId));
             }
-            notifyPasswordChanged(credential, userId);
+            notifyPasswordMetricsChanged(credential, userId);
             notifySeparateProfileChallengeChanged(userId);
         }
         return result;

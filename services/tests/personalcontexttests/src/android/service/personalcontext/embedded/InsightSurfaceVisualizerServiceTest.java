@@ -25,10 +25,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.PublishedContextInsight;
 import android.service.personalcontext.insight.PublishedContextInsightWrapper;
+import android.service.personalcontext.testutil.FakeExecutor;
 import android.view.Display;
 import android.view.SurfaceControlViewHost;
 import android.view.View;
@@ -44,7 +46,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.UUID;
-import java.util.concurrent.Executor;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -54,10 +55,14 @@ public class InsightSurfaceVisualizerServiceTest {
     @Mock private IVisualizationResult mResult;
     @Mock private Context mContext;
     @Mock private Display mDisplay;
+
+    @Mock private IOpCallback mOpCallback;
     private final PublishedContextInsightWrapper mInsight =
             new PublishedContextInsightWrapper(new PublishedContextInsight(
                     new BundleInsight.Builder().build(), UUID.randomUUID()));
     private final RenderToken mRenderToken = new RenderToken(UUID.randomUUID(), null);
+
+    private final FakeExecutor mFakeExecutor = new FakeExecutor();
 
     private final InsightSurfaceVisualizerService.Injector mInjector =
             new InsightSurfaceVisualizerService.Injector() {
@@ -69,11 +74,6 @@ public class InsightSurfaceVisualizerServiceTest {
                 @Override
                 public Display getDisplay() {
                     return mDisplay;
-                }
-
-                @Override
-                public Executor getExecutor() {
-                    return Runnable::run;
                 }
 
                 @Override
@@ -147,34 +147,47 @@ public class InsightSurfaceVisualizerServiceTest {
 
     @Test
     public void testOnClientConnectedCalled() throws RemoteException {
-        final IInsightSurfaceVisualizer visualizer = createVisualizer(mock(View.class));
-        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult);
+        final TestInsightSurfaceVisualizerService service = createVisualizer(mock(View.class));
+        final IInsightSurfaceVisualizer visualizer = bind(service);
+        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult,
+                mOpCallback);
+        mFakeExecutor.runAll();
         verify(mMonitor).onClientConnected(mClientInfo);
     }
 
     @Test
     public void testOnClientDisconnectedCalled() throws RemoteException {
-        final IInsightSurfaceVisualizer visualizer = createVisualizer(mock(View.class));
-        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult);
-        visualizer.onClientDisconnected(mClientInfo);
+        final TestInsightSurfaceVisualizerService service = createVisualizer(mock(View.class));
+        final IInsightSurfaceVisualizer visualizer = bind(service);
+        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult,
+                mOpCallback);
+        mFakeExecutor.runAll();
+        visualizer.onClientDisconnected(mClientInfo, mOpCallback);
+        mFakeExecutor.runAll();
         verify(mMonitor).onClientDisconnected(mClientInfo);
     }
 
     @Test
     public void testOnCreateEmbeddedView() throws RemoteException {
-        final IInsightSurfaceVisualizer visualizer = createVisualizer();
+        final TestInsightSurfaceVisualizerService service = createVisualizer();
+        final IInsightSurfaceVisualizer visualizer = bind(service);
 
-        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult);
+        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult,
+                mOpCallback);
+        mFakeExecutor.runAll();
         verify(mMonitor).onCreateEmbeddedView(mClientInfo);
     }
 
     @Test
     public void testCallbackOnResult_false() throws RemoteException {
+        final TestInsightSurfaceVisualizerService service = createVisualizer();
         // By not passing a View to createVisualizer(), we cause it to call the callback with
         // "false" (because it has now View to return).
-        final IInsightSurfaceVisualizer visualizer = createVisualizer();
+        final IInsightSurfaceVisualizer visualizer = bind(service);
 
-        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult);
+        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult,
+                mOpCallback);
+        mFakeExecutor.runAll();
         verify(mMonitor).onCreateEmbeddedView(mClientInfo);
         // Since the visualizer was created without a View to create, it will call the callback
         // with "false" to indicate that View creation failed.
@@ -183,25 +196,33 @@ public class InsightSurfaceVisualizerServiceTest {
 
     @Test
     public void testCallbackOnResult_true() throws RemoteException {
+        final TestInsightSurfaceVisualizerService service = createVisualizer(mock(View.class));
         // By passing a View to createVisualizer(), we cause it to call the callback with "true"
         // (because it has a View to return).
-        final IInsightSurfaceVisualizer visualizer = createVisualizer(mock(View.class));
-
-        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult);
+        final IInsightSurfaceVisualizer visualizer = bind(service);
+        visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult,
+                mOpCallback);
+        mFakeExecutor.runAll();
         verify(mMonitor).onCreateEmbeddedView(mClientInfo);
         // Since the visualizer was created with a View to create, it will call the callback
         // with "true" to indicate that View creation succeeded.
         verify(mResult).onResult(true);
     }
 
-    private IInsightSurfaceVisualizer createVisualizer() {
+    private TestInsightSurfaceVisualizerService createVisualizer() {
         return createVisualizer(null);
     }
 
-    private IInsightSurfaceVisualizer createVisualizer(View view) {
+    private TestInsightSurfaceVisualizerService createVisualizer(View view) {
         final TestInsightSurfaceVisualizerService service =
                 new TestInsightSurfaceVisualizerService(mMonitor, mInjector, view);
+        service.setExecutor(mFakeExecutor);
         service.onCreate();
+
+        return service;
+    }
+
+    private IInsightSurfaceVisualizer bind(TestInsightSurfaceVisualizerService service) {
         final IBinder binder = service.onBind(
                 new Intent(InsightSurfaceVisualizerService.SERVICE_INTERFACE));
         return IInsightSurfaceVisualizer.Stub.asInterface(binder);

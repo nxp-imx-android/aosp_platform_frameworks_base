@@ -434,6 +434,7 @@ android_library {
     manifest: "AndroidManifest-res.xml",
     flags_packages: [
         "android.app.flags-aconfig",
+        "android.net.platform.flags-aconfig",
         "com_android_systemui_flags",
     ],
 }

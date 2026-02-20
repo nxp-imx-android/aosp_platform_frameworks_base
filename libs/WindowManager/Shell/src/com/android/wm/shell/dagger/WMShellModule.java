@@ -34,6 +34,7 @@ import android.view.Choreographer;
 import android.view.IWindowManager;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityManager;
 import android.window.DesktopExperienceFlags;
 import android.window.TaskSnapshotManager;
 
@@ -44,6 +45,7 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.internal.util.LatencyTracker;
 import com.android.launcher3.icons.IconProvider;
+import com.android.window.flags.Flags;
 import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -184,6 +186,7 @@ import com.android.wm.shell.pip2.phone.PipDisplayDisconnectHandler;
 import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler;
 import com.android.wm.shell.pip2.phone.PipScheduler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
+import com.android.wm.shell.recents.PerDisplayRecentsTransitionStateListener;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.scrolltotop.ScrollToTopController;
@@ -204,6 +207,8 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.DefaultMixedHandler;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.HomeTransitionObserver;
+import com.android.wm.shell.transition.InteractiveTasksRepository;
+import com.android.wm.shell.transition.InteractiveTasksTransitionObserver;
 import com.android.wm.shell.transition.MixedTransitionHandler;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.unfold.ShellUnfoldProgressProvider;
@@ -464,7 +469,7 @@ public abstract class WMShellModule {
             WindowDecorViewModel windowDecorViewModel,
             Optional<TaskChangeListener> taskChangeListener,
             FocusTransitionObserver focusTransitionObserver,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             Optional<DesksTransitionObserver> desksTransitionObserver,
             DesktopState desktopState,
             Optional<DesktopImeHandler> desktopImeHandler,
@@ -676,7 +681,7 @@ public abstract class WMShellModule {
             Optional<RecentTasksController> recentTasksController,
             HomeTransitionObserver homeTransitionObserver,
             DisplayController displayController,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             BubbleHelper bubbleHelper) {
         return new RecentsTransitionHandler(
                 shellInit,
@@ -800,6 +805,7 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
+    @DynamicOverride
     static DesksOrganizer provideDesksOrganizer(
             @NonNull ShellInit shellInit,
             @NonNull ShellCommandHandler shellCommandHandler,
@@ -869,7 +875,7 @@ public abstract class WMShellModule {
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             Optional<BubbleController> bubbleController,
             OverviewToDesktopTransitionObserver overviewToDesktopTransitionObserver,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             Optional<DesksTransitionObserver> desksTransitionObserver,
             UserProfileContexts userProfileContexts,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
@@ -1008,7 +1014,7 @@ public abstract class WMShellModule {
             DesktopState desktopState,
             ShellController shellController,
             Optional<PinnedLayerController> pinnedLayerController,
-            DesksOrganizer desksOrganizer) {
+            @DynamicOverride DesksOrganizer desksOrganizer) {
         if (ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
                 && desktopState.canEnterDesktopMode()) {
             return Optional.of(
@@ -1052,7 +1058,7 @@ public abstract class WMShellModule {
             Transitions transitions,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             ShellTaskOrganizer shellTaskOrganizer,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             DesktopConfig desktopConfig,
             DesktopState desktopState,
             SnapController snapController,
@@ -1108,7 +1114,7 @@ public abstract class WMShellModule {
             Context context,
             Transitions transitions,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             InteractionJankMonitor interactionJankMonitor,
             Optional<BubbleController> bubbleController,
@@ -1262,13 +1268,14 @@ public abstract class WMShellModule {
             FocusTransitionObserver focusTransitionObserver,
             @ShellMainThread ShellExecutor mainExecutor,
             DisplayController displayController,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            AccessibilityManager accessibilityManager) {
         if (desktopState.canEnterDesktopMode()) {
             return Optional.of(new DesktopModeKeyGestureHandler(context,
                     desktopModeWindowDecorViewModel, desktopTasksController,
-                    desktopUserRepositories,
-                    inputManager, shellTaskOrganizer, focusTransitionObserver,
-                    mainExecutor, displayController, desktopState));
+                    desktopUserRepositories, inputManager, shellTaskOrganizer,
+                    focusTransitionObserver, mainExecutor, displayController, desktopState,
+                    accessibilityManager));
         }
         return Optional.empty();
     }
@@ -1328,12 +1335,12 @@ public abstract class WMShellModule {
             DesktopModeEventLogger desktopModeEventLogger,
             DesktopModeUiEventLogger desktopModeUiEventLogger,
             WindowDecorTaskResourceLoader taskResourceLoader,
-            RecentsTransitionHandler recentsTransitionHandler,
+            PerDisplayRecentsTransitionStateListener perDisplayRecentsTransitionStateListener,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
             MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
             Optional<CompatUIHandler> compatUI,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             ShellDesktopState shelldesktopState,
             DesktopConfig desktopConfig,
             UserProfileContexts userProfileContexts,
@@ -1359,7 +1366,8 @@ public abstract class WMShellModule {
                 multiInstanceHelper, appHandleEducationController,
                 captionVisibilityHelper, windowDecorCaptionRepository,
                 activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
-                desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
+                desktopModeUiEventLogger, taskResourceLoader,
+                perDisplayRecentsTransitionStateListener,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
                 desksOrganizer, shelldesktopState, desktopConfig, userProfileContexts,
@@ -1625,7 +1633,7 @@ public abstract class WMShellModule {
             Optional<DesktopUserRepositories> desktopUserRepositories,
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
             Optional<BackAnimationController> backAnimationController,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             Transitions transitions,
             DesktopState desktopState,
             ShellInit shellInit) {
@@ -1646,7 +1654,7 @@ public abstract class WMShellModule {
     @Provides
     static Optional<DesksTransitionObserver> provideDesksTransitionObserver(
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
-            @NonNull DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             @NonNull Transitions transitions,
             @NonNull DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             @NonNull @ShellMainThread CoroutineScope mainScope,
@@ -1670,7 +1678,7 @@ public abstract class WMShellModule {
             ShellInit shellInit,
             Context context,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             DesksController desksController,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             DisplayController displayController,
@@ -1734,7 +1742,7 @@ public abstract class WMShellModule {
             DesktopModeEventLogger desktopModeEventLogger,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             DesktopState desktopState,
-            DesksOrganizer desksOrganizer) {
+            @DynamicOverride DesksOrganizer desksOrganizer) {
         return new DesktopModeLoggerTransitionObserver(
                 shellInit, desktopModeEventLogger,
                 desktopTasksLimiter, desktopState, desksOrganizer);
@@ -1754,7 +1762,7 @@ public abstract class WMShellModule {
             ShellController shellController,
             DisplayController displayController,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
-            DesksOrganizer desksOrganizer,
+            @DynamicOverride DesksOrganizer desksOrganizer,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             Optional<DesktopTasksController> desktopTasksController,
             Optional<DesktopDisplayModeController> desktopDisplayModeController,
@@ -2271,5 +2279,28 @@ public abstract class WMShellModule {
     @Provides
     static HomeIntentProvider provideHomeIntentProvider(Context context) {
         return new HomeIntentProvider(context);
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<InteractiveTasksRepository> provideInteractiveTasksRepository() {
+        if (Flags.allowDragAndDropWhenInteractiveBugfix()) {
+            return Optional.of(new InteractiveTasksRepository());
+        }
+        return Optional.empty();
+    }
+
+    @WMSingleton
+    @Provides
+    @DynamicOverride
+    static InteractiveTasksTransitionObserver provideInteractiveTasksTransitionObserver(
+            ShellInit shellInit,
+            Transitions transitions,
+            Optional<InteractiveTasksRepository> repository) {
+        // As a dynamic override it's binded as optional in the base module. Since that creates a
+        // optional multi-binding situation, we need to provide here a real instance and rely on
+        // lazy inject.
+        return new InteractiveTasksTransitionObserver(shellInit, transitions,
+                repository.get());
     }
 }

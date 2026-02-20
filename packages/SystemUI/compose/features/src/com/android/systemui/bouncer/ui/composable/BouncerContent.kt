@@ -68,6 +68,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -92,6 +93,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -252,7 +254,10 @@ fun ContentScope.BouncerContent(
                         }
                     IntOffset(x = 0, y = yOffset.toInt())
                 }
-                .graphicsLayer { alpha = contentAlpha() },
+                .graphicsLayer { alpha = contentAlpha() }
+                .motionTestValues {
+                    contentAlpha() exportAs BouncerMotionTestKeys.bouncerContentAlpha
+                },
         alphaOnEntry = { contentAlpha() },
     )
 }
@@ -820,7 +825,12 @@ private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier
                     maxLines = 2,
                     textAlign = TextAlign.Center,
                     modifier =
-                        Modifier.fillMaxWidth().semantics { liveRegion = LiveRegionMode.Polite },
+                        Modifier.fillMaxWidth().semantics {
+                            liveRegion = LiveRegionMode.Polite
+                            if (it.isNullOrEmpty()) {
+                                hideFromAccessibility()
+                            }
+                        },
                 )
             }
         }
@@ -890,6 +900,10 @@ private fun ActionArea(viewModel: BouncerOverlayContentViewModel, modifier: Modi
     val appearFadeInAnimatable = remember { Animatable(0f) }
     val appearMoveAnimatable = remember { Animatable(0f) }
     val appearAnimationInitialOffset = with(LocalDensity.current) { 80.dp.toPx() }
+    val actionAreaTranslationY by
+        remember(appearAnimationInitialOffset) {
+            derivedStateOf { (1 - appearMoveAnimatable.value) * appearAnimationInitialOffset }
+        }
 
     viewModel.actionButton?.let { actionButtonModel ->
         LaunchedEffect(Unit) {
@@ -920,10 +934,15 @@ private fun ActionArea(viewModel: BouncerOverlayContentViewModel, modifier: Modi
                 modifier
                     .graphicsLayer {
                         // Translate the button up from an initially pushed-down position:
-                        translationY =
-                            (1 - appearMoveAnimatable.value) * appearAnimationInitialOffset
+                        translationY = actionAreaTranslationY
                         // Fade the button in:
                         alpha = appearFadeInAnimatable.value
+                    }
+                    .motionTestValues {
+                        appearFadeInAnimatable.value exportAs
+                            BouncerMotionTestKeys.bouncerActionButtonAlpha
+                        actionAreaTranslationY exportAs
+                            BouncerMotionTestKeys.bouncerActionButtonTranslationY
                     }
                     .height(48.dp)
                     .clip(ButtonDefaults.shape)
@@ -1284,7 +1303,11 @@ private val SceneTransitions = transitions {
 
 @VisibleForTesting
 object BouncerMotionTestKeys {
+    val bouncerActionButtonAlpha = MotionTestValueKey<Float>("bouncerContentActionBtnAlpha")
+    val bouncerActionButtonTranslationY =
+        MotionTestValueKey<Float>("bouncerContentActionBtnTranslationY")
     val swapAnimationEnd = MotionTestValueKey<Boolean>("swapAnimationEnd")
+    val bouncerContentAlpha = MotionTestValueKey<Float>("bouncerContentAlpha")
 }
 
 private const val BOUNCER_CONTENTS_PASSIVE_AUTH_DELAY = 500

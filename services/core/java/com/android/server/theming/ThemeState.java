@@ -19,6 +19,8 @@ package com.android.server.theming;
 import android.annotation.Nullable;
 import android.content.theming.ThemeStyle;
 
+import com.android.internal.annotations.VisibleForTesting;
+
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,10 +45,10 @@ import java.util.Set;
  * @param style         The theme style, e.g., TONAL_SPOT, VIBRANT.
  * @param childProfiles A set of user IDs for associated profiles.
  * @param timeStamp     A timestamp also used to force updates.
- *
  * @hide
  */
-record ThemeState(
+@VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
+public record ThemeState(
         int userId,
         boolean isSetup,
         int seedColor,
@@ -163,7 +165,7 @@ record ThemeState(
      * @param pw     The PrintWriter to dump the state to.
      * @param prefix A prefix to prepend to each line for indentation.
      */
-    public void dump(PrintWriter pw, String prefix) {
+    void dump(PrintWriter pw, String prefix) {
         pw.println(prefix + "isSetup: " + isSetup);
         pw.println(
                 prefix + "seedColor: #" + Integer.toHexString(seedColor).toUpperCase(Locale.ROOT));

@@ -33,7 +33,9 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -49,10 +51,10 @@ class ScreenshotSoundControllerTest : SysuiTestCase() {
     private val scope = TestScope(bgDispatcher)
 
     @Before
-    fun setup() {
+    fun setup() = runTest {
         whenever(soundProvider.getScreenshotSound()).thenReturn(mediaPlayer)
         whenever(soundProvider.getForcedShutterSound()).thenReturn(mediaActionSound)
-        whenever(soundPolicy.shouldForceShutterSound()).thenReturn(false) // default
+        soundPolicy.stub { onBlocking { shouldForceShutterSound() }.doReturn(false) } // default
     }
 
     @Test
@@ -117,17 +119,15 @@ class ScreenshotSoundControllerTest : SysuiTestCase() {
         }
 
     @Test
-    fun screenshotSoundForced_usesShutterSound() {
-        scope.runTest {
-            whenever(soundPolicy.shouldForceShutterSound()).thenReturn(true)
-            val controller = createController()
+    fun screenshotSoundForced_usesShutterSound() = runTest {
+        soundPolicy.stub { onBlocking { shouldForceShutterSound() }.doReturn(true) }
+        val controller = createController()
 
-            controller.playScreenshotSound()
-            advanceUntilIdle()
+        controller.playScreenshotSound()
+        advanceUntilIdle()
 
-            verify(mediaPlayer, never()).start()
-            verify(mediaActionSound).play(MediaActionSound.SHUTTER_CLICK)
-        }
+        verify(mediaPlayer, never()).start()
+        verify(mediaActionSound).play(MediaActionSound.SHUTTER_CLICK)
     }
 
     private fun createController() =

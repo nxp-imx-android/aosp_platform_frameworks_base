@@ -31,6 +31,15 @@ interface ContextualSetupDefinition : Dumpable {
      * handles all logic (Trigger + Preconditions + Power Optimization).
      */
     val isReady: Flow<Boolean>
+
+    /**
+     * The priority of this setup flow. Higher values are prioritized.
+     *
+     * In case of a tie (multiple flows ready with the same priority), the [id] will be used as a
+     * tie-breaker (lexicographical order) to ensure deterministic behavior.
+     */
+    val priority: Int
+        get() = 0
 }
 
 sealed interface SetupTarget {

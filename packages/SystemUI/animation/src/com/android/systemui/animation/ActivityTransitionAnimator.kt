@@ -1610,7 +1610,7 @@ constructor(
             val apps = ArrayList<RemoteAnimationTarget>()
             val filteredStates = ArrayList<WindowAnimationState>()
             val leashMap = ArrayMap<SurfaceControl, SurfaceControl>()
-            val leafTaskFilter = TransitionUtil.LeafTaskFilter()
+            val leafTaskFilter = TransitionUtil.LeafTaskFilter(info)
 
             // About layering: we divide up the "layer space" into 2 regions (each the size of the
             // change count). This lets us categorize things into above and below while
@@ -2001,13 +2001,15 @@ constructor(
                 }
 
             var candidate: TransitionInfo.Change? = null
+            var candidateOrder: Int? = null
             var state: WindowAnimationState? = null
 
+            val leafTaskFilter = TransitionUtil.LeafTaskFilter(info)
             for ((index, it) in info.changes.withIndex()) {
                 // Ignore changes that are not standalone tasks or activities, as these are not new
                 // containers to animate (e.g. they are changes within an existing and already
                 // showing task or activity window).
-                val isLeafTask = TransitionUtil.LeafTaskFilter().test(it)
+                val isLeafTask = leafTaskFilter.test(it)
                 val isActivity = it.activityComponent != null
                 if (!isLeafTask && !isActivity) continue
 
@@ -2036,17 +2038,21 @@ constructor(
 
                     if (candidate == null) {
                         candidate = it
+                        candidateOrder = info.changes.size - index
                         state = states?.get(index)
                         continue
                     }
                     if (it.endAbsBounds.hasGreaterAreaThan(candidate.endAbsBounds)) {
                         candidate = it
+                        candidateOrder = info.changes.size - index
                         state = states?.get(index)
                     }
                 }
             }
 
-            return candidate?.let { AnimatedSurface.from(candidate, state) }
+            return if (candidate != null && candidateOrder != null) {
+                AnimatedSurface.from(candidate, state, candidateOrder)
+            } else null
         }
 
         private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {

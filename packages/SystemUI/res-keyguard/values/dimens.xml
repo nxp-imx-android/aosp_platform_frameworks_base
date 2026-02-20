@@ -118,7 +118,6 @@
     <dimen name="smartspace_padding_vertical">6dp</dimen>
 
     <!-- Lockscreen upper region horizontal paddings -->
-    <dimen name="upper_region_narrow_horizontal_padding">16dp</dimen>
     <dimen name="upper_region_wide_horizontal_padding">24dp</dimen>
     <dimen name="upper_region_wide_column_horizontal_padding">16dp</dimen>
 

@@ -706,11 +706,6 @@ package android.app.admin {
     ctor public PackagePolicyKey(@NonNull String, @NonNull String);
   }
 
-  @FlaggedApi("android.app.admin.flags.policy_streamlining") public final class PolicyIdentifier<T> {
-    ctor public PolicyIdentifier(@NonNull String);
-    method @NonNull public String getId();
-  }
-
   public final class PolicyState<V> implements android.os.Parcelable {
     method @NonNull public android.app.admin.ResolutionMechanism<V> getResolutionMechanism();
   }

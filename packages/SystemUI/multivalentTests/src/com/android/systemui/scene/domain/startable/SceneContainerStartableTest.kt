@@ -23,7 +23,6 @@ import android.hardware.face.FaceManager
 import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.provider.Settings
 import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import android.view.Display
 import android.view.SurfaceControl
@@ -73,7 +72,6 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.haptics.msdl.fakeMSDLPlayer
 import com.android.systemui.haptics.vibratorHelper
 import com.android.systemui.keyevent.data.repository.fakeKeyEventRepository
-import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsRepository
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
@@ -94,6 +92,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteract
 import com.android.systemui.keyguard.domain.interactor.keyguardServiceShowLockscreenInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardWakeDirectlyToGoneInteractor
+import com.android.systemui.keyguard.domain.interactor.lockAfterScreenTimeoutInteractor
 import com.android.systemui.keyguard.domain.interactor.scenetransition.lockscreenSceneTransitionInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.DismissAction
@@ -147,7 +146,6 @@ import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobile
 import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
-import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -1520,14 +1518,9 @@ class SceneContainerStartableTest : SysuiTestCase() {
             // Putting the device to sleep to lock it again, which shouldn't report another
             // successful unlock.
             powerInteractor.setAsleepForTest()
-            testScope.advanceTimeBy(
-                userAwareSecureSettingsRepository
-                    .getInt(
-                        Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
-                        KeyguardViewMediator.KEYGUARD_LOCK_AFTER_DELAY_DEFAULT,
-                    )
-                    .toLong()
-            )
+            runCurrent()
+            kosmos.lockAfterScreenTimeoutInteractor.timeoutElapsedForTesting()
+            runCurrent()
             // Verify that the startable changed the scene to Lockscreen because the device locked
             // following the sleep.
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)

@@ -329,10 +329,7 @@ constructor(
                 lastInsets?.let { updateConstraintsForInsets(header, it) }
                 updateResources()
                 updateCarrierGroupPadding()
-
-                if (Flags.fixShadeHeaderWrongDndIconSize()) {
-                    statusBarIconController.reloadIconGroupLayoutParams(iconManager)
-                }
+                statusBarIconController.reloadIconGroupLayoutParams(iconManager)
             }
 
             override fun onThemeChanged() {

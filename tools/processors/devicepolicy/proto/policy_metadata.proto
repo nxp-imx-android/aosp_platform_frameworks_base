@@ -92,17 +92,27 @@ message TypeSpecificPolicyMetadata {
   }
 
   message EnumPolicyMetadata {
-    int32 default_value = 1;
-    string int_def_name = 2;
-    string documentation = 3;
-
     message EnumValue {
       FullyQualifiedFieldName field_name = 1;
       int32 int_value = 2;
       string documentation = 3;
     }
 
+    message ResolutionMechanism {
+      message MostRestrictive {
+        repeated int32 most_to_least_restrictive = 1;
+      }
+      oneof mechanism {
+        bool custom = 1;
+        MostRestrictive most_restrictive = 2;
+      }
+    }
+
+    int32 default_value = 1;
+    string int_def_name = 2;
+    string documentation = 3;
     repeated EnumValue values = 4;
+    ResolutionMechanism resolution_mechanism = 5;
   }
 
   message StringPolicyMetadata {

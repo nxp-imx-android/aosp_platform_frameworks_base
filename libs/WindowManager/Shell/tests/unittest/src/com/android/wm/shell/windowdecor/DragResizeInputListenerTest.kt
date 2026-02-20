@@ -15,10 +15,8 @@
  */
 package com.android.wm.shell.windowdecor
 
-import android.app.ActivityManager
 import android.content.Context
-import android.graphics.Region
-import android.os.Handler
+import android.hardware.input.InputManager
 import android.os.Looper
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
@@ -27,7 +25,14 @@ import android.view.Choreographer
 import android.view.Display
 import android.view.IWindowSession
 import android.view.InputChannel
+import android.view.InputDevice
+import android.view.InputEventReceiver
+import android.view.MotionEvent
+import android.view.PointerIcon
 import android.view.SurfaceControl
+import androidx.test.core.view.MotionEventBuilder
+import androidx.test.core.view.PointerCoordsBuilder
+import androidx.test.core.view.PointerPropertiesBuilder
 import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.StubTransaction
 import com.android.wm.shell.ShellTestCase
@@ -35,19 +40,18 @@ import com.android.wm.shell.TestHandler
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.DisplayController
-import com.android.wm.shell.windowdecor.DragResizeInputListener.TaskResizeInputEventReceiver
 import com.google.common.truth.Truth.assertThat
-import java.util.function.Consumer
-import java.util.function.Supplier
 import kotlin.test.assertNotNull
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -65,7 +69,12 @@ class DragResizeInputListenerTest : ShellTestCase() {
     private val testMainExecutor = TestShellExecutor()
     private val testBgExecutor = TestShellExecutor()
     private val mockWindowSession = mock<IWindowSession>()
-    private val mockInputEventReceiver = mock<TaskResizeInputEventReceiver>()
+    private val mockInputManager = mock<InputManager>()
+    private val mockGeometry = mock<DragResizeWindowGeometry>()
+    private val inputChannels =
+        InputChannel.openInputChannelPair(DragResizeInputListenerTest::class.toString())
+    private val mockOnInputEventReceiverDisposed = mock<Runnable>()
+    private lateinit var receiver: InputEventReceiver
     private val decorationSurface = SurfaceControl.Builder().setName("decoration surface").build()
     private val createdSurfaces = ArrayList<SurfaceControl>()
     private val removedSurfaces = ArrayList<SurfaceControl>()
@@ -87,7 +96,14 @@ class DragResizeInputListenerTest : ShellTestCase() {
                     any(), // name
                 )
             )
-            .thenReturn(InputChannel())
+            .thenReturn(inputChannels[1])
+
+        if (Looper.myLooper() == null) {
+            // Prepare a looper in the test thread, but we never call Looper.loop on it.
+            Looper.prepare()
+        }
+
+        mContext.addMockSystemService(Context.INPUT_SERVICE, mockInputManager)
     }
 
     @After
@@ -95,6 +111,8 @@ class DragResizeInputListenerTest : ShellTestCase() {
         createdSurfaces.clear()
         removedSurfaces.clear()
         decorationSurface.release()
+        inputChannels[0].dispose()
+        inputChannels[1].dispose()
     }
 
     @Test
@@ -190,7 +208,7 @@ class DragResizeInputListenerTest : ShellTestCase() {
         testMainExecutor.flushAll()
         inputListener.close()
 
-        verify(mockInputEventReceiver).dispose()
+        verify(mockOnInputEventReceiverDisposed).run()
     }
 
     @Test
@@ -249,6 +267,478 @@ class DragResizeInputListenerTest : ShellTestCase() {
         assertThat(removedSurfaces.contains(decorationSurface)).isFalse()
     }
 
+    @Test
+    fun testSkipUpdatingCursorIcon_nonPointingDevice() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(300, 200))
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        whenever(
+                mockGeometry.calculateCtrlType(
+                    false /* isTouchscreen */,
+                    true /* isEdgeResizePermitted */,
+                    X,
+                    Y,
+                )
+            )
+            .thenReturn(DragPositioningCallback.CTRL_TYPE_LEFT)
+
+        val hoverEnter =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_HOVER_ENTER)
+                .setSource(InputDevice.SOURCE_JOYSTICK)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_FINGER)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+
+        receiver.onInputEvent(hoverEnter)
+
+        verify(mockInputManager, never()).setPointerIcon(any(), anyInt(), anyInt(), anyInt(), any())
+    }
+
+    @Test
+    fun testSkipUpdatingCursorIcon_stylus() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(300, 200))
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        whenever(
+                mockGeometry.calculateCtrlType(
+                    false /* isTouchscreen */,
+                    true /* isEdgeResizePermitted */,
+                    X,
+                    Y,
+                )
+            )
+            .thenReturn(DragPositioningCallback.CTRL_TYPE_LEFT)
+
+        val hoverEnter =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_HOVER_ENTER)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_STYLUS)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+
+        receiver.onInputEvent(hoverEnter)
+
+        verify(mockInputManager, never()).setPointerIcon(any(), anyInt(), anyInt(), anyInt(), any())
+    }
+
+    @Test
+    fun testUpdateCursorIcon_leftEdge() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(300, 200))
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        whenever(
+                mockGeometry.calculateCtrlType(
+                    false /* isTouchscreen */,
+                    true /* isEdgeResizePermitted */,
+                    X,
+                    Y,
+                )
+            )
+            .thenReturn(DragPositioningCallback.CTRL_TYPE_LEFT)
+
+        val hoverEnter =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_HOVER_ENTER)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+
+        receiver.onInputEvent(hoverEnter)
+
+        val iconCaptor = ArgumentCaptor.forClass(PointerIcon::class.java)
+        verify(mockInputManager)
+            .setPointerIcon(
+                iconCaptor.capture(),
+                eq(DISPLAY_ID),
+                eq(DEVICE_ID),
+                eq(POINTER_ID),
+                any(),
+            )
+        assertThat(iconCaptor.value.type).isEqualTo(PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW)
+    }
+
+    @Test
+    fun testUpdateCursorIcon_rightEdge() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(300, 200))
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        whenever(
+                mockGeometry.calculateCtrlType(
+                    false /* isTouchscreen */,
+                    true /* isEdgeResizePermitted */,
+                    X,
+                    Y,
+                )
+            )
+            .thenReturn(DragPositioningCallback.CTRL_TYPE_RIGHT)
+
+        val hoverEnter =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_HOVER_ENTER)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_FINGER)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+
+        receiver.onInputEvent(hoverEnter)
+
+        val iconCaptor = ArgumentCaptor.forClass(PointerIcon::class.java)
+        verify(mockInputManager)
+            .setPointerIcon(
+                iconCaptor.capture(),
+                eq(DISPLAY_ID),
+                eq(DEVICE_ID),
+                eq(POINTER_ID),
+                any(),
+            )
+        assertThat(iconCaptor.value.type).isEqualTo(PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW)
+    }
+
+    @Test
+    fun testUpdateCursorIcon_topEdge() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(300, 200))
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        whenever(
+                mockGeometry.calculateCtrlType(
+                    false /* isTouchscreen */,
+                    true /* isEdgeResizePermitted */,
+                    X,
+                    Y,
+                )
+            )
+            .thenReturn(DragPositioningCallback.CTRL_TYPE_TOP)
+
+        val hoverEnter =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_HOVER_ENTER)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+
+        receiver.onInputEvent(hoverEnter)
+
+        val iconCaptor = ArgumentCaptor.forClass(PointerIcon::class.java)
+        verify(mockInputManager)
+            .setPointerIcon(
+                iconCaptor.capture(),
+                eq(DISPLAY_ID),
+                eq(DEVICE_ID),
+                eq(POINTER_ID),
+                any(),
+            )
+        assertThat(iconCaptor.value.type).isEqualTo(PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW)
+    }
+
+    @Test
+    fun testUpdateCursorIcon_bottomEdge() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(300, 200))
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        whenever(
+                mockGeometry.calculateCtrlType(
+                    false /* isTouchscreen */,
+                    true /* isEdgeResizePermitted */,
+                    X,
+                    Y,
+                )
+            )
+            .thenReturn(DragPositioningCallback.CTRL_TYPE_BOTTOM)
+
+        val hoverEnter =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_HOVER_ENTER)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+
+        receiver.onInputEvent(hoverEnter)
+
+        val iconCaptor = ArgumentCaptor.forClass(PointerIcon::class.java)
+        verify(mockInputManager)
+            .setPointerIcon(
+                iconCaptor.capture(),
+                eq(DISPLAY_ID),
+                eq(DEVICE_ID),
+                eq(POINTER_ID),
+                any(),
+            )
+        assertThat(iconCaptor.value.type).isEqualTo(PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW)
+    }
+
+    @Test
+    fun testUpdateCursorIcon_topLeftCorner() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(300, 200))
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        whenever(
+                mockGeometry.calculateCtrlType(
+                    false /* isTouchscreen */,
+                    true /* isEdgeResizePermitted */,
+                    X,
+                    Y,
+                )
+            )
+            .thenReturn(
+                DragPositioningCallback.CTRL_TYPE_TOP or DragPositioningCallback.CTRL_TYPE_LEFT
+            )
+
+        val hoverEnter =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_HOVER_ENTER)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+
+        receiver.onInputEvent(hoverEnter)
+
+        val iconCaptor = ArgumentCaptor.forClass(PointerIcon::class.java)
+        verify(mockInputManager)
+            .setPointerIcon(
+                iconCaptor.capture(),
+                eq(DISPLAY_ID),
+                eq(DEVICE_ID),
+                eq(POINTER_ID),
+                any(),
+            )
+        assertThat(iconCaptor.value.type).isEqualTo(PointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW)
+    }
+
+    @Test
+    fun testUpdateCursorIcon_bottomRightCorner() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(300, 200))
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        whenever(
+                mockGeometry.calculateCtrlType(
+                    false /* isTouchscreen */,
+                    true /* isEdgeResizePermitted */,
+                    X,
+                    Y,
+                )
+            )
+            .thenReturn(
+                DragPositioningCallback.CTRL_TYPE_BOTTOM or DragPositioningCallback.CTRL_TYPE_RIGHT
+            )
+
+        val hoverEnter =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_HOVER_ENTER)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+
+        receiver.onInputEvent(hoverEnter)
+
+        val iconCaptor = ArgumentCaptor.forClass(PointerIcon::class.java)
+        verify(mockInputManager)
+            .setPointerIcon(
+                iconCaptor.capture(),
+                eq(DISPLAY_ID),
+                eq(DEVICE_ID),
+                eq(POINTER_ID),
+                any(),
+            )
+        assertThat(iconCaptor.value.type).isEqualTo(PointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW)
+    }
+
+    @Test
+    fun testUpdateCursorIcon_topRightCorner() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(300, 200))
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        whenever(
+                mockGeometry.calculateCtrlType(
+                    false /* isTouchscreen */,
+                    true /* isEdgeResizePermitted */,
+                    X,
+                    Y,
+                )
+            )
+            .thenReturn(
+                DragPositioningCallback.CTRL_TYPE_TOP or DragPositioningCallback.CTRL_TYPE_RIGHT
+            )
+
+        val hoverEnter =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_HOVER_ENTER)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+
+        receiver.onInputEvent(hoverEnter)
+
+        val iconCaptor = ArgumentCaptor.forClass(PointerIcon::class.java)
+        verify(mockInputManager)
+            .setPointerIcon(
+                iconCaptor.capture(),
+                eq(DISPLAY_ID),
+                eq(DEVICE_ID),
+                eq(POINTER_ID),
+                any(),
+            )
+        assertThat(iconCaptor.value.type)
+            .isEqualTo(PointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW)
+    }
+
+    @Test
+    fun testUpdateCursorIcon_bottomLeftCorner() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(300, 200))
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        whenever(
+                mockGeometry.calculateCtrlType(
+                    false /* isTouchscreen */,
+                    true /* isEdgeResizePermitted */,
+                    X,
+                    Y,
+                )
+            )
+            .thenReturn(
+                DragPositioningCallback.CTRL_TYPE_BOTTOM or DragPositioningCallback.CTRL_TYPE_LEFT
+            )
+
+        val hoverEnter =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_HOVER_ENTER)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+
+        receiver.onInputEvent(hoverEnter)
+
+        val iconCaptor = ArgumentCaptor.forClass(PointerIcon::class.java)
+        verify(mockInputManager)
+            .setPointerIcon(
+                iconCaptor.capture(),
+                eq(DISPLAY_ID),
+                eq(DEVICE_ID),
+                eq(POINTER_ID),
+                any(),
+            )
+        assertThat(iconCaptor.value.type)
+            .isEqualTo(PointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW)
+    }
+
     private fun verifyNoInputChannelGrantRequests() {
         verify(mockWindowSession, never())
             .grantInputChannel(
@@ -272,11 +762,10 @@ class DragResizeInputListenerTest : ShellTestCase() {
             mockWindowSession,
             testMainExecutor,
             testBgExecutor,
-            TestTaskResizeInputEventReceiverFactory(mockInputEventReceiver),
             TestRunningTaskInfoBuilder().build(),
-            TestHandler(Looper.getMainLooper()),
+            TestHandler(Looper.myLooper()),
             mock<Choreographer>(),
-            Display.DEFAULT_DISPLAY,
+            DISPLAY_ID,
             decorationSurface,
             mock<DragPositioningCallback>(),
             {
@@ -297,7 +786,10 @@ class DragResizeInputListenerTest : ShellTestCase() {
                 }
             },
             mock<DisplayController>(),
-        )
+            mockOnInputEventReceiverDisposed,
+        ) { r ->
+            receiver = r
+        }
 
     private class TestInitializationCallback : Runnable {
         var initialized: Boolean = false
@@ -308,18 +800,11 @@ class DragResizeInputListenerTest : ShellTestCase() {
         }
     }
 
-    private class TestTaskResizeInputEventReceiverFactory(
-        private val mockInputEventReceiver: TaskResizeInputEventReceiver
-    ) : DragResizeInputListener.TaskResizeInputEventReceiverFactory {
-        override fun create(
-            context: Context,
-            taskInfo: ActivityManager.RunningTaskInfo,
-            inputChannel: InputChannel,
-            callback: DragPositioningCallback,
-            handler: Handler,
-            choreographer: Choreographer,
-            displayLayoutSizeSupplier: Supplier<Size?>,
-            touchRegionConsumer: Consumer<Region?>,
-        ): TaskResizeInputEventReceiver = mockInputEventReceiver
+    companion object {
+        val DISPLAY_ID = Display.DEFAULT_DISPLAY
+        val DEVICE_ID = 10
+        val POINTER_ID = 6
+        val X = 30f
+        val Y = 40f
     }
 }

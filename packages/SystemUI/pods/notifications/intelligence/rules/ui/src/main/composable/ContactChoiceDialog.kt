@@ -19,6 +19,7 @@ package com.android.systemui.notifications.intelligence.rules.ui.composable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -106,11 +107,12 @@ fun ContactChoiceDialog(
                 Text("Selected", style = MaterialTheme.typography.titleLargeEmphasized)
             }
             currentSelectedContacts.forEach {
-                item(key = it.name) { // TODO: b/478225883 - Use contact URI instead.
+                item(key = it.lookupUri.toSafeString()) {
                     Contact(
                         contactModel = it,
                         isSelected = true,
                         setContactSelection = onContactSelectionToggled,
+                        viewModel = viewModel,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -121,11 +123,12 @@ fun ContactChoiceDialog(
             }
             currentSearchResults.forEach {
                 if (it !in currentSelectedContacts) {
-                    item(key = it.name) { // TODO: b/478225883 - Use contact URI instead.
+                    item(key = it.lookupUri.toSafeString()) {
                         Contact(
                             contactModel = it,
                             isSelected = false,
                             setContactSelection = onContactSelectionToggled,
+                            viewModel = viewModel,
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
@@ -151,13 +154,22 @@ private fun Contact(
     contactModel: ContactModel,
     isSelected: Boolean,
     setContactSelection: (ContactModel, Boolean) -> Unit,
+    viewModel: NotificationRuleEditViewModel,
     modifier: Modifier = Modifier,
 ) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        AsyncUriImage(
+            uri = contactModel.photoUri,
+            contentDescription = contactModel.name,
+            size = 40.dp,
+            viewModel = viewModel,
+            modifier = Modifier.padding(start = 8.dp),
+        )
+
         Text(
             text = contactModel.name,
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.height(24.dp).fillMaxWidth(0.8f),
+            modifier = Modifier.height(24.dp).fillMaxWidth(0.8f).padding(horizontal = 8.dp),
         )
         Button(onClick = { setContactSelection(contactModel, !isSelected) }) {
             val iconModifier = Modifier.size(18.dp)

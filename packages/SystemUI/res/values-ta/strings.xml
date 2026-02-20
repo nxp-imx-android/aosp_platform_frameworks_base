@@ -36,8 +36,10 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"திரையைத் தானாகச் சுழற்று"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="USB_DEVICE">%2$s</xliff:g>ஐ அணுக, <xliff:g id="APPLICATION">%1$s</xliff:g> ஆப்ஸை அனுமதிக்கவா?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"<xliff:g id="USB_DEVICE">%2$s</xliff:g>ஐப் பயன்படுத்த <xliff:g id="APPLICATION">%1$s</xliff:g>ஐ அனுமதிக்கவா?\nஇந்த ஆப்ஸிற்கு ரெக்கார்டு செய்வதற்கான அனுமதி வழங்கப்படவில்லை, எனினும் இந்த USB சாதனம் மூலம் ஆடியோவைப் பதிவுசெய்யும்."</string>
-    <string name="usb_audio_device_permission_prompt_title" msgid="4221351137250093451">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> சாதனத்தை அணுக <xliff:g id="APPLICATION">%1$s</xliff:g> ஆப்ஸை அனுமதிக்கவா?"</string>
-    <string name="usb_audio_device_confirm_prompt_title" msgid="8828406516732985696">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> சாதனத்தைக் கையாள <xliff:g id="APPLICATION">%1$s</xliff:g> ஆப்ஸைத் திறக்கவா?"</string>
+    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
+    <skip />
+    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
+    <skip />
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"இந்த ஆப்ஸில் ரெக்கார்டு செய்வதற்கு அனுமதி இல்லை, எனினும் இந்த USB சாதனம் மூலம் ஆடியோவைப் பதிவுசெய்யலாம். இந்தச் சாதனத்தில் <xliff:g id="APPLICATION">%1$s</xliff:g> ஆப்ஸைப் பயன்படுத்தினால் அழைப்புகள், அறிவிப்புகள், அலாரங்கள் ஆகியவற்றின் ஒலி கேட்பது தடுக்கப்படக்கூடும்."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"இந்தச் சாதனத்தில் <xliff:g id="APPLICATION">%1$s</xliff:g> ஆப்ஸைப் பயன்படுத்தினால் அழைப்புகள், அறிவிப்புகள், அலாரங்கள் ஆகியவற்றின் ஒலி கேட்பது தடுக்கப்படக்கூடும்."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g>ஐ அணுக, <xliff:g id="APPLICATION">%1$s</xliff:g> ஆப்ஸை அனுமதிக்கவா?"</string>
@@ -58,24 +60,15 @@
     <string name="usb_debugging_allow" msgid="1722643858015321328">"அனுமதி"</string>
     <string name="usb_debugging_secondary_user_title" msgid="7843050591380107998">"USB பிழைதிருத்தம் அனுமதிக்கப்படவில்லை"</string>
     <string name="usb_debugging_secondary_user_message" msgid="1888835696965417845">"தற்போது இந்தச் சாதனத்தில் உள்நுழைந்துள்ள பயனரால் USB பிழைதிருத்தத்தை இயக்க முடியாது. இந்த அம்சத்தைப் பயன்படுத்த நிர்வாகப் பயனராக உள்நுழையவும்."</string>
-    <!-- no translation found for usb_authorization_title (3332796080113535331) -->
-    <skip />
-    <!-- no translation found for usb_authorization_title_multi (1966181648363433366) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message (1107567912094941105) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi (4867596373922923637) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_untrusted (4407977362840907960) -->
-    <skip />
-    <!-- no translation found for usb_authorization_message_multi_untrusted (85055448435495205) -->
-    <skip />
-    <!-- no translation found for usb_authorization_unknown_device (1107933381080189970) -->
-    <skip />
-    <!-- no translation found for usb_authorization_allow (5517449937301874244) -->
-    <skip />
-    <!-- no translation found for usb_authorization_deny (8156333001876101456) -->
-    <skip />
+    <string name="usb_authorization_title" msgid="3332796080113535331">"USB சாதனத்தை இணைக்க அனுமதிக்கவா?"</string>
+    <string name="usb_authorization_title_multi" msgid="1966181648363433366">"USB சாதனங்களை இணைக்க அனுமதிக்கவா?"</string>
+    <string name="usb_authorization_message" msgid="1107567912094941105">"உங்கள் <xliff:g id="NAME">%1$s</xliff:g> உடன் இந்தச் சாதனம் இணைக்கப்பட்டுள்ளது:"</string>
+    <string name="usb_authorization_message_multi" msgid="4867596373922923637">"உங்கள் <xliff:g id="NAME">%1$s</xliff:g> உடன் இந்தச் சாதனங்கள் இணைக்கப்பட்டுள்ளன:"</string>
+    <string name="usb_authorization_message_untrusted" msgid="4407977362840907960">"உங்கள் <xliff:g id="NAME">%1$s</xliff:g> உடன் பின்வரும் சாதனம் இணைக்கப்பட்டுள்ளது. நீங்கள் உள்நுழைந்த பிறகுதான் இந்தச் சாதனம் நம்பகமானதாகக் கருதப்படும்."</string>
+    <string name="usb_authorization_message_multi_untrusted" msgid="85055448435495205">"உங்கள் <xliff:g id="NAME">%1$s</xliff:g> உடன் பின்வரும் சாதனங்கள் இணைக்கப்பட்டுள்ளன. நீங்கள் உள்நுழைந்த பிறகுதான் இந்தச் சாதனங்கள் நம்பகமானவையாகக் கருதப்படும்."</string>
+    <string name="usb_authorization_unknown_device" msgid="1107933381080189970">"அறியப்படாத தயாரிப்பு (<xliff:g id="VENDOR_ID">%1$04X</xliff:g>:<xliff:g id="PRODUCT_ID">%2$04X</xliff:g>)"</string>
+    <string name="usb_authorization_allow" msgid="5517449937301874244">"அனுமதி"</string>
+    <string name="usb_authorization_deny" msgid="8156333001876101456">"அனுமதிக்க வேண்டாம்"</string>
     <string name="hdmi_cec_set_menu_language_title" msgid="1259765420091503742">"சிஸ்டம் மொழியை <xliff:g id="LANGUAGE">%1$s</xliff:g> மொழிக்கு மாற்ற விரும்புகிறீர்களா?"</string>
     <string name="hdmi_cec_set_menu_language_description" msgid="8176716678074126619">"சிஸ்டம் மொழியை மாற்றும்படி வேறொரு சாதனம் கோருகிறது"</string>
     <string name="hdmi_cec_set_menu_language_accept" msgid="2513689457281009578">"மொழியை மாற்று"</string>
@@ -121,10 +114,8 @@
     <string name="screenshot_scroll_label" msgid="2930198809899329367">"கூடுதலாக படமெடு"</string>
     <string name="screenshot_dismiss_description" msgid="4702341245899508786">"ஸ்கிரீன்ஷாட்டை நிராகரிக்கும்"</string>
     <string name="screenshot_dismiss_work_profile" msgid="3101530842987697045">"பணிக் கணக்கு மெசேஜை மூடும்"</string>
-    <!-- no translation found for screenshot_open_in_folder_label (7030308792263959983) -->
-    <skip />
-    <!-- no translation found for screenshot_open_in_folder_description (2181459418652236210) -->
-    <skip />
+    <string name="screenshot_open_in_folder_label" msgid="7030308792263959983">"காட்டு"</string>
+    <string name="screenshot_open_in_folder_description" msgid="2181459418652236210">"Files ஆப்ஸில் ஸ்கிரீன்ஷாட்டைக் காட்டும் பட்டன்"</string>
     <string name="screenshot_preview_description" msgid="7606510140714080474">"ஸ்கிரீன்ஷாட்டின் மாதிரிக்காட்சி"</string>
     <string name="screenshot_top_boundary_pct" msgid="2520148599096479332">"மேல் எல்லை <xliff:g id="PERCENT">%1$d</xliff:g> சதவீதம்"</string>
     <string name="screenshot_bottom_boundary_pct" msgid="3880821519814946478">"கீழ் எல்லை <xliff:g id="PERCENT">%1$d</xliff:g> சதவீதம்"</string>
@@ -196,6 +187,8 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"ஒலியடக்கு"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"ஒலி எழுப்பு"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="DURATION">%2$s</xliff:g>"</string>
+    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
+    <skip />
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"திரையைப் படமெடுப்பதை உங்கள் IT நிர்வாகி தடுத்துள்ளார்"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"முழுத் திரையை ஸ்கிரீன்ஷாட் எடு"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"முழுத் திரையை ரெக்கார்டு செய்"</string>
@@ -208,7 +201,12 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"கீழ் வலது ஹேண்டில் - அளவை மாற்ற அம்புக்குறிகளைப் பயன்படுத்தவும்"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"கீழ் இடது ஹேண்டில் - அளவை மாற்ற அம்புக்குறிகளைப் பயன்படுத்தவும்"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"பகிர்"</string>
-    <string name="screen_share_no_select_app_thumbnail" msgid="1630012401570567430">"பகிர ஓர் ஆப்ஸைத் தேர்ந்தெடுங்கள்"</string>
+    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
+    <skip />
+    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
+    <skip />
+    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
+    <skip />
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ஆடியோவைப் பகிர்தல்"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ஆப்ஸ் சாளரத்தைப் பகிர்தல்"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"பிரிவைப் பகிர்தல்"</string>
@@ -226,11 +224,14 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"<xliff:g id="DISPLAY_NAME">%1$s</xliff:g> டிஸ்பிளேவைப் பகிர்வது நிறுத்தப்பட்டது. திரை யாருடனும் பகிரப்படவில்லை."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"மூடுவதற்கான பட்டன். பகிர்வதற்கு முன்பான உரையாடல் பெட்டியை மூட Enter பட்டனை அழுத்தவும்."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"பக்கத்தைப் பகிர்வதற்கான பட்டன். தேர்ந்தெடுக்கப்படவில்லை. பக்கத்தைப் பகிர Enter பட்டனை அழுத்தவும்."</string>
-    <string name="screen_share_a11y_tab_button_selected" msgid="4304681826101817704">"பகிர்தல் பக்கம். கிடைக்கக்கூடிய பக்கங்களுக்குச் செல்லும்."</string>
+    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
+    <skip />
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"ஆப்ஸைப் பகிரும் பட்டன். தேர்ந்தெடுக்கப்படவில்லை. ஆப்ஸைப் பகிர Enter பட்டனை அழுத்தவும்."</string>
-    <string name="screen_share_a11y_app_button_selected" msgid="6049272377472922732">"ஆப்ஸைப் பகிரும். கிடைக்கக்கூடிய ஆப்ஸுக்குச் செல்லும்."</string>
+    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
+    <skip />
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"முழுத்திரை பட்டன். தேர்ந்தெடுக்கப்படவில்லை. முழுத்திரையைப் பகிர Enter பட்டனை அழுத்தவும்."</string>
-    <string name="screen_share_a11y_fullscreen_button_selected" msgid="6706822615908429473">"முழுத்திரையைப் பகிர்கிறது. கிடைக்கக்கூடிய டிஸ்ப்ளேக்களுக்குச் செல்லும்."</string>
+    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
+    <skip />
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"பகிர் பட்டன். ஆஃப் செய்யப்பட்டுள்ளது. பகிர்வதற்கு ஆப்ஸ், பக்கம் அல்லது டிஸ்ப்ளேவைத் தேர்ந்தெடுக்கவும்."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"பகிர்தல் ஆன் செய்யப்பட்டுள்ளது. <xliff:g id="ITEM">%1$s</xliff:g> தேர்ந்தெடுக்கப்பட்டது. பகிர்வதைத் தொடங்க Enter பட்டனை அழுத்தவும்."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. தேர்ந்தெடுக்கப்படவில்லை. தேர்ந்தெடுக்க Enter பட்டனை அழுத்தவும்."</string>
@@ -247,8 +248,7 @@
     <string name="screen_capture_post_recording_shelf_share_button_a11y" msgid="2907313384921655711">"ஸ்கிரீன் ரெக்கார்டிங்கைப் பகிரும்"</string>
     <string name="screen_capture_post_recording_shelf_folder_button_a11y" msgid="4217075254383938093">"ஃபைல் நிர்வாகியில் ஸ்கிரீன் ரெக்கார்டிங்கைத் திறக்கும்"</string>
     <string name="screen_capture_post_recording_shelf_delete_button_a11y" msgid="8519897681775354217">"ஸ்கிரீன் ரெக்கார்டிங்கை நீக்கும்"</string>
-    <!-- no translation found for screen_capture_post_recording_shelf_thumbnail_a11y (4764732838982357845) -->
-    <skip />
+    <string name="screen_capture_post_recording_shelf_thumbnail_a11y" msgid="4764732838982357845">"மீடியாவைப் பார்க்கும் ஆப்ஸில் ஸ்கிரீன் ரெக்கார்டிங்கைத் திறக்கும்"</string>
     <string name="screen_capture_show_clicks_and_keys" msgid="2151690554364148717">"கிளிக்குகள் &amp; பட்டன்களைக் காட்டு"</string>
     <string name="screen_capture_device_audio" msgid="1537290197773737349">"சாதன ஆடியோ"</string>
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"மைக்ரோஃபோன்"</string>
@@ -303,7 +303,6 @@
     <string name="accessibility_unlock_button" msgid="3613812140816244310">"அன்லாக் செய்யப்பட்டுள்ளது"</string>
     <string name="accessibility_lock_icon" msgid="661492842417875775">"சாதனம் பூட்டப்பட்டுள்ளது"</string>
     <string name="accessibility_confirm_biometric_auth_to_unlock" msgid="1600162805010332470">"உறுதிசெய்து அன்லாக் செய்யலாம்"</string>
-    <string name="accessibility_retry_face_auth" msgid="3018310877303150273">"திறக்க மறுபடி முகம் காட்டலாம்"</string>
     <string name="accessibility_scanning_face" msgid="3093828357921541387">"முகத்தை ஸ்கேன் செய்கிறது"</string>
     <string name="accessibility_send_smart_reply" msgid="8885032190442015141">"அனுப்பு"</string>
     <string name="cancel" msgid="1089011503403416730">"ரத்துசெய்"</string>
@@ -316,11 +315,8 @@
     <string name="biometric_dialog_face_icon_description_authenticated" msgid="2242167416140740920">"முகம் அங்கீகரிக்கப்பட்டது"</string>
     <string name="biometric_dialog_face_icon_description_confirmed" msgid="7918067993953940778">"உறுதிப்படுத்தப்பட்டது"</string>
     <string name="biometric_dialog_tap_confirm" msgid="9166350738859143358">"முடிக்க \'உறுதிப்படுத்துக\' என்பதை தட்டவும்"</string>
-    <string name="biometric_dialog_tap_confirm_with_face" msgid="2378151312221818694">"முகத்தால் அன்லாக் செய்யப்பட்டது"</string>
-    <string name="biometric_dialog_tap_confirm_with_face_alt_1" msgid="439152621640507113">"முகம் மூலம் அன்லாக் செய்யப்பட்டது. தொடர அழுத்தவும்."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_2" msgid="8586608186457385108">"முகம் அங்கீகரிக்கப்பட்டது. தொடர அழுத்தவும்."</string>
     <string name="biometric_dialog_tap_confirm_with_face_alt_3" msgid="2192670471930606539">"முகம் அங்கீகரிக்கப்பட்டது. தொடர அன்லாக் ஐகானை அழுத்தவும்."</string>
-    <string name="biometric_dialog_tap_confirm_with_face_sfps" msgid="2499213248903257928">"முகம் கொண்டு அன்லாக் செய்யப்பட்டது. தொடர தட்டவும்."</string>
     <string name="biometric_dialog_authenticated" msgid="7337147327545272484">"அங்கீகரிக்கப்பட்டது"</string>
     <string name="biometric_dialog_cancel_authentication" msgid="981316588773442637">"அங்கீகரிப்பை ரத்துசெய்"</string>
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"கூடுதல் விருப்பங்கள்"</string>
@@ -365,11 +361,6 @@
     <string name="fingerprint_re_enroll_dialog_content" msgid="4866561176695984879">"\'கைரேகை அன்லாக்\' அம்சத்தை மீண்டும் அமைக்க, உங்களுடைய தற்போதைய கைரேகைப் படங்களும் மாடல்களும் நீக்கப்படும்.\n\nஅவை நீக்கப்பட்ட பிறகு, உங்கள் கைரேகையைப் பயன்படுத்தி மொபைலைத் திறக்கவோ நீங்கள்தான் என்பதை உறுதிப்படுத்தவோ \'கைரேகை அன்லாக்\' அம்சத்தை மீண்டும் அமைக்க வேண்டும்."</string>
     <string name="fingerprint_re_enroll_dialog_content_singular" msgid="3083663339787381218">"\'கைரேகை அன்லாக்\' அம்சத்தை மீண்டும் அமைக்க, உங்களுடைய தற்போதைய கைரேகைப் படங்களும் மாடலும் நீக்கப்படும்.\n\nஅவை நீக்கப்பட்ட பிறகு, உங்கள் கைரேகையைப் பயன்படுத்தி மொபைலைத் திறக்கவோ நீங்கள்தான் என்பதை உறுதிப்படுத்தவோ \'கைரேகை அன்லாக்\' அம்சத்தை மீண்டும் அமைக்க வேண்டும்."</string>
     <string name="fingerprint_reenroll_failure_dialog_content" msgid="4733768492747300666">"\'கைரேகை அன்லாக்\' அம்சத்தை அமைக்க முடியவில்லை. அமைப்புகளுக்குச் சென்று மீண்டும் முயலவும்."</string>
-    <string name="face_re_enroll_notification_title" msgid="1850838867718410520">"\'முகம் காட்டித் திறத்தல்\' அம்சத்தை மீண்டும் அமையுங்கள்"</string>
-    <string name="face_re_enroll_notification_name" msgid="7384545252206120659">"முகம் காட்டித் திறத்தல்"</string>
-    <string name="face_re_enroll_dialog_title" msgid="6392173708176069994">"\'முகம் காட்டித் திறத்தல்\' அம்சத்தை அமையுங்கள்"</string>
-    <string name="face_re_enroll_dialog_content" msgid="7353502359464038511">"\'முகம் காட்டித் திறத்தல்\' அம்சத்தை மீண்டும் அமைக்க, உங்களுடைய தற்போதைய முகத் தோற்றப் பதிவு நீக்கப்படும்.\n\nஉங்கள் முகத்தைப் பயன்படுத்தி மொபைலைத் திறக்க இந்த அம்சத்தை மீண்டும் அமைக்க வேண்டும்."</string>
-    <string name="face_reenroll_failure_dialog_content" msgid="7073947334397236935">"\'முகம் காட்டித் திறத்தல்\' அம்சத்தை அமைக்க முடியவில்லை. அமைப்புகளுக்குச் சென்று மீண்டும் முயலவும்."</string>
     <string name="fingerprint_dialog_touch_sensor" msgid="2817887108047658975">"கைரேகை சென்சாரைத் தொடவும்"</string>
     <string name="fingerprint_dialog_authenticated_confirmation" msgid="1603899612957562862">"தொடர, அன்லாக் ஐகானை அழுத்துங்கள்"</string>
     <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5542430577183894219">"முகத்தைக் கண்டறிய முடியவில்லை. கைரேகை பயன்படுத்துக"</string>
@@ -377,7 +368,6 @@
     <skip />
     <string name="keyguard_face_failed" msgid="2346762871330729634">"முகம் கண்டறிய முடியவில்லை"</string>
     <string name="keyguard_suggest_fingerprint" msgid="8742015961962702960">"கைரேகையை உபயோகிக்கவும்"</string>
-    <string name="keyguard_face_unlock_unavailable" msgid="1581949044193418736">"முகம் காட்டித் திறத்தல் அம்சம் கிடைக்கவில்லை"</string>
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"புளூடூத் இணைக்கப்பட்டது."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"புளூடூத் சாதன ஐகான்"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"சாதன விவரத்தை உள்ளமைக்க கிளிக் செய்யலாம்"</string>
@@ -553,6 +543,7 @@
     <string name="quick_settings_nfc_off" msgid="3465000058515424663">"NFC முடக்கப்பட்டது"</string>
     <string name="quick_settings_nfc_on" msgid="1004976611203202230">"NFC இயக்கப்பட்டது"</string>
     <string name="quick_settings_screen_record_label" msgid="8650355346742003694">"ஸ்கிரீன் ரெக்கார்டு"</string>
+    <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"திரையைப் படமெடுத்தல்"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"தொடங்கு"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"நிறுத்து"</string>
     <string name="qs_record_issue_label" msgid="8166290137285529059">"சிக்கலை ரெக்கார்டு செய்தல்"</string>
@@ -648,16 +639,10 @@
     <string name="tap_again" msgid="1315420114387908655">"மீண்டும் தட்டவும்"</string>
     <string name="keyguard_unlock" msgid="8031975796351361601">"திறப்பதற்கு மேல் நோக்கி ஸ்வைப் செய்யவும்"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"திறக்க, அன்லாக் ஐகானை அழுத்தவும்"</string>
-    <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"முகத்தால் அன்லாக் செய்யப்பட்டது திறக்க மேல்நோக்கி ஸ்வைப்செய்க"</string>
-    <string name="keyguard_face_successful_unlock_confirm_button" msgid="3862344771780817393">"முகம் மூலம் திறக்கப்பட்டது. தொடர, உறுதிசெய் என்பதை அழுத்துக."</string>
-    <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"முகம் மூலம் அன்லாக் செய்யப்பட்டது. திறக்க, அன்லாக் ஐகானை அழுத்துக."</string>
-    <string name="keyguard_face_successful_unlock_press_alt_1" msgid="5715461103913071474">"முகம் மூலம் அன்லாக் செய்யப்பட்டது. திறக்க அழுத்தவும்."</string>
     <string name="keyguard_face_successful_unlock_press_alt_2" msgid="8310787946357120406">"முகம் அங்கீகரிக்கப்பட்டது. திறக்க அழுத்தவும்."</string>
     <string name="keyguard_face_successful_unlock_press_alt_3" msgid="7219030481255573962">"முகம் அங்கீகரிக்கப்பட்டது. திறக்க அன்லாக் ஐகானை அழுத்தவும்."</string>
-    <string name="keyguard_face_successful_unlock" msgid="4203999851465708287">"முகத்தால் அன்லாக் செய்யப்பட்டது"</string>
     <string name="keyguard_face_successful_unlock_alt1" msgid="5853906076353839628">"முகம் அங்கீகரிக்கப்பட்டது"</string>
     <string name="keyguard_retry" msgid="886802522584053523">"மீண்டும் முயல மேல்நோக்கி ஸ்வைப் செய்யவும்"</string>
-    <string name="accesssibility_keyguard_retry" msgid="8880238862712870676">"முகம் காட்டித் திறத்தலை மீண்டும் முயல மேலே ஸ்வைப் செய்யவும்"</string>
     <string name="require_unlock_for_nfc" msgid="1305686454823018831">"NFCயைப் பயன்படுத்த அன்லாக் செய்யவும்"</string>
     <string name="do_disclosure_generic" msgid="4896482821974707167">"இந்த சாதனம் உங்கள் நிறுவனத்துக்கு சொந்தமானது"</string>
     <string name="do_disclosure_with_name" msgid="2091641464065004091">"இந்த சாதனம் <xliff:g id="ORGANIZATION_NAME">%s</xliff:g> நிறுவனத்துக்கு சொந்தமானது"</string>
@@ -1263,10 +1248,16 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"மாற்றுத்திறன் வசதிக்கான பட்டன்"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"மாற்றுத்திறன் அம்சங்களைப் பயன்படுத்தத் தொடங்க, மாற்றுத்திறன் வசதிக்கான பட்டனை அழுத்தலாம்."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"அம்சங்களைச் சேர்"</string>
+    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
+    <skip />
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> ஐ அமையுங்கள்"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"முடிந்தது"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"அம்சத்தைத் தேர்ந்தெடுங்கள்"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"திருத்து"</string>
+    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
+    <skip />
+    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
+    <skip />
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"மாற்றுத்திறன் வசதி"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"லாக் ஸ்கிரீன்"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ஷட் டவுன் ஆகிறது…"</string>
@@ -1579,7 +1570,7 @@
     <string name="see_all_networks" msgid="3773666844913168122">"அனைத்தையும் காட்டு"</string>
     <string name="to_switch_networks_disconnect_ethernet" msgid="6698111101156951955">"நெட்வொர்க்குகளை மாற்ற ஈதர்நெட் இணைப்பைத் துண்டிக்கவும்"</string>
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"சாதன அனுபவத்தை மேம்படுத்த, வைஃபை ஆஃப் செய்யப்பட்டிருந்தாலும்கூட எந்த நேரத்திலும் ஆப்ஸும் சேவைகளும் வைஃபை நெட்வொர்க்குகளைத் தேடலாம். வைஃபை ஸ்கேனிங் அமைப்புகளில் இதை மாற்றிக் கொள்ளலாம். "<annotation id="link">"மாற்று"</annotation></string>
-    <string name="turn_off_airplane_mode" msgid="8425587763226548579">"விமானப் பயன்முறையை முடக்கும்"</string>
+    <string name="turn_off_airplane_mode" msgid="8425587763226548579">"விமான மோடை ஆஃப் செய்"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"விரைவு அமைப்புகளில் பின்வரும் கட்டத்தைச் சேர்க்க <xliff:g id="APPNAME">%1$s</xliff:g> ஆப்ஸ் விரும்புகிறது"</string>
     <string name="qs_tile_request_dialog_text_with_size" msgid="732578771040573291">"விரைவு அமைப்புகளில் கட்டத்தைச் சேர்க்க <xliff:g id="APPNAME">%1$s</xliff:g> ஆப்ஸ் விரும்புகிறது. தொடர்வதற்கு, கட்டத்தின் அளவைத் தேர்ந்தெடுக்கவும்."</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"கட்டத்தைச் சேர்"</string>
@@ -1876,6 +1867,8 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d எஃபெக்ட்டுகள்"</string>
     <string name="av_blur" msgid="405131343487260171">"மங்கலாக்கு"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"உடனடி சப்டைட்டில்கள்"</string>
+    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
+    <skip />
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"பேட்டரி %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"இடதுபுற பேட்டரி %1$s    வலதுபுற பேட்டரி %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"இடதுபுற பேட்டரி %1$s"</string>

@@ -3019,8 +3019,10 @@ public final class ViewRootImpl implements ViewParent,
         if (mAttachInfo.mThreadedRenderer != null) {
             mAttachInfo.mThreadedRenderer.updateRenderTargetSize(mSurfaceSize.x, mSurfaceSize.y);
         }
-        // TODO(b/483110996): Avoid calling this when using IPC rendering.
-        updateBlastSurfaceIfNeeded();
+
+        if (!mIpcRenderingEnabled) {
+            updateBlastSurfaceIfNeeded();
+        }
 
         mRenderTargetIsValid = true;
     }
@@ -6023,7 +6025,7 @@ public final class ViewRootImpl implements ViewParent,
     private boolean draw(boolean fullRedrawNeeded, @Nullable SurfaceSyncGroup activeSyncGroup,
             boolean syncBuffer) {
         Surface surface = mSurface;
-        if (!surface.isValid()) {
+        if (!mRenderTargetIsValid) {
             return false;
         }
 

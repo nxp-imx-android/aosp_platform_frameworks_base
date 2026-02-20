@@ -17,14 +17,17 @@
 package com.android.systemui.dreams.ui.viewmodel
 
 import android.content.Intent
+import android.content.res.mainResources
 import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.contextualSetupRepository
 import com.android.systemui.communal.data.repository.SetupState
 import com.android.systemui.communal.domain.definition.UprightChargingSetupDefinition
 import com.android.systemui.communal.fake
+import com.android.systemui.dreams.ui.metrics.DreamSetupUiEvent
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceUntilIdle
 import com.android.systemui.kosmos.collectLastValue
@@ -56,7 +59,16 @@ import org.mockito.kotlin.argThat
 @RunWith(AndroidJUnit4::class)
 class DreamSetupViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val Kosmos.underTest by Kosmos.Fixture { dreamSetupViewModel }
+    private val fakeUiEventLogger = UiEventLoggerFake()
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            DreamSetupViewModel(
+                activityStarter,
+                contextualSetupRepository,
+                mainResources,
+                fakeUiEventLogger,
+            )
+        }
     private val Kosmos.repository by Kosmos.Fixture { contextualSetupRepository.fake }
     private val Kosmos.starter by Kosmos.Fixture { activityStarter }
 
@@ -86,11 +98,15 @@ class DreamSetupViewModelTest : SysuiTestCase() {
             underTest.onEvent(DreamSetupEvent.Dismiss)
             advanceUntilIdle()
             assertThat(state).isEqualTo(SetupState.NotStarted)
+            assertThat(fakeUiEventLogger.eventId(0))
+                .isEqualTo(DreamSetupUiEvent.DREAM_SETUP_DISMISSED.id)
 
             // 2nd Dismiss - should trigger permanent dismissal (max count is 2)
             underTest.onEvent(DreamSetupEvent.Dismiss)
             advanceUntilIdle()
             assertThat(state).isEqualTo(SetupState.Dismissed)
+            assertThat(fakeUiEventLogger.eventId(1))
+                .isEqualTo(DreamSetupUiEvent.DREAM_SETUP_DISMISSED.id)
 
             verify(starter, never()).postStartActivityDismissingKeyguard(any(), any(), any())
         }
@@ -108,8 +124,12 @@ class DreamSetupViewModelTest : SysuiTestCase() {
             assertThat(state).isInstanceOf(SetupState.Snoozed::class.java)
             val snoozed = state as SetupState.Snoozed
             val expectedDuration = 14.days.inWholeMilliseconds
-            assertThat(snoozed.expirationTimeMillis).isAtLeast(now + expectedDuration)
-            assertThat(snoozed.expirationTimeMillis).isAtMost(now + expectedDuration + 5000)
+            assertThat(snoozed.expirationTime.toEpochMilli()).isAtLeast(now + expectedDuration)
+            assertThat(snoozed.expirationTime.toEpochMilli())
+                .isAtMost(now + expectedDuration + 5000)
+
+            assertThat(fakeUiEventLogger.eventId(0))
+                .isEqualTo(DreamSetupUiEvent.DREAM_SETUP_SNOOZED.id)
 
             verify(starter, never()).postStartActivityDismissingKeyguard(any(), any(), any())
         }
@@ -122,6 +142,9 @@ class DreamSetupViewModelTest : SysuiTestCase() {
 
             underTest.onEvent(DreamSetupEvent.SetUp)
             advanceUntilIdle()
+
+            assertThat(fakeUiEventLogger.eventId(0))
+                .isEqualTo(DreamSetupUiEvent.DREAM_SETUP_TRIGGERED.id)
 
             verify(starter)
                 .postStartActivityDismissingKeyguard(

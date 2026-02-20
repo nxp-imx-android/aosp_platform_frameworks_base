@@ -94,6 +94,13 @@ java_genrule {
 }
 
 genrule {
+    name: "statslog-privatecompute-java-gen",
+    tools: ["stats-log-api-gen"],
+    cmd: "$(location stats-log-api-gen) --java $(out) --module privatecompute --javaPackage com.android.os.privatecompute --javaClass PrivateComputeAtomsLog",
+    out: ["com/android/os/privatecompute/PrivateComputeAtomsLog.java"],
+}
+
+genrule {
     name: "statslog-art-java-gen",
     tools: ["stats-log-api-gen"],
     cmd: "$(location stats-log-api-gen) --java $(out) --module art" +
@@ -133,6 +140,7 @@ java_library_static {
         ":statslog-art-java-gen",
         ":statslog-contexthub-java-gen",
         ":statslog-mediarouter-java-gen",
+        ":statslog-privatecompute-java-gen",
         ":services.core-aidl-sources",
         ":services.core-sources",
         ":services.core.protologsrc",

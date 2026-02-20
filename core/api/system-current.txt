@@ -336,6 +336,13 @@ package android {
     field @FlaggedApi("com.android.nfc.module.flags.tap_to_x") public static final String PERFORM_GESTURE_EXCHANGE = "android.permission.PERFORM_GESTURE_EXCHANGE";
     field public static final String PERFORM_IMS_SINGLE_REGISTRATION = "android.permission.PERFORM_IMS_SINGLE_REGISTRATION";
     field public static final String PERFORM_SIM_ACTIVATION = "android.permission.PERFORM_SIM_ACTIVATION";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE = "android.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_PUBLISH_HINTS = "android.permission.PERSONAL_CONTEXT_PUBLISH_HINTS";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_PUBLISH_INSIGHTS = "android.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_READ_SETTINGS = "android.permission.PERSONAL_CONTEXT_READ_SETTINGS";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_RECEIVE_HINTS = "android.permission.PERSONAL_CONTEXT_RECEIVE_HINTS";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_RECEIVE_INSIGHTS = "android.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS";
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final String PERSONAL_CONTEXT_WRITE_SETTINGS = "android.permission.PERSONAL_CONTEXT_WRITE_SETTINGS";
     field @FlaggedApi("android.app.bridged_notifications") public static final String POST_BRIDGED_NOTIFICATIONS = "android.permission.POST_BRIDGED_NOTIFICATIONS";
     field public static final String POWER_SAVER = "android.permission.POWER_SAVER";
     field @FlaggedApi("android.permission.flags.factory_reset_prep_permission_apis") public static final String PREPARE_FACTORY_RESET = "android.permission.PREPARE_FACTORY_RESET";
@@ -1632,8 +1639,8 @@ package android.app.admin {
     field public static final String ACTION_PROVISION_FINALIZATION = "android.app.action.PROVISION_FINALIZATION";
     field public static final String ACTION_PROVISION_FINANCED_DEVICE = "android.app.action.PROVISION_FINANCED_DEVICE";
     field public static final String ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE = "android.app.action.PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE";
-    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final String ACTION_PROVISION_MULTI_USER_DEVICE = "android.app.admin.action.PROVISION_MULTI_USER_DEVICE";
-    field @FlaggedApi("android.app.admin.flags.multi_user_management_user_provisioning") public static final String ACTION_PROVISION_MULTI_USER_MANAGED_USER = "android.app.admin.action.PROVISION_MULTI_USER_MANAGED_USER";
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final String ACTION_PROVISION_MULTIUSER_MANAGED_DEVICE = "android.app.admin.action.PROVISION_MULTIUSER_MANAGED_DEVICE";
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_user_provisioning") public static final String ACTION_PROVISION_MULTIUSER_MANAGED_USER = "android.app.admin.action.PROVISION_MULTIUSER_MANAGED_USER";
     field @RequiresPermission(android.Manifest.permission.MANAGE_FACTORY_RESET_PROTECTION) public static final String ACTION_RESET_PROTECTION_POLICY_CHANGED = "android.app.action.RESET_PROTECTION_POLICY_CHANGED";
     field @RequiresPermission(android.Manifest.permission.LAUNCH_DEVICE_MANAGER_SETUP) public static final String ACTION_ROLE_HOLDER_PROVISION_FINALIZATION = "android.app.action.ROLE_HOLDER_PROVISION_FINALIZATION";
     field @RequiresPermission(android.Manifest.permission.LAUNCH_DEVICE_MANAGER_SETUP) public static final String ACTION_ROLE_HOLDER_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE = "android.app.action.ROLE_HOLDER_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE";
@@ -1681,6 +1688,7 @@ package android.app.admin {
     field public static final String REQUIRED_APP_MANAGED_PROFILE = "android.app.REQUIRED_APP_MANAGED_PROFILE";
     field public static final String REQUIRED_APP_MANAGED_USER = "android.app.REQUIRED_APP_MANAGED_USER";
     field public static final int RESULT_DEVICE_OWNER_SET = 123; // 0x7b
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int RESULT_MULTIUSER_MANAGED_DEVICE_PROVISIONED = 124; // 0x7c
     field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int RESULT_MULTI_USER_DEVICE_PROVISIONED = 124; // 0x7c
     field public static final int RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_PROVISIONING_DISABLED = 3; // 0x3
     field public static final int RESULT_UPDATE_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_RECOVERABLE_ERROR = 1; // 0x1
@@ -1702,7 +1710,7 @@ package android.app.admin {
     field public static final int STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED = 16; // 0x10
     field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED = 19; // 0x13
     field public static final int STATUS_MANAGED_USERS_NOT_SUPPORTED = 9; // 0x9
-    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int STATUS_MULTI_USER_MANAGEMENT_NOT_SUPPORTED = 23; // 0x17
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int STATUS_MULTIUSER_MANAGEMENT_NOT_SUPPORTED = 23; // 0x17
     field public static final int STATUS_NONSYSTEM_USER_EXISTS = 5; // 0x5
     field @FlaggedApi("android.app.admin.flags.secure_adb_role_bypassing") public static final int STATUS_NON_DEFAULT_DEVICE_POLICY_MANAGEMENT_ROLE_HOLDER_EXISTS = 23; // 0x17
     field @FlaggedApi("android.app.admin.flags.multi_user_management_user_provisioning") public static final int STATUS_NOT_FULL_USER = 21; // 0x15
@@ -15050,13 +15058,14 @@ package android.service.persistentdata {
 package android.service.personalcontext {
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PersonalContextManager {
-    method public boolean isEnabled();
+    method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_READ_SETTINGS) public boolean isEnabled();
     method @RequiresPermission(android.Manifest.permission.QUERY_ALL_PACKAGES) public boolean isPersonalContextModeEnabled(@NonNull String);
     method @NonNull public android.service.personalcontext.Token mintToken();
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>);
     method public void publishTriggeringHint(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @Nullable java.util.List<android.service.personalcontext.RenderToken>, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
-    method public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
-    method public void setEnabled(boolean);
+    method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS) public void publishTriggeringHint(@NonNull android.service.personalcontext.insight.interaction.ReturnHintReport, @NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
+    method public void reportInsightEvent(@NonNull android.service.personalcontext.insight.PublishedContextInsight, int, @NonNull android.service.personalcontext.RenderToken);
+    method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_WRITE_SETTINGS) public void setEnabled(boolean);
     method @RequiresPermission(android.Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE) public void setPersonalContextModeEnabled(@NonNull String, boolean);
     method public void showAttribution(@NonNull android.service.personalcontext.insight.ContextInsight);
     method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature signHint(@NonNull android.service.personalcontext.hint.ContextHint, @Nullable java.util.List<android.service.personalcontext.hint.ContextHint>);
@@ -15104,7 +15113,7 @@ package android.service.personalcontext.embedded {
     method @StyleRes public int getThemeResourceId();
     method public boolean isNestedScrollAxisLocked();
     method public void publishHints(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHint>);
-    method public void register(@Nullable java.util.concurrent.Executor, @NonNull android.service.personalcontext.embedded.InsightSurfaceClient.ClientCallback);
+    method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_HOST_INSIGHT_SURFACE) public void register(@Nullable java.util.concurrent.Executor, @NonNull android.service.personalcontext.embedded.InsightSurfaceClient.ClientCallback);
     method public boolean shouldBlur();
     method public void unregister();
   }
@@ -15208,6 +15217,7 @@ package android.service.personalcontext.embedded {
     method public abstract void onClientDisconnected(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method public boolean onClientUpdated(@NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
     method @Nullable public abstract android.view.View onCreateEmbeddedView(@NonNull android.content.Context, @NonNull android.service.personalcontext.insight.PublishedContextInsight, @Nullable android.service.personalcontext.RenderToken, @NonNull android.service.personalcontext.embedded.InsightSurfaceClientInfo);
+    method public final void setExecutor(@NonNull java.util.concurrent.Executor);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.embedded.InsightSurfaceVisualizerService";
   }
 
@@ -15325,28 +15335,25 @@ package android.service.personalcontext.hint {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public abstract class ContentCaptureConversationEvent {
     method @NonNull public java.time.Instant getClientEventTimestamp();
     method @NonNull public String getConversationSessionId();
+    method @NonNull public java.time.Instant getTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationEnterEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
     ctor public ContentCaptureConversationEvent.ConversationEnterEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
-    method @NonNull public java.time.Instant getTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationExitEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
     ctor public ContentCaptureConversationEvent.ConversationExitEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant);
-    method @NonNull public java.time.Instant getTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationProcessingEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
     ctor public ContentCaptureConversationEvent.ConversationProcessingEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant, @NonNull android.view.autofill.AutofillId);
     method @NonNull public android.view.autofill.AutofillId getMessageAutofillId();
-    method @NonNull public java.time.Instant getStartProcessingTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class ContentCaptureConversationEvent.ConversationUpdateEvent extends android.service.personalcontext.hint.ContentCaptureConversationEvent {
     ctor public ContentCaptureConversationEvent.ConversationUpdateEvent(@NonNull String, @NonNull java.time.Instant, @NonNull java.time.Instant, @NonNull android.service.personalcontext.hint.ConversationData);
     method @NonNull public android.service.personalcontext.hint.ConversationData getConversationData();
-    method @NonNull public java.time.Instant getConversationUpdateTimestamp();
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContentCaptureConversationHint extends android.service.personalcontext.hint.ContextHint {
@@ -15614,9 +15621,9 @@ package android.service.personalcontext.insight {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightActionDetails implements android.os.Parcelable {
-    method @Nullable public android.content.Intent createActionIntent();
     method public int describeContents();
     method public int getActionTypes();
+    method @Nullable public android.content.Intent getIntent();
     method @Nullable public android.app.RemoteAction getRemoteAction();
     method public boolean hasActionType(int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -15681,7 +15688,6 @@ package android.service.personalcontext.insight {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PublishedContextInsight {
     method @NonNull public android.service.personalcontext.insight.ContextInsight getInsight();
     method @NonNull public java.util.UUID getPublisherComponentId();
-    method public void reportEvent(@NonNull android.content.Context, int, @NonNull android.service.personalcontext.RenderToken, @Nullable android.os.Bundle);
   }
 
 }
@@ -15710,7 +15716,6 @@ package android.service.personalcontext.insight.interaction {
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class InsightEvent implements android.os.Parcelable {
     method public int describeContents();
     method public int getEventType();
-    method @NonNull public android.os.Bundle getExtras();
     method @NonNull public android.service.personalcontext.insight.PublishedContextInsight getInsight();
     method @NonNull public android.service.personalcontext.RenderToken getRenderToken();
     method public long getTimestamp();
@@ -15742,7 +15747,8 @@ package android.service.personalcontext.refiner {
     method @Nullable public final android.os.IBinder onBind(@Nullable android.content.Intent);
     method public void onConnected();
     method @NonNull public abstract android.service.personalcontext.hint.HintFilter onInitializeFilter();
-    method public abstract void onRefine(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>, @NonNull java.util.function.Consumer<java.util.List<android.service.personalcontext.hint.ContextHint>>);
+    method @NonNull public abstract java.util.List<android.service.personalcontext.hint.ContextHint> onRefine(@NonNull java.util.List<android.service.personalcontext.hint.ContextHint>);
+    method public final void setExecutor(@NonNull java.util.concurrent.Executor);
   }
 
 }
@@ -15757,6 +15763,7 @@ package android.service.personalcontext.renderer {
     method public void onConnected();
     method @NonNull public abstract android.service.personalcontext.insight.InsightFilter onInitializeFilter();
     method public abstract void onRender(@NonNull android.service.personalcontext.insight.PublishedContextInsight, @NonNull android.service.personalcontext.RenderToken);
+    method public final void setExecutor(@NonNull java.util.concurrent.Executor);
     field public static final String SERVICE_INTERFACE = "android.service.personalcontext.renderer.InsightRendererService";
   }
 
@@ -15771,8 +15778,9 @@ package android.service.personalcontext.understander {
     method public void onHandleEvent(@NonNull String, @NonNull android.service.personalcontext.insight.interaction.InsightEvent);
     method public void onHandleUserFeedback(@NonNull android.service.personalcontext.insight.PublishedContextInsight, @NonNull android.os.Bundle);
     method @NonNull public abstract android.service.personalcontext.hint.HintFilter onInitializeFilter();
-    method public abstract void onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
-    method public final void understood(@NonNull android.service.personalcontext.insight.ContextInsight);
+    method @NonNull @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS) public abstract java.util.List<android.service.personalcontext.insight.ContextInsight> onUnderstand(@NonNull java.util.List<android.service.personalcontext.hint.ContextHintWithSignature>);
+    method public final void setExecutor(@NonNull java.util.concurrent.Executor);
+    method @RequiresPermission(android.Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS) public final void understood(@NonNull android.service.personalcontext.insight.ContextInsight);
   }
 
 }

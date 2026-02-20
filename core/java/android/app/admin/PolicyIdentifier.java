@@ -32,11 +32,11 @@ import static android.processor.devicepolicy.AllowedDpcTypes.DISALLOWED;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
-import android.annotation.TestApi;
 import android.content.Intent;
 import android.os.UserManager;
 import android.processor.devicepolicy.AllowedDpcTypes;
 import android.processor.devicepolicy.EnumPolicyDefinition;
+import android.processor.devicepolicy.EnumResolutionMechanism;
 import android.processor.devicepolicy.PolicyDefinition;
 import android.processor.devicepolicy.StringPolicyDefinition;
 
@@ -70,7 +70,6 @@ public final class PolicyIdentifier<T> {
      *
      * @hide
      */
-    @TestApi
     public PolicyIdentifier(@NonNull String id) {
         this.mId = id;
     }
@@ -82,7 +81,6 @@ public final class PolicyIdentifier<T> {
      * @hide
      */
     @NonNull
-    @TestApi
     public String getId() {
         return mId;
     }
@@ -160,7 +158,8 @@ public final class PolicyIdentifier<T> {
                                             profileOwnerOnUser0 = ALLOWED,
                                             affiliatedFullUserProfileOwner = ALLOWED)),
             intDef = ScreenCaptureValue.class,
-            defaultValue = SCREEN_CAPTURE_ALLOWED)
+            defaultValue = SCREEN_CAPTURE_ALLOWED,
+            resolutionMechanism = @EnumResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Integer> SCREEN_CAPTURE =
             new PolicyIdentifier<>("SCREEN_CAPTURE");
 
@@ -215,9 +214,7 @@ public final class PolicyIdentifier<T> {
             })
     public @interface AutoTimeValue {}
 
-    /**
-     * Policy that controls whether the time is automatically obtained from the network or not.
-     */
+    /** Policy that controls whether the time is automatically obtained from the network or not. */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
     @NonNull
     @EnumPolicyDefinition(
@@ -235,25 +232,26 @@ public final class PolicyIdentifier<T> {
                                             unaffiliatedFullUserProfileOwner = DISALLOWED,
                                             profileOwnerOnUser0 = ALLOWED)),
             intDef = AutoTimeValue.class,
-            defaultValue = AUTO_TIME_USER_CHOICE)
+            defaultValue = AUTO_TIME_USER_CHOICE,
+            resolutionMechanism = @EnumResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Integer> AUTO_TIME = new PolicyIdentifier<>("AUTO_TIME");
 
     /**
      * Policy that sets a custom message to be shown on the lock screen. This message is displayed
      * on the device screen when locked, and is useful for a lost or stolen device.
-     * <p>
-     * The message set using this method overrides any owner information manually set by the user
+     *
+     * <p>The message set using this method overrides any owner information manually set by the user
      * and prevents the user from further changing it.
-     * <p>
-     * If the message is {@code null} then the device owner info is cleared and the user
-     * owner info is shown on the lock screen if it is set.
-     * <p>
-     * If the message contains only whitespaces then the message on the lock screen will be blank
+     *
+     * <p>If the message is {@code null} then the device owner info is cleared and the user owner
+     * info is shown on the lock screen if it is set.
+     *
+     * <p>If the message contains only whitespaces then the message on the lock screen will be blank
      * and the user will not be allowed to change it.
-     * <p>
-     * If the message needs to be localized, it is the responsibility of the
-     * {@link DeviceAdminReceiver} to listen to the {@link Intent#ACTION_LOCALE_CHANGED} broadcast
-     * and set a new version of this string accordingly.
+     *
+     * <p>If the message needs to be localized, it is the responsibility of the {@link
+     * DeviceAdminReceiver} to listen to the {@link Intent#ACTION_LOCALE_CHANGED} broadcast and set
+     * a new version of this string accordingly.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING)
     @NonNull
@@ -265,11 +263,11 @@ public final class PolicyIdentifier<T> {
                             requiredPermission = MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE,
                             requiredCrossUserPermission = MANAGE_DEVICE_POLICY_ACROSS_USERS,
                             allowedDpcTypes =
-                            @AllowedDpcTypes(
-                                    deviceOwner = ALLOWED,
-                                    managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
-                                    managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
-                                    unaffiliatedFullUserProfileOwner = DISALLOWED)),
+                                    @AllowedDpcTypes(
+                                            deviceOwner = ALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)),
             emptyStringAllowed = false)
     public static final PolicyIdentifier<String> LOCKSCREEN_MESSAGE =
             new PolicyIdentifier<>("LOCKSCREEN_MESSAGE");

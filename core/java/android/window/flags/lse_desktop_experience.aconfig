@@ -116,16 +116,6 @@ flag {
 }
 
 flag {
-    name: "disable_desk_switch_wallpaper_offsets"
-    namespace: "lse_desktop_experience"
-    description: "Disables wallpaper offsets when switching between desks"
-    bug: "447196823"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "disable_display_force_freeform_on_pc"
     namespace: "lse_desktop_experience"
     description: "Prevents a display from being forced to freeform solely due to it being on PC."
@@ -781,16 +771,6 @@ flag {
 }
 
 flag {
-    name: "enable_mirror_display_no_activity"
-    namespace: "lse_desktop_experience"
-    description: "Prevent activity being launched on a mirroring display."
-    bug: "417098352"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_multi_display_split"
     namespace: "lse_desktop_experience"
     description: "Enables split screen on multiple displays at the same time"
@@ -1110,6 +1090,16 @@ flag {
   description: "Allow app developers to opt out from OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS"
   bug: "472448413"
   is_exported: true
+}
+
+flag {
+    name: "fix_wallpaper_dim_issues_26q2"
+    namespace: "lse_desktop_experience"
+    description: "Fixes the issues around wallpaper dimming in 26Q2."
+    bug: "482102679"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

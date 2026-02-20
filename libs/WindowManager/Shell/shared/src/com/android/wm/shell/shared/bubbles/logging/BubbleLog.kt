@@ -113,6 +113,7 @@ object BubbleLog {
     }
 
     @JvmStatic
+    @JvmOverloads
     fun dump(pw: PrintWriter, prefix: String = "") {
         bubbleEventHistoryLogger.dump(pw, prefix)
     }

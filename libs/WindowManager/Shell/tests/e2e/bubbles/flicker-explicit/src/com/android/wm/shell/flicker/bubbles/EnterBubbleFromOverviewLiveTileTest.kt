@@ -20,6 +20,7 @@ import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.NavBar
 import android.tools.device.apphelpers.CalculatorAppHelper
+import android.tools.traces.component.ComponentNameMatcher.Companion.TASK_BAR
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils.testSetupRule
@@ -30,6 +31,7 @@ import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.RunOncePerParameterRule
 import com.android.wm.shell.flicker.utils.SplitScreenUtils
 import org.junit.FixMethodOrder
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runners.MethodSorters
@@ -110,10 +112,21 @@ class EnterBubbleFromOverviewLiveTileTest : BubbleFlickerTestBase(), EnterBubble
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
-    @Test
-    override fun appLayerBecomesVisible() {
-        // TODO(b/483519862): live-tile to bubble animation needs to be fixed
+    override fun focusChanges() {
+        eventLogSubject.focusChanges(
+            testApp.toWindowName(), // LOST, test starts with app running in live tile
+            TASK_BAR.toWindowName(), // GAINED, open taskbar app menu
+            testApp.toWindowName(), // GAINED, open as bubble
+        )
     }
+
+    @Ignore("The app is running in live-tile mode in overview, so it starts in visible state")
+    @Test
+    override fun appLayerBecomesVisible() {}
+
+    @Ignore("The app is running in live-tile mode in overview, so it starts in visible state")
+    @Test
+    override fun appWindowBecomesVisible() {}
 
     @Test
     override fun appLayerMoveInSingleDirection() {
@@ -122,16 +135,6 @@ class EnterBubbleFromOverviewLiveTileTest : BubbleFlickerTestBase(), EnterBubble
 
     @Test
     override fun appLayerResizeConsistently() {
-        // TODO(b/483519862): live-tile to bubble animation needs to be fixed
-    }
-
-    @Test
-    override fun appWindowBecomesVisible() {
-        // TODO(b/483519862): live-tile to bubble animation needs to be fixed
-    }
-
-    @Test
-    override fun focusChanges() {
         // TODO(b/483519862): live-tile to bubble animation needs to be fixed
     }
 

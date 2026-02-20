@@ -20,8 +20,8 @@ import androidx.compose.animation.core.tween
 import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.systemui.notifications.ui.composable.Notifications
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.qs.shared.ui.QuickSettings
+import com.android.systemui.shade.ui.composable.Shade
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -32,20 +32,18 @@ fun TransitionBuilder.quickSettingsToAlwaysOnDisplayTransition() {
     sharedElement(Notifications.Elements.StackPlaceholder, enabled = false)
 
     // Fade out the Quick Settings elements first.
-    fractionRange(end = 0.4f) {
+    fractionRange(end = 0.15f) {
         fade(ShadeHeader.Elements.ExpandedContent)
         fade(ShadeHeader.Elements.Clock)
         fade(ShadeHeader.Elements.ShadeCarrierGroup)
         fade(QuickSettings.Elements.BrightnessSlider)
         fade(QuickSettings.Elements.QuickSettingsContent)
+        fade(QuickSettings.Elements.FooterActions)
         fade(Notifications.Elements.HeadsUpNotificationPlaceholder)
+        fade(Shade.Elements.BackgroundScrim)
     }
 
-    // Once the screen is black, fade in the AOD elements.
-    fractionRange(start = 0.58f) {
-        fade(LockscreenElementKeys.Region.Clock.Small)
-        fade(LockscreenElementKeys.Region.Clock.Large)
-    }
+    goneToAodEnterFromTop()
 }
 
-private val DefaultDuration = 500.milliseconds
+private val DefaultDuration = 1100.milliseconds

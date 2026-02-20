@@ -86,4 +86,10 @@ class DreamServiceDelegateImplTest : SysuiTestCase() {
         underTest.onWakeUp()
         verify(dreamService).onWakeUp()
     }
+
+    @Test
+    fun testFinish() {
+        underTest.finish()
+        verify(dreamService).finish()
+    }
 }

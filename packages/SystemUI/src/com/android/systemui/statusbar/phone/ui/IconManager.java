@@ -33,7 +33,6 @@ import androidx.collection.MutableIntObjectMap;
 
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.internal.statusbar.StatusBarIcon.Shape;
-import com.android.systemui.Flags;
 import com.android.systemui.demomode.DemoModeCommandReceiver;
 
 import com.android.systemui.kairos.KairosNetwork;
@@ -394,9 +393,6 @@ public class IconManager implements DemoModeCommandReceiver {
 
     /** Updates the layout params for an icon view. */
     public void reloadIconLayoutParams(int viewIndex, StatusBarIconHolder holder) {
-        if (!Flags.fixShadeHeaderWrongDndIconSize()) {
-            return;
-        }
         reloadDimens();
         if (holder.getIcon() != null) {
             View view = mGroup.getChildAt(viewIndex);

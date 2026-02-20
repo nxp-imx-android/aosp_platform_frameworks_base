@@ -65,6 +65,7 @@ class EnumPolicyHandlerTest {
                 /*requiredPermission=*/ "testPermission",
                 /*requiredCrossUserPermission=*/ "testCrossUserPermission",
                 /*allowedDpcTypes=*/ setOf(),
+                /*resolutionMechanism=*/ null,
                 /*allowedValues=*/ setOf(VALUE_1, VALUE_2),
             )
         val anyTransportValue: PolicyValueTransport = PolicyValueTransport.integerField(VALUE_1)
@@ -96,6 +97,7 @@ class EnumPolicyHandlerTest {
             requiredPermission ?: source.requiredPermission,
             requiredCrossUserPermission ?: source.requiredCrossUserPermission,
             allowedDpcTypes ?: source.allowedDpcTypes,
+            source.resolutionMechanism,
             allowedValues ?: source.allowedValues,
         )
 

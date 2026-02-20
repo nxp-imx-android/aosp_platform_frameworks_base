@@ -18,6 +18,9 @@ package android.processor.devicepolicy
 
 import android.processor.devicepolicy.protos.FullyQualifiedFieldName
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue as EnumValueProto
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata.ResolutionMechanism as EnumResolutionMechanismProto
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.EnumPolicyMetadata.ResolutionMechanism.MostRestrictive as MostRestrictiveProto
 import com.sun.source.tree.IdentifierTree
 import com.sun.source.tree.MemberSelectTree
 import com.sun.source.tree.NewArrayTree
@@ -42,6 +45,7 @@ import javax.lang.model.type.TypeMirror
  * <li> The default value. </li>
  * <li> The documentation for the enumeration. </li>
  * <li> All enumeration entries with value, name and documentation. </li>
+ * <li> The conflict resolution mechanism . </li>
  * </ul>
  *
  * We will use the following example to illustrate what we are doing: {@snippet : class ExampleClass
@@ -132,6 +136,9 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
         // In the class-level example above, these would be ENUM_ENTRY_1 and ENUM_ENTRY_2.
         val entries = getIntDefIdentifiers(annotationMirror, intDefElement)
 
+        val resolutionMechanism =
+            getResolutionMechanism(enumPolicyAnnotation.resolutionMechanism, entries, element)
+
         val metadata =
             TypeSpecificPolicyMetadata.newBuilder()
                 .setEnumMetadata(
@@ -140,6 +147,7 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
                         .setIntDefName(enumName)
                         .setDocumentation(enumDoc)
                         .addAllValues(entries)
+                        .setResolutionMechanism(resolutionMechanism)
                         .build()
                 )
                 .build()
@@ -174,7 +182,7 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
     private fun getIntDefIdentifiers(
         annotationMirror: AnnotationMirror,
         intDefElement: TypeElement,
-    ): List<TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue> {
+    ): List<EnumValueProto> {
         val annotationValue: AnnotationValue =
             annotationMirror.elementValues.firstValue { key ->
                 key.simpleName.contentEquals("value")
@@ -206,12 +214,107 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
         }
 
         return fields.mapIndexed { i, field ->
-            TypeSpecificPolicyMetadata.EnumPolicyMetadata.EnumValue.newBuilder()
+            EnumValueProto.newBuilder()
                 .setFieldName(names[i])
                 .setIntValue(values[i])
                 .setDocumentation(docs[i])
                 .build()
         }
+    }
+
+    /*
+     * Given a policy definition element:
+     *   * Finds the modeled resolution mechanism
+     *   * Verifies only one is specified
+     *   * If `mostRestrictive` is selected: verifies each enum value is mentioned exactly once.
+     *
+     */
+    private fun getResolutionMechanism(
+        annotationValue: EnumResolutionMechanism,
+        allValues: List<EnumValueProto>,
+        element: Element,
+    ): EnumResolutionMechanismProto {
+        if (!verifyResolutionMechanism(annotationValue, allValues, element)) {
+            // Error is already printed
+            return EnumResolutionMechanismProto.newBuilder().build()
+        }
+
+        val builder = EnumResolutionMechanismProto.newBuilder()
+        if (annotationValue.custom) {
+            builder.setCustom(true)
+        } else {
+            builder.setMostRestrictive(
+                MostRestrictiveProto.newBuilder()
+                    .addAllMostToLeastRestrictive(annotationValue.mostRestrictive.toList())
+                    .build()
+            )
+        }
+        return builder.build()
+    }
+
+    private fun verifyResolutionMechanism(
+        annotation: EnumResolutionMechanism,
+        allValues: List<EnumValueProto>,
+        element: Element,
+    ): Boolean {
+        val isCustom = annotation.custom
+        val isMostRestrictive = annotation.mostRestrictive.isNotEmpty()
+
+        if (isCustom && isMostRestrictive) {
+            printError(
+                element,
+                "In @EnumResolutionMechanism, `custom` and `mostRestrictive` " +
+                    "can not be set together.",
+            )
+            return false
+        }
+
+        if (!isCustom && !isMostRestrictive) {
+            printError(
+                element,
+                "In @EnumResolutionMechanism, either `custom` or `mostRestrictive` must be set.",
+            )
+            return false
+        }
+
+        if (isMostRestrictive) {
+            return verifyMostRestrictive(annotation.mostRestrictive.toList(), allValues, element)
+        }
+        return true
+    }
+
+    private fun verifyMostRestrictive(
+        values: List<Int>,
+        allValues: List<EnumValueProto>,
+        element: Element,
+    ): Boolean {
+        var success =
+            ensureNoDuplicates(
+                element,
+                values,
+                "mostRestrictive",
+                elementToString = { v -> valueToString(v, allValues) },
+            ) &&
+                ensureNoUnexpectedValues(
+                    element,
+                    values,
+                    expectedValues = allValues.map { it.intValue },
+                    listName = "mostRestrictive",
+                ) &&
+                ensureNoMissingValues(
+                    element,
+                    values,
+                    expectedValues = allValues.map { it.intValue },
+                    listName = "mostRestrictive",
+                    elementToString = { v -> valueToString(v, allValues) },
+                )
+
+        return success
+    }
+
+    private fun valueToString(value: Int, allValues: List<EnumValueProto>): String {
+        val matchingEnum = allValues.firstOrNull { it.intValue == value }
+        return matchingEnum?.fieldName?.fieldName ?: value.toString()
     }
 
     private fun getElementForIdentifier(

@@ -31,6 +31,11 @@ public @interface EnumPolicyDefinition {
     Class<?> intDef();
 
     /**
+     * Indicates the conflict resolution mechanism used by this enum.
+     */
+    EnumResolutionMechanism resolutionMechanism();
+
+    /**
      * Indicates the default value of this policy when unset or cleared.
      */
     int defaultValue();

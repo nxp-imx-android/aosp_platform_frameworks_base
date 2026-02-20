@@ -369,6 +369,33 @@ public class DreamControllerTest {
         verify(appTask).finishAndRemoveTask();
     }
 
+    @Test
+    public void stopDream_finishesDreamActivity() throws RemoteException {
+        // Start dream.
+        mDreamController.startDream(
+                mToken,
+                mDreamName,
+                false /*isPreview*/,
+                false /*doze*/,
+                0 /*userId*/,
+                null /*wakeLock*/,
+                mOverlayName,
+                "test" /*reason*/);
+        captureServiceConnection().onServiceConnected(mDreamName, mIBinder);
+        mLooper.dispatchAll();
+
+        // Set the dream app task.
+        final IAppTask appTask = mock(IAppTask.class);
+        mDreamController.setDreamAppTask(mToken, appTask);
+
+        // Stop dream.
+        mDreamController.stopDream(true /*immediate*/, "test stop dream" /*reason*/);
+        mLooper.dispatchAll();
+
+        // Verify that the dream activity is finished.
+        verify(appTask).finishAndRemoveTask();
+    }
+
     private ServiceConnection captureServiceConnection() {
         verify(mContext).bindServiceAsUser(any(), mServiceConnectionACaptor.capture(), anyInt(),
                 any());
