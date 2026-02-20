@@ -1236,4 +1236,7 @@
     Indicates whether to include Scenes.QuickSettings and Scenes.Shade in the scene container flag.
     -->
     <bool name="config_includeQSAndShadeScenes">true</bool>
+
+    <!-- Whether to disable notification shelf on keyguard. -->
+    <bool name="config_disableNotificationShelfOnKeyguard">false</bool>
 </resources>

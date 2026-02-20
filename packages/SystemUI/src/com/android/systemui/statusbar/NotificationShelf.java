@@ -105,6 +105,7 @@ public class NotificationShelf extends ActivatableNotificationView {
     private float mCornerAnimationDistance;
     private float mActualWidth = -1;
     private int mMaxIconsOnLockscreen;
+    private boolean mDisableNotificationShelfOnKeyguard;
     private boolean mCanModifyColorOfNotifications;
     private boolean mCanInteract;
     private NotificationStackScrollLayout mHostLayout;
@@ -165,6 +166,8 @@ public class NotificationShelf extends ActivatableNotificationView {
         mCornerAnimationDistance = res.getDimensionPixelSize(
                 R.dimen.notification_corner_animation_distance);
         mEnableNotificationClipping = res.getBoolean(R.bool.notification_enable_clipping);
+        mDisableNotificationShelfOnKeyguard =
+                res.getBoolean(R.bool.config_disableNotificationShelfOnKeyguard);
 
         mShelfIcons.setOverrideIconColor(true);
         if (!mShowNotificationShelf) {
@@ -249,7 +252,8 @@ public class NotificationShelf extends ActivatableNotificationView {
 
             viewState.hidden = !mAmbientState.isShadeExpanded()
                     || mAmbientState.isPulsing()
-                    || algorithmState.firstViewInShelf == null;
+                    || algorithmState.firstViewInShelf == null
+                    || (mAmbientState.isOnKeyguard() && mDisableNotificationShelfOnKeyguard);
 
             final int indexOfFirstViewInShelf = algorithmState.visibleChildren.indexOf(
                     algorithmState.firstViewInShelf);
