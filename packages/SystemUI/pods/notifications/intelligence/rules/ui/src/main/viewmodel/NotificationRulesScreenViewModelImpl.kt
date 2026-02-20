@@ -16,31 +16,24 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.NotificationRulesInteractor
-import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import dagger.assisted.Assisted
 
 class NotificationRulesScreenViewModelImpl
 @AssistedInject
 constructor(
+    @Assisted override val backStack: List<RulesScreenViewState>,
     private val interactor: NotificationRulesInteractor,
-    private val editViewModelFactory: NotificationRuleEditViewModel.Factory,
 ) : NotificationRulesScreenViewModel, HydratedActivatable() {
     override val rules: List<RuleModel>
         get() = interactor.rules
 
-    override var viewState by
-        mutableStateOf<RulesScreenViewState>(RulesScreenViewState.CurrentRules)
-
-    override fun launchEditRuleScreen(draftRule: DraftRuleModel) {
-        viewState = RulesScreenViewState.RuleEdit(editViewModelFactory.create(draftRule))
-    }
+    override val currentScreen: RulesScreenViewState
+        get() = backStack[backStack.size - 1]
 
     override fun createRule(newRule: RuleModel) {
         interactor.createRule(newRule)
@@ -48,6 +41,8 @@ constructor(
 
     @AssistedFactory
     interface Factory : NotificationRulesScreenViewModel.Factory {
-        override fun create(): NotificationRulesScreenViewModelImpl
+        override fun create(
+            backStack: List<RulesScreenViewState>
+        ): NotificationRulesScreenViewModelImpl
     }
 }

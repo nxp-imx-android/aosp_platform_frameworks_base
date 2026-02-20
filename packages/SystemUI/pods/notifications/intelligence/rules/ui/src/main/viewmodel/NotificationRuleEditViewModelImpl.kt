@@ -21,6 +21,9 @@ import android.content.ContentResolver
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.ContactsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.InstalledAppsInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
@@ -34,10 +37,12 @@ import dagger.assisted.AssistedInject
 class NotificationRuleEditViewModelImpl
 @AssistedInject
 constructor(
-    @Assisted override val rule: DraftRuleModel,
+    @Assisted startingRule: DraftRuleModel,
     private val contactsInteractor: ContactsInteractor,
     private val installedAppsInteractor: InstalledAppsInteractor,
 ) : NotificationRuleEditViewModel {
+
+    override var rule: DraftRuleModel by mutableStateOf(startingRule)
 
     override suspend fun fetchContacts(
         searchQuery: String,

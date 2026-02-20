@@ -20,13 +20,14 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 
-/** Renders a menu to choose a new field to add to the rule. */
+/** Renders an inline menu to choose a new field to add to the rule. */
 @Composable
 fun AddFieldDialog(
-    options: List<EditDialogType>,
+    options: List<RulesScreenViewState.EditField>,
     onDismissRequest: () -> Unit,
-    onOptionSelected: (EditDialogType) -> Unit,
+    onOptionSelected: (RulesScreenViewState.EditField) -> Unit,
 ) {
     DropdownMenu(expanded = true, onDismissRequest = onDismissRequest) {
         for (option in options) {

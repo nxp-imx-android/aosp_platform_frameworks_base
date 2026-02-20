@@ -16,12 +16,35 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+
 /** Represents the current state of the rules screen. */
 public sealed interface RulesScreenViewState {
     /** The rules screen is showing a list of the currently saved rules. */
     public data object CurrentRules : RulesScreenViewState
 
-    /** The rules screen is showing an edit page for the given [editVewModel.rule]. */
-    public data class RuleEdit(val editViewModel: NotificationRuleEditViewModel) :
-        RulesScreenViewState
+    /** The rules screen is showing an edit page for the given [viewModel.rule]. */
+    public data class EditRule(val viewModel: NotificationRuleEditViewModel) : RulesScreenViewState
+
+    /** One particular field is being edited. */
+    public sealed interface EditField : RulesScreenViewState {
+        /**
+         * The action for a particular rule is being edited.
+         *
+         * @param onActionSaved invoked when the user selects an action in the menu.
+         */
+        public data class Action(val onActionSaved: (ActionModel) -> Unit) : EditField
+
+        /** The list of contacts for a particular rule is being edited. */
+        public data class Contacts(
+            val viewModel: NotificationRuleEditViewModel,
+            val onContactsSaved: (List<ContactModel>) -> Unit,
+        ) : EditField
+
+        /** The list of apps for a particular rule is being edited. */
+        public data class Apps(val viewModel: NotificationRuleEditViewModel) : EditField
+    }
+
+    // TODO: b/478225883 - Add more edit types.
 }

@@ -18,6 +18,7 @@ package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
 
 /** Interface providing a composable to render the notification rules screen. */
@@ -31,6 +32,7 @@ public interface NotificationRulesScreen {
     @Composable
     public fun Content(
         viewModelFactory: NotificationRulesScreenViewModel.Factory,
+        editViewModelFactory: NotificationRuleEditViewModel.Factory,
         dismissRulesScreen: () -> Unit,
         modifier: Modifier,
     )
