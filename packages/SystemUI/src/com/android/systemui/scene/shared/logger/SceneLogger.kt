@@ -332,6 +332,18 @@ constructor(
         )
     }
 
+    fun logDumpable(name: String, dump: String) {
+        logBuffer.log(
+            tag = TAG,
+            level = LogLevel.DEBUG,
+            messageInitializer = {
+                str1 = name
+                str2 = dump
+            },
+            messagePrinter = { "$str1:\n$str2" },
+        )
+    }
+
     companion object {
         private const val TAG = "SceneFramework"
     }
