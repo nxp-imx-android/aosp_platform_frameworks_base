@@ -144,10 +144,14 @@ constructor(
                 return
             }
 
+            // Create a new LaunchCookie and ActivityOptions to perform the security handshake.
+            val launchCookie = ActivityOptions.LaunchCookie(MEDIA_PROJECTION_LAUNCH_TOKEN)
+
             if (task.isForegroundTask && task.component?.packageName == packageName) {
                 // The task is already in the foreground and belongs to the host app, so we don't
                 // need to launch it again. Directly approve the projection for this taskId.
                 try {
+                    projection.setLaunchCookie(launchCookie)
                     projection.taskId = taskId
                     mediaProjectionHelper.setReviewedConsentIfNeeded(
                         ReviewGrantedConsentResult.RECORD_CONTENT_TASK,
@@ -162,8 +166,6 @@ constructor(
                 return
             }
 
-            // Create a new LaunchCookie and ActivityOptions to perform the security handshake.
-            val launchCookie = ActivityOptions.LaunchCookie(MEDIA_PROJECTION_LAUNCH_TOKEN)
             val options = ActivityOptions.makeBasic()
             options.launchCookie = launchCookie.binder
 

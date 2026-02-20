@@ -270,12 +270,22 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
     @Test
     fun onShareClicked_foregroundHostAppTarget_sharingApprovedWithoutLaunch() =
         kosmos.runTest {
+            val projection = mock<android.media.projection.IMediaProjection>()
             setupViewModel(
                 config =
                     mock<MediaProjectionConfig> {
                         on { initiallySelectedSource } doReturn PROJECTION_SOURCE_APP_CONTENT
                         on { isSourceEnabled(any()) } doReturn true
                     }
+            )
+            kosmos.shareScreenUiInteractor.initialize(
+                projection = projection,
+                reviewGrantedConsentRequired = true,
+                hostUserHandle = UserHandle.of(100),
+                uid = 100,
+                packageName = context.packageName,
+                initialDisplayId = 0,
+                config = mock(),
             )
             val sharingState by collectLastValue(kosmos.shareScreenUiInteractor.sharingState)
             val target = ScreenCaptureTarget.App(displayId = 0, taskId = 42)
@@ -308,6 +318,10 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             // Verify the sharing state is updated to [Approved].
             assertThat(sharingState)
                 .isInstanceOf(ShareScreenUiInteractor.SharingState.Approved::class.java)
+
+            // Verify setLaunchCookie and taskId were set on the projection binder
+            org.mockito.kotlin.verify(projection).setLaunchCookie(any())
+            org.mockito.kotlin.verify(projection).setTaskId(42)
 
             // Verify AsyncActivityLauncher was NEVER called
             org.mockito.kotlin
