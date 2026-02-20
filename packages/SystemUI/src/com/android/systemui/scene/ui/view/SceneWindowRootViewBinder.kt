@@ -91,6 +91,7 @@ object SceneWindowRootViewBinder {
         onVisibilityChangedInternal: (isVisible: Boolean) -> Unit,
         dataSourceDelegator: SceneDataSourceDelegator,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
+        sceneTransitionLatencyMonitor: SceneTransitionLatencyMonitor,
         tintedIconManagerFactory: TintedIconManager.Factory,
         authRippleViewModelFactory: AuthRippleScrimViewModel.Factory,
     ) {
@@ -176,6 +177,7 @@ object SceneWindowRootViewBinder {
                                 dataSourceDelegator = dataSourceDelegator,
                                 containerConfig = containerConfig,
                                 sceneJankMonitorFactory = sceneJankMonitorFactory,
+                                sceneTransitionLatencyMonitor = sceneTransitionLatencyMonitor,
                                 tintedIconManagerFactory = tintedIconManagerFactory,
                                 showOrHideBouncer = { transition, animationScope ->
                                     // This is invoked when the logic in the scene container wants
@@ -284,6 +286,7 @@ object SceneWindowRootViewBinder {
         dataSourceDelegator: SceneDataSourceDelegator,
         containerConfig: SceneContainerConfig,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
+        sceneTransitionLatencyMonitor: SceneTransitionLatencyMonitor,
         tintedIconManagerFactory: TintedIconManager.Factory,
         showOrHideBouncer:
             (
@@ -317,6 +320,7 @@ object SceneWindowRootViewBinder {
                         transitionsBuilder = containerConfig.transitionsBuilder,
                         dataSourceDelegator = dataSourceDelegator,
                         sceneJankMonitorFactory = sceneJankMonitorFactory,
+                        sceneTransitionLatencyMonitor = sceneTransitionLatencyMonitor,
                         onTransitionStart = { transition, animationScope ->
                             // If the transition that started is specifically meant to show or hide
                             // the bouncer overlay, that needs to be delegated out to the dedicated
