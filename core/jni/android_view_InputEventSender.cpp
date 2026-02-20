@@ -328,8 +328,8 @@ bool NativeInputEventSender::notifyConsumerResponse(
 
 static jlong nativeInit(JNIEnv* env, jclass clazz, jobject senderWeak,
         jobject inputChannelObj, jobject messageQueueObj) {
-    std::shared_ptr<InputChannel> inputChannel =
-            android_view_InputChannel_getInputChannel(env, inputChannelObj);
+    std::unique_ptr<InputChannel> inputChannel =
+            android_view_InputChannel_extractInputChannel(env, inputChannelObj);
     if (inputChannel == NULL) {
         jniThrowRuntimeException(env, "InputChannel is not initialized.");
         return 0;
@@ -341,8 +341,8 @@ static jlong nativeInit(JNIEnv* env, jclass clazz, jobject senderWeak,
         return 0;
     }
 
-    sp<NativeInputEventSender> sender = new NativeInputEventSender(env,
-            senderWeak, inputChannel, messageQueue);
+    sp<NativeInputEventSender> sender =
+            new NativeInputEventSender(env, senderWeak, std::move(inputChannel), messageQueue);
     status_t status = sender->initialize();
     if (status) {
         String8 message;

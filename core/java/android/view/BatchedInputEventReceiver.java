@@ -44,7 +44,7 @@ public class BatchedInputEventReceiver extends InputEventReceiver {
         super(inputChannel, looper);
         mChoreographer = choreographer;
         mBatchingEnabled = true;
-        mTag = inputChannel.getName();
+        mTag = getClass().getName();
         traceBoolVariable("mBatchingEnabled", mBatchingEnabled);
         traceBoolVariable("mBatchedInputScheduled", mBatchedInputScheduled);
         mHandler = new Handler(looper);

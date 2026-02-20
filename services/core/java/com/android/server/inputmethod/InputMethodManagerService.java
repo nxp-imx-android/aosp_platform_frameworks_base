@@ -2617,15 +2617,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                 }
             };
 
-            try {
-                curIme.createSession(clientChannel, callback);
-            } finally {
-                // Dispose the channel because the remote proxy will get its own copy when
-                // unparceled.
-                if (clientChannel != null) {
-                    clientChannel.dispose();
-                }
-            }
+            curIme.createSession(clientChannel, callback);
         }
     }
 
