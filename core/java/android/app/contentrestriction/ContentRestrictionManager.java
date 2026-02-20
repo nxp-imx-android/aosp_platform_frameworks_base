@@ -21,6 +21,8 @@ import static android.Manifest.permission.INTERACT_ACROSS_USERS;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.SdkConstant;
+import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -43,6 +45,23 @@ import java.util.function.Consumer;
 public class ContentRestrictionManager {
     private final Context mContext;
     private final IContentRestrictionManager mService;
+
+    /**
+     * Activity Action: Launch an activity showing information about restricted content.
+     * <p>
+     * Apps holding the {@link android.app.role.RoleManager#ROLE_CONTENT_RESTRICTION} must
+     * declare an activity that handles this action to show specific content restriction details.
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_SHOW_RESTRICTED_CONTENT_DETAILS =
+            "android.app.contentrestriction.action.SHOW_RESTRICTED_CONTENT_DETAILS";
+
+    /**
+     * Extra for {@link #ACTION_SHOW_RESTRICTED_CONTENT_DETAILS} containing the locus ID of the
+     * restricted content.
+     */
+    public static final String EXTRA_CONTENT_LOCUS_ID =
+            "android.app.contentrestriction.extra.CONTENT_LOCUS_ID";
 
     /** @hide */
     public ContentRestrictionManager(
