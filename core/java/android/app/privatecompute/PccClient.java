@@ -90,7 +90,8 @@ public class PccClient {
      *                                    boolean, String, byte[])
      *                                    <li>{@link android.os.PersistableBundle}
      *                                    <li>Read-only {@link android.os.ParcelFileDescriptor}
-     *                                    <li>Read-only {@link android.os.SharedMemory}
+     *                                    <li>{@link android.os.SharedMemory} (must be read-only,
+     *                                    or will be set to read-only)
      *                                    <li>{@link android.graphics.Bitmap}
      *                                    <li>Custom {@link android.os.Parcelable} objects must
      *                                    be serialized as a {@code byte[]}.
