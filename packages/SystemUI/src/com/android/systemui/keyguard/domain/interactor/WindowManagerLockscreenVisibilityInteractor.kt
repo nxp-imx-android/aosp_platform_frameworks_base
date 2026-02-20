@@ -372,8 +372,9 @@ constructor(
                         }
                     }
             } else {
-                // Lockscreen is never visible when the device isn't provisioned.
-                flowOf(false to "device is not provisioned")
+                deviceEntryInteractor.get().isUnlocked.map {
+                    !it to "device is not provisioned, isUnlocked=$it"
+                }
             }
         }
 
