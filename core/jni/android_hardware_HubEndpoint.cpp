@@ -17,6 +17,7 @@
 #define LOG_TAG "HubEndpointJNI"
 
 #include <android/looper.h>
+#include <android_chre_flags.h>
 #include <nativehelper/JNIHelp.h>
 #include <stdio.h>
 
@@ -26,6 +27,7 @@
 #include "core_jni_helpers.h"
 #include "data_flow/host/notification_manager.h"
 #include "data_flow/host/region_manager.h"
+#include "data_flow/host/remote_consumer.h"
 #include "data_flow/untyped_queue.h"
 #include "jni.h"
 #include "utils/Log.h"
@@ -36,8 +38,11 @@ using ::aidl::android::hardware::contexthub::DataFlowId;
 using ::aidl::android::hardware::contexthub::DataFlowSinkContext;
 using ::aidl::android::hardware::contexthub::EndpointId;
 using ::aidl::android::hardware::contexthub::SharedDataRegion;
+using android::chre::flags::fmcq_support_variable_sized_data_flow_fix;
 using android::contexthub::data_flow::AllocatorRegion;
+using android::contexthub::data_flow::ConsumerManager;
 using android::contexthub::data_flow::ConsumerPolicyBuilder;
+using android::contexthub::data_flow::createRemoteConsumer;
 using android::contexthub::data_flow::DataNotifier;
 using android::contexthub::data_flow::NotificationManager;
 using android::contexthub::data_flow::NotificationPolicy;
@@ -46,6 +51,8 @@ using android::contexthub::data_flow::RegionManager;
 using android::contexthub::data_flow::RemoteNotifyArgs;
 using android::contexthub::data_flow::UntypedConsumer;
 using android::contexthub::data_flow::UntypedProducer;
+using android::contexthub::data_flow::VariableDataConsumer;
+using android::contexthub::data_flow::VariableDataProducer;
 
 static JavaVM* gVm = nullptr;
 
@@ -57,7 +64,8 @@ static JavaVM* gVm = nullptr;
 
 class SourceWrapper {
 public:
-    SourceWrapper(UntypedProducer&& producer, AllocatorRegion allocator,
+    SourceWrapper(std::variant<UntypedProducer, VariableDataProducer>&& producer,
+                  AllocatorRegion allocator,
                   NotificationManager::NotificationDataHandle notificationDataHandle)
           : mProducer(std::move(producer)),
             mAllocator(allocator),
@@ -68,7 +76,7 @@ public:
             mAllocator(other.mAllocator),
             mNotificationDataHandle(other.mNotificationDataHandle) {}
 
-    UntypedProducer& getProducer() {
+    std::variant<UntypedProducer, VariableDataProducer>& getProducer() {
         return mProducer;
     }
 
@@ -96,7 +104,7 @@ public:
     }
 
 private:
-    UntypedProducer mProducer;
+    std::variant<UntypedProducer, VariableDataProducer> mProducer;
     AllocatorRegion mAllocator;
     NotificationManager::NotificationDataHandle mNotificationDataHandle;
     std::optional<DataFlowId> mDataFlowId;
@@ -106,24 +114,30 @@ private:
 
 class SinkWrapper {
 public:
-    SinkWrapper(UntypedConsumer&& consumer, DataFlowId dataFlowId)
+    SinkWrapper(std::variant<UntypedConsumer, VariableDataConsumer>&& consumer,
+                DataFlowId dataFlowId)
           : mConsumer(std::move(consumer)), mDataFlowId(dataFlowId) {}
     SinkWrapper(SinkWrapper&& other)
           : mConsumer(std::move(other.mConsumer)), mDataFlowId(other.mDataFlowId) {}
 
-    UntypedConsumer& getConsumer() {
+    std::variant<UntypedConsumer, VariableDataConsumer>& getConsumer() {
         return mConsumer;
     }
+
     DataFlowId getDataFlowId() {
         return mDataFlowId;
     }
 
     ~SinkWrapper() {
-        mConsumer.disable();
+        if (mConsumer.index() == 0) {
+            std::get<UntypedConsumer>(mConsumer).disable();
+        } else {
+            std::get<VariableDataConsumer>(mConsumer).disable();
+        }
     }
 
 private:
-    UntypedConsumer mConsumer;
+    std::variant<UntypedConsumer, VariableDataConsumer> mConsumer;
     DataFlowId mDataFlowId;
 };
 
@@ -175,11 +189,12 @@ public:
     }
 
     ~HubEndpointResource() {
-        for (auto& [id, sourceWrapper] : mSources) {
-            removeSourceWrapper(id);
+        for (auto& [regionId, sourceWrapper] : mSources) {
+            removeSourceWrapper(regionId, &sourceWrapper);
         }
-        for (auto& [id, sinkWrapper] : mSinks) {
-            removeSinkWrapper(id);
+
+        for (auto& [dataFlowId, sinkWrapper] : mSinks) {
+            removeSinkWrapper(dataFlowId, &sinkWrapper);
         }
     }
 
@@ -215,15 +230,32 @@ public:
         return &it->second;
     }
 
-    void removeSourceWrapper(int regionId) {
-        SourceWrapper* wrapper = getSourceWrapper(regionId);
-        if (wrapper != nullptr) {
-            auto dataFlowId = wrapper->getDataFlowId();
-            if (dataFlowId.has_value()) {
-                mNotificationManager->removeHostProducerDataFlow(dataFlowId.value().id);
+    void removeSourceWrapper(int regionId, SourceWrapper* sourceWrapper = nullptr,
+                             bool doErase = false) {
+        if (sourceWrapper == nullptr) {
+            sourceWrapper = getSourceWrapper(regionId);
+            if (sourceWrapper == nullptr) {
+                ALOGE("removeSourceWrapper: sourceWrapper is null, regionId=%d", regionId);
+                return;
             }
+        }
+
+        auto dataFlowId = sourceWrapper->getDataFlowId();
+        if (dataFlowId.has_value()) {
+            pw::Status status =
+                    mNotificationManager->removeHostProducerDataFlow(dataFlowId.value().id);
+            if (!status.ok()) {
+                ALOGE("removeHostProducerDataFlow: status=%s", status.str());
+            }
+        }
+
+        if (doErase) {
             mSources.erase(regionId);
-            mRegionManager.unmapHostProducerRegion(regionId);
+        }
+
+        pw::Status status = mRegionManager.unmapHostProducerRegion(regionId);
+        if (!status.ok()) {
+            ALOGE("unmapHostProducerRegion: regionId=%d, status=%s", regionId, status.str());
         }
     }
 
@@ -239,13 +271,29 @@ public:
         return &it->second;
     }
 
-    void removeSinkWrapper(int dataFlowId) {
-        SinkWrapper* wrapper = getSinkWrapper(dataFlowId);
-        if (wrapper != nullptr) {
-            auto dataFlowId = wrapper->getDataFlowId();
-            mNotificationManager->disableHostConsumer(dataFlowId);
-            mSinks.erase(dataFlowId.id);
-            mRegionManager.unlinkHostConsumerDataFlow(dataFlowId);
+    void removeSinkWrapper(int dataFlowId, SinkWrapper* sinkWrapper = nullptr,
+                           bool doErase = false) {
+        if (sinkWrapper == nullptr) {
+            sinkWrapper = getSinkWrapper(dataFlowId);
+            if (sinkWrapper == nullptr) {
+                ALOGE("removeSinkWrapper: sinkWrapper is null, dataFlowId=%d", dataFlowId);
+                return;
+            }
+        }
+
+        DataFlowId fullDataFlowId = sinkWrapper->getDataFlowId();
+        pw::Status status = mNotificationManager->disableHostConsumer(fullDataFlowId);
+        if (!status.ok()) {
+            ALOGE("disableHostConsumer: dataFlowId=%d, status=%s", dataFlowId, status.str());
+        }
+
+        if (doErase) {
+            mSinks.erase(dataFlowId);
+        }
+
+        status = mRegionManager.unlinkHostConsumerDataFlow(fullDataFlowId);
+        if (!status.ok()) {
+            ALOGE("unlinkHostConsumerDataFlow: dataFlowId=%d, status=%s", dataFlowId, status.str());
         }
     }
 
@@ -296,21 +344,73 @@ static jintArray android_hardware_HubEndpoint_createDataFlowInfo(JNIEnv* env, jo
     constexpr size_t kBlockCapacityInBytes = 1024;
     RemoteNotifyArgs args = {.fn = [&](pw::ConstByteSpan /*id*/) {}, .id = {}};
 
-    size_t minElementSize = static_cast<size_t>(elementSize) * minElementCount;
-    size_t maxElementSize = static_cast<size_t>(elementSize) * maxElementCount;
-    // The min block count >= 1, and maxBlockCount >= minBlockCount
-    size_t minBlockCount = 1 + (minElementSize - 1) / kBlockCapacityInBytes;
-    size_t maxBlockCount = 1 + (maxElementSize - 1) / kBlockCapacityInBytes;
-    auto producer =
-            UntypedProducer::createRemote(alloc.value(),
-                                          kBlockCapacityInBytes / static_cast<size_t>(elementSize),
-                                          static_cast<size_t>(elementSize),
-                                          static_cast<size_t>(alignment), maxBlockCount,
-                                          minBlockCount, resource->getNotifier(), std::move(args));
-    RETURN_ON_FALSE(producer.ok(), nullptr,
-                    (std::string("Failed to create producer: ") + producer.status().str()).c_str());
+    std::optional<std::variant<UntypedProducer, VariableDataProducer>> producer = std::nullopt;
+    size_t queueOffset;
+    if (fmcq_support_variable_sized_data_flow_fix()) {
+        bool isFixedSize = elementSize > 0;
+        std::optional<std::pair<size_t, size_t>> fixedSizeConfig = std::nullopt;
+        size_t minBlockCount = 1;
+        size_t maxBlockCount = kBlockCapacityInBytes;
+        if (isFixedSize) {
+            fixedSizeConfig = std::make_pair(static_cast<size_t>(elementSize),
+                                             static_cast<size_t>(alignment));
+            size_t minElementSize = static_cast<size_t>(elementSize) * minElementCount;
+            size_t maxElementSize = static_cast<size_t>(elementSize) * maxElementCount;
+            minBlockCount = 1 + (minElementSize - 1) / kBlockCapacityInBytes;
+            maxBlockCount = 1 + (maxElementSize - 1) / kBlockCapacityInBytes;
+        }
 
-    size_t queueOffset = producer->getQueueOffset();
+        if (isFixedSize) {
+            pw::Result<UntypedProducer> producerRes =
+                    UntypedProducer::createRemote(alloc.value(),
+                                                  kBlockCapacityInBytes /
+                                                          static_cast<size_t>(elementSize),
+                                                  static_cast<size_t>(elementSize),
+                                                  static_cast<size_t>(alignment), maxBlockCount,
+                                                  minBlockCount, resource->getNotifier(),
+                                                  std::move(args));
+            RETURN_ON_FALSE(producerRes.ok(), nullptr,
+                            (std::string("Failed to create fixed size producer: ") +
+                             producerRes.status().str())
+                                    .c_str());
+            producer = std::move(*producerRes);
+        } else {
+            pw::Result<VariableDataProducer> producerRes =
+                    VariableDataProducer::createRemote(alloc.value(), kBlockCapacityInBytes,
+                                                       maxBlockCount, minBlockCount,
+                                                       resource->getNotifier(), std::move(args));
+            RETURN_ON_FALSE(producerRes.ok(), nullptr,
+                            (std::string("Failed to create variable size producer: ") +
+                             producerRes.status().str())
+                                    .c_str());
+            producer = std::move(*producerRes);
+        }
+
+        if (producer->index() == 0) {
+            queueOffset = std::get<UntypedProducer>(*producer).getQueueOffset();
+        } else {
+            queueOffset = std::get<VariableDataProducer>(*producer).getQueueOffset();
+        }
+    } else {
+        size_t minElementSize = static_cast<size_t>(elementSize) * minElementCount;
+        size_t maxElementSize = static_cast<size_t>(elementSize) * maxElementCount;
+        // The min block count >= 1, and maxBlockCount >= minBlockCount
+        size_t minBlockCount = 1 + (minElementSize - 1) / kBlockCapacityInBytes;
+        size_t maxBlockCount = 1 + (maxElementSize - 1) / kBlockCapacityInBytes;
+        auto producerRes = UntypedProducer::createRemote(alloc.value(),
+                                                         kBlockCapacityInBytes /
+                                                                 static_cast<size_t>(elementSize),
+                                                         static_cast<size_t>(elementSize),
+                                                         static_cast<size_t>(alignment),
+                                                         maxBlockCount, minBlockCount,
+                                                         resource->getNotifier(), std::move(args));
+        RETURN_ON_FALSE(producerRes.ok(), nullptr,
+                        (std::string("Failed to create producer: ") + producerRes.status().str())
+                                .c_str());
+        queueOffset = producerRes->getQueueOffset();
+        producer = std::move(producerRes.value());
+    }
+
     auto flow = resource->getNotificationManager()->prepareHostProducerDataFlowInfo();
     RETURN_ON_FALSE(flow.ok(), nullptr,
                     (std::string("Failed to prepare host producer data flow: ") +
@@ -404,14 +504,37 @@ static jintArray android_hardware_HubEndpoint_enableHostSink(
                     (std::string("Failed to enable host sink: ") + status.str()).c_str());
 
     RemoteNotifyArgs args = {.fn = [](pw::ConstByteSpan /*id*/) { return; }, .id = {}};
-    auto consumer = UntypedConsumer::createRemote(region, std::nullopt, queueOffset, metadataOffset,
-                                                  std::move(args));
-    RETURN_ON_FALSE(consumer.ok(), nullptr,
-                    (std::string("Failed to create sink: ") + consumer.status().str()).c_str());
 
+    std::optional<std::variant<UntypedConsumer, VariableDataConsumer>> consumer = std::nullopt;
     std::vector<jint> out;
-    out.push_back(consumer->getElementSize());
-    out.push_back(consumer->getElementAlignment());
+    if (fmcq_support_variable_sized_data_flow_fix()) {
+        pw::Result<std::variant<UntypedConsumer, VariableDataConsumer>> consumerRes =
+                createRemoteConsumer(region, /* descRegion= */ std::nullopt, queueOffset,
+                                     metadataOffset, std::move(args));
+        RETURN_ON_FALSE(consumerRes.ok(), nullptr,
+                        (std::string("Failed to create sink: ") + consumerRes.status().str())
+                                .c_str());
+        consumer = std::move(consumerRes.value());
+
+        if (consumer->index() == 0) {
+            out.push_back(std::get<UntypedConsumer>(*consumer).getElementSize());
+            out.push_back(std::get<UntypedConsumer>(*consumer).getElementAlignment());
+        } else {
+            out.push_back(-1); // element size
+            out.push_back(1);  // element alignment
+        }
+    } else {
+        auto consumerRes = UntypedConsumer::createRemote(region, std::nullopt, queueOffset,
+                                                         metadataOffset, std::move(args));
+        RETURN_ON_FALSE(consumerRes.ok(), nullptr,
+                        (std::string("Failed to create sink: ") + consumerRes.status().str())
+                                .c_str());
+
+        out.push_back(consumerRes->getElementSize());
+        out.push_back(consumerRes->getElementAlignment());
+        consumer = std::move(consumerRes.value());
+    }
+
     jintArray javaArray = env->NewIntArray(out.size());
     RETURN_ON_FALSE(javaArray != nullptr, nullptr, "Failed to create int array");
     env->SetIntArrayRegion(javaArray, 0, out.size(), out.data());
@@ -430,20 +553,32 @@ static jint android_hardware_HubEndpoint_sourcePush(JNIEnv* env, jobject /*thiz*
     SourceWrapper* sourceWrapper = resource->getSourceWrapper(regionId);
     RETURN_ON_FALSE(sourceWrapper != nullptr, JNI_FALSE, "Source not found for regionId");
 
-    UntypedProducer& producer = sourceWrapper->getProducer();
+    std::variant<UntypedProducer, VariableDataProducer>& producer = sourceWrapper->getProducer();
 
     jbyte* dataPtr = env->GetByteArrayElements(data, nullptr);
     RETURN_ON_FALSE(dataPtr != nullptr, 0, "Failed to get byte array elements");
 
     pw::ConstByteSpan byteSpan(reinterpret_cast<const std::byte*>(dataPtr),
                                env->GetArrayLength(data));
-    pw::Result<size_t> pushResult = producer.push(byteSpan, allOrNothing);
-
-    env->ReleaseByteArrayElements(data, dataPtr, JNI_ABORT);
-
-    RETURN_ON_FALSE(pushResult.ok(), 0,
-                    (std::string("Failed to push data to queue: ") + pushResult.status().str())
-                            .c_str());
+    size_t numElementsPushed = 0;
+    if (producer.index() == 0) {
+        pw::Result<size_t> pushResult =
+                std::get<UntypedProducer>(producer).push(byteSpan, allOrNothing);
+        env->ReleaseByteArrayElements(data, dataPtr, JNI_ABORT);
+        RETURN_ON_FALSE(pushResult.ok(), 0,
+                        (std::string("Failed to push data to queue: ") + pushResult.status().str())
+                                .c_str());
+        numElementsPushed = pushResult.value();
+    } else if (fmcq_support_variable_sized_data_flow_fix()) {
+        pw::Status status = std::get<VariableDataProducer>(producer).push(byteSpan);
+        env->ReleaseByteArrayElements(data, dataPtr, JNI_ABORT);
+        RETURN_ON_FALSE(status.ok(), 0,
+                        (std::string("Failed to push variable data to queue: ") + status.str())
+                                .c_str());
+        numElementsPushed = 1;
+    } else {
+        return 0;
+    }
 
     // TODO(b/460528144): Wrap this using the default notifier
     for (auto& sink : sourceWrapper->getOffloadSinks()) {
@@ -455,7 +590,7 @@ static jint android_hardware_HubEndpoint_sourcePush(JNIEnv* env, jobject /*thiz*
                         (std::string("Failed to notify offload sink: ") + status.str()).c_str());
     }
 
-    return static_cast<jint>(pushResult.value());
+    return static_cast<jint>(numElementsPushed);
 }
 
 static jboolean android_hardware_HubEndpoint_sourceFull(JNIEnv* env, jobject /*thiz*/, jlong handle,
@@ -466,7 +601,14 @@ static jboolean android_hardware_HubEndpoint_sourceFull(JNIEnv* env, jobject /*t
     SourceWrapper* sourceWrapper = resource->getSourceWrapper(regionId);
     RETURN_ON_FALSE(sourceWrapper != nullptr, JNI_FALSE, "Source not found for regionId");
 
-    return static_cast<jboolean>(sourceWrapper->getProducer().full());
+    std::variant<UntypedProducer, VariableDataProducer>& producer = sourceWrapper->getProducer();
+    if (producer.index() == 0) {
+        return static_cast<jboolean>(std::get<UntypedProducer>(producer).full());
+    } else if (fmcq_support_variable_sized_data_flow_fix()) {
+        return static_cast<jboolean>(std::get<VariableDataProducer>(producer).full());
+    } else {
+        return JNI_FALSE;
+    }
 }
 
 static jint android_hardware_HubEndpoint_sourceSize(JNIEnv* env, jobject /*thiz*/, jlong handle,
@@ -477,7 +619,14 @@ static jint android_hardware_HubEndpoint_sourceSize(JNIEnv* env, jobject /*thiz*
     SourceWrapper* sourceWrapper = resource->getSourceWrapper(regionId);
     RETURN_ON_FALSE(sourceWrapper != nullptr, 0, "Source not found for regionId");
 
-    return static_cast<jint>(sourceWrapper->getProducer().size(includeReserved));
+    std::variant<UntypedProducer, VariableDataProducer>& producer = sourceWrapper->getProducer();
+    if (producer.index() == 0) {
+        return static_cast<jint>(std::get<UntypedProducer>(producer).size(includeReserved));
+    } else if (fmcq_support_variable_sized_data_flow_fix()) {
+        return static_cast<jint>(std::get<VariableDataProducer>(producer).size(includeReserved));
+    } else {
+        return 0;
+    }
 }
 
 static jbyteArray android_hardware_HubEndpoint_sinkRequestData(JNIEnv* env, jobject /*thiz*/,
@@ -490,26 +639,60 @@ static jbyteArray android_hardware_HubEndpoint_sinkRequestData(JNIEnv* env, jobj
     SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
     RETURN_ON_FALSE(sinkWrapper != nullptr, nullptr, "Sink not found for dataFlowId");
 
-    UntypedConsumer& consumer = sinkWrapper->getConsumer();
+    std::variant<UntypedConsumer, VariableDataConsumer>& consumer = sinkWrapper->getConsumer();
+    size_t headSize = 0;
     if (allOrNothing) {
-        auto sizeResult = consumer.size();
-        RETURN_ON_FALSE(sizeResult.ok(), nullptr,
-                        (std::string("Failed to get sink size: ") + sizeResult.status().str())
-                                .c_str());
-        if (elementCount > static_cast<jint>(sizeResult.value())) {
+        if (consumer.index() == 0) {
+            pw::Result<size_t> sizeResult = std::get<UntypedConsumer>(consumer).size();
+            RETURN_ON_FALSE(sizeResult.ok(), nullptr,
+                            (std::string("Failed to get sink size: ") + sizeResult.status().str())
+                                    .c_str());
+            if (elementCount > static_cast<jint>(sizeResult.value())) {
+                return nullptr;
+            }
+        } else if (fmcq_support_variable_sized_data_flow_fix()) {
+            pw::Result<size_t> headSizeResult =
+                    std::get<VariableDataConsumer>(consumer).getHeadSize();
+            RETURN_ON_FALSE(headSizeResult.ok(), nullptr,
+                            (std::string("Failed to get sink head element size: ") +
+                             headSizeResult.status().str())
+                                    .c_str());
+            headSize = headSizeResult.value();
+            if (elementCount > static_cast<jint>(headSizeResult.value())) {
+                return nullptr;
+            }
+        } else {
             return nullptr;
         }
     }
-    std::vector<std::byte> output(elementCount * consumer.getElementSize());
-    auto popStatus = consumer.pop(output);
+
+    std::vector<std::byte> output;
+    if (consumer.index() == 0) {
+        output.resize(elementCount * std::get<UntypedConsumer>(consumer).getElementSize());
+    } else if (fmcq_support_variable_sized_data_flow_fix()) {
+        output.resize(headSize);
+    } else {
+        return nullptr;
+    }
+
+    pw::ByteSpan outputSpan(output.data(), output.size());
+    pw::Status popStatus;
+    if (consumer.index() == 0) {
+        popStatus = std::get<UntypedConsumer>(consumer).pop(outputSpan);
+    } else if (fmcq_support_variable_sized_data_flow_fix()) {
+        popStatus = std::get<VariableDataConsumer>(consumer).pop(outputSpan);
+    } else {
+        return nullptr;
+    }
+
     RETURN_ON_FALSE(popStatus.ok(), nullptr,
                     (std::string("Failed to pop data from queue: ") + popStatus.str()).c_str());
 
-    jbyteArray javaArray = env->NewByteArray(output.size());
+    jbyteArray javaArray = env->NewByteArray(outputSpan.size());
     RETURN_ON_FALSE(javaArray != nullptr, nullptr, "Failed to create byte array");
 
-    env->SetByteArrayRegion(javaArray, 0, output.size(),
-                            reinterpret_cast<const jbyte*>(output.data()));
+    env->SetByteArrayRegion(javaArray, 0, outputSpan.size(),
+                            reinterpret_cast<const jbyte*>(outputSpan.data()));
     return javaArray;
 }
 
@@ -522,7 +705,16 @@ static jboolean android_hardware_HubEndpoint_sinkSyncToSource(JNIEnv* env, jobje
     SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
     RETURN_ON_FALSE(sinkWrapper != nullptr, JNI_FALSE, "Sink not found for dataFlowId");
 
-    auto syncStatus = sinkWrapper->getConsumer().resync(offset);
+    std::variant<UntypedConsumer, VariableDataConsumer>& consumer = sinkWrapper->getConsumer();
+    pw::Status syncStatus;
+    if (consumer.index() == 0) {
+        syncStatus = std::get<UntypedConsumer>(consumer).resync(offset);
+    } else if (fmcq_support_variable_sized_data_flow_fix()) {
+        syncStatus = std::get<VariableDataConsumer>(consumer).resync(offset);
+    } else {
+        return JNI_FALSE;
+    }
+
     RETURN_ON_FALSE(syncStatus.ok(), JNI_FALSE,
                     (std::string("Failed to resync sink: ") + syncStatus.str()).c_str());
     return JNI_TRUE;
@@ -538,7 +730,16 @@ static jboolean android_hardware_HubEndpoint_sinkSourceCanOverwriteReadPosition(
     SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
     RETURN_ON_FALSE(sinkWrapper != nullptr, JNI_FALSE, "Sink not found for dataFlowId");
 
-    auto overwritableResult = sinkWrapper->getConsumer().isOverwritable();
+    std::variant<UntypedConsumer, VariableDataConsumer>& consumer = sinkWrapper->getConsumer();
+    pw::Result<bool> overwritableResult;
+    if (consumer.index() == 1) {
+        overwritableResult = std::get<UntypedConsumer>(consumer).isOverwritable();
+    } else if (fmcq_support_variable_sized_data_flow_fix()) {
+        overwritableResult = std::get<VariableDataConsumer>(consumer).isOverwritable();
+    } else {
+        return JNI_FALSE;
+    }
+
     RETURN_ON_FALSE(overwritableResult.ok(), JNI_FALSE,
                     (std::string("Failed to get sink overwritable: ") +
                      overwritableResult.status().str())
@@ -554,7 +755,16 @@ static jint android_hardware_HubEndpoint_sinkSize(JNIEnv* env, jobject /*thiz*/,
     SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
     RETURN_ON_FALSE(sinkWrapper != nullptr, 0, "Sink not found for dataFlowId");
 
-    auto sizeResult = sinkWrapper->getConsumer().size();
+    std::variant<UntypedConsumer, VariableDataConsumer>& consumer = sinkWrapper->getConsumer();
+    pw::Result<size_t> sizeResult;
+    if (consumer.index() == 0) {
+        sizeResult = std::get<UntypedConsumer>(consumer).size();
+    } else if (fmcq_support_variable_sized_data_flow_fix()) {
+        sizeResult = std::get<VariableDataConsumer>(consumer).size();
+    } else {
+        return 0;
+    }
+
     RETURN_ON_FALSE(sizeResult.ok(), 0,
                     (std::string("Failed to get sink size: ") + sizeResult.status().str()).c_str());
     return static_cast<jint>(sizeResult.value());
@@ -659,9 +869,20 @@ static jint android_hardware_HubEndpoint_mapOffloadSinkRegion(
     pw::ConstByteSpan nameSpan(sinkNameArray.data(), sizeof(sinkHubId) + sizeof(sinkEndpointId));
     ConsumerPolicyBuilder policy =
             createConsumerPolicyBuilder(notificationPolicy, notificationPolicyData, canOverwrite);
-    auto consDescOffsetRes =
-            sourceWrapper->getProducer().getConsumerManager().addConsumer(nameSpan, policy,
-                                                                          &result.value());
+
+    std::variant<UntypedProducer, VariableDataProducer>& producer = sourceWrapper->getProducer();
+    pw::Result<uint32_t> consDescOffsetRes;
+    if (producer.index() == 0) {
+        ConsumerManager consumerManager = std::get<UntypedProducer>(producer).getConsumerManager();
+        consDescOffsetRes = consumerManager.addConsumer(nameSpan, policy, &result.value());
+    } else if (fmcq_support_variable_sized_data_flow_fix()) {
+        ConsumerManager consumerManager =
+                std::get<VariableDataProducer>(producer).getConsumerManager();
+        consDescOffsetRes = consumerManager.addConsumer(nameSpan, policy, &result.value());
+    } else {
+        return 0;
+    }
+
     RETURN_ON_FALSE(consDescOffsetRes.ok(), 0,
                     (std::string("Failed to add sink: ") + consDescOffsetRes.status().str())
                             .c_str());
@@ -685,8 +906,17 @@ static void android_hardware_HubEndpoint_updateSinkPolicy(JNIEnv* env, jobject /
             ConsumerPolicyBuilder policy =
                     createConsumerPolicyBuilder(notificationPolicy, notificationPolicyData,
                                                 canOverwrite);
-            sourceWrapper->getProducer().getConsumerManager().updateConsumerPolicy(nameSpan,
-                                                                                   policy);
+            std::variant<UntypedProducer, VariableDataProducer>& producer =
+                    sourceWrapper->getProducer();
+            if (producer.index() == 0) {
+                ConsumerManager consumerManager =
+                        std::get<UntypedProducer>(producer).getConsumerManager();
+                consumerManager.updateConsumerPolicy(nameSpan, policy);
+            } else if (fmcq_support_variable_sized_data_flow_fix()) {
+                ConsumerManager consumerManager =
+                        std::get<VariableDataProducer>(producer).getConsumerManager();
+                consumerManager.updateConsumerPolicy(nameSpan, policy);
+            }
         }
     }
 }
@@ -708,7 +938,7 @@ static void android_hardware_HubEndpoint_removeHostSource(JNIEnv* env, jobject /
                                                           jlong handle, jint regionId) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     if (resource != nullptr) {
-        resource->removeSourceWrapper(regionId);
+        resource->removeSourceWrapper(regionId, /* sourceWrapper= */ nullptr, /* doErase= */ true);
     }
 }
 
@@ -716,7 +946,7 @@ static void android_hardware_HubEndpoint_removeHostSink(JNIEnv* env, jobject /* 
                                                         jlong handle, jint dataFlowId) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     if (resource != nullptr) {
-        resource->removeSinkWrapper(dataFlowId);
+        resource->removeSinkWrapper(dataFlowId, /* sinkWrapper= */ nullptr, /* doErase= */ true);
     }
 }
 
