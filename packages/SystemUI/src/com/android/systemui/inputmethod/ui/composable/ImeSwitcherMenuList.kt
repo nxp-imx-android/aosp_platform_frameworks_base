@@ -46,15 +46,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.android.internal.R
-import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.common.ui.compose.Icon as SysuiIconComposable
 import com.android.systemui.inputmethod.ui.viewmodel.ImeSwitcherMenuViewModel
+import com.android.systemui.res.R
 
 /**
  * The UI for the list of IMEs and IME subtypes.
@@ -153,6 +153,12 @@ private fun ImeSwitcherMenuListItem(
                     .background(backgroundColor)
                     .semantics { this.selected = isSelected }
                     .clickable(
+                        onClickLabel =
+                            if (isSelected) {
+                                stringResource(R.string.input_method_switcher_dismiss)
+                            } else {
+                                stringResource(R.string.input_method_switcher_select_item)
+                            },
                         onClick = {
                             if (!isSelected) {
                                 viewModel.onImeAndSubtypeSelected(item.imeId, item.subtypeIndex)
@@ -191,7 +197,7 @@ private fun ImeSwitcherMenuListItem(
 
             if (isSelected) {
                 Icon(
-                    painter = painterResource(com.android.systemui.res.R.drawable.ic_check),
+                    painter = painterResource(R.drawable.ic_check),
                     contentDescription = null, // decorative
                     tint = selectedColor,
                     modifier = Modifier.padding(start = 12.dp).size(24.dp),

@@ -986,6 +986,12 @@
     <!-- Title of the large-screen version of the pop-up dialog in which the user switches keyboard or input method. [CHAR LIMIT=NONE] -->
     <string name="input_method_switcher_title_large_screen">Keyboard</string>
 
+    <!-- Accessible label for the action to select a keyboard or input method item in the IME switcher menu. [CHAR LIMIT=NONE] -->
+    <string name="input_method_switcher_select_item">select</string>
+
+    <!-- Accessible label for the action to close the IME switcher menu. [CHAR LIMIT=NONE] -->
+    <string name="input_method_switcher_dismiss">dismiss</string>
+
     <!-- The overflow indicator shown when a group has more notification inside the group than the visible ones. An example is "+ 3" [CHAR LIMIT=5] -->
     <string name="notification_group_overflow_indicator">+ <xliff:g id="number" example="3">%s</xliff:g></string>
 
