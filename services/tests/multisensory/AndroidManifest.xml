@@ -17,6 +17,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
      package="com.android.framework.services.tests.multisensory">
 
+    <uses-permission android:name="android.permission.REMOTE_MULTISENSORY_PLAYBACK" />
+
     <application android:debuggable="true">
         <uses-library android:name="android.test.mock" android:required="true" />
         <uses-library android:name="android.test.runner" />
