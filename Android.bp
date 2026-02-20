@@ -778,6 +778,7 @@ filegroup {
         ":framework-non-updatable-sources",
         ":opt-telephony-srcs",
         ":opt-net-voip-srcs",
+        ":modules-utils-xml-shared-srcs",
         "core/java/**/*.logtags",
         "**/package.html",
     ],
