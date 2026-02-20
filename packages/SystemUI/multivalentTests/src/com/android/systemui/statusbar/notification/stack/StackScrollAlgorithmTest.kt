@@ -2023,6 +2023,40 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     @EnableSceneContainer
     fun resetViewStates_stackOnLockscreen_fadingFromShade() {
         ambientState.fakeShowingStackOnLockscreen()
+        ambientState.isCurrentSceneLockscreen = true
+        ambientState.dozeAmount = 0.0f
+        ambientState.lockscreenStackFadeInProgress = 0.2f
+
+        whenever(notificationRow.isHeadsUpState).thenReturn(false)
+
+        stackScrollAlgorithm.initView(context)
+
+        stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
+
+        assertThat(notificationRow.viewState.alpha)
+            .isEqualTo(ambientState.lockscreenStackFadeInProgress)
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_stackNotOnLockscreen_fadingFromShade_onLockscreen() {
+        ambientState.isCurrentSceneLockscreen = true
+        ambientState.dozeAmount = 0.0f
+        ambientState.lockscreenStackFadeInProgress = 0.2f
+
+        whenever(notificationRow.isHeadsUpState).thenReturn(false)
+
+        stackScrollAlgorithm.initView(context)
+
+        stackScrollAlgorithm.resetViewStates(ambientState, /* speedBumpIndex= */ 0)
+
+        assertThat(notificationRow.viewState.alpha).isEqualTo(0f)
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_stackNotOnLockscreen_fadingFromShade_notOnLockscreen() {
+        ambientState.isCurrentSceneLockscreen = false
         ambientState.dozeAmount = 0.0f
         ambientState.lockscreenStackFadeInProgress = 0.2f
 
