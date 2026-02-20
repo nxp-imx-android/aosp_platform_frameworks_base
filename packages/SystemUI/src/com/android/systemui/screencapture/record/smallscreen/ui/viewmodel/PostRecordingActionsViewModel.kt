@@ -25,6 +25,7 @@ import android.view.Display
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
@@ -32,6 +33,7 @@ import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiPar
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.screencapture.record.largescreen.data.repository.ParentUriRepository
+import com.android.systemui.screencapture.record.shared.model.ScreenRecordEvent
 import com.android.systemui.screenrecord.service.ActivityStartingReceiver
 import com.android.systemui.settings.UserTracker
 import dagger.assisted.Assisted
@@ -51,6 +53,7 @@ constructor(
     private val drawableLoaderViewModel: DrawableLoaderViewModel,
     private val screenCaptureUiInteractor: ScreenCaptureUiInteractor,
     private val parentUriRepository: ParentUriRepository,
+    private val uiEventLogger: UiEventLogger,
 ) : HydratedActivatable(), DrawableLoaderViewModel by drawableLoaderViewModel {
 
     var parentUri: Uri? by mutableStateOf(null)
@@ -60,11 +63,13 @@ constructor(
         parentUri = parentUriRepository.getParentDirectoryUri(videoUri)
     }
 
-    fun retake() {
+    fun new() {
+        uiEventLogger.log(ScreenRecordEvent.SCREEN_RECORD_POST_RECORDING_NEW)
         screenCaptureUiInteractor.show(ScreenCaptureUiParameters.Record())
     }
 
     fun edit() {
+        uiEventLogger.log(ScreenRecordEvent.SCREEN_RECORD_POST_RECORDING_EDIT)
         startVideoActivity(
             action = Intent.ACTION_EDIT,
             label = context.getString(R.string.screen_record_edit),
@@ -89,6 +94,7 @@ constructor(
     }
 
     fun share() {
+        uiEventLogger.log(ScreenRecordEvent.SCREEN_RECORD_POST_RECORDING_SHARE)
         startVideoActivity(
             action = Intent.ACTION_SEND,
             label = context.getString(R.string.screenrecord_share_label),

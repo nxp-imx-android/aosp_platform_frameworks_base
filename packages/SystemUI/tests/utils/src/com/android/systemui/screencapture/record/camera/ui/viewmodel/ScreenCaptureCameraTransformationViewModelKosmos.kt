@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.camera.ui.viewmodel
 
+import com.android.internal.logging.uiEventLogger
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.record.camera.domain.interactor.screenCaptureCameraTransformationInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.screenRecordCameraInteractor
@@ -33,6 +34,7 @@ val Kosmos.screenCaptureCameraTransformationViewModelFactory:
                     screenRecordingServiceInteractor = screenRecordingServiceInteractor,
                     cameraInteractor = screenRecordCameraInteractor,
                     transformationInteractor = screenCaptureCameraTransformationInteractor,
+                    uiEventLogger = uiEventLogger,
                 )
         }
     }

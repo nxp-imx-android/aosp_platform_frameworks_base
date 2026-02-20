@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
+import com.android.internal.logging.uiEventLogger
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundCoroutineContext
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureMarkupInteractor
@@ -54,6 +55,7 @@ fun Kosmos.smallScreenCaptureRecordViewModelFactory(
                 screenCaptureCameraTransformationInteractor =
                     screenCaptureCameraTransformationInteractor,
                 screenRecordCameraInteractor = screenRecordCameraInteractor,
+                uiEventLogger = uiEventLogger,
                 defaultDetailsPopupType = defaultDetailsPopupType,
             )
     }
