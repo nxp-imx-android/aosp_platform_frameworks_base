@@ -67,12 +67,15 @@ class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScree
                         onExitEditField = { backStack.removeLast() },
                     )
                 }
-
                 is RulesScreenViewState.EditField.Action -> {
                     ActionChoiceScreen(viewState, onDismissRequest = { backStack.removeLast() })
                 }
-                is RulesScreenViewState.EditField.Contacts -> { ContactChoiceScreen(viewState) }
-                is RulesScreenViewState.EditField.Apps -> { AppChoiceScreen(viewState) }
+                is RulesScreenViewState.EditField.Contacts -> {
+                    ContactChoiceScreen(viewState, onDismissRequest = { backStack.removeLast() })
+                }
+                is RulesScreenViewState.EditField.Apps -> {
+                    AppChoiceScreen(viewState, onDismissRequest = { backStack.removeLast() })
+                }
             }
         }
     }

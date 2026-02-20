@@ -17,6 +17,7 @@
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 
 /** Represents the current state of the rules screen. */
@@ -43,7 +44,10 @@ public sealed interface RulesScreenViewState {
         ) : EditField
 
         /** The list of apps for a particular rule is being edited. */
-        public data class Apps(val viewModel: NotificationRuleEditViewModel) : EditField
+        public data class Apps(
+            val viewModel: NotificationRuleEditViewModel,
+            val onAppsSaved: (List<AppModel>) -> Unit,
+        ) : EditField
     }
 
     // TODO: b/478225883 - Add more edit types.

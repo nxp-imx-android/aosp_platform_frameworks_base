@@ -16,190 +16,43 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material3.Button
-import androidx.compose.material3.DockedSearchBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableStateSetOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
-import kotlinx.coroutines.launch
 
 /** Renders a fullscreen page to select 1 or more contacts matching a search string. */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ContactChoiceScreen(viewState: RulesScreenViewState.EditField.Contacts) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+fun ContactChoiceScreen(
+    viewState: RulesScreenViewState.EditField.Contacts,
+    onDismissRequest: () -> Unit,
+) {
     val viewModel = viewState.viewModel
+    val contentResolver = LocalContext.current.contentResolver
 
-    val currentSelectedContacts = remember {
-        val initialSelection =
-            when (val contacts = viewModel.rule.contacts) {
-                is RuleValue.Specified -> contacts.value.contacts
-                is RuleValue.Ambiguous -> emptyList()
-                null -> emptyList()
-            }
-        mutableStateSetOf(*initialSelection.toTypedArray())
-    }
-    var currentSearchResults by remember { mutableStateOf(emptyList<ContactModel>()) }
-    var currentQuery by remember {
-        val initialQuery =
-            when (val contacts = viewModel.rule.contacts) {
-                is RuleValue.Specified -> ""
-                is RuleValue.Ambiguous -> contacts.placeholderText
-                null -> ""
-            }
-        mutableStateOf(initialQuery)
-    }
-    var expanded by rememberSaveable { mutableStateOf(true) }
-
-    val onQueryChange: (String) -> Unit = { query: String ->
-        scope.launch {
-            currentSearchResults = viewModel.fetchContacts(query, context.contentResolver)
-        }
-    }
-
-    // When the dialog first opens, fetch all contacts.
-    LaunchedEffect(Unit) { onQueryChange.invoke(currentQuery) }
-
-    val onContactSelectionToggled: (ContactModel, Boolean) -> Unit =
-        { contactModel: ContactModel, isSelectedNew: Boolean ->
-            if (isSelectedNew) {
-                currentSelectedContacts.add(contactModel)
-            } else {
-                currentSelectedContacts.remove(contactModel)
-            }
+    val initialSelection =
+        when (val contacts = viewModel.rule.contacts) {
+            is RuleValue.Specified -> contacts.value.contacts
+            is RuleValue.Ambiguous -> emptyList()
+            null -> emptyList()
         }
 
-    DockedSearchBar(
-        inputField = {
-            SearchBarDefaults.InputField(
-                query = currentQuery,
-                onQueryChange = { newQuery: String ->
-                    currentQuery = newQuery
-                    onQueryChange(newQuery)
-                },
-                onSearch = { onQueryChange(it) },
-                placeholder = { Text(text = "Search [TK]") },
-                expanded = expanded,
-                onExpandedChange = { expanded = it },
+    EditScreen(
+        title = "People [TK]",
+        initialSelection = initialSelection,
+        onSelectionSaved = { viewState.onContactsSaved(it) },
+        onDismissRequest = onDismissRequest,
+        fetchSearchResults = { query -> viewModel.fetchContacts(query, contentResolver) },
+        sortKey = { it.name },
+        uniqueId = { it.lookupUri },
+        image = {
+            AsyncUriImage(
+                uri = it.photoUri,
+                contentDescription = it.name,
+                size = EditScreenDimens.imageSize,
+                viewModel = viewModel,
             )
         },
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
-    ) {
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            item(key = "Selected") {
-                Text("Selected [TK]", style = MaterialTheme.typography.titleLargeEmphasized)
-            }
-            currentSelectedContacts.forEach {
-                item(key = it.lookupUri) {
-                    Contact(
-                        contactModel = it,
-                        isSelected = true,
-                        setContactSelection = onContactSelectionToggled,
-                        viewModel = viewModel,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            }
-
-            item(key = "Search results") {
-                Text("Search results [TK]", style = MaterialTheme.typography.titleLargeEmphasized)
-            }
-            currentSearchResults.forEach {
-                if (it !in currentSelectedContacts) {
-                    item(key = it.lookupUri) {
-                        Contact(
-                            contactModel = it,
-                            isSelected = false,
-                            setContactSelection = onContactSelectionToggled,
-                            viewModel = viewModel,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                }
-            }
-
-            item(key = "Save") {
-                Button(onClick = { viewState.onContactsSaved(currentSelectedContacts.toList()) }) {
-                    Text("Save [TK]")
-                }
-            }
-        }
-    }
-}
-
-/**
- * Renders a single contact.
- *
- * @param isSelected true if the contact is currently selected to be part of the rule
- */
-@Composable
-private fun Contact(
-    contactModel: ContactModel,
-    isSelected: Boolean,
-    setContactSelection: (ContactModel, Boolean) -> Unit,
-    viewModel: NotificationRuleEditViewModel,
-    modifier: Modifier = Modifier,
-) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        AsyncUriImage(
-            uri = contactModel.photoUri,
-            contentDescription = contactModel.name,
-            size = 40.dp,
-            viewModel = viewModel,
-            modifier = Modifier.padding(start = 8.dp),
-        )
-
-        Text(
-            text = contactModel.name,
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.height(24.dp).fillMaxWidth(0.8f).padding(horizontal = 8.dp),
-        )
-        Button(onClick = { setContactSelection(contactModel, !isSelected) }) {
-            val iconModifier = Modifier.size(18.dp)
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Filled.Clear,
-                    contentDescription = "Remove contact [TK]",
-                    modifier = iconModifier,
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add contact [TK]",
-                    modifier = iconModifier,
-                )
-            }
-        }
-    }
+        text = { it.name },
+    )
 }

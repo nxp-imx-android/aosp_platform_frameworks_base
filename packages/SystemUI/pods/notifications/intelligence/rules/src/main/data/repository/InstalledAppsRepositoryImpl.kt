@@ -38,9 +38,11 @@ constructor(
         return withContext(backgroundDispatcher) {
             packageManager.getInstalledApplications(0).map {
                 AppModel(
+                    uid = it.uid,
                     label = it.loadLabel(packageManager).toString(),
                     // TODO: b/478225883 - Scale icon down.
                     icon = it.loadIcon(packageManager),
+                    packageName = it.packageName,
                 )
             }
         }

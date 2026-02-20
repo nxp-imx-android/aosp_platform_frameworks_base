@@ -39,6 +39,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
+import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
@@ -138,6 +139,7 @@ private fun buildAnnotatedText(
                 selectedIncludedApps = it,
                 viewModel = viewModel,
                 onEnterEditField = onEnterEditField,
+                onExitEditField,
                 textStyles = textStyles,
             )
         }
@@ -191,7 +193,12 @@ private fun buildAddFieldOptions(
             )
         }
         if (viewModel.rule.includedApps == null) {
-            add(RulesScreenViewState.EditField.Apps(viewModel = viewModel))
+            add(
+                RulesScreenViewState.EditField.Apps(
+                    viewModel = viewModel,
+                    onAppsSaved = { newApps -> onAppsSaved(newApps, viewModel, onExitEditField) },
+                )
+            )
         }
     }
 }
@@ -201,6 +208,7 @@ private fun AnnotatedString.Builder.createIncludedAppsText(
     selectedIncludedApps: RuleValue<IncludedAppsModel>,
     viewModel: NotificationRuleEditViewModel,
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
+    onExitEditField: () -> Unit,
     textStyles: TextStyles,
 ) {
     val text =
@@ -222,7 +230,14 @@ private fun AnnotatedString.Builder.createIncludedAppsText(
     clickableText(
         text = text,
         isAmbiguous = selectedIncludedApps is RuleValue.Ambiguous,
-        onClick = { onEnterEditField(RulesScreenViewState.EditField.Apps(viewModel = viewModel)) },
+        onClick = {
+            onEnterEditField(
+                RulesScreenViewState.EditField.Apps(
+                    viewModel = viewModel,
+                    onAppsSaved = { newApps -> onAppsSaved(newApps, viewModel, onExitEditField) },
+                )
+            )
+        },
         textStyles = textStyles,
     )
 }
@@ -315,6 +330,24 @@ private fun onContactsSaved(
                 } else {
                     // Saving with no selected contacts is effectively removing contacts from the
                     // filter.
+                    null
+                }
+        )
+    onExitEditField()
+}
+
+private fun onAppsSaved(
+    newApps: List<AppModel>,
+    viewModel: NotificationRuleEditViewModel,
+    onExitEditField: () -> Unit,
+) {
+    viewModel.rule =
+        viewModel.rule.copy(
+            includedApps =
+                if (newApps.isNotEmpty()) {
+                    RuleValue.Specified(IncludedAppsModel(newApps))
+                } else {
+                    // Saving with no selected apps is effectively removing apps from the filter.
                     null
                 }
         )

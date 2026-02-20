@@ -20,11 +20,13 @@ import android.graphics.drawable.Drawable
 
 /** Represents an app installed on the device. */
 public data class AppModel(
-    // TODO: b/478225883 - Support UIDs, since that's the API used by
-    // [android.app.NotificationRule].
+    val uid: Int,
     val label: String,
     val icon: Drawable,
-)
+    val packageName: String,
+) {
+    val uniqueId: String = "$uid-$packageName"
+}
 
 /** Represents a set of apps that are included as part of a notification rule filter. */
 public data class IncludedAppsModel(val apps: List<AppModel>) {
