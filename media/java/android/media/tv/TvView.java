@@ -1238,6 +1238,7 @@ public class TvView extends ViewGroup {
          * <li>{@link TvInputManager#VIDEO_UNAVAILABLE_REASON_WEAK_SIGNAL}
          * <li>{@link TvInputManager#VIDEO_UNAVAILABLE_REASON_BUFFERING}
          * <li>{@link TvInputManager#VIDEO_UNAVAILABLE_REASON_AUDIO_ONLY}
+         * <li>{@link TvInputManager#VIDEO_UNAVAILABLE_REASON_NO_VIDEO_NO_AUDIO}
          * </ul>
          */
         public void onVideoUnavailable(
@@ -1267,10 +1268,10 @@ public class TvView extends ViewGroup {
          * This is invoked when a custom event from the bound TV input is sent to this view.
          *
          * @param inputId The ID of the TV input bound to this view.
-         * @param eventType The type of the event.
-         * @param eventArgs Optional arguments of the event; eventArgs must include
-         *                  {@link TvInputService#EXTRA_SESSION_ID} when eventType is
-         *                  {@link TvInputService#EVENT_SESSION_ID_SYNC}.
+         * @param eventType The type of the event, see {@link TvInputService.SessionEventType}
+         *                  as reference.
+         * @param eventArgs Optional arguments of the event.
+         *
          * @hide
          */
         @SystemApi

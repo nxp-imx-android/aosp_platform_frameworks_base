@@ -135,7 +135,7 @@ public final class TvInputManager {
             VIDEO_UNAVAILABLE_REASON_CAS_NO_CARD, VIDEO_UNAVAILABLE_REASON_CAS_CARD_MUTE,
             VIDEO_UNAVAILABLE_REASON_CAS_CARD_INVALID, VIDEO_UNAVAILABLE_REASON_CAS_BLACKOUT,
             VIDEO_UNAVAILABLE_REASON_CAS_REBOOTING, VIDEO_UNAVAILABLE_REASON_CAS_UNKNOWN,
-            VIDEO_UNAVAILABLE_REASON_STOPPED})
+            VIDEO_UNAVAILABLE_REASON_STOPPED, VIDEO_UNAVAILABLE_REASON_NO_VIDEO_NO_AUDIO})
     public @interface VideoUnavailableReason {}
 
     /** Indicates that this TV message contains watermarking data */
@@ -352,6 +352,15 @@ public final class TvInputManager {
      */
     @FlaggedApi(Flags.FLAG_TIAF_V_APIS)
     public static final int VIDEO_UNAVAILABLE_REASON_STOPPED = 19;
+
+    /**
+     * Reason for {@link TvInputService.Session#notifyVideoUnavailable(int)} and
+     * {@link TvView.TvInputCallback#onVideoUnavailable(String, int)}: Video is unavailable because
+     * both video and audio are unavailable while video has signal.
+     *
+     * @hide
+     */
+    public static final int VIDEO_UNAVAILABLE_REASON_NO_VIDEO_NO_AUDIO = 20;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
