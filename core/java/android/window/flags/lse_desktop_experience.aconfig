@@ -1152,6 +1152,13 @@ flag {
 }
 
 flag {
+    name: "protect_set_launch_windowing_mode_api"
+    namespace: "lse_desktop_experience"
+    description: "Protect setLaunchWindowingMode API from being called by 3P apps."
+    bug: "484322740"
+}
+
+flag {
     name: "reenable_app_handle_color_animations"
     namespace: "lse_desktop_experience"
     description: "Re-enables the app handle color animations"
