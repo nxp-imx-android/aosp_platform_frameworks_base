@@ -1303,7 +1303,7 @@ public final class AppFunctionManager {
         void onAppFunctionAccessChanged(int agentUid);
     }
 
-    private final class OnAppFunctionAccessChangeListenerDelegate
+    private static final class OnAppFunctionAccessChangeListenerDelegate
             extends IOnAppFunctionAccessChangeListener.Stub {
 
         private final OnAppFunctionAccessChangedListener mListener;
