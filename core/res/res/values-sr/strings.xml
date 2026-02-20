@@ -760,19 +760,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"Откључавање уређаја"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"Пробајте други начин откључавања"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"Користите откључавање лицем када вам се отисак прста не препозна, на пример, када су вам прсти влажни"</string>
-    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
-    <skip />
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"Откључајте помоћу лица када вам се отисак прста не препозна, на пример, када су вам прсти влажни"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Користите откључавање отиском прста када вам се лице не препозна, на пример, када је осветљење слабо"</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"Откључавање лицем"</string>
-    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
-    <skip />
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"Откључавање лицем"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"Проблем са откључавање лицем"</string>
-    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
-    <skip />
+    <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"Проблем са откључавањем лицем"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"Додирните да бисте избрисали модел лица, па поново додајте своје лице"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"Да бисте користили откључавање лицем, укључите "<b>"приступ камери"</b>" у одељку Подешавања &gt; Приватност"</string>
-    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
-    <skip />
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"Да бисте откључавали лицем, укључите "<b>"Приступ камери"</b>" у одељку Подешавања &gt; Приватност"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"Откључавање отиском прста"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"Не можете да користите сензор за отисак прста"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"Посетите добављача за поправке."</string>
@@ -780,42 +776,31 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Превише је светло. Пробајте са слабијим осветљењем."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Нема довољно светла"</string>
     <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"Удаљите телефон"</string>
-    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
-    <skip />
+    <string name="face_acquired_too_close" product="desktop" msgid="7189579448504853047">"Удаљите уређај још мало"</string>
     <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"Приближите телефон"</string>
-    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
-    <skip />
+    <string name="face_acquired_too_far" product="desktop" msgid="6590730829823321223">"Приближите уређај"</string>
     <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"Померите телефон нагоре"</string>
-    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
-    <skip />
+    <string name="face_acquired_too_high" product="desktop" msgid="717393614154504299">"Померите уређај нагоре"</string>
     <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"Померите телефон надоле"</string>
-    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
-    <skip />
+    <string name="face_acquired_too_low" product="desktop" msgid="7695733281069538045">"Померите уређај надоле"</string>
     <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"Померите телефон улево"</string>
-    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
-    <skip />
+    <string name="face_acquired_too_right" product="desktop" msgid="4058756237538843740">"Померите уређај улево"</string>
     <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"Померите телефон удесно"</string>
-    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
-    <skip />
+    <string name="face_acquired_too_left" product="desktop" msgid="5804819007366973778">"Померите уређај надесно"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Гледајте право у камеру"</string>
     <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"Не види се лице. Држите телефон у висини очију."</string>
-    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
-    <skip />
+    <string name="face_acquired_not_detected" product="desktop" msgid="1047701586390904260">"Не види се лице. Држите уређај у висини очију."</string>
     <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"Много се померате. Држите телефон мирно."</string>
-    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
-    <skip />
+    <string name="face_acquired_too_much_motion" product="desktop" msgid="7135563968992659161">"Много се померате. Не померајте уређај."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Поново региструјте лице."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"Лице није препознато. Пробајте поново."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"Мало померите главу"</string>
     <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"Гледајте право у телефон"</string>
-    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
-    <skip />
+    <string name="face_acquired_pan_too_extreme" product="desktop" msgid="821456302944137576">"Гледајте право у уређај"</string>
     <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"Гледајте право у телефон"</string>
-    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
-    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="desktop" msgid="1119243364774233108">"Гледајте право у уређај"</string>
     <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"Гледајте право у телефон"</string>
-    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
-    <skip />
+    <string name="face_acquired_roll_too_extreme" product="desktop" msgid="3665467581072397682">"Гледајте право у уређај"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"Уклоните све што вам заклања лице."</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"Очистите горњи део екрана, укључујући црну траку"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -829,30 +814,24 @@
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Провера лица није успела. Хардвер није доступан."</string>
     <string name="face_error_timeout" product="default" msgid="2598544068593889762">"Пробајте поново откључавање лицем"</string>
-    <!-- no translation found for face_error_timeout (8136501408214657840) -->
-    <skip />
+    <string name="face_error_timeout" product="desktop" msgid="8136501408214657840">"Пробајте поново да откључате лицем"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"Нови подаци о лицу нису сачувани. Прво избришете претходне."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"Обрада лица је отказана."</string>
     <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"Корисник је отказао откључавање лицем"</string>
-    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
-    <skip />
+    <string name="face_error_user_canceled" product="desktop" msgid="8903551031462609651">"Корисник је отказао откључавање лицем"</string>
     <string name="face_error_lockout" msgid="7864408714994529437">"Превише покушаја. Пробајте поново касније."</string>
     <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"Превише покушаја. Откључавање лицем није доступно."</string>
-    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
-    <skip />
+    <string name="face_error_lockout_permanent" product="desktop" msgid="1885291877517229762">"Превише покушаја. Откључавање лицем није доступно."</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"Превише покушаја. Користите откључавање екрана за то."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"Провера лица није успела. Пробајте поново."</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"Нисте подесили откључавање лицем"</string>
-    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
-    <skip />
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"Откључавање лицем још није подешено"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"Откључавање лицем није подржано на овом уређају"</string>
-    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
-    <skip />
+    <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"Откључавање лицем није подржано на овом уређају"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"Сензор је привремено онемогућен."</string>
     <string name="face_name_template" msgid="3877037340223318119">"Лице <xliff:g id="FACEID">%d</xliff:g>"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"Користите откључавање лицем"</string>
-    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
-    <skip />
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"Откључавање лицем"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"Користите откључавање лицем или откључавање екрана"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"Потврдите идентитет лицем да бисте наставили"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"Користите лице или откључавање екрана да бисте наставили"</string>
@@ -1113,8 +1092,7 @@
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Притисните било који тастер да бисте откључали"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Откључајте за све функције и податке"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Премашен је највећи дозвољени број покушаја Откључавања лицем"</string>
-    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
-    <skip />
+    <string name="faceunlock_multiple_failures" product="desktop" msgid="5388142244463490793">"Достигли сте максималан број покушаја откључавања лицем"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Нема SIM-а"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"Нема SIM-а у таблету."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"Нема SIM-а у Android TV уређају."</string>
@@ -1186,8 +1164,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"Откључавање превлачењем."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"Откључавање шаблоном."</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"Откључавање лицем."</string>
-    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
-    <skip />
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"Откључајте лицем."</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"Откључавање PIN-ом."</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Откључава SIM картицу PIN-ом."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Откључава SIM картицу PUK-ом."</string>
@@ -1924,8 +1901,7 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Промени"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Подешавања"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Пребацивање на: <xliff:g id="NAME">%1$s</xliff:g>"</string>
-    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
-    <skip />
+    <string name="user_logging_out_message" msgid="2968888364742643174">"Одјављујете се…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Власник"</string>
     <string name="guest_name" msgid="8502103277839834324">"Гост"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Системски корисник"</string>
@@ -2188,23 +2164,17 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"AI агенти и услуге којима сте дозволили приступ услузи %1$s и даље ће моћи да приступају њеним подацима"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Додај закључавање апликација"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Откључавање лицем"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"Откључавање лицем"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Откључавање отиском прста"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"Откључавање отиском прста и лицем"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"Откључавање отиском прста, откључавање лицем"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"лозинка"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"шаблон"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
-    <!-- no translation found for app_lock_permission_review_dialog_title_photos (6193222920123912729) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_photos (1854948251386976703) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title_files (8820759644609198515) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_files (2999447193189851364) -->
-    <skip />
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"Слике могу и даље да се приказују у другим апликацијама"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"Апликације са приступом сликама"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"Фајлови могу и даље да се приказују у другим апликацијама"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"Апликације са приступом фајловима"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Прикажи све"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Настави"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Укључити пословне апликације?"</string>
@@ -2694,11 +2664,9 @@
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> више не може да се препозна. Поново подесите откључавање отиском прста."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> и <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> више не могу да се препознају. Поново подесите откључавање отиском прста."</string>
     <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"Поново подесите откључавање лицем"</string>
-    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
-    <skip />
+    <string name="face_dangling_notification_title" product="desktop" msgid="4632690536207343589">"Поново подесите откључавање лицем"</string>
     <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"Ваш модел лица више не може да се препозна. Поново подесите откључавање лицем."</string>
-    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
-    <skip />
+    <string name="face_dangling_notification_msg" product="desktop" msgid="5982979430103820891">"Модел лица више не може да се препозна. Поново подесите откључавање лицем."</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"Подеси"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"Не сада"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"Аларм за: <xliff:g id="USER_NAME">%s</xliff:g>"</string>
@@ -2738,4 +2706,5 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Новости од родитеља"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Апликација <xliff:g id="APP_NAME">%1$s</xliff:g> је за сад уклоњена"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Апликација <xliff:g id="APP_NAME">%1$s</xliff:g> је сада доступна"</string>
+    <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Пребацуј на друге"</string>
 </resources>

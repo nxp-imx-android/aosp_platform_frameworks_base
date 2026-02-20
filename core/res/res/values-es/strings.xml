@@ -760,19 +760,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"Desbloqueo del dispositivo"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"Prueba otro método de desbloqueo"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"Usa Desbloqueo facial cuando no se reconozca tu huella (p. ej., si tienes los dedos mojados)"</string>
-    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
-    <skip />
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"Usa el desbloqueo con la cara cuando no se reconozca tu huella digital, como cuando tengas los dedos mojados"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Usa Desbloqueo con huella digital cuando no se reconozca tu cara (p. ej., si hay poca luz)"</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"Desbloqueo facial"</string>
-    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
-    <skip />
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"Desbloqueo con la cara"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"Problema con Desbloqueo facial"</string>
-    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
-    <skip />
+    <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"Problema al desbloquear con la cara"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"Toca para eliminar tu modelo facial y luego añade de nuevo tu cara"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"Para usar Desbloqueo Facial, habilita el "<b>"acceso a la cámara"</b>" en Ajustes y privacidad"</string>
-    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
-    <skip />
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"Para desbloquear con la cara, activa el "<b>"acceso a la cámara"</b>" en Ajustes &gt; Privacidad"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"Desbloqueo con huella digital"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"No se puede usar el sensor de huellas digitales"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"Visita un proveedor de reparaciones."</string>
@@ -780,42 +776,31 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Hay demasiada luz. Busca un sitio menos iluminado."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"No hay suficiente luz"</string>
     <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"Aleja el teléfono"</string>
-    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
-    <skip />
+    <string name="face_acquired_too_close" product="desktop" msgid="7189579448504853047">"Aleja el dispositivo"</string>
     <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"Acerca el teléfono"</string>
-    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
-    <skip />
+    <string name="face_acquired_too_far" product="desktop" msgid="6590730829823321223">"Acerca el dispositivo"</string>
     <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"Sube el teléfono"</string>
-    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
-    <skip />
+    <string name="face_acquired_too_high" product="desktop" msgid="717393614154504299">"Sube el dispositivo"</string>
     <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"Baja el teléfono"</string>
-    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
-    <skip />
+    <string name="face_acquired_too_low" product="desktop" msgid="7695733281069538045">"Baja el dispositivo"</string>
     <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"Mueve el teléfono hacia la izquierda"</string>
-    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
-    <skip />
+    <string name="face_acquired_too_right" product="desktop" msgid="4058756237538843740">"Mueve el dispositivo hacia la izquierda"</string>
     <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"Mueve el teléfono hacia la derecha"</string>
-    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
-    <skip />
+    <string name="face_acquired_too_left" product="desktop" msgid="5804819007366973778">"Mueve el dispositivo hacia la derecha"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Mira más directamente a la cámara"</string>
     <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"No se ve tu cara. Sujeta el teléfono a la altura de los ojos."</string>
-    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
-    <skip />
+    <string name="face_acquired_not_detected" product="desktop" msgid="1047701586390904260">"No se te ve la cara. Sujeta el dispositivo a la altura de los ojos."</string>
     <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"El teléfono se mueve demasiado. Mantenlo quieto."</string>
-    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
-    <skip />
+    <string name="face_acquired_too_much_motion" product="desktop" msgid="7135563968992659161">"El dispositivo se mueve mucho. Sujétalo firmemente."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Vuelve a registrar tu cara."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"Cara no reconocida. Inténtalo de nuevo."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"Cambia ligeramente la posición de tu cabeza"</string>
     <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"Mira al teléfono de forma más directa"</string>
-    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
-    <skip />
+    <string name="face_acquired_pan_too_extreme" product="desktop" msgid="821456302944137576">"Mira más directamente al dispositivo"</string>
     <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"Mira al teléfono de forma más directa"</string>
-    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
-    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="desktop" msgid="1119243364774233108">"Mira más directamente al dispositivo"</string>
     <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"Mira al teléfono de forma más directa"</string>
-    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
-    <skip />
+    <string name="face_acquired_roll_too_extreme" product="desktop" msgid="3665467581072397682">"Mira más directamente al dispositivo"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"Retira cualquier objeto que te tape la cara"</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"Limpia la parte superior de la pantalla, incluida la barra de color negro"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -829,30 +814,24 @@
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"No se puede verificar. Hardware no disponible."</string>
     <string name="face_error_timeout" product="default" msgid="2598544068593889762">"Vuelve a probar Desbloqueo facial"</string>
-    <!-- no translation found for face_error_timeout (8136501408214657840) -->
-    <skip />
+    <string name="face_error_timeout" product="desktop" msgid="8136501408214657840">"Intenta el desbloqueo con la cara de nuevo"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"Para guardar nuevos datos faciales, borra otros antiguos."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"Se ha cancelado el reconocimiento facial."</string>
     <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"El usuario ha cancelado Desbloqueo facial"</string>
-    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
-    <skip />
+    <string name="face_error_user_canceled" product="desktop" msgid="8903551031462609651">"Desbloqueo con la cara cancelado por el usuario"</string>
     <string name="face_error_lockout" msgid="7864408714994529437">"Demasiados intentos. Inténtalo de nuevo más tarde."</string>
     <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"Demasiados intentos. Desbloqueo facial no disponible."</string>
-    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
-    <skip />
+    <string name="face_error_lockout_permanent" product="desktop" msgid="1885291877517229762">"Demasiados intentos. Desbloqueo con la cara no disponible."</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"Demasiados intentos. Usa el bloqueo de pantalla."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"No se ha verificado tu cara. Vuelve a intentarlo."</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"No has configurado Desbloqueo facial"</string>
-    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
-    <skip />
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"Aún no se ha configurado el desbloqueo con la cara"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"Este dispositivo no admite Desbloqueo facial"</string>
-    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
-    <skip />
+    <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"Este dispositivo no admite el desbloqueo con la cara"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"El sensor está inhabilitado en estos momentos."</string>
     <string name="face_name_template" msgid="3877037340223318119">"Cara <xliff:g id="FACEID">%d</xliff:g>"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"Usar Desbloqueo facial"</string>
-    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
-    <skip />
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"Desbloqueo con la cara"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"Usar Desbloqueo facial o Bloqueo de pantalla"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"Usa tu cara para continuar"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"Usa tu cara o tu bloqueo de pantalla para continuar"</string>
@@ -1113,8 +1092,7 @@
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Pulsa cualquier tecla para desbloquear"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Desbloquear para todos los datos y funciones"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Se ha superado el número máximo de intentos de Desbloqueo facial."</string>
-    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
-    <skip />
+    <string name="faceunlock_multiple_failures" product="desktop" msgid="5388142244463490793">"Se ha alcanzado el máximo de intentos de desbloqueo con la cara"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"No hay ninguna SIM"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"No hay ninguna SIM en la tablet."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"No hay ninguna SIM en tu dispositivo Android TV."</string>
@@ -1186,8 +1164,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"Desbloqueo deslizando el dedo"</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"Desbloqueo por patrón"</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"Desbloqueo facial."</string>
-    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
-    <skip />
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"Usa la cara para desbloquear."</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"Desbloqueo por PIN"</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Desbloqueo con PIN de la SIM."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Desbloqueo con PUK de la SIM."</string>
@@ -1924,8 +1901,7 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Cambiar"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Ajustes"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Cambiando a <xliff:g id="NAME">%1$s</xliff:g>…"</string>
-    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
-    <skip />
+    <string name="user_logging_out_message" msgid="2968888364742643174">"Cerrando sesión…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Propietario"</string>
     <string name="guest_name" msgid="8502103277839834324">"Invitado"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Usuario del sistema"</string>
@@ -2188,23 +2164,17 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"Los agentes y servicios de IA a los que hayas permitido el acceso a %1$s aún podrán acceder a sus datos"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Añadir bloqueo de app"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Desbloqueo facial"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"Desbloqueo con la cara"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Desbloqueo con huella digital"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"Desbloqueo facial y con huella digital"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"Desbloq. con huella digital y con la cara"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"contraseña"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"patrón"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
-    <!-- no translation found for app_lock_permission_review_dialog_title_photos (6193222920123912729) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_photos (1854948251386976703) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title_files (8820759644609198515) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_files (2999447193189851364) -->
-    <skip />
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"Tus fotos pueden seguir apareciendo en otras apps"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"Apps con acceso a tus fotos"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"Tus archivos pueden seguir apareciendo en otras apps"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"Apps con acceso a tus archivos"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Ver todas"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Continuar"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"¿Reactivar apps de trabajo?"</string>
@@ -2694,11 +2664,9 @@
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> ya no puede reconocerse. Vuelve a configurar Desbloqueo con huella digital."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> y <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> ya no pueden reconocerse. Vuelve a configurar Desbloqueo con huella digital."</string>
     <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"Configura Desbloqueo facial de nuevo"</string>
-    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
-    <skip />
+    <string name="face_dangling_notification_title" product="desktop" msgid="4632690536207343589">"Configura el desbloqueo con la cara de nuevo"</string>
     <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"Tu modelo facial ya no puede reconocerse. Vuelve a configurar Desbloqueo facial."</string>
-    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
-    <skip />
+    <string name="face_dangling_notification_msg" product="desktop" msgid="5982979430103820891">"Tu modelo facial ya no puede reconocerse. Configura el desbloqueo con la cara de nuevo."</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"Configurar"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"Ahora no"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"Alarma para <xliff:g id="USER_NAME">%s</xliff:g>"</string>
@@ -2738,4 +2706,6 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Actualizado por tu padre o madre"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Se ha quitado <xliff:g id="APP_NAME">%1$s</xliff:g> por ahora"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ya está disponible"</string>
+    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
+    <skip />
 </resources>

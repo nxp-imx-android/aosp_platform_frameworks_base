@@ -2196,14 +2196,10 @@
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"पासवर्ड"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"प्याटर्न"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
-    <!-- no translation found for app_lock_permission_review_dialog_title_photos (6193222920123912729) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_photos (1854948251386976703) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title_files (8820759644609198515) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_files (2999447193189851364) -->
-    <skip />
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"तपाईंका फोटोहरू अझै पनि अन्य एपहरूमा देखिन सक्छन्"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"तपाईंका फोटोहरूको एक्सेस भएका एपहरू"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"तपाईंका फाइलहरू अझै पनि अन्य एपहरूमा देखिन सक्छन्"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"तपाईंका फाइलहरूको एक्सेस भएका एपहरू"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"सबै हेर्नुहोस्"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"जारी राख्नुहोस्"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"वर्क एपहरू अनपज गर्ने हो?"</string>
@@ -2737,4 +2733,6 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"तपाईंका अभिभावकले गर्नुभएको अपडेट"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"अहिलेलाई <xliff:g id="APP_NAME">%1$s</xliff:g> हटाइएको छ"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> अब उपलब्ध भएको छ"</string>
+    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
+    <skip />
 </resources>
