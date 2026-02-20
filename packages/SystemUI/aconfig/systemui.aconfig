@@ -689,6 +689,16 @@ flag {
 }
 
 flag {
+    name: "fix_collapsing_overshoot_timing"
+    namespace: "systemui"
+    description: "Fixes the timing of maxOvershoot calculation during collapsing animations."
+    bug: "452479381"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_dialog_anim_collapse_flicker"
     namespace: "systemui"
     description: "Fix a flicker in bluetooth tile when it is tapping during dialog collapse animation"
