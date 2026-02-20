@@ -388,15 +388,6 @@ flag {
     }
 }
 
-flag {
-    name: "enable_desktop_first_persisted_launch_params_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fixes an issue where freeform windowing mode is unexpectedly persisted across launches."
-    bug: "461305925"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
 
 flag {
     name: "enable_desktop_first_policy_in_lpm"
