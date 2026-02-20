@@ -1132,16 +1132,6 @@ flag {
 }
 
 flag {
-    name: "parallel_cd_transitions_during_recents"
-    namespace: "lse_desktop_experience"
-    description: "Runs CD transitions in a separate track when the recents transition is running"
-    bug: "416499938"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "protect_set_launch_windowing_mode_api"
     namespace: "lse_desktop_experience"
     description: "Protect setLaunchWindowingMode API from being called by 3P apps."
