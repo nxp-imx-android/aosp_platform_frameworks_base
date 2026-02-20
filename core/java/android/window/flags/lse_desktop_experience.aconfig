@@ -430,16 +430,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_immersive_drag_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Keeps the app handle visible during a drag."
-    bug: "381280828"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_mode_through_dev_option"
     namespace: "lse_desktop_experience"
     description: "Enables support for desktop mode through developer options for devices eligible for desktop mode."
