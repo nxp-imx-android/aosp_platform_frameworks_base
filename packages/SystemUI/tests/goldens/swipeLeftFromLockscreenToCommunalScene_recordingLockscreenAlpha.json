@@ -35,7 +35,7 @@
   ],
   "features": [
     {
-      "name": "contentAlpha",
+      "name": "lockscreenContentAlpha",
       "type": "float",
       "data_points": [
         1,
