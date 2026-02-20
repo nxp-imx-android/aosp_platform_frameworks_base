@@ -1232,6 +1232,16 @@ flag {
 }
 
 flag {
+    name: "show_when_locked_desktop_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes an issue where show-when-locked activities are not correctly handled on external displays in desktop mode."
+    bug: "443008976"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "skip_deactivation_of_desk_with_nothing_in_front"
     namespace: "lse_desktop_experience"
     description: "Keep the desk active on TO_BACK transitions without nothing else in front"
