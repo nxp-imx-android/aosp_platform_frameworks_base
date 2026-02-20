@@ -115,6 +115,19 @@ filegroup_defaults {
     defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
 }
 
+// Represents code in the "preview" folder of a pod
+java_defaults {
+    name: "sysui_preview",
+    defaults: ["sysui_pod_defaults"],
+    srcs: [
+        "src/preview/**/*.kt",
+    ],
+    libs: [
+        "androidx.compose.ui_ui-tooling-preview",
+    ],
+    defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
+}
+
 java_defaults {
     name: "sysui_pod_defaults",
     lint: {

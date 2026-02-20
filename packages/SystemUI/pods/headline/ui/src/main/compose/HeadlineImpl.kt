@@ -64,11 +64,20 @@ import com.android.systemui.headline.ui.viewmodel.HeadlineItemContent
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel.Companion.GoneScene
 import com.android.systemui.headline.ui.viewmodel.toHeadlineItemKey
+import javax.inject.Inject
 import kotlinx.coroutines.launch
+
+/** Implementation of the [Headline] composer. */
+public class HeadlineImpl @Inject constructor() : Headline {
+    @Composable
+    override fun Content(viewModel: HeadlineViewModel, modifier: Modifier) {
+        Headline(viewModel, modifier)
+    }
+}
 
 /** The top-level composable for the Headline UI. */
 @Composable
-fun Headline(viewModel: HeadlineViewModel, modifier: Modifier = Modifier) {
+public fun Headline(viewModel: HeadlineViewModel, modifier: Modifier = Modifier) {
     CompositionLocalProvider(
         LocalContentColor provides Color.White,
         LocalTextStyle provides MaterialTheme.typography.labelMedium,

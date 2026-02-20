@@ -22,6 +22,7 @@ java_library {
         // go/keep-sorted start
         "com.android.systemui.brightness_dagger",
         "com.android.systemui.graphics_dagger",
+        "com.android.systemui.headline.ui_dagger",
         "com.android.systemui.notifications.intelligence.rules.ui_dagger",
         "com.android.systemui.notifications.intelligence.rules_dagger",
         "com.android.systemui.notifications.ui.composable",
@@ -50,6 +51,7 @@ java_library {
         "com.android.systemui.common.shared.model_api",
         "com.android.systemui.flags_api",
         "com.android.systemui.graphics_api",
+        "com.android.systemui.headline.ui_api",
         "com.android.systemui.lifecycle_api",
         "com.android.systemui.log-api",
         "com.android.systemui.log.table-api",
