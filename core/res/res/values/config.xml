@@ -7985,6 +7985,9 @@
      <!-- Whether to enable app launch blur -->
     <bool name="config_enableAppLaunchBlur">true</bool>
 
+     <!-- Whether to enable blur expansion (surface blurs) -->
+    <bool name="config_enableBlurExpansion">true</bool>
+
     <!-- Whether the native_serial service is supported by this device. -->
     <bool name="config_supportNativeSerialService">false</bool>
 
