@@ -286,16 +286,6 @@ flag {
 }
 
 flag {
-    name: "enable_display_mirror_in_lock_task_mode"
-    namespace: "lse_desktop_experience"
-    description: "Starts mirroring on the connected display if the device is in lock task mode."
-    bug: "408988940"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "configure_app_resolution_change"
     namespace: "display_manager"
     description: "Enables app dynamic resolution change configuration"

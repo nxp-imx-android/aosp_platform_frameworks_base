@@ -4463,7 +4463,6 @@ public class DisplayManagerServiceTest {
     @Test
     public void testMirrorBuiltInDisplay_inLockTaskMode() {
         when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
-        when(mMockFlags.isDisplayMirrorInLockTaskModeEnabled()).thenReturn(true);
         when(mMockActivityTaskManagerInternal.getLockTaskModeState())
                 .thenReturn(ActivityManager.LOCK_TASK_MODE_LOCKED);
 
@@ -4477,7 +4476,6 @@ public class DisplayManagerServiceTest {
     @Test
     public void testMirrorBuiltInDisplay_isNotInLockTaskMode() {
         when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
-        when(mMockFlags.isDisplayMirrorInLockTaskModeEnabled()).thenReturn(true);
         when(mMockActivityTaskManagerInternal.getLockTaskModeState())
                 .thenReturn(ActivityManager.LOCK_TASK_MODE_NONE);
 
@@ -4496,7 +4494,6 @@ public class DisplayManagerServiceTest {
     @Test
     public void testMirrorBuiltInDisplay_onLockTaskModeChanged() {
         when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
-        when(mMockFlags.isDisplayMirrorInLockTaskModeEnabled()).thenReturn(true);
         when(mMockActivityTaskManagerInternal.getLockTaskModeState())
                 .thenReturn(ActivityManager.LOCK_TASK_MODE_NONE);
 

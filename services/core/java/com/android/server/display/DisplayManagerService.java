@@ -903,9 +903,7 @@ public final class DisplayManagerService extends SystemService {
             mContext.getSystemService(DeviceStateManager.class).registerCallback(
                     mHandlerExecutor, new DeviceStateListener());
 
-            if (mFlags.isDisplayMirrorInLockTaskModeEnabled()) {
-                setupTaskStackListener();
-            }
+            setupTaskStackListener();
 
             mLogicalDisplayMapper.onWindowManagerReady();
             scheduleTraversalLocked(false);
@@ -1326,7 +1324,7 @@ public final class DisplayManagerService extends SystemService {
 
     private boolean updateMirrorBuiltInDisplaySettingLocked(boolean shouldSendDisplayChangeEvent) {
         final boolean mirrorBuiltInDisplay;
-        if (mFlags.isDisplayMirrorInLockTaskModeEnabled()
+        if (mActivityTaskManagerInternal != null
                 && mActivityTaskManagerInternal.getLockTaskModeState()
                 == ActivityManager.LOCK_TASK_MODE_LOCKED) {
             // If the device is in lock task mode, enable external displays mirroring regardless of
