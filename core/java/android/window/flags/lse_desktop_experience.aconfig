@@ -23,6 +23,16 @@ flag {
 }
 
 flag {
+   name: "change_display_focus_on_wallpaper_touch"
+   namespace: "lse_desktop_experience"
+   description: "Change display focus on touching wallpaper"
+   bug: "440655802"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "close_fullscreen_and_splitscreen_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enable keyboard shortcut to close fullscreen and split screen tasks"
