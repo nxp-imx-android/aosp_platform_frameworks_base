@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Képernyő automatikus forgatása"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"Engedélyezi a(z) <xliff:g id="APPLICATION">%1$s</xliff:g> számára, hogy hozzáférjen a következőhöz: <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"Lehetővé teszi a(z) <xliff:g id="APPLICATION">%1$s</xliff:g> alkalmazásnak, hogy hozzáférjen a következőhöz: <xliff:g id="USB_DEVICE">%2$s</xliff:g>?\nEz az alkalmazás nem rendelkezik rögzítési engedéllyel, de ezzel az USB-eszközzel képes a hangfelvételre."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"Engedélyezi a(z) &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; számára, hogy hozzáférjen a következőhöz: &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>’s&lt;/b&gt;?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"Megnyitja a(z) &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; alkalmazást a(z) &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; kezeléséhez?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Ez az alkalmazás nem rendelkezik rögzítési engedéllyel, de ezzel az USB-eszközzel képes a hangfelvételre. Ha a(z) <xliff:g id="APPLICATION">%1$s</xliff:g> alkalmazást használja ezzel az eszközzel, előfordulhat, hogy nem hallja meg a hívásokat, értesítéseket és riasztásokat."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"Ha a(z) <xliff:g id="APPLICATION">%1$s</xliff:g> alkalmazást használja ezzel az eszközzel, előfordulhat, hogy nem hallja meg a hívásokat, értesítéseket és riasztásokat."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"Engedélyezi a(z) <xliff:g id="APPLICATION">%1$s</xliff:g> számára, hogy hozzáférjen a következőhöz: <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
@@ -167,11 +165,15 @@
     <string name="screen_record_single_app_hint" msgid="8404332826093639170">"Rögzíteni kívánt alkalmazás"</string>
     <string name="screen_record_single_app_no_recents" msgid="1023249803854209330">"Egyetlen app (a választáshoz nyisson meg egy appot)"</string>
     <string name="screen_record_record_device_audio_label" msgid="5363057443124085198">"Eszköz hangjának rögzítése"</string>
-    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Mikrofon általi hangrögzítés"</string>
+    <string name="screen_record_record_microphone_label" msgid="4685753707185662381">"Mikrofonos hangrögzítés"</string>
     <string name="screen_record_record_audio_during_recording_warning" msgid="1240590393919102946">"Felvétel közben nem módosíthatók a hangbeállítások"</string>
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Szelfikamera megjelenítése"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Érintések megjelenítése"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Válassza ki a felvenni kívánt alkalmazást"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"Képernyőrögzítés beállításai"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Jelölés"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videó mentve"</string>
@@ -201,12 +203,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Jobb alsó fogópont – átméretezheti a nyílbillentyűkkel"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Bal alsó fogópont – átméretezheti a nyílbillentyűkkel"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Megosztás"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Válassza ki a megosztandó appablakot"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Válassza ki a megosztandó lapot"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Válassza ki a megosztandó kijelzőt"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Hang megosztása"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Alkalmazásablak megosztása"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Lap megosztása"</string>
@@ -224,14 +223,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"A kijelző megosztása leállítva: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. A képernyő nincs megosztva senkivel."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Bezárás gomb. A megosztás előtti párbeszédpanel bezárásához nyomja meg az Enter billentyűt."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Lapmegosztás gomb. Nincs kijelölve. A lap megosztásához nyomja meg az Enter billentyűt."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"Lap megosztása. Navigáljon a rendelkezésre álló lapok megtekintéséhez."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Alkalmazásmegosztás gomb. Nincs kijelölve. Alkalmazás megosztásához nyomja meg az Enter billentyűt."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"Alkalmazás megosztása. Navigáljon a rendelkezésre álló alkalmazások megtekintéséhez."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Teljes képernyő gomb Nincs kijelölve. A teljes képernyő megosztásához nyomja meg az Enter billentyűt."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"Teljes képernyő megosztása. Navigáljon a rendelkezésre álló kijelzők megtekintéséhez."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Megosztás gomb. Kikapcsolva. Válassza ki a megosztani kívánt alkalmazást, lapot vagy kijelzőt."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Megosztás bekapcsolva. <xliff:g id="ITEM">%1$s</xliff:g> kiválasztva. A megosztás megkezdéséhez nyomja meg az Enter billentyűt."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Nincs kiválasztva. A kiválasztáshoz nyomja meg az Enter billentyűt."</string>
@@ -254,6 +250,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Előlapi kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Megosztás leállítása"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"A képernyőmegosztás be van kapcsolva. A megosztás leállításához használja az adatvédelmi jelzőt."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Képernyő megosztása…"</string>
@@ -432,6 +430,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Segéd"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Billentyűzet"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Billentyűzet"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# további értesítés a csoportban.}other{# további értesítés a csoportban.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"A képernyő zárolva van fekvő tájolásban."</string>
@@ -1751,7 +1753,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Váltás az alkalmazások között"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Kész"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Következő"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"Próbálja újra"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Vissza"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Csúsztassa gyorsan három ujját balra vagy jobbra az érintőpadon."</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Remek!"</string>
@@ -1759,14 +1762,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Ha az érintőpadot használva szeretne visszalépni, csúsztasson három ujjal balra vagy jobbra."</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Ugrás a főoldalra"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Csúsztasson gyorsan felfelé három ujjával az érintőpadon."</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Kiváló!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Megtanulta a kezdőképernyőre lépés kézmozdulatát."</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"A kezdőképernyőre való ugráshoz csúsztasson három ujjal felfelé az érintőpadon."</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Legutóbbi alkalmazások megtekintése"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Csúsztasson gyorsan felfelé három ujjal az érintőpadon, és tartsa rajta lenyomva az ujjait."</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Kiváló!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Teljesítette a legutóbbi alkalmazások megtekintésének kézmozdulatát."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"A legutóbbi appokért csúsztasson három ujjal felfelé az érintőpadon, és tartsa lenyomva ujjait."</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Váltás az alkalmazások között"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Csúsztasson gyorsan négy ujjal jobbra az érintőpadon"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Kiváló!"</string>
@@ -1867,8 +1881,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d effekt"</string>
     <string name="av_blur" msgid="405131343487260171">"Homályosítás"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Élő feliratozás"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Vissza"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Akkumulátor: %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Bal oldali akkumulátor: %1$s    Jobb oldali akkumulátor: %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Bal oldali akkumulátor: %1$s"</string>

@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Аутоматско ротирање екрана"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"Дозвољавате да <xliff:g id="APPLICATION">%1$s</xliff:g> приступа уређају <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"Желите ли да дозволите да <xliff:g id="APPLICATION">%1$s</xliff:g> приступа уређају <xliff:g id="USB_DEVICE">%2$s</xliff:g>?\nОва апликација нема дозволу за снимање, али би могла да снима звук помоћу овог USB уређаја."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"Дозвољавате да апликација &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; приступа уређају &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"Желите да отворите апликацију &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; да бисте управљали уређајем &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Ова апликација нема дозволу за снимање, али би могла да снима звук помоћу овог USB уређаја. Ако користите апликацију <xliff:g id="APPLICATION">%1$s</xliff:g> са овим уређајем, можда нећете чути позиве, обавештења и аларме."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"Ако користите апликацију <xliff:g id="APPLICATION">%1$s</xliff:g> са овим уређајем, можда нећете чути позиве, обавештења и аларме."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"Дозвољавате да <xliff:g id="APPLICATION">%1$s</xliff:g> приступа уређају <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Прикажи предњу камеру"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Прикажи додире"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Одаберите апликацију за снимање"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"Подешавања снимања екрана"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Означавање"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Видео је сачуван"</string>
@@ -187,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Искључи звук"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Укључи звук"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Уштините, превуците и додирните селфи да бисте га прилагодили"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"ИТ администратор је блокирао снимање екрана"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Направи снимак целог екрана"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Сними цео екран"</string>
@@ -201,12 +202,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Доњи десни маркер – користите тастере са стрелицама да бисте променили величину"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Доњи леви маркер – користите тастере са стрелицама да бисте променили величину"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Дели"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Бирајте прозор апликације за дељење"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Изаберите картицу за дељење"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Изаберите екран за дељење"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Дели звук"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Прозор за дељење апликације"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Делите картицу"</string>
@@ -224,14 +222,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Дељење екрана <xliff:g id="DISPLAY_NAME">%1$s</xliff:g> је заустављено. Екран се не дели ни са ким."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Дугме Затвори. Притисните Enter да бисте затворили дијалог за дељење унапред."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Дугме за дељење картице. Није изабрано. Притисните Enter да бисте делили картицу."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"Дељење картице. Крећите се да бисте видели доступне картице."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Дугме за дељење апликације. Није изабрано. Притисните Enter да бисте делили апликацију."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"Дељење апликације. Крећите се да бисте видели доступне апликације."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Дугме за приказ преко целог екрана. Није изабрано. Притисните Enter да бисте делили приказ преко целог екрана."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"Дељење приказа преко целог екрана. Крећите се да бисте видели доступне екране."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Дугме Дели. Искључено. Изаберите апликацију, картицу или екран за дељење."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Дељење је укључено. Изабрано: <xliff:g id="ITEM">%1$s</xliff:g>. Притисните Enter да бисте почели да делите."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Није изабрано. Притисните Enter да бисте изабрали."</string>
@@ -254,6 +249,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Микрофон"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Предња камера"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>×<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Заустави дељење"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Дељење садржаја екрана је укључено. Користите индикатор приватности да бисте прекинули дељење."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Екран се дели"</string>
@@ -432,6 +429,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Помоћник"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Тастатура"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Тастатура"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"и још <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Унутра је још # обавештење.}one{Унутра је још # обавештење.}few{Унутра су још # обавештења.}other{Унутра је још # обавештења.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Екран је закључан у хоризонталном положају."</string>
@@ -1248,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Тастер за приступачност"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Можете да притиснете тастер за приступачност како бисте почели да користите функције приступачности."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Додај функције"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Подесите тастер за приступачност"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Подесите <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Готово"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Изаберите функцију"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Измени"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Одаберите функцију"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Ова функција ће се отворити када следећи пут изаберете дугме Приступачност"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Приступачност"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Закључан екран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Искључује се…"</string>
@@ -1751,7 +1749,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Пређи на другу апликацију"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Готово"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Даље"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"Пробајте поново."</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Назад"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Превуците улево или удесно са три прста на тачпеду"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Супер!"</string>
@@ -1759,14 +1758,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Да бисте се вратили помоћу тачпеда, превуците улево или удесно са три прста"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Иди на почетни екран"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Превуците нагоре са три прста на тачпеду"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Одлично!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Довршили сте покрет за повратак на почетну страницу."</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Да бисте отишли на почетни екран, превуците нагоре са три прста на тачпеду"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Прикажи недавно коришћене апликације"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Превуците нагоре и задржите са три прста на тачпеду"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Одлично!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Довршили сте покрет за приказивање недавно коришћених апликација."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Да бисте прегледали недавне апликације, превуците нагоре и задржите са три прста на тачпеду"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Пређи на другу апликацију"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Превуците удесно са четири прста на тачпеду"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Одлично!"</string>
@@ -1867,8 +1877,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"Ефеката: %d"</string>
     <string name="av_blur" msgid="405131343487260171">"Замагли"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Титл уживо"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Назад"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Батерија: %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Лева страна батерије: %1$s    Десна страна батерије: %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Лева страна батерије: %1$s"</string>

@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"स्‍क्रीन अपने आप घुमाना"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="APPLICATION">%1$s</xliff:g> को <xliff:g id="USB_DEVICE">%2$s</xliff:g> के ऐक्सेस की अनुमति दें?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"आप <xliff:g id="APPLICATION">%1$s</xliff:g> को <xliff:g id="USB_DEVICE">%2$s</xliff:g> ऐक्सेस करने की अनुमति देना चाहते हैं?\nइस ऐप्लिकेशन को रिकॉर्ड करने की अनुमति नहीं दी गई है. हालांकि, ऐप्लिकेशन इस यूएसबी डिवाइस से ऑडियो कैप्चर कर सकता है."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"क्या &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; को &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>’s&lt;/b&gt; को ऐक्सेस करने की अनुमति देनी है?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"क्या &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; को मैनेज करने के लिए, &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; खोलना है?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"इस ऐप्लिकेशन को रिकॉर्ड करने की अनुमति नहीं दी गई है. हालांकि, ऐप्लिकेशन इस यूएसबी डिवाइस से ऑडियो रिकॉर्ड कर सकता है. <xliff:g id="APPLICATION">%1$s</xliff:g> का इस्तेमाल इस डिवाइस के साथ करने पर, हो सकता है कि कॉल, सूचनाएं, और अलार्म की आवाज़ सुनाई न दे."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"<xliff:g id="APPLICATION">%1$s</xliff:g> का इस्तेमाल इस डिवाइस के साथ करने पर, हो सकता है कि कॉल, सूचनाएं, और अलार्म की आवाज़ सुनाई न दे."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"<xliff:g id="APPLICATION">%1$s</xliff:g> को <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> के ऐक्सेस की अनुमति दें?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"सेल्फ़ी कैमरा दिखाएं"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"टच करने से जुड़ी सेटिंग दिखाएं"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"स्क्रीन रिकॉर्ड करने के लिए कोई ऐप्लिकेशन चुनें"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"स्क्रीन रिकॉर्ड करने से जुड़ी सेटिंग"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"मार्कअप"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"वीडियो सेव किया गया"</string>
@@ -201,12 +203,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"सबसे नीचे दाईं ओर मौजूद हैंडल - साइज़ बदलने के लिए, ऐरो बटन इस्तेमाल करें"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"सबसे नीचे बाईं ओर मौजूद हैंडल - साइज़ बदलने के लिए, ऐरो बटन इस्तेमाल करें"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"शेयर करें"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"शेयर करने के लिए ऐप की विंडो चुनें"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"शेयर करने के लिए टैब चुनें"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"शेयर करने के लिए डिसप्ले चुनें"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ऑडियो शेयर करें"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ऐप्लिकेशन की विंडो शेयर करें"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"टैब को शेयर करें"</string>
@@ -224,14 +223,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"डिसप्ले शेयर करना बंद किया गया: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. स्क्रीन किसी के साथ शेयर नहीं की गई."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"बंद करने का बटन. शेयर करने से पहले दिखने वाला डायलॉग बॉक्स बंद करने के लिए, Enter दबाएं."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"टैब शेयर करने का बटन. नहीं चुना गया. टैब शेयर करने के लिए, Enter दबाएं."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"टैब शेयर किया जा रहा है. उपलब्ध टैब देखने के लिए नेविगेट करें."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"ऐप्लिकेशन शेयर करने का बटन. नहीं चुना गया. ऐप्लिकेशन शेयर करने के लिए, Enter दबाएं."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"ऐप्लिकेशन शेयर किया जा रहा है. उपलब्ध ऐप्लिकेशन देखने के लिए नेविगेट करें."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"फ़ुलस्क्रीन शेयर करने का बटन. नहीं चुना गया. फ़ुलस्क्रीन शेयर करने के लिए, Enter दबाएं."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"पूरी स्क्रीन शेयर की जा रही है. उपलब्ध डिसप्ले देखने के लिए नेविगेट करें."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"शेयर करने का बटन. बंद है. शेयर करने के लिए ऐप्लिकेशन, टैब या डिसप्ले चुनें."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"शेयर करने की सुविधा चालू है. <xliff:g id="ITEM">%1$s</xliff:g> को चुना गया. शेयर करने के लिए, Enter दबाएं."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. नहीं चुना गया. इसे चुनने के लिए, Enter दबाएं."</string>
@@ -254,6 +250,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"माइक्रोफ़ोन"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"फ़्रंट कैमरा"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"शेयर करना बंद करें"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"स्क्रीन शेयर करने की सुविधा चालू है. इसे बंद करने के लिए, प्राइवसी इंडिकेटर का इस्तेमाल करें."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"स्क्रीन शेयर की जा रही है"</string>
@@ -432,6 +430,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"कीबोर्ड"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"कीबोर्ड"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ग्रुप में # सूचना है.}one{ग्रुप में # सूचना है.}other{ग्रुप में # सूचनाएं हैं.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"स्क्रीन लैंडस्केप दिशा में लॉक है."</string>
@@ -911,7 +913,7 @@
     <string name="volume_panel_hint_muted" msgid="1124844870181285320">"म्यूट किया गया"</string>
     <string name="volume_panel_hint_vibrate" msgid="4136223145435914132">"वाइब्रेट"</string>
     <string name="media_output_label_title" msgid="872824698593182505">"<xliff:g id="LABEL">%s</xliff:g> इस पर चल रहा है"</string>
-    <string name="media_output_title_without_playing" msgid="3825663683169305013">"ऑडियो इस पर चलेगा"</string>
+    <string name="media_output_title_without_playing" msgid="3825663683169305013">"ऑडियो कहां चलेगा"</string>
     <string name="media_output_title_ongoing_call" msgid="208426888064112006">"कॉल चालू है"</string>
     <string name="system_ui_tuner" msgid="1471348823289954729">"सिस्टम यूज़र इंटरफ़ेस (यूआई) ट्यूनर"</string>
     <string name="status_bar" msgid="4357390266055077437">"स्टेटस बार"</string>
@@ -995,7 +997,7 @@
     <string name="notification_automatic_title" msgid="3745465364578762652">"अपने-आप"</string>
     <string name="notification_bridged_title" msgid="4213554380230273828">"यह सूचना आपके <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> से मिली है"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"आवाज़ या वाइब्रेशन न हो"</string>
-    <string name="notification_conversation_summary_low" msgid="3855696451919728790">"कोई आवाज़ या वाइब्रेशन नहीं होता, फिर भी बातचीत वाले सेक्शन में दिखता है"</string>
+    <string name="notification_conversation_summary_low" msgid="3855696451919728790">"कोई आवाज़ या वाइब्रेशन नहीं होता, फिर भी सूचनाएं बातचीत वाले सेक्शन में दिखती हैं"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"डिवाइस की सेटिंग के आधार पर, सूचना आने पर घंटी बज सकती है या वाइब्रेशन हो सकता है"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"डिवाइस की सेटिंग के आधार पर, सूचना आने पर घंटी बज सकती है या वाइब्रेशन हो सकता है. <xliff:g id="APP_NAME">%1$s</xliff:g> पर होने वाली बातचीत, डिफ़ॉल्ट रूप से बबल के तौर पर दिखती है."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"सिस्टम को यह तय करने की अनुमति दें कि इस सूचना के मिलने पर आवाज़ हो या वाइब्रेशन हो"</string>
@@ -1306,7 +1308,7 @@
     <string name="qs_dnd_prompt_auto_rule_app" msgid="1841469944118486580">"एक ऑटोमैटिक नियम या ऐप्लिकेशन ने परेशान न करें को चालू कर दिया था."</string>
     <string name="running_foreground_services_title" msgid="5137313173431186685">"बैकग्राउंड में चल रहे ऐप्लिकेशन"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"बैटरी और डेटा खर्च की जानकारी के लिए छूएं"</string>
-    <string name="mobile_data_disable_title" msgid="5366476131671617790">"मोबाइल डेटा बंद करना चाहते हैं?"</string>
+    <string name="mobile_data_disable_title" msgid="5366476131671617790">"मोबाइल डेटा बंद करना है?"</string>
     <string name="mobile_data_enable_title" msgid="8259903353761259200">"क्या आपको मोबाइल डेटा चालू करना है?"</string>
     <string name="mobile_data_enable_message" msgid="2013861580086078913">"मोबाइल डेटा का इस्तेमाल करने पर, मोबाइल और इंटरनेट सेवा देने वाली कंपनी के प्लान के हिसाब से शुल्क लागू हो सकते हैं."</string>
     <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"चालू करें"</string>
@@ -1562,7 +1564,7 @@
     <string name="non_carrier_network_unavailable" msgid="770049357024492372">"कोई दूसरा नेटवर्क उपलब्ध नहीं है"</string>
     <string name="all_network_unavailable" msgid="4112774339909373349">"कोई नेटवर्क उपलब्ध नहीं है"</string>
     <string name="turn_on_wifi" msgid="1308379840799281023">"वाई-फ़ाई"</string>
-    <string name="tap_a_network_to_connect" msgid="1565073330852369558">"इंटरनेट से कनेक्ट करने के लिए, किसी नेटवर्क पर टैप करें"</string>
+    <string name="tap_a_network_to_connect" msgid="1565073330852369558">"कनेक्ट करने के लिए, किसी नेटवर्क पर टैप करें"</string>
     <string name="unlock_to_view_networks" msgid="5072880496312015676">"वाई-फ़ाई नेटवर्क देखने के लिए, स्क्रीन को अनलॉक करें"</string>
     <string name="wifi_empty_list_wifi_on" msgid="3864376632067585377">"नेटवर्क खोजे जा रहे हैं…"</string>
     <string name="wifi_failed_connect_message" msgid="4161863112079000071">"नेटवर्क से कनेक्ट नहीं किया जा सका"</string>
@@ -1751,7 +1753,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ऐप्लिकेशन के बीच स्विच करें"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"हो गया"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"आगे बढ़ें"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"फिर से कोशिश करें!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"वापस जाएं"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"अपने टचपैड पर तीन उंगलियों से बाईं या दाईं ओर स्वाइप करें"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"बढ़िया!"</string>
@@ -1759,14 +1762,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"टचपैड का इस्तेमाल करके वापस जाने के लिए, तीन उंगलियों से बाईं या दाईं ओर स्वाइप करें"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"होम स्क्रीन पर जाएं"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"अपने टचपैड पर तीन उंगलियों से ऊपर की ओर स्वाइप करें"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"बहुत बढ़िया!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"अब आपको हाथ के जेस्चर का इस्तेमाल करके होम स्क्रीन पर जाने का तरीका पता चल गया है"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"होम स्क्रीन पर जाने के लिए, अपने टचपैड पर तीन उंगलियों से ऊपर की ओर स्वाइप करें"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"हाल ही में इस्तेमाल किए गए ऐप्लिकेशन देखें"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"अपने टचपैड पर तीन उंगलियों से ऊपर की ओर स्वाइप करें और दबाकर रखें"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"बहुत बढ़िया!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"अब आपको हाथ के जेस्चर का इस्तेमाल करके, हाल ही में इस्तेमाल किए गए ऐप्लिकेशन देखने का तरीका पता चल गया है."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"हाल ही में इस्तेमाल किए गए ऐप्लिकेशन देखने के लिए, अपने टचपैड पर तीन उंगलियों से ऊपर की ओर स्वाइप करें और दबाकर रखें"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"ऐप्लिकेशन के बीच स्विच करें"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"अपने टचपैड पर चार उंगलियों से दाईं ओर स्वाइप करें"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"बहुत बढ़िया!"</string>
@@ -1867,8 +1881,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d इफ़ेक्ट"</string>
     <string name="av_blur" msgid="405131343487260171">"धुंधला करें"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"लाइव कैप्शन"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"वापस जाएं"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"बैटरी %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"बाएं कान की मशीन की बैटरी %1$s    दाएं कान की मशीन की बैटरी %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"बाएं कान की मशीन की बैटरी %1$s"</string>

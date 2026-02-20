@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"ଅଟୋ-ରୋଟେଟ ସ୍କ୍ରିନ"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> ଆକ୍ସେସ୍‍ କରିବାକୁ <xliff:g id="APPLICATION">%1$s</xliff:g>କୁ ଅନୁମତି ଦେବେ?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> ଆକ୍ସେସ୍ କରିବାକୁ <xliff:g id="APPLICATION">%1$s</xliff:g>କୁ ଅନୁମତି ଦେବେ କି?\nଏହି ଆପ୍‌କୁ ରେକର୍ଡ କରିବାକୁ ଅନୁମତି ଦିଆଯାଇ ନାହିଁ କିନ୍ତୁ ଏହି USB ଡିଭାଇସ୍ ଜରିଆରେ ଅଡିଓ କ୍ୟାପ୍ଟର୍ କରିପାରିବ।"</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"&lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;କୁ ଆକ୍ସେସ କରିବା ପାଇଁ &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt;କୁ ଅନୁମତି ଦେବେ?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"&lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;କୁ ପରିଚାଳନା କରିବା ପାଇଁ &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; ଖୋଲିବେ?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"ଏହି ଆପକୁ ରେକର୍ଡ କରିବା ପାଇଁ ଅନୁମତି ଦିଆଯାଇନାହିଁ, କିନ୍ତୁ ଏହି USB ଡିଭାଇସ ମାଧ୍ୟମରେ ଏହା ଅଡିଓକୁ କ୍ୟାପଚର କରିପାରିବ। ଏହି ଡିଭାଇସରେ <xliff:g id="APPLICATION">%1$s</xliff:g> ବ୍ୟବହାର କଲେ କଲ, ବିଜ୍ଞପ୍ତି ଏବଂ ଆଲାରାମଗୁଡ଼ିକୁ ଶୁଣିବାରୁ ପ୍ରତିରୋଧ କରାଯାଇପାରେ।"</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"ଏହି ଡିଭାଇସରେ <xliff:g id="APPLICATION">%1$s</xliff:g> ବ୍ୟବହାର କରିବା କଲ, ବିଜ୍ଞପ୍ତି ଏବଂ ଆଲାରାମଗୁଡ଼ିକୁ ଶୁଣିବାରୁ ପ୍ରତିରୋଧ କରିପାରେ।"</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> ଆକ୍ସେସ୍‍ କରିବାକୁ <xliff:g id="APPLICATION">%1$s</xliff:g>କୁ ଅନୁମତି ଦେବେ?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"ସେଲ୍ଫି କେମେରା ଦେଖାନ୍ତୁ"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ଟଚଗୁଡ଼ିକ ଦେଖାନ୍ତୁ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ରେକର୍ଡ କରିବାକୁ ଏକ ଆପ ବାଛନ୍ତୁ"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"ସ୍କ୍ରିନ ରେକର୍ଡିଂ ସେଟିଂସ"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"ମାର୍କଅପ"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ଭିଡିଓ ସେଭ କରାଯାଇଛି"</string>
@@ -187,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"ମ୍ୟୁଟ କରନ୍ତୁ"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"ଅନମ୍ୟୁଟ କରନ୍ତୁ"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>ରୁ <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"ଆଡଜଷ୍ଟ କରିବାକୁ ସେଲ୍ଫିକୁ ପିଞ୍ଚ, ଡ୍ରାଗ ଏବଂ ଟାପ କରନ୍ତୁ"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"ଆପଣଙ୍କ IT ଆଡମିନଙ୍କ ଦ୍ୱାରା ସ୍କ୍ରିନ କେପଚରକୁ ବ୍ଲକ କରାଯାଇଛି"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ସମ୍ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନର ସ୍କ୍ରିନସଟ ନିଅନ୍ତୁ"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ସମ୍ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନ ରେକର୍ଡ କରନ୍ତୁ"</string>
@@ -201,12 +202,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"ନିମ୍ନ-ଡାହାଣ ହେଣ୍ଡେଲ - ରିସାଇଜ କରିବାକୁ ତୀର କୀ\'ଗୁଡ଼ିକୁ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"ନିମ୍ନ-ବାମ ହେଣ୍ଡେଲ - ରିସାଇଜ କରିବାକୁ ତୀର କୀ\'ଗୁଡ଼ିକୁ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"ସେୟାର କରନ୍ତୁ"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"ସେୟାର କରିବାକୁ ଆପ ୱିଣ୍ଡୋ ଚୟନ କରନ୍ତୁ"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"ସେୟାର କରିବାକୁ ଟାବ ଚୟନ କରନ୍ତୁ"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"ସେୟାର କରିବାକୁ ଡିସପ୍ଲେ ଚୟନ କରନ୍ତୁ"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ଅଡିଓ ସେୟାର କରନ୍ତୁ"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"ଆପ ୱିଣ୍ଡୋ ସେୟାର କରନ୍ତୁ"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"ଟାବ ସେୟାର କରନ୍ତୁ"</string>
@@ -224,14 +222,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"ଡିସପ୍ଲେ ସେୟାର କରିବା ବନ୍ଦ କରାଯାଇଛି: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>। କାହା ସହ ସ୍କ୍ରିନ ସେୟାର କରାଯାଇନାହିଁ।"</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"ବନ୍ଦ କରନ୍ତୁ ବଟନ। ପ୍ରି-ସେୟାର ଡାଏଲଗକୁ ବନ୍ଦ କରିବା ପାଇଁ ଏଣ୍ଟର ଦବାନ୍ତୁ।"</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"ଟାବ ସେୟାରିଂ ବଟନ। ଚୟନ କରାଯାଇନାହିଁ। ଟାବ ସେୟାର କରିବାକୁ ଏଣ୍ଟର ଦବାନ୍ତୁ।"</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"ଟାବ ସେୟାର କରାଯାଉଛି। ଉପଲବ୍ଧ ଟାବଗୁଡ଼ିକ ଯାଞ୍ଚ କରିବାକୁ ନାଭିଗେଟ କରନ୍ତୁ।"</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"ଆପ ସେୟାରିଂ ବଟନ। ଚୟନ କରାଯାଇନାହିଁ। ଆପ ସେୟାର କରିବାକୁ ଏଣ୍ଟର ଦବାନ୍ତୁ।"</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"ଆପ ସେୟାର କରାଯାଉଛି। ଉପଲବ୍ଧ ଆପ୍ସ ଯାଞ୍ଚ କରିବାକୁ ନାଭିଗେଟ କରନ୍ତୁ।"</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"ସମ୍ପୂର୍ଣ୍ଣସ୍କ୍ରିନ ବଟନ। ଚୟନ କରାଯାଇନାହିଁ। ସମ୍ପୂର୍ଣ୍ଣସ୍କ୍ରିନରେ ସେୟାର କରିବାକୁ ଏଣ୍ଟର ଦବାନ୍ତୁ।"</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"ସମ୍ପୂର୍ଣ୍ଣସ୍କ୍ରିନରେ ସେୟାର କରାଯାଉଛି। ଉପଲବ୍ଧ ଡିସପ୍ଲେଗୁଡ଼ିକୁ ଯାଞ୍ଚ କରିବା ପାଇଁ ନାଭିଗେଟ କରନ୍ତୁ।"</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"ସେୟାର କରନ୍ତୁ ବଟନ। ବନ୍ଦ ଅଛି। ସେୟାର କରିବାକୁ ଆପ, ଟାବ କିମ୍ବା ଡିସପ୍ଲେ ଚୟନ କରନ୍ତୁ।"</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"ସେୟାରିଂ ଚାଲୁ ଅଛି। <xliff:g id="ITEM">%1$s</xliff:g>କୁ ଚୟନ କରାଯାଇଛି। ସେୟାର କରିବା ଆରମ୍ଭ କରିବାକୁ ଏଣ୍ଟର ଦବାନ୍ତୁ।"</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>। ଚୟନ କରାଯାଇନାହିଁ। ଚୟନ କରିବାକୁ ଏଣ୍ଟର ଦବାନ୍ତୁ।"</string>
@@ -254,6 +249,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"ମାଇକ୍ରୋଫୋନ"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ସାମ୍ନା କେମେରା"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"ସେୟାର କରିବା ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"ସ୍କ୍ରିନ ସେୟାରିଂ ଚାଲୁ ଅଛି। ସେୟାରିଂ ବନ୍ଦ କରିବାକୁ ଗୋପନୀୟତା ସୂଚକ ବ୍ୟବହାର କରନ୍ତୁ।"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ସ୍କ୍ରିନ ସେୟାର କରାଯାଉଛି"</string>
@@ -432,6 +429,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"କୀବୋର୍ଡ"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"କୀବୋର୍ଡ"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ଭିତରେ #ଟି ଅଧିକ ବିଜ୍ଞପ୍ତି ଅଛି।}other{ଭିତରେ #ଟି ଅଧିକ ବିଜ୍ଞପ୍ତି ଅଛି।}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ଲ୍ୟାଣ୍ଡସ୍କେପ୍‌ ଅବସ୍ଥାରେ ସ୍କ୍ରୀନ୍‍କୁ ଲକ୍‌ କରାଯାଇଛି।"</string>
@@ -1248,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ଆକ୍ସେସିବିଲିଟୀ କୀ"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"ଆକ୍ସେସିବିଲିଟୀ ଫିଚରଗୁଡ଼ିକୁ ବ୍ୟବହାର କରିବା ଆରମ୍ଭ କରିବା ପାଇଁ ଆପଣ ଆକ୍ସେସିବିଲିଟୀ କୀ\'କୁ ଦବାଇପାରିବେ।"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"ଫିଚରଗୁଡ଼ିକ ଯୋଗ କରନ୍ତୁ"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"ଆକ୍ସେସିବିଲିଟୀ କୀ ସେଟ ଅପ କରନ୍ତୁ"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> ସେଟ ଅପ କରନ୍ତୁ"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"ହୋଇଗଲା"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"ଏକ ଫିଚର ଚୟନ କରନ୍ତୁ"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"ଏଡିଟ କରନ୍ତୁ"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"ଏକ ଫିଚର ବାଛନ୍ତୁ"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"ପରବର୍ତ୍ତୀ ସମୟରେ ଆପଣ ଆକ୍ସେସିବିଲିଟୀ ବଟନକୁ ଚୟନ କଲେ ଏହି ଫିଚରଟି ଖୋଲିବ"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ଆକ୍ସେସିବିଲିଟୀ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ଲକ ସ୍କ୍ରିନ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ବନ୍ଦ କରାଯାଉଛି…"</string>
@@ -1306,7 +1304,7 @@
     <string name="qs_dnd_prompt_auto_rule_app" msgid="1841469944118486580">"ଏକ ସ୍ୱଚାଳିତ ନିୟମ କିମ୍ବା ଆପ୍‍ ଦ୍ୱାରା \"ବିରକ୍ତ କରନ୍ତୁ ନାହିଁ\" ଅନ୍‍ କରାଗଲା।"</string>
     <string name="running_foreground_services_title" msgid="5137313173431186685">"ବ୍ୟାକଗ୍ରାଉଣ୍ଡରେ ଆପ୍‍ ଚାଲୁଛି"</string>
     <string name="running_foreground_services_msg" msgid="3009459259222695385">"ବ୍ୟାଟେରୀ ଏବଂ ଡାଟା ବ୍ୟବହାର ଉପରେ ବିବରଣୀ ପାଇଁ ଟାପ୍‍ କରନ୍ତୁ"</string>
-    <string name="mobile_data_disable_title" msgid="5366476131671617790">"ମୋବାଇଲ୍‌ ଡାଟା ବନ୍ଦ କରିବେ?"</string>
+    <string name="mobile_data_disable_title" msgid="5366476131671617790">"ମୋବାଇଲ ଡାଟା ବନ୍ଦ କରିବେ?"</string>
     <string name="mobile_data_enable_title" msgid="8259903353761259200">"ମୋବାଇଲ ଡାଟା ଚାଲୁ କରିବେ?"</string>
     <string name="mobile_data_enable_message" msgid="2013861580086078913">"ଆପଣଙ୍କ ମୋବାଇଲ ସାର୍ଭିସ ପ୍ଲାନ ଆଧାରରେ ମୋବାଇଲ ଡାଟାକୁ ବ୍ୟବହାର କରିବା ପାଇଁ ଚାର୍ଜଗୁଡ଼ିକ ଲାଗୁ ହୋଇପାରେ।"</string>
     <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"ଚାଲୁ କରନ୍ତୁ"</string>
@@ -1748,10 +1746,11 @@
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"ପଛକୁ ଫେରନ୍ତୁ"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"ହୋମକୁ ଯାଆନ୍ତୁ"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"ବର୍ତ୍ତମାନର ଆପ୍ସ ଭ୍ୟୁ କରନ୍ତୁ"</string>
-    <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ଆପ୍ସକୁ ସୁଇଚ କରନ୍ତୁ"</string>
+    <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ଆପ୍ସକୁ ସ୍ଵିଚ କରନ୍ତୁ"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"ହୋଇଗଲା"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"ପରବର୍ତ୍ତୀ"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ପଛକୁ ଫେରନ୍ତୁ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ଆପଣଙ୍କ ଟଚପେଡରେ ତିନୋଟି ଆଙ୍ଗୁଠି ବ୍ୟବହାର କରି ବାମ କିମ୍ବା ଡାହାଣକୁ ସ୍ୱାଇପ କରନ୍ତୁ"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"ବଢ଼ିଆ!"</string>
@@ -1759,14 +1758,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"ଆପଣଙ୍କ ଟଚପେଡକୁ ବ୍ୟବହାର କରି ପଛକୁ ଫେରିବା ପାଇଁ ତିନୋଟି ଆଙ୍ଗୁଠି ବ୍ୟବହାର କରି ବାମ କିମ୍ବା ଡାହାଣକୁ ସ୍ୱାଇପ କରନ୍ତୁ"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"ହୋମକୁ ଯାଆନ୍ତୁ"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"ଆପଣଙ୍କ ଟଚପେଡରେ ତିନୋଟି ଆଙ୍ଗୁଠିରେ ଉପରକୁ ସ୍ୱାଇପ କରନ୍ତୁ"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"ବଢ଼ିଆ କାମ!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"ଆପଣ ହୋମକୁ ଯାଆନ୍ତୁ ଜେଶ୍ଚର ସମ୍ପୂର୍ଣ୍ଣ କରିଛନ୍ତି"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"ଆପଣଙ୍କର ହୋମ ସ୍କ୍ରିନକୁ ଯିବା ପାଇଁ ଆପଣଙ୍କ ଟଚପେଡରେ ତିନୋଟି ଆଙ୍ଗୁଠିରେ ଉପରକୁ ସ୍ୱାଇପ କରନ୍ତୁ"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"ବର୍ତ୍ତମାନର ଆପ୍ସକୁ ଭ୍ୟୁ କରନ୍ତୁ"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"ଆପଣଙ୍କ ଟଚପେଡରେ ତିନୋଟି ଆଙ୍ଗୁଠିକୁ ବ୍ୟବହାର କରି ଉପରକୁ ସ୍ୱାଇପ କରି ଧରି ରଖନ୍ତୁ"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"ବଢ଼ିଆ କାମ!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"ଆପଣ ବର୍ତ୍ତମାନର ଆପ୍ସ ଜେଶ୍ଚରକୁ ଭ୍ୟୁ କରିବା ସମ୍ପୂର୍ଣ୍ଣ କରିଛନ୍ତି।"</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"ବର୍ତ୍ତମାନର ଆପ୍ସ ଭ୍ୟୁ କରିବାକୁ, ଆପଣଙ୍କ ଟଚପେଡରେ ତିନୋଟି ଆଙ୍ଗୁଠି ବ୍ୟବହାର କରି ଉପରକୁ ସ୍ୱାଇପ କରି ଧରି ରଖନ୍ତୁ"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"ଆପ୍ସକୁ ସୁଇଚ କରନ୍ତୁ"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"ଆପଣଙ୍କ ଟଚପେଡରେ ଚାରି ଆଙ୍ଗୁଠି ବ୍ୟବହାର କରି ଡାହାଣକୁ ସ୍ୱାଇପ କରନ୍ତୁ"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"ବଢ଼ିଆ କାମ!"</string>
@@ -1867,8 +1877,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d ଇଫେକ୍ଟ"</string>
     <string name="av_blur" msgid="405131343487260171">"ବ୍ଲର କରନ୍ତୁ"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"ଲାଇଭ କେପ୍ସନ"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"ପଛକୁ ଫେରନ୍ତୁ"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"ବେଟେରୀ %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"ବାମ ବେଟେରୀ %1$s    ଡାହାଣ ବେଟେରୀ %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"ବାମ ବେଟେରୀ %1$s"</string>

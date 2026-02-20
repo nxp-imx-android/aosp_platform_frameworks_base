@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"ස්වයංක්‍රීයව-භ්‍රමණය වන තිරය"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="APPLICATION">%1$s</xliff:g> හට <xliff:g id="USB_DEVICE">%2$s</xliff:g> වෙත පිවිසීමට ඉඩ දෙන්නද?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"<xliff:g id="APPLICATION">%1$s</xliff:g> වෙත ප්‍රවේශ වීමට <xliff:g id="USB_DEVICE">%2$s</xliff:g> හට ඉඩ දෙන්නද?\n මෙම යෙදුමට පටිගත කිරීම් අවසරයක් ලබා දී නොමැති නමුත් මෙම USB උපාංගය හරහා ශ්‍රව්‍ය ග්‍රහණය කර ගත හැකිය."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"&lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; හට &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; වෙත ප්‍රවේශ වීමට ඉඩ දෙන්න ද?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"&lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; හසුරුවීමට &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; විවෘත කරන්න ද?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"මෙම යෙදුමට පටිගත කිරීම් අවසරයක් ලබා දී නොමැති නමුත් මෙම USB උපාංගය හරහා ශ්‍රව්‍ය ග්‍රහණය කර ගත හැකිය. මෙම උපාංගය සමග <xliff:g id="APPLICATION">%1$s</xliff:g> භාවිත කිරීම ඇමතුම්, දැනුම්දීම් සහ එලාම ඇසීම වැළැක්විය හැකිය."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"මෙම උපාංගය සමග <xliff:g id="APPLICATION">%1$s</xliff:g> භාවිත කිරීම ඇමතුම්, දැනුම්දීම් සහ එලාම ඇසීම වැළැක්විය හැකිය."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"<xliff:g id="APPLICATION">%1$s</xliff:g> හට <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> වෙත පිවිසීමට ඉඩ දෙන්නද?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"සෙල්ෆි කැමරාව පෙන්වන්න"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ස්පර්ශ පෙන්වන්න"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"පටිගත කිරීමට යෙදුමක් තෝරා ගන්න"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"තිර පටිගත කිරීමේ සැකසීම්"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"සලකුණු"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"වීඩියෝව සුරැකිණි"</string>
@@ -187,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"නිහඬ කරන්න"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"නිහඬ නොකරන්න"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>න් <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"සකස් කිරීමට සෙල්ෆිය කොණින් කොණට අදින්න, ඇදගෙන ගොස් තට්ටු කරන්න"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"ඔබේ IT පරිපාලක විසින් තිර ග්‍රහණය අවහිර කර ඇත"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"මුළු තිරයේම තිර රුවක් ගන්න"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"සම්පූර්ණ තිරය පටිගත කරන්න"</string>
@@ -201,12 +202,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"පහළ-දකුණු හසුරුව - ප්‍රතිප්‍රමාණය කිරීමට ඊතල යතුරු භාවිතා කරන්න"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"පහළ වම් හසුරුව - ප්‍රතිප්‍රමාණය කිරීමට ඊතල යතුරු භාවිතා කරන්න"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"බෙදා ගන්න"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"බෙදා ගැනීමට යෙදුම් කවුළුව තෝරන්න"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"බෙදා ගැනීමට පටිත්ත තෝරන්න"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"බෙදා ගැනීමට සංදර්ශකය තෝරන්න"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"ශ්‍රව්‍ය බෙදා ගන්න"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"යෙදුම් කවුළුව බෙදා ගන්න"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"පටිත්ත බෙදා ගන්න"</string>
@@ -224,14 +222,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"සංදර්ශකය බෙදා ගැනීම නැවැත්තුවා: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. තිරය ​​කිසිවෙකු සමග බෙදා නොගනී."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"වැසීමේ බොත්තම. පෙර බෙදා ගැනීමේ සංවාදය වැසීමට Enter ඔබන්න."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"පටිති බෙදා ගැනීමේ බොත්තම. තෝරා නොමැත. පටිත්ත බෙදා ගැනීමට enter ඔබන්න."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"බෙදා ගැනීමේ පටිත්ත. ලැබෙන පටිති පරීක්‍ෂා කිරීමට සංචාලන කරන්න."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"යෙදුම් බෙදා ගැනීමේ බොත්තම. තෝරා නොමැත. යෙදුම බෙදා ගැනීමට enter ඔබන්න."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"යෙදුම බෙදා ගනිමින්. ලබා ගත හැකි යෙදුම් පරීක්ෂා කිරීමට සංචාලනය කරන්න."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"පූර්ණ තිර බොත්තම. තෝරා නොමැත. පූර්ණ තිරය බෙදා ගැනීමට Enter ඔබන්න."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"පූර්ණ තිරය බෙදා ගැනීම. ලැබෙන සංදර්ශක පරික්ෂා කිරීමට සංචාලන කරන්න."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"බෙදා ගැනීමේ බොත්තම. ක්‍රියාවිරහිතයි. බෙදා ගැනීමට යෙදුම, පටිත්ත, හෝ සංදර්ශකය තෝරන්න."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"බෙදා ගැනීම ක්‍රියාත්මකයි. <xliff:g id="ITEM">%1$s</xliff:g> තෝරන ලදි. බෙදා ගැනීම ආරම්භ කිරීමට enter ඔබන්න."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. තෝරා නොමැත. තේරීමට enter ඔබන්න."</string>
@@ -254,6 +249,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"මයික්‍රෆෝනය"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ඉදිරිපස කැමරාව"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"බෙදා ගැනීම නවත්වන්න"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"තිරය බෙදා ගැනීම ක්‍රියාත්මකයි. බෙදා ගැනීම අවසන් කිරීමට පෞද්ගලිකත්ව දර්ශකය භාවිත කරන්න."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"තිරය ​​බෙදා ගැනීම"</string>
@@ -432,6 +429,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"සහායක"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"යතුරු පුවරුව"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"යතුරු පුවරුව"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ඇතුළත තව # දැනුම්දීමක් ඇත.}one{ඇතුළත තව දැනුම්දීම් #ක් ඇත.}other{ඇතුළත තව දැනුම්දීම් #ක් ඇත.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"තිරය තිරස් දිශානතියෙහි අගුළු දමා ඇත."</string>
@@ -1248,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ප්‍රවේශ්‍යතා යතුර"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"ප්‍රවේශ්‍යතා විශේෂාංග භාවිත කිරීම ආරම්භ කිරීමට ඔබට ප්‍රවේශ්‍යතා යතුර එබිය හැක."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"විශේෂාංග එක් කරන්න"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"ප්‍රවේශ්‍යතා යතුර පිහිටුවන්න"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> පිහිටුවන්න"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"නිමයි"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"විශේෂාංගයක් තෝරන්න"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"සංස්කරණය කරන්න"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"විශේෂාංගයක් තෝරා ගන්න"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"ඔබ ප්‍රවේශ්‍යතා බොත්තම තෝරන මීළඟ වතාවේ මෙම විශේෂාංගය විවෘත වනු ඇත"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ප්‍රවේශ්‍යතාව"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"අගුලු තිරය"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"වසා දමමින්…"</string>
@@ -1751,7 +1749,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"යෙදුම් මාරු කරන්න"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"නිමයි"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"මීළඟ"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"නැවත උත්සාහ කරන්න!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ආපස්සට යන්න"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ඔබේ ස්පර්ශ පුවරුව මත ඇඟිලි තුනක් භාවිතයෙන් වමට හෝ දකුණට ස්වයිප් කරන්න"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"කදිමයි!"</string>
@@ -1759,14 +1758,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"ඔබේ ස්පර්ශ පෑඩය භාවිතයෙන් ආපසු යාමට, ඇඟිලි තුනක් භාවිතයෙන් වමට හෝ දකුණට ස්වයිප් කරන්න"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"මුල් පිටුවට යන්න"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"ඔබේ ස්පර්ශ පුවරුවේ ඇඟිලි තුනකින් ඉහළට ස්වයිප් කරන්න"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"අනර්ඝ වැඩක්!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"ඔබ මුල් පිටුවට යාමේ ඉංගිතය සම්පූර්ණ කරන ලදි"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"ඔබේ මුල් තිරයට යාමට ඔබේ ස්පර්ශක පෑඩයේ ඇඟිලි තුනකින් ඉහළට ස්වයිප් කරන්න"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"මෑත යෙදුම් බලන්න"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"ඉහළට ස්වයිප් කර ඔබේ ස්පර්ශ පුවරුව මත ඇඟිලි තුනක් භාවිත කර රඳවාගෙන සිටින්න"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"අනර්ඝ වැඩක්!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"ඔබ මෑත යෙදුම් ඉංගිත බැලීම සම්පූර්ණ කර ඇත."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"මෑත කාලීන යෙදුම් බැලීමට, ඔබේ ස්පර්ශක පෑඩයේ ඇඟිලි තුනක් භාවිතයෙන් ඉහළට ස්වයිප් කරගෙන සිටින්න"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"යෙදුම් මාරු කරන්න"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"ඔබේ ස්පර්ශක පෑඩයේ ඇඟිලි හතරක් භාවිතයෙන් දකුණට ස්වයිප් කරන්න"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"අනර්ඝ වැඩක්!"</string>
@@ -1867,8 +1877,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"ප්‍රයෝග %dක්"</string>
     <string name="av_blur" msgid="405131343487260171">"නොපැහැදිලි"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"සජීවී සිරස්තල"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"ආපසු"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"බැටරිය %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"L බැටරිය %1$s    R බැටරිය %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"L බැටරිය %1$s"</string>
