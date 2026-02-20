@@ -17,9 +17,6 @@
 package com.android.systemui.statusbar.phone;
 
 import static android.service.notification.NotificationListenerService.REASON_CLICK;
-
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.systemui.log.LogBufferHelperKt.logcatLogBuffer;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -35,6 +32,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -71,6 +69,7 @@ import com.android.systemui.assist.AssistManager;
 import com.android.systemui.classifier.FalsingCollectorFake;
 import com.android.systemui.flags.SceneContainerFlagParameterizationKt;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
+import com.android.systemui.log.FrameworkStatsLogWrapper;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
@@ -117,8 +116,6 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.MockitoSession;
-import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
@@ -188,6 +185,8 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
     private UserTracker mUserTracker;
     @Mock
     private HeadsUpManager mHeadsUpManager;
+    @Mock
+    private FrameworkStatsLogWrapper mFrameworkStatsLogWrapper;
 
     private final FakeExecutor mMainExecutor = new FakeExecutor(new FakeSystemClock());
     private final FakeExecutor mUiBgExecutor = new FakeExecutor(new FakeSystemClock());
@@ -197,7 +196,6 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
     private ExpandableNotificationRow mBubbleNotificationRow;
     private FakeShadeDialogContextInteractor mContextInteractor;
     private StatusBarNotificationActivityStarter mUnderTest;
-
 
     private final Answer<Void> mCallOnDismiss = answerVoid(
             (OnDismissAction dismissAction, Runnable cancel,
@@ -292,7 +290,8 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
                         notificationAnimationProvider,
                         mock(LaunchFullScreenIntentProvider.class),
                         mPowerInteractor,
-                        mUserTracker
+                        mUserTracker,
+                        mFrameworkStatsLogWrapper
                 );
 
         // set up dismissKeyguardThenExecute to synchronously invoke the OnDismissAction arg
@@ -604,18 +603,13 @@ public class StatusBarNotificationActivityStarterTest extends SysuiTestCase {
         NotificationEntry entry = mock(NotificationEntry.class);
         when(entry.getImportance()).thenReturn(NotificationManager.IMPORTANCE_HIGH);
         when(entry.getSbn()).thenReturn(sbn);
-        MockitoSession mockingSession = mockitoSession()
-                .mockStatic(FrameworkStatsLog.class)
-                .strictness(Strictness.LENIENT)
-                .startMocking();
 
         // WHEN
         mUnderTest.launchFullScreenIntent(entry);
 
         // THEN the full screen intent should be logged to statsd.
-        verify(() -> FrameworkStatsLog.write(FrameworkStatsLog.FULL_SCREEN_INTENT_LAUNCHED,
-                kTestUid, kTestActivityName));
-        mockingSession.finishMocking();
+        verify(mFrameworkStatsLogWrapper).write(FrameworkStatsLog.FULL_SCREEN_INTENT_LAUNCHED,
+                kTestUid, kTestActivityName);
     }
 
     @Test

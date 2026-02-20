@@ -61,6 +61,7 @@ import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.log.FrameworkStatsLogWrapper;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
@@ -161,6 +162,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
     private final NotificationLaunchAnimatorControllerProvider mNotificationAnimationProvider;
     private final PowerInteractor mPowerInteractor;
     private final UserTracker mUserTracker;
+    private final FrameworkStatsLogWrapper mFrameworkStatsLogWrapper;
     private final OnUserInteractionCallback mOnUserInteractionCallback;
 
     private boolean mIsCollapsingToShowActivityOverLockscreen;
@@ -202,7 +204,8 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
             NotificationLaunchAnimatorControllerProvider notificationAnimationProvider,
             LaunchFullScreenIntentProvider launchFullScreenIntentProvider,
             PowerInteractor powerInteractor,
-            UserTracker userTracker) {
+            UserTracker userTracker,
+            FrameworkStatsLogWrapper frameworkStatsLogWrapper) {
         mContext = context;
         mContextInteractor = contextInteractor;
         mMainThreadHandler = mainThreadHandler;
@@ -238,6 +241,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
         mNotificationAnimationProvider = notificationAnimationProvider;
         mPowerInteractor = powerInteractor;
         mUserTracker = userTracker;
+        mFrameworkStatsLogWrapper = frameworkStatsLogWrapper;
 
         launchFullScreenIntentProvider.registerListener(entry -> launchFullScreenIntent(entry));
     }
@@ -820,7 +824,7 @@ public class StatusBarNotificationActivityStarter implements NotificationActivit
             } else {
                 activityName = "";
             }
-            FrameworkStatsLog.write(FrameworkStatsLog.FULL_SCREEN_INTENT_LAUNCHED,
+            mFrameworkStatsLogWrapper.write(FrameworkStatsLog.FULL_SCREEN_INTENT_LAUNCHED,
                     fullScreenIntent.getCreatorUid(),
                     activityName);
         } catch (PendingIntent.CanceledException e) {
