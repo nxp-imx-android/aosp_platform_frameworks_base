@@ -109,6 +109,9 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        whenever(kosmos.packageManager.checkPermission(any<String>(), any<String>()))
+            .thenReturn(PackageManager.PERMISSION_DENIED)
+
         runBlocking {
             kosmos.displayRepository.emit(
                 setOf(
