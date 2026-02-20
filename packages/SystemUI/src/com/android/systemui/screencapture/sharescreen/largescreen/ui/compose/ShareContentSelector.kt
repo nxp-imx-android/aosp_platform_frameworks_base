@@ -80,12 +80,12 @@ fun ShareContentSelector(shareScreenViewModel: ScreenCaptureShareScreenViewModel
                             else -> throw IllegalArgumentException("Unknown TargetsViewModel type")
                         }
                     ),
-                modifier = Modifier.padding(start = 8.dp, end = 8.dp).height(24.dp).fillMaxWidth(),
+                modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth(),
                 style = MaterialTheme.typography.titleMedium,
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(start = 4.dp, end = 4.dp),
+                modifier = Modifier.padding(horizontal = 4.dp),
             ) {
                 // The sharing content item list.
                 ShareContentList(viewModel = targetsViewModel)
@@ -164,7 +164,7 @@ private fun DisclaimerText(targetsViewModel: TargetsViewModel, requestingAppName
                 requestingAppName,
             ),
         style = MaterialTheme.typography.labelMedium,
-        modifier = Modifier.padding(start = 8.dp, end = 8.dp).fillMaxWidth(),
+        modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth(),
     )
 }
 
