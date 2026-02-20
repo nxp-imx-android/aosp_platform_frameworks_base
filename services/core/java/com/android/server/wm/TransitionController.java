@@ -24,7 +24,6 @@ import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
-import static android.window.DesktopExperienceFlags.ENABLE_PARALLEL_CD_TRANSITIONS_DURING_RECENTS;
 import static android.window.TransitionInfo.FLAGS_IS_NON_APP_WINDOW;
 import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
 
@@ -1429,8 +1428,7 @@ class TransitionController {
             for (int i = 0; i < collecting.mParticipants.size(); ++i) {
                 final WindowContainer wc = collecting.mParticipants.valueAt(i);
                 final boolean isOnDifferentDisplay = !queued.isOnDisplay(wc.mDisplayContent);
-                if (isOnDifferentDisplay
-                        && ENABLE_PARALLEL_CD_TRANSITIONS_DURING_RECENTS.isTrue()) {
+                if (isOnDifferentDisplay) {
                     // Running in a different display, could be independent.
                     continue;
                 }
@@ -1492,8 +1490,7 @@ class TransitionController {
         for (int i = 0; i < other.mTargets.size(); ++i) {
             final WindowContainer wc = other.mTargets.get(i).mContainer;
             final boolean isOnDifferentDisplay = !recents.isOnDisplay(wc.mDisplayContent);
-            if (isOnDifferentDisplay
-                    && ENABLE_PARALLEL_CD_TRANSITIONS_DURING_RECENTS.isTrue()) {
+            if (isOnDifferentDisplay) {
                 // Running in a different display, could be independent.
                 continue;
             }
