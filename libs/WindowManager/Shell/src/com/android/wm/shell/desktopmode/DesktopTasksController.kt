@@ -6849,85 +6849,6 @@ class DesktopTasksController(
         private lateinit var remoteListener:
             SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>
 
-        private val deskChangeListener: DeskChangeListener =
-            object : DeskChangeListener {
-                override fun onDeskAdded(displayId: Int, deskId: Int) {
-                    ProtoLog.v(
-                        WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onDeskAdded display=%d deskId=%d",
-                        displayId,
-                        deskId,
-                    )
-                    remoteListener.call { l -> l.onDeskAdded(displayId, deskId) }
-                }
-
-                override fun onDeskRemoved(displayId: Int, deskId: Int) {
-                    ProtoLog.v(
-                        WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onDeskRemoved display=%d deskId=%d",
-                        displayId,
-                        deskId,
-                    )
-                    remoteListener.call { l -> l.onDeskRemoved(displayId, deskId) }
-                }
-
-                override fun onActiveDeskChanged(
-                    displayId: Int,
-                    newActiveDeskId: Int,
-                    oldActiveDeskId: Int,
-                ) {
-                    ProtoLog.v(
-                        WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onActiveDeskChanged display=%d new=%d old=%d",
-                        displayId,
-                        newActiveDeskId,
-                        oldActiveDeskId,
-                    )
-                    remoteListener.call { l ->
-                        l.onActiveDeskChanged(displayId, newActiveDeskId, oldActiveDeskId)
-                    }
-                }
-
-                override fun onCanCreateDesksChanged(canCreateDesks: Boolean) {
-                    ProtoLog.v(
-                        WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onCanCreateDesksChanged canCreateDesks=%b",
-                        canCreateDesks,
-                    )
-                    remoteListener.call { l -> l.onCanCreateDesksChanged(canCreateDesks) }
-                }
-
-                override fun onTaskAppearingInDesk(taskId: Int, displayId: Int, deskId: Int) {
-                    if (shellController?.isOverviewVisible(displayId) != true) return
-                    if (transitionStateHolder?.isRecentsTransitionRunning() != false) return
-                    ProtoLog.v(
-                        WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onTaskAppearingInDesk taskId=%d displayId=%d deskId=%d",
-                        taskId,
-                        displayId,
-                        deskId,
-                    )
-                    remoteListener.call { l ->
-                        l.onTaskAppearingInDeskWithOverviewShowing(taskId, displayId, deskId)
-                    }
-                }
-            }
-
-        private val visibleTasksListener: VisibleTasksListener =
-            object : VisibleTasksListener {
-                override fun onTasksVisibilityChanged(displayId: Int, visibleTasksCount: Int) {
-                    ProtoLog.v(
-                        WM_SHELL_DESKTOP_MODE,
-                        "IDesktopModeImpl: onVisibilityChanged display=%d visible=%d",
-                        displayId,
-                        visibleTasksCount,
-                    )
-                    remoteListener.call { l ->
-                        l.onTasksVisibilityChanged(displayId, visibleTasksCount)
-                    }
-                }
-            }
-
         init {
             remoteListener =
                 SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>(
@@ -7122,18 +7043,10 @@ class DesktopTasksController(
         }
 
         private fun registerListeners(c: DesktopTasksController) {
-            if (c.desktopState.enableMultipleDesktops) {
-                c.userRepositories.current.addDeskChangeListener(deskChangeListener, c.mainExecutor)
-            }
-            c.userRepositories.current.addVisibleTasksListener(visibleTasksListener, c.mainExecutor)
             desktopRemoteListener.register(remoteListener)
         }
 
         private fun unregisterListeners(c: DesktopTasksController) {
-            if (c.desktopState.enableMultipleDesktops) {
-                c.userRepositories.current.removeDeskChangeListener(deskChangeListener)
-            }
-            c.userRepositories.current.removeVisibleTasksListener(visibleTasksListener)
             desktopRemoteListener.unregister()
         }
     }
