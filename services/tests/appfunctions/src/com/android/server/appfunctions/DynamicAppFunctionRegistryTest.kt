@@ -790,6 +790,58 @@ class DynamicAppFunctionRegistryTest {
             )
     }
 
+    @Test
+    fun getRegisteredActivityIds_functionNotRegistered_returnsNull() {
+        val functionName = AppFunctionName(TEST_PACKAGE, TEST_FUNCTION)
+
+        val result = registry.getRegisteredActivityIds(functionName)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun getRegisteredActivityIds_functionRegisteredWithGlobalScope_returnsNull() {
+        // Verifies that getRegisteredActivityIds returns null for a globally registered function.
+        val functionName = AppFunctionName(TEST_PACKAGE, TEST_FUNCTION)
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            createExecutorMock(),
+            globalScope,
+        )
+
+        val result = registry.getRegisteredActivityIds(functionName)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun getRegisteredActivityIds_functionRegisteredWithActivityScope_returnsActivityIds() {
+        // Verifies that getRegisteredActivityIds returns the correct set of activity IDs.
+        val executor = createExecutorMock()
+        val functionName = AppFunctionName(TEST_PACKAGE, TEST_FUNCTION)
+        val activityId1 = AppFunctionActivityId(Binder())
+        val activityId2 = AppFunctionActivityId(Binder())
+
+        // Register the same function for two different activities
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            executor,
+            listOf(RegistrationScopeId(activityId1)),
+        )
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            executor,
+            listOf(RegistrationScopeId(activityId2)),
+        )
+
+        val result = registry.getRegisteredActivityIds(functionName)
+
+        assertThat(result).containsExactly(activityId1, activityId2)
+    }
+
     private fun createExecutorMock(binder: IBinder = mock()): IAppFunctionExecutor {
         val executor = mock<IAppFunctionExecutor>()
         whenever(executor.asBinder()).thenReturn(binder)
