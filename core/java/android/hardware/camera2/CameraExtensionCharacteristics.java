@@ -873,7 +873,7 @@ public final class CameraExtensionCharacteristics {
      * device-specific extension.
      */
     @FlaggedApi(Flags.FLAG_CAMERA_EXTENSIONS_CHARACTERISTICS_GET)
-    public <T> @Nullable T get(@Extension int extension,
+    public <T> T get(@Extension int extension,
             @NonNull CameraCharacteristics.Key<T> key) {
         final IBinder token = new Binder(TAG + "#get:" + mCameraId);
         boolean success = registerClient(mContext, token, extension, mCameraId,
