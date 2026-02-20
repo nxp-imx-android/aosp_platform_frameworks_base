@@ -20,7 +20,6 @@ import static org.junit.Assert.assertThrows;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.BaseBundle;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -225,14 +224,26 @@ public class PccBundleSanitizationUtilTest {
     }
 
     @Test
-    public void sanitizeBundle_disallowsWritableSharedMemory() throws Exception {
+    public void sanitizeBundle_handlesWritableSharedMemory() throws Exception {
         SharedMemory sm = SharedMemory.create("test", 1024);
         Bundle bundle = new Bundle();
         bundle.putParcelable("sm", sm);
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(bundle));
-        });
+        if (com.android.libcore.Flags.enablePccFrameworkSupport()) {
+            assertThrows(IllegalArgumentException.class, () -> {
+                PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(bundle));
+            });
+        } else {
+            // If the flag is disabled, we attempt to make the shared memory read-only instead of
+            // throwing. Ideally we would verify that it is now read-only, but the
+            // isRegionReadOnly() API is also guarded by the same flag. So we just verify it
+            // doesn't throw.
+            try {
+                PccBundleSanitizationUtil.sanitizeBundle(parcelAndUnparcel(bundle));
+            } catch (IllegalArgumentException e) {
+                throw new AssertionError("Should not throw when flag is disabled", e);
+            }
+        }
     }
 
     @Test
