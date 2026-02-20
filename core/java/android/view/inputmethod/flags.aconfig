@@ -299,3 +299,17 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "ime_switcher_menu_systemui_style_update"
+  namespace: "input_method"
+  description: "Update styling and layout of the IME Switcher Menu implemented in SystemUi"
+  bug: "481673341"
+}
+
+flag {
+  name: "ime_switcher_menu_systemui_style_update_desktop"
+  namespace: "input_method"
+  description: "Update styling and layout of the IME Switcher Menu implemented in SystemUi for Desktop Android"
+  bug: "481673341"
+}
