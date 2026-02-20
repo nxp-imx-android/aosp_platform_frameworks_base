@@ -2116,8 +2116,7 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
     }
 
     private void checkCallingUidPackage(String packageName, int callingUid, int userId) {
-        int packageUid = mPackageManagerInternal.getPackageUid(packageName, 0, userId);
-        if (UserHandle.getAppId(callingUid) != UserHandle.getAppId(packageUid)) {
+        if (!mPackageManagerInternal.isSameApp(packageName, callingUid, userId)) {
             throw new SecurityException("Package " + packageName
                     + " does not belong to the calling uid " + callingUid);
         }
