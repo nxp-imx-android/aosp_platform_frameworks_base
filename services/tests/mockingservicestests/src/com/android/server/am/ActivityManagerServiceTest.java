@@ -152,6 +152,7 @@ import com.android.server.am.BroadcastController.StickyBroadcast;
 import com.android.server.am.ProcessList.IsolatedUidRange;
 import com.android.server.am.ProcessList.IsolatedUidRangeAllocator;
 import com.android.server.am.UidObserverController.ChangeRecord;
+import com.android.server.am.psc.MockUtils;
 import com.android.server.appop.AppOpsService;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.notification.NotificationManagerInternal;
@@ -632,7 +633,7 @@ public class ActivityManagerServiceTest {
     public void testMaybeUpdateUsageStats_ProcStatePersistentUI() {
         final long elapsedTime = 0L;
 
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_PERSISTENT_UI);
+        MockUtils.setCurProcState(mProcessRecord, ActivityManager.PROCESS_STATE_PERSISTENT_UI);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
         assertProcessRecordState(0L, true, elapsedTime);
@@ -641,7 +642,7 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateTop() {
         final long elapsedTime = 0L;
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_TOP);
+        MockUtils.setCurProcState(mProcessRecord, ActivityManager.PROCESS_STATE_TOP);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
         assertProcessRecordState(0L, true, elapsedTime);
@@ -650,7 +651,7 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateTop_PreviousInteraction() {
         final long elapsedTime = 0L;
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_TOP);
+        MockUtils.setCurProcState(mProcessRecord, ActivityManager.PROCESS_STATE_TOP);
         mProcessRecord.setHasReportedInteraction(true);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
@@ -660,7 +661,7 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateTop_PastUsageInterval() {
         final long elapsedTime = 3 * USAGE_STATS_INTERACTION;
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_TOP);
+        MockUtils.setCurProcState(mProcessRecord, ActivityManager.PROCESS_STATE_TOP);
         mProcessRecord.setHasReportedInteraction(true);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
@@ -670,7 +671,7 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateBoundTop() {
         final long elapsedTime = 0L;
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_BOUND_TOP);
+        MockUtils.setCurProcState(mProcessRecord, ActivityManager.PROCESS_STATE_BOUND_TOP);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
         assertProcessRecordState(0L, true, elapsedTime);
@@ -679,7 +680,7 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateFGS() {
         final long elapsedTime = 0L;
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
+        MockUtils.setCurProcState(mProcessRecord, ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
         assertProcessRecordState(elapsedTime, false, 0L);
@@ -690,7 +691,7 @@ public class ActivityManagerServiceTest {
         final long elapsedTime = 0L;
         final long fgInteractionTime = 1000L;
         mProcessRecord.setFgInteractionTime(fgInteractionTime);
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
+        MockUtils.setCurProcState(mProcessRecord, ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
         assertProcessRecordState(fgInteractionTime, false, 0L);
@@ -701,7 +702,7 @@ public class ActivityManagerServiceTest {
         final long elapsedTime = 2 * SERVICE_USAGE_INTERACTION;
         final long fgInteractionTime = 1000L;
         mProcessRecord.setFgInteractionTime(fgInteractionTime);
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
+        MockUtils.setCurProcState(mProcessRecord, ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
         assertProcessRecordState(fgInteractionTime, true, elapsedTime);
@@ -713,7 +714,7 @@ public class ActivityManagerServiceTest {
         final long fgInteractionTime = 1000L;
         mProcessRecord.setFgInteractionTime(fgInteractionTime);
         mProcessRecord.setHasReportedInteraction(true);
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
+        MockUtils.setCurProcState(mProcessRecord, ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
         assertProcessRecordState(fgInteractionTime, true, 0L);
@@ -722,7 +723,7 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateFGSLocation() {
         final long elapsedTime = 0L;
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
+        MockUtils.setCurProcState(mProcessRecord, ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
         assertProcessRecordState(elapsedTime, false, 0L);
@@ -731,7 +732,7 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateBFGS() {
         final long elapsedTime = 0L;
-        mProcessRecord.setCurProcState(
+        MockUtils.setCurProcState(mProcessRecord,
                 ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
@@ -741,7 +742,8 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateImportantFG() {
         final long elapsedTime = 0L;
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND);
+        MockUtils.setCurProcState(mProcessRecord,
+                ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
         assertProcessRecordState(0L, true, elapsedTime);
@@ -750,7 +752,8 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateImportantFG_PreviousInteraction() {
         final long elapsedTime = 0L;
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND);
+        MockUtils.setCurProcState(mProcessRecord,
+                ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND);
         mProcessRecord.setHasReportedInteraction(true);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
@@ -760,7 +763,8 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateImportantFG_PastUsageInterval() {
         final long elapsedTime = 3 * USAGE_STATS_INTERACTION;
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND);
+        MockUtils.setCurProcState(mProcessRecord,
+                ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND);
         mProcessRecord.setHasReportedInteraction(true);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
@@ -770,7 +774,8 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateImportantBG() {
         final long elapsedTime = 0L;
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND);
+        MockUtils.setCurProcState(mProcessRecord,
+                ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
         assertProcessRecordState(0L, false, 0L);
@@ -779,7 +784,7 @@ public class ActivityManagerServiceTest {
     @Test
     public void testMaybeUpdateUsageStats_ProcStateService() {
         final long elapsedTime = 0L;
-        mProcessRecord.setCurProcState(ActivityManager.PROCESS_STATE_SERVICE);
+        MockUtils.setCurProcState(mProcessRecord, ActivityManager.PROCESS_STATE_SERVICE);
         maybeUpdateUsageStats(mProcessRecord, elapsedTime);
 
         assertProcessRecordState(0L, false, 0L);

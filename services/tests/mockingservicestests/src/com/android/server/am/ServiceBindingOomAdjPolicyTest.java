@@ -54,6 +54,7 @@ import android.app.IServiceConnection;
 import android.content.Intent;
 import android.platform.test.annotations.Presubmit;
 
+import com.android.server.am.psc.MockUtils;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.wm.WindowProcessController;
 
@@ -469,18 +470,18 @@ public final class ServiceBindingOomAdjPolicyTest extends BaseServiceTest {
                 .setUid(uid)
                 .build();
 
-        app.setCurRawProcState(procState);
-        app.setCurProcState(procState);
-        app.setSetProcState(procState);
-        app.setCurRawAdj(adj);
-        app.setCurAdj(adj);
-        app.setSetAdj(adj);
-        app.setCurCapability(cap);
-        app.addCurCpuTimeReasons(defaultCpuTimeReasons(cap));
-        app.addCurImplicitCpuTimeReasons(defaultImplicitCpuTimeReasons(cap));
-        app.setSetCapability(cap);
-        app.setSetCpuTimeReasons(defaultCpuTimeReasons(cap));
-        app.setSetImplicitCpuTimeReasons(defaultImplicitCpuTimeReasons(cap));
+        MockUtils.setCurRawProcState(app, procState);
+        MockUtils.setCurProcState(app, procState);
+        MockUtils.setSetProcState(app, procState);
+        MockUtils.setCurRawAdj(app, adj);
+        MockUtils.setCurAdj(app, adj);
+        MockUtils.setSetAdj(app, adj);
+        MockUtils.setCurCapability(app, cap);
+        MockUtils.addCurCpuTimeReasons(app, defaultCpuTimeReasons(cap));
+        MockUtils.addCurImplicitCpuTimeReasons(app, defaultImplicitCpuTimeReasons(cap));
+        MockUtils.setSetCapability(app, cap);
+        MockUtils.setSetCpuTimeReasons(app, defaultCpuTimeReasons(cap));
+        MockUtils.setSetImplicitCpuTimeReasons(app, defaultImplicitCpuTimeReasons(cap));
         return app;
     }
 
