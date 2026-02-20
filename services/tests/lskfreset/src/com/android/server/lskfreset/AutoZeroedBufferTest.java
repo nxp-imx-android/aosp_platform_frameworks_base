@@ -46,7 +46,7 @@ public class AutoZeroedBufferTest {
         byte[] ownedData = testData.clone();
 
         // Wrap the buffer in an auto-zero object and verify it is unchanged.
-        try (AutoZeroedBuffer buffer = new AutoZeroedBuffer(ownedData)) {
+        try (var buffer = new AutoZeroedBuffer(ownedData)) {
             assertArrayEquals(testData, buffer.getBuffer());
         }
 
