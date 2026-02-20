@@ -23,7 +23,7 @@ import android.annotation.SystemApi;
 import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.interaction.AttributionDetails;
 
 import java.util.ArrayList;
@@ -102,8 +102,8 @@ public final class InsightCollection extends ContextInsight implements Iterable<
 
     @Override
     @NonNull
-    public Set<ContextHintWithSignature> getOriginHints() {
-        final Set<ContextHintWithSignature> originHints = new HashSet<>();
+    public Set<PublishedContextHint> getOriginHints() {
+        final Set<PublishedContextHint> originHints = new HashSet<>();
         for (final ContextInsight insight : mInsights) {
             originHints.addAll(insight.getOriginHints());
         }

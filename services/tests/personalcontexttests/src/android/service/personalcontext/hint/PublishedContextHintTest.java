@@ -39,17 +39,17 @@ import javax.crypto.spec.SecretKeySpec;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-public class ContextHintWithSignatureTest {
+public class PublishedContextHintTest {
     private static final String SYSTEM_PACKAGE = "android";
 
-    private static void checkPresence(ContextHintWithSignature signedHint,
+    private static void checkPresence(PublishedContextHint signedHint,
             List<ContextHint> hints) {
         final ArraySet<ContextHint> remainingHints = new ArraySet<>(hints);
-        final HashSet<ContextHintWithSignature> attributionHints =
+        final HashSet<PublishedContextHint> attributionHints =
                 new HashSet<>(signedHint.getAttributionHints());
 
         assertThat(remainingHints.size()).isEqualTo(attributionHints.size());
-        for (ContextHintWithSignature targetHint : attributionHints) {
+        for (PublishedContextHint targetHint : attributionHints) {
             assertThat(targetHint.getOriginatingPackage()).isEqualTo(SYSTEM_PACKAGE);
             final ContextHint targetContextHint = targetHint.getContextHint();
             final Optional<ContextHint> foundHint = remainingHints.stream().filter(hint ->
@@ -72,19 +72,19 @@ public class ContextHintWithSignatureTest {
         final RenderToken renderToken1 = new RenderToken(UUID.randomUUID(), null);
         final RenderToken renderToken2 = new RenderToken(UUID.randomUUID(), null);
 
-        final ContextHintWithSignature signedAttributedHint1 =
-                new ContextHintWithSignature.Builder(attributedHint1, key)
+        final PublishedContextHint signedAttributedHint1 =
+                new PublishedContextHint.Builder(attributedHint1, key)
                         .addRenderTokens(List.of(renderToken1, renderToken2))
                         .build();
 
-        final ContextHintWithSignature signedAttributedHint2 =
-                new ContextHintWithSignature.Builder(attributedHint2, key)
+        final PublishedContextHint signedAttributedHint2 =
+                new PublishedContextHint.Builder(attributedHint2, key)
                         .addRenderTokens(List.of(renderToken1, renderToken2))
                         .build();
 
         final Parcel parcel = Parcel.obtain();
-        parcel.writeParcelable(new ContextHintWithSignatureWrapper(
-                new ContextHintWithSignature.Builder(hint, key)
+        parcel.writeParcelable(new PublishedContextHintWrapper(
+                new PublishedContextHint.Builder(hint, key)
                         .setOriginatingPackage(origin.getPackageName())
                         .addRenderTokens(List.of(renderToken1, renderToken2))
                         .addAttributionHint(signedAttributedHint1)
@@ -93,9 +93,9 @@ public class ContextHintWithSignatureTest {
 
         parcel.setDataPosition(0);
 
-        final ContextHintWithSignature signedHint =
-                parcel.readParcelable(/* loader= */ null, ContextHintWithSignatureWrapper.class)
-                        .getContextHintWithSignature();
+        final PublishedContextHint signedHint =
+                parcel.readParcelable(/* loader= */ null, PublishedContextHintWrapper.class)
+                        .getPublishedContextHint();
 
         parcel.recycle();
 
@@ -115,19 +115,19 @@ public class ContextHintWithSignatureTest {
         final BundleHint attributedHint2 = new BundleHint.Builder().build();
         final RenderToken renderToken = new RenderToken(UUID.randomUUID(), null);
 
-        final ContextHintWithSignature signedAttributedHint1 =
-                new ContextHintWithSignature.Builder(attributedHint1, key)
+        final PublishedContextHint signedAttributedHint1 =
+                new PublishedContextHint.Builder(attributedHint1, key)
                         .addRenderTokens(List.of(renderToken))
                         .build();
 
-        final ContextHintWithSignature signedAttributedHint2 =
-                new ContextHintWithSignature.Builder(attributedHint2, key)
+        final PublishedContextHint signedAttributedHint2 =
+                new PublishedContextHint.Builder(attributedHint2, key)
                         .addRenderTokens(List.of(renderToken))
                         .build();
 
         final Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(
-                new ContextHintWithSignatureWrapper(new ContextHintWithSignature.Builder(hint, key)
+                new PublishedContextHintWrapper(new PublishedContextHint.Builder(hint, key)
                         .addRenderTokens(List.of(renderToken))
                         .addAttributionHint(signedAttributedHint1)
                         .addAttributionHint(signedAttributedHint2)
@@ -135,9 +135,9 @@ public class ContextHintWithSignatureTest {
 
         parcel.setDataPosition(0);
 
-        final ContextHintWithSignature signedHint =
-                parcel.readParcelable(/* loader= */ null, ContextHintWithSignatureWrapper.class)
-                        .getContextHintWithSignature();
+        final PublishedContextHint signedHint =
+                parcel.readParcelable(/* loader= */ null, PublishedContextHintWrapper.class)
+                        .getPublishedContextHint();
 
         parcel.recycle();
 
@@ -157,24 +157,24 @@ public class ContextHintWithSignatureTest {
         final BundleHint attributedHint1 = new BundleHint.Builder().build();
         final BundleHint attributedHint2 = new BundleHint.Builder().build();
 
-        final ContextHintWithSignature signedAttributedHint1 =
-                new ContextHintWithSignature.Builder(attributedHint1, key).build();
+        final PublishedContextHint signedAttributedHint1 =
+                new PublishedContextHint.Builder(attributedHint1, key).build();
 
-        final ContextHintWithSignature signedAttributedHint2 =
-                new ContextHintWithSignature.Builder(attributedHint2, key).build();
+        final PublishedContextHint signedAttributedHint2 =
+                new PublishedContextHint.Builder(attributedHint2, key).build();
 
         final Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(
-                new ContextHintWithSignatureWrapper(new ContextHintWithSignature.Builder(hint, key)
+                new PublishedContextHintWrapper(new PublishedContextHint.Builder(hint, key)
                         .setOriginatingPackage(origin.getPackageName())
                         .addAttributionHints(List.of(signedAttributedHint1, signedAttributedHint2))
                         .build()), 0);
 
         parcel.setDataPosition(0);
 
-        final ContextHintWithSignature signedHint =
-                parcel.readParcelable(/* loader= */ null, ContextHintWithSignatureWrapper.class)
-                        .getContextHintWithSignature();
+        final PublishedContextHint signedHint =
+                parcel.readParcelable(/* loader= */ null, PublishedContextHintWrapper.class)
+                        .getPublishedContextHint();
 
         parcel.recycle();
 
@@ -195,16 +195,16 @@ public class ContextHintWithSignatureTest {
 
         final Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(
-                new ContextHintWithSignatureWrapper(new ContextHintWithSignature.Builder(hint, key)
+                new PublishedContextHintWrapper(new PublishedContextHint.Builder(hint, key)
                         .setOriginatingPackage(origin.getPackageName())
                         .addRenderTokens(List.of(renderToken))
                         .build()), 0);
 
         parcel.setDataPosition(0);
 
-        final ContextHintWithSignature signedHint =
-                parcel.readParcelable(/* loader= */ null, ContextHintWithSignatureWrapper.class)
-                        .getContextHintWithSignature();
+        final PublishedContextHint signedHint =
+                parcel.readParcelable(/* loader= */ null, PublishedContextHintWrapper.class)
+                        .getPublishedContextHint();
 
         parcel.recycle();
 
@@ -219,8 +219,8 @@ public class ContextHintWithSignatureTest {
     public void testSignatureWrongKey() throws GeneralSecurityException {
         final BundleHint hint = new BundleHint.Builder().build();
 
-        final ContextHintWithSignature signedHint =
-                new ContextHintWithSignature.Builder(
+        final PublishedContextHint signedHint =
+                new PublishedContextHint.Builder(
                         hint, ContextHintTestUtils.generateSignedHintKey()).build();
 
         assertThat(signedHint.isSignatureValid(ContextHintTestUtils.generateSignedHintKey()))
@@ -233,7 +233,7 @@ public class ContextHintWithSignatureTest {
         final BundleHint hint = new BundleHint.Builder().build();
 
         final Parcel parcel = Parcel.obtain();
-        new ContextHintWithSignature.Builder(hint, key)
+        new PublishedContextHint.Builder(hint, key)
                 .build()
                 .writeToParcel(parcel, 0);
 
@@ -248,7 +248,7 @@ public class ContextHintWithSignatureTest {
         parcel.setDataPosition(0);
 
         // Re-read the parcel with a bad signature.
-        final ContextHintWithSignature signedHint = new ContextHintWithSignature(parcel);
+        final PublishedContextHint signedHint = new PublishedContextHint(parcel);
 
         parcel.recycle();
 

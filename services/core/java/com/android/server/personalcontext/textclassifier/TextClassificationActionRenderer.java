@@ -21,7 +21,7 @@ import static java.util.Objects.requireNonNull;
 import android.annotation.Nullable;
 import android.app.RemoteAction;
 import android.service.personalcontext.RenderToken;
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.hint.TextClassificationHint;
 import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.ContextInsight;
@@ -92,7 +92,7 @@ public class TextClassificationActionRenderer implements Renderer {
     @Nullable
     private static TextClassificationHint getFirstTextClassificationHintIfPresent(
             ContextInsight insight) {
-        for (ContextHintWithSignature hint : insight.getOriginHints()) {
+        for (PublishedContextHint hint : insight.getOriginHints()) {
             if (hint.getContextHint() instanceof TextClassificationHint textClassificationHint) {
                 return textClassificationHint;
             }

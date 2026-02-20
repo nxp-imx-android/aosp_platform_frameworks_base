@@ -34,9 +34,9 @@ import android.service.personalcontext.Flags;
 import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWithSignature;
-import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.HintFilter;
+import android.service.personalcontext.hint.PublishedContextHint;
+import android.service.personalcontext.hint.PublishedContextHintWrapper;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.service.personalcontext.insight.PublishedContextInsight;
@@ -144,7 +144,7 @@ public abstract class ContextUnderstanderService extends Service {
      */
     @NonNull
     @RequiresPermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS)
-    public abstract List<ContextInsight> onUnderstand(@NonNull List<ContextHintWithSignature>
+    public abstract List<ContextInsight> onUnderstand(@NonNull List<PublishedContextHint>
             hints);
 
     /**
@@ -184,14 +184,14 @@ public abstract class ContextUnderstanderService extends Service {
         @Override
         public void refine(
                 ParcelUuid componentId,
-                List<ContextHintWithSignatureWrapper> inputHints, IRefineCallback callback,
+                List<PublishedContextHintWrapper> inputHints, IRefineCallback callback,
                 IOpCallback opCallback) {
             mRequestProcessor.execute(
                     new BinderRequestProcessor.ExecutionParams.Builder<ContextUnderstanderService>(
                             opCallback, serviceInstance -> {
                         callback.onHintsRefined(Collections.emptyList());
                         final List<ContextInsight> insights = serviceInstance.onUnderstand(
-                                ContextHintWithSignatureWrapper.unwrapList(inputHints));
+                                PublishedContextHintWrapper.unwrapList(inputHints));
                         callback.onUnderstood(ContextInsightWrapper.wrapList(insights));
                     }).setComponentId(componentId).build());
         }

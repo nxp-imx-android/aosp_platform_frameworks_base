@@ -19,7 +19,7 @@ package android.service.personalcontext.refiner;
 import android.os.Bundle;
 import android.os.ParcelUuid;
 import android.service.personalcontext.IOpCallback;
-import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
+import android.service.personalcontext.hint.PublishedContextHintWrapper;
 import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.refiner.IGetFilterCallback;
@@ -36,7 +36,7 @@ oneway interface IRefiner {
      * hints that this refiner hasn't seen before. The callback may be called exactly once,
      * with a new set of hints.
      */
-    void refine(in ParcelUuid componentId, in List<ContextHintWithSignatureWrapper> inputHints,
+    void refine(in ParcelUuid componentId, in List<PublishedContextHintWrapper> inputHints,
         in IRefineCallback callback, in IOpCallback opCallback);
 
     /** Gets a filter to be used when deciding whether to send an insight to this refiner. */

@@ -26,9 +26,9 @@ import android.os.RemoteException;
 import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
-import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.HintFilter;
+import android.service.personalcontext.hint.PublishedContextHint;
+import android.service.personalcontext.hint.PublishedContextHintWrapper;
 import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
@@ -57,7 +57,8 @@ import java.util.UUID;
 @RunWith(AndroidJUnit4.class)
 public class ContextUnderstanderServiceTest {
     private final FakeExecutor mFakeExecutor = new FakeExecutor();
-    @Mock private IRefineCallback mIRefineCallback;
+    @Mock
+    private IRefineCallback mIRefineCallback;
 
     @Before
     public void setUp() throws Exception {
@@ -66,22 +67,22 @@ public class ContextUnderstanderServiceTest {
 
     @Test
     public void testOnUnderstandList() throws RemoteException, GeneralSecurityException {
-        final ContextHintWithSignature hint1 =
-                new ContextHintWithSignature.Builder(
-                                new BundleHint.Builder().build(),
-                                ContextHintTestUtils.generateSignedHintKey())
+        final PublishedContextHint hint1 =
+                new PublishedContextHint.Builder(
+                        new BundleHint.Builder().build(),
+                        ContextHintTestUtils.generateSignedHintKey())
                         .build();
-        final ContextHintWithSignature hint2 =
-                new ContextHintWithSignature.Builder(
-                                new BundleHint.Builder().build(),
-                                ContextHintTestUtils.generateSignedHintKey())
+        final PublishedContextHint hint2 =
+                new PublishedContextHint.Builder(
+                        new BundleHint.Builder().build(),
+                        ContextHintTestUtils.generateSignedHintKey())
                         .build();
 
-        final List<ContextHintWithSignature> hints = Arrays.asList(hint1, hint2);
+        final List<PublishedContextHint> hints = Arrays.asList(hint1, hint2);
 
         final BundleInsight generatedInsight = new BundleInsight.Builder().build();
 
-        final ArrayList<ContextHintWithSignature> capturedHints = new ArrayList<>();
+        final ArrayList<PublishedContextHint> capturedHints = new ArrayList<>();
         final UUID componentId = UUID.randomUUID();
         final ContextUnderstanderService service =
                 new ContextUnderstanderService() {
@@ -93,7 +94,7 @@ public class ContextUnderstanderServiceTest {
 
                     @Override
                     public List<ContextInsight> onUnderstand(
-                            @NonNull List<ContextHintWithSignature> hints) {
+                            @NonNull List<PublishedContextHint> hints) {
                         capturedHints.addAll(hints);
                         return List.of(generatedInsight);
                     }
@@ -105,7 +106,7 @@ public class ContextUnderstanderServiceTest {
 
         refiner.refine(
                 new ParcelUuid(componentId),
-                ContextHintWithSignatureWrapper.wrapList(hints),
+                PublishedContextHintWrapper.wrapList(hints),
                 mIRefineCallback,
                 opCallback);
 
