@@ -3968,7 +3968,7 @@ class Task extends TaskFragment {
         pw.print(prefix); pw.print("isPerceptible="); pw.println(mIsPerceptible);
         pw.print(prefix); pw.print("lastActiveTime="); pw.print(lastActiveTime);
         pw.println(" (inactive for " + (getInactiveDuration() / 1000) + "s)");
-        pw.print(prefix); pw.print("isTrimmable=" + mIsTrimmableFromRecents);
+        pw.print(prefix); pw.print(" isTrimmable=" + mIsTrimmableFromRecents);
         pw.print(" isForceHidden="); pw.print(isForceHidden());
         pw.print(" isForceExcludedFromRecents="); pw.println(isForceExcludedFromRecents());
         if (mLaunchAdjacentDisabled) {
@@ -3984,6 +3984,7 @@ class Task extends TaskFragment {
             pw.println(prefix + "mPreserveLeafTaskIfRelaunch=true");
         }
         pw.println(prefix + "mSelfMovable=" + mSelfMovable);
+        pw.println(prefix + "mHandlePackageUpdate=" + mHandlePackageUpdate);
     }
 
     @Override
