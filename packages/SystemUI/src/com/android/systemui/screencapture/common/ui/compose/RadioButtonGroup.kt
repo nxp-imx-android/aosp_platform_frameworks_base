@@ -42,7 +42,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
-import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.res.R
 
@@ -54,7 +54,7 @@ private val ICON_SIZE = 20.dp
  */
 data class RadioButtonGroupItem(
     val isSelected: Boolean,
-    val icon: Icon? = null,
+    val icon: IconModel? = null,
     val label: String? = null,
     val contentDescription: String? = null,
     val stateDescription: String? = null,
@@ -65,8 +65,8 @@ data class RadioButtonGroupItem(
     /** Secondary constructor for cases where the icon is different when selected vs unselected. */
     constructor(
         label: String? = null,
-        selectedIcon: Icon? = null,
-        unselectedIcon: Icon? = null,
+        selectedIcon: IconModel? = null,
+        unselectedIcon: IconModel? = null,
         isSelected: Boolean,
         onClick: () -> Unit,
         contentDescription: String? = null,
