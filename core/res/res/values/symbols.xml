@@ -2053,6 +2053,7 @@
   <java-symbol type="string" name="lockscreen_carrier_default" />
   <java-symbol type="style" name="Animation.LockScreen" />
   <java-symbol type="style" name="Theme.Dialog.RecentApplications" />
+  <java-symbol type="style" name="Theme.Dialog.Confirmation" />
   <java-symbol type="style" name="Theme.ExpandedMenu" />
   <java-symbol type="string" name="forward_intent_to_owner" />
   <java-symbol type="string" name="forward_intent_to_work" />
