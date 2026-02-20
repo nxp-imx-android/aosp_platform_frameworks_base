@@ -246,3 +246,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "remove_composer_overlay_usage"
+  namespace: "core_graphics"
+  description: "Remove composer overlay usage from hardware bitmap creation"
+  bug: "182901940"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
