@@ -505,8 +505,8 @@ public abstract class JobScheduler {
      * Returns potential reasons why the job with the given {@code jobId} may be pending
      * and not currently executing.
      * <p>
-     * The returned array will include {@link PendingJobReason reasons} composed of both
-     * explicitly set constraints on the job and implicit constraints imposed by the system.
+     * The returned array will include reasons composed of both explicitly set constraints on the
+     * job and implicit constraints imposed by the system.
      * The results can be used to debug why a given job may not be currently executing.
      * @see #getPendingJobReasonsHistory(int)
      * @see #getPendingJobReasonStats(int)
@@ -521,15 +521,14 @@ public abstract class JobScheduler {
      * For the given {@code jobId}, returns a limited historical view of why the job may have
      * been pending execution. The returned list is composed of {@link PendingJobReasonsInfo}
      * objects, each of which include a timestamp since epoch along with an array of
-     * unsatisfied constraints represented by {@link PendingJobReason PendingJobReason constants}.
+     * unsatisfied constraints represented by {@code PENDING_JOB_REASON_*} constants.
      * <p>
      * These constants could either be explicitly set constraints on the job or implicit
      * constraints imposed by the system due to various reasons.
      * The results can be used to debug why a given job may have been pending execution.
      * <p>
-     * If the only {@link PendingJobReason} for the timestamp is
-     * {@link PendingJobReason#PENDING_JOB_REASON_UNDEFINED}, it could mean that
-     * the job was ready to be executed at that point in time.
+     * If {@code PENDING_JOB_REASON_UNDEFINED} is the only reason for the timestamp, it could mean
+     * that the job was ready to be executed at that point in time.
      * <p>
      * The length of the history returned is truncated so it's recommended to query this API
      * periodically for debugging purposes. To get a holistic view of why the job has been pending,
@@ -552,7 +551,7 @@ public abstract class JobScheduler {
     /**
      * For the given {@code jobId}, returns an aggregated view of why the job has been pending
      * execution over its lifetime. The returned map is composed of
-     * {@link PendingJobReason PendingJobReasons} mapped to a duration representing the total time
+     * {@code PENDING_JOB_REASON_*} constants mapped to a duration representing the total time
      * the job has been pending for that reason.
      * <p>
      * Note that the sum of these durations will often exceed the total duration the job was
