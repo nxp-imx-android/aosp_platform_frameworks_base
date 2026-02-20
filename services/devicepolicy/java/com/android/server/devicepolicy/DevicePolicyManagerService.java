@@ -112,7 +112,6 @@ import static android.app.admin.DevicePolicyManager.EXEMPT_FROM_DISMISSIBLE_NOTI
 import static android.app.admin.DevicePolicyManager.EXEMPT_FROM_HIBERNATION;
 import static android.app.admin.DevicePolicyManager.EXEMPT_FROM_POWER_RESTRICTIONS;
 import static android.app.admin.DevicePolicyManager.EXEMPT_FROM_SUSPENSION;
-import static android.app.admin.DevicePolicyManager.EXTRA_ENFORCING_ADMIN;
 import static android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ACCOUNT_TO_MIGRATE;
 import static android.app.admin.DevicePolicyManager.EXTRA_RESOURCE_IDS;
 import static android.app.admin.DevicePolicyManager.EXTRA_RESOURCE_TYPE;
@@ -350,7 +349,6 @@ import android.app.admin.ParcelableGranteeMap;
 import android.app.admin.ParcelableResource;
 import android.app.admin.PasswordMetrics;
 import android.app.admin.PasswordPolicy;
-import android.app.admin.PolicyEnforcementInfo;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyKey;
 import android.app.admin.PolicySizeVerifier;
@@ -14967,20 +14965,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                     listener.onCrossProfileWidgetProvidersChanged(userId, packages);
                 }
             });
-        }
-
-        @Override
-        public Intent createShowAdminSupportIntentForPolicy(int userId, String policyIdentifier) {
-            PolicyEnforcementInfo enforcementInfo = new PolicyEnforcementInfo(
-                    getEnforcingAdminsForPolicy(policyIdentifier, userId));
-            if (!enforcementInfo.isEnforced()) {
-                return null;
-            }
-            final Intent intent =
-                    DevicePolicyManagerService.this.createShowAdminSupportIntent(userId);
-            intent.putExtra(EXTRA_ENFORCING_ADMIN,
-                    enforcementInfo.getMostImportantEnforcingAdmin());
-            return intent;
         }
 
         @Override
