@@ -972,7 +972,6 @@ public final class CameraManager {
      * @see #getCameraIdList()
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_MULTI_CLIENT)
     @SystemApi
     public boolean isCameraDeviceSharingSupported(@NonNull String cameraId)
             throws CameraAccessException {
@@ -1364,7 +1363,6 @@ public final class CameraManager {
             android.Manifest.permission.SYSTEM_CAMERA,
             android.Manifest.permission.CAMERA,
     })
-    @FlaggedApi(Flags.FLAG_CAMERA_MULTI_CLIENT)
     public void openSharedCamera(@NonNull String cameraId,
             @NonNull @CallbackExecutor Executor executor,
             @NonNull final CameraDevice.StateCallback callback)

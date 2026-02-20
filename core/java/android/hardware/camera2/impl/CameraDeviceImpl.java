@@ -233,9 +233,6 @@ public class CameraDeviceImpl extends CameraDevice
     private final Runnable mCallOnOpenedInSharedMode = new Runnable() {
         @Override
         public void run() {
-            if (!Flags.cameraMultiClient()) {
-                return;
-            }
             StateCallbackKK sessionCallback = null;
             synchronized (mInterfaceLock) {
                 if (mRemoteDevice == null) return; // Camera already closed
@@ -365,9 +362,6 @@ public class CameraDeviceImpl extends CameraDevice
         }
 
         public void onOpenedInSharedMode(@NonNull CameraDevice camera, boolean primaryClient) {
-            if (!Flags.cameraMultiClient()) {
-                return;
-            }
             mClientExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -378,9 +372,6 @@ public class CameraDeviceImpl extends CameraDevice
 
         public void onClientSharedAccessPriorityChanged(@NonNull CameraDevice camera,
                 boolean primaryClient) {
-            if (!Flags.cameraMultiClient()) {
-                return;
-            }
             mClientExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -527,7 +518,7 @@ public class CameraDeviceImpl extends CameraDevice
                 }
             }
 
-            if (Flags.cameraMultiClient() && mSharedMode) {
+            if (mSharedMode) {
                 mIsPrimaryClient = mRemoteDevice.isPrimaryClient();
                 mDeviceExecutor.execute(mCallOnOpenedInSharedMode);
             } else {
@@ -941,9 +932,6 @@ public class CameraDeviceImpl extends CameraDevice
     }
 
     private boolean checkSharedOutputConfiguration(OutputConfiguration outConfig) {
-        if (!Flags.cameraMultiClient()) {
-            return false;
-        }
         SharedSessionConfiguration sharedSessionConfiguration =
                 mCharacteristics.get(CameraCharacteristics.SHARED_SESSION_CONFIGURATION);
         if (sharedSessionConfiguration == null) {
@@ -1015,7 +1003,7 @@ public class CameraDeviceImpl extends CameraDevice
             checkIfCameraClosedOrInError();
 
             boolean isSharedSession = (operatingMode == ICameraDeviceUser.SHARED_MODE);
-            if (Flags.cameraMultiClient() && mSharedMode) {
+            if (mSharedMode) {
                 if (!isSharedSession) {
                     throw new IllegalArgumentException("Invalid session type");
                 }
@@ -1163,7 +1151,7 @@ public class CameraDeviceImpl extends CameraDevice
         synchronized(mInterfaceLock) {
             checkIfCameraClosedOrInError();
 
-            if (Flags.cameraMultiClient() && mSharedMode && !mIsPrimaryClient) {
+            if (mSharedMode && !mIsPrimaryClient) {
                 throw new UnsupportedOperationException("In shared session mode,"
                         + "only primary clients can create capture request.");
             }
@@ -1194,7 +1182,7 @@ public class CameraDeviceImpl extends CameraDevice
         synchronized(mInterfaceLock) {
             checkIfCameraClosedOrInError();
 
-            if (Flags.cameraMultiClient() && mSharedMode && !mIsPrimaryClient) {
+            if (mSharedMode && !mIsPrimaryClient) {
                 throw new UnsupportedOperationException("In shared session mode,"
                         + "only primary clients can create capture request.");
             }
@@ -1218,7 +1206,7 @@ public class CameraDeviceImpl extends CameraDevice
             throws CameraAccessException {
         synchronized(mInterfaceLock) {
             checkIfCameraClosedOrInError();
-            if (Flags.cameraMultiClient() && mSharedMode) {
+            if (mSharedMode) {
                 throw new UnsupportedOperationException("In shared session mode,"
                         + "reprocess capture requests are not supported.");
             }
@@ -2341,7 +2329,6 @@ public class CameraDeviceImpl extends CameraDevice
     /**
      * Callback when client access priorities change when camera is opened in shared mode.
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_MULTI_CLIENT)
     public void onClientSharedAccessPriorityChanged(boolean primaryClient) {
         if (DEBUG) {
             Log.d(TAG, String.format(
@@ -2363,7 +2350,6 @@ public class CameraDeviceImpl extends CameraDevice
         }
     }
 
-    @FlaggedApi(Flags.FLAG_CAMERA_MULTI_CLIENT)
     private void notifyClientSharedAccessPriorityChanged(boolean primaryClient) {
         if (!CameraDeviceImpl.this.isClosed()) {
             mIsPrimaryClient = primaryClient;
@@ -3092,7 +3078,6 @@ public class CameraDeviceImpl extends CameraDevice
         }
 
         @Override
-        @FlaggedApi(Flags.FLAG_CAMERA_MULTI_CLIENT)
         public void onClientSharedAccessPriorityChanged(boolean primaryClient) {
             CameraDeviceImpl.this.onClientSharedAccessPriorityChanged(primaryClient);
         }
@@ -3325,7 +3310,7 @@ public class CameraDeviceImpl extends CameraDevice
     @Override
     public void createExtensionSession(ExtensionSessionConfiguration extensionConfiguration)
             throws CameraAccessException {
-        if (Flags.cameraMultiClient() && mSharedMode) {
+        if (mSharedMode) {
             throw new UnsupportedOperationException("In shared session mode,"
                     + "extension sessions are not supported.");
         }
