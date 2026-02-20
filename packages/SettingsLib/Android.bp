@@ -22,6 +22,7 @@ android_library {
         "androidx.sqlite_sqlite",
         "guava",
         "zxing-core",
+        "usertypelib",
 
         "//frameworks/libs/systemui:iconloader",
         "WifiTrackerLibRes",
