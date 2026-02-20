@@ -43,12 +43,14 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 
 import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
 import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
+import static com.android.server.am.psc.OomAdjuster.ALL_CPU_TIME_CAPABILITIES;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_ALLOW_LIST;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_NONE;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.ProcessState;
@@ -394,9 +396,17 @@ public class CapabilityControllerTest {
     }
 
     @Test
-    public void testDefaultProviderBindingEdge_GrantsOnlyBfsl() {
+    public void testDefaultProviderBindingEdge_GrantsOnlyBfslAndCpuTime() {
         final TestProviderBindingEdge edge = new TestProviderBindingEdge();
-        assertEquals(PROCESS_CAPABILITY_BFSL, edge.evaluateCapabilityFilter());
+        assertEquals(PROCESS_CAPABILITY_BFSL | ALL_CPU_TIME_CAPABILITIES,
+                edge.evaluateCapabilityFilter());
+    }
+
+    @Test
+    public void testDefaultServiceBindingEdge_GrantsOnlyBfslAndAudioControl() {
+        final TestServiceBindingEdge edge = new TestServiceBindingEdge.Builder().build();
+        assertEquals(PROCESS_CAPABILITY_BFSL | PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL,
+                edge.evaluateCapabilityFilter());
     }
 
     private static class TestServiceRecord {
@@ -652,6 +662,25 @@ public class CapabilityControllerTest {
     private static class TestProviderBindingEdge extends ProviderBindingEdge {
         TestProviderBindingEdge() {
             super(mock(ContentProviderConnectionInternal.class));
+        }
+    }
+
+    private static class TestServiceBindingEdge extends ServiceBindingEdge {
+        private TestServiceBindingEdge() {
+            super(buildMockConnectionRecord());
+        }
+
+        private static ConnectionRecordInternal buildMockConnectionRecord() {
+            final ConnectionRecordInternal conn = mock(ConnectionRecordInternal.class);
+            when(conn.getService()).thenReturn(mock(ServiceRecordInternal.class));
+            when(conn.getClient()).thenReturn(mock(ProcessRecordInternal.class));
+            return conn;
+        }
+
+        static class Builder {
+            TestServiceBindingEdge build() {
+                return new TestServiceBindingEdge();
+            }
         }
     }
 }
