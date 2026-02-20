@@ -202,6 +202,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private KeyguardLockedStateListener mKeyguardLockedStateListener;
     private UsbPortStatus mLastUsbPortStatus;
     private UiModeManager mUiModeManager;
+    private UsbDataBugReportHelper mBugReportHelper;
 
     // TODO(b/418846176):  Move these to a system property
     private long mUsbPortPowerBrickConnectionCheckTimeoutMillis;
@@ -232,6 +233,9 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             mDelayedDisableHandler = new Handler(Looper.getMainLooper());
             mDelayedNotificationHandler = new Handler(Looper.getMainLooper());
         }
+        if(Flags.aapmFeatureUsbDataProtectionErrorReporting()) {
+            mBugReportHelper = new UsbDataBugReportHelper(mContext);
+        }
         mUsbManager = Objects.requireNonNull(mContext.getSystemService(UsbManager.class));
         mNotificationManager =
                 Objects.requireNonNull(mContext.getSystemService(NotificationManager.class));
@@ -261,6 +265,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             HandlerThread handlerThread,
             AtomicBoolean apmRequestedUsbDataStatus,
             UiModeManager uiModeManager,
+            UsbDataBugReportHelper bugReportHelper,
             boolean canSetUsbDataSignal,
             boolean afterFirstUnlock) {
         super(context, false);
@@ -274,6 +279,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         mHandlerThread = handlerThread;
         mDelayedDisableHandler = delayDisableHandler;
         mUiModeManager = uiModeManager;
+        mBugReportHelper = bugReportHelper;
         mCanSetUsbDataSignal = canSetUsbDataSignal;
         mIsAfterFirstUnlock = afterFirstUnlock;
         mUserManager = userManager;
@@ -817,6 +823,15 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                 "InterruptedException thrown when waiting for USB change state", e);
                     }
                 }
+            }
+
+            if (Flags.aapmFeatureUsbDataProtectionErrorReporting()
+                    && usbChangeStateReattempts >= maxRetryAttempts) {
+                int reportReason =
+                        status
+                                ? UsbDataBugReportHelper.REPORT_REASON_FAILURE_TO_ENABLE_USB_DATA
+                                : UsbDataBugReportHelper.REPORT_REASON_FAILURE_TO_DISABLE_USB_DATA;
+                mBugReportHelper.report(reportReason);
             }
 
             // Log the error if the USB change state failed at least once, we do not want to mix

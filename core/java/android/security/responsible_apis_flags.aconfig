@@ -59,6 +59,16 @@ flag {
 }
 
 flag {
+    name: "aapm_feature_usb_data_protection_error_reporting"
+    namespace: "preload_safety"
+    description: "Enable error reporting for USB data protection"
+    bug: "466329221"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "asm_ignore_grace_period_exemption"
     namespace: "responsible_apis"
     description: "Ignore grace period exemption for ASM apps"

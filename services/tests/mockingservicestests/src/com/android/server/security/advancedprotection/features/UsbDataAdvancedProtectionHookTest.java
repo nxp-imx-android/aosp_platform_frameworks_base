@@ -159,6 +159,7 @@ public class UsbDataAdvancedProtectionHookTest {
     @Mock private UserManager mUserManager;
     @Mock private UiModeManager mUiModeManager;
     @Mock private HandlerThread mHandlerThread;
+    @Mock private UsbDataBugReportHelper mBugReportHelper;
 
     @Captor private ArgumentCaptor<BroadcastReceiver> mBroadcastReceiverCaptor;
     @Captor private ArgumentCaptor<Runnable> mRunnableCaptor;
@@ -195,6 +196,7 @@ public class UsbDataAdvancedProtectionHookTest {
                         mHandlerThread,
                         mApmRequestedUsbDataStatusBoolean,
                         mUiModeManager,
+                        mBugReportHelper,
                         true, // canSetUsbDataSignal
                         afterFirstUnlock); // afterFirstUnlock
         when(mUsbManager.getUsbHalVersion()).thenReturn(UsbManager.USB_HAL_V2_0);
@@ -856,7 +858,8 @@ public class UsbDataAdvancedProtectionHookTest {
     @Test
     @EnableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION)
     @DisableFlags({Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY,
-                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY })
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_RETRY,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_ERROR_REPORTING })
     public void setUsbDataSignal_retriesOnFailure() throws Exception {
         setupAndEnableFeature(false, false, true);
         when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
@@ -877,6 +880,7 @@ public class UsbDataAdvancedProtectionHookTest {
                                 2,
                                 AdvancedProtectionProtoEnums
                                         .USB_ERROR_TYPE_CHANGE_DATA_STATUS_FAILED));
+        verifyNoInteractions(mBugReportHelper);
     }
 
     @Test
@@ -908,6 +912,22 @@ public class UsbDataAdvancedProtectionHookTest {
                                 AdvancedProtectionProtoEnums
                                         .USB_ERROR_TYPE_CHANGE_DATA_STATUS_FAILED));
         verify(() -> Thread.sleep(100), times(5));
+    }
+
+    @Test
+    @EnableFlags({ Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION,
+                Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_ERROR_REPORTING })
+    @DisableFlags(Flags.FLAG_AAPM_FEATURE_USB_DATA_PROTECTION_DELAY_DISABLE_AUTO_ONLY)
+    public void setUsbDataSignal_retriesOnFailureWithBugReport() throws Exception {
+        when(mKeyguardManager.isKeyguardLocked()).thenReturn(true);
+        setupAndEnableFeature(false, false, true);
+        when(mUsbManagerInternal.enableUsbDataSignal(anyBoolean(), anyInt()))
+                .thenReturn(false);
+
+        verify(mDelayDisableHandler).post(mRunnableCaptor.capture());
+        mRunnableCaptor.getValue().run();
+
+        verify(mBugReportHelper).report(UsbDataBugReportHelper.REPORT_REASON_FAILURE_TO_ENABLE_USB_DATA);
     }
 
     @Test
