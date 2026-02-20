@@ -118,7 +118,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
     suspend fun addOrUpdateRepository(
         userId: Int,
         desks: List<Desk>,
-        activeDeskId: Int?,
+        activeDeskIdToUniqueDisplayId: Map<String?, Int>,
         preservedDisplays: ArrayMap<String, DesktopDisplay>,
         rememberedBoundsRatioByPackageName: ArrayMap<String, RectF>,
     ) {
@@ -146,7 +146,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
 
                         currentUserRepoBuilder.putDesktop(desk.deskId, updatedDesktop)
                         desk.uniqueDisplayId?.let {
-                            if (desk.deskId == activeDeskId) {
+                            if (activeDeskIdToUniqueDisplayId[it] == desk.deskId) {
                                 currentUserRepoBuilder.putActiveDeskByUniqueDisplayId(
                                     it,
                                     desk.deskId,
