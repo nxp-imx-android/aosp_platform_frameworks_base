@@ -17,7 +17,6 @@
 package com.android.wm.shell.windowdecor.viewholder
 
 import android.util.Log
-import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.CaptionState
@@ -51,19 +50,19 @@ class AppHandleNotifier(
     private val appHandleImpl = AppHandlesImpl()
 
     init {
-        if (DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue()) {
-            mainScope.launch {
-                windowDecorCaptionRepository.captionStateFlow.collect { captionState ->
-                    when (captionState) {
-                        is CaptionState.NoCaption -> {
-                            removeHandle(captionState.taskId)
-                        }
-                        is CaptionState.AppHeader -> {
-                            removeHandle(captionState.runningTaskInfo.taskId)
-                        }
-                        is CaptionState.AppHandle -> {
-                            addHandle(captionState.appHandleIdentifier)
-                        }
+        mainScope.launch {
+            windowDecorCaptionRepository.captionStateFlow.collect { captionState ->
+                when (captionState) {
+                    is CaptionState.NoCaption -> {
+                        removeHandle(captionState.taskId)
+                    }
+
+                    is CaptionState.AppHeader -> {
+                        removeHandle(captionState.runningTaskInfo.taskId)
+                    }
+
+                    is CaptionState.AppHandle -> {
+                        addHandle(captionState.appHandleIdentifier)
                     }
                 }
             }

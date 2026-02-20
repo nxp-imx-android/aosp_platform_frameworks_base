@@ -35,7 +35,6 @@ import android.window.TaskSnapshot
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
 import com.android.internal.policy.SystemBarUtils
-import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.apptoweb.AppToWebRepository
@@ -159,12 +158,6 @@ class AppHandleController(
         // going home.
         get() = isCaptionVisible && !isRecentsTransitionRunning
 
-    private val isEducationOrHandleReportingEnabled =
-        Flags.enableDesktopWindowingAppHandleEducation() ||
-            DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
-                .isTrue ||
-            DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
-
     override fun relayout(
         params: RelayoutParams,
         parentContainer: SurfaceControl,
@@ -226,12 +219,10 @@ class AppHandleController(
         }
 
     private fun notifyNoCaption() {
-        if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) return
         windowDecorHandleRepository.notifyCaptionChanged(CaptionState.NoCaption(taskInfo.taskId))
     }
 
     private fun notifyCaptionStateChanged(captionLayoutResult: CaptionRelayoutResult) {
-        if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) return
         if (!isCaptionVisible) {
             notifyNoCaption()
             return
@@ -467,9 +458,7 @@ class AppHandleController(
         viewHolder.onHandleMenuClosed()
         handleMenu?.close()
         handleMenu = null
-        if (desktopState.canEnterDesktopMode && isEducationOrHandleReportingEnabled) {
-            notifyCaptionStateChanged(captionLayoutResult)
-        }
+        notifyCaptionStateChanged(captionLayoutResult)
     }
 
     /** Checks if a [MotionEvent] occurs in caption. */

@@ -176,11 +176,6 @@ class AppHeaderController(
         get() = taskInfo.positionInParent
 
     private val closeLayoutMenuRunnable = Runnable { closeLayoutMenu() }
-    private val isEducationOrHandleReportingEnabled =
-        Flags.enableDesktopWindowingAppHandleEducation() ||
-            DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
-                .isTrue ||
-            DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
     private val dimensions = LargeHeaderDimensions(decorWindowContext.resources)
 
     private var isLayoutMenuHovered = false
@@ -267,9 +262,6 @@ class AppHeaderController(
     }
 
     private fun notifyCaptionStateChanged() {
-        if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) {
-            return
-        }
         if (!isCaptionVisible || !hasGlobalFocus) {
             notifyNoCaption()
             return
@@ -278,7 +270,6 @@ class AppHeaderController(
     }
 
     private fun notifyNoCaption() {
-        if (!desktopState.canEnterDesktopMode || !isEducationOrHandleReportingEnabled) return
         windowDecorCaptionRepository.notifyCaptionChanged(CaptionState.NoCaption(taskInfo.taskId))
     }
 
@@ -560,9 +551,7 @@ class AppHeaderController(
         viewHolder.onHandleMenuClosed()
         handleMenu?.close()
         handleMenu = null
-        if (desktopState.canEnterDesktopMode && isEducationOrHandleReportingEnabled) {
-            notifyCaptionStateChanged()
-        }
+        notifyCaptionStateChanged()
     }
 
     private fun isBrowserApp(): Boolean =
@@ -647,9 +636,7 @@ class AppHeaderController(
                 val (name, icon) = taskResourceLoader.getNameAndHeaderIcon(taskInfo)
                 viewHolder.setAppName(name)
                 viewHolder.setAppIcon(icon)
-                if (desktopState.canEnterDesktopMode && isEducationOrHandleReportingEnabled) {
-                    notifyCaptionStateChanged()
-                }
+                notifyCaptionStateChanged()
             }
         viewHolder = appHeaderViewHolder
         return appHeaderViewHolder
@@ -739,10 +726,8 @@ class AppHeaderController(
         closeManageWindowsMenu()
         closeLayoutMenu()
         viewHolder.close()
+        notifyNoCaption()
         openByDefaultDialog?.dismiss()
-        if (desktopState.canEnterDesktopMode && isEducationOrHandleReportingEnabled) {
-            notifyNoCaption()
-        }
         return super.close(wct, t)
     }
 
