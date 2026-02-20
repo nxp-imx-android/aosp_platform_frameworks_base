@@ -19,9 +19,11 @@ import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static com.android.media.audio.Flags.hardeningPartial;
 import static com.android.media.audio.Flags.hardeningPartialVolume;
 import static com.android.media.audio.Flags.hardeningStrict;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_FOCUS;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_RINGER;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_VOLUME;
-import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_FOCUS;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -198,11 +200,15 @@ public class HardeningEnforcer {
                 if (volumeMethod == METHOD_AUDIO_MANAGER_SET_RINGER_MODE) {
                     AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, uid,
                             AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_RINGER,
-                            isStrict, enforced);
+                            isStrict, enforced,
+                            AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN,
+                            AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE);
                 } else {
                     AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, uid,
                             AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_VOLUME,
-                            isStrict, enforced);
+                            isStrict, enforced,
+                            AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN,
+                            AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE);
                 }
             }
             return enforced && allowed != ALLOWED;
@@ -256,7 +262,9 @@ public class HardeningEnforcer {
             mEventLogger.enqueueAndSlog(msg, EventLogger.Event.ALOGW, TAG);
             AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, callingUid,
                     AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_FOCUS,
-                    false /*isStrict*/, enforcedPartial);
+                    false /*isStrict*/, enforcedPartial,
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN,
+                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE);
         } else if (blockLevel == DENIED_IF_FULL) {
             String msg = "AudioHardening focus request for req "
                     + focusReqType
@@ -268,7 +276,9 @@ public class HardeningEnforcer {
             mEventLogger.enqueueAndSlog(msg, EventLogger.Event.ALOGW, TAG);
             AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, callingUid,
                     AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_FOCUS,
-                    true /*isStrict*/, enforcedFull);
+                    true /*isStrict*/, enforcedFull,
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN,
+                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE);
         }
         boolean blocked = (blockLevel == DENIED_IF_PARTIAL) && enforcedPartial ||
                               (blockLevel == DENIED_IF_FULL) && enforcedFull;
