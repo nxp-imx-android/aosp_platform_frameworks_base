@@ -45,7 +45,7 @@ public final class DreamPlaylist implements Parcelable {
     public static final DreamPlaylist EMPTY =
             new DreamPlaylist(Collections.emptyList(), NO_ACTIVE_DREAM_INDEX);
 
-    private final List<ComponentName> mDreams;
+    private final List<DreamItem> mDreams;
     private final int mActiveIndex;
 
     /**
@@ -55,9 +55,9 @@ public final class DreamPlaylist implements Parcelable {
      * @param activeIndex The index of the currently active dream within the list. If no dream is
      *     active or the list is empty, pass {@link #NO_ACTIVE_DREAM_INDEX}.
      */
-    public DreamPlaylist(@NonNull List<ComponentName> dreams, int activeIndex) {
+    public DreamPlaylist(@NonNull List<DreamItem> dreams, int activeIndex) {
         mDreams = new ArrayList<>(Objects.requireNonNull(dreams));
-        for (ComponentName dream : mDreams) {
+        for (DreamItem dream : mDreams) {
             Objects.requireNonNull(dream, "Dream list cannot contain null elements");
         }
         if (activeIndex != NO_ACTIVE_DREAM_INDEX) {
@@ -75,13 +75,13 @@ public final class DreamPlaylist implements Parcelable {
     }
 
     private DreamPlaylist(Parcel in) {
-        mDreams = in.createTypedArrayList(ComponentName.CREATOR);
+        mDreams = in.createTypedArrayList(DreamItem.CREATOR);
         mActiveIndex = in.readInt();
     }
 
-    /** Returns the currently active dream component, or null if none is active. */
+    /** Returns the currently active dream item, or null if none is active. */
     @Nullable
-    public ComponentName getActiveDream() {
+    public DreamItem getActiveDream() {
         if (mActiveIndex >= 0 && mActiveIndex < mDreams.size()) {
             return mDreams.get(mActiveIndex);
         }
@@ -89,11 +89,11 @@ public final class DreamPlaylist implements Parcelable {
     }
 
     /**
-     * Returns the next dream component in the playlist, wrapping around to the beginning. Returns
-     * null if the playlist is empty.
+     * Returns the next dream item in the playlist, wrapping around to the beginning. Returns null
+     * if the playlist is empty.
      */
     @Nullable
-    public ComponentName getNextDream() {
+    public DreamItem getNextDream() {
         if (mDreams.isEmpty()) {
             return null;
         }
@@ -105,11 +105,11 @@ public final class DreamPlaylist implements Parcelable {
     }
 
     /**
-     * Returns the previous dream component in the playlist, wrapping around to the end. Returns
-     * null if the playlist is empty.
+     * Returns the previous dream item in the playlist, wrapping around to the end. Returns null if
+     * the playlist is empty.
      */
     @Nullable
-    public ComponentName getPreviousDream() {
+    public DreamItem getPreviousDream() {
         if (mDreams.isEmpty()) {
             return null;
         }
@@ -120,10 +120,28 @@ public final class DreamPlaylist implements Parcelable {
         return mDreams.get(prevIndex);
     }
 
-    /** Returns the list of all allowed dream components. */
+    /** Returns the list of all allowed dream items. */
     @NonNull
-    public List<ComponentName> getDreams() {
+    public List<DreamItem> getDreams() {
         return Collections.unmodifiableList(mDreams);
+    }
+
+    /**
+     * Checks if the playlist contains the given component name.
+     *
+     * @param componentName the component name to check
+     * @return true if the playlist contains the component
+     */
+    public boolean contains(@Nullable ComponentName componentName) {
+        if (componentName == null) {
+            return false;
+        }
+        for (DreamItem item : mDreams) {
+            if (item.componentName.equals(componentName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Returns the index of the currently active dream. */
@@ -146,17 +164,7 @@ public final class DreamPlaylist implements Parcelable {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("DreamPlaylist{");
-        sb.append("dreams=[");
-        for (int i = 0; i < mDreams.size(); i++) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-            sb.append(mDreams.get(i).flattenToString());
-        }
-        sb.append("], activeIndex=").append(mActiveIndex);
-        sb.append("}");
-        return sb.toString();
+        return "DreamPlaylist{" + "mDreams=" + mDreams + ", mActiveIndex=" + mActiveIndex + '}';
     }
 
     @Override
@@ -164,9 +172,7 @@ public final class DreamPlaylist implements Parcelable {
         return 0;
     }
 
-    /**
-     * Writes the list of dreams and the index of the currently active dream to the parcel.
-     */
+    /** Writes the list of dreams and the index of the currently active dream to the parcel. */
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeTypedList(mDreams);

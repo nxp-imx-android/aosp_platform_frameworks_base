@@ -42,7 +42,7 @@ class DreamPlaylistUpdater {
     private static final int DEFAULT_UPDATE_DEBOUNCE_DELAY_MS = 100;
     private static final String TAG = "DreamPlaylistUpdater";
 
-    private final DreamComponentsResolver mResolver;
+    private final ResolverProvider mResolverProvider;
     private final Handler mHandler;
     private final int mDebounceDelayMs;
 
@@ -62,21 +62,26 @@ class DreamPlaylistUpdater {
         void onPlaylistChanged(int userId, DreamPlaylist playlist);
     }
 
+    interface ResolverProvider {
+        @Nullable
+        DreamComponentsResolver getResolver(int userId);
+    }
+
     private final Callback mCallback;
 
     DreamPlaylistUpdater(
-            @NonNull DreamComponentsResolver resolver,
+            @NonNull ResolverProvider resolverProvider,
             @NonNull Handler handler,
             @Nullable Callback callback) {
-        this(resolver, handler, callback, DEFAULT_UPDATE_DEBOUNCE_DELAY_MS);
+        this(resolverProvider, handler, callback, DEFAULT_UPDATE_DEBOUNCE_DELAY_MS);
     }
 
     DreamPlaylistUpdater(
-            @NonNull DreamComponentsResolver resolver,
+            @NonNull ResolverProvider resolverProvider,
             @NonNull Handler handler,
             @Nullable Callback callback,
             int debounceDelayMs) {
-        mResolver = resolver;
+        mResolverProvider = resolverProvider;
         mHandler = handler;
         mCallback = callback;
         mDebounceDelayMs = debounceDelayMs;
@@ -109,28 +114,33 @@ class DreamPlaylistUpdater {
                 mHandler.removeCallbacks(existingTask);
             }
 
-            Runnable newTask = new Runnable() {
-                @Override
-                public void run() {
-                    boolean shouldRun = false;
-                    synchronized (mLock) {
-                        if (mPendingUpdateTasks.get(userId) == this) {
-                            mPendingUpdateTasks.remove(userId);
-                            shouldRun = true;
+            Runnable newTask =
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            boolean shouldRun = false;
+                            synchronized (mLock) {
+                                if (mPendingUpdateTasks.get(userId) == this) {
+                                    mPendingUpdateTasks.remove(userId);
+                                    shouldRun = true;
+                                }
+                            }
+                            if (shouldRun) {
+                                refreshImmediately(userId, systemDreamComponent);
+                            }
                         }
-                    }
-                    if (shouldRun) {
-                        refreshImmediately(userId, systemDreamComponent);
-                    }
-                }
-            };
+                    };
             mPendingUpdateTasks.put(userId, newTask);
             mHandler.postDelayed(newTask, mDebounceDelayMs);
         }
     }
 
     void refreshImmediately(int userId, @Nullable ComponentName systemDreamComponent) {
-        final DreamPlaylist playlist = mResolver.getDreamPlaylist(userId, systemDreamComponent);
+        DreamComponentsResolver resolver = mResolverProvider.getResolver(userId);
+        if (resolver == null) {
+            return;
+        }
+        final DreamPlaylist playlist = resolver.getDreamPlaylist(systemDreamComponent);
         final RemoteCallbackList<IDreamManagerListener> listenersForUser;
 
         synchronized (mLock) {
@@ -153,7 +163,8 @@ class DreamPlaylistUpdater {
 
     @Nullable
     DreamPlaylist getDreamPlaylist(int userId, @Nullable ComponentName systemDreamComponent) {
-        return mResolver.getDreamPlaylist(userId, systemDreamComponent);
+        DreamComponentsResolver resolver = mResolverProvider.getResolver(userId);
+        return resolver != null ? resolver.getDreamPlaylist(systemDreamComponent) : null;
     }
 
     void clearCache(int userId) {
