@@ -100,7 +100,7 @@ class ContainerHierarchyCommandHandler(
     }
 
     private fun dumpContainerHierarchy(pw: PrintWriter): Boolean {
-        pw.println(HierarchyDebugUtils.dumpToString(hierarchy.root))
+        pw.println(HierarchyDebugUtils.dumpHierarchy(hierarchy))
         return true
     }
 }

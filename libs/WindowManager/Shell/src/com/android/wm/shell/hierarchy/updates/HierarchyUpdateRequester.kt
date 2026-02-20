@@ -20,8 +20,6 @@ import android.window.WindowContainerTransaction
 import com.android.wm.shell.hierarchy.containers.Container
 import com.android.wm.shell.hierarchy.modes.Mode
 
-val UNSPECIFIED_WCT = WindowContainerTransaction()
-
 /**
  * Interface for requesting updates to a container hierarchy.
  */

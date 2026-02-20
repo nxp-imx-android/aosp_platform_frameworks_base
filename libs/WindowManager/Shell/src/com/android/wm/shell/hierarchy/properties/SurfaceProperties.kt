@@ -233,8 +233,9 @@ class SurfaceProperties(
     }
 
     override fun toString(): String {
-        val props = "layer=$layer alpha=$alpha crop=$crop refFrame=${referenceFrame}" +
-                " bounds=$relBounds bgBlur=$backgroundBlurRadius"
+        val props = "layer=$layer alpha=$alpha crop=${crop.toShortString()}" +
+                " refFrame=${referenceFrame.toShortString()} bounds=${relBounds.toShortString()}" +
+                " bgBlur=$backgroundBlurRadius"
         return "s {$props}"
     }
 

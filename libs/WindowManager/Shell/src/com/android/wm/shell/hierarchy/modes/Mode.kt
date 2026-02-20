@@ -220,6 +220,7 @@ interface Mode {
      * persisted in the updated hierarchy.
      */
     class UpdateContext(
+        var reason: String = "No reason given",
         // The surface transactions that are to be applied if there is an associated transition
         // with the update, if there isn't then these will be null, and the logic doing the update
         // must apply and surface updates itself.

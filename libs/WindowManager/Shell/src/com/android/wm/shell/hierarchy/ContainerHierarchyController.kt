@@ -58,8 +58,7 @@ class ContainerHierarchyController(
     }
 
     private fun dump(pw: PrintWriter, prefix: String) {
-        val innerPrefix = "$prefix  "
         pw.println("${prefix}ContainerHierarchy")
-        pw.println(HierarchyDebugUtils.dumpToString(hierarchy.root, innerPrefix))
+        pw.println(HierarchyDebugUtils.dumpHierarchy(hierarchy))
     }
 }
