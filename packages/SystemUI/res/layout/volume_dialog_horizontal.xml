@@ -31,7 +31,7 @@
         android:layout_height="@dimen/volume_dialog_width"
         android:layout_marginStart="@dimen/volume_dialog_background_top_margin"
         android:layout_marginEnd="@dimen/volume_dialog_background_margin_negative"
-        android:background="@drawable/volume_dialog_background"
+        android:background="@drawable/volume_dialog_background_horizontal"
         app:layout_constraintStart_toStartOf="@+id/volume_dialog_main_slider_container"
         app:layout_constraintEnd_toEndOf="@+id/volume_dialog_bottom_section_container"
         app:layout_constraintBottom_toBottomOf="@+id/volume_dialog_main_slider_container"

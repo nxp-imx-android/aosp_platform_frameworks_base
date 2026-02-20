@@ -30,6 +30,7 @@ import com.android.settingslib.Utils
 import com.android.settingslib.notification.domain.interactor.NotificationsSoundPolicyInteractor
 import com.android.settingslib.volume.shared.model.AudioStream
 import com.android.settingslib.volume.shared.model.RingerMode
+import com.android.systemui.Flags.blurOnMoreSurfaces
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.res.R
@@ -40,6 +41,7 @@ import com.android.systemui.util.time.SystemClock
 import com.android.systemui.volume.Events
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialog
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
+import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.dialog.domain.interactor.VolumeDialogVisibilityInteractor
 import com.android.systemui.volume.dialog.ringer.domain.VolumeDialogRingerInteractor
 import com.android.systemui.volume.dialog.ringer.shared.model.VolumeDialogRingerModel
@@ -77,7 +79,14 @@ constructor(
     configurationController: ConfigurationController,
     private val uiEventLogger: UiEventLogger,
     private val systemClock: SystemClock,
+    private val expandedAudioTileDetailsFeatureInteractor: ExpandedAudioTileDetailsFeatureInteractor,
 ) {
+
+    // Use horizontal volume dialog if the audio tile details view is enabled
+    val isVolumeDialogVertical = !expandedAudioTileDetailsFeatureInteractor.isEnabled()
+
+    // Show blur if the flag is enabled and the volume dialog is vertical
+    val showBlur = blurOnMoreSurfaces() && isVolumeDialogVertical
 
     private val drawerState = MutableStateFlow<RingerDrawerState>(RingerDrawerState.Initial)
     private val orientation: StateFlow<Int> =
