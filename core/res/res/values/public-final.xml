@@ -4147,4 +4147,130 @@
       @hide @SystemApi -->
   <public type="bool" name="config_enableMaterialDesignInPackageInstaller" id="0x0111000c" />
 
+  <!-- ===============================================================
+    Resources added in version NEXT of the platform
+
+    NOTE: After this version of the platform is forked, changes cannot be made to the root
+    branch's groups for that release. Only merge changes to the forked platform branch.
+    =============================================================== -->
+  <eat-comment/>
+
+  <staging-public-group-final type="attr" first-id="0x01a20000">
+    <public name="removed_" />
+    <public name="removed_" />
+    <public name="removed_" />
+    <!-- @hide No longer needed. -->
+    <public name="removed_runInPccSandbox"/>
+    <!-- @FlaggedApi(android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA)
+    @hide @SystemApi -->
+    <public name="userSelectable"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE) -->
+    <public name="nativeService"/>
+    <public name="removed_" />
+    <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE) -->
+    <public name="zygotePreloadNativeLib"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE) -->
+    <public name="zygotePreloadNativeFunc"/>
+    <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+    <public name="usesAssistData"/>
+    <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+    <public name="usesAssistScreenshots"/>
+    <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+    <public name="usesAssistStructureScreenContent"/>
+    <!-- @FlaggedApi(android.view.inputmethod.Flags.FLAG_IME_SUBTYPE_SHORT_LABEL) -->
+    <public name="shortLabel"/>
+    <!-- @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
+    <public name="privateComputeCore"/>
+    <!-- @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
+    <public name="backupAgentProcess"/>
+    <public name="removed_" />
+    <public name="removed_" />
+    <public name="removed_" />
+    <public name="removed_" />
+  </staging-public-group-final>
+
+  <!-- @FlaggedApi(android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA)
+  @hide @SystemApi -->
+  <public type="attr" name="userSelectable" id="0x010106ad" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE) -->
+  <public type="attr" name="nativeService" id="0x010106ae" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE) -->
+  <public type="attr" name="zygotePreloadNativeLib" id="0x010106af" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE) -->
+  <public type="attr" name="zygotePreloadNativeFunc" id="0x010106b0" />
+  <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+  <public type="attr" name="usesAssistData" id="0x010106b1" />
+  <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+  <public type="attr" name="usesAssistScreenshots" id="0x010106b2" />
+  <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
+  <public type="attr" name="usesAssistStructureScreenContent" id="0x010106b3" />
+  <!-- @FlaggedApi(android.view.inputmethod.Flags.FLAG_IME_SUBTYPE_SHORT_LABEL) -->
+  <public type="attr" name="shortLabel" id="0x010106b4" />
+  <!-- @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
+  <public type="attr" name="privateComputeCore" id="0x010106b5" />
+  <!-- @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
+  <public type="attr" name="backupAgentProcess" id="0x010106b6" />
+
+  <staging-public-group-final type="color" first-id="0x019d0000">
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_inverse_on_surface_light"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_inverse_primary_light"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_inverse_surface_light"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_scrim_light"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_shadow_light"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_surface_tint_light"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_inverse_on_surface_dark"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_inverse_primary_dark"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_inverse_surface_dark"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_scrim_dark"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_shadow_dark"/>
+    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+    <public name="system_surface_tint_dark"/>
+    <public name="removed_" />
+    <public name="removed_" />
+    <public name="removed_" />
+    <public name="removed_" />
+    <public name="removed_" />
+    <public name="removed_" />
+    <public name="removed_" />
+    <public name="removed_" />
+    <public name="removed_" />
+    <public name="removed_" />
+  </staging-public-group-final>
+
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_inverse_on_surface_light" id="0x010600d2" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_inverse_primary_light" id="0x010600d3" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_inverse_surface_light" id="0x010600d4" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_scrim_light" id="0x010600d5" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_shadow_light" id="0x010600d6" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_surface_tint_light" id="0x010600d7" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_inverse_on_surface_dark" id="0x010600d8" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_inverse_primary_dark" id="0x010600d9" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_inverse_surface_dark" id="0x010600da" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_scrim_dark" id="0x010600db" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_shadow_dark" id="0x010600dc" />
+  <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
+  <public type="color" name="system_surface_tint_dark" id="0x010600dd" />
+
 </resources>
