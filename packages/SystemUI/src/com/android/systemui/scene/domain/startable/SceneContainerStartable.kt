@@ -256,9 +256,13 @@ constructor(
                 }
 
                 printSection("Power state") {
-                    println("detailedWakefulness", powerInteractor.detailedWakefulness.value)
+                    println(
+                        "detailedWakefulness",
+                        powerInteractor.detailedWakefulness.value.internalWakefulnessState,
+                    )
                     println("isDozing", keyguardInteractor.isDozing.value)
                     println("isAodAvailable", keyguardInteractor.isAodAvailable.value)
+                    println("isInteractive", powerInteractor.isInteractive.value)
                 }
             }
         }
