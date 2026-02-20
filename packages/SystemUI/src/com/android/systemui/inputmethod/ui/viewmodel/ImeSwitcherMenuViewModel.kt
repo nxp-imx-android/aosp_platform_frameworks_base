@@ -20,7 +20,6 @@ import android.annotation.IntRange
 import android.content.Context
 import android.content.Intent
 import android.os.UserHandle
-import android.provider.Settings
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -168,13 +167,8 @@ constructor(
         isScreenLocked: Boolean,
         userId: Int,
     ) {
-        val isDeviceProvisioned =
-            Settings.Global.getInt(
-                context.contentResolver,
-                Settings.Global.DEVICE_PROVISIONED,
-                0,
-            ) != 0
-        val hasButton = settingsIntent != null && !isScreenLocked && isDeviceProvisioned
+        val hasButton =
+            settingsIntent != null && !isScreenLocked && interactor.shouldShowSettingsButton()
         if (hasButton) {
             settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             settingsButtonAction.value = {

@@ -24,13 +24,19 @@ import com.android.systemui.inputmethod.data.repository.ImeSwitcherMenuRepositor
 import com.android.systemui.inputmethod.shared.model.ImeSwitcherMenuModel
 import com.android.systemui.inputmethod.shared.model.ImeSwitcherMenuModel.Companion.NOT_A_SUBTYPE_INDEX
 import com.android.systemui.inputmethod.shared.model.ModelChangeListener
+import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
+import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import javax.inject.Inject
 
 /** Interactor for linking the IME Switcher Menu UI and Data. */
 @SysUISingleton
 class ImeSwitcherMenuInteractor
 @Inject
-constructor(private val repository: ImeSwitcherMenuRepository) {
+constructor(
+    private val repository: ImeSwitcherMenuRepository,
+    private val deviceProvisioningInteractor: DeviceProvisioningInteractor,
+    private val userSetupRepository: UserSetupRepository,
+) {
 
     /**
      * Retrieves the stored data model for the given user, or returns `null` if no model is stored
@@ -85,5 +91,14 @@ constructor(private val repository: ImeSwitcherMenuRepository) {
         @UserIdInt userId: Int,
     ) {
         repository.notifyImeAndSubtypeSelected(imeId, subtypeIndex, userId)
+    }
+
+    /**
+     * Whether the settings button should be shown on the IME Switcher Menu based on the device and
+     * user state.
+     */
+    fun shouldShowSettingsButton(): Boolean {
+        return deviceProvisioningInteractor.isDeviceProvisioned() &&
+            userSetupRepository.isUserSetUp.value
     }
 }
