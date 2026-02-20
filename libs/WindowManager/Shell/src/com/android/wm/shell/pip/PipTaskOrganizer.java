@@ -742,10 +742,12 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
         }
 
         mRemoveStaledPinnedTaskRunnable = () -> {
+            final ComponentName toRemove = (info != null && info.topActivity != null)
+                    ? info.topActivity : null;
             ProtoLog.w(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
-                    "SystemUI reboot detected, remove staled PiP task");
+                    "SystemUI reboot detected, remove staled PiP task %s", toRemove);
+            if (toRemove == null) return;
             // Remove the staled Task by matching component name.
-            final ComponentName toRemove = info.topActivity;
             try {
                 List<ActivityManager.RunningTaskInfo> tasks = ActivityTaskManager.getService()
                         .getTasks(10 /* maxNum */,
