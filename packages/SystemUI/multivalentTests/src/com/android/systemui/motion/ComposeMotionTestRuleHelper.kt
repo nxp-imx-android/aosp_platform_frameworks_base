@@ -57,7 +57,13 @@ fun createSysUiComposeMotionTestRule(
     val composeScreenshotTestRule =
         ComposeScreenshotTestRule(deviceEmulationSpec, goldenPathManager)
     val fixedConfiguration =
-        FixedConfiguration(density = Density(deviceEmulationSpec.display.densityDpi / 160f))
+        FixedConfiguration(
+            density =
+                Density(
+                    density = deviceEmulationSpec.display.densityDpi / 160f,
+                    fontScale = deviceEmulationSpec.fontScale,
+                )
+        )
     return MotionTestRule(
         ComposeToolkit(composeScreenshotTestRule.composeRule, testScope, fixedConfiguration),
         goldenPathManager,
