@@ -31,9 +31,9 @@ import java.util.Objects
  * [Icon.Resource] to a resource. In case of [Loaded], the resource ID [res] is optional.
  */
 @Stable
-sealed class Icon {
-    abstract val contentDescription: ContentDescription?
-    abstract val resId: Int?
+public sealed class Icon {
+    public abstract val contentDescription: ContentDescription?
+    public abstract val resId: Int?
 
     /**
      * An icon that is already loaded.
@@ -44,7 +44,7 @@ sealed class Icon {
      * @param packageName The package that owns [resId]. Null if it belongs to the current
      *   (Systemui) package.
      */
-    data class Loaded
+    public data class Loaded
     @JvmOverloads
     constructor(
         val drawable: Drawable,
@@ -95,7 +95,7 @@ sealed class Icon {
     }
 
     /** An icon that is a reference to a resource belonging to the current (SystemUI) package. */
-    data class Resource(
+    public data class Resource(
         @DrawableRes override val resId: Int,
         override val contentDescription: ContentDescription?,
     ) : Icon()
@@ -105,7 +105,7 @@ sealed class Icon {
  * Creates [Icon.Loaded] for a given drawable with an optional [contentDescription], [resId] and
  * [resPackage].
  */
-fun Drawable.asIcon(
+public fun Drawable.asIcon(
     contentDescription: ContentDescription? = null,
     @DrawableRes resId: Int? = null,
     resPackage: String? = null,
@@ -115,7 +115,7 @@ fun Drawable.asIcon(
  * Creates [ImageBitmap] for a given [Icon.Loaded]. It avoids IllegalArgumentException by providing
  * 1x1 bitmap if [Drawable.getIntrinsicWidth] or [Drawable.getIntrinsicHeight] is <= 0
  */
-fun Loaded.asImageBitmap(): ImageBitmap {
+public fun Loaded.asImageBitmap(): ImageBitmap {
     return with(drawable) {
         if (this is BitmapDrawable) {
             bitmap.asImageBitmap()

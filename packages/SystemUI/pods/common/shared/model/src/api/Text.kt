@@ -24,23 +24,19 @@ import android.content.Context
  * Models a text, that can either be already [loaded][Text.Loaded] or be a [reference]
  * [Text.Resource] to a resource.
  */
-sealed class Text {
-    data class Loaded(
-        val text: String?,
-    ) : Text()
+public sealed class Text {
+    public data class Loaded(val text: String?) : Text()
 
-    data class Resource(
-        @StringRes val res: Int,
-    ) : Text()
+    public data class Resource(@StringRes val res: Int) : Text()
 
-    companion object {
+    public companion object {
         /**
          * Returns the loaded test string, or null if we don't have one.
          *
          * Prefer [com.android.systemui.common.ui.binder.TextViewBinder.bind] over this method. This
          * should only be used for testing or concatenation purposes.
          */
-        fun Text?.loadText(context: Context): String? {
+        public fun Text?.loadText(context: Context): String? {
             return when (this) {
                 null -> null
                 is Loaded -> this.text

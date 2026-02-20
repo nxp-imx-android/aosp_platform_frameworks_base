@@ -18,9 +18,9 @@ package com.android.systemui.common.shared.colors
 
 import android.content.Context
 
-object SurfaceEffectColors {
+public object SurfaceEffectColors {
     @JvmStatic
-    fun surfaceEffect0(context: Context): Int {
+    public fun surfaceEffect0(context: Context): Int {
         return context.resources.getColor(
             com.android.internal.R.color.customColorSurfaceEffect0,
             context.theme,
@@ -28,7 +28,7 @@ object SurfaceEffectColors {
     }
 
     @JvmStatic
-    fun surfaceEffect1(context: Context): Int {
+    public fun surfaceEffect1(context: Context): Int {
         return context.resources.getColor(
             com.android.internal.R.color.customColorSurfaceEffect1,
             context.theme,
@@ -36,7 +36,7 @@ object SurfaceEffectColors {
     }
 
     @JvmStatic
-    fun surfaceEffect2(context: Context): Int {
+    public fun surfaceEffect2(context: Context): Int {
         return context.resources.getColor(
             com.android.internal.R.color.customColorSurfaceEffect2,
             context.theme,
@@ -44,7 +44,7 @@ object SurfaceEffectColors {
     }
 
     @JvmStatic
-    fun surfaceEffect3(context: Context): Int {
+    public fun surfaceEffect3(context: Context): Int {
         return context.resources.getColor(
             com.android.internal.R.color.customColorSurfaceEffect3,
             context.theme,

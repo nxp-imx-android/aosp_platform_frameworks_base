@@ -20,7 +20,7 @@ import android.graphics.Bitmap
 import android.os.UserHandle
 
 /** Represents a session of a package being installed on device. */
-data class PackageInstallSession(
+public data class PackageInstallSession(
     val sessionId: Int,
     val packageName: String,
     val icon: Bitmap?,
