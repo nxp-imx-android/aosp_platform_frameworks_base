@@ -108,11 +108,13 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
         }
     }
 
-    val iconResourceId =
+    val captureIconResId =
         when (viewModel.captureType) {
             ScreenCaptureType.SCREENSHOT -> R.drawable.ic_screen_capture_camera
             ScreenCaptureType.RECORDING -> R.drawable.ic_screenrecord
         }
+    val captureIcon by
+        loadIcon(viewModel = viewModel, resId = captureIconResId, contentDescription = null)
 
     // Main content
     AnimatedVisibility(
@@ -147,13 +149,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                     PrimaryButton(
                         modifier =
                             Modifier.align(Alignment.Center).pointerHoverIcon(PointerIcon.Default),
-                        icon =
-                            loadIcon(
-                                    viewModel = viewModel,
-                                    resId = iconResourceId,
-                                    contentDescription = null,
-                                )
-                                .value,
+                        icon = captureIcon,
                         text =
                             stringResource(
                                 when (viewModel.captureType) {
@@ -174,12 +170,6 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                 // dimensions are calculated, we only compose the RegionBox once its initial state
                 // is ready.
                 if (regionBox != null) {
-                    val icon by
-                        loadIcon(
-                            viewModel = viewModel,
-                            resId = iconResourceId,
-                            contentDescription = null,
-                        )
                     RegionBox(
                         initialRect = regionBox,
                         buttonText =
@@ -192,7 +182,7 @@ fun PreCaptureUI(viewModel: PreCaptureViewModel) {
                                             R.string.screen_capture_record_region_selection_button
                                     }
                             ),
-                        buttonIcon = icon,
+                        buttonIcon = captureIcon,
                         onRegionSelected = { regionBoxRect ->
                             viewModel.updateRegionBoxBounds(regionBoxRect)
                             viewModel.toolbarViewModel.updateOpacityForRegionBox(
