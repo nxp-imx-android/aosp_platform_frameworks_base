@@ -16,7 +16,7 @@
 
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 
-package com.android.systemui.notifications.ui.composable.component
+package com.android.systemui.notifications.content.ui.composable.component
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi

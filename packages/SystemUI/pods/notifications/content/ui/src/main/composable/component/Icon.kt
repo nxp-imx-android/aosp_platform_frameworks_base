@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.notifications.ui.composable.component
+package com.android.systemui.notifications.content.ui.composable.component
 
 import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image

@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2025 The Android Open Source Project
+// Copyright (C) 2026 The Android Open Source Project
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,21 +18,28 @@ package {
     default_applicable_licenses: ["frameworks_base_packages_SystemUI_license"],
 }
 
-// Pod for all compose-based notification rendering.
-// IMPORTANT: this is an alpha implementation of pods; please reach out to saff@ or caitlinshk@
-// before planning another folder based on this model.
-android_library {
-    name: "com.android.systemui.notifications.ui.composable",
+java_library {
+    name: "com.android.systemui.notifications.content.ui_api",
+    defaults: ["sysui_api"],
+    static_libs: [
+        "androidx.compose.runtime_runtime",
+    ],
+    libs: [
+        "androidx.compose.foundation_foundation",
+        "com.android.systemui.lifecycle_api",
+    ],
+}
+
+java_library {
+    name: "com.android.systemui.notifications.content.ui_main",
+    defaults: ["sysui_main"],
     visibility: [
-        // TODO: b/431222735 - This is currently only used in the Gallery app, we may want to tweak
-        //  the visibility or create an api library later.
+        "//frameworks/base/packages/SystemUI/pods/notifications/content/ui",
         "//vendor:__subpackages__",
     ],
-    srcs: [
-        "src/main/**/*.kt",
-    ],
     static_libs: [
-        "com.android.systemui.notifications.ui.viewmodel-api",
+        "com.android.systemui.lifecycle_api",
+        "com.android.systemui.notifications.content.ui_api",
         "PlatformComposeCore",
         "androidx.compose.foundation_foundation",
         "androidx.compose.foundation_foundation-layout",
@@ -40,7 +47,12 @@ android_library {
         "androidx.compose.material_material-icons-core",
         "androidx.compose.runtime_runtime",
     ],
-    defaults: [
-        "SystemUI_pod_defaults_impl",
+}
+
+java_library {
+    name: "com.android.systemui.notifications.content.ui_dagger",
+    defaults: ["sysui_dagger"],
+    static_libs: [
+        "com.android.systemui.notifications.content.ui_main",
     ],
 }
