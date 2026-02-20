@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Snúa skjá sjálfkrafa"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"Viltu veita <xliff:g id="APPLICATION">%1$s</xliff:g> aðgang að <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"Viltu veita <xliff:g id="APPLICATION">%1$s</xliff:g> aðgang að <xliff:g id="USB_DEVICE">%2$s</xliff:g>?\nÞetta forrit hefur ekki fengið heimild fyrir upptöku en gæti tekið upp hljóð í gegnum þetta USB-tæki."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"Leyfðu &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; til að fá aðgang að &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>’s&lt;/b&gt;?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"Opnaðu &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; til að sjá um &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Þetta forrit hefur ekki fengið heimild fyrir upptöku en gæti tekið upp hljóð í gegnum þetta USB-tæki. Notkun <xliff:g id="APPLICATION">%1$s</xliff:g> með þessu tæki getur komið í veg fyrir að símtöl, tilkynningar og viðvaranir heyrist."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"Notkun <xliff:g id="APPLICATION">%1$s</xliff:g> með þessu tæki getur komið í veg fyrir að símtöl, tilkynningar og viðvaranir heyrist."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"Viltu veita <xliff:g id="APPLICATION">%1$s</xliff:g> aðgang að <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Sýna sjálfsmyndavél"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Sýna snertingar"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Veldu forrit fyrir upptökuna"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"Stillingar skjáupptöku"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Markup"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vídeó vistað"</string>
@@ -187,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Þagga"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Hætta að þagga"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> af <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Færðu fingur saman, dragðu og ýttu á sjálfu til að lagfæra"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Kerfisstjórinn þinn lokaði á skjáupptöku"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Taka skjámynd af öllum skjánum"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Taka upp allan skjáinn"</string>
@@ -201,12 +202,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Handfang neðst til hægri – Notaðu örvalyklana til að breyta stærðinni"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Handfang neðst til vinstri – Notaðu örvalyklana til að breyta stærðinni"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Deila"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Veldu forritsglugga til að deila"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Veldu flipa til að deila"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Veldu skjá til að deila"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Deila hljóði"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Deila forritsglugga"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Deila flipa"</string>
@@ -224,14 +222,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Hætti að deila skjá: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. Skjánum er ekki deilt með neinum."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Hnappur til að loka. Ýttu á færsluhnappinn til að loka fordeilingarglugga."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Hnappur til að deila flipa. Ekki valið. Ýttu á færsluhnappinn til að deila flipa."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"Deiling flipa. Flettu til að skoða tiltæka flipa."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Hnappur til að deila forriti. Ekki valið. Ýttu á færsluhnappinn til að deila forriti."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"Deiling forrits. Opnaðu til að kanna tiltæk forrit."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Hnappur fyrir allan skjáinn. Ekki valið. Ýttu á færsluhnappinn til að deila öllum skjánum."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"Deiling alls skjás. Flettu til að skoða tiltæka skjái."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Hnappur til að deila. Slökkt. Veldu forrit, flipa eða skjá til að deila."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Kveikt á deilingu. <xliff:g id="ITEM">%1$s</xliff:g> valið. Ýttu á færsluhnappinn til að byrja að deila."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Ekki valið. Ýttu á færsluhnappinn til að velja."</string>
@@ -254,6 +249,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Hljóðnemi"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Fremri myndavél"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Hætta að deila"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Kveikt er á skjádeilingu. Notaðu persónuverndarvísi til að hætta að deila."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Deilir skjá"</string>
@@ -432,6 +429,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Hjálpari"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Lyklaborð"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Lyklaborð"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# tilkynning í viðbót.}one{# tilkynning í viðbót.}other{# tilkynningar í viðbót.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Skjárinn er læstur í langsniði."</string>
@@ -1248,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Aðgengislykill"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Þú getur ýtt á aðgengislykilinn til að byrja að nota aðgengiseiginleika."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Bæta við eiginleikum"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Setja upp aðgengislykil"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Setja upp <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Lokið"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Veldu eiginleika"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Breyta"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Veldu eiginleika"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Þessi eiginleiki virkjast næst þegar þú velur aðgengishnappinn"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Aðgengileiki"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lásskjár"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Slekkur…"</string>
@@ -1751,7 +1749,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Að skipta á milli forrita"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Lokið"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Áfram"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"Reyndu aftur!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Til baka"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Strjúktu til hægri eða vinstri á snertifletinum með þremur fingrum"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Flott!"</string>
@@ -1759,14 +1758,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Strjúktu til hægri eða vinstri á snertifletinum með þremur fingrum til að fara til baka"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Heim"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Strjúktu upp á snertifletinum með þremur fingrum"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Vel gert!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Þú framkvæmdir bendinguna „Fara á heimaskjá“"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Strjúktu upp á snertifletinum með þremur fingrum til að fara á heimaskjáinn"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Sjá nýleg forrit"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Strjúktu upp og haltu þremur fingrum inni á snertifletinum."</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Vel gert!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Þú framkvæmdir bendinguna til að sjá nýleg forrit."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Strjúktu upp og haltu þremur fingrum inni á snertifletinum til að sjá nýleg forrit"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Að skipta á milli forrita"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Strjúktu til hægri á snertifletinum með fjórum fingrum"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Vel gert!"</string>
@@ -1867,8 +1877,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d áhrif"</string>
     <string name="av_blur" msgid="405131343487260171">"Móða"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Skjátextar í rauntíma"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Til baka"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Rafhlaða: %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"V rafhlaða: %1$s    H rafhlaða: %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"V rafhlaða: %1$s"</string>

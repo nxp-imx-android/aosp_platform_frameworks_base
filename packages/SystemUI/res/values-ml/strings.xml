@@ -170,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"സെൽഫി ക്യാമറ കാണിക്കുക"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ടച്ചുകൾ കാണിക്കുക"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"റെക്കോർഡ് ചെയ്യാൻ ഒരു ആപ്പ് തിരഞ്ഞെടുക്കുക"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"സ്ക്രീൻ റെക്കോർഡിംഗ് ക്രമീകരണം"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"മാർക്കപ്പ്"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"വീഡിയോ സംരക്ഷിച്ചു"</string>
@@ -185,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"മ്യൂട്ട് ചെയ്യുക"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"അൺമ്യൂട്ട് ചെയ്യുക"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>-ൽ <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"ക്രമീകരിക്കാൻ സെൽഫി പിഞ്ച് ചെയ്ത് വലിച്ചിട്ട് ടാപ്പ് ചെയ്യുക"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"നിങ്ങളുടെ ഐടി അഡ്‌മിൻ സ്ക്രീൻ ക്യാപ്‌ചർ ചെയ്യുന്നത് ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"മുഴുവൻ സ്ക്രീനിന്റെ സ്ക്രീൻഷോട്ട് എടുക്കുക"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"സ്ക്രീൻ പൂർണ്ണമായി റെക്കോർഡ് ചെയ്യുക"</string>
@@ -246,6 +249,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"മൈക്രോഫോൺ"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"മുൻ ക്യാമറ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"പങ്കിടൽ നിർത്തുക"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"സ്ക്രീൻ പങ്കിടൽ ഓണാണ്. പങ്കിടൽ അവസാനിപ്പിക്കാൻ സ്വകാര്യതാ ഇൻഡിക്കേറ്റർ ഉപയോഗിക്കുക."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"സ്‌ക്രീൻ പങ്കിടുന്നു"</string>
@@ -424,6 +429,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"കീബോർഡ്"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"കീബോർഡ്"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# അറിയിപ്പ് കൂടിയുണ്ട്.}other{# അറിയിപ്പുകൾ കൂടിയുണ്ട്.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"സ്‌ക്രീൻ ലാൻഡ്‌സ്‌കേപ്പ് ഓറിയന്റേഷനിൽ ലോക്കുചെയ്‌തു."</string>
@@ -1240,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ഉപയോഗസഹായി കീ"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"ഉപയോഗസഹായി ഫീച്ചറുകൾ ഉപയോഗിച്ച് തുടങ്ങാൻ നിങ്ങൾക്ക് ഉപയോഗസഹായി കീ അമർത്താം."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"ഫീച്ചറുകൾ ചേർക്കുക"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"ഉപയോഗസഹായി കീ സജ്ജീകരിക്കുക"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> സജ്ജീകരിക്കുക"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"പൂർത്തിയായി"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"ഒരു ഫീച്ചർ തിരഞ്ഞെടുക്കുക"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"എഡിറ്റ് ചെയ്യുക"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"ഒരു ഫീച്ചർ തിരഞ്ഞെടുക്കുക"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"അടുത്ത തവണ നിങ്ങൾ ഉപയോഗസഹായി ബട്ടൺ തിരഞ്ഞെടുക്കുമ്പോൾ ഈ ഫീച്ചർ തുറക്കും"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ഉപയോഗസഹായി"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"ഷട്ട്‌ഡൗൺ ചെയ്യുന്നു…"</string>
@@ -1743,7 +1749,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ആപ്പുകൾ മാറുക"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"പൂർത്തിയായി"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"അടുത്തത്"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"വീണ്ടും ശ്രമിക്കുക!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"മടങ്ങുക"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ടച്ച്‌പാഡിൽ മൂന്ന് വിരലുകൾ കൊണ്ട് ഇടത്തേക്കോ വലത്തേക്കോ സ്വൈപ്പ് ചെയ്യുക"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"കൊള്ളാം!"</string>
@@ -1751,14 +1758,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"നിങ്ങളുടെ ടച്ച്പാഡ് ഉപയോഗിച്ച് തിരികെ പോകാൻ, മൂന്ന് വിരലുകൾ ഉപയോഗിച്ച് ഇടത്തോട്ടോ വലത്തോട്ടോ സ്വൈപ്പ് ചെയ്യുക"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"ഹോമിലേക്ക് പോകൂ"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"ടച്ച്‌പാഡിൽ മൂന്ന് വിരലുകൾ ഉപയോഗിച്ച് മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്യുക"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"കൊള്ളാം!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"ഹോം ജെസ്ച്ചർ നിങ്ങൾ പൂർത്തിയാക്കി"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"നിങ്ങളുടെ ഹോം സ്‌ക്രീനിലേക്ക് പോകാൻ ടച്ച്‌പാഡിൽ മൂന്ന് വിരലുകൾ ഉപയോഗിച്ച് മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്യുക"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"അടുത്തിടെയുള്ള ആപ്പുകൾ കാണുക"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"നിങ്ങളുടെ ടച്ച്പാഡിൽ മൂന്ന് വിരലുകൾ കൊണ്ട് മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്‌ത് പിടിക്കുക"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"കൊള്ളാം!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"അടുത്തിടെയുള്ള ആപ്പുകൾ കാണുക എന്ന ജെസ്ച്ചർ നിങ്ങൾ പൂർത്തിയാക്കി."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"സമീപകാല ആപ്പുകൾ കാണുന്നതിന്, നിങ്ങളുടെ ടച്ച്പാഡിൽ മൂന്ന് വിരലുകൾ ഉപയോഗിച്ച് മുകളിലേക്ക് സ്വൈപ്പ് ചെയ്‌ത് പിടിക്കുക"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"ആപ്പുകൾ മാറുക"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"നിങ്ങളുടെ ടച്ച്‌പാഡിൽ നാല് വിരലുകൾ കൊണ്ട് വലത്തേക്ക് സ്വൈപ്പ് ചെയ്യുക"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"കൊള്ളാം!"</string>

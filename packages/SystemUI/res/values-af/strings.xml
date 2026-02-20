@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Outodraai skerm"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"Gee <xliff:g id="APPLICATION">%1$s</xliff:g> toegang tot <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"Laat <xliff:g id="APPLICATION">%1$s</xliff:g> toe om by <xliff:g id="USB_DEVICE">%2$s</xliff:g> in te gaan?\nOpneemtoestemming is nie aan hierdie app verleen nie, maar dit kan oudio deur hierdie USB-toestel vasvang."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"Gee &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; toegang tot &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"Maak &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; oop om &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; te hanteer?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Opneemtoestemming is nie aan hierdie app verleen nie, maar dit kan oudio deur hierdie USB-toestel opneem. As jy <xliff:g id="APPLICATION">%1$s</xliff:g> met hierdie toestel gebruik, kan dit verhinder dat jy oproepe, kennisgewings en wekkers hoor."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"As jy <xliff:g id="APPLICATION">%1$s</xliff:g> met hierdie toestel gebruik, kan dit verhinder dat jy oproepe, kennisgewings en wekkers hoor."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"Gee <xliff:g id="APPLICATION">%1$s</xliff:g> toegang tot <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Wys selfiekamera"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Wys aanrakings"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Kies ’n app om op te neem"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"Skermopname-instellings"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Uitleg"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video is gestoor"</string>
@@ -201,12 +203,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Onderste regterhandvatsel – Gebruik pylsleutels om grootte te verander"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Onderste linkerhandvatsel – Gebruik pylsleutels om grootte te verander"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Deel"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Kies appvenster om te deel"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Kies oortjie om te deel"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Kies skerm om te deel"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Deel oudio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Deel appvenster"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Deel oortjie"</string>
@@ -224,14 +223,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Het opgehou om skerm te deel: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. Skerm word nie met enigiemand gedeel nie."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Maak Toe-knoppie. Druk Enter om die voorafdelingdialoog toe te maak."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Oortjiedelingknoppie. Nie gekies nie. Druk Enter om oortjie te deel."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"Deel tans oortjie. Navigeer om die beskikbare oortjies na te gaan."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Appdelingknoppie. Nie gekies nie. Druk Enter om die app te deel."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"Delingapp. Navigeer om die beskikbare apps na te gaan."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Volskermknoppie. Nie gekies nie. Druk Enter om volskerm te deel."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"Deel tans volskerm. Navigeer om die beskikbare skerms na te gaan."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Deelknoppie. Af. Kies ’n app, oortjie of skerm om te deel."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Deling is aan. <xliff:g id="ITEM">%1$s</xliff:g> is gekies. Druk Enter om te begin deel."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g> is nie gekies nie. Druk Enter om te kies."</string>
@@ -254,6 +250,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofoon"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Voorste kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Hou op deel"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Skermdeling is aan. Gebruik privaatheidaanduier om deling te beëindig."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Deel tans skerm"</string>
@@ -432,6 +430,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Sleutelbord"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Sleutelbord"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{nog # kennisgewing binne.}other{nog # kennisgewings binne.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Skerm is in landskapsoriëntasie gesluit."</string>
@@ -1006,8 +1008,8 @@
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;Status:&lt;/b&gt; Laer gegradeer"</string>
     <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"Word aan die bokant van gesprekskennisgewings en as \'n profielfoto op sluitskerm gewys"</string>
     <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"Word aan die bokant van gesprekskennisgewings en as \'n profielfoto op sluitskerm gewys, verskyn as \'n borrel"</string>
-    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Word aan die bokant van gesprekskennisgewings en as \'n profielfoto op sluitskerm gewys, onderbreek Moenie Steur Nie"</string>
-    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Word aan die bokant van gesprekskennisgewings en as \'n profielfoto op sluitskerm gewys, verskyn as \'n borrel, onderbreek Moenie Steur Nie"</string>
+    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Word aan die bokant van gesprekskennisgewings en as ’n profielfoto op sluitskerm gewys, onderbreek Moenie Steur Nie"</string>
+    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Word aan die bokant van gesprekskennisgewings en as ’n profielfoto op sluitskerm gewys, verskyn as ’n borrel, onderbreek Moenie Steur Nie"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Prioriteit"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> steun nie gesprekskenmerke nie"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Terugvoer"</string>
@@ -1310,7 +1312,7 @@
     <string name="mobile_data_enable_title" msgid="8259903353761259200">"Skakel mobieldata aan?"</string>
     <string name="mobile_data_enable_message" msgid="2013861580086078913">"Die gebruik van mobieldata kan koste aangaan op grond van jou mobieldiensplan."</string>
     <string name="mobile_data_enable_turn_on" msgid="5577732543207882533">"Skakel aan"</string>
-    <string name="mobile_data_disable_message" msgid="8604966027899770415">"Jy sal nie deur <xliff:g id="CARRIER">%s</xliff:g> toegang tot data of die internet hê nie. Internet sal net deur Wi-Fi beskikbaar wees."</string>
+    <string name="mobile_data_disable_message" msgid="8604966027899770415">"Jy sal nie deur <xliff:g id="CARRIER">%s</xliff:g> toegang tot data of die internet hê nie. Internet sal net deur wi-fi beskikbaar wees."</string>
     <string name="mobile_data_disable_message_default_carrier" msgid="6496033312431658238">"jou diensverskaffer"</string>
     <string name="auto_data_switch_disable_title" msgid="5146527155665190652">"Skakel weer oor na <xliff:g id="CARRIER">%s</xliff:g>?"</string>
     <string name="auto_data_switch_disable_message" msgid="5885533647399535852">"Mobiele data sal nie outomaties op grond van beskikbaarheid oorskakel nie"</string>
@@ -1503,7 +1505,7 @@
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"kopieer na knipbord."</string>
     <string name="basic_status" msgid="2315371112182658176">"Maak gesprek oop"</string>
     <string name="select_conversation_title" msgid="6716364118095089519">"Gespreklegstukke"</string>
-    <string name="select_conversation_text" msgid="3376048251434956013">"Tik op \'n gesprek om dit by jou tuisskerm te voeg"</string>
+    <string name="select_conversation_text" msgid="3376048251434956013">"Tik op ’n gesprek om dit by jou tuisskerm te voeg"</string>
     <string name="no_conversations_text" msgid="5354115541282395015">"Jou onlangse gesprekke sal hier verskyn"</string>
     <string name="priority_conversations" msgid="3967482288896653039">"Prioriteitgesprekke"</string>
     <string name="recent_conversations" msgid="8531874684782574622">"Onlangse gesprekke"</string>
@@ -1751,7 +1753,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Wissel apps"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Klaar"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Volgende"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"Probeer weer!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Gaan terug"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Swiep links of regs met drie vingers op jou raakpaneel"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Mooi so!"</string>
@@ -1759,14 +1762,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Swiep links of regs met drie vingers om terug te gaan met jou raakpaneel"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Gaan na tuisskerm"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Swiep op met drie vingers op jou raakpaneel"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Uitstekende werk!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Jy het die Gaan na Tuisskerm-gebaar voltooi"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Swiep op met drie vingers op jou raakpaneel om na jou tuisskerm te gaan"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Bekyk onlangse apps"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Swiep op en hou met drie vingers op jou raakpaneel"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Knap gedaan!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Jy het die Bekyk Onlangse Apps-gebaar voltooi."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Swiep op en hou met drie vingers op jou raakpaneel om onlangse apps te bekyk"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Wissel apps"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Swiep regs met vier vingers op jou raakpaneel"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Uitstekende werk!"</string>
@@ -1867,8 +1881,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d effekte"</string>
     <string name="av_blur" msgid="405131343487260171">"Maak wasig"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Intydse Onderskrifte"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Terug"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Battery %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"L-battery %1$s    R-battery %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"L-battery %1$s"</string>

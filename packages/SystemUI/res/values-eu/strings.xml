@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Biratu pantaila automatikoki"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> erabiltzeko baimena eman nahi diozu <xliff:g id="APPLICATION">%1$s</xliff:g> aplikazioari?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"<xliff:g id="USB_DEVICE">%2$s</xliff:g> erabiltzeko baimena eman nahi diozu <xliff:g id="APPLICATION">%1$s</xliff:g> aplikazioari?\nAplikazioak ez du grabatzeko baimenik, baina baliteke USB bidezko gailu horren bidez audioa grabatzea."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"&lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; aplikazioari &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; erabiltzeko baimena eman nahi diozu?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"&lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; kudeatzeko &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; ireki nahi duzu?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Aplikazioak ez du grabatzeko baimenik, baina baliteke USB bidezko gailu honen bidez audioa grabatzea. <xliff:g id="APPLICATION">%1$s</xliff:g> gailu honekin erabiliz gero, baliteke deiak, jakinarazpenak eta alarmak ez entzutea."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"<xliff:g id="APPLICATION">%1$s</xliff:g> gailu honekin erabiliz gero, baliteke deiak, jakinarazpenak eta alarmak ez entzutea."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"<xliff:g id="USB_ACCESSORY">%2$s</xliff:g> erabiltzeko baimena eman nahi diozu <xliff:g id="APPLICATION">%1$s</xliff:g> aplikazioari?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Erakutsi aurreko kamera"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Erakutsi ukitutakoa"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Aukeratu grabatzeko aplikazio bat"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"Pantaila-grabaketaren ezarpenak"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Markatzea"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Gorde da bideoa"</string>
@@ -201,12 +203,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Beheko eskuineko kontrol-puntua: erabili gezi-teklak tamaina aldatzeko"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Beheko ezkerreko kontrol-puntua: erabili gezi-teklak tamaina aldatzeko"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Partekatu"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Hautatu partekatzeko aplikazio-leihoa"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Hautatu partekatzeko fitxa"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Hautatu partekatzeko pantaila"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Partekatu audioa"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Partekatu aplikazioaren leihoa"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Partekatu fitxa"</string>
@@ -224,14 +223,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"<xliff:g id="DISPLAY_NAME">%1$s</xliff:g> pantaila partekatzeari utzi diozu. Pantaila ez da partekatu inorekin."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Ixteko botoia. Partekatu aurreko leihoa ixteko, sakatu Sartu."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Fitxa bat partekatzeko botoia. Hautatu gabe. Fitxa bat partekatzeko, sakatu Sartu."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"Fitxa bat partekatzen. Nabigatu erabilgarri dauden fitxak ikusteko."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Aplikazio bat partekatzeko botoia. Hautatu gabe. Aplikazio bat partekatzeko, sakatu Sartu."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"Aplikazio bat partekatzea. Nabigatu erabilgarri dauden aplikazioak ikusteko."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Pantaila osoaren botoia. Hautatu gabe. Pantaila osoa partekatzeko, sakatu Sartu."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"Pantaila osoa partekatzen. Nabigatu erabilgarri dauden pantailak ikusteko."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Partekatzeko botoia. Desaktibatuta. Hautatu partekatu nahi duzun aplikazioa, fitxa edo pantaila."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Partekatzeko aukera aktibatuta dago. <xliff:g id="ITEM">%1$s</xliff:g> hautatu duzu. Partekatzen hasteko, sakatu Sartu."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Hautatu gabe. Hautatzeko, sakatu Sartu."</string>
@@ -254,6 +250,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofonoa"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Aurreko kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Utzi partekatzeari"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Pantaila partekatzeko eginbidea aktibatuta dago. Hura partekatzeari uzteko, erabili pribatutasunaren adierazlea."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Pantaila partekatzen"</string>
@@ -432,6 +430,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Laguntzailea"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Teklatua"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Teklatua"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Beste # jakinarazpen dago barnean.}other{Beste # jakinarazpen daude barnean.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Pantaila horizontalki blokeatuta dago."</string>
@@ -528,7 +530,7 @@
     <string name="quick_settings_work_mode_paused_state" msgid="6681788236383735976">"Pausatuta"</string>
     <string name="quick_settings_night_display_label" msgid="8180030659141778180">"Gaueko argia"</string>
     <string name="quick_settings_night_secondary_label_on_at_sunset" msgid="3358706312129866626">"Ilunabarrean aktibatuta"</string>
-    <string name="quick_settings_night_secondary_label_until_sunrise" msgid="4063448287758262485">"Ilunabarrera arte"</string>
+    <string name="quick_settings_night_secondary_label_until_sunrise" msgid="4063448287758262485">"Egunsentira arte"</string>
     <string name="quick_settings_night_secondary_label_on_at" msgid="3584738542293528235">"Aktibatze-ordua: <xliff:g id="TIME">%s</xliff:g>"</string>
     <string name="quick_settings_secondary_label_until" msgid="1883981263191927372">"<xliff:g id="TIME">%s</xliff:g> arte"</string>
     <string name="quick_settings_ui_mode_night_label" msgid="1398928270610780470">"Gai iluna"</string>
@@ -546,7 +548,7 @@
     <string name="quick_settings_screen_capture_label" msgid="4400625606618045690">"Pantaila-argazkiak edo -kapturak"</string>
     <string name="quick_settings_screen_record_start" msgid="1574725369331638985">"Hasi"</string>
     <string name="quick_settings_screen_record_stop" msgid="8087348522976412119">"Gelditu"</string>
-    <string name="qs_record_issue_label" msgid="8166290137285529059">"Grabatu arazoa"</string>
+    <string name="qs_record_issue_label" msgid="8166290137285529059">"Erregistratu arazo bat"</string>
     <string name="qs_record_issue_start" msgid="2979831312582567056">"Hasi"</string>
     <string name="qs_record_issue_stop" msgid="3531747965741982657">"Gelditu"</string>
     <string name="qs_record_issue_bug_report" msgid="8229031766918650079">"Akatsen txostena"</string>
@@ -866,7 +868,7 @@
     <string name="screen_pinning_exit" msgid="4553787518387346893">"Kendu zaio aingura aplikazioari"</string>
     <string name="stream_voice_call" msgid="7468348170702375660">"Deia"</string>
     <string name="stream_system" msgid="7663148785370565134">"Sistema"</string>
-    <string name="stream_ring" msgid="7550670036738697526">"Jo tonua"</string>
+    <string name="stream_ring" msgid="7550670036738697526">"Tonua"</string>
     <string name="stream_music" msgid="2188224742361847580">"Multimedia-edukia"</string>
     <string name="stream_alarm" msgid="16058075093011694">"Alarma"</string>
     <string name="stream_notification" msgid="7930294049046243939">"Jakinarazpena"</string>
@@ -1751,7 +1753,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Aldatu aplikazioa"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Eginda"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Hurrengoa"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"Saiatu berriro!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Egin atzera"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Pasatu 3 hatz ezkerrera edo eskuinera ukipen-panelean"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Ederki!"</string>
@@ -1759,14 +1762,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Ukipen-panelaren bidez atzera egiteko, pasatu 3 hatz ezkerrera edo eskuinera"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Joan orri nagusira"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Pasatu 3 hatz gora ukipen-panelean"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Bikain!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Ikasi duzu orri nagusira joateko keinua"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Orri nagusira joateko, pasatu 3 hatz gora ukipen-panelean"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Ikusi azkenaldiko aplikazioak"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Pasatu 3 hatz gora eta eduki sakatuta ukipen-panelean"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Bikain!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Osatu duzu azkenaldiko aplikazioak ikusteko keinua."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Azkenaldiko aplikazioak ikusteko, pasatu 3 hatz gora eta eduki sakatuta ukipen-panelean"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Aldatu aplikazioa"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Pasatu 4 hatz eskuinera ukipen-panelean"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Bikain!"</string>
@@ -1867,8 +1881,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d efektu"</string>
     <string name="av_blur" msgid="405131343487260171">"Lausotu"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Istanteko azpitituluak"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Atzera"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Bateria: %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Ezkerreko aldearen bateria: %1$s    Eskuineko aldearen bateria: %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Ezkerreko aldearen bateria: %1$s"</string>

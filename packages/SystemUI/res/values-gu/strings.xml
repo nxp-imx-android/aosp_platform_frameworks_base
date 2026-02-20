@@ -170,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"સેલ્ફી કૅમેરા બતાવો"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ટચ બતાવો"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"રેકોર્ડ કરવા માટે ઍપ પસંદ કરો"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"સ્ક્રીન રેકોર્ડિંગના સેટિંગ"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"માર્કઅપ"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"વીડિયો સાચવ્યો"</string>
@@ -185,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"મ્યૂટ કરો"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"અનમ્યૂટ કરો"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>માંથી <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"ગોઠવવા માટે સેલ્ફીને પિન્ચ કરો, ખેંચો અને ટૅપ કરો"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"તમારા IT ઍડમિન દ્વારા સ્ક્રીન કૅપ્ચરની સુવિધા બ્લૉક કરવામાં આવી છે"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"સંપૂર્ણ સ્ક્રીનનો સ્ક્રીનશૉટ લો"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"પૂર્ણ સ્ક્રીન રેકોર્ડ કરો"</string>
@@ -246,6 +249,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"માઇક્રોફોન"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ફ્રન્ટ કૅમેરા"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"શેર કરવાનું રોકો"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"સ્ક્રીન શેરિંગ ચાલુ છે. શેરિંગ બંધ કરવા માટે પ્રાઇવસી સૂચકનો ઉપયોગ કરો."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"સ્ક્રીન શેર કરી રહ્યાં છીએ"</string>
@@ -424,6 +429,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"આસિસ્ટંટ"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"કીબોર્ડ"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"કીબોર્ડ"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{વધુ # નોટિફિકેશન અંદર છે.}one{વધુ # નોટિફિકેશન અંદર છે.}other{વધુ # નોટિફિકેશન અંદર છે.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"સ્ક્રીન લેન્ડસ્કેપ ઓરિએન્ટેશનમાં લૉક કરેલ છે."</string>
@@ -1240,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"ઍક્સેસિબિલિટી કી"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"ઍક્સેસિબિલિટી સુવિધાઓનો ઉપયોગ કરવાનું શરૂ કરવા માટે, તમે ઍક્સેસિબિલિટી કી દબાવી શકો છો."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"સુવિધાઓ ઉમેરો"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"ઍક્સેસિબિલિટી કીનું સેટઅપ કરો"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g>નું સેટઅપ કરો"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"થઈ ગયું"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"સુવિધા પસંદ કરો"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"ફેરફાર કરો"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"સુવિધા પસંદ કરો"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"તમે આગલી વાર જ્યારે ઍક્સેસિબિલિટી બટન પસંદ કરશો, ત્યારે આ સુવિધા ખુલશે"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"ઍક્સેસિબિલિટી"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"લૉક સ્ક્રીન"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"શટ ડાઉન કરી રહ્યાં છીએ…"</string>
@@ -1743,7 +1749,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ઍપ સ્વિચ કરો"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"થઈ ગયું"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"આગળ"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"ફરી પ્રયાસ કરો!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"પાછા જાઓ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"તમારા ટચપૅડ પર ત્રણ આંગળીનો ઉપયોગ કરીને ડાબે કે જમણે સ્વાઇપ કરો"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"સરસ!"</string>
@@ -1751,14 +1758,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"તમારા ટચપૅડ વડે પાછા જવા માટે, ત્રણ આંગળીનો ઉપયોગ કરીને ડાબે કે જમણે સ્વાઇપ કરો"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"હોમ પર જાઓ"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"તમારા ટચપૅડ પર ત્રણ આંગળી વડે ઉપરની તરફ સ્વાઇપ કરો"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"ખૂબ સરસ કામ!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"તમે હોમ સ્ક્રીન પર જવાનો સંકેત પૂર્ણ કર્યો"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"તમારી હોમ સ્ક્રીન પર જવા માટે, તમારા ટચપૅડ પર ત્રણ આંગળી વડે ઉપરની તરફ સ્વાઇપ કરો"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"તાજેતરની ઍપ જુઓ"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"તમારા ટચપૅડ પર ત્રણ આંગળીઓનો ઉપયોગ કરીને ઉપર સ્વાઇપ કરો અને દબાવી રાખો"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"ખૂબ સરસ કામ!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"તમે \'તાજેતરની ઍપ જુઓ\' સંકેત પૂર્ણ કર્યો."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"તાજેતરની ઍપ જોવા માટે, તમારા ટચપૅડ પર ત્રણ આંગળી વડે ઉપરની તરફ સ્વાઇપ કરો અને દબાવી રાખો"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"ઍપ સ્વિચ કરો"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"તમારા ટચપૅડ પર ચાર આંગળીઓનો ઉપયોગ કરીને જમણે સ્વાઇપ કરો"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"ખૂબ સરસ કામ!"</string>

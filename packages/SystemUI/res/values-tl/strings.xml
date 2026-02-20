@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"I-auto rotate ang screen"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"Payagan ang <xliff:g id="APPLICATION">%1$s</xliff:g> na ma-access ang <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"Payagan ang <xliff:g id="APPLICATION">%1$s</xliff:g> na i-access ang <xliff:g id="USB_DEVICE">%2$s</xliff:g>?\nHindi nabigyan ng pahintulot ang app na ito para mag-record pero nakakapag-capture ito ng audio sa pamamagitan ng USB device na ito."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"Payagan ang &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; na ma-access ang &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"Buksan ang &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; para pangasiwaan ang &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Hindi nabigyan ng pahintulot ang app na ito na mag-record pero puwede itong mag-capture ng audio sa pamamagitan ng USB device na ito. Kapag ginamit ang <xliff:g id="APPLICATION">%1$s</xliff:g> sa device na ito, posibleng hindi marinig ang mga tawag, notification, at alarm."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"Kapag ginamit ang <xliff:g id="APPLICATION">%1$s</xliff:g> sa device na ito, posibleng hindi marinig ang mga tawag, notification, at alarm."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"Payagan ang <xliff:g id="APPLICATION">%1$s</xliff:g> na ma-access ang <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Ipakita ang camera para sa selfie"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Ipakita ang mga pagpindot"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Pumili ng app para mag-record"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"Mga setting ng pag-record ng screen"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Markup"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Na-save ang video"</string>
@@ -201,12 +203,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Handle sa kanang bahagi sa ibaba - Gamitin ang mga arrow key para mag-resize"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Handle sa kaliwang bahagi sa ibaba - Gamitin ang mga arrow key para mag-resize"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"I-share"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Pumili ng ise-share na app window"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Pumili ng ise-share na tab"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Pumili ng ise-share na display"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"I-share ang audio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"I-share ang window ng app"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"I-share ang tab"</string>
@@ -224,14 +223,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Inihinto ang pag-share ng display: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. Hindi na-share ang screen sa kahit na sino."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Button na Isara. Pindutin ang enter para isara ang dialog bago ang pag-share."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Button sa pag-share ng tab. Hindi napili. Pindutin ang enter para i-share ang tab."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"Sine-share ang tab. Mag-navigate para tingnan ang mga available na tab."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Button ng pag-share ng app. Hindi napili. Pindutin ang enter para i-share ang app."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"Sine-share ang app. Mag-navigate para makita ang mga available na app."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Button ng fullscreen. Hindi napili. Pindutin ang enter para mag-share ng fullscreen."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"Sine-share ang fullscreen. Mag-navigate para tingnan ang mga available na display."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Button na i-share. Naka-off. Pumili ng app, tab, o display na ise-share."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Naka-on ang pag-share. Napili ang <xliff:g id="ITEM">%1$s</xliff:g>. Pindutin ang enter para simulang mag-share."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Hindi napili. Pindutin ang enter para pumili."</string>
@@ -254,6 +250,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikropono"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Camera sa harap"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Ihinto ang pag-share"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Naka-on ang pag-share ng screen. Gamitin ang indicator ng privacy para tapusin ang pag-share."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ibinabahagi ang screen"</string>
@@ -432,6 +430,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Keyboard"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Keyboard"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{May # pang notification sa loob.}one{May # pang notification sa loob.}other{May # pang notification sa loob.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Naka-lock ang screen sa pahigang oryentasyon."</string>
@@ -1751,7 +1753,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Lumipat ng app"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Tapos na"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Susunod"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"Subukan ulit!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Bumalik"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Mag-swipe pakaliwa o pakanan gamit ang tatlong daliri sa iyong touchpad"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Magaling!"</string>
@@ -1759,14 +1762,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Para bumalik gamit ang iyong touchpad, mag-swipe pakaliwa o pakanan gamit ang tatlong daliri"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Pumunta sa home"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Mag-swipe pataas gamit ang tatlong daliri sa iyong touchpad"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Magaling!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Nakumpleto mo na ang galaw para pumunta sa home"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Mag-swipe pataas gamit ang tatlong daliri sa iyong touchpad para pumunta sa home screen mo"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Tingnan ang mga kamakailang app"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Mag-swipe pataas at i-hold gamit ang tatlong daliri sa iyong touchpad"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Magaling!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Nakumpleto mo ang galaw sa pag-view ng mga kamakailang app."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Para tingnan ang mga kamakailang app, mag-swipe pataas at i-hold gamit ang tatlong daliri sa iyong touchpad"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Lumipat ng app"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Mag-swipe pakanan gamit ang apat na daliri sa iyong touchpad"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Magaling!"</string>
@@ -1867,8 +1881,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d na effect"</string>
     <string name="av_blur" msgid="405131343487260171">"I-blur"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Mga Instant Caption"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Bumalik"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"%s ng baterya"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"%1$s ng L battery    %2$s ng R battery"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"%1$s ng L battery"</string>
