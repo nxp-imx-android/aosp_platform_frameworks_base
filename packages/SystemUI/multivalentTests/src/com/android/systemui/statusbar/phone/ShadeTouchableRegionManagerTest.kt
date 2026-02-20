@@ -128,6 +128,43 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableSceneContainer
+    fun entireScreenTouchable_sceneContainerEnabled_isIdleOnOccluded() =
+        kosmos.runTest {
+            kosmos.sceneInteractor.changeScene(Scenes.Occluded, "test")
+            kosmos.sceneContainerRepository.setTransitionState(
+                flowOf(Idle(currentScene = Scenes.Occluded))
+            )
+            assertThat(underTest.shouldMakeEntireScreenTouchable()).isFalse()
+
+            kosmos.sceneInteractor.changeScene(Scenes.Lockscreen, "test")
+            kosmos.sceneContainerRepository.setTransitionState(
+                flowOf(Idle(currentScene = Scenes.Lockscreen))
+            )
+            assertThat(underTest.shouldMakeEntireScreenTouchable()).isTrue()
+
+            kosmos.sceneInteractor.changeScene(Scenes.Occluded, "test")
+            kosmos.sceneContainerRepository.setTransitionState(
+                flowOf(Idle(currentScene = Scenes.Occluded))
+            )
+            assertThat(underTest.shouldMakeEntireScreenTouchable()).isFalse()
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun entireScreenTouchable_sceneContainerDisabled_isIdleOnOccluded() =
+        kosmos.runTest {
+            assertThat(underTest.shouldMakeEntireScreenTouchable()).isFalse()
+
+            kosmos.sceneInteractor.changeScene(Scenes.Occluded, "test")
+            kosmos.sceneContainerRepository.setTransitionState(
+                flowOf(Idle(currentScene = Scenes.Occluded))
+            )
+
+            assertThat(underTest.shouldMakeEntireScreenTouchable()).isFalse()
+        }
+
+    @Test
     @DisableSceneContainer
     fun entireScreenTouchable_communalVisible() =
         kosmos.runTest {
