@@ -158,7 +158,10 @@ fun DesktopStatusBar(
             }
 
             if (StatusBarPopupChips.isEnabled) {
-                QuickActionChipsContainer(chips = viewModel.popupChips)
+                QuickActionChipsContainer(
+                    chips = viewModel.popupChips,
+                    isDarkProvider = { bounds -> viewModel.areaDark.isDarkTheme(bounds) },
+                )
             }
 
             NotificationsChip(viewModel = viewModel)
