@@ -192,7 +192,7 @@ class AppHeaderControllerTests : ShellTestCase() {
             desktopState = desktopState,
             windowDecorationActions = mockWindowDecorationActions,
             decorWindowContext = context,
-            onCaptionTouchListener = mock(),
+            gestureInterceptor = mock(),
             appToWebRepository = appToWebRepository,
             handleMenuFactory = mockHandleMenuFactory,
             rootTaskDisplayAreaOrganizer = mock(),

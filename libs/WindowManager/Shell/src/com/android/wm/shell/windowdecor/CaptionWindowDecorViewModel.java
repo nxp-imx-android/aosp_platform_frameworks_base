@@ -48,6 +48,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.window.DisplayAreaInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
@@ -377,7 +378,9 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
     }
 
     private class CaptionTouchEventListener implements
-            View.OnClickListener, View.OnTouchListener, DragDetector.MotionEventHandler {
+            View.OnClickListener,
+            WindowDecorLinearLayout.GestureInterceptor,
+            DragDetector.MotionEventHandler {
 
         private final int mTaskId;
         private final WindowContainerToken mTaskToken;
@@ -417,6 +420,11 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
                 mTaskOperations.maximizeTask(taskInfo,
                         rootDisplayAreaInfo.configuration.windowConfiguration.getWindowingMode());
             }
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(ViewGroup v, MotionEvent e) {
+            return false;
         }
 
         @Override

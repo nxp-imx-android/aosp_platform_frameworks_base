@@ -44,6 +44,7 @@ import android.view.PointerIcon;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
@@ -72,8 +73,8 @@ import java.util.function.Supplier;
 
 public class DesktopModeTouchEventListener
         extends GestureDetector.SimpleOnGestureListener
-        implements View.OnClickListener, View.OnTouchListener, View.OnLongClickListener,
-        View.OnGenericMotionListener, DragDetector.MotionEventHandler {
+        implements View.OnClickListener, WindowDecorLinearLayout.GestureInterceptor,
+        View.OnLongClickListener, View.OnGenericMotionListener, DragDetector.MotionEventHandler {
     private static final String TAG = "DesktopModeTouchEventListener";
     private static final long APP_HANDLE_HOLD_TO_DRAG_DURATION_MS = 100;
     private static final long APP_HEADER_HOLD_TO_DRAG_DURATION_MS = 0;
@@ -238,6 +239,26 @@ public class DesktopModeTouchEventListener
         } else if (id == R.id.minimize_window) {
             mWindowDecorationActions.onMinimize(decoration.getTaskInfo());
         }
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(ViewGroup v, MotionEvent e) {
+        final String viewName = getResourceName(v);
+        final WindowDecorationWrapper decoration = mWindowDecorationFinder.apply(mTaskId);
+        if (decoration == null) {
+            debugLogD("onInterceptMotionEvent(%s) but decoration is null, ignoring", viewName);
+            return false;
+        }
+        final ActivityManager.RunningTaskInfo taskInfo = decoration.getTaskInfo();
+        final boolean isAppHandle = !taskInfo.isFreeform();
+        final boolean intercepted =
+                isAppHandle
+                        ? mHandleDragDetector.onInterceptTouchEvent(v, e)
+                        : mHeaderDragDetector.onInterceptTouchEvent(v, e);
+        if (intercepted) {
+            mInputPilferer.pilferPointers(v);
+        }
+        return intercepted;
     }
 
     @Override

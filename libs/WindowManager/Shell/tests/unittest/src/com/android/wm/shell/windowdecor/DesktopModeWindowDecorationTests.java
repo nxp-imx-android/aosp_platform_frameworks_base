@@ -83,6 +83,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceControl;
 import android.view.SurfaceControlViewHost;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.window.WindowContainerTransaction;
@@ -1940,8 +1941,9 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     private static class TestTouchEventListener extends GestureDetector.SimpleOnGestureListener
-            implements View.OnClickListener, View.OnTouchListener, View.OnLongClickListener,
-            View.OnGenericMotionListener, DragDetector.MotionEventHandler {
+            implements View.OnClickListener, WindowDecorLinearLayout.GestureInterceptor,
+            View.OnLongClickListener, View.OnGenericMotionListener,
+            DragDetector.MotionEventHandler {
 
         @Override
         public void onClick(View v) {}
@@ -1953,6 +1955,11 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
 
         @Override
         public boolean onLongClick(View v) {
+            return false;
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(ViewGroup v, MotionEvent event) {
             return false;
         }
 

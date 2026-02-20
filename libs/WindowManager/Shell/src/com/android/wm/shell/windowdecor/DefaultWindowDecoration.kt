@@ -39,7 +39,6 @@ import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.View.OnGenericMotionListener
 import android.view.View.OnLongClickListener
-import android.view.View.OnTouchListener
 import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.INPUT_FEATURE_SPY
@@ -170,7 +169,7 @@ constructor(
         mainScope,
         transitions,
     ) {
-    private lateinit var onTouchListener: OnTouchListener
+    private lateinit var gestureInterceptor: WindowDecorLinearLayout.GestureInterceptor
     private lateinit var onLongClickListener: OnLongClickListener
     private lateinit var onGenericMotionListener: OnGenericMotionListener
     private lateinit var exclusionRegionListener: ExclusionRegionListener
@@ -259,11 +258,11 @@ constructor(
 
     /** Set the listeners for the decorations. */
     fun setListeners(
-        onTouchListener: OnTouchListener,
+        gestureInterceptor: WindowDecorLinearLayout.GestureInterceptor,
         onLongClickListener: OnLongClickListener,
         onGenericMotionListener: OnGenericMotionListener,
     ) {
-        this.onTouchListener = onTouchListener
+        this.gestureInterceptor = gestureInterceptor
         this.onLongClickListener = onLongClickListener
         this.onGenericMotionListener = onGenericMotionListener
     }
@@ -1070,7 +1069,7 @@ constructor(
                     desktopState = desktopState,
                     windowDecorationActions = windowDecorationActions,
                     decorWindowContext = decorWindowContext,
-                    onCaptionTouchListener = onTouchListener,
+                    gestureInterceptor = gestureInterceptor,
                     onLongClickListener = onLongClickListener,
                     onCaptionGenericMotionListener = onGenericMotionListener,
                     appToWebRepository = appToWebRepository,
@@ -1105,7 +1104,7 @@ constructor(
                     desktopState,
                     windowDecorationActions,
                     decorWindowContext,
-                    onTouchListener,
+                    gestureInterceptor,
                     appToWebRepository,
                     recentsTransitionStateListener,
                 )
@@ -1117,7 +1116,7 @@ constructor(
                     windowDecorViewHostSupplier,
                     decorWindowContext,
                     displayController,
-                    onTouchListener = onTouchListener,
+                    onTouchListener = gestureInterceptor,
                     onGenericMotionEventListener = onGenericMotionListener,
                     windowDecorationActions,
                     taskResourceLoader,

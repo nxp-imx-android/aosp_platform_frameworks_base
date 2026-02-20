@@ -90,7 +90,8 @@ class AppHandleViewHolder(
             } else {
                 error("App Handle root view should not be null")
             }
-    private val captionView: View = rootView.requireViewById(R.id.desktop_mode_caption)
+    private val captionView: WindowDecorLinearLayout =
+        rootView.requireViewById(R.id.desktop_mode_caption)
     val captionHandle: ImageButton = rootView.requireViewById(R.id.caption_handle)
     private val inputManager = context.getSystemService(InputManager::class.java)
     private val decorThemeUtil = DecorThemeUtil(context)
