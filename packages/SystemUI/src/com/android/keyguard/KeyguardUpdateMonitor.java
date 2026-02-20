@@ -136,6 +136,7 @@ import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.deviceentry.data.repository.FaceWakeUpTriggersConfig;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor;
+import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor;
 import com.android.systemui.deviceentry.domain.interactor.FaceAuthenticationListener;
 import com.android.systemui.deviceentry.shared.model.AcquiredFaceAuthenticationStatus;
 import com.android.systemui.deviceentry.shared.model.ErrorFaceAuthenticationStatus;
@@ -299,6 +300,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
     private final Provider<CommunalSceneInteractor> mCommunalSceneInteractor;
     private final Provider<KeyguardServiceShowLockscreenInteractor>
             mKeyguardServiceShowLockscreenInteractor;
+    private final Provider<DeviceUnlockedInteractor> mDeviceUnlockedInteractor;
     private final AuthController mAuthController;
     private final UiEventLogger mUiEventLogger;
     private final Set<String> mAllowFingerprintOnOccludingActivitiesFromPackage;
@@ -2264,7 +2266,8 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
             Provider<SceneInteractor> sceneInteractor,
             Provider<CommunalSceneInteractor> communalSceneInteractor,
             Provider<KeyguardServiceShowLockscreenInteractor>
-                    keyguardServiceShowLockscreenInteractor) {
+                    keyguardServiceShowLockscreenInteractor,
+            Provider<DeviceUnlockedInteractor> deviceUnlockedInteractor) {
         mContext = context;
         mSubscriptionManager = subscriptionManager;
         mUserTracker = userTracker;
@@ -2318,6 +2321,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
         mSceneInteractor = sceneInteractor;
         mCommunalSceneInteractor = communalSceneInteractor;
         mKeyguardServiceShowLockscreenInteractor = keyguardServiceShowLockscreenInteractor;
+        mDeviceUnlockedInteractor = deviceUnlockedInteractor;
 
         mHandler = new Handler(mainLooper) {
             @Override
@@ -3979,12 +3983,17 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
 
     private void setForceIsDismissibleKeyguard(boolean forceIsDismissible) {
         Assert.isMainThread();
-        if (mKeyguardShowing && forceIsDismissible) {
-            // never keep the device unlocked if the keyguard was already showing
+        // Only force dismissible if the device isn't already locked
+        boolean isAlreadyLocked =
+                SceneContainerFlag.isEnabled()
+                        ? !mDeviceUnlockedInteractor.get().isUnlocked()
+                        : mKeyguardShowing;
+        if (forceIsDismissible && isAlreadyLocked) {
             mLogger.d("Skip setting forceIsDismissibleKeyguard to true. "
-                    + "Keyguard already showing.");
+                    + "Device was already locked.");
             return;
         }
+
         if (mForceIsDismissible != forceIsDismissible) {
             mForceIsDismissible = forceIsDismissible;
             mLogger.logForceIsDismissibleKeyguard(mForceIsDismissible);

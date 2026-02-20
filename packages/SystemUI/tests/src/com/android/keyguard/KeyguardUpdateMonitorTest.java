@@ -146,6 +146,7 @@ import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.deviceentry.data.repository.FaceWakeUpTriggersConfig;
 import com.android.systemui.deviceentry.data.repository.FaceWakeUpTriggersConfigImpl;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor;
+import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor;
 import com.android.systemui.deviceentry.domain.interactor.FaceAuthenticationListener;
 import com.android.systemui.deviceentry.shared.model.ErrorFaceAuthenticationStatus;
 import com.android.systemui.deviceentry.shared.model.FaceDetectionStatus;
@@ -373,6 +374,8 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     private CommunalSceneInteractor mCommunalSceneInteractor;
     @Mock
     private KeyguardServiceShowLockscreenInteractor mKeyguardServiceShowLockscreenInteractor;
+    @Mock
+    private DeviceUnlockedInteractor mDeviceUnlockedInteractor;
     @Captor
     private ArgumentCaptor<FaceAuthenticationListener> mFaceAuthenticationListener;
 
@@ -2625,8 +2628,22 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
     @Test
     public void forceIsDismissibleKeyguard() {
         primaryAuthNotRequiredByStrongAuthTracker();
+        setIsLockedOrKeyguardShowing(false);
         mKeyguardUpdateMonitor.tryForceIsDismissibleKeyguard();
         Assert.assertTrue(mKeyguardUpdateMonitor.forceIsDismissibleIsKeepingDeviceUnlocked());
+    }
+
+    @Test
+    public void forceIsDismissibleKeyguard_whenKeyguardShowing() {
+        // GIVEN keyguard already showing
+        setIsLockedOrKeyguardShowing(true);
+        primaryAuthNotRequiredByStrongAuthTracker();
+
+        // WHEN tryForceIsDismissibleKeyguard
+        mKeyguardUpdateMonitor.tryForceIsDismissibleKeyguard();
+
+        // THEN forceIsDismissibleIsKeepingDeviceUnlocked is false (wasn't updated to true)
+        Assert.assertFalse(mKeyguardUpdateMonitor.forceIsDismissibleIsKeepingDeviceUnlocked());
     }
 
     @Test
@@ -2694,7 +2711,6 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
                 TelephonyManager.SIM_PIN_ENROLLMENT_STATUS_PLATFORM_MANAGED);
         when(mTelephonyManager.createForSubscriptionId(0)).thenReturn(subInstance);
         assertThat(mKeyguardUpdateMonitor.isSimPinPlatformManaged(0)).isFalse();
-
     }
 
     private Intent defaultSimStateChangedIntent() {
@@ -2879,6 +2895,13 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
         when(mActivityTaskManager.getRootTaskInfo(anyInt(), eq(ACTIVITY_TYPE_STANDARD)))
                 .thenReturn(taskInfo);
     }
+    private void setIsLockedOrKeyguardShowing(boolean isLockedorKeyguardShowing) {
+        if (SceneContainerFlag.isEnabled()) {
+            when(mDeviceUnlockedInteractor.isUnlocked()).thenReturn(!isLockedorKeyguardShowing);
+        } else {
+            mKeyguardUpdateMonitor.setKeyguardShowing(isLockedorKeyguardShowing, false);
+        }
+    }
 
     private void onTaskStackChanged() {
         ArgumentCaptor<TaskStackChangeListener> taskStackChangeListenerCaptor =
@@ -2917,7 +2940,8 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
                     () -> mJavaAdapter,
                     () -> mSceneInteractor,
                     () -> mCommunalSceneInteractor,
-                    () -> mKeyguardServiceShowLockscreenInteractor);
+                    () -> mKeyguardServiceShowLockscreenInteractor,
+                    () -> mDeviceUnlockedInteractor);
             setAlternateBouncerVisibility(false);
             setPrimaryBouncerVisibility(false);
             setStrongAuthTracker(KeyguardUpdateMonitorTest.this.mStrongAuthTracker);
