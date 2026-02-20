@@ -162,17 +162,17 @@ final class AppFunctionMetadataReader {
             @NonNull FutureGlobalSearchSession futureGlobalSearchSession,
             @NonNull AppFunctionName targetAppFunction,
             int userId) {
-        // Unregistered dynamic function is effectively disabled. No need to call app search.
         if (mCache.isDynamicFunction(
-                        targetAppFunction.getPackageName(),
-                        targetAppFunction.getFunctionIdentifier(),
-                        UserHandle.of(userId))
-                && !mMultiUserDynamicAppFunctionRegistry.hasRegistrations(
-                        targetAppFunction.getPackageName(),
-                        targetAppFunction.getFunctionIdentifier(),
-                        UserHandle.of(userId))) {
-            return AndroidFuture.completedFuture(false);
+                targetAppFunction.getPackageName(),
+                targetAppFunction.getFunctionIdentifier(),
+                UserHandle.of(userId))) {
+            return AndroidFuture.completedFuture(
+                    mMultiUserDynamicAppFunctionRegistry.hasRegistrations(
+                            targetAppFunction.getPackageName(),
+                            targetAppFunction.getFunctionIdentifier(),
+                            UserHandle.of(userId)));
         }
+
         SearchSpec appFunctionJoinedStaticWithRuntimeSearchSpec =
                 new SearchSpec.Builder()
                         .addFilterDocumentIds(List.of(targetAppFunction.getQualifiedId()))
