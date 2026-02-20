@@ -145,7 +145,7 @@ public class AgentAuthServiceTest {
 
     @Test
     public void testIsAgentAuthorized_noSession_returnsFalse() {
-        assertThat(mService.isAgentAuthorized(USER_ID, createDeviceId("1"))).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, createDeviceId("1"))).isFalse();
     }
 
     @Test
@@ -156,7 +156,7 @@ public class AgentAuthServiceTest {
         DeviceId deviceId = createDeviceId("123");
         triggerAgentConnected(123, deviceId);
 
-        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, deviceId)).isTrue();
     }
 
     @Test
@@ -169,7 +169,7 @@ public class AgentAuthServiceTest {
         DeviceId deviceId = createDeviceId("123");
         triggerAgentConnected(123, deviceId);
 
-        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, deviceId)).isTrue();
     }
 
     @Test
@@ -182,7 +182,7 @@ public class AgentAuthServiceTest {
         DeviceId deviceId = createDeviceId("123");
         triggerAgentConnected(123, deviceId);
 
-        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, deviceId)).isFalse();
     }
 
     @Test
@@ -194,7 +194,7 @@ public class AgentAuthServiceTest {
         DeviceId deviceId = createDeviceId("123");
         triggerAgentConnected(123, deviceId);
 
-        assertThat(mService.isAgentAuthorized(USER_ID + 1, deviceId)).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID + 1, Context.DEVICE_ID_DEFAULT, deviceId)).isFalse();
     }
 
     @Test
@@ -205,13 +205,13 @@ public class AgentAuthServiceTest {
 
         DeviceId deviceId = createDeviceId("123");
         triggerAgentConnected(123, deviceId);
-        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, deviceId)).isTrue();
 
         // Switch user
         mService.initInBackgroundForUser(USER_ID + 1);
         TestableLooper.get(this).processAllMessages();
 
-        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, deviceId)).isFalse();
     }
 
     @Test
@@ -229,7 +229,7 @@ public class AgentAuthServiceTest {
 
         DeviceId deviceId = createDeviceId("123");
         triggerAgentConnected(123, deviceId);
-        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, deviceId)).isFalse();
 
         // Now simulate strong auth
         when(mBiometricManager.getLastAuthenticationTime(eq(USER_ID), anyInt()))
@@ -238,30 +238,70 @@ public class AgentAuthServiceTest {
         listener.onAuthenticationSucceeded(USER_ID);
         TestableLooper.get(this).processAllMessages();
 
-        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, deviceId)).isTrue();
     }
 
     @Test
     public void testSetOverride_updatesSession() throws RemoteException {
         DeviceId deviceId = createDeviceId("123");
         triggerAgentConnected(123, deviceId);
-        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, deviceId)).isFalse();
 
         // Override to true
         boolean result = mService.setOverride(USER_ID, 123, true);
         assertThat(result).isTrue();
-        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isTrue();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, deviceId)).isTrue();
 
         // Override to false
         result = mService.setOverride(USER_ID, 123, false);
         assertThat(result).isFalse();
-        assertThat(mService.isAgentAuthorized(USER_ID, deviceId)).isFalse();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, deviceId)).isFalse();
     }
 
     @Test
     public void testSetOverride_nonExistentSession_returnsFalse() {
         boolean result = mService.setOverride(USER_ID, 999, true);
         assertThat(result).isFalse();
+    }
+
+    @Test
+    public void testIsAgentAuthorized_localAgent_unlocked_returnsTrue() {
+        // Simulate device is UNLOCKED
+        when(mKeyguardManager.isDeviceLocked(USER_ID, Context.DEVICE_ID_DEFAULT)).thenReturn(false);
+
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, null)).isTrue();
+    }
+
+    @Test
+    public void testIsAgentAuthorized_localAgent_locked_returnsFalse() {
+        // Simulate device is LOCKED
+        when(mKeyguardManager.isDeviceLocked(USER_ID, Context.DEVICE_ID_DEFAULT)).thenReturn(true);
+
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, null)).isFalse();
+    }
+
+    @Test
+    public void testIsAgentAuthorized_localAgent_perDevice_returnsStatusForThatDevice() {
+        int deviceId = 5;
+        // Simulate device 5 is UNLOCKED
+        when(mKeyguardManager.isDeviceLocked(USER_ID, deviceId)).thenReturn(false);
+        // Simulate default device (Context.DEVICE_ID_DEFAULT) is LOCKED
+        when(mKeyguardManager.isDeviceLocked(USER_ID, Context.DEVICE_ID_DEFAULT)).thenReturn(true);
+
+        assertThat(mService.isAgentAuthorized(USER_ID, deviceId, null)).isTrue();
+        assertThat(mService.isAgentAuthorized(USER_ID, Context.DEVICE_ID_DEFAULT, null)).isFalse();
+    }
+
+    @Test
+    public void testIsAgentAuthorized_localAgent_wrongUser_returnsFalse() {
+        // Simulate device is UNLOCKED for current user
+        when(mKeyguardManager.isDeviceLocked(USER_ID, Context.DEVICE_ID_DEFAULT)).thenReturn(false);
+
+        when(mKeyguardManager.isDeviceLocked(USER_ID + 1, Context.DEVICE_ID_DEFAULT)).thenReturn(true);
+        assertThat(mService.isAgentAuthorized(USER_ID + 1, Context.DEVICE_ID_DEFAULT, null)).isFalse();
+
+        when(mKeyguardManager.isDeviceLocked(USER_ID + 1, Context.DEVICE_ID_DEFAULT)).thenReturn(false);
+        assertThat(mService.isAgentAuthorized(USER_ID + 1, Context.DEVICE_ID_DEFAULT, null)).isTrue();
     }
 
     private void triggerAgentConnected(int associationId, DeviceId deviceId) throws RemoteException {
