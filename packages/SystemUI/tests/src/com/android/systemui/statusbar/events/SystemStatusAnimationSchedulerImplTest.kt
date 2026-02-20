@@ -30,7 +30,6 @@ import android.view.Display
 import android.view.View
 import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_FIX_DOT_NOT_VISIBLE_RACE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.AnimatorTestRule
 import com.android.systemui.dump.DumpManager
@@ -111,7 +110,6 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
         fun getParams(): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(
                 Flags.FLAG_LOCATION_INDICATORS_ENABLED,
-                FLAG_FIX_DOT_NOT_VISIBLE_RACE,
             )
         }
     }
@@ -610,7 +608,6 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
     }
 
     @Test
-    @EnableFlags(FLAG_FIX_DOT_NOT_VISIBLE_RACE)
     fun testPrivacyEvent_forceVisibleIsUpdated_whenRescheduledDuringAnimatingState() = runTest {
         // Instantiate class under test with TestScope from runTest
         initializeSystemStatusAnimationScheduler(testScope = this)
@@ -652,7 +649,6 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
     }
 
     @Test
-    @EnableFlags(FLAG_FIX_DOT_NOT_VISIBLE_RACE)
     fun testPrivacyDot_visible_whenRemovedAndRescheduledInDebounceWindow() = runTest {
         initializeSystemStatusAnimationScheduler(testScope = this)
         createAndScheduleFakePrivacyEvent()
@@ -671,7 +667,6 @@ class SystemStatusAnimationSchedulerImplTest(flags: FlagsParameterization) : Sys
     }
 
     @Test
-    @EnableFlags(FLAG_FIX_DOT_NOT_VISIBLE_RACE)
     fun testPrivacyDot_animationCancelled_whenRemovedInDebounceWindow() = runTest {
         initializeSystemStatusAnimationScheduler(testScope = this)
         createAndScheduleFakePrivacyEvent()

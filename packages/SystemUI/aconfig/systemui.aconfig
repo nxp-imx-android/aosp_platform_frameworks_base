@@ -679,16 +679,6 @@ flag {
 }
 
 flag {
-  name: "fix_dot_not_visible_race"
-  namespace: "systemui"
-  description: "Fix privacy indicator dot not visible due to a possible race condition"
-  bug: "447129739"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "fix_notes_role_in_freeform"
     namespace: "note"
     description: "Fix issues related to notes role under the freeform environment."
