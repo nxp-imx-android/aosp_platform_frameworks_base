@@ -296,7 +296,7 @@ class CustomizationProvider : ContentProvider(), ContentProviderContextInitializ
             .apply {
                 interactor.getAffordancePickerRepresentations().forEach { representation ->
                     addRow(
-                        arrayOf(
+                        arrayOf<Any?>(
                             representation.id,
                             representation.name,
                             representation.iconResourceId,
@@ -320,7 +320,7 @@ class CustomizationProvider : ContentProvider(), ContentProviderContextInitializ
             )
             .apply {
                 interactor.getSlotPickerRepresentations().forEach { representation ->
-                    addRow(arrayOf(representation.id, representation.maxSelectedAffordances))
+                    addRow(arrayOf<Any?>(representation.id, representation.maxSelectedAffordances))
                 }
             }
     }
@@ -332,7 +332,7 @@ class CustomizationProvider : ContentProvider(), ContentProviderContextInitializ
             .apply {
                 interactor.getPickerFlags().forEach { flag ->
                     addRow(
-                        arrayOf(
+                        arrayOf<Any?>(
                             flag.name,
                             if (flag.value) {
                                 1
@@ -362,7 +362,7 @@ class CustomizationProvider : ContentProvider(), ContentProviderContextInitializ
             )
             .apply {
                 addRow(
-                    arrayOf(
+                    arrayOf<Any?>(
                         Contract.RuntimeValuesTable.KEY_IS_SHADE_LAYOUT_WIDE,
                         if (shadeModeInteractor.isFullWidthShade.value) 0 else 1,
                     )
