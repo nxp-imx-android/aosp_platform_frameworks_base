@@ -95,6 +95,7 @@ import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskListenerAdapte
 import com.android.wm.shell.crashhandling.ShellCrashHandler;
 import com.android.wm.shell.dagger.back.ShellBackAnimationModule;
 import com.android.wm.shell.dagger.desktop.DesktopModule;
+import com.android.wm.shell.dagger.hierarchy.ContainerHierarchyDependency;
 import com.android.wm.shell.dagger.hierarchy.HandheldContainersModule;
 import com.android.wm.shell.dagger.pinnedlayer.PinnedLayerModule;
 import com.android.wm.shell.dagger.pip.PipModule;
@@ -2173,7 +2174,8 @@ public abstract class WMShellModule {
             Lazy<DragToBubbleController> dragToBubbleControllerLazy,
             @ShellMainThread ShellExecutor mainExecutor,
             DesktopState desktopState,
-            BubbleFeatureConfig bubbleFeatureConfig) {
+            BubbleFeatureConfig bubbleFeatureConfig,
+            Optional<ContainerHierarchyDependency> containerHierarchyDependency) {
         return new DragAndDropController(
                 context,
                 shellInit,
