@@ -393,6 +393,12 @@ public class CapabilityControllerTest {
                 PROCESS_CAPABILITY_IMPLICIT_CPU_TIME);
     }
 
+    @Test
+    public void testDefaultProviderBindingEdge_GrantsOnlyBfsl() {
+        final TestProviderBindingEdge edge = new TestProviderBindingEdge();
+        assertEquals(PROCESS_CAPABILITY_BFSL, edge.evaluateCapabilityFilter());
+    }
+
     private static class TestServiceRecord {
         final boolean mIsForegroundService;
         final boolean mIsFgsAllowedWiuForCapabilities;
@@ -640,6 +646,12 @@ public class CapabilityControllerTest {
                         mHasForegroundActivities, mHasExecutingServices, mIsReceivingBroadcast,
                         mHasIntrinsicImplicitCpuTime, mMaxAdj, mProcState, mServices);
             }
+        }
+    }
+
+    private static class TestProviderBindingEdge extends ProviderBindingEdge {
+        TestProviderBindingEdge() {
+            super(mock(ContentProviderConnectionInternal.class));
         }
     }
 }
