@@ -73,68 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Du kannst die Uhrzeit, Fotos oder Wetterinformationen anzeigen lassen, während dein Smartphone lädt"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Du kannst die Uhrzeit, Fotos oder Wetterinformationen anzeigen lassen, während dein Tablet lädt"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Du kannst die Uhrzeit, Fotos oder Wetterinformationen anzeigen lassen, während dein Gerät lädt"</string>
-    <!-- no translation found for accessibility_retry_face_auth (92100916134164459) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (5630058255754932537) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_title (1533872824718008968) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_title (5218710819864377084) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face (2261934158598458578) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face (2066067154465078068) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_alt_1 (1268255053915789297) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_alt_1 (1514178179652703156) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_sfps (2492608775606333432) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_sfps (7918648092655463233) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_name (5965443249759045602) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_name (3705121888554395242) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_title (2719988247243428771) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_title (4217639465392210803) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_content (7290782487464426692) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_content (7718739738665960268) -->
-    <skip />
-    <!-- no translation found for face_reenroll_failure_dialog_content (6318784230085101323) -->
-    <skip />
-    <!-- no translation found for face_reenroll_failure_dialog_content (1206573626798969692) -->
-    <skip />
-    <!-- no translation found for keyguard_face_unlock_unavailable (3188895702987679056) -->
-    <skip />
-    <!-- no translation found for keyguard_face_unlock_unavailable (7088502865328130614) -->
-    <skip />
-    <!-- no translation found for accesssibility_keyguard_retry (5017097587017783548) -->
-    <skip />
-    <!-- no translation found for accesssibility_keyguard_retry (5084769005671288179) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_swipe (1358318947548832086) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_swipe (4016445068612817741) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (4883782574761031564) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (7268520979450633978) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press (7293890116185253825) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press (6158498006084899116) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press_alt_1 (6269966346565076951) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press_alt_1 (1612731733090835687) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock (5544493091450184889) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock (5348626087316804379) -->
-    <skip />
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"Gesichtsentsperrung wiederholen"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"Erneut mit Gesicht entsperren"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"Entsperrung per Gesichtserkennung neu einrichten"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"Entsperren per Gesichtserkennung neu einrichten"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"Per Gesichtserkennung entsperrt"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"Mit Gesichtserkennung entsperrt"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"Per Gesichtserkennung entsperrt. Tippe, um fortzufahren."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"Mit Gesichtserkennung entsperrt. Tippe, um fortzufahren."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"Per Gesichtserkennung entsperrt. Tippe, um fortzufahren."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"Mit Gesichtserkennung entsperrt. Tippe, um fortzufahren."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"Entsperrung per Gesichtserkennung"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"Entsperren per Gesichtserkennung"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"Entsperrung per Gesichtserkennung einrichten"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"Entsperren per Gesichtserkennung einrichten"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"Wenn du die Entsperrung per Gesichtserkennung neu einrichtest, wird dein aktuelles Gesichtsmodell gelöscht.\n\nDu musst diese Funktion neu einrichten, damit du dein Smartphone weiterhin per Gesichtserkennung entsperren kannst."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"Wenn du die Entsperrung per Gesichtserkennung neu einrichtest, wird dein aktuelles Gesichtsmodell gelöscht.\n\nDu musst diese Funktion neu einrichten, damit du dein Gerät weiterhin per Gesichtserkennung entsperren kannst."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"Die Entsperrung per Gesichtserkennung konnte nicht eingerichtet werden. Rufe die Einstellungen auf und versuche es noch einmal."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"Das Entsperren per Gesichtserkennung konnte nicht eingerichtet werden. Versuche es noch einmal in den Einstellungen."</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"Entsperrung per Gesichtserkennung nicht verfügbar"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"Entsperren per Gesichtserkennung nicht verfügbar"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"Nach oben wischen, um erneut per Gesicht zu entsperren"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"Nach oben wischen, um erneut mit Gesicht zu entsperren"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"Per Gesichtserkennung entsperrt. Zum Öffnen nach oben wischen."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"Mit Gesichtserkennung entsperrt. Zum Öffnen nach oben wischen."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"Per Gesichtserkennung entsperrt. Drücke auf „Bestätigen“."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"Mit Gesichtserkennung entsperrt. Drücke auf „Bestätigen“."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"Per Gesicht entsperrt. Zum Öffnen auf Entsperrsymbol tippen."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"Mit Gesicht entsperrt. Zum Öffnen auf Entsperrsymbol tippen."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"Per Gesichtserkennung entsperrt. Tippe zum Öffnen."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"Mit Gesichtserkennung entsperrt. Tippe zum Öffnen."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"Per Gesichtserkennung entsperrt"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"Mit Gesichtserkennung entsperrt"</string>
 </resources>

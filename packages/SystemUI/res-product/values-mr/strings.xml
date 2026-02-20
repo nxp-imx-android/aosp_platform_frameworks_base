@@ -73,68 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"तुमचा फोन चार्ज होत असताना घड्याळ, फोटो किंवा हवामान दाखवा"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"तुमचा टॅबलेट चार्ज होत असताना घड्याळ, फोटो किंवा हवामान दाखवा"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"तुमचे डिव्हाइस चार्ज होत असताना घड्याळ, फोटो किंवा हवामान दाखवा"</string>
-    <!-- no translation found for accessibility_retry_face_auth (92100916134164459) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (5630058255754932537) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_title (1533872824718008968) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_title (5218710819864377084) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face (2261934158598458578) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face (2066067154465078068) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_alt_1 (1268255053915789297) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_alt_1 (1514178179652703156) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_sfps (2492608775606333432) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_sfps (7918648092655463233) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_name (5965443249759045602) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_name (3705121888554395242) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_title (2719988247243428771) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_title (4217639465392210803) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_content (7290782487464426692) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_content (7718739738665960268) -->
-    <skip />
-    <!-- no translation found for face_reenroll_failure_dialog_content (6318784230085101323) -->
-    <skip />
-    <!-- no translation found for face_reenroll_failure_dialog_content (1206573626798969692) -->
-    <skip />
-    <!-- no translation found for keyguard_face_unlock_unavailable (3188895702987679056) -->
-    <skip />
-    <!-- no translation found for keyguard_face_unlock_unavailable (7088502865328130614) -->
-    <skip />
-    <!-- no translation found for accesssibility_keyguard_retry (5017097587017783548) -->
-    <skip />
-    <!-- no translation found for accesssibility_keyguard_retry (5084769005671288179) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_swipe (1358318947548832086) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_swipe (4016445068612817741) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (4883782574761031564) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (7268520979450633978) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press (7293890116185253825) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press (6158498006084899116) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press_alt_1 (6269966346565076951) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press_alt_1 (1612731733090835687) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock (5544493091450184889) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock (5348626087316804379) -->
-    <skip />
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"फेस अनलॉक पुन्हा वापरून पहा"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"चेहरा वापरून अनलॉक करण्याचा पुन्हा प्रयत्न करा"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"फेस अनलॉक पुन्हा सेट करा"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"चेहरा वापरून अनलॉक करणे पुन्हा सेट करा"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"चेहरा वापरून अनलॉक केले"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"चेहरा वापरून अनलॉक केले"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"चेहरा वापरून अनलॉक केले. पुढे सुरू ठेवण्यासाठी प्रेस करा."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"चेहरा वापरून अनलॉक केले. पुढे सुरू ठेवण्यासाठी प्रेस करा."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"चेहरा वापरून अनलॉक केले. पुढे सुरू ठेवण्यासाठी टॅप करा."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"चेहरा वापरून अनलॉक केले. पुढे सुरू ठेवण्यासाठी टॅप करा."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"फेस अनलॉक"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"चेहरा वापरून अनलॉक करणे"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"फेस अनलॉक सेट करा"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"चेहरा वापरून अनलॉक करणे सेट करा"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"फेस अनलॉक पुन्हा सेट करण्यासाठी, तुमचे सद्य फेस मॉडेल हटवले जाईल.\n\nतुमचा फोन अनलॉक करण्यासाठी तुमचा चेहरा वापरण्याकरिता तुम्हाला हे वैशिष्ट्य पुन्हा सेट करावे लागेल."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"चेहरा वापरून अनलॉक करणे पुन्हा सेट करण्यासाठी, तुमचे सद्य फेस मॉडेल हटवले जाईल.\n\nतुमचे डिव्हाइस अनलॉक करण्यासाठी तुमचा चेहरा वापरण्याकरिता तुम्हाला हे वैशिष्ट्य पुन्हा सेट करावे लागेल."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"फेस अनलॉक सेट करता आले नाही. सेटिंग्ज वर जा आणि पुन्हा प्रयत्न करा."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"चेहरा वापरून अनलॉक करणे सेट करता आले नाही. सेटिंग्ज मध्ये पुन्हा प्रयत्न करा."</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"फेस अनलॉक उपलब्ध नाही"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"चेहरा वापरून अनलॉक करणे उपलब्ध नाही"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"फेस अनलॉक पुन्हा वापरून पाहण्यासाठी वर स्‍वाइप करा"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"पुन्हा चेहरा वापरून अनलॉक करण्यासाठी वर स्‍वाइप करा"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"चेहरा वापरून अनलॉक केले. वर स्वाइप करून उघडा."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"चेहरा वापरून अनलॉक केले. वर स्वाइप करून उघडा."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"चेहरा वापरून अनलॉक केले. कन्फर्म करा प्रेस करून सुरू ठेवा."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"चेहरा वापरून अनलॉक केले. कन्फर्म करा प्रेस करून सुरू ठेवा."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"चेहरा वापरून अनलॉक केले. अनलॉक करा आयकन प्रेस करून उघडा."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"चेहरा वापरून अनलॉक केले. अनलॉक करा आयकन प्रेस करून उघडा."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"चेहरा वापरून अनलॉक केले. प्रेस करून उघडा."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"चेहरा वापरून अनलॉक केले. प्रेस करून उघडा."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"चेहरा वापरून अनलॉक केले"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"चेहरा वापरून अनलॉक केले"</string>
 </resources>
