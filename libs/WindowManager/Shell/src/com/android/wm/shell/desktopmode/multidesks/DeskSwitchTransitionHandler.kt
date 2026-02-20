@@ -32,6 +32,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.DesktopWallpaperActivity
+import com.android.wm.shell.desktopmode.SnapController
 import com.android.wm.shell.desktopmode.multidesks.animation.DeskSwitchAnimationUtils
 import com.android.wm.shell.desktopmode.multidesks.animation.DeskSwitchAnimationUtils.FADE_IN_SPRING_CONFIG
 import com.android.wm.shell.desktopmode.multidesks.animation.DeskSwitchAnimationUtils.FADE_IN_START_FRACTION
@@ -54,6 +55,7 @@ class DeskSwitchTransitionHandler(
     private val transactionProvider: () -> SurfaceControl.Transaction,
     private val shellMainHandler: Handler,
     private val interactionJankMonitor: InteractionJankMonitor,
+    private val snapController: SnapController,
 ) : Transitions.TransitionHandler {
 
     constructor(
@@ -64,6 +66,7 @@ class DeskSwitchTransitionHandler(
         displayController: DisplayController,
         shellMainHandler: Handler,
         interactionJankMonitor: InteractionJankMonitor,
+        snapController: SnapController,
     ) : this(
         context = context,
         desktopUserRepositories = desktopUserRepositories,
@@ -73,6 +76,7 @@ class DeskSwitchTransitionHandler(
         transactionProvider = { SurfaceControl.Transaction() },
         shellMainHandler = shellMainHandler,
         interactionJankMonitor = interactionJankMonitor,
+        snapController = snapController,
     )
 
     private val pendingTransitions = mutableMapOf<IBinder, PendingSwitch>()
@@ -211,6 +215,10 @@ class DeskSwitchTransitionHandler(
             runningAnimationCount--
             if (runningAnimationCount <= 0) {
                 logD("All animations finished, finishing transition")
+                snapController.onDeskSwitchAnimationEnded(
+                    changes.displayId,
+                    changes.toDeskId
+                )
                 finishTransaction.apply {
                     changes.fromDeskTasks.forEach { c -> setAlpha(c.leash, 0f) }
                     changes.toDeskTasks.forEach { c -> setAlpha(c.leash, 1f) }
@@ -226,6 +234,11 @@ class DeskSwitchTransitionHandler(
 
         // Now actually start the animations.
         logD("startAnimation: changes=%s", changes)
+        snapController.onDeskSwitchAnimationStarting(
+            changes.displayId,
+            changes.fromDeskId,
+            changes.toDeskId
+        )
         val tx = transactionProvider()
         // Animate the bounds animation, which triggers fade-in/out animations within it.
         PhysicsAnimator.getInstance(
@@ -417,6 +430,8 @@ class DeskSwitchTransitionHandler(
             fromDeskPosition = fromDeskPosition,
             toDeskPosition = toDeskPosition,
             totalDesks = repository.getNumberOfDesks(displayId),
+            fromDeskId = fromDeskId,
+            toDeskId = toDeskId,
         )
     }
 
@@ -438,11 +453,11 @@ class DeskSwitchTransitionHandler(
         val fromDeskPosition: Int,
         val toDeskPosition: Int,
         val totalDesks: Int,
+        val fromDeskId: Int,
+        val toDeskId: Int,
     ) {
         override fun toString(): String {
-            val fromDeskId = fromDesk?.taskInfo?.taskId
             val fromDeskTaskIds = fromDeskTasks.mapNotNull { it.taskInfo?.taskId }
-            val toDeskId = toDesk?.taskInfo?.taskId
             val toDeskTaskIds = toDeskTasks.mapNotNull { it.taskInfo?.taskId }
             return "DeskSwitchChanges(displayId=$displayId, " +
                 "fromDesk=$fromDeskId with tasks=$fromDeskTaskIds, " +
