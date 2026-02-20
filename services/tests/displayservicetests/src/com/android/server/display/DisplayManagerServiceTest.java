@@ -18,13 +18,11 @@ package com.android.server.display;
 
 import static android.Manifest.permission.ADD_ALWAYS_UNLOCKED_DISPLAY;
 import static android.Manifest.permission.ADD_TRUSTED_DISPLAY;
-import static android.Manifest.permission.CAPTURE_SECURE_VIDEO_OUTPUT;
 import static android.Manifest.permission.CAPTURE_VIDEO_OUTPUT;
-import static android.Manifest.permission.CONFIGURE_WIFI_DISPLAY;
 import static android.Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS;
+import static android.Manifest.permission.CONFIGURE_WIFI_DISPLAY;
 import static android.Manifest.permission.MANAGE_DISPLAYS;
 import static android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE;
-import static android.Manifest.permission.READ_FRAME_BUFFER;
 import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
 import static android.hardware.display.DisplayManager.BRIGHTNESS_UNIT_NITS;
@@ -356,10 +354,6 @@ public class DisplayManagerServiceTest {
                 long getDefaultDisplayDelayTimeout() {
                     return SHORT_DEFAULT_DISPLAY_TIMEOUT_MILLIS;
                 }
-
-                IMediaProjectionManager getProjectionService() {
-                    return mMockProjectionService;
-                }
             };
 
     class BasicInjector extends DisplayManagerService.Injector {
@@ -382,7 +376,7 @@ public class DisplayManagerServiceTest {
                         @Override
                         public IBinder createDisplay(String name, boolean secure,
                                 boolean optimizeForPower, String uniqueId, int ownerUid,
-                                boolean includeContentFromAllUids, float requestedRefreshRate) {
+                                float requestedRefreshRate) {
                             return mMockDisplayToken;
                         }
 
@@ -583,7 +577,6 @@ public class DisplayManagerServiceTest {
         if (mDisplayManager != null) {
             mDisplayManager.stop();
         }
-        DisplayManagerService.IS_VIRTUAL_DISPLAY_CONTENT_FILTER_DISABLED = true;
         flushHandlers();
         mPowerLooperManager.release();
         mDisplayLooperManager.release();
@@ -4332,7 +4325,7 @@ public class DisplayManagerServiceTest {
         verify(mMockVirtualDisplayAdapter).createVirtualDisplayLocked(eq(mMockAppToken),
                 /* projection= */ isNull(), eq(callingUid), eq(PACKAGE_NAME),
                 eq("virtual:" + PACKAGE_NAME + ":" + uniqueId), eq(surface), /* flags= */ anyInt(),
-                eq(config), /* includeContentFromAllUids= */ eq(true));
+                eq(config));
 
         bs.releaseVirtualDisplay(mMockAppToken);
         verify(mMockVirtualDisplayAdapter).releaseVirtualDisplayLocked(binder);
@@ -6216,86 +6209,5 @@ public class DisplayManagerServiceTest {
 
         // Verify: onDisplayEvent was NOT called at all
         verify(mockCallback, never()).onDisplayEvent(anyInt(), anyInt());
-    }
-
-    @Test
-    public void testCreateVirtualDisplay_shouldIncludeContentFromAllUids() throws Exception {
-        DisplayManagerService.IS_VIRTUAL_DISPLAY_CONTENT_FILTER_DISABLED = false;
-        mDisplayManager = new DisplayManagerService(mContext, mShortMockedInjector);
-        registerDefaultDisplays(mDisplayManager);
-        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
-
-        // Capturing permission granted. -> includeContentFromAllUids = true
-        IMediaProjection projection = mock(IMediaProjection.class);
-        doReturn(false).when(projection).isValid();
-        doReturn(true).when(mMockProjectionService).isCurrentProjection(eq(projection));
-        when(projection.applyVirtualDisplayFlags(anyInt())).thenAnswer(i -> i.getArguments()[0]);
-        VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
-                VIRTUAL_DISPLAY_NAME, 600, 800, 320);
-        builder.setUniqueId("uniqueId1");
-        builder.setFlags(VIRTUAL_DISPLAY_FLAG_PRESENTATION);
-        when(mContext.checkCallingPermission(CAPTURE_VIDEO_OUTPUT))
-                .thenReturn(PackageManager.PERMISSION_GRANTED);
-        bs.createVirtualDisplay(builder.build(), mMockAppToken, projection, PACKAGE_NAME);
-        verify(mMockVirtualDisplayAdapter).createVirtualDisplayLocked(
-                any(), any(), anyInt(), any(), any(), any(), anyInt(), any(),
-                eq(true));
-
-        // Capturing permission denied. -> includeContentFromAllUids = false
-        clearInvocations(mMockVirtualDisplayAdapter);
-        doReturn(false).when(projection).isValid();
-        when(mContext.checkCallingPermission(CAPTURE_VIDEO_OUTPUT))
-                .thenReturn(PackageManager.PERMISSION_DENIED);
-        when(mContext.checkCallingPermission(CAPTURE_SECURE_VIDEO_OUTPUT))
-                .thenReturn(PackageManager.PERMISSION_DENIED);
-        when(mContext.checkCallingPermission(READ_FRAME_BUFFER))
-                .thenReturn(PackageManager.PERMISSION_DENIED);
-        when(projection.canProjectVideo()).thenReturn(true);
-        builder.setUniqueId("uniqueId2");
-        builder.setFlags(VIRTUAL_DISPLAY_FLAG_PRESENTATION);
-        bs.createVirtualDisplay(builder.build(), mMockAppToken, projection, PACKAGE_NAME);
-        verify(mMockVirtualDisplayAdapter).createVirtualDisplayLocked(
-                any(), any(), anyInt(), any(), any(), any(), anyInt(), any(),
-                eq(false));
-    }
-
-    @Test
-    public void testCreateVirtualDisplay_userPermissionGranted() throws Exception {
-        DisplayManagerService.IS_VIRTUAL_DISPLAY_CONTENT_FILTER_DISABLED = false;
-        mDisplayManager = new DisplayManagerService(mContext, mShortMockedInjector);
-        registerDefaultDisplays(mDisplayManager);
-        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
-
-        IMediaProjection projection = mock(IMediaProjection.class);
-        when(mMockProjectionService.isCurrentProjection(eq(projection))).thenReturn(true);
-        when(projection.applyVirtualDisplayFlags(anyInt())).thenAnswer(i -> i.getArguments()[0]);
-        VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
-                VIRTUAL_DISPLAY_NAME, 600, 800, 320);
-        builder.setUniqueId("uniqueId_userPermissionGranted");
-        builder.setFlags(VIRTUAL_DISPLAY_FLAG_PRESENTATION);
-
-        // No capturing permissions granted.
-        when(mContext.checkCallingPermission(CAPTURE_VIDEO_OUTPUT))
-                .thenReturn(PackageManager.PERMISSION_DENIED);
-        when(mContext.checkCallingPermission(CAPTURE_SECURE_VIDEO_OUTPUT))
-                .thenReturn(PackageManager.PERMISSION_DENIED);
-        when(mContext.checkCallingPermission(READ_FRAME_BUFFER))
-                .thenReturn(PackageManager.PERMISSION_DENIED);
-
-        // userPermissionGranted = true -> includeContentFromAllUids = true
-        when(projection.isValid()).thenReturn(true);
-
-        bs.createVirtualDisplay(builder.build(), mMockAppToken, projection, PACKAGE_NAME);
-        verify(mMockVirtualDisplayAdapter).createVirtualDisplayLocked(
-                any(), any(), anyInt(), any(), any(), any(), anyInt(), any(),
-                eq(true));
-
-        // userPermissionGranted = false -> includeContentFromAllUids = false
-        clearInvocations(mMockVirtualDisplayAdapter);
-
-        bs.createVirtualDisplay(builder.build(), mMockAppToken, null, PACKAGE_NAME);
-        verify(mMockVirtualDisplayAdapter).createVirtualDisplayLocked(
-                any(), isNull(), anyInt(), any(), any(), any(), anyInt(), any(),
-                eq(false));
     }
 }
