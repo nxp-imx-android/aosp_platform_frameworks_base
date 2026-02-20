@@ -18,7 +18,7 @@ package android.app.appfunctions;
 
 import android.annotation.NonNull;
 import android.content.pm.ParceledListSlice;
-import android.os.DedupBinderHelper;
+import android.os.ParcelDedupHelper;
 import android.os.Parcel;
 import android.os.Parcel.ReadWriteHelper;
 import android.os.Parcelable.Creator;
@@ -40,6 +40,11 @@ public final class AppFunctionActivityStateList
 
     public AppFunctionActivityStateList(Parcel p) {
         super(p, AppFunctionActivityStateList.class.getClassLoader());
+    }
+
+    @Override
+    protected ReadWriteHelper createReadWriteHelper() {
+        return new ParcelDedupHelper.Builder().dedupString8(true).build();
     }
 
     @NonNull
