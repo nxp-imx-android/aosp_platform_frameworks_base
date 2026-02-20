@@ -455,7 +455,7 @@ constructor(
                         loggingReason = "device is starting to sleep",
                         transitionKey = ToAlwaysOnDisplay.takeIf { isAodAvailable },
                         keyguardState = getKeyguardStateForWakefulness(isAwake = false),
-                        freezeAndAnimateToCurrentState = !isAodAvailable,
+                        freezeAndAnimateToCurrentState = true,
                     )
                 } else {
                     if (wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value) {
