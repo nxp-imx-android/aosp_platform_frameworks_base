@@ -1604,6 +1604,7 @@ public abstract class WMShellModule {
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             DisplayController displayController,
+            Optional<PinnedLayerController> pinnedLayerController,
             DesktopState desktopState,
             ShellInit shellInit) {
         return desktopUserRepositories.flatMap(
@@ -1616,6 +1617,7 @@ public abstract class WMShellModule {
                                         desktopMixedTransitionHandler.get(),
                                         desktopWallpaperActivityTokenProvider,
                                         displayController,
+                                        pinnedLayerController.orElse(null),
                                         desktopState,
                                         shellInit)));
     }
