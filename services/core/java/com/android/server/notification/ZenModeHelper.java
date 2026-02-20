@@ -47,6 +47,7 @@ import static android.service.notification.ZenModeConfig.isImplicitRuleId;
 
 import static com.android.internal.util.FrameworkStatsLog.DND_MODE_RULE;
 import static com.android.internal.util.Preconditions.checkArgument;
+import static com.android.media.audio.Flags.filterCallOnListenerHint;
 import static com.android.server.notification.Flags.preventZenDeviceEffectsWhileDriving;
 
 import static java.util.Objects.requireNonNull;
@@ -254,6 +255,12 @@ public class ZenModeHelper {
             ValidateNotificationPeople validator, int contactsTimeoutMs, float timeoutAffinity,
             int callingUid) {
         synchronized (mConfigLock) {
+            if (filterCallOnListenerHint()
+                    && (mSuppressedEffects & SUPPRESSED_EFFECT_CALLS) != 0) {
+                // equivalent to ZEN_MODE_NO_INTERRUPTION, nothing gets through
+                if (DEBUG) Log.d(TAG, "filtering call due to mSuppressedEffects");
+                return false;
+            }
             return ZenModeFiltering.matchesCallFilter(mContext, mZenMode, mConsolidatedPolicy,
                     userHandle, extras, validator, contactsTimeoutMs, timeoutAffinity,
                     callingUid);
