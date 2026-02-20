@@ -25,7 +25,6 @@ import static android.Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS;
 import static android.Manifest.permission.INTERNAL_SYSTEM_WINDOW;
 import static android.Manifest.permission.MANAGE_DISPLAYS;
 import static android.Manifest.permission.MODIFY_HDR_CONVERSION_MODE;
-import static android.Manifest.permission.READ_FRAME_BUFFER;
 import static android.Manifest.permission.RESTRICT_DISPLAY_MODES;
 import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED;
@@ -310,8 +309,6 @@ public final class DisplayManagerService extends SystemService {
     private static final HdrConversionMode HDR_CONVERSION_MODE_UNSUPPORTED = new HdrConversionMode(
             HDR_CONVERSION_UNSUPPORTED);
     private static final int[] ARRAY_DEFAULT_DISPLAY_ONLY = new int[] { Display.DEFAULT_DISPLAY };
-    @VisibleForTesting
-    static boolean IS_VIRTUAL_DISPLAY_CONTENT_FILTER_DISABLED = true;
 
     private final Context mContext;
     private final DisplayManagerHandler mHandler;
@@ -1951,10 +1948,6 @@ public final class DisplayManagerService extends SystemService {
         return false;
     }
 
-    private boolean checkCallingPermissionWithoutLog(String permission) {
-        return mContext.checkCallingPermission(permission) == PackageManager.PERMISSION_GRANTED;
-    }
-
     private int createVirtualDisplayInternal(VirtualDisplayConfig virtualDisplayConfig,
             IVirtualDisplayCallback callback, IMediaProjection projection,
             IVirtualDevice virtualDevice, DisplayWindowPolicyController dwpc, String packageName,
@@ -2076,7 +2069,6 @@ public final class DisplayManagerService extends SystemService {
         // MediaProjection instance. Don't start recording if so; MediaProjectionManagerService
         // decides how to respond based on the target SDK.
         boolean waitForPermissionConsent = false;
-        boolean userPermissionGranted = false;
         final long firstToken = Binder.clearCallingIdentity();
         try {
             if (projection != null) {
@@ -2092,8 +2084,6 @@ public final class DisplayManagerService extends SystemService {
                     // Declare that mirroring shouldn't begin until user reviews the permission
                     // dialog.
                     waitForPermissionConsent = true;
-                } else {
-                    userPermissionGranted = true;
                 }
                 flags = projection.applyVirtualDisplayFlags(flags);
             }
@@ -2203,9 +2193,6 @@ public final class DisplayManagerService extends SystemService {
             throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
         }
 
-        boolean includeContentFromAllUids =
-                shouldIncludeContentFromAllUids(callingUid, userPermissionGranted);
-
         final long secondToken = Binder.clearCallingIdentity();
         try {
             final int displayId;
@@ -2251,8 +2238,7 @@ public final class DisplayManagerService extends SystemService {
                                 dwpc,
                                 surface,
                                 flags,
-                                virtualDisplayConfig,
-                                includeContentFromAllUids);
+                                virtualDisplayConfig);
                 if (displayId != Display.INVALID_DISPLAY && virtualDevice != null && dwpc != null) {
                     mDisplayWindowPolicyControllers.put(
                             displayId, Pair.create(virtualDevice, dwpc));
@@ -2343,23 +2329,6 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
-    private boolean shouldIncludeContentFromAllUids(int callingUid,
-            boolean userPermissionGranted) {
-        // Skip UID and permission checks if virtual display content filter is disabled.
-        if (IS_VIRTUAL_DISPLAY_CONTENT_FILTER_DISABLED) {
-            return true;
-        }
-        if (callingUid == Process.SYSTEM_UID) {
-            return true;
-        }
-        if (userPermissionGranted) {
-            return true;
-        }
-        return checkCallingPermissionWithoutLog(CAPTURE_VIDEO_OUTPUT)
-              || checkCallingPermissionWithoutLog(CAPTURE_SECURE_VIDEO_OUTPUT)
-              || checkCallingPermissionWithoutLog(READ_FRAME_BUFFER);
-    }
-
     private int createVirtualDisplayLocked(
             IVirtualDisplayCallback callback,
             IMediaProjection projection,
@@ -2370,8 +2339,7 @@ public final class DisplayManagerService extends SystemService {
             DisplayWindowPolicyController dwpc,
             Surface surface,
             int flags,
-            VirtualDisplayConfig virtualDisplayConfig,
-            boolean includeContentFromAllUids) {
+            VirtualDisplayConfig virtualDisplayConfig) {
         if (mVirtualDisplayAdapter == null) {
             Slog.w(
                     TAG,
@@ -2383,7 +2351,7 @@ public final class DisplayManagerService extends SystemService {
         Slog.d(TAG, "Virtual Display: creating DisplayDevice with VirtualDisplayAdapter");
         DisplayDevice device = mVirtualDisplayAdapter.createVirtualDisplayLocked(
                 callback, projection, callingUid, packageName, uniqueId, surface, flags,
-                virtualDisplayConfig, includeContentFromAllUids);
+                virtualDisplayConfig);
         if (device == null) {
             Slog.w(TAG, "Virtual Display: VirtualDisplayAdapter failed to create DisplayDevice");
             return -1;
