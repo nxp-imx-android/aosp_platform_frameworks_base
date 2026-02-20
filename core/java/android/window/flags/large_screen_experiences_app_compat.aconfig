@@ -120,16 +120,6 @@ flag {
 }
 
 flag {
-  name: "app_compat_refactoring_skip_starting_window_letterbox"
-  namespace: "large_screen_experiences_app_compat"
-  description: "Skip letterboxing on starting window if not related to the current activity."
-  bug: "431928994"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "letterbox_background_wallpaper"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether the blurred letterbox wallpaper background is enabled by default"
