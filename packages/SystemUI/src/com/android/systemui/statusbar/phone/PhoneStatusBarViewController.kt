@@ -193,8 +193,10 @@ private constructor(
         }
 
         addCursorSupportToIconContainers()
-        mView.setLongPressGestureDetector(statusBarLongPressGestureDetector.get())
 
+        if (!StatusBarEventForwardingModernization.isEnabled) {
+            mView.setLongPressGestureDetector(statusBarLongPressGestureDetector.get())
+        }
         progressProvider?.setReadyToHandleTransition(true)
         configurationController.addCallback(configurationListener)
     }

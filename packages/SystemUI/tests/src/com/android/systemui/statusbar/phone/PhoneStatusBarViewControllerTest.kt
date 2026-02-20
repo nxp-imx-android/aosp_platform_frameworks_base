@@ -25,6 +25,7 @@ import android.content.res.mainResources
 import android.graphics.Insets
 import android.graphics.Region
 import android.hardware.display.DisplayManagerGlobal
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
@@ -240,6 +241,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleTouchEventFromStatusBar_panelsNotEnabled_returnsFalseAndNoViewEvent() {
         whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(false)
         val returnVal =
@@ -249,6 +251,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleTouchEventFromStatusBar_viewNotEnabled_returnsTrueAndNoViewEvent() {
         whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
         whenever(shadeViewController.isViewEnabled).thenReturn(false)
@@ -259,6 +262,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleTouchEventFromStatusBar_viewNotEnabledButIsMoveEvent_viewReceivesEvent() {
         whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
         whenever(shadeViewController.isViewEnabled).thenReturn(false)
@@ -274,6 +278,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleTouchEventFromStatusBar_panelAndViewEnabled_viewReceivesEvent() {
         whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
         whenever(shadeViewController.isViewEnabled).thenReturn(true)
@@ -289,6 +294,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleTouchEventFromStatusBar_topEdgeTouch_viewNeverReceivesEvent() {
         whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
         whenever(panelExpansionInteractor.isFullyCollapsed).thenReturn(true)
@@ -300,6 +306,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleTouchEventFromStatusBar_touchOnPrimaryDisplay_shadeReceivesEvent() {
         whenever(centralSurfacesImpl.commandQueuePanelsEnabled).thenReturn(true)
         whenever(shadeViewController.isViewEnabled).thenReturn(true)
@@ -315,6 +322,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleTouchEventFromStatusBar_touchOnSecondaryDisplay_interactionsAllowed_shadeReceivesEvent() {
         attachToWindow(viewForSecondaryDisplay)
         controller = createAndInitController(viewForSecondaryDisplay)
@@ -337,6 +345,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleTouchEventFromStatusBar_touchOnSecondaryDisplay_interactionsNotAllowed_shadeDoesNotReceiveEvent() {
         attachToWindow(viewForSecondaryDisplay)
         controller = createAndInitController(viewForSecondaryDisplay)
@@ -378,6 +387,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleInterceptTouchEventFromStatusBar_swipeDown_intercepts() {
         val downEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 10f, 0)
         view.onInterceptTouchEvent(downEvent)
@@ -391,6 +401,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleInterceptTouchEventFromStatusBar_swipeDown_dispatchesCachedEvents() {
         val downEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 10f, 0)
         view.onInterceptTouchEvent(downEvent)
@@ -410,6 +421,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleInterceptTouchEventFromStatusBar_smallSwipe_doesNotIntercept() {
         val downEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 10f, 0)
         view.onInterceptTouchEvent(downEvent)
@@ -423,6 +435,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleInterceptTouchEventFromStatusBar_horizontalSwipe_doesNotIntercept() {
         val downEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 10f, 0)
         view.onInterceptTouchEvent(downEvent)
@@ -436,6 +449,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun handleInterceptTouchEventFromStatusBar_clearsCacheBetweenGestures() {
         // Gesture 1: A short tap/swipe that does NOT trigger interception.
         val downEvent1 = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 10f, 0)
@@ -501,6 +515,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_STATUS_BAR_EVENT_FORWARDING_MODERNIZATION)
     fun onInterceptTouchEvent_actionDown_propagatesToDisplayPolicy() {
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 0f, 0)
 
