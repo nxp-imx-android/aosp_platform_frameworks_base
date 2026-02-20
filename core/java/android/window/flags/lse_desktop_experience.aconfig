@@ -773,13 +773,6 @@ flag {
 }
 
 flag {
-    name: "enable_non_default_display_split"
-    namespace: "lse_desktop_experience"
-    description: "Enables split screen on non default displays"
-    bug: "384999213"
-}
-
-flag {
     name: "enable_non_default_display_split_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes desktop to split screen on non default displays"
