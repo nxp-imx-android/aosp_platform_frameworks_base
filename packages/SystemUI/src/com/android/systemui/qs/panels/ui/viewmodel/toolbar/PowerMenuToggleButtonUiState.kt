@@ -24,6 +24,12 @@ data class PowerMenuToggleButtonUiState(val onClick: () -> Unit, val isSelected:
     val icon: Icon = powerIcon
     val chevron: Icon = chevronIcon
     val chevronRotation: Float = if (isSelected) 270f else 90f
+    val stateDescriptionRes =
+        if (isSelected) {
+            R.string.accessibility_quick_settings_power_menu_expanded
+        } else {
+            R.string.accessibility_quick_settings_power_menu_collapsed
+        }
 
     companion object {
         private val powerIcon =
