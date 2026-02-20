@@ -1110,6 +1110,17 @@ public class InputManagerService extends IInputManager.Stub
         return createVirtualGamepadInternal(token, config);
     }
 
+    @NonNull
+    @Override // Binder call
+    @EnforcePermission(Manifest.permission.INJECT_EVENTS)
+    public IVirtualMouse createVirtualMouse(
+            @NonNull IBinder token, @NonNull VirtualMouseConfig config) {
+        super.createVirtualMouse_enforcePermission();
+
+        checkDisplayAssociationPermission(config.getAssociatedDisplayId(), Binder.getCallingUid());
+
+        return createVirtualMouseInternal(token, config);
+    }
 
     @Override // Binder call
     public VerifiedInputEvent verifyInputEvent(@NonNull InputEvent event) {
@@ -2027,6 +2038,17 @@ public class InputManagerService extends IInputManager.Stub
                 InputManagerService.this.getTargetDisplayIdForInput(
                         config.associatedDisplayId),
                 config.registerTriggerAxes);
+    }
+
+    @NonNull
+    IVirtualMouse createVirtualMouseInternal(@NonNull IBinder token,
+            @NonNull VirtualMouseConfig config) {
+        return mVirtualInputDeviceController.createMouse(config.getInputDeviceName(),
+                config.getVendorId(), config.getProductId(), token,
+                config.getAssociatedDisplayId(),
+                android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
+                        ? config.getViewBehaviorConfigOrDefault(/* defaultValue= */ null)
+                        : null);
     }
 
     @Override // Binder call
@@ -4236,12 +4258,7 @@ public class InputManagerService extends IInputManager.Stub
         @Override
         public IVirtualMouse createVirtualMouse(@NonNull IBinder token,
                 @NonNull VirtualMouseConfig config) {
-            return mVirtualInputDeviceController.createMouse(config.getInputDeviceName(),
-                    config.getVendorId(), config.getProductId(), token,
-                    config.getAssociatedDisplayId(),
-                    android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
-                            ? config.getViewBehaviorConfigOrDefault(/* defaultValue= */ null)
-                            : null);
+            return InputManagerService.this.createVirtualMouseInternal(token, config);
         }
 
         @NonNull

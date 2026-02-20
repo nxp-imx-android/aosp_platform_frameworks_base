@@ -2028,6 +2028,7 @@ package android.hardware.input {
     method @FlaggedApi("com.android.hardware.input.controller_remapping") @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public void clearAllControllerAxisRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
     method @FlaggedApi("com.android.hardware.input.controller_remapping") @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public void clearAllControllerButtonRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
     method @RequiresPermission(android.Manifest.permission.REMAP_MODIFIER_KEYS) public void clearAllModifierKeyRemappings();
+    method @NonNull @RequiresPermission(android.Manifest.permission.INJECT_EVENTS) public android.hardware.input.VirtualMouse createVirtualMouse(@NonNull android.hardware.input.VirtualMouseConfig);
     method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<java.lang.Integer,java.lang.Integer> getControllerAxisRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
     method @FlaggedApi("com.android.hardware.input.controller_remapping") @NonNull @RequiresPermission("android.permission.CONTROLLER_REMAPPING") public java.util.Map<java.lang.Integer,java.lang.Integer> getControllerButtonRemappings(@NonNull android.hardware.input.InputDeviceIdentifier);
     method @Nullable @RequiresPermission(android.Manifest.permission.INJECT_EVENTS) public android.graphics.PointF getCursorPosition(int);
