@@ -38,7 +38,6 @@ import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
 import android.view.View
 import android.view.WindowInsets
-import android.view.WindowManager.LayoutParams
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowlessWindowManager
 import android.window.DesktopExperienceFlags
@@ -250,7 +249,12 @@ abstract class WindowDecoration2<T>(
                 traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
                 name = "WindowDecoration2#relayout-updateSurfacesAndInsets",
             ) {
-                updateDecorationContainerSurface(startT, taskWidth, taskHeight)
+                updateDecorationContainerSurface(
+                    startT,
+                    taskWidth,
+                    taskHeight,
+                    params.isDecorationSurfaceNeeded,
+                )
                 updateTaskSurface(
                     params,
                     startT,
@@ -446,31 +450,58 @@ abstract class WindowDecoration2<T>(
         }
     }
 
+    /**
+     * Returns the [decorationContainerSurface] if not null. Otherwise, creates and returns a new
+     * surface.
+     */
+    private fun getOrCreateDecorationSurface(
+        taskInfo: RunningTaskInfo,
+        t: SurfaceControl.Transaction,
+    ): SurfaceControl {
+        if (decorationContainerSurface != null) {
+            return checkNotNull(decorationContainerSurface) {
+                "expected non-null decoration container surface"
+            }
+        }
+        logD("Creating new decoration container surface for taskId=%d", taskInfo.taskId)
+        val builder = surfaceControlBuilderSupplier()
+        val containerSurface =
+            builder
+                .setName("Decor container of Task=" + taskInfo.taskId)
+                .setContainerLayer()
+                .setParent(taskSurface)
+                .setCallsite("WindowDecoration2.getOrCreateDecorationSurface")
+                .build()
+
+        t.setTrustedOverlay(containerSurface, true)
+            .setLayer(containerSurface, TaskConstants.TASK_CHILD_LAYER_WINDOW_DECORATIONS)
+        decorationContainerSurface = containerSurface
+        return containerSurface
+    }
+
+    /** Updates an existing decoration container surface. */
     private fun updateDecorationContainerSurface(
         startT: SurfaceControl.Transaction,
         taskWidth: Int,
         taskHeight: Int,
+        isDecorationContainerSurfaceUsed: Boolean,
     ) {
-        if (decorationContainerSurface == null) {
-            val builder = surfaceControlBuilderSupplier()
-            val containerSurface =
-                builder
-                    .setName("Decor container of Task=" + taskInfo.taskId)
-                    .setContainerLayer()
-                    .setParent(taskSurface)
-                    .setCallsite("WindowDecoration2.updateDecorationContainerSurface")
-                    .build()
-
-            startT
-                .setTrustedOverlay(containerSurface, true)
-                .setLayer(containerSurface, TaskConstants.TASK_CHILD_LAYER_WINDOW_DECORATIONS)
-            decorationContainerSurface = containerSurface
-        }
-        val containerSurface =
-            checkNotNull(decorationContainerSurface) {
-                "expected non-null decoration container surface"
+        if (
+            DesktopExperienceFlags.ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS.isTrue &&
+                !isDecorationContainerSurfaceUsed
+        ) {
+            // If decoration container surface is not needed, destroy it if it exists
+            decorationContainerSurface?.let {
+                logD("Destroying decoration container surface for taskId=%d", taskInfo.taskId)
+                startT.remove(it)
+                decorationContainerSurface = null
             }
-        startT.setWindowCrop(containerSurface, taskWidth, taskHeight).show(containerSurface)
+            return
+        }
+
+        getOrCreateDecorationSurface(taskInfo, startT).let {
+            startT.setWindowCrop(it, taskWidth, taskHeight).show(it)
+        }
     }
 
     // TODO(b/478792808): Remove suppression
@@ -624,13 +655,8 @@ abstract class WindowDecoration2<T>(
         val shouldSetBackground: Boolean = false,
         val shouldUpdateTaskSurfaceOutline: Boolean = true,
         val inSyncWithTransition: Boolean = false,
-    ) {
-
-        /** Returns true if caption input should fall through to the app. */
-        fun hasInputFeatureSpy(): Boolean {
-            return (inputFeatures and LayoutParams.INPUT_FEATURE_SPY) != 0
-        }
-    }
+        val isDecorationSurfaceNeeded: Boolean = true,
+    )
 
     /** Data calculated and retrieved during a [relayout] call. */
     data class RelayoutResult<T>(
