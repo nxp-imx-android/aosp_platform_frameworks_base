@@ -23,8 +23,9 @@ import static android.media.AudioDeviceAttributes.ROLE_OUTPUT;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.PermissionManuallyEnforced;
+import android.annotation.RequiresNoPermission;
+import android.annotation.SuppressLint;
 import android.content.AttributionSource;
-import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.audio.AudioModeSessionRequest;
@@ -36,8 +37,7 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.FunctionalUtils;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -55,14 +55,17 @@ import java.util.Objects;
 public final class AudioModeSession extends IAudioModeSession.Stub {
     private static final String TAG = "AudioModeSession";
 
+    @SuppressLint("DebugTrue")
+    private static final boolean DEBUG = true;
+
     private final Object mLock = new Object();
     private final IAudioModeSessionCallback mCallback;
     private final AttributionSource mAttributionSource;
     private final AttributionSource mClientAttribution;
     private final AudioService mAudioService;
     private final int[] mNoFocusModes;
-    private final AudioManager mAudioManager;
-    private final ExecutorService mExecutor;
+    private final AudioDeviceBroker mDeviceBroker;
+    private final Executor mExecutor;
 
     // Session State
     @GuardedBy("mLock")
@@ -87,7 +90,7 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     // TODO: This is currently a layer inversion, since we still call into AudioService to get the
     // list of eligible communication devices. After this flips, we can hold the route list directly
     // instead.
-    private List<AudioDeviceInfo> mAvailableRoutes = new ArrayList<>();
+    private List<AudioDeviceInfo> mAvailableDevices = new ArrayList<>();
 
     @GuardedBy("mLock")
     private int mCurrentRequestId = 42;
@@ -101,84 +104,99 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     @GuardedBy("mLock")
     private AudioDeviceInfo mSetCommDevice = null;
 
-    private final AudioDeviceCallback mAudioDevicesListener =
-            new AudioDeviceCallback() {
-                @Override
-                public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
-                    updateAvailableRoutes();
+    /*package*/ void onAvailableDevicesChanged(List<AudioDeviceInfo> availableDevices) {
+        if (DEBUG) {
+            Slog.d(TAG, "onAvailableDevicesChanged: " + availableDevices);
+        }
+        synchronized (mLock) {
+            if (Objects.equals(mAvailableDevices, availableDevices)) {
+                return;
+            }
+            mAvailableDevices = availableDevices;
+            dispatchRemote(() ->
+                        mCallback.onAvailableRoutesChanged(getSessionRoutes(availableDevices)));
+            if (mRequestedRoute != null) {
+                for (var route : mAvailableDevices) {
+                    if (matches(mRequestedRoute.output, route)) {
+                        return;
+                    }
                 }
+                preemptClientRoute(null);
+            }
+        }
+    }
 
-                @Override
-                public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
-                    updateAvailableRoutes();
-                }
-            };
+    /*package*/ void onCommunicationDeviceChanged(AudioDeviceInfo device) {
+        if (DEBUG) {
+            Slog.d(TAG, "onCommunicationDeviceChanged: " + device);
+        }
+        synchronized (mLock) {
+            mSetCommDevice = device;
+            updateCommunicationRoute(deviceToRoute(device));
+        }
+    }
 
-    private final AudioManager.OnCommunicationDeviceChangedListener
-            mOnCommunicationDeviceChangedListener =
-                    new AudioManager.OnCommunicationDeviceChangedListener() {
-                        @Override
-                        public void onCommunicationDeviceChanged(@Nullable AudioDeviceInfo device) {
-                            synchronized (mLock) {
-                                mSetCommDevice = device;
-                                // No async result for null devices at the moment.
-                                if (device == null) {
-                                    return;
-                                }
-                                if (mPendingRequestId != 0) {
-                                    // non-null pending route
-                                    if (matches(mPendingRoute.output, mSetCommDevice)) {
-                                        final int pRequestId = mPendingRequestId;
-                                        final IAudioModeSession.Route pRoute = mPendingRoute;
-                                        dispatchRemote(
-                                                () ->
-                                                        mCallback.onRoutingResult(
-                                                                pRequestId,
-                                                                pRoute,
-                                                                ROUTING_RESULT_SUCCESSFUL));
-                                        mPendingRequestId = 0;
-                                        mPendingRoute = null;
-                                    }
-                                }
-                            }
-                        }
-                    };
+    @GuardedBy("mLock")
+    private void updateCommunicationRoute(@Nullable IAudioModeSession.Route route) {
+        // No async result for null devices at the moment.
+        if (route == null) {
+            return;
+        }
+        if (mPendingRequestId != 0) {
+            // non-null pending route
+            if (Objects.equals(mPendingRoute, route)) {
+                final int pRequestId = mPendingRequestId;
+                final IAudioModeSession.Route pRoute = mPendingRoute;
+                dispatchRemote(
+                        () ->
+                                mCallback.onRoutingResult(
+                                        pRequestId,
+                                        pRoute,
+                                        ROUTING_RESULT_SUCCESSFUL));
+                mPendingRequestId = 0;
+                mPendingRoute = null;
+            }
+        }
+    }
 
     public AudioModeSession(
             @NonNull AudioService audioService,
+            @NonNull AudioDeviceBroker deviceBroker,
             @NonNull AudioModeSessionRequest request,
-            @NonNull IAudioModeSessionCallback callback) {
+            @NonNull IAudioModeSessionCallback callback,
+            @NonNull Executor executor) {
+        if (DEBUG) {
+            Slog.d(TAG, "AudioModeSession created with request: mode=" + request.mode
+                    + " isDisplayActiveUseCase=" + request.isDisplayActiveUseCase);
+        }
         mAudioService = audioService;
+        mDeviceBroker = deviceBroker;
         mCallback = callback;
         mAttributionSource = new AttributionSource(request.attributionSource);
         mClientAttribution =
                 request.clientAttribution == null
                         ? null
                         : new AttributionSource(request.clientAttribution);
-        mExecutor = Executors.newSingleThreadExecutor();
+        mExecutor = executor;
 
-        mAudioManager = mAudioService.mContext.getSystemService(AudioManager.class);
         synchronized (mLock) {
             // Initialize state from request
             mMode = request.mode;
             mIsDisplayActiveUseCase = request.isDisplayActiveUseCase;
             mNoFocusModes = request.noFocusModes;
-            mSetCommDevice = mAudioManager.getCommunicationDevice();
+            mSetCommDevice = mDeviceBroker.getCommunicationDevice();
         }
 
         mAudioService.setMode(
                 mMode, mCallback.asBinder(), mAttributionSource.getPackageName());
-
-        // on main thread, temporary
-        mAudioManager.registerAudioDeviceCallback(mAudioDevicesListener, null);
-        mAudioManager.addOnCommunicationDeviceChangedListener(
-                mAudioService.mContext.getMainExecutor(), mOnCommunicationDeviceChangedListener);
-        updateAvailableRoutes();
     }
 
     @Override
     @PermissionManuallyEnforced
     public void setDisplayActiveUseCase(boolean isDisplayActiveUseCase) {
+        if (DEBUG) {
+            Slog.d(TAG, "setDisplayActiveUseCase: " + isDisplayActiveUseCase);
+        }
         synchronized (mLock) {
             if (mIsClosed || mIsDisplayActiveUseCase == isDisplayActiveUseCase) {
                 return;
@@ -190,6 +208,9 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     @Override
     @PermissionManuallyEnforced
     public void setMode(int mode) {
+        if (DEBUG) {
+            Slog.d(TAG, "setMode: " + mode);
+        }
         synchronized (mLock) {
             if (mIsClosed || mMode == mode) {
                 return;
@@ -205,6 +226,9 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     @Override
     @PermissionManuallyEnforced
     public int setRequestedRoute(@Nullable IAudioModeSession.Route route) {
+        if (DEBUG) {
+            Slog.d(TAG, "setRequestedRoute: " + route);
+        }
         synchronized (mLock) {
             if (mIsClosed) {
                 return 0;
@@ -217,6 +241,9 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     @Override
     @PermissionManuallyEnforced
     public void setClientPaused(boolean isPaused) {
+        if (DEBUG) {
+            Slog.d(TAG, "setClientPaused: " + isPaused);
+        }
         synchronized (mLock) {
             if (mIsClosed || mIsClientPaused == isPaused) {
                 return;
@@ -231,8 +258,8 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                         AudioManager.MODE_NORMAL,
                         mCallback.asBinder(),
                         mAttributionSource.getPackageName());
-                mAudioService.setCommunicationDevice(
-                        mCallback.asBinder(), /*clear*/ 0, mAttributionSource);
+                mDeviceBroker.setCommunicationDevice(
+                        mCallback.asBinder(), mAttributionSource, null, true, TAG);
                 dispatchRemote(() -> mCallback.onPaused());
             } else {
                 mAudioService.setMode(
@@ -245,14 +272,20 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     @Override
     @PermissionManuallyEnforced
     public List<IAudioModeSession.Route> getAvailableRoutes() {
+        if (DEBUG) {
+            Slog.d(TAG, "getAvailableRoutes");
+        }
         synchronized (mLock) {
-            return getSessionRoutes(mAvailableRoutes);
+            return getSessionRoutes(mAvailableDevices);
         }
     }
 
     @Override
     @PermissionManuallyEnforced
     public void close() {
+        if (DEBUG) {
+            Slog.d(TAG, "close");
+        }
         synchronized (mLock) {
             if (mIsClosed) {
                 return;
@@ -263,17 +296,17 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                     AudioManager.MODE_NORMAL,
                     mCallback.asBinder(),
                     mAttributionSource.getPackageName());
-            mAudioService.setCommunicationDevice(
-                    mCallback.asBinder(), /*clear*/ 0, mAttributionSource);
+            mDeviceBroker.setCommunicationDevice(
+                    mCallback.asBinder(), mAttributionSource, null, true, TAG);
         }
-        mAudioManager.unregisterAudioDeviceCallback(mAudioDevicesListener);
-        mAudioManager.removeOnCommunicationDeviceChangedListener(
-                mOnCommunicationDeviceChangedListener);
+        mDeviceBroker.removeAudioModeSession(this);
         dispatchRemote(() -> mCallback.onClosed());
-        mExecutor.shutdown();
     }
 
     public void pause() {
+        if (DEBUG) {
+            Slog.d(TAG, "pause");
+        }
         synchronized (mLock) {
             if (mIsClosed || mIsServerPaused) {
                 return;
@@ -284,14 +317,17 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                         AudioManager.MODE_NORMAL,
                         mCallback.asBinder(),
                         mAttributionSource.getPackageName());
-                mAudioService.setCommunicationDevice(
-                        mCallback.asBinder(), /*clear*/ 0, mAttributionSource);
+                mDeviceBroker.setCommunicationDevice(
+                        mCallback.asBinder(), mAttributionSource, null, true, TAG);
             }
             dispatchRemote(() -> mCallback.onPaused());
         }
     }
 
     public void resume() {
+        if (DEBUG) {
+            Slog.d(TAG, "resume");
+        }
         synchronized (mLock) {
             if (mIsClosed || !mIsServerPaused) {
                 return;
@@ -306,6 +342,9 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     }
 
     public void preemptClientRoute(@Nullable IAudioModeSession.Route route) {
+        if (DEBUG) {
+            Slog.d(TAG, "preemptClientRoute: " + route);
+        }
         synchronized (mLock) {
             if (mIsClosed || Objects.equals(route, mRequestedRoute)) {
                 return;
@@ -339,8 +378,8 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                 return requestId;
             }
 
-            mAudioService.setCommunicationDevice(mCallback.asBinder(), getRouteId(),
-                    mAttributionSource);
+            mDeviceBroker.setCommunicationDevice(mCallback.asBinder(), mAttributionSource,
+                    getRouteDevice(), true, TAG);
             if (mRequestedRoute == null) {
                 // TODO: track default routes
                 dispatchRemote(() -> mCallback.onRoutingResult(requestId, null,
@@ -375,41 +414,22 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
         return !mIsClosed && !mIsClientPaused && !mIsServerPaused;
     }
 
-    private int getRouteId() {
-        int portId = 0;
+    private AudioDeviceInfo getRouteDevice() {
         if (mRequestedRoute != null) {
-            for (AudioDeviceInfo device : mAvailableRoutes) {
+            for (AudioDeviceInfo device : mAvailableDevices) {
                 if (matches(mRequestedRoute.output, device)) {
-                    portId = device.getId();
-                    break;
+                    return device;
                 }
             }
         }
-        return portId;
-    }
-
-    private void updateAvailableRoutes() {
-        List<AudioDeviceInfo> routes = AudioDeviceBroker.getAvailableCommunicationDevices();
-        synchronized (mLock) {
-            if (Objects.equals(mAvailableRoutes, routes)) {
-                return;
-            }
-            mAvailableRoutes = routes;
-            dispatchRemote(() -> mCallback.onAvailableRoutesChanged(getSessionRoutes(routes)));
-        }
+        return null;
     }
 
     private List<IAudioModeSession.Route> getSessionRoutes(List<AudioDeviceInfo> devices) {
         List<IAudioModeSession.Route> routes = new ArrayList<>();
         for (AudioDeviceInfo device : devices) {
             if (device.isSink()) {
-                IAudioModeSession.Route route = new IAudioModeSession.Route();
-                DeviceIdentity output = new DeviceIdentity();
-                output.role = ROLE_OUTPUT;
-                output.type = device.getType();
-                output.address = device.getAddress();
-                route.output = output;
-                routes.add(route);
+                routes.add(deviceToRoute(device));
             }
         }
         return routes;
@@ -424,5 +444,16 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
             return false;
         }
         return info.isSink() == (identity.role == ROLE_OUTPUT);
+    }
+
+    private static IAudioModeSession.Route deviceToRoute(AudioDeviceInfo info) {
+        if (info == null) return null;
+        var route = new IAudioModeSession.Route();
+        DeviceIdentity output = new DeviceIdentity();
+        output.role = ROLE_OUTPUT;
+        output.type = info.getType();
+        output.address = info.getAddress();
+        route.output = output;
+        return route;
     }
 }

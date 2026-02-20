@@ -34,6 +34,7 @@ shared_deps = [
     "ravenwood-junit",
     "services.core",
     "truth",
+    "mockito-kotlin2",
 ]
 
 android_test {
@@ -64,6 +65,7 @@ android_ravenwood_test {
     srcs: [
         "src/com/android/server/audio/ActivityDebouncerTest.java",
         "src/com/android/server/audio/AmScoHelperTest.kt",
+        "src/com/android/server/audio/AudioModeSessionTest.kt",
         "src/com/android/server/audio/AudioServerPermissionProviderTest.java",
         "src/com/android/server/audio/MediaFocusControlTest.java",
         "src/com/android/server/audio/ServiceHolderTest.java",
