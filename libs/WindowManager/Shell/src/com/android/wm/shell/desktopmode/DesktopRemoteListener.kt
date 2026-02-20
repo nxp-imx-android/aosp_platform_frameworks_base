@@ -17,14 +17,28 @@
 package com.android.wm.shell.desktopmode
 
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SingleInstanceRemoteListener
+import com.android.wm.shell.common.transition.TransitionStateHolder
+import com.android.wm.shell.dagger.DynamicOverride
 import com.android.wm.shell.dagger.WMSingleton
+import com.android.wm.shell.desktopmode.data.DesktopRepository.DeskChangeListener
+import com.android.wm.shell.desktopmode.data.DesktopRepository.VisibleTasksListener
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
+import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.sysui.ShellController
 import javax.inject.Inject
 
 /** Represents a remote-listener forwarding calls for [IDesktopTaskListener]. */
 @WMSingleton
-class DesktopRemoteListener @Inject constructor() {
+class DesktopRemoteListener
+@Inject
+constructor(
+    @param:ShellMainThread private val mainExecutor: ShellExecutor,
+    @param:DynamicOverride private val userRepositories: DesktopUserRepositories,
+    private val shellController: ShellController,
+    private val transitionStateHolder: TransitionStateHolder,
+) {
 
     private var remoteListener:
         SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>? =
@@ -40,10 +54,17 @@ class DesktopRemoteListener @Inject constructor() {
             SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>
     ) {
         remoteListener = remoteDesktopTaskListener
+        if (!::deskChangeListener.isInitialized) deskChangeListener = createDeskChangeListener()
+        with (userRepositories.current) {
+            addDeskChangeListener(deskChangeListener, mainExecutor)
+            addVisibleTasksListener(visibleTasksListener, mainExecutor)
+        }
     }
 
     /** Unregisters the current remote listener and stops further callbacks. */
     fun unregister() {
+        userRepositories.current.removeDeskChangeListener(deskChangeListener)
+        userRepositories.current.removeVisibleTasksListener(visibleTasksListener)
         remoteListener = null
     }
 
@@ -99,6 +120,87 @@ class DesktopRemoteListener @Inject constructor() {
             l.onTaskbarCornerRoundingUpdate(hasTasksRequiringTaskbarRounding, displayId)
         }
     }
+
+    private lateinit var deskChangeListener: DeskChangeListener
+
+    private fun createDeskChangeListener(): DeskChangeListener =
+        object : DeskChangeListener {
+            override fun onDeskAdded(displayId: Int, deskId: Int) {
+                ProtoLog.v(
+                    WM_SHELL_DESKTOP_MODE,
+                    "$TAG: onDeskAdded display=%d deskId=%d",
+                    displayId,
+                    deskId,
+                )
+                remoteListener?.call { l -> l.onDeskAdded(displayId, deskId) }
+            }
+
+            override fun onDeskRemoved(displayId: Int, deskId: Int) {
+                ProtoLog.v(
+                    WM_SHELL_DESKTOP_MODE,
+                    "$TAG: onDeskRemoved display=%d deskId=%d",
+                    displayId,
+                    deskId,
+                )
+                remoteListener?.call { l -> l.onDeskRemoved(displayId, deskId) }
+            }
+
+            override fun onActiveDeskChanged(
+                displayId: Int,
+                newActiveDeskId: Int,
+                oldActiveDeskId: Int,
+            ) {
+                ProtoLog.v(
+                    WM_SHELL_DESKTOP_MODE,
+                    "$TAG: onActiveDeskChanged display=%d new=%d old=%d",
+                    displayId,
+                    newActiveDeskId,
+                    oldActiveDeskId,
+                )
+                remoteListener?.call { l ->
+                    l.onActiveDeskChanged(displayId, newActiveDeskId, oldActiveDeskId)
+                }
+            }
+
+            override fun onCanCreateDesksChanged(canCreateDesks: Boolean) {
+                ProtoLog.v(
+                    WM_SHELL_DESKTOP_MODE,
+                    "$TAG: onCanCreateDesksChanged canCreateDesks=%b",
+                    canCreateDesks,
+                )
+                remoteListener?.call { l -> l.onCanCreateDesksChanged(canCreateDesks) }
+            }
+
+            override fun onTaskAppearingInDesk(taskId: Int, displayId: Int, deskId: Int) {
+                if (shellController.isOverviewVisible(displayId) != true) return
+                if (transitionStateHolder.isRecentsTransitionRunning() != false) return
+                ProtoLog.v(
+                    WM_SHELL_DESKTOP_MODE,
+                    "$TAG: onTaskAppearingInDesk taskId=%d displayId=%d deskId=%d",
+                    taskId,
+                    displayId,
+                    deskId,
+                )
+                remoteListener?.call { l ->
+                    l.onTaskAppearingInDeskWithOverviewShowing(taskId, displayId, deskId)
+                }
+            }
+        }
+
+    private val visibleTasksListener: VisibleTasksListener =
+        object : VisibleTasksListener {
+            override fun onTasksVisibilityChanged(displayId: Int, visibleTasksCount: Int) {
+                ProtoLog.v(
+                    WM_SHELL_DESKTOP_MODE,
+                    "$TAG: onVisibilityChanged display=%d visible=%d",
+                    displayId,
+                    visibleTasksCount,
+                )
+                remoteListener?.call { l ->
+                    l.onTasksVisibilityChanged(displayId, visibleTasksCount)
+                }
+            }
+        }
 
     private companion object {
         private val TAG = "DesktopRemoteListener"
