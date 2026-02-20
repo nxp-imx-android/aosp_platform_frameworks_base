@@ -73,68 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"ስልክዎ ኃይል በሚሞላበት ጊዜ ሰዓት፣ ፎቶዎች ወይም የአየር ሁኔታን ያሳዩ"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"ጡባዊዎ ኃይል በሚሞላበት ጊዜ ሰዓት፣ ፎቶዎች ወይም የአየር ሁኔታን ያሳዩ"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"መሣሪያዎ ኃይል በሚሞላበት ጊዜ ሰዓት፣ ፎቶዎች ወይም የአየር ሁኔታን ያሳዩ"</string>
-    <!-- no translation found for accessibility_retry_face_auth (92100916134164459) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (5630058255754932537) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_title (1533872824718008968) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_title (5218710819864377084) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face (2261934158598458578) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face (2066067154465078068) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_alt_1 (1268255053915789297) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_alt_1 (1514178179652703156) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_sfps (2492608775606333432) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_sfps (7918648092655463233) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_name (5965443249759045602) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_name (3705121888554395242) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_title (2719988247243428771) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_title (4217639465392210803) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_content (7290782487464426692) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_content (7718739738665960268) -->
-    <skip />
-    <!-- no translation found for face_reenroll_failure_dialog_content (6318784230085101323) -->
-    <skip />
-    <!-- no translation found for face_reenroll_failure_dialog_content (1206573626798969692) -->
-    <skip />
-    <!-- no translation found for keyguard_face_unlock_unavailable (3188895702987679056) -->
-    <skip />
-    <!-- no translation found for keyguard_face_unlock_unavailable (7088502865328130614) -->
-    <skip />
-    <!-- no translation found for accesssibility_keyguard_retry (5017097587017783548) -->
-    <skip />
-    <!-- no translation found for accesssibility_keyguard_retry (5084769005671288179) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_swipe (1358318947548832086) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_swipe (4016445068612817741) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (4883782574761031564) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (7268520979450633978) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press (7293890116185253825) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press (6158498006084899116) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press_alt_1 (6269966346565076951) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press_alt_1 (1612731733090835687) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock (5544493091450184889) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock (5348626087316804379) -->
-    <skip />
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"በመልክ መክፈትን እንደገና ይሞክሩ"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"በመልክ ለመክፈት እንደገና ይሞክሩ"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"በመልክ መክፈትን እንደገና ያዋቅሩ"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"በመልክ መክፈትን እንደገና ያዋቅሩ"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"በመልክ ተከፍቷል"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"በመልክ ተከፍቷል"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"በመልክ ተከፍቷል። ለመቀጠል ይጫኑ።"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"በመልክ ተከፍቷል። ለመቀጠል ይጫኑ።"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"በመልክ ተከፍቷል። ለመቀጠል መታ ያድርጉ።"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"በመልክ ተከፍቷል። ለመቀጠል መታ ያድርጉ።"</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"በመልክ መክፈት"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"በመልክ መክፈት"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"በመልክ መክፈትን ያዋቅሩ"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"በመልክ መክፈትን ያዋቅሩ"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"በመልክ መክፈትን እንደገና ለማዋቀር፣ አሁን ያለው የመልክ ሞዴልዎ ይሰረዛል።\n\nስልክዎን ለመክፈት ፊትዎን ለመጠቀም ይህን ባህሪ እንደገና ማዋቀር ያስፈልግዎታል።"</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"በመልክ መክፈትን እንደገና ለማዋቀር፣ አሁን ያለው የመልክ ሞዴልዎ ይሰረዛል።\n\nመሣሪያዎን ከፍተው ፊትዎን ለመጠቀም ይህን ባህሪ እንደገና ማዋቀር ያስፈልግዎታል።"</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"በመልክ መክፈትን ማዋቀር አልተቻለም። እንደገና ለመሞከር ወደ ቅንብሮች ይሂዱ።"</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"በመልክ መክፈትን ማዋቀር አልተቻለም። ቅንብሮች ውስጥ እንደገና ይሞክሩ።"</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"በመልክ መክፈት አይገኝም"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"በመልክ መክፈት አይገኝም"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"በመልክ መክፈትን እንደገና ለመሞከር ወደ ላይ ያንሸራትቱ"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"በመልክ መክፈትን እንደገና ለመሞከር ወደ ላይ ያንሸራትቱ"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"በመልክ ተከፍቷል። ለመክፈት ወደ ላይ ያንሸራትቱ።"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"በመልክ ተከፍቷል። ለመክፈት ወደ ላይ ያንሸራትቱ።"</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"በመልክ ተከፍቷል። ለመቀጠል አረጋግጥ የሚለውን ይጫኑ።"</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"በመልክ ተከፍቷል። ለመቀጠል አረጋግጥ የሚለውን ይጫኑ።"</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"በመልክ ተከፍቷል። ለመክፈት የመክፈቻ አዶውን ይጫኑ።"</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"በመልክ ተከፍቷል። ለመክፈት የመክፈቻ አዶውን ይጫኑ።"</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"በመልክ ተከፍቷል። ለመክፈት ይጫኑ።"</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"በመልክ ተከፍቷል። ለመክፈት ይጫኑ።"</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"በመልክ ተከፍቷል"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"በመልክ ተከፍቷል"</string>
 </resources>
