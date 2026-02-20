@@ -1237,4 +1237,6 @@
             android:foregroundServiceType="systemExempted"
             android:exported="false" />
     </application>
+
+    <uses-sdk android:targetSdkVersion="36" />
 </manifest>
