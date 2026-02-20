@@ -630,6 +630,12 @@ public class ThemeManagerImplTests {
         // Verify: State UPDATED to GREEN
         assertThat(mStateManager.getState(userId).getCurrentState().seedColor()).isEqualTo(
                 Color.GREEN);
+
+        // Verify: Settings persisted
+        verify(mThemeSettingsManager).setSettings(eq(userId), any(),
+                org.mockito.ArgumentMatchers.argThat(settingsArgument ->
+                        settingsArgument.seedColors().getFirst().toArgb() == Color.GREEN
+                ));
     }
 
     @Test

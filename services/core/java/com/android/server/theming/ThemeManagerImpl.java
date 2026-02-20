@@ -540,6 +540,21 @@ public class ThemeManagerImpl implements ThemeManagerInternal, ThemeEventDispatc
                 settings.colorSource())) {
             List<Integer> seedColors = mWallpaperManager.getSeedColors(colors, true);
             mStateManager.onSeedColorChange(userId, seedColors, fromForegroundApp);
+
+            // Persist the new seed colors to settings if they have changed.
+            // This ensures getThemeSettings() returns the accurate current color.
+            List<Color> newColors = seedColors.stream().map(Color::valueOf).toList();
+            ThemeSettings newSettings = new ThemeSettings.Builder()
+                    .setThemeStyle(settings.themeStyle())
+                    .setColorSource(settings.colorSource())
+                    .setSeedColors(newColors)
+                    .build();
+
+            if (!settings.equals(newSettings)) {
+                if (mThemeSettingsManager.setSettings(userId, resolver, newSettings)) {
+                    notifySettingsChange(userId, settings, newSettings);
+                }
+            }
         }
     }
 
