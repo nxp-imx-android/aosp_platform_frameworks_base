@@ -589,6 +589,7 @@ private fun ContentScope.Clock(
                                 isClickable = true
                                 isFocusable = true
                                 importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                                setOnClickListener { onClick.invoke() }
                                 accessibilityDelegate =
                                     object : View.AccessibilityDelegate() {
                                         override fun onInitializeAccessibilityNodeInfo(
