@@ -759,19 +759,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"ଡିଭାଇସ ଅନଲକ"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"ଅନଲକ କରିବା ପାଇଁ ଅନ୍ୟ ଏକ ଉପାୟ ଚେଷ୍ଟା କରନ୍ତୁ"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"ଆପଣଙ୍କ ଆଙ୍ଗୁଠି ଓଦା ଥିବା ସମୟରେ ଆପଣଙ୍କର ଟିପଚିହ୍ନ ଚିହ୍ନଟ ନହେଲେ ଫେସ ଅନଲକ ବ୍ୟବହାର କରନ୍ତୁ"</string>
-    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
-    <skip />
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"ଆପଣଙ୍କ ଆଙ୍ଗୁଠି ଓଦା ଥିବା ସମୟରେ ଆପଣଙ୍କର ଟିପଚିହ୍ନ ଚିହ୍ନଟ ନହେଲେ ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରନ୍ତୁ"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"ପର୍ଯ୍ୟାପ୍ତ ଆଲୋକ ନଥିବା ପରି ସମୟରେ ଆପଣଙ୍କର ଫେସ ଚିହ୍ନଟ ନହେଲେ ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"ଫେସ ଅନଲକ"</string>
-    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
-    <skip />
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରନ୍ତୁ"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"ଫେସ୍ ଅନଲକ୍ ସହ ସମସ୍ୟା"</string>
-    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
-    <skip />
+    <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରିବାରେ ସମସ୍ୟା"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"ଆପଣଙ୍କ ଫେସ୍ ମଡେଲକୁ ଡିଲିଟ୍ କରିବାକୁ ଟାପ୍ କରନ୍ତୁ, ତା\'ପରେ ପୁଣି ଆପଣଙ୍କ ଫେସ୍ ଯୋଗ କରନ୍ତୁ"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"ଫେସ ଅନଲକ ବ୍ୟବହାର କରିବା ପାଇଁ, ସେଟିଂସ ଏବଂ ଗୋପନୀୟତାରେ "<b>"କ୍ୟାମେରା ଆକ୍ସେସ"</b>"କୁ ଚାଲୁ କରନ୍ତୁ"</string>
-    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
-    <skip />
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରିବା ପାଇଁ, ସେଟିଂସ &gt; ଗୋପନୀୟତାରେ "<b>"କେମେରା ଆକ୍ସେସ"</b>"କୁ ଚାଲୁ କରନ୍ତୁ"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକ୍"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"ଟିପଚିହ୍ନ ସେନ୍ସରକୁ ବ୍ୟବହାର କରାଯାଇପାରିବ ନାହିଁ"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"ଏକ ମରାମତି କେନ୍ଦ୍ରକୁ ଭିଜିଟ୍ କରନ୍ତୁ।"</string>
@@ -779,42 +775,31 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"ଅତ୍ୟଧିକ ଉଜ୍ଵଳ। କମ୍ ଉଜ୍ବଳକରଣରେ ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"ଯଥେଷ୍ଟ ଆଲୋକ ନାହିଁ"</string>
     <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"ଫୋନକୁ ଟିକେ ଦୂରକୁ ନିଅନ୍ତୁ"</string>
-    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
-    <skip />
+    <string name="face_acquired_too_close" product="desktop" msgid="7189579448504853047">"ଡିଭାଇସକୁ ଆହୁରି ଦୂରକୁ ମୁଭ କରନ୍ତୁ"</string>
     <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"ଫୋନକୁ ପାଖକୁ ଆଣନ୍ତୁ"</string>
-    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
-    <skip />
+    <string name="face_acquired_too_far" product="desktop" msgid="6590730829823321223">"ଡିଭାଇସକୁ ପାଖକୁ ମୁଭ କରନ୍ତୁ"</string>
     <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"ଫୋନକୁ ଉପରକୁ ମୁଭ କରନ୍ତୁ"</string>
-    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
-    <skip />
+    <string name="face_acquired_too_high" product="desktop" msgid="717393614154504299">"ଡିଭାଇସକୁ ଉପରକୁ ମୁଭ କରନ୍ତୁ"</string>
     <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"ଫୋନ୍‌କୁ ତଳକୁ ମୁଭ କରନ୍ତୁ"</string>
-    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
-    <skip />
+    <string name="face_acquired_too_low" product="desktop" msgid="7695733281069538045">"ଡିଭାଇସକୁ ତଳକୁ ମୁଭ କରନ୍ତୁ"</string>
     <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"ଫୋନକୁ ଆପଣଙ୍କ ବାମ ପଟକୁ ମୁଭ କରନ୍ତୁ"</string>
-    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
-    <skip />
+    <string name="face_acquired_too_right" product="desktop" msgid="4058756237538843740">"ଡିଭାଇସକୁ ଆପଣଙ୍କ ବାମପଟକୁ ମୁଭ କରନ୍ତୁ"</string>
     <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"ଫୋନକୁ ଆପଣଙ୍କ ଡାହାଣ ପଟକୁ ମୁଭ କରନ୍ତୁ"</string>
-    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
-    <skip />
+    <string name="face_acquired_too_left" product="desktop" msgid="5804819007366973778">"ଡିଭାଇସକୁ ଆପଣଙ୍କ ଡାହାଣପଟକୁ ମୁଭ କରନ୍ତୁ"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"ଆପଣଙ୍କ କେମେରାକୁ ସିଧାସଳଖ ଦେଖନ୍ତୁ"</string>
     <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"ଆପଣଙ୍କ ଫେସ ଦେଖାଯାଉନାହିଁ। ଆପଣଙ୍କ ଫୋନକୁ ଆଖି ସିଧାରେ ଧରି ରଖନ୍ତୁ।"</string>
-    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
-    <skip />
+    <string name="face_acquired_not_detected" product="desktop" msgid="1047701586390904260">"ଆପଣଙ୍କ ଫେସ ଦେଖାଯାଉନାହିଁ। ଆପଣଙ୍କ ଡିଭାଇସକୁ ଆଖି ଲେଭେଲରେ ଧରି ରଖନ୍ତୁ।"</string>
     <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"ଅତ୍ୟଧିକ ଅସ୍ଥିର। ଫୋନ୍‍କୁ ସ୍ଥିର ଭାବେ ଧରନ୍ତୁ।"</string>
-    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
-    <skip />
+    <string name="face_acquired_too_much_motion" product="desktop" msgid="7135563968992659161">"ଅତ୍ୟଧିକ ମୋସନ। ଡିଭାଇସକୁ ସ୍ଥିର ଭାବେ ଧରି ରଖନ୍ତୁ।"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"ଦୟାକରି ଆପଣଙ୍କର ମୁହଁ ପୁଣି-ଏନ୍‍ରୋଲ୍ କରନ୍ତୁ।"</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"ଫେସ ଚିହ୍ନଟ କରାଯାଇନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"ଆପଣଙ୍କ ମୁଣ୍ଡର ସ୍ଥିତି ସାମାନ୍ୟ ବଦଳାନ୍ତୁ"</string>
     <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"ଆପଣଙ୍କ ଫୋନକୁ ସମ୍ପୂର୍ଣ୍ଣ ସିଧା ଦେଖନ୍ତୁ"</string>
-    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
-    <skip />
+    <string name="face_acquired_pan_too_extreme" product="desktop" msgid="821456302944137576">"ଆପଣଙ୍କ ଡିଭାଇସକୁ ସିଧାସଳଖ ଦେଖନ୍ତୁ"</string>
     <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"ଆପଣଙ୍କ ଫୋନକୁ ସମ୍ପୂର୍ଣ୍ଣ ସିଧା ଦେଖନ୍ତୁ"</string>
-    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
-    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="desktop" msgid="1119243364774233108">"ଆପଣଙ୍କ ଡିଭାଇସକୁ ସିଧାସଳଖ ଦେଖନ୍ତୁ"</string>
     <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"ଆପଣଙ୍କ ଫୋନକୁ ସମ୍ପୂର୍ଣ୍ଣ ସିଧା ଦେଖନ୍ତୁ"</string>
-    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
-    <skip />
+    <string name="face_acquired_roll_too_extreme" product="desktop" msgid="3665467581072397682">"ଆପଣଙ୍କ ଡିଭାଇସକୁ ସିଧାସଳଖ ଦେଖନ୍ତୁ"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"ଆପଣଙ୍କ ମୁହଁକୁ ଲୁଚାଉଥିବା ଯେ କୌଣସି ଜିନିଷକୁ କାଢ଼ି ଦିଅନ୍ତୁ।"</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"କଳା ବାର୍ ସମେତ ଆପଣଙ୍କ ସ୍କ୍ରିନ୍‌ର ଶୀର୍ଷକୁ ସଫା କରନ୍ତୁ"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -828,30 +813,24 @@
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"ମୁହଁ ଚିହ୍ନଟ କରିପାରିଲା ନାହିଁ। ହାର୍ଡୱେୟାର୍ ଉପଲବ୍ଧ ନାହିଁ।"</string>
     <string name="face_error_timeout" product="default" msgid="2598544068593889762">"ଫେସ୍ ଅନଲକ୍ ପୁଣି ବ୍ୟବହାର କରି ଦେଖନ୍ତୁ"</string>
-    <!-- no translation found for face_error_timeout (8136501408214657840) -->
-    <skip />
+    <string name="face_error_timeout" product="desktop" msgid="8136501408214657840">"ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରିବାକୁ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"ନୂଆ ମୁହଁ ଡାଟା ଷ୍ଟୋର୍ ହେବ ନାହିଁ। ପ୍ରଥମେ ପୁରୁଣାକୁ ଡିଲିଟ୍ କରନ୍ତୁ।"</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"ଫେସ୍‍ର ଅପରେଶନ୍‍ କ୍ୟାନ୍ସଲ୍‍ ହୋ‍ଇଗଲା"</string>
     <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"ଉପଯୋଗକର୍ତ୍ତାଙ୍କ ଦ୍ୱାରା ଫେସ୍ ଅନଲକ୍ ବାତିଲ୍ କରାଯାଇଛି"</string>
-    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
-    <skip />
+    <string name="face_error_user_canceled" product="desktop" msgid="8903551031462609651">"ୟୁଜରଙ୍କ ଦ୍ୱାରା ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରିବା ବାତିଲ କରାଯାଇଛି"</string>
     <string name="face_error_lockout" msgid="7864408714994529437">"ବାରମ୍ବାର ଚେଷ୍ଟା। ପରେ ପୁଣିଥରେ ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
     <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"ଅନେକଗୁଡ଼ିଏ ପ୍ରଚେଷ୍ଟା। ଫେସ ଅନଲକ ଉପଲବ୍ଧ ନାହିଁ।"</string>
-    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
-    <skip />
+    <string name="face_error_lockout_permanent" product="desktop" msgid="1885291877517229762">"ଅନେକଗୁଡ଼ିଏ ପ୍ରଚେଷ୍ଟା। ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରିବା ଉପଲବ୍ଧ ନାହିଁ।"</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"ଅନେକଗୁଡ଼ିଏ ପ୍ରଚେଷ୍ଟା। ଏହା ପରିବର୍ତ୍ତେ ସ୍କ୍ରିନ୍ ଲକ୍ ଏଣ୍ଟର୍ କରନ୍ତୁ।"</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"ମୁହଁ ଚିହ୍ନଟ କରିପାରିଲା ନାହିଁ। ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"ଆପଣ ଫେସ୍ ଅନଲକ୍ ସେଟ୍ ଅପ୍ କରିନାହାଁନ୍ତି"</string>
-    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
-    <skip />
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରିବା ଏପର୍ଯ୍ୟନ୍ତ ସେଟ ଅପ ହୋଇନାହିଁ"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"ଏହି ଡିଭାଇସରେ ଫେସ୍ ଅନଲକ୍ ସମର୍ଥିତ ନୁହେଁ"</string>
-    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
-    <skip />
+    <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"ଏହି ଡିଭାଇସରେ ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରିବା ସପୋର୍ଟ କରୁନାହିଁ"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"ସେନ୍ସରକୁ ଅସ୍ଥାୟୀ ଭାବେ ଅକ୍ଷମ କରାଯାଇଛି।"</string>
     <string name="face_name_template" msgid="3877037340223318119">"<xliff:g id="FACEID">%d</xliff:g>ଙ୍କ ଫେସ୍‍"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"ଫେସ୍ ଅନଲକ୍ ବ୍ୟବହାର କରନ୍ତୁ"</string>
-    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
-    <skip />
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରନ୍ତୁ"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"ଫେସ୍ ବା ସ୍କ୍ରିନ୍ ଲକ୍ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"ଜାରି ରଖିବାକୁ ଆପଣଙ୍କ ଚେହେରା ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"ଜାରି ରଖିବାକୁ ଆପଣଙ୍କ ଚେହେରା କିମ୍ବା ସ୍କ୍ରିନ୍ ଲକ୍ ବ୍ୟବହାର କରନ୍ତୁ"</string>
@@ -1112,8 +1091,7 @@
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"ଅନଲକ କରିବାକୁ ଯେ କୌଣସି କୀ ଦବାନ୍ତୁ"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"ସବୁ ଫିଚର ଓ ଡାଟା ପାଇଁ ଅନଲକ କରନ୍ତୁ"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"ସର୍ବାଧିକ ଫେସ୍ ଅନଲକ୍‍ ପ୍ରଚେଷ୍ଟା ଅତିକ୍ରମ କରିଛି"</string>
-    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
-    <skip />
+    <string name="faceunlock_multiple_failures" product="desktop" msgid="5388142244463490793">"ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରିବାର ସର୍ବାଧିକ ପ୍ରଚେଷ୍ଟାରେ ପହଞ୍ଚିଯାଇଛି"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"କୌଣସି SIM ନାହିଁ"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"ଟାବଲେଟରେ କୌଣସି SIM ନାହିଁ।"</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"ଆପଣଙ୍କର Android TV ଡିଭାଇସରେ କୌଣସି SIM ନାହିଁ।"</string>
@@ -1185,8 +1163,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"ସ୍ଲାଇଡ୍‍ ଅନଲକ୍‍।"</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"ପାଟର୍ନ ଅନଲକ୍‍।"</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"ଫେସ ଅନଲକ।"</string>
-    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
-    <skip />
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରନ୍ତୁ।"</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"PIN ଅନଲକ୍‍।"</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"PIN ଦ୍ଵାରା SIMକୁ ଅନଲକ୍ କରନ୍ତୁ।"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"PUK ଦ୍ଵାରା SIMକୁ ଅନଲକ୍ କରନ୍ତୁ।"</string>
@@ -1923,8 +1900,7 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"ସୁଇଚ କରନ୍ତୁ"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"ସେଟିଂସ"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g>ରେ ସୁଇଚ ହେଉଛି…"</string>
-    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
-    <skip />
+    <string name="user_logging_out_message" msgid="2968888364742643174">"ସାଇନ ଆଉଟ କରାଯାଉଛି…"</string>
     <string name="owner_name" msgid="8713560351570795743">"ମାଲିକ"</string>
     <string name="guest_name" msgid="8502103277839834324">"ଅତିଥି"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"ସିଷ୍ଟମ ୟୁଜର"</string>
@@ -2187,23 +2163,17 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"%1$sକୁ ଆକ୍ସେସ କରିବା ପାଇଁ ଆପଣ ଅନୁମତି ଦେଇଥିବା AI ଏଜେଣ୍ଟ ଏବଂ ସର୍ଭିସେସ ଏବେ ବି ଏହାର ଡାଟାକୁ ଆକ୍ସେସ କରିବାକୁ ସକ୍ଷମ ହେବ"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"ଆପ ଲକ ଯୋଗ କରନ୍ତୁ"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"ଫେସ ଅନଲକ"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କର"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକ"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକ, ଫେସ ଅନଲକ"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକ, ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କର"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"ପାସୱାର୍ଡ"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"ପାଟର୍ନ"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
-    <!-- no translation found for app_lock_permission_review_dialog_title_photos (6193222920123912729) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_photos (1854948251386976703) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title_files (8820759644609198515) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_files (2999447193189851364) -->
-    <skip />
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"ଆପଣଙ୍କ ଫଟୋଗୁଡ଼ିକ ଏବେ ବି ଅନ୍ୟ ଆପ୍ସରେ ଦେଖାଯାଇପାରେ"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"ଆପଣଙ୍କ ଫଟୋକୁ ଆକ୍ସେସ ଥିବା ଆପ୍ସ"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"ଆପଣଙ୍କ ଫାଇଲଗୁଡ଼ିକ ଏବେ ବି ଅନ୍ୟ ଆପ୍ସରେ ଦେଖାଯାଇପାରେ"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"ଆପଣଙ୍କ ଫାଇଲକୁ ଆକ୍ସେସ ଥିବା ଆପ୍ସ"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"ସବୁ ଭ୍ୟୁ କରନ୍ତୁ"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"ଜାରି ରଖନ୍ତୁ"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"ୱାର୍କ ଆପ୍ସକୁ ପୁଣି ଚାଲୁ କରିବେ?"</string>
@@ -2693,11 +2663,9 @@
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g>କୁ ଆଉ ଚିହ୍ନଟ କରାଯାଇପାରିବ ନାହିଁ। ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକ ପୁଣି ସେଟ ଅପ କରନ୍ତୁ।"</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ଏବଂ <xliff:g id="FINGERPRINT_1">%2$s</xliff:g>କୁ ଆଉ ଚିହ୍ନଟ କରାଯାଇପାରିବ ନାହିଁ। ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକ ପୁଣି ସେଟ ଅପ କରନ୍ତୁ।"</string>
     <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"ଫେସ୍ ଅନଲକ୍ ପୁଣି ସେଟ୍ ଅପ୍ କରନ୍ତୁ"</string>
-    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
-    <skip />
+    <string name="face_dangling_notification_title" product="desktop" msgid="4632690536207343589">"ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରିବାକୁ ପୁଣି ସେଟ ଅପ କରନ୍ତୁ"</string>
     <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"ଆପଣଙ୍କ ଫେସ ମଡେଲକୁ ଆଉ ଚିହ୍ନଟ କରାଯାଇପାରିବ ନାହିଁ। ଫେସ ଅନଲକ ପୁଣି ସେଟ ଅପ କରନ୍ତୁ।"</string>
-    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
-    <skip />
+    <string name="face_dangling_notification_msg" product="desktop" msgid="5982979430103820891">"ଆପଣଙ୍କ ଫେସ ମଡେଲକୁ ଆଉ ଚିହ୍ନଟ କରାଯାଇପାରିବ ନାହିଁ। ଫେସ ମାଧ୍ୟମରେ ଅନଲକ କରିବାକୁ ପୁଣି ସେଟ ଅପ କରନ୍ତୁ।"</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"ସେଟ ଅପ କରନ୍ତୁ"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"ବର୍ତ୍ତମାନ ନୁହେଁ"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"<xliff:g id="USER_NAME">%s</xliff:g>ଙ୍କ ପାଇଁ ଆଲାରାମ"</string>
@@ -2737,4 +2705,5 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"ଆପଣଙ୍କ ବାପାମାଙ୍କଠାରୁ ଅପଡେଟ"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g>କୁ ବର୍ତ୍ତମାନ ପାଇଁ କାଢ଼ି ଦିଆଯାଇଛି"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ଅଛି"</string>
+    <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"ଅନ୍ୟମାନଙ୍କୁ କାଷ୍ଟ କରନ୍ତୁ"</string>
 </resources>

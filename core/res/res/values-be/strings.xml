@@ -2198,14 +2198,10 @@
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"пароль"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"узор разблакіроўкі"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN-код"</string>
-    <!-- no translation found for app_lock_permission_review_dialog_title_photos (6193222920123912729) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_photos (1854948251386976703) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title_files (8820759644609198515) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_files (2999447193189851364) -->
-    <skip />
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"Вашы фота могуць па-ранейшаму паказвацца ў іншых праграмах"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"Праграмы з доступам да вашых фота"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"Вашы файлы могуць па-ранейшаму паказвацца ў іншых праграмах"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"Праграмы з доступам да вашых файлаў"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Праглядзець усе"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Працягнуць"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Уключыць працоўныя праграмы?"</string>
@@ -2739,4 +2735,6 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Адзін з бацькоў змяніў налады"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Праграма \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" выдалена"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Праграма \"<xliff:g id="APP_NAME">%1$s</xliff:g>\" даступная"</string>
+    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
+    <skip />
 </resources>
