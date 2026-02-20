@@ -32,6 +32,7 @@ import android.hardware.sidekick.SidekickInternal;
 import android.media.MediaDrm;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Binder;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
@@ -1215,7 +1216,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 mDisplayModeSpecs.copyFrom(displayModeSpecs);
 
                 // TODO: Generate token for resolution switch and multi-display modeset.
-                IBinder applyToken = null;
+                IBinder applyToken = new Binder();
 
                 if (DEBUG) {
                     final var mode = findMode(displayModeSpecs.baseModeId);
@@ -1227,9 +1228,10 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 }
                 getHandler().sendMessage(PooledLambda.obtainMessage(
                         LocalDisplayDevice::setDesiredDisplayModeSpecsAsync, this,
+                        applyToken,
                         new SurfaceControl.DesiredDisplayModeSpecs[] {
                             new SurfaceControl.DesiredDisplayModeSpecs(
-                                getDisplayTokenLocked(), applyToken, baseSfModeId,
+                                getDisplayTokenLocked(), baseSfModeId,
                                 mDisplayModeSpecs.allowGroupSwitching,
                                 mDisplayModeSpecs.primary,
                                 mDisplayModeSpecs.appRequest,
@@ -1239,10 +1241,11 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         }
 
         private void setDesiredDisplayModeSpecsAsync(
+                IBinder applyToken,
                 SurfaceControl.DesiredDisplayModeSpecs[] modeSpecs) {
             // Do not lock when calling these SurfaceControl methods because they are sync
             // operations that may block for a while when setting display power mode.
-            mSurfaceControlProxy.setDesiredDisplayModeSpecs(modeSpecs);
+            mSurfaceControlProxy.setDesiredDisplayModeSpecs(applyToken, modeSpecs);
         }
 
         @Override
@@ -1806,8 +1809,8 @@ final class LocalDisplayAdapter extends DisplayAdapter {
         }
 
         public boolean setDesiredDisplayModeSpecs(
-                SurfaceControl.DesiredDisplayModeSpecs[] specs) {
-            return SurfaceControl.setDesiredDisplayModeSpecs(specs);
+                IBinder applyToken, SurfaceControl.DesiredDisplayModeSpecs[] specs) {
+            return SurfaceControl.setDesiredDisplayModeSpecs(applyToken, specs);
         }
 
         public void setDisplayPowerMode(IBinder displayToken, int mode) {

@@ -228,7 +228,7 @@ public final class SurfaceControl implements Parcelable {
     private static native DisplayedContentSample nativeGetDisplayedContentSample(
             IBinder displayToken, long numFrames, long timestamp);
     private static native boolean nativeSetDesiredDisplayModeSpecs(
-            DesiredDisplayModeSpecs[] desiredDisplayModeSpecs);
+            IBinder applyToken, DesiredDisplayModeSpecs[] desiredDisplayModeSpecs);
     private static native DesiredDisplayModeSpecs
             nativeGetDesiredDisplayModeSpecs(IBinder displayToken);
     private static native DisplayPrimaries nativeGetDisplayNativePrimaries(
@@ -2552,7 +2552,6 @@ public final class SurfaceControl implements Parcelable {
      */
     public static final class DesiredDisplayModeSpecs {
         public IBinder displayToken;
-        public IBinder applyToken;
 
         public int defaultMode;
 
@@ -2608,13 +2607,12 @@ public final class SurfaceControl implements Parcelable {
             copyFrom(other);
         }
 
-        public DesiredDisplayModeSpecs(IBinder displayToken, IBinder applyToken,
+        public DesiredDisplayModeSpecs(IBinder displayToken,
                 int defaultMode, boolean allowGroupSwitching,
                 RefreshRateRanges primaryRanges, RefreshRateRanges appRequestRanges,
                 @Nullable IdleScreenRefreshRateConfig idleScreenRefreshRateConfig,
                 @Nullable WorkDuration workDuration) {
             this.displayToken = displayToken;
-            this.applyToken = applyToken;
             this.defaultMode = defaultMode;
             this.allowGroupSwitching = allowGroupSwitching;
             this.primaryRanges =
@@ -2637,7 +2635,6 @@ public final class SurfaceControl implements Parcelable {
          */
         public boolean equals(DesiredDisplayModeSpecs other) {
             return other != null && displayToken == other.displayToken
-                    && applyToken == other.applyToken
                     && defaultMode == other.defaultMode
                     && allowGroupSwitching == other.allowGroupSwitching
                     && primaryRanges.equals(other.primaryRanges)
@@ -2657,7 +2654,6 @@ public final class SurfaceControl implements Parcelable {
          */
         public void copyFrom(DesiredDisplayModeSpecs other) {
             displayToken = other.displayToken;
-            applyToken = other.applyToken;
             defaultMode = other.defaultMode;
             allowGroupSwitching = other.allowGroupSwitching;
             primaryRanges.copyFrom(other.primaryRanges);
@@ -2670,7 +2666,6 @@ public final class SurfaceControl implements Parcelable {
         @Override
         public String toString() {
             return "displayToken=" + displayToken
-                    + "applyToken=" + applyToken
                     + "defaultMode=" + defaultMode
                     + " allowGroupSwitching=" + allowGroupSwitching
                     + " primaryRanges=" + primaryRanges
@@ -2696,19 +2691,25 @@ public final class SurfaceControl implements Parcelable {
     /**
      * Specifies the desired display mode(s) that should be applied atomically.
      *
-     * The `applyToken` is for synchronization. To change the resolution, the client must first
-     * request the `DisplayModeSpecs#defaultMode` for the new resolution, then commit a display
-     * transaction with the same `applyToken`. The `DisplayModeSpecs` and transaction will then
-     * be applied atomically. To atomically change modes for multiple displays, the client must
-     * pass multiple `DesiredDisplayModeSpecs` and pass the same `applyToken` in the subsequent
-     * display transaction that commits all displays.
+     * The `applyToken` is for synchronization. To change modes, the client must
+     * first request the `DisplayModeSpecs#defaultMode` for the new modes, then commit a display
+     * transaction with the same `applyToken`. The `DisplayModeSpecs` and transaction will then be
+     * applied atomically. To atomically change modes for multiple displays, the client must pass
+     * multiple `DesiredDisplayModeSpecs` and pass the same `applyToken` in the subsequent display
+     * transaction that commits all displays.
      *
+     * @param applyToken The mode apply token with which the specs should apply.
+     * @param desiredDisplayModeSpecs The new desired display mode specs.
+
      * @hide
      */
     public static boolean setDesiredDisplayModeSpecs(
-            DesiredDisplayModeSpecs[] desiredDisplayModeSpecs) {
+            IBinder applyToken, DesiredDisplayModeSpecs[] desiredDisplayModeSpecs) {
         if (desiredDisplayModeSpecs == null || desiredDisplayModeSpecs.length == 0) {
             throw new IllegalArgumentException("desiredDisplayModeSpecs must not be null or empty");
+        }
+        if (applyToken == null) {
+            throw new IllegalArgumentException("applyToken must not be null");
         }
 
         for (DesiredDisplayModeSpecs specs : desiredDisplayModeSpecs) {
@@ -2725,7 +2726,7 @@ public final class SurfaceControl implements Parcelable {
             }
         }
 
-        return nativeSetDesiredDisplayModeSpecs(desiredDisplayModeSpecs);
+        return nativeSetDesiredDisplayModeSpecs(applyToken, desiredDisplayModeSpecs);
     }
 
     /**
