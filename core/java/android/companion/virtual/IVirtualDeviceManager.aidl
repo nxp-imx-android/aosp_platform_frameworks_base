@@ -25,6 +25,7 @@ import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IAutomatedPackageListener;
+import android.companion.virtual.computercontrol.IComputerControlConsentManager;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.content.AttributionSource;
 import android.content.Intent;
@@ -62,6 +63,11 @@ interface IVirtualDeviceManager {
     void requestComputerControlSession(
             in IApplicationThread appThread, in AttributionSource attributionSource,
             in ComputerControlSessionParams params, in IComputerControlSessionCallback callback);
+
+    /**
+     * Returns the consent manager for computer control.
+     */
+    IComputerControlConsentManager getComputerControlConsentManager();
 
     /**
      * Returns the details of all available virtual devices.

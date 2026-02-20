@@ -253,6 +253,8 @@ public class ComputerControlSessionProcessorTest {
                 anyInt())).thenReturn(true);
         when(mAllowlistController.isPackageAutomatable(
                 eq(TARGET_PACKAGE), eq(OWNER_PACKAGE_NAME), any())).thenReturn(true);
+        when(mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(anyInt(), anyString(),
+                anyString())).thenReturn(true);
 
         when(mAuthenticationPolicyService.isAgentAuthorized(any(), anyInt(), any()))
                 .thenReturn(true);
@@ -741,6 +743,59 @@ public class ComputerControlSessionProcessorTest {
 
         verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                 .onSessionCreated(anyInt(), any());
+    }
+
+    @Test
+    public void removeAppFromAutomatableAppListForAgent_closesSession() throws Exception {
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), any());
+
+        mProcessor.removeAppFromAutomatableAppListForAgent(
+                ATTRIBUTION_SOURCE.getUid(), OWNER_PACKAGE_NAME, TARGET_PACKAGE);
+
+        verify(mVirtualDevice, timeout(SESSION_CLOSE_TIMEOUT_MS)).close();
+    }
+
+    @Test
+    public void removeAppFromAutomatableAppListForAgent_differentPackage_doesNotCloseSession()
+            throws Exception {
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), any());
+
+        mProcessor.removeAppFromAutomatableAppListForAgent(
+                ATTRIBUTION_SOURCE.getUid(), OWNER_PACKAGE_NAME, ANOTHER_TARGET_PACKAGE);
+
+        verify(mVirtualDevice, never()).close();
+    }
+
+    @Test
+    public void clearAutomatableAppListForAgent_closesSession() throws Exception {
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreated(anyInt(), any());
+
+        mProcessor.clearAutomatableAppListForAgent(ATTRIBUTION_SOURCE.getUid(), OWNER_PACKAGE_NAME);
+
+        verify(mVirtualDevice, timeout(SESSION_CLOSE_TIMEOUT_MS)).close();
+    }
+
+    @Test
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_COMPUTER_CONTROL_PER_APP_CONSENT)
+    public void processNewSessionRequest_perAppConsentEnabled_notAutomatable_sendsPendingIntent()
+            throws Exception {
+        when(mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(anyInt(), anyString(),
+                anyString())).thenReturn(false);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+
+        verify(mPendingIntentFactory).create(any(), anyInt(), mIntentArgumentCaptor.capture());
+        verify(mComputerControlSessionCallback).onSessionPending(any());
     }
 
     private ComputerControlSessionParams generateUniqueParams(int index) {

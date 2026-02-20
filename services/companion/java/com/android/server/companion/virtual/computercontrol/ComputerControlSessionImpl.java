@@ -556,6 +556,12 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mOwnerPackageName;
     }
 
+    boolean isAutomatingPackage(@NonNull String packageName) {
+        synchronized (mAllowlistedPackages) {
+            return mAllowlistedPackages.contains(packageName);
+        }
+    }
+
     @Nullable
     NotificationInfo getNotificationInfo() {
         synchronized (mNotificationLock) {

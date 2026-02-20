@@ -75,6 +75,8 @@ import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -175,14 +177,32 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
 
         final int opResult = mAppOpsManager.noteOpNoThrow(
                 AppOpsManager.OP_COMPUTER_CONTROL, attributionSource, "create session");
-        if (opResult == AppOpsManager.MODE_ALLOWED) {
-            mHandler.post(() -> createSession(appThread, attributionSource, params, callback));
-            return;
-        } else if (opResult == AppOpsManager.MODE_IGNORED
+        final List<String> targetPackagesForConsentRequest = new ArrayList<>();
+        if (opResult == AppOpsManager.MODE_IGNORED
                 || opResult == AppOpsManager.MODE_ERRORED) {
             Slog.w(TAG, "No permission to request computer control session: " + params.getName());
             dispatchSessionCreationFailed(callback, attributionSource, params,
                     ComputerControlSession.ERROR_PERMISSION_DENIED);
+            return;
+        }
+        if (opResult == AppOpsManager.MODE_ALLOWED) {
+            if (android.companion.virtualdevice.flags.Flags.computerControlPerAppConsent()) {
+                final int callerUid = attributionSource.getUid();
+                final String callerPackageName = attributionSource.getPackageName();
+                for (int i = 0; i < params.getTargetPackageNames().size(); i++) {
+                    final String packageName = params.getTargetPackageNames().get(i);
+                    if (!mAllowlistController.doesAgentHaveConsentToAutomateTargetApp(callerUid,
+                            callerPackageName, packageName)) {
+                        targetPackagesForConsentRequest.add(packageName);
+                    }
+                }
+            }
+        } else {
+            targetPackagesForConsentRequest.addAll(params.getTargetPackageNames());
+        }
+        if (targetPackagesForConsentRequest.isEmpty()) {
+            // Start session if no additional consent required
+            mHandler.post(() -> createSession(appThread, attributionSource, params, callback));
             return;
         }
 
@@ -197,7 +217,10 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
                         .prepareForIpc();
         final Intent intent = new Intent(ComputerControlSession.ACTION_REQUEST_ACCESS)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .putExtra(Intent.EXTRA_UID, attributionSource.getUid())
                 .putExtra(Intent.EXTRA_PACKAGE_NAME, attributionSource.getPackageName())
+                .putExtra(Intent.EXTRA_PACKAGES,
+                        targetPackagesForConsentRequest.toArray(new String[0]))
                 .putExtra(Intent.EXTRA_RESULT_RECEIVER, resultReceiver);
         final PendingIntent pendingIntent =
                 mPendingIntentFactory.create(mContext, Binder.getCallingUid(), intent);
@@ -326,6 +349,59 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
      */
     public boolean isComputerControlSession(int deviceId) {
         return findSession(deviceId) != null;
+    }
+
+    /**
+     * Adds a package to the automatable app list for the specified agent.
+     */
+    public void addAppToAutomatableAppListForAgent(int agentUid, @NonNull String agentPackageName,
+            @NonNull String packageName) {
+        mAllowlistController.addAppToAutomatableAppListForAgent(agentUid, agentPackageName,
+                packageName);
+    }
+
+    /**
+     * Removes a package from the automatable app list for the specified agent.
+     */
+    public void removeAppFromAutomatableAppListForAgent(int agentUid,
+            @NonNull String agentPackageName,
+            @NonNull String packageName) {
+        mAllowlistController.removeAppFromAutomatableAppListForAgent(agentUid, agentPackageName,
+                packageName);
+        // Close any ongoing automation session for the agent where the agent is automating the
+        // removed automatable app.
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                ComputerControlSessionImpl session = mSessions.valueAt(i);
+                if (session.getOwnerPackageName().equals(agentPackageName)
+                        && session.isAutomatingPackage(packageName)) {
+                    session.close(CLOSE_REASON_USER_INITIATED);
+                }
+            }
+        }
+    }
+
+    /**
+     * Clears the automatable app list for the specified agent.
+     */
+    public void clearAutomatableAppListForAgent(int agentUid, @NonNull String agentPackageName) {
+        mAllowlistController.clearAutomatableAppListForAgent(agentUid, agentPackageName);
+        // Close any ongoing automation session for the agent
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                ComputerControlSessionImpl session = mSessions.valueAt(i);
+                if (session.getOwnerPackageName().equals(agentPackageName)) {
+                    session.close(CLOSE_REASON_USER_INITIATED);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the automatable app list for the specified agent.
+     */
+    public String[] getAutomatableAppListForAgent(int agentUid, @NonNull String agentPackageName) {
+        return mAllowlistController.getAutomatableAppListForAgent(agentUid, agentPackageName);
     }
 
     private void startHandlerThreadIfNeeded() {
