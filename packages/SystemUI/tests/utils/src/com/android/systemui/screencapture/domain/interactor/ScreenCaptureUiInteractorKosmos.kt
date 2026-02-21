@@ -25,7 +25,7 @@ import com.android.systemui.screencapture.data.repository.screenCaptureDeviceSta
 import com.android.systemui.screencapture.data.repository.screenCaptureUiRepository
 import com.android.systemui.user.data.repository.userRepository
 
-val Kosmos.screenCaptureUiInteractor: ScreenCaptureUiInteractor by
+var Kosmos.screenCaptureUiInteractor: ScreenCaptureUiInteractor by
     Kosmos.Fixture {
         ScreenCaptureUiInteractor(
             context = applicationContext,
