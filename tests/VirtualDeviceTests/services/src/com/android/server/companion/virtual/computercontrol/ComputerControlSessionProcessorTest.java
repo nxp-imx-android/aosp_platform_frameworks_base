@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -65,6 +66,8 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.security.authenticationpolicy.AuthenticationPolicyManager;
+import android.security.authenticationpolicy.IAuthenticationPolicyService;
 import android.util.ArraySet;
 import android.view.Display;
 import android.view.WindowManager;
@@ -123,6 +126,8 @@ public class ComputerControlSessionProcessorTest {
     @Mock
     private KeyguardManager mKeyguardManager;
     @Mock
+    private IAuthenticationPolicyService mAuthenticationPolicyService;
+    @Mock
     private AppOpsManager mAppOpsManager;
     @Mock
     private WindowManager mWindowManager;
@@ -169,7 +174,7 @@ public class ComputerControlSessionProcessorTest {
     private AutoCloseable mMockitoSession;
 
     @Before
-    public void setUp() {
+    public void setUp() throws RemoteException {
         mMockitoSession = MockitoAnnotations.openMocks(this);
 
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
@@ -195,6 +200,8 @@ public class ComputerControlSessionProcessorTest {
         doReturn(mWindowManager).when(displayContext).getSystemService(WindowManager.class);
 
         when(context.getSystemService(Context.KEYGUARD_SERVICE)).thenReturn(mKeyguardManager);
+        when(context.getSystemService(Context.AUTHENTICATION_POLICY_SERVICE))
+                .thenReturn(new AuthenticationPolicyManager(context, mAuthenticationPolicyService));
         when(context.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
         when(context.getSystemService(DevicePolicyManager.class)).thenReturn(mDevicePolicyManager);
         when(context.getSystemService(UserManager.class)).thenReturn(mUserManager);
@@ -231,6 +238,9 @@ public class ComputerControlSessionProcessorTest {
         when(mAllowlistController.isPackageAutomatable(
                 eq(TARGET_PACKAGE), eq(OWNER_PACKAGE_NAME), any())).thenReturn(true);
 
+        when(mAuthenticationPolicyService.isAgentAuthorized(any(), anyInt(), isNull()))
+                .thenReturn(true);
+
         mProcessor = new ComputerControlSessionProcessor(
                 context, mVirtualDeviceManagerInternal, mVirtualDeviceFactory,
                 mPendingIntentFactory, mAllowlistController);
@@ -249,7 +259,21 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void defaultDevice_keyguardLocked_sessionNotCreated() throws Exception {
+        when(mAuthenticationPolicyService.isAgentAuthorized(
+                any(), eq(Context.DEVICE_ID_DEFAULT), isNull())).thenReturn(false);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreationFailed(ComputerControlSession.ERROR_DEVICE_LOCKED);
+    }
+
+    @Test
+    @DisableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void defaultDevice_keyguardLocked_sessionNotCreated_flagDisabled() throws Exception {
         when(mKeyguardManager.isDeviceLocked(CALLING_USER_ID, Context.DEVICE_ID_DEFAULT))
                 .thenReturn(true);
 
@@ -261,7 +285,24 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void nonDefaultDevice_uidNotSeenOnDevice_fallbackToDefaultDevice() throws Exception {
+        when(mVirtualDeviceManagerInternal.getDeviceIdsForUid(ATTRIBUTION_SOURCE.getUid()))
+                .thenReturn(new ArraySet<>(Set.of(Context.DEVICE_ID_DEFAULT)));
+        when(mAuthenticationPolicyService.isAgentAuthorized(
+                any(), eq(Context.DEVICE_ID_DEFAULT), isNull())).thenReturn(false);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
+                mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
+                .onSessionCreationFailed(ComputerControlSession.ERROR_DEVICE_LOCKED);
+    }
+
+    @Test
+    @DisableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void nonDefaultDevice_uidNotSeenOnDevice_fallbackToDefaultDevice_flagDisabled() throws Exception {
         when(mVirtualDeviceManagerInternal.getDeviceIdsForUid(ATTRIBUTION_SOURCE.getUid()))
                 .thenReturn(new ArraySet<>(Set.of(Context.DEVICE_ID_DEFAULT)));
         when(mKeyguardManager.isDeviceLocked(CALLING_USER_ID, Context.DEVICE_ID_DEFAULT))
@@ -276,7 +317,25 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
+    @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void nonDefaultDevice_uidSeenOnDevice_sessionCreated() throws Exception {
+        when(mVirtualDeviceManagerInternal.getDeviceIdsForUid(ATTRIBUTION_SOURCE.getUid()))
+                .thenReturn(
+                        new ArraySet<>(Set.of(Context.DEVICE_ID_DEFAULT, NON_DEFAULT_DEVICE_ID)));
+        when(mAuthenticationPolicyService.isAgentAuthorized(
+                any(), eq(NON_DEFAULT_DEVICE_ID), isNull())).thenReturn(true);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
+                mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS).times(1))
+                .onSessionCreated(anyInt(), any());
+    }
+
+    @Test
+    @DisableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
+    public void nonDefaultDevice_uidSeenOnDevice_sessionCreated_flagDisabled() throws Exception {
         when(mVirtualDeviceManagerInternal.getDeviceIdsForUid(ATTRIBUTION_SOURCE.getUid()))
                 .thenReturn(
                         new ArraySet<>(Set.of(Context.DEVICE_ID_DEFAULT, NON_DEFAULT_DEVICE_ID)));

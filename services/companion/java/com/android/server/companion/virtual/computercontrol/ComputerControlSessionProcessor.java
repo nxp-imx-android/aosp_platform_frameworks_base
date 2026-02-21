@@ -58,6 +58,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.util.ArraySet;
 import android.util.Slog;
 
@@ -91,6 +92,7 @@ public final class ComputerControlSessionProcessor {
 
     private final Context mContext;
     private final KeyguardManager mKeyguardManager;
+    private final AuthenticationPolicyManager mAuthenticationPolicyManager;
     private final AppOpsManager mAppOpsManager;
     private final PackageManager mPackageManager;
     private final UserManager mUserManager;
@@ -130,6 +132,7 @@ public final class ComputerControlSessionProcessor {
         mVirtualDeviceFactory = virtualDeviceFactory;
         mPendingIntentFactory = pendingIntentFactory;
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
+        mAuthenticationPolicyManager = context.getSystemService(AuthenticationPolicyManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
         mPackageManager = context.getPackageManager();
         mUserManager = context.getSystemService(UserManager.class);
@@ -419,8 +422,15 @@ public final class ComputerControlSessionProcessor {
             deviceId = Context.DEVICE_ID_DEFAULT;
         }
         final int userId = UserHandle.getUserId(attributionSource.getUid());
-        return Binder.withCleanCallingIdentity(
-                () -> mKeyguardManager.isDeviceLocked(userId, deviceId));
+        return Binder.withCleanCallingIdentity(() -> {
+            if (android.companion.Flags.supportAiAgent() && mAuthenticationPolicyManager != null) {
+                // TODO(b/482988620): replace null with CDM DeviceId for xdevice scenarios
+                return !mAuthenticationPolicyManager.isAgentAuthorized(
+                        userId, deviceId, /* companionDeviceId */ null);
+            } else {
+                return mKeyguardManager.isDeviceLocked(userId, deviceId);
+            }
+        });
     }
 
     /** Returns true of the source's UID is seen on the device given by the source's deviceId. */
