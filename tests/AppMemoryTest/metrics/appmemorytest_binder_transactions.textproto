@@ -20,7 +20,7 @@ WITH
   )
 SELECT
   abt.aidl_name,
-  COALESCE(abt.aidl_name, 'NULL') AS aidl_name_including_nulls
+  COALESCE(abt.aidl_name, abt.server_process, 'NULL') AS aidl_name_including_nulls
 FROM
   android_binder_txns AS abt
   JOIN testhelper_startup
@@ -30,6 +30,18 @@ FROM
     )
 WHERE
   abt.client_process = 'android.app.memory.testhelper'
+  -- Exclude binder transactions that have shown to be noisy
+  -- We should work towards de-noising these calls; however,
+  -- for now we can simply omit them to avoid alerting on false
+  -- positives.
+  AND COALESCE(abt.aidl_name, abt.server_process, 'NULL') NOT IN (
+       '/system/bin/surfaceflinger',
+       '/system/bin/gpuservice',
+       'AIDL::cpp::IDisplayEventConnection::requestNextVsync::cppServer',
+       'AIDL::cpp::IDisplayEventConnection::stealReceiveChannel::cppServer',
+       'AIDL::cpp::ISurfaceComposerClient::createSurface::cppServer',
+       'AIDL::java::IInputManager::getVelocityTrackerStrategy::server'
+  )
       "
   }
 }
