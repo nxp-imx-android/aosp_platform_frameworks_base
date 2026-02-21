@@ -466,6 +466,107 @@ public class TrustedPresentationListenerControllerTest extends WindowTestsBase {
         assertEquals(1, mListener.mInvocationLatch.getCount());
     }
 
+    @Test
+    public void testComputeTpl_windowMirrored_passesFractionRenderedThreshold() throws Exception {
+        mController.registerListener(mWindowToken, mListener, mThresholds, LISTENER_ID);
+        waitForHandlerIdle();
+
+        mListener.setExpectedInvocations(1);
+
+        // Primary window, fully occluded
+        InputWindowHandle primaryWindow = createInputWindowHandle(
+                DEFAULT_DISPLAY, new Rect(0, 0, 100, 100), 1.0f /* alpha */, mWindowToken);
+        InputWindowHandle occludingWindow = createInputWindowHandle(
+                DEFAULT_DISPLAY, new Rect(0, 0, 100, 100), 1.0f /* alpha */, new Binder());
+
+        WindowInfosListener.DisplayInfo primaryDisplayInfo = createDisplayInfo(
+                DEFAULT_DISPLAY, 100, 100, new Matrix());
+
+        // Mirrored window on a different display, not occluded
+        int mirrorDisplayId = DEFAULT_DISPLAY + 1;
+        InputWindowHandle mirroredWindow = createInputWindowHandle(
+                mirrorDisplayId, new Rect(0, 0, 100, 100), 1.0f /* alpha */, mWindowToken);
+        WindowInfosListener.DisplayInfo mirrorDisplayInfo = createDisplayInfo(
+                mirrorDisplayId, 100, 100, new Matrix());
+
+        triggerWindowInfosChanged(
+                new InputWindowHandle[]{occludingWindow, primaryWindow, mirroredWindow},
+                new WindowInfosListener.DisplayInfo[]{primaryDisplayInfo, mirrorDisplayInfo});
+
+        mListener.await();
+        mListener.assertEnteredTrustedState(LISTENER_ID);
+        assertNotNull(mListener.mEntered);
+        assertEquals(1, mListener.mEntered.length);
+        assertEquals(1, mListener.mEntered[0]);
+    }
+
+    @Test
+    public void testComputeTpl_windowMirrored_failsWhenDifferentMirrorsMeetDifferentThresholds()
+                throws Exception {
+        mController.registerListener(mWindowToken, mListener, mThresholds, LISTENER_ID);
+        waitForHandlerIdle();
+
+        mListener.setExpectedInvocations(1);
+
+        // Primary window: high alpha, but low fraction rendered (mostly occluded)
+        InputWindowHandle primaryWindow = createInputWindowHandle(
+                DEFAULT_DISPLAY, new Rect(0, 0, 100, 100), 1.0f /* alpha */, mWindowToken);
+        InputWindowHandle occludingWindow = createInputWindowHandle(
+                DEFAULT_DISPLAY, new Rect(0, 0, 100, 80), 1.0f /* alpha */,
+                new Binder()); // Occludes 80%
+
+        WindowInfosListener.DisplayInfo primaryDisplayInfo = createDisplayInfo(
+                DEFAULT_DISPLAY, 100, 100, new Matrix());
+
+        // Mirrored window: low alpha, but high fraction rendered (not occluded)
+        int mirrorDisplayId = DEFAULT_DISPLAY + 1;
+        InputWindowHandle mirroredWindow = createInputWindowHandle(
+                mirrorDisplayId, new Rect(0, 0, 100, 100), 0.2f,
+                mWindowToken); // Alpha 0.2 < threshold 0.5
+        WindowInfosListener.DisplayInfo mirrorDisplayInfo = createDisplayInfo(
+                mirrorDisplayId, 100, 100, new Matrix());
+
+        triggerWindowInfosChanged(
+                new InputWindowHandle[]{occludingWindow, primaryWindow, mirroredWindow},
+                new WindowInfosListener.DisplayInfo[]{primaryDisplayInfo, mirrorDisplayInfo});
+
+        // The computation runs, but neither enters nor starts the timer for entered
+        waitForHandlerIdle();
+        assertEquals(1, mListener.mInvocationLatch.getCount());
+    }
+
+    @Test
+    public void testComputeTpl_windowMirrored_passesWhenOneMirrorMeetsThresholds()
+                throws Exception {
+        mController.registerListener(mWindowToken, mListener, mThresholds, LISTENER_ID);
+        waitForHandlerIdle();
+
+        mListener.setExpectedInvocations(1);
+
+        // Primary window: fails both thresholds (low alpha and heavily occluded)
+        InputWindowHandle primaryWindow = createInputWindowHandle(
+                DEFAULT_DISPLAY, new Rect(0, 0, 100, 100), 0.2f /* alpha */,
+                mWindowToken); // Alpha 0.2 < threshold 0.5
+        InputWindowHandle occludingWindow = createInputWindowHandle(
+                DEFAULT_DISPLAY, new Rect(0, 0, 100, 80), 1.0f /* alpha */,
+                new Binder()); // Occludes 80%
+
+        WindowInfosListener.DisplayInfo displayInfo = createDisplayInfo(
+                DEFAULT_DISPLAY, 100, 100, new Matrix());
+
+        // Mirrored window: passes both thresholds
+        InputWindowHandle mirroredWindow = createInputWindowHandle(
+                DEFAULT_DISPLAY, new Rect(0, 0, 100, 100), 1.0f /* alpha */, mWindowToken);
+
+        triggerWindowInfosChanged(
+                new InputWindowHandle[]{mirroredWindow, occludingWindow, primaryWindow},
+                new WindowInfosListener.DisplayInfo[]{displayInfo});
+
+        mListener.await();
+
+        mListener.assertEnteredTrustedState(LISTENER_ID);
+    }
+
     private void waitForHandlerIdle() {
         dumpController();
     }

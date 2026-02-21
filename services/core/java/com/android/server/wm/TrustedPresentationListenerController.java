@@ -338,8 +338,11 @@ public class TrustedPresentationListenerController {
 
         ArrayMap<ITrustedPresentationListener, Pair<IntArray, IntArray>> listenerUpdates =
                 new ArrayMap<>();
+
+        ArrayMap<IBinder, ArrayList<Pair<Float, Float>>> windowStates = new ArrayMap<>();
+
         for (int i = 0; i < mLastWindowHandles.first.length; ++i) {
-            var windowHandle = mLastWindowHandles.first[i];
+            InputWindowHandle windowHandle = mLastWindowHandles.first[i];
             var isInvisible = ((windowHandle.inputConfig & InputConfig.NOT_VISIBLE)
                     == InputConfig.NOT_VISIBLE);
             if (!windowHandle.canOccludePresentation || isInvisible) {
@@ -379,7 +382,8 @@ public class TrustedPresentationListenerController {
             }
 
             Region coveredRegionsAbove = coveredRegionsAboveByDisplay.get(displayId, new Region());
-            var listeners = mRegisteredListeners.get(windowHandle.getWindowToken());
+            IBinder windowToken = windowHandle.getWindowToken();
+            var listeners = mRegisteredListeners.get(windowToken);
             if (listeners != null) {
                 Region region = new Region();
                 region.op(tmpRect, coveredRegionsAbove, Region.Op.DIFFERENCE);
@@ -394,14 +398,22 @@ public class TrustedPresentationListenerController {
                         windowHandle.contentSize,
                         scaleX, scaleY);
 
-                checkIfInThreshold(listeners, listenerUpdates, fractionRendered, windowHandle.alpha,
-                        currTimeMs);
+                windowStates.computeIfAbsent(windowToken, k -> new ArrayList<>())
+                        .add(new Pair<>(fractionRendered, windowHandle.alpha));
             }
 
             coveredRegionsAbove.op(tmpRect, Region.Op.UNION);
             coveredRegionsAboveByDisplay.put(displayId, coveredRegionsAbove);
             ProtoLog.v(WM_DEBUG_TPL, "coveredRegionsAbove updated with %s frame:%s region:%s",
                     windowHandle.name, tmpRect.toShortString(), coveredRegionsAbove);
+        }
+
+        for (int i = 0; i < mRegisteredListeners.mWindowToListeners.size(); i++) {
+            IBinder windowToken = mRegisteredListeners.mWindowToListeners.keyAt(i);
+            var listeners = mRegisteredListeners.mWindowToListeners.valueAt(i);
+            checkIfInThreshold(listeners, listenerUpdates,
+                    windowStates.get(windowToken),
+                    currTimeMs);
         }
 
         for (int i = 0; i < listenerUpdates.size(); i++) {
@@ -434,37 +446,56 @@ public class TrustedPresentationListenerController {
     private void checkIfInThreshold(
             ArrayList<TrustedPresentationInfo> listeners,
             ArrayMap<ITrustedPresentationListener, Pair<IntArray, IntArray>> listenerUpdates,
-            float fractionRendered, float alpha, long currTimeMs) {
-        ProtoLog.v(WM_DEBUG_TPL, "checkIfInThreshold fractionRendered=%f alpha=%f currTimeMs=%d",
-                fractionRendered, alpha, currTimeMs);
+            ArrayList<Pair<Float, Float>> states, long currTimeMs) {
+        if (states == null) {
+            states = new ArrayList<>();
+        }
         for (int i = 0; i < listeners.size(); i++) {
             var trustedPresentationInfo = listeners.get(i);
-            trustedPresentationInfo.mLastAlpha = alpha;
-            trustedPresentationInfo.mLastFractionRendered = fractionRendered;
-            var listener = trustedPresentationInfo.mListener;
+            boolean newState = false;
+            float bestAlpha = 0f;
+            float bestFraction = 0f;
+            for (Pair<Float, Float> state : states) {
+                float fractionRendered = state.first;
+                float alpha = state.second;
+                boolean meetsThreshold =
+                        (alpha >= trustedPresentationInfo.mThresholds.getMinAlpha())
+                        && (fractionRendered >= trustedPresentationInfo.mThresholds
+                                .getMinFractionRendered());
+                if (meetsThreshold) {
+                    newState = true;
+                    bestAlpha = alpha;
+                    bestFraction = fractionRendered;
+                    break;
+                }
+                // Track best non-meeting state for debugging/dump
+                if (fractionRendered > bestFraction) {
+                    bestFraction = fractionRendered;
+                    bestAlpha = alpha;
+                }
+            }
+
+            trustedPresentationInfo.mLastAlpha = bestAlpha;
+            trustedPresentationInfo.mLastFractionRendered = bestFraction;
             boolean lastState = trustedPresentationInfo.mLastComputedTrustedPresentationState;
-            boolean newState =
-                    (alpha >= trustedPresentationInfo.mThresholds.getMinAlpha())
-                            && (fractionRendered >= trustedPresentationInfo.mThresholds
-                                    .getMinFractionRendered());
             trustedPresentationInfo.mLastComputedTrustedPresentationState = newState;
 
             ProtoLog.v(WM_DEBUG_TPL,
                     "lastState=%s newState=%s alpha=%f minAlpha=%f fractionRendered=%f "
                             + "minFractionRendered=%f",
-                    lastState, newState, alpha, trustedPresentationInfo.mThresholds.getMinAlpha(),
-                    fractionRendered, trustedPresentationInfo.mThresholds
-                            .getMinFractionRendered());
+                    lastState, newState, bestAlpha,
+                    trustedPresentationInfo.mThresholds.getMinAlpha(), bestFraction,
+                    trustedPresentationInfo.mThresholds.getMinFractionRendered());
 
             if (lastState && !newState) {
                 // We were in the trusted presentation state, but now we left it,
                 // emit the callback if needed
                 if (trustedPresentationInfo.mLastReportedTrustedPresentationState) {
                     trustedPresentationInfo.mLastReportedTrustedPresentationState = false;
-                    addListenerUpdate(listenerUpdates, listener,
+                    addListenerUpdate(listenerUpdates, trustedPresentationInfo.mListener,
                             trustedPresentationInfo.mId, /*presentationState*/ false);
                     ProtoLog.d(WM_DEBUG_TPL, "Adding untrusted state listener=%s with id=%d",
-                            listener, trustedPresentationInfo.mId);
+                            trustedPresentationInfo.mListener, trustedPresentationInfo.mId);
                 }
                 // Reset the timer
                 trustedPresentationInfo.mEnteredTrustedPresentationStateTime = -1;
@@ -484,10 +515,10 @@ public class TrustedPresentationListenerController {
                             > trustedPresentationInfo.mThresholds
                                         .getStabilityRequirementMillis())) {
                 trustedPresentationInfo.mLastReportedTrustedPresentationState = true;
-                addListenerUpdate(listenerUpdates, listener,
+                addListenerUpdate(listenerUpdates, trustedPresentationInfo.mListener,
                         trustedPresentationInfo.mId, /*presentationState*/ true);
                 ProtoLog.d(WM_DEBUG_TPL, "Adding trusted state listener=%s with id=%d",
-                        listener, trustedPresentationInfo.mId);
+                        trustedPresentationInfo.mListener, trustedPresentationInfo.mId);
             }
         }
     }
