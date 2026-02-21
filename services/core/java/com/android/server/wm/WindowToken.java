@@ -347,6 +347,11 @@ class WindowToken extends WindowContainer<WindowState> {
             dc.reParentWindowToken(this);
         }
 
+        if (mFixedRotationTransformState != null && dc != mDisplayContent
+                && dc.getIgnoreOrientationRequest()) {
+            finishFixedRotationTransform();
+        }
+
         // TODO(b/36740756): One day this should perhaps be hooked
         // up with goodToGo, so we don't move a window
         // to another display before the window behind
@@ -661,6 +666,7 @@ class WindowToken extends WindowContainer<WindowState> {
             // override configuration can update to the same state.
             getResolvedOverrideConfiguration().updateFrom(
                     mFixedRotationTransformState.mRotatedOverrideConfiguration);
+
         }
         if (asActivityRecord() == null) {
             // Let ActivityRecord override the config if there is one. Otherwise, override here.
