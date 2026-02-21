@@ -208,7 +208,9 @@ class LocationButtonSession(
             if (DEBUG) {
                 Slog.d(LOG_TAG, "setCornerRadius() for session $sessionId: $cornerRadius")
             }
-            ensureActiveSession()
+            if (!ensureActiveSession()) {
+                return@execute
+            }
             interactor.setCornerRadius(sessionId, cornerRadius)
         }
     }
@@ -218,7 +220,9 @@ class LocationButtonSession(
             if (DEBUG) {
                 Slog.d(LOG_TAG, "setPressedCornerRadius() for session $sessionId: $cornerRadius")
             }
-            ensureActiveSession()
+            if (!ensureActiveSession()) {
+                return@execute
+            }
             interactor.setPressedCornerRadius(sessionId, cornerRadius)
         }
     }
@@ -231,7 +235,9 @@ class LocationButtonSession(
             )
         }
         executor.execute {
-            ensureActiveSession()
+            if (!ensureActiveSession()) {
+                return@execute
+            }
             // For security, ensure the background is always opaque.
             val opaqueBackgroundColor = ColorUtils.setAlphaComponent(color, 255)
             interactor.setBackgroundColor(sessionId, opaqueBackgroundColor)
@@ -246,7 +252,9 @@ class LocationButtonSession(
                     "setTextColor() for session $sessionId: #${Integer.toHexString(textColor)}",
                 )
             }
-            ensureActiveSession()
+            if (!ensureActiveSession()) {
+                return@execute
+            }
             interactor.setTextColor(sessionId, textColor)
         }
     }
@@ -259,7 +267,9 @@ class LocationButtonSession(
                     "setIconTint() for session $sessionId: #${Integer.toHexString(color)}",
                 )
             }
-            ensureActiveSession()
+            if (!ensureActiveSession()) {
+                return@execute
+            }
             interactor.setIconTint(sessionId, color)
         }
     }
@@ -269,7 +279,9 @@ class LocationButtonSession(
             if (DEBUG) {
                 Slog.d(LOG_TAG, "setTextType() for session $sessionId: $textType")
             }
-            ensureActiveSession()
+            if (!ensureActiveSession()) {
+                return@execute
+            }
             interactor.setTextType(sessionId, textType)
         }
     }
@@ -279,7 +291,9 @@ class LocationButtonSession(
             if (DEBUG) {
                 Slog.d(LOG_TAG, "resize() called for session $sessionId: $width x $height")
             }
-            ensureActiveSession()
+            if (!ensureActiveSession()) {
+                return@execute
+            }
             interactor.setSize(sessionId, width, height)
             val model = interactor.getButtonState(sessionId) ?: return@execute
             if (DEBUG) {
@@ -297,7 +311,9 @@ class LocationButtonSession(
             if (DEBUG) {
                 Slog.d(LOG_TAG, "setPadding() for session $sessionId: $left, $top, $right, $bottom")
             }
-            ensureActiveSession()
+            if (!ensureActiveSession()) {
+                return@execute
+            }
             interactor.setPadding(sessionId, left, top, right, bottom)
         }
     }
@@ -310,7 +326,9 @@ class LocationButtonSession(
                     "setStrokeColor() for session $sessionId: #${Integer.toHexString(color)}",
                 )
             }
-            ensureActiveSession()
+            if (!ensureActiveSession()) {
+                return@execute
+            }
             interactor.setStrokeColor(sessionId, color)
         }
     }
@@ -320,7 +338,9 @@ class LocationButtonSession(
             if (DEBUG) {
                 Slog.d(LOG_TAG, "setStrokeWidth() for session $sessionId: $width")
             }
-            ensureActiveSession()
+            if (!ensureActiveSession()) {
+                return@execute
+            }
             interactor.setStrokeWidth(sessionId, width)
         }
     }
@@ -330,7 +350,9 @@ class LocationButtonSession(
             if (DEBUG) {
                 Slog.d(LOG_TAG, "changeConfiguration() for session $sessionId: $newConfig")
             }
-            ensureActiveSession()
+            if (!ensureActiveSession()) {
+                return@execute
+            }
             val display = displayManager.getDisplay(displayId)
             val displayContext = context.createDisplayContext(display)
             interactor.setConfiguration(
@@ -358,7 +380,7 @@ class LocationButtonSession(
         }
     }
 
-    private fun ensureActiveSession() {
+    private fun ensureActiveSession(): Boolean {
         if (!isActive) {
             Slog.w(LOG_TAG, "Session is already closed, can't use a closed session.")
             try {
@@ -376,7 +398,9 @@ class LocationButtonSession(
                     e,
                 )
             }
+            return false
         }
+        return true
     }
 
     override fun binderDied() {
