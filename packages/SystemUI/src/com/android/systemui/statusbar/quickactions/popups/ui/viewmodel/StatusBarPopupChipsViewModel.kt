@@ -29,6 +29,7 @@ import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsChi
 import com.android.systemui.statusbar.quickactions.ime.ui.viewmodel.ImeIndicatorChipViewModel
 import com.android.systemui.statusbar.quickactions.media.ui.viewmodel.MediaControlChipViewModel
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
+import com.android.systemui.statusbar.quickactions.screenrecord.ui.viewmodel.LargeScreenRecordingChipViewModel
 import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorViewModel
@@ -53,6 +54,7 @@ constructor(
     shareScreenPrivacyIndicatorFactory: ShareScreenPrivacyIndicatorViewModel.Factory,
     assistantIconFactory: AssistantIconViewModel.Factory,
     imeIndicatorChipFactory: ImeIndicatorChipViewModel.Factory,
+    largeScreenRecordingChipViewModelFactory: LargeScreenRecordingChipViewModel.Factory,
 ) : ExclusiveActivatable() {
 
     private val mediaControlChip by lazy { mediaControlChipFactory.create() }
@@ -60,6 +62,9 @@ constructor(
     private val shareScreenPrivacyIndicator by lazy { shareScreenPrivacyIndicatorFactory.create() }
     private val assistantIcon by lazy { assistantIconFactory.create() }
     private val imeIndicatorChip by lazy { imeIndicatorChipFactory.create(displayId) }
+    private val largeScreenRecordingChip by lazy {
+        largeScreenRecordingChipViewModelFactory.create()
+    }
 
     /** The ID of the current chip that is currently active, or `null` if no chip is active. */
     private var currentActiveQuickActionId by mutableStateOf<QuickActionChipId?>(null)
@@ -71,6 +76,7 @@ constructor(
             shareScreen = shareScreenPrivacyIndicator.chip,
             assistant = assistantIcon.chip,
             ime = imeIndicatorChip.chip,
+            largeScreenRecording = largeScreenRecordingChip.chip,
         )
     }
 
@@ -78,7 +84,12 @@ constructor(
         if (StatusBarPopupChips.isEnabled) {
             val bundle = incomingQuickActionChipBundle
 
-            listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
+            listOfNotNull(
+                    bundle.media,
+                    bundle.privacy,
+                    bundle.shareScreen,
+                    bundle.largeScreenRecording,
+                )
                 .filterIsInstance<QuickActionChipModel.PopupChip>()
                 .map { chip ->
                     chip.copy(
@@ -100,6 +111,7 @@ constructor(
             launch { avControlsChip.activate() }
             launch { mediaControlChip.activate() }
             launch { shareScreenPrivacyIndicator.activate() }
+            launch { largeScreenRecordingChip.activate() }
             if (StatusBarAssistantIcon.isEnabled) {
                 launch { assistantIcon.activate() }
             }
@@ -111,7 +123,12 @@ constructor(
                     .distinctUntilChanged()
                     .collect { bundle ->
                         if (
-                            listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
+                            listOfNotNull(
+                                    bundle.media,
+                                    bundle.privacy,
+                                    bundle.shareScreen,
+                                    bundle.largeScreenRecording,
+                                )
                                 .filterIsInstance<QuickActionChipModel.PopupChip>()
                                 .none { it.chipId == currentActiveQuickActionId }
                         ) {
@@ -134,6 +151,8 @@ constructor(
             QuickActionChipModel.Hidden(chipId = QuickActionChipId.AssistantIcon),
         val ime: QuickActionChipModel =
             QuickActionChipModel.Hidden(chipId = QuickActionChipId.ImeIndicator),
+        val largeScreenRecording: QuickActionChipModel =
+            QuickActionChipModel.Hidden(chipId = QuickActionChipId.ScreenRecording),
     )
 
     @AssistedFactory

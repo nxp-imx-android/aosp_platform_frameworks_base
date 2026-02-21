@@ -22,6 +22,7 @@ import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDispla
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
 import com.android.systemui.statusbar.chips.StatusBarChipToHunAnimation
 import com.android.systemui.statusbar.chips.StatusBarChipsLog
@@ -61,6 +62,7 @@ constructor(
     callChipViewModel: CallChipViewModel,
     notifChipsViewModel: NotifChipsViewModel,
     @DisplayAware displayStateInteractor: DisplayStateInteractor,
+    private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
     private val chipsRefiners: Set<@JvmSuppressWildcards OngoingActivityChipsRefiner>,
     @StatusBarChipsLog private val logger: LogBuffer,
 ) {
@@ -105,45 +107,78 @@ constructor(
 
     /** Bundles all the incoming chips into one object to easily pass to various flows. */
     private val incomingChipBundle =
-        combine(
-                screenRecordChipViewModel.chip,
-                shareToAppChipViewModel.chip,
-                castToOtherDeviceChipViewModel.chip,
-                callChipViewModel.chip,
-                notifChipsViewModel.chips,
-            ) { screenRecord, shareToApp, castToOtherDevice, call, notifs ->
-                logger.log(
-                    TAG,
-                    LogLevel.INFO,
-                    {
-                        str1 = screenRecord.logName
-                        str2 = shareToApp.logName
-                        str3 = castToOtherDevice.logName
-                    },
-                    { "Chips: ScreenRecord=$str1 > ShareToApp=$str2 > CastToOther=$str3..." },
-                )
-                logger.log(
-                    TAG,
-                    LogLevel.INFO,
-                    {
-                        str1 = call.logName
-                        str2 = notifs.map { it.logName }.toString()
-                    },
-                    { "... > Call=$str1 > Notifs=$str2" },
-                )
-                ChipBundle(
-                    screenRecord = screenRecord,
-                    shareToApp = shareToApp,
-                    castToOtherDevice = castToOtherDevice,
-                    call = call,
-                    notifs = notifs,
-                )
+        if (screenCaptureRecordFeaturesInteractor.isLargeScreenScreencaptureEnabled) {
+                combine(
+                    shareToAppChipViewModel.chip,
+                    castToOtherDeviceChipViewModel.chip,
+                    callChipViewModel.chip,
+                    notifChipsViewModel.chips,
+                ) { shareToApp, castToOtherDevice, call, notifs ->
+                    logChips(
+                        OngoingActivityChipModel.Inactive(),
+                        shareToApp,
+                        castToOtherDevice,
+                        call,
+                        notifs,
+                    )
+                    ChipBundle(
+                        shareToApp = shareToApp,
+                        castToOtherDevice = castToOtherDevice,
+                        call = call,
+                        notifs = notifs,
+                    )
+                }
+            } else {
+                combine(
+                    screenRecordChipViewModel.chip,
+                    shareToAppChipViewModel.chip,
+                    castToOtherDeviceChipViewModel.chip,
+                    callChipViewModel.chip,
+                    notifChipsViewModel.chips,
+                ) { screenRecord, shareToApp, castToOtherDevice, call, notifs ->
+                    logChips(screenRecord, shareToApp, castToOtherDevice, call, notifs)
+                    ChipBundle(
+                        screenRecord = screenRecord,
+                        shareToApp = shareToApp,
+                        castToOtherDevice = castToOtherDevice,
+                        call = call,
+                        notifs = notifs,
+                    )
+                }
             }
             // Some of the chips could have timers in them and we don't want the start time for
             // those timers to get reset for any reason. So, as soon as any subscriber has requested
             // the chip information, we maintain it forever by using [SharingStarted.Lazily].
             // See b/347726238.
             .stateIn(scope, SharingStarted.Lazily, ChipBundle())
+
+    private fun logChips(
+        screenRecord: OngoingActivityChipModel,
+        shareToApp: OngoingActivityChipModel,
+        castToOtherDevice: OngoingActivityChipModel,
+        call: OngoingActivityChipModel,
+        notifs: List<OngoingActivityChipModel.Active>,
+    ) {
+        logger.log(
+            TAG,
+            LogLevel.INFO,
+            {
+                str1 = screenRecord.logName
+                str2 = shareToApp.logName
+                str3 = castToOtherDevice.logName
+            },
+            { "Chips: ScreenRecord=$str1 > ShareToApp=$str2 > CastToOther=$str3..." },
+        )
+        logger.log(
+            TAG,
+            LogLevel.INFO,
+            {
+                str1 = call.logName
+                str2 = notifs.map { it.logName }.toString()
+            },
+            { "... > Call=$str1 > Notifs=$str2" },
+        )
+    }
 
     private fun OngoingActivityChipModel.Active.shouldSquish(): Boolean {
         if (this.icon == null) {

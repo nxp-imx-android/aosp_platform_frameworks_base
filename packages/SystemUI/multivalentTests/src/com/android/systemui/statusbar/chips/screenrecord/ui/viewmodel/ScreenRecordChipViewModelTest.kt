@@ -75,10 +75,16 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class ScreenRecordChipViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+    private val underTest by lazy { kosmos.screenRecordChipViewModel }
     private val testScope = kosmos.testScope
-    private val screenRecordRepo = kosmos.screenRecordRepository
-    private val mediaProjectionRepo = kosmos.fakeMediaProjectionRepository
     private val systemClock = kosmos.fakeSystemClock
+
+    private val screenRecordRepo
+        get() = kosmos.screenRecordRepository
+
+    private val mediaProjectionRepo
+        get() = kosmos.fakeMediaProjectionRepository
+
     private val mockSystemUIDialog = mock<SystemUIDialog>()
     private val chipBackgroundView =
         mock<ChipBackgroundContainer> { on { context } doReturn context }
@@ -96,8 +102,6 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
         mock<Expandable> {
             on { dialogTransitionController(any()) } doReturn dialogTransitionController
         }
-
-    private val underTest = kosmos.screenRecordChipViewModel
 
     @Before
     fun setUp() {
