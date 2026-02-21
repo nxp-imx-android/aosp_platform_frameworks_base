@@ -88,6 +88,7 @@ import com.android.internal.widget.remotecompose.core.operations.PathTween;
 import com.android.internal.widget.remotecompose.core.operations.Rem;
 import com.android.internal.widget.remotecompose.core.operations.RootContentBehavior;
 import com.android.internal.widget.remotecompose.core.operations.RootContentDescription;
+import com.android.internal.widget.remotecompose.core.operations.Skip;
 import com.android.internal.widget.remotecompose.core.operations.TextAttribute;
 import com.android.internal.widget.remotecompose.core.operations.TextData;
 import com.android.internal.widget.remotecompose.core.operations.TextFromFloat;
@@ -896,6 +897,7 @@ public class RemoteComposeBuffer {
             return;
         }
         mMap = map;
+        mBuffer.setSystemInfo(getBuffer().mSystemInfo);
         while (mBuffer.available()) {
             int opId = mBuffer.readByte();
             if (DEBUG) {
@@ -2529,6 +2531,21 @@ public class RemoteComposeBuffer {
      */
     public void rem(@NonNull String text) {
         Rem.apply(mBuffer, text);
+    }
+
+    /**
+     * Insert a conditional skip. Warning this should be used with care.
+     * It is incompatible with being called between beginGlobal endGlobal
+     */
+    public int beginSkip(short type, int value) {
+        return Skip.apply(mBuffer, type, value, 0);
+    }
+
+    /**
+     * End a conditional skip
+     */
+    public void endSkip(int offset) {
+        Skip.applyEndSkip(mBuffer, offset);
     }
 
     /**
