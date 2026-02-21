@@ -2140,7 +2140,9 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
             final boolean expandWantsIt;
             if (NsslTouchDispatchFix.isEnabled()) {
-                expandWantsIt = false;
+                // Intercept the touches as soon as the swipe starts to expand a Notification,
+                // otherwise this gesture might be interpreted as a click on the Notification.
+                expandWantsIt = mView.isExpandingNotification();
             } else {
                 expandWantsIt = mLongPressedView == null
                         && !mSwipeHelper.isSwiping()
@@ -2254,6 +2256,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             final boolean showTouchToExpandHelper;
             if (NsslTouchDispatchFix.isEnabled()) {
                 showTouchToExpandHelper = false;
+                // Handle the touch if it was used for expanding a notification.
+                expandWantsIt = mView.isExpandingNotification() || mView.getExpandedInThisMotion();
             } else {
                 showTouchToExpandHelper = mLongPressedView == null
                         && mView.getIsExpanded()
