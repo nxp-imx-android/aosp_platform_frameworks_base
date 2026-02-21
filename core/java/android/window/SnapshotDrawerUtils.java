@@ -37,8 +37,8 @@ import static android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 import static android.view.WindowManager.LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_EDGE_TO_EDGE_ENFORCED;
-import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY;
+import static android.view.WindowManager.LayoutParams.RENDERING_HINT_FORCE_DRAW_BAR_BACKGROUNDS;
 
 import static com.android.internal.policy.DecorView.NAVIGATION_BAR_COLOR_VIEW_ATTRIBUTES;
 import static com.android.internal.policy.DecorView.STATUS_BAR_COLOR_VIEW_ATTRIBUTES;
@@ -247,6 +247,7 @@ public class SnapshotDrawerUtils {
         final int appearance = attrs.insetsFlags.appearance;
         final int windowFlags = attrs.flags;
         final int windowPrivateFlags = attrs.privateFlags;
+        final int windowRenderingHints = attrs.renderingHints;
 
         layoutParams.packageName = attrs.packageName;
         layoutParams.windowAnimations = attrs.windowAnimations;
@@ -257,13 +258,12 @@ public class SnapshotDrawerUtils {
         layoutParams.flags = (windowFlags & ~FLAG_INHERIT_EXCLUDES)
                 | FLAG_NOT_FOCUSABLE
                 | FLAG_NOT_TOUCHABLE;
-        layoutParams.privateFlags =
-                (windowPrivateFlags
-                        & (PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS
-                        | PRIVATE_FLAG_EDGE_TO_EDGE_ENFORCED))
-                // Setting as trusted overlay to let touches pass through. This is safe because this
-                // window is controlled by the system.
-                | PRIVATE_FLAG_TRUSTED_OVERLAY;
+        layoutParams.privateFlags = (windowPrivateFlags & PRIVATE_FLAG_EDGE_TO_EDGE_ENFORCED);
+        // Setting as trusted overlay to let touches pass through. This is safe because this window
+        // is controlled by the system.
+        layoutParams.privateFlags |= PRIVATE_FLAG_TRUSTED_OVERLAY;
+        layoutParams.renderingHints =
+                (windowRenderingHints & RENDERING_HINT_FORCE_DRAW_BAR_BACKGROUNDS);
         layoutParams.token = token;
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -293,15 +293,22 @@ public class SnapshotDrawerUtils {
         private final int mNavigationBarColor;
         private final int mWindowFlags;
         private final int mWindowPrivateFlags;
+        private final int mWindowRenderingHints;
         private final float mScale;
         private final @WindowInsets.Type.InsetsType int mRequestedVisibleTypes;
         private final Rect mSystemBarInsets = new Rect();
 
-        public SystemBarBackgroundPainter(int windowFlags, int windowPrivateFlags, int appearance,
-                ActivityManager.TaskDescription taskDescription, float scale,
+        public SystemBarBackgroundPainter(
+                int windowFlags,
+                int windowPrivateFlags,
+                int windowRenderingHints,
+                int appearance,
+                ActivityManager.TaskDescription taskDescription,
+                float scale,
                 @WindowInsets.Type.InsetsType int requestedVisibleTypes) {
             mWindowFlags = windowFlags;
             mWindowPrivateFlags = windowPrivateFlags;
+            mWindowRenderingHints = windowRenderingHints;
             mScale = scale;
             final Context context = ActivityThread.currentActivityThread().getSystemUiContext();
             final int semiTransparent = context.getColor(
@@ -333,7 +340,7 @@ public class SnapshotDrawerUtils {
 
         int getStatusBarColorViewHeight() {
             final boolean forceBarBackground =
-                    (mWindowPrivateFlags & PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS) != 0;
+                    (mWindowRenderingHints & RENDERING_HINT_FORCE_DRAW_BAR_BACKGROUNDS) != 0;
             if (STATUS_BAR_COLOR_VIEW_ATTRIBUTES.isVisible(
                     mRequestedVisibleTypes, mStatusBarColor, mWindowFlags,
                     forceBarBackground)) {
@@ -345,7 +352,7 @@ public class SnapshotDrawerUtils {
 
         private boolean isNavigationBarColorViewVisible() {
             final boolean forceBarBackground =
-                    (mWindowPrivateFlags & PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS) != 0;
+                    (mWindowRenderingHints & RENDERING_HINT_FORCE_DRAW_BAR_BACKGROUNDS) != 0;
             return NAVIGATION_BAR_COLOR_VIEW_ATTRIBUTES.isVisible(
                     mRequestedVisibleTypes, mNavigationBarColor, mWindowFlags,
                     forceBarBackground);

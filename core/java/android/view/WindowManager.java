@@ -3386,23 +3386,6 @@ public interface WindowManager extends ViewManager {
         public int flags;
 
         /**
-         * Flag to indicate that this window disables the performance hint session.
-         * @hide
-         */
-        public static final int PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT = 1 << 0;
-
-        /**
-         * In the system process, we globally do not use hardware acceleration
-         * because there are many threads doing UI there and they conflict.
-         * If certain parts of the UI that really do want to use hardware
-         * acceleration, this flag can be set to force it.  This is basically
-         * for the lock screen.  Anyone else using it, you are probably wrong.
-         *
-         * @hide
-         */
-        public static final int PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED = 1 << 1;
-
-        /**
          * By default, wallpapers are sent new offsets when the wallpaper is scrolled. Wallpapers
          * may elect to skip these notifications if they are not doing anything productive with
          * them (they do not affect the wallpaper scrolling operation) by calling
@@ -3506,20 +3489,6 @@ public interface WindowManager extends ViewManager {
          * @hide
          */
         public static final int PRIVATE_FLAG_LAYOUT_CHILD_WINDOW_IN_PARENT_FRAME = 1 << 14;
-
-        /**
-         * Flag to indicate that this window is always drawing the status bar background, no matter
-         * what the other flags are.
-         * @hide
-         */
-        public static final int PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS = 1 << 15;
-
-        /**
-         * Flag to indicate that this window needs Sustained Performance Mode if
-         * the device supports it.
-         * @hide
-         */
-        public static final int PRIVATE_FLAG_SUSTAINED_PERFORMANCE_MODE = 1 << 16;
 
         /**
          * Flag to indicate that this window is a immersive mode confirmation window. The window
@@ -3666,8 +3635,6 @@ public interface WindowManager extends ViewManager {
          * @hide
          */
         @IntDef(flag = true, prefix="PRIVATE_FLAG_", value = {
-                PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT,
-                PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED,
                 PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS,
                 SYSTEM_FLAG_SHOW_FOR_ALL_USERS,
                 PRIVATE_FLAG_UNRESTRICTED_GESTURE_EXCLUSION,
@@ -3680,8 +3647,6 @@ public interface WindowManager extends ViewManager {
                 PRIVATE_FLAG_LAYOUT_SIZE_EXTENDED_BY_CUTOUT,
                 PRIVATE_FLAG_FORCE_DECOR_VIEW_VISIBILITY,
                 PRIVATE_FLAG_LAYOUT_CHILD_WINDOW_IN_PARENT_FRAME,
-                PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS,
-                PRIVATE_FLAG_SUSTAINED_PERFORMANCE_MODE,
                 PRIVATE_FLAG_IMMERSIVE_CONFIRMATION_WINDOW,
                 PRIVATE_FLAG_OVERRIDE_LAYOUT_IN_DISPLAY_CUTOUT_MODE,
                 SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS,
@@ -3707,14 +3672,6 @@ public interface WindowManager extends ViewManager {
          */
         @UnsupportedAppUsage
         @ViewDebug.ExportedProperty(flagMapping = {
-                @ViewDebug.FlagToString(
-                        mask = PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT,
-                        equals = PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT,
-                        name = "DISABLE_PERFORMANCE_HINT"),
-                @ViewDebug.FlagToString(
-                        mask = PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED,
-                        equals = PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED,
-                        name = "FORCE_HARDWARE_ACCELERATED"),
                 @ViewDebug.FlagToString(
                         mask = PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS,
                         equals = PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS,
@@ -3759,14 +3716,6 @@ public interface WindowManager extends ViewManager {
                         mask = PRIVATE_FLAG_LAYOUT_CHILD_WINDOW_IN_PARENT_FRAME,
                         equals = PRIVATE_FLAG_LAYOUT_CHILD_WINDOW_IN_PARENT_FRAME,
                         name = "LAYOUT_CHILD_WINDOW_IN_PARENT_FRAME"),
-                @ViewDebug.FlagToString(
-                        mask = PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS,
-                        equals = PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS,
-                        name = "FORCE_DRAW_STATUS_BAR_BACKGROUND"),
-                @ViewDebug.FlagToString(
-                        mask = PRIVATE_FLAG_SUSTAINED_PERFORMANCE_MODE,
-                        equals = PRIVATE_FLAG_SUSTAINED_PERFORMANCE_MODE,
-                        name = "SUSTAINED_PERFORMANCE_MODE"),
                 @ViewDebug.FlagToString(
                         mask = PRIVATE_FLAG_IMMERSIVE_CONFIRMATION_WINDOW,
                         equals = PRIVATE_FLAG_IMMERSIVE_CONFIRMATION_WINDOW,
@@ -3831,6 +3780,84 @@ public interface WindowManager extends ViewManager {
         @PrivateFlags
         @TestApi
         public int privateFlags;
+
+        /**
+         * Flag to indicate that this window disables the performance hint session.
+         *
+         * @hide
+         */
+        public static final int RENDERING_HINT_DISABLE_PERFORMANCE_HINT = 1;
+
+        /**
+         * Forces the window to be hardware accelerated.
+         *
+         * <p>In the system process, hardware acceleration is globally disabled by default because
+         * multiple threads performing UI operations can conflict. This flag allows specific windows
+         * created by the system process to override this global default and enable hardware
+         * acceleration.
+         *
+         * <p>Standard applications should use {@link #FLAG_HARDWARE_ACCELERATED} instead.
+         *
+         * @hide
+         */
+        public static final int RENDERING_HINT_FORCE_HARDWARE_ACCELERATED = 1 << 1;
+
+        /**
+         * Flag to indicate that this window is always drawing the status bar background, no matter
+         * what the other flags are.
+         *
+         * @hide
+         */
+        public static final int RENDERING_HINT_FORCE_DRAW_BAR_BACKGROUNDS = 1 << 2;
+
+        /**
+         * Flag to indicate that this window needs Sustained Performance Mode if the device supports
+         * it.
+         *
+         * @hide
+         */
+        public static final int RENDERING_HINT_SUSTAINED_PERFORMANCE_MODE = 1 << 3;
+
+        /** @hide */
+        @IntDef(
+                flag = true,
+                prefix = {"RENDERING_HINT_"},
+                value = {
+                    RENDERING_HINT_DISABLE_PERFORMANCE_HINT,
+                    RENDERING_HINT_FORCE_HARDWARE_ACCELERATED,
+                    RENDERING_HINT_FORCE_DRAW_BAR_BACKGROUNDS,
+                    RENDERING_HINT_SUSTAINED_PERFORMANCE_MODE,
+                })
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface RenderingHints {}
+
+        /**
+         * Hints for rendering/performance optimizations for the window.
+         *
+         * @hide
+         */
+        @UnsupportedAppUsage
+        @ViewDebug.ExportedProperty(
+                flagMapping = {
+                    @ViewDebug.FlagToString(
+                            mask = RENDERING_HINT_DISABLE_PERFORMANCE_HINT,
+                            equals = RENDERING_HINT_DISABLE_PERFORMANCE_HINT,
+                            name = "DISABLE_PERFORMANCE_HINT"),
+                    @ViewDebug.FlagToString(
+                            mask = RENDERING_HINT_FORCE_HARDWARE_ACCELERATED,
+                            equals = RENDERING_HINT_FORCE_HARDWARE_ACCELERATED,
+                            name = "FORCE_HARDWARE_ACCELERATED"),
+                    @ViewDebug.FlagToString(
+                            mask = RENDERING_HINT_FORCE_DRAW_BAR_BACKGROUNDS,
+                            equals = RENDERING_HINT_FORCE_DRAW_BAR_BACKGROUNDS,
+                            name = "FORCE_DRAW_BAR_BACKGROUNDS"),
+                    @ViewDebug.FlagToString(
+                            mask = RENDERING_HINT_SUSTAINED_PERFORMANCE_MODE,
+                            equals = RENDERING_HINT_SUSTAINED_PERFORMANCE_MODE,
+                            name = "SUSTAINED_PERFORMANCE_MODE")
+                })
+        @RenderingHints
+        public int renderingHints;
 
         /**
          * Given a particular set of window manager flags, determine whether
@@ -4940,7 +4967,7 @@ public interface WindowManager extends ViewManager {
          * @hide
          */
         public boolean isPerfHintSessionDisabled() {
-            return (privateFlags & PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT) != 0;
+            return (renderingHints & RENDERING_HINT_DISABLE_PERFORMANCE_HINT) != 0;
         }
 
         /**
@@ -5413,6 +5440,7 @@ public interface WindowManager extends ViewManager {
                 out.writeBoolean(mFrameRateBoostOnTouch);
                 out.writeBoolean(mIsFrameRatePowerSavingsBalanced);
             }
+            out.writeInt(renderingHints);
         }
 
         public static final @android.annotation.NonNull Parcelable.Creator<LayoutParams> CREATOR
@@ -5490,6 +5518,7 @@ public interface WindowManager extends ViewManager {
                 mFrameRateBoostOnTouch = in.readBoolean();
                 mIsFrameRatePowerSavingsBalanced = in.readBoolean();
             }
+            renderingHints = in.readInt();
         }
 
         @SuppressWarnings({"PointlessBitwiseExpression"})
@@ -5605,6 +5634,12 @@ public interface WindowManager extends ViewManager {
                 privateFlags = o.privateFlags;
                 changes |= PRIVATE_FLAGS_CHANGED;
             }
+
+            if (renderingHints != o.renderingHints) {
+                renderingHints = o.renderingHints;
+                changes |= PRIVATE_FLAGS_CHANGED;
+            }
+
             if (softInputMode != o.softInputMode) {
                 softInputMode = o.softInputMode;
                 changes |= SOFT_INPUT_MODE_CHANGED;
@@ -6019,6 +6054,13 @@ public interface WindowManager extends ViewManager {
                 sb.append(prefix).append("  pfl=").append(ViewDebug.flagsToString(
                         LayoutParams.class, "privateFlags", privateFlags));
             }
+
+            if (renderingHints != 0) {
+                sb.append(System.lineSeparator());
+                sb.append(prefix).append("  rh=").append(ViewDebug.flagsToString(
+                        LayoutParams.class, "renderingHint", renderingHints));
+            }
+
             if (systemUiVisibility != 0) {
                 sb.append(System.lineSeparator());
                 sb.append(prefix).append("  sysui=").append(ViewDebug.flagsToString(
