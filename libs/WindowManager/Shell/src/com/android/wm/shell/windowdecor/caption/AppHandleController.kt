@@ -30,7 +30,6 @@ import android.view.Display
 import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.View
-import android.window.DesktopExperienceFlags
 import android.window.TaskSnapshot
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
@@ -434,13 +433,7 @@ class AppHandleController(
                         openInAppOrBrowserClickListener = { intent ->
                             windowDecorationActions.onOpenInBrowser(taskInfo.taskId, intent)
                             appToWebRepository.onCapturedLinkUsed(taskInfo.taskId)
-                            if (
-                                DesktopExperienceFlags
-                                    .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
-                                    .isTrue
-                            ) {
-                                windowDecorHandleRepository.onAppToWebUsage()
-                            }
+                            windowDecorHandleRepository.onAppToWebUsage()
                         },
                         onOpenByDefaultClickListener = { createOpenByDefaultDialog() },
                         onCloseMenuClickListener = { closeHandleMenu() },

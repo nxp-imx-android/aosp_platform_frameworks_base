@@ -94,9 +94,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX),
     ENABLE_DESKTOP_TASKBAR_ON_FREEFORM_DISPLAYS(Flags::enableDesktopTaskbarOnFreeformDisplays,
             true, Flags.FLAG_ENABLE_DESKTOP_TASKBAR_ON_FREEFORM_DISPLAYS),
-    ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION(
-            Flags::enableDesktopWindowingAppToWebEducationIntegration, true,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION),
     ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT(
             com.android.server.display.feature.flags.Flags::enableDisplayContentModeManagement,
             true, FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT),

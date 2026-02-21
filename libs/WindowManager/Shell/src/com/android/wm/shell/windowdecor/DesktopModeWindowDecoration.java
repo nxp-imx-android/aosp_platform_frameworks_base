@@ -478,10 +478,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             boolean inSyncWithTransition, SurfaceControl taskSurface) {
         Trace.beginSection("DesktopModeWindowDecoration#relayout");
 
-        if (DesktopExperienceFlags
-                .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION.isTrue()) {
-            setCapturedLink(taskInfo.capturedLink, taskInfo.capturedLinkTimestamp);
-        }
+        setCapturedLink(taskInfo.capturedLink, taskInfo.capturedLinkTimestamp);
 
         if (DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue()) {
             final Context dc = mDisplayController.getDisplayContext(taskInfo.displayId);
@@ -1633,10 +1630,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 /* openInBrowserClickListener= */ (intent) -> {
                     mWindowDecorationActions.onOpenInBrowser(mTaskInfo.taskId, intent);
                     onCapturedLinkUsed();
-                    if (DesktopExperienceFlags
-                            .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION.isTrue()) {
-                        mWindowDecorCaptionRepository.onAppToWebUsage();
-                    }
+                    mWindowDecorCaptionRepository.onAppToWebUsage();
                     return Unit.INSTANCE;
                 },
                 /* onOpenByDefaultClickListener= */ () -> {
