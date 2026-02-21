@@ -42,11 +42,11 @@ import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWithSignature;
-import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.NotificationEvent;
 import android.service.personalcontext.hint.NotificationHint;
+import android.service.personalcontext.hint.PublishedContextHint;
+import android.service.personalcontext.hint.PublishedContextHintWrapper;
 import android.service.personalcontext.hint.TextClassificationHint;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.ContextInsightWrapper;
@@ -108,7 +108,7 @@ public class PersonalContextManagerService extends SystemService {
         // Generate a new random signing key on each system start.
         final byte[] key = new byte[64];
         new SecureRandom().nextBytes(key);
-        HINT_SIGNING_KEY = new SecretKeySpec(key, ContextHintWithSignature.HMAC_ALGORITHM);
+        HINT_SIGNING_KEY = new SecretKeySpec(key, PublishedContextHint.HMAC_ALGORITHM);
     }
 
     private static class SettingObserver extends ContentObserver {
@@ -323,14 +323,14 @@ public class PersonalContextManagerService extends SystemService {
         }
 
         try {
-            final Set<ContextHintWithSignature> signedAttributionHints = new HashSet<>();
+            final Set<PublishedContextHint> signedAttributionHints = new HashSet<>();
             if (attributionHints != null) {
                 for (ContextHint hint : attributionHints) {
                     signedAttributionHints.add(signHint(hint, processId, emptySet(), emptySet()));
                 }
             }
 
-            final Set<ContextHintWithSignature> signedHints = new HashSet<>();
+            final Set<PublishedContextHint> signedHints = new HashSet<>();
             for (ContextHint hint : hints) {
                 signedHints.add(signHint(hint, processId, renderTokens, signedAttributionHints));
             }
@@ -468,13 +468,13 @@ public class PersonalContextManagerService extends SystemService {
         }
     }
 
-    private ContextHintWithSignature signHint(
+    private PublishedContextHint signHint(
             ContextHint hint,
             int callingPid,
             Set<RenderToken> renderTokens,
-            Set<ContextHintWithSignature> attributionHints)
+            Set<PublishedContextHint> attributionHints)
             throws GeneralSecurityException {
-        return new ContextHintWithSignature.Builder(hint, HINT_SIGNING_KEY)
+        return new PublishedContextHint.Builder(hint, HINT_SIGNING_KEY)
                 .setOriginatingPackage(mActivityManager.getPackageNameByPid(callingPid))
                 .addRenderTokens(renderTokens)
                 .addAttributionHints(attributionHints)
@@ -644,13 +644,13 @@ public class PersonalContextManagerService extends SystemService {
 
         @RequiresNoPermission
         @Override
-        public ContextHintWithSignatureWrapper signHint(
+        public PublishedContextHintWrapper signHint(
                 ContextHintWrapper hint, List<ContextHintWrapper> attributionHints) {
             final int callingPid = Binder.getCallingPid();
 
             return Binder.withCleanCallingIdentity(
                     () -> {
-                        final Set<ContextHintWithSignature> signedAttributionHints =
+                        final Set<PublishedContextHint> signedAttributionHints =
                                 new HashSet<>();
                         if (attributionHints != null) {
                             for (ContextHintWrapper attributionHint : attributionHints) {
@@ -662,7 +662,7 @@ public class PersonalContextManagerService extends SystemService {
                             }
                         }
 
-                        return new ContextHintWithSignatureWrapper(getService().signHint(
+                        return new PublishedContextHintWrapper(getService().signHint(
                                 hint.getContextHint(),
                                 callingPid,
                                 emptySet(),

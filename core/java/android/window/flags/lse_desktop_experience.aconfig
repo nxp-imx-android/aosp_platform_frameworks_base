@@ -106,6 +106,13 @@ flag {
 }
 
 flag {
+    name: "different_display_launch_focus_restriction"
+    namespace: "lse_desktop_experience"
+    description: "Limits launching tasks on different displays only to focused tasks."
+    bug: "484320791"
+}
+
+flag {
     name: "dimming_wallpaper_for_maximized_and_tiled"
     namespace: "lse_desktop_experience"
     description: "Dim the wallpaper to make maximized and tiled window looks immersive."
@@ -153,20 +160,20 @@ flag {
 }
 
 flag {
-    name: "enable_app_handle_position_reporting"
-    namespace: "lse_desktop_experience"
-    description: "Report app handle position to the SysUi."
-    bug: "412444130"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_app_restart_after_update"
     namespace: "lse_desktop_experience"
     description: "Enables the app restart after update feature."
     bug: "448577499"
+}
+
+flag {
+    name: "enable_app_restart_after_update_split_screen"
+    namespace: "lse_desktop_experience"
+    description: "Enables the app restart after update feature for split screen."
+    bug: "484324706"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -379,26 +386,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_first_persisted_launch_params_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fixes an issue where freeform windowing mode is unexpectedly persisted across launches."
-    bug: "461305925"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_desktop_first_policy_fullscreen_decision_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fix desktop-first policy bug for fullscreen tasks."
-    bug: "383617953"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_first_policy_in_lpm"
     namespace: "lse_desktop_experience"
     description: "Enables desktop-first policy in DesktopModeLaunchParamsModifier."
@@ -443,16 +430,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to handle IME interactions in desktop windowing."
     bug: "388570293"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_desktop_immersive_drag_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Keeps the app handle visible during a drag."
-    bug: "381280828"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -802,13 +779,6 @@ flag {
 }
 
 flag {
-    name: "enable_non_default_display_split"
-    namespace: "lse_desktop_experience"
-    description: "Enables split screen on non default displays"
-    bug: "384999213"
-}
-
-flag {
     name: "enable_non_default_display_split_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes desktop to split screen on non default displays"
@@ -888,16 +858,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enable the remembered launch bounds feature."
     bug: "391869747"
-}
-
-flag {
-    name: "enable_request_fullscreen_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fixes split to fullscreen restoration using the Activity#requestFullscreenMode API"
-    bug: "402973271"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -1152,13 +1112,6 @@ flag {
 }
 
 flag {
-    name: "keyboard_shortcuts_to_switch_desks"
-    namespace: "lse_desktop_experience"
-    description: "Enable switching the active desk with keyboard shortcuts"
-    bug: "389957556"
-}
-
-flag {
     name: "move_task_to_front_on_drag_resizing_bugfix"
     namespace: "lse_desktop_experience"
     description: "Moving a drag resized task to front"
@@ -1186,6 +1139,13 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "protect_set_launch_windowing_mode_api"
+    namespace: "lse_desktop_experience"
+    description: "Protect setLaunchWindowingMode API from being called by 3P apps."
+    bug: "484322740"
 }
 
 flag {

@@ -74,7 +74,7 @@ constructor(
         )
     }
 
-    val shownQuickActionChips: List<QuickActionChipUiState.PopupChip> by derivedStateOf {
+    val shownQuickActionChips: List<QuickActionChipUiState> by derivedStateOf {
         if (StatusBarPopupChips.isEnabled) {
             val bundle = incomingQuickActionChipBundle
 
@@ -87,8 +87,9 @@ constructor(
                         hidePopup = { currentActiveQuickActionId = null },
                     )
                 } +
-                listOfNotNull(bundle.assistant, bundle.ime)
-                    .filterIsInstance<QuickActionChipUiState.PopupChip>()
+                listOfNotNull(bundle.assistant, bundle.ime).filter {
+                    it !is QuickActionChipUiState.Hidden
+                }
         } else {
             emptyList()
         }

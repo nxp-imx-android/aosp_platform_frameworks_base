@@ -61,7 +61,7 @@ class InitialHierarchyPopulator(
         addInitialTaskDisplayAreas(taskDisplayAreaOrganizer.getInitialTaskDisplayAreas())
         addInitialTasks(shellTaskOrganizer.getInitialTasks())
 
-        updater.notifyModes(Mode.UpdateContext(), snapshot)
+        updater.notifyModes(Mode.UpdateContext(reason = "Initial population"), snapshot)
     }
 
     @VisibleForTesting

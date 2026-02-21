@@ -16,7 +16,12 @@
 
 package android.util.apk;
 
+import static android.util.apk.ApkSignatureSchemeV3Verifier.APK_SIGNATURE_SCHEME_V32_BLOCK_ID;
+import static android.util.apk.ApkSignatureSchemeV3Verifier.APK_SIGNATURE_SCHEME_V3_BLOCK_ID;
+
 import android.annotation.IntDef;
+import android.content.pm.SigningDetails.SignatureSchemeMinorVersion;
+import android.content.pm.SigningDetails.SignatureSchemeVersion;
 import android.security.apksigverify.ApkSigVerifyProtoEnums;
 
 import com.android.internal.util.FrameworkStatsLog;
@@ -62,7 +67,13 @@ public class ApkSignatureVerifierMetrics {
             VerificationResult.VERIFICATION_V32_POR_CAPABILITY_MISMATCH,
             VerificationResult.VERIFICATION_V32_SDK_RANGE_MISMATCH,
             VerificationResult.VERIFICATION_V32_BLOCK_STRIPPED,
-            VerificationResult.VERIFICATION_V32_SDK_ATTR_MISMATCH
+            VerificationResult.VERIFICATION_V32_SDK_ATTR_MISMATCH,
+            VerificationResult.VERIFICATION_V32_KEY_REUSE_INSTALLED_DATA,
+            VerificationResult.VERIFICATION_V32_KEY_REUSE_ROLLBACK,
+            VerificationResult.VERIFICATION_V32_KEY_REUSE,
+            VerificationResult.VERIFICATION_V32_MISSING_CLASSICAL_INSTALLED_DATA,
+            VerificationResult.VERIFICATION_V32_MISSING_CLASSICAL_ROLLBACK,
+            VerificationResult.VERIFICATION_V32_MISSING_CLASSICAL
     })
     public @interface VerificationResult {
         int VERIFICATION_SUCCESS = ApkSigVerifyProtoEnums.VERIFICATION_SUCCESS;
@@ -115,6 +126,17 @@ public class ApkSignatureVerifierMetrics {
                 ApkSigVerifyProtoEnums.VERIFICATION_V32_BLOCK_STRIPPED;
         int VERIFICATION_V32_SDK_ATTR_MISMATCH =
                 ApkSigVerifyProtoEnums.VERIFICATION_V32_SDK_ATTR_MISMATCH;
+        int VERIFICATION_V32_KEY_REUSE_INSTALLED_DATA =
+                ApkSigVerifyProtoEnums.VERIFICATION_V32_KEY_REUSE_INSTALLED_DATA;
+        int VERIFICATION_V32_KEY_REUSE_ROLLBACK =
+                ApkSigVerifyProtoEnums.VERIFICATION_V32_KEY_REUSE_ROLLBACK;
+        int VERIFICATION_V32_KEY_REUSE = ApkSigVerifyProtoEnums.VERIFICATION_V32_KEY_REUSE;
+        int VERIFICATION_V32_MISSING_CLASSICAL_INSTALLED_DATA =
+                ApkSigVerifyProtoEnums.VERIFICATION_V32_MISSING_CLASSICAL_INSTALLED_DATA;
+        int VERIFICATION_V32_MISSING_CLASSICAL_ROLLBACK =
+                ApkSigVerifyProtoEnums.VERIFICATION_V32_MISSING_CLASSICAL_ROLLBACK;
+        int VERIFICATION_V32_MISSING_CLASSICAL =
+                ApkSigVerifyProtoEnums.VERIFICATION_V32_MISSING_CLASSICAL;
     }
 
     /**
@@ -166,6 +188,74 @@ public class ApkSignatureVerifierMetrics {
             @VerificationResult int verificationResult) {
         logApkSignatureVerificationReported(blockId, blockMinSdkVersion, blockMaxSdkVersion,
                 sigAlgorithmId, false, false, verificationResult);
+    }
+
+    /**
+     * Logs a successful key change event; this can occur either if the signing key has been rotated
+     * forward or has been rolled back as indicated by the provided booleans.
+     *
+     * <p>If the same value is provided for both {@code isRotation} and {@code isRollback}, this
+     * method will immediately return without logging an event.
+     *
+     * @param majorSchemeVersion the major signing scheme version of the update package
+     * @param minorSchemeVersion the minor signing scheme version of the update package
+     * @param isRotation whether this signing key change event is a successful rotation
+     * @param isRollback whether this signing key change event is a successful rollback
+     */
+    public static void logSigningKeyChangeSuccess(@SignatureSchemeVersion int majorSchemeVersion,
+            @SignatureSchemeMinorVersion int minorSchemeVersion, boolean isRotation,
+            boolean isRollback) {
+        if (isRotation == isRollback) {
+            return;
+        }
+        int blockId = getBlockIdFromSchemeVersion(majorSchemeVersion, minorSchemeVersion);
+        logApkSignatureVerificationReported(blockId, 0, 0, 0, isRollback, isRotation,
+                VerificationResult.VERIFICATION_SUCCESS);
+    }
+
+    /**
+     * Logs a signing key policy failure where a signature based capability is requested, but the
+     * requesting app's signing identity does not fully meet the requirements to be granted the
+     * capability.
+     *
+     * <p>This method is primarily intended for cases where either the declaring or requesting app
+     * is signed by a hybrid signing config. For instance, if an app is installed on device with
+     * a hybrid signing identity, an update for that app must either maintain the same signing
+     * identity or be signed with a new identity that has both hybrid signers in its lineage; if the
+     * update is only signed by the PQC key from the hybrid config, then this method should be
+     * called to log the update policy failure.
+     *
+     * @param majorSchemeVersion the major signing scheme version of the update package
+     * @param minorSchemeVersion the minor signing scheme version of the update package
+     * @param verificationResult the {@link VerificationResult} expressing the result of the event
+     */
+    public static void logSigningKeyPolicyFailure(@SignatureSchemeVersion int majorSchemeVersion,
+            @SignatureSchemeMinorVersion int minorSchemeVersion,
+            @VerificationResult int verificationResult) {
+        int blockId = getBlockIdFromSchemeVersion(majorSchemeVersion, minorSchemeVersion);
+        logApkSignatureVerificationReported(blockId, 0, 0, 0, false, false,
+                verificationResult);
+    }
+
+    /**
+     * Returns the signature block ID for the provided {@code majorSchemeVersion} and {@code
+     * minorSchemeVersion}.
+     */
+    private static int getBlockIdFromSchemeVersion(@SignatureSchemeVersion int majorSchemeVersion,
+            @SignatureSchemeMinorVersion int minorSchemeVersion) {
+        switch (majorSchemeVersion) {
+            case SignatureSchemeVersion.SIGNING_BLOCK_V3: {
+                return switch (minorSchemeVersion) {
+                    case SignatureSchemeMinorVersion.MINOR_VERSION_DEFAULT ->
+                            APK_SIGNATURE_SCHEME_V3_BLOCK_ID;
+                    case SignatureSchemeMinorVersion.MINOR_VERSION_32_HYBRID ->
+                            APK_SIGNATURE_SCHEME_V32_BLOCK_ID;
+                    default -> 0;
+                };
+            }
+            default:
+                return 0;
+        }
     }
 
     /**

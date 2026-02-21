@@ -59,6 +59,7 @@ class AppContentsViewModelImplTest : SysuiTestCase() {
                 audioSwitchViewModel = audioSwitchViewModel,
                 thumbnailWidthPx = 200,
                 thumbnailHeightPx = 100,
+                iconSizePx = 50,
             )
         }
 

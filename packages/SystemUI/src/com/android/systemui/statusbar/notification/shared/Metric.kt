@@ -59,8 +59,13 @@ sealed interface Metric {
         ) : TimeDifference
     }
 
-    /** Represents a metric that displays a simple text value. */
-    data class Text(val metricValue: CharSequence, override val label: CharSequence) : Metric
+    /**
+     * Represents a metric that displays a simple text value. More than one option can be provided
+     * for `value` (e.g. for the integer 1200 it can be "1200" or "1.2K"); the view will choose the
+     * appropriate one based on the available screen space.
+     */
+    data class Text(val textVariants: List<CharSequence>, override val label: CharSequence) :
+        Metric
 }
 
 /** Extracts a list of UI model [Metric]s from the [Notification.MetricStyle]. */
@@ -108,11 +113,11 @@ fun Notification.MetricStyle.extractMetrics(systemUiContext: Context): Sequence<
                             label = label,
                         )
 
-                    else -> Metric.Text(valueString.textVariants.first(), label)
+                    else -> Metric.Text(valueString.textVariants, label)
                 }
             }
 
-            else -> Metric.Text(valueString.textVariants.first(), label)
+            else -> Metric.Text(valueString.textVariants, label)
         }
     }
 }

@@ -75,7 +75,7 @@ class HierarchyTransitionPlanner(
         plannableInfo: TransitionInfo,
         startTransaction: SurfaceControl.Transaction,
     ) {
-        ProtoLog.v(WM_SHELL_MODES, "Planning for transition: %d", fullInfo.debugId)
+        ProtoLog.v(WM_SHELL_MODES, "Planning for transition: #%d", fullInfo.debugId)
         val animationContext = Mode.AnimationContext(startTransaction)
 
         // Get a set of all containers pre/post update by token

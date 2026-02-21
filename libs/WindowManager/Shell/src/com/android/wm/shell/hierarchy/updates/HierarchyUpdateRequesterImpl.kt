@@ -55,12 +55,17 @@ class HierarchyUpdateRequesterImpl(
         val appearedInfo = shellTaskOrganizer.createTask(params, null)
         val snapshot = HierarchySnapshot(hierarchy.toContainerList())
 
-        // Create task will synchronously call the updater's handleCreatedTask(), so we just need
-        // to update the mode after the container is created
         val task = hierarchy.getTask(appearedInfo!!.taskInfo.taskId)!!
-        task.mode = mode
+        if (mode != null) {
+            // Create task will synchronously call the updater's handleCreatedTask(), so we just need
+            // to update the mode after the container is created
+            task.mode = mode
 
-        updater.notifyModes(Mode.UpdateContext(), snapshot)
+            updater.notifyModes(
+                Mode.UpdateContext(reason = "Set root task=${task.name} to mode=${mode.getId()}"),
+                snapshot
+            )
+        }
         return task
     }
 

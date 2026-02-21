@@ -166,19 +166,14 @@ private fun ExpressiveActionButton(
     textStyle: TextStyle,
     textHorizontalPadding: Dp
 ) {
-    val disabledContentDescription = stringResource(R.string.spa_action_button_disabled_item)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
-        // The entire column is made clickable to provide a single semantic node for accessibility.
-        // This ensures TalkBack announces the button's state correctly (e.g., "disabled").
-        // NOTE: This makes the component clickable even when visually disabled.
         modifier = modifier.clickable(
             onClick = actionButton.onClick,
+            enabled = actionButton.enabled, // Control clickability based on state
             role = Role.Button,
-        ).thenIf(!actionButton.enabled) {
-            modifier.contentDescription(disabledContentDescription)
-        }
+        )
     ) {
         IconButton(actionButton)
         Spacer(Modifier.height(SettingsSpace.extraSmall3))

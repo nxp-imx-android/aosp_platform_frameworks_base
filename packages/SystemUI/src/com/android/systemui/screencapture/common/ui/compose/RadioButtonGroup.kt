@@ -33,15 +33,18 @@ import androidx.compose.material3.ToggleButtonShapes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
-import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
+import com.android.systemui.res.R
 
 private val ICON_SIZE = 20.dp
 
@@ -51,7 +54,7 @@ private val ICON_SIZE = 20.dp
  */
 data class RadioButtonGroupItem(
     val isSelected: Boolean,
-    val icon: Icon? = null,
+    val icon: IconModel? = null,
     val label: String? = null,
     val contentDescription: String? = null,
     val stateDescription: String? = null,
@@ -62,8 +65,8 @@ data class RadioButtonGroupItem(
     /** Secondary constructor for cases where the icon is different when selected vs unselected. */
     constructor(
         label: String? = null,
-        selectedIcon: Icon? = null,
-        unselectedIcon: Icon? = null,
+        selectedIcon: IconModel? = null,
+        unselectedIcon: IconModel? = null,
         isSelected: Boolean,
         onClick: () -> Unit,
         contentDescription: String? = null,
@@ -105,7 +108,7 @@ fun RadioButtonGroup(
 
             key(item.contentDescription) {
                 val radioButton: @Composable () -> Unit = {
-                    ToggleRadioButton(
+                    SelectableRadioButton(
                         item = item,
                         colors = colors,
                         shapes = shapes,
@@ -124,12 +127,14 @@ fun RadioButtonGroup(
 }
 
 @Composable
-private fun ToggleRadioButton(
+private fun SelectableRadioButton(
     item: RadioButtonGroupItem,
     colors: ToggleButtonColors,
     shapes: ToggleButtonShapes,
     modifier: Modifier = Modifier,
 ) {
+    val actionLabel = stringResource(R.string.screen_capture_a11y_toolbar_radio_button_action)
+
     ToggleButton(
         colors = colors,
         shapes = shapes,
@@ -138,6 +143,7 @@ private fun ToggleRadioButton(
         modifier =
             modifier.semantics(mergeDescendants = true) {
                 this.role = Role.RadioButton
+                this.onClick(label = actionLabel, action = null)
                 item.contentDescription
                     ?.takeIf { it.isNotEmpty() }
                     ?.let { this.contentDescription = it }

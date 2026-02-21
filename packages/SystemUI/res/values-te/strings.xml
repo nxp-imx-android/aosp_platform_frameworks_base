@@ -170,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"సెల్ఫీ కెమెరాను చూపండి"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"టచ్‌లను చూడండి"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"రికార్డ్ చేయడానికి యాప్‌ను ఎంచుకోండి"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"స్క్రీన్ రికార్డింగ్ సెట్టింగ్‌లు"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"మార్కప్"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"వీడియో సేవ్ అయింది"</string>
@@ -185,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"మ్యూట్ చేయండి"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"అన్‌మ్యూట్ చేయండి"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g>లో <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"సర్దుబాటు చేయడానికి సెల్ఫీని వేళ్లతో స్క్రీన్‌ను నియంత్రించి, లాగి, ట్యాప్ చేయండి"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"మీ IT అడ్మిన్ ద్వారా స్క్రీన్ క్యాప్చర్ బ్లాక్ చేయబడింది"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"ఫుల్-స్క్రీన్ తాలూకు స్క్రీన్‌షాట్ తీయండి"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"ఫుల్ స్క్రీన్‌ను రికార్డ్ చేయండి"</string>
@@ -246,6 +249,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"మైక్రోఫోన్"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ముందు వైపు కెమెరా"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"షేరింగ్‌ను ఆపివేయండి"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"స్క్రీన్ షేరింగ్ ఆన్‌లో ఉంది. షేరింగ్‌ను ముగించడానికి గోప్యతా ఇండికేటర్‌ను ఉపయోగించండి."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"స్క్రీన్‌ను షేర్ చేస్తోంది"</string>
@@ -424,6 +429,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"కీబోర్డ్"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"కీబోర్డ్"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{లోపల మరో # నోటిఫికేషన్ ఉంది.}other{లోపల మరో # నోటిఫికేషన్‌లు ఉన్నాయి.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"స్క్రీన్ ల్యాండ్‌స్కేప్ దృగ్విన్యాసంలో లాక్ చేయబడుతుంది."</string>
@@ -1240,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"యాక్సెసిబిలిటీ కీ"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"యాక్సెసిబిలిటీ ఫీచర్‌లను ఉపయోగించడం ప్రారంభించడానికి మీరు యాక్సెసిబిలిటీ కీని నొక్కవచ్చు."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"ఫీచర్‌లను జోడించండి"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"యాక్సెసిబిలిటీ కీని సెటప్ చేయండి"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g>‌ను సెటప్ చేయండి"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"పూర్తయింది"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"ఫీచర్‌ను ఎంచుకోండి"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"ఎడిట్ చేయండి"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"ఒక ఫీచర్‌ను ఎంచుకోండి"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"తర్వాతిసారి మీరు యాక్సెసిబిలిటీ బటన్‌ను ఎంచుకున్నప్పుడు ఈ ఫీచర్ తెరుచుకుంటుంది"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"యాక్సెసిబిలిటీ"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"లాక్ స్క్రీన్"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"షట్ డౌన్ చేయబడుతోంది…"</string>
@@ -1743,7 +1749,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"యాప్‌ల మధ్య మారండి"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"పూర్తయింది"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"తర్వాత"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"మళ్లీ ట్రై చేయండి!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"వెనుకకు"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"మీ టచ్‌ప్యాడ్‌లో మూడు వేళ్లను ఉపయోగించి ఎడమ వైపునకు లేదా కుడి వైపునకు స్వైప్ చేయండి"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"సూపర్!"</string>
@@ -1751,14 +1758,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"మీ టచ్‌ప్యాడ్‌ను ఉపయోగించి తిరిగి వెనక్కి వెళ్లడానికి, మూడు వేళ్లను ఉపయోగించి ఎడమ వైపునకు లేదా కుడి వైపునకు స్వైప్ చేయండి"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"మొదటి ట్యాబ్‌కు వెళ్లండి"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"మీ టచ్‌ప్యాడ్‌పై మూడు వేళ్లతో పైకి స్వైప్ చేయండి"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"చక్కగా పూర్తి చేశారు!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"మీరు మొదటి స్క్రీన్‌కు వెళ్లే సంజ్ఞను పూర్తి చేశారు"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"మీ మొదటి స్క్రీన్‌కు వెళ్లడానికి మీ టచ్‌ప్యాడ్‌పై మూడు వేళ్లతో పైకి స్వైప్ చేయండి"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"ఇటీవలి యాప్‌లను చూడండి"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"మీ టచ్‌ప్యాడ్‌లో మూడు వేళ్లను ఉపయోగించి పైకి స్వైప్ చేసి, హోల్డ్ చేయండి"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"చక్కగా పూర్తి చేశారు!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"ఇటీవలి యాప్‌లను చూడడానికి ఉపయోగించే సంజ్ఞకు సంబంధించిన ట్యుటోరియల్‌ను మీరు పూర్తి చేశారు."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"ఇటీవలి యాప్‌లను చూడటానికి, మీ టచ్‌ప్యాడ్‌లో మూడు వేళ్లను ఉపయోగించి పైకి స్వైప్ చేసి, హోల్డ్ చేయండి"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"యాప్‌ల మధ్య మారండి"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"మీ టచ్‌ప్యాడ్‌లో నాలుగు వేళ్లను ఉపయోగించి కుడి వైపునకు స్వైప్ చేయండి"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"చక్కగా పూర్తి చేశారు!"</string>

@@ -17,4 +17,4 @@
 package android.service.personalcontext.hint;
 
 /** @hide */
-parcelable ContextHintWithSignatureWrapper;
+parcelable PublishedContextHintWrapper;

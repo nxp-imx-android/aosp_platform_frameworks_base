@@ -403,7 +403,10 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_API_METRIC_STYLE)
+    @EnableFlags(
+        android.app.Flags.FLAG_API_METRIC_STYLE,
+        android.app.Flags.FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS,
+    )
     fun createViewModelForMetricSingleLineView() {
         // Given: a MetricStyle notification
         val testMetric = Notification.Metric(Notification.Metric.FixedInt(1245), "Steps")
@@ -422,7 +425,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         assertThat(metric).isNotNull()
         assertThat(metric?.label).isEqualTo("Steps")
         assertThat(metric).isInstanceOf(Metric.Text::class.java)
-        assertThat((metric as Metric.Text).metricValue).isEqualTo("1,245")
+        assertThat((metric as Metric.Text).textVariants).containsExactly("1,245", "1.2K")
     }
 
     sealed class NotificationType(val largeIcon: Icon? = null)

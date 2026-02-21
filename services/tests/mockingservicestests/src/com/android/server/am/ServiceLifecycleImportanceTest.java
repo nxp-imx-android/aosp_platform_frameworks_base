@@ -44,6 +44,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.platform.test.annotations.Presubmit;
 
+import com.android.server.am.psc.MockUtils;
 import com.android.server.am.psc.ProcessImportanceAssert;
 import com.android.server.am.psc.ProcessImportanceExpectations;
 
@@ -396,16 +397,16 @@ public class ServiceLifecycleImportanceTest extends BaseServiceTest {
 
     /** Set proc's importance state as if it was an FGS that has already been evaluated by PSC. */
     private void makeForegroundService(ProcessRecord proc) {
-        proc.setCurRawProcState(PROCESS_STATE_FOREGROUND_SERVICE);
-        proc.setCurProcState(PROCESS_STATE_FOREGROUND_SERVICE);
-        proc.setSetProcState(PROCESS_STATE_FOREGROUND_SERVICE);
+        MockUtils.setCurRawProcState(proc, PROCESS_STATE_FOREGROUND_SERVICE);
+        MockUtils.setCurProcState(proc, PROCESS_STATE_FOREGROUND_SERVICE);
+        MockUtils.setSetProcState(proc, PROCESS_STATE_FOREGROUND_SERVICE);
 
-        proc.setCurRawAdj(PERCEPTIBLE_APP_ADJ);
-        proc.setCurAdj(PERCEPTIBLE_APP_ADJ);
-        proc.setSetAdj(PERCEPTIBLE_APP_ADJ);
+        MockUtils.setCurRawAdj(proc, PERCEPTIBLE_APP_ADJ);
+        MockUtils.setCurAdj(proc, PERCEPTIBLE_APP_ADJ);
+        MockUtils.setSetAdj(proc, PERCEPTIBLE_APP_ADJ);
 
-        proc.setCurCapability(PROCESS_CAPABILITY_ALL);
-        proc.setSetCapability(PROCESS_CAPABILITY_ALL);
+        MockUtils.setCurCapability(proc, PROCESS_CAPABILITY_ALL);
+        MockUtils.setSetCapability(proc, PROCESS_CAPABILITY_ALL);
     }
 
     // Simple data object for caching the args the app thread receives from service lifecycle events

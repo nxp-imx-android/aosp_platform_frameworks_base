@@ -2196,14 +2196,10 @@
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"கடவுச்சொல்"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"பேட்டர்ன்"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"பின்"</string>
-    <!-- no translation found for app_lock_permission_review_dialog_title_photos (6193222920123912729) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_photos (1854948251386976703) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title_files (8820759644609198515) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_files (2999447193189851364) -->
-    <skip />
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"உங்கள் படங்கள் இப்போதும் பிற ஆப்ஸில் காட்டப்படலாம்"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"உங்கள் படங்களுக்கான அணுகல் உள்ள ஆப்ஸ்"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"உங்கள் ஃபைல்கள் இப்போதும் பிற ஆப்ஸில் காட்டப்படலாம்"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"உங்கள் ஃபைல்களுக்கான அணுகல் உள்ள ஆப்ஸ்"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"அனைத்தையும் காட்டு"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"தொடர்க"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"பணி ஆப்ஸை மீண்டும் இயக்கவா?"</string>
@@ -2737,4 +2733,6 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"பெற்றோர் செய்துள்ள மாற்றம்"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸ் இப்போதைக்கு அகற்றப்பட்டது"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"இப்போது <xliff:g id="APP_NAME">%1$s</xliff:g> கிடைக்கிறது"</string>
+    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
+    <skip />
 </resources>

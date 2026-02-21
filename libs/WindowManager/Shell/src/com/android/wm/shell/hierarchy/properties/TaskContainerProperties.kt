@@ -17,6 +17,7 @@ package com.android.wm.shell.hierarchy.properties
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.window.TransitionInfo
+import com.android.wm.shell.common.ComponentUtils
 import com.android.wm.shell.dagger.hierarchy.WmSyncedProperty
 
 /**
@@ -48,11 +49,11 @@ class TaskContainerProperties(
 
     /** @see ContainerProperties.propsToString */
     override fun propsToString(): String {
-        return "#$taskId pkg=${taskInfo.baseIntent?.getPackage()} " + super.propsToString()
+        return "#$taskId pkg=${ComponentUtils.getPackageName(taskInfo)} " + super.propsToString()
     }
 
     /** @see ContainerProperties.getTypeName */
     override fun getTypeName(): String {
-        return "Task"
+        return "Task#$taskId"
     }
 }

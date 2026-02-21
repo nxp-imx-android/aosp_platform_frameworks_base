@@ -759,19 +759,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"ការដោះសោ​ឧបករណ៍"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"សាកល្បងប្រើ​វិធីដោះសោ​ផ្សេងទៀត"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"ប្រើ​ការដោះសោ​ដោយស្កេនមុខ នៅពេលដែល​មិនស្គាល់​ស្នាមម្រាមដៃ​របស់អ្នក ដូចជា​នៅពេលដែល​ម្រាមដៃ​របស់អ្នក​សើមជាដើម"</string>
-    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
-    <skip />
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"ដោះសោដោយស្កេនមុខ នៅពេលមិនស្គាល់ស្នាមម្រាមដៃរបស់អ្នក ដូចជានៅពេលម្រាមដៃរបស់អ្នកសើមជាដើម"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"ប្រើ​ការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃ នៅពេលដែល​មិនស្គាល់​មុខរបស់អ្នក ដូចជា​នៅពេលដែល​មិនមានពន្លឺ​គ្រប់គ្រាន់ជាដើម"</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"ការដោះ​សោ​ដោយស្កេន​មុខ"</string>
-    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
-    <skip />
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"ដោះសោដោយប្រើមុខ"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"មានបញ្ហា​ពាក់ព័ន្ធនឹង​មុខងារ​ដោះសោ​តាមទម្រង់មុខ"</string>
-    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
-    <skip />
+    <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"មានបញ្ហាក្នុងការដោះសោដោយប្រើមុខ"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"ចុចដើម្បីលុប​គំរូមុខ​របស់អ្នក រួចបញ្ចូល​មុខរបស់អ្នក​ម្ដងទៀត"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"ដើម្បីប្រើមុខងារដោះសោតាមទម្រង់មុខ សូមបើក"<b>"ការចូលប្រើកាមេរ៉ា"</b>"នៅក្នុងការកំណត់ &gt; ឯកជនភាព"</string>
-    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
-    <skip />
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"ដើម្បីដោះសោដោយប្រើមុខ សូមបើក"<b>"សិទ្ធិចូលប្រើកាមេរ៉ា"</b>"នៅក្នុង ការកំណត់ &gt; ឯកជនភាព"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"ការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃ"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"មិនអាចប្រើ​ឧបករណ៍ចាប់ស្នាមម្រាមដៃ​បានទេ"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"ទាក់ទងក្រុមហ៊ុន​ផ្ដល់ការជួសជុល។"</string>
@@ -779,42 +775,31 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"ភ្លឺពេក។ សូមសាកល្បង​ប្រើ​ពន្លឺស្រាលជាងនេះ។"</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"មិនមាន​ពន្លឺគ្រប់គ្រាន់"</string>
     <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"ដាក់​ទូរសព្ទឱ្យឆ្ងាយ​ជាងនេះ"</string>
-    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
-    <skip />
+    <string name="face_acquired_too_close" product="desktop" msgid="7189579448504853047">"ផ្លាស់ទីឧបករណ៍ទៅឆ្ងាយជាងនេះ"</string>
     <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"ដាក់​ទូរសព្ទ​ឱ្យជិត​ជាងនេះ"</string>
-    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
-    <skip />
+    <string name="face_acquired_too_far" product="desktop" msgid="6590730829823321223">"ផ្លាស់ទីឧបករណ៍មកជិតជាងនេះ"</string>
     <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"រំកិល​ទូរសព្ទឡើងលើ"</string>
-    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
-    <skip />
+    <string name="face_acquired_too_high" product="desktop" msgid="717393614154504299">"ផ្លាស់ទីឧបករណ៍ឡើងលើ"</string>
     <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"រំកិល​ទូរសព្ទចុះក្រោម"</string>
-    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
-    <skip />
+    <string name="face_acquired_too_low" product="desktop" msgid="7695733281069538045">"ផ្លាស់ទីឧបករណ៍ចុះក្រោម"</string>
     <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"រំកិលទូរសព្ទ​ទៅខាងឆ្វេង"</string>
-    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
-    <skip />
+    <string name="face_acquired_too_right" product="desktop" msgid="4058756237538843740">"ផ្លាស់ទីឧបករណ៍ទៅខាងឆ្វេងរបស់អ្នក"</string>
     <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"រំកិលទូរសព្ទ​ទៅខាងស្ដាំ"</string>
-    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
-    <skip />
+    <string name="face_acquired_too_left" product="desktop" msgid="5804819007366973778">"ផ្លាស់ទីឧបករណ៍ទៅខាងស្ដាំរបស់អ្នក"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"មើលឱ្យចំកាមេរ៉ារបស់អ្នកជាងនេះ"</string>
     <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"មើលមិនឃើញ​មុខរបស់អ្នកទេ។ កាន់ទូរសព្ទរបស់អ្នក​ដាក់ត្រឹមភ្នែក។"</string>
-    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
-    <skip />
+    <string name="face_acquired_not_detected" product="desktop" msgid="1047701586390904260">"មើលមិនឃើញ​មុខរបស់អ្នកទេ។ សូមកាន់ឧបករណ៍​របស់អ្នក​នៅត្រឹមភ្នែក។"</string>
     <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"មាន​ចលនា​ខ្លាំងពេក។ សូមកាន់​ទូរសព្ទ​ឱ្យនឹង។"</string>
-    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
-    <skip />
+    <string name="face_acquired_too_much_motion" product="desktop" msgid="7135563968992659161">"មាន​ចលនា​ខ្លាំងពេក។ កាន់ឧបករណ៍ឱ្យនឹង។"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"សូម​​ស្កេន​បញ្ចូល​មុខរបស់អ្នក​ម្ដងទៀត។"</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"មិន​ស្គាល់​មុខទេ។ សូមព្យាយាមម្ដងទៀត។"</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"ប្ដូរទីតាំងក្បាល​របស់អ្នកតិចៗ"</string>
     <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"មើល​ទូរសព្ទ​របស់អ្នក​ឱ្យចំជាងនេះ"</string>
-    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
-    <skip />
+    <string name="face_acquired_pan_too_extreme" product="desktop" msgid="821456302944137576">"មើលឱ្យចំឧបករណ៍របស់អ្នកជាងនេះ"</string>
     <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"មើល​ទូរសព្ទ​របស់អ្នក​ឱ្យចំជាងនេះ"</string>
-    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
-    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="desktop" msgid="1119243364774233108">"មើលឱ្យចំឧបករណ៍របស់អ្នកជាងនេះ"</string>
     <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"មើល​ទូរសព្ទ​របស់អ្នក​ឱ្យចំជាងនេះ"</string>
-    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
-    <skip />
+    <string name="face_acquired_roll_too_extreme" product="desktop" msgid="3665467581072397682">"មើលឱ្យចំឧបករណ៍របស់អ្នកជាងនេះ"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"យកអ្វី​ដែលបាំង​មុខ​របស់អ្នកចេញ។"</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"សម្អាតផ្នែកខាង​លើនៃ​អេក្រង់​របស់​អ្នក រួមទាំង​របារខ្មៅ"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -828,30 +813,24 @@
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"មិនអាច​ផ្ទៀងផ្ទាត់​មុខបានទេ។ មិនមាន​ហាតវែរទេ។"</string>
     <string name="face_error_timeout" product="default" msgid="2598544068593889762">"សាកល្បង​ដោះសោតាមទម្រង់មុខ​ម្ដងទៀត"</string>
-    <!-- no translation found for face_error_timeout (8136501408214657840) -->
-    <skip />
+    <string name="face_error_timeout" product="desktop" msgid="8136501408214657840">"សាកដោះសោដោយប្រើមុខម្ដងទៀត"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"មិនអាច​ផ្ទុកទិន្នន័យទម្រង់​មុខថ្មី​បានទេ។ សូមលុបទិន្នន័យទម្រង់​មុខចាស់ជាមុនសិន។"</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"បាន​បោះបង់​ប្រតិបត្តិការចាប់​ផ្ទៃមុខ។"</string>
     <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"អ្នកប្រើប្រាស់​បានបោះបង់​ការដោះសោ​តាមទម្រង់មុខ"</string>
-    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
-    <skip />
+    <string name="face_error_user_canceled" product="desktop" msgid="8903551031462609651">"អ្នកប្រើប្រាស់បានបោះបង់ការដោះសោដោយប្រើមុខ"</string>
     <string name="face_error_lockout" msgid="7864408714994529437">"ព្យាយាមចូលច្រើនពេកហើយ។ សូមព្យាយាមម្តងទៀតពេលក្រោយ។"</string>
     <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"ព្យាយាម​ច្រើនដងពេក។ មិនអាចប្រើការដោះសោតាមទម្រង់មុខបានទេ។"</string>
-    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
-    <skip />
+    <string name="face_error_lockout_permanent" product="desktop" msgid="1885291877517229762">"ព្យាយាម​ច្រើនដងពេក។ មិនអាចដោះសោដោយប្រើមុខបានទេ។"</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"ព្យាយាម​ដោះសោ​ច្រើនដងពេក។ សូមបញ្ចូល​ការចាក់សោ​អេក្រង់​ជំនួសវិញ​។"</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"មិន​អាច​ផ្ទៀងផ្ទាត់​មុខ​បាន​ទេ។ សូមព្យាយាមម្ដងទៀត។"</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"អ្នក​មិនបាន​រៀបចំ​ការដោះសោតាមទម្រង់មុខ​ទេ"</string>
-    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
-    <skip />
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"ការដោះសោដោយប្រើមុខមិនទាន់ត្រូវបានរៀបចំនៅឡើយទេ"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"មិនអាចប្រើ​ការដោះសោ​តាមទម្រង់មុខ​នៅលើ​ឧបករណ៍នេះ​បានទេ"</string>
-    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
-    <skip />
+    <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"មិនអាចដោះសោដោយប្រើមុខនៅលើឧបករណ៍នេះបានទេ"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"បានបិទ​ឧបករណ៍​ចាប់សញ្ញាជា​បណ្តោះអាសន្ន។"</string>
     <string name="face_name_template" msgid="3877037340223318119">"ផ្ទៃមុខទី <xliff:g id="FACEID">%d</xliff:g>"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"ប្រើការដោះសោ​តាមទម្រង់មុខ"</string>
-    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
-    <skip />
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"ដោះសោដោយប្រើមុខ"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"ប្រើមុខ ឬ​ការចាក់សោអេក្រង់"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"ប្រើមុខរបស់អ្នក ដើម្បីបន្ត"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"ប្រើការចាក់សោអេក្រង់ ឬមុខរបស់អ្នក ដើម្បីបន្ត"</string>
@@ -1112,8 +1091,7 @@
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"ចុចគ្រាប់ចុចណាក៏បាន ដើម្បីដោះសោ"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"ដោះសោមុខងារ និងទិន្នន័យទាំងអស់"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"បាន​លើស​ការ​ព្យាយាម​ដោះ​សោ​តាម​ទម្រង់​មុខ"</string>
-    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
-    <skip />
+    <string name="faceunlock_multiple_failures" product="desktop" msgid="5388142244463490793">"បានព្យាយាមដោះសោដោយប្រើមុខច្រើនដងបំផុតហើយ"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"គ្មានស៊ីមទេ"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"គ្មានស៊ីមក្នុងថេប្លេតទេ។"</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"គ្មានស៊ីម​ក្នុង​ឧបករណ៍ Android TV របស់អ្នកទេ។"</string>
@@ -1185,8 +1163,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"រុញ​ដោះ​សោ។"</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"លំនាំ​ដោះ​សោ​។"</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"ការដោះ​សោ​ដោយស្កេន​មុខ។"</string>
-    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
-    <skip />
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"ដោះសោដោយប្រើមុខ។"</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"កូដ PIN ដោះ​សោ។"</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"ដោះ​កូដ Pin របស់​សីុម។"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"ដោះ​កូដ Puk របស់​សីុម។"</string>
@@ -1923,8 +1900,7 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"ប្ដូរ"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"ការកំណត់"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"កំពុង​ប្ដូរ​ទៅ<xliff:g id="NAME">%1$s</xliff:g>…"</string>
-    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
-    <skip />
+    <string name="user_logging_out_message" msgid="2968888364742643174">"កំពុងចេញពីគណនី…"</string>
     <string name="owner_name" msgid="8713560351570795743">"ម្ចាស់"</string>
     <string name="guest_name" msgid="8502103277839834324">"ភ្ញៀវ"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"អ្នកប្រើប្រាស់ប្រព័ន្ធ"</string>
@@ -2187,12 +2163,10 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"សេវាកម្ម និងភ្នាក់ងារ AI ដែលអ្នកបានអនុញ្ញាតឱ្យចូលប្រើ %1$s នឹងនៅតែអាចចូលប្រើទិន្នន័យរបស់ខ្លួនបានដដែល"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"បញ្ចូលការចាក់សោកម្មវិធី"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"ការដោះសោ​ដោយស្កេនមុខ"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"ដោះសោដោយប្រើមុខ"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"ការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃ"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"ការដោះសោដោយស្កេនស្នាមម្រាមដៃ ការដោះសោដោយស្កេនមុខ"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"ការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃ និងមុខ"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"ពាក្យសម្ងាត់"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"លំនាំ"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"កូដ PIN"</string>
@@ -2689,11 +2663,9 @@
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"លែងអាចសម្គាល់ <xliff:g id="FINGERPRINT">%s</xliff:g> បានទៀតហើយ។ សូមរៀបចំការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃម្ដងទៀត។"</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"លែងអាចសម្គាល់ <xliff:g id="FINGERPRINT_0">%1$s</xliff:g> និង <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> បានទៀតហើយ។ សូមរៀបចំការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃម្ដងទៀត។"</string>
     <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"រៀបចំ​ការដោះ​សោ​ដោយស្កេន​មុខម្ដងទៀត"</string>
-    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
-    <skip />
+    <string name="face_dangling_notification_title" product="desktop" msgid="4632690536207343589">"រៀបចំការដោះសោដោយប្រើមុខម្ដងទៀត"</string>
     <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"លែងអាចសម្គាល់គំរូមុខរបស់អ្នកបានទៀតហើយ។ សូមរៀបចំ​ការដោះ​សោ​ដោយស្កេន​មុខម្ដងទៀត។"</string>
-    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
-    <skip />
+    <string name="face_dangling_notification_msg" product="desktop" msgid="5982979430103820891">"លែងអាចស្គាល់គំរូមុខរបស់អ្នកបានទៀតហើយ។ រៀបចំការដោះសោដោយប្រើមុខម្ដងទៀត។"</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"រៀបចំ"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"កុំទាន់"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"ម៉ោងរោទ៍សម្រាប់ <xliff:g id="USER_NAME">%s</xliff:g>"</string>
@@ -2733,4 +2705,6 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"ព័ត៌មានថ្មីៗពីមាតាបិតារបស់អ្នក"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ត្រូវបានលុបចេញហើយឥឡូវនេះ"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"ឥឡូវនេះមាន <xliff:g id="APP_NAME">%1$s</xliff:g> ហើយ"</string>
+    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
+    <skip />
 </resources>

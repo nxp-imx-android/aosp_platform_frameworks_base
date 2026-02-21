@@ -111,7 +111,9 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
                     callStats.callCount, callStats.durationSumMicros,
                     callStats.secondsWithAtLeast10Calls, callStats.secondsWithAtLeast50Calls,
                     callStats.callDurationSumSquaredMicros, callStats.cpuTimeCount,
-                    callStats.cpuTimeSumMicros, callStats.cpuTimeSumSquaredMicros);
+                    callStats.cpuTimeSumMicros, callStats.cpuTimeSumSquaredMicros,
+                    /* secondsWithAtLeast125Calls = */ 0,
+                    /* secondsWithAtLeast250Calls = */ 0);
         }
     }
 
@@ -255,7 +257,9 @@ public class BinderStatsConsumerService extends IBinderStatsConsumerService.Stub
                     aggregatedStats.mSecondsWithAtLeast10Calls,
                     aggregatedStats.mSecondsWithAtLeast50Calls,
                     aggregatedStats.mDurationMicrosSquaredSum, aggregatedStats.mCpuTimeCount,
-                    aggregatedStats.mCpuTimeMicrosSum, aggregatedStats.mCpuTimeMicrosSquaredSum);
+                    aggregatedStats.mCpuTimeMicrosSum, aggregatedStats.mCpuTimeMicrosSquaredSum,
+                    aggregatedStats.mSecondsWithAtLeast125Calls,
+                    aggregatedStats.mSecondsWithAtLeast250Calls);
         }
     }
 

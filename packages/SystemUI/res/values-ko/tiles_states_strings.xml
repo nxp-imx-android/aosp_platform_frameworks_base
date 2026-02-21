@@ -201,7 +201,9 @@
     <item msgid="6641673879029894995">"사용 안함"</item>
     <item msgid="5806682401126108403">"사용"</item>
   </string-array>
-    <!-- no translation found for tile_states_battery_charging:0 (7997022271404074195) -->
-    <!-- no translation found for tile_states_battery_charging:1 (9200787142547749446) -->
-    <!-- no translation found for tile_states_battery_charging:2 (1965665798398064399) -->
+  <string-array name="tile_states_battery_charging">
+    <item msgid="7997022271404074195">"사용할 수 없음"</item>
+    <item msgid="9200787142547749446">"사용 안함"</item>
+    <item msgid="1965665798398064399">"사용"</item>
+  </string-array>
 </resources>

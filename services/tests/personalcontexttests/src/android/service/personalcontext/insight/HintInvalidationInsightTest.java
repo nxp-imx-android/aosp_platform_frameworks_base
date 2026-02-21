@@ -20,8 +20,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.HintInvalidationHint;
+import android.service.personalcontext.hint.PublishedContextHint;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -40,16 +40,16 @@ public class HintInvalidationInsightTest {
     @Test
     public void testInvalidatesCorrectHint() throws GeneralSecurityException {
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
-        final ContextHintWithSignature signedHint =
-                new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+        final PublishedContextHint signedHint =
+                new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                         .setOriginatingPackage("packageA")
                         .build();
 
         final HintInvalidationHint invalidationHint =
                 new HintInvalidationHint.Builder(signedHint.getContextHint()).build();
 
-        final ContextHintWithSignature signedInvalidationHint =
-                new ContextHintWithSignature.Builder(invalidationHint, key)
+        final PublishedContextHint signedInvalidationHint =
+                new PublishedContextHint.Builder(invalidationHint, key)
                         .setOriginatingPackage("packageA")
                         .build();
 
@@ -65,21 +65,21 @@ public class HintInvalidationInsightTest {
     @Test
     public void testDoesNotInvalidateIncorrectHint() throws GeneralSecurityException {
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
-        final ContextHintWithSignature signedHint1 =
-                new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+        final PublishedContextHint signedHint1 =
+                new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                         .setOriginatingPackage("packageA")
                         .build();
 
-        final ContextHintWithSignature signedHint2 =
-                new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+        final PublishedContextHint signedHint2 =
+                new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                         .setOriginatingPackage("packageA")
                         .build();
 
         final HintInvalidationHint invalidationHint =
                 new HintInvalidationHint.Builder(signedHint1.getContextHint()).build();
 
-        final ContextHintWithSignature signedInvalidationHint =
-                new ContextHintWithSignature.Builder(invalidationHint, key)
+        final PublishedContextHint signedInvalidationHint =
+                new PublishedContextHint.Builder(invalidationHint, key)
                         .setOriginatingPackage("packageA")
                         .build();
 
@@ -95,16 +95,16 @@ public class HintInvalidationInsightTest {
     @Test
     public void testDoesNotInvalidateIncorrectPackage() throws GeneralSecurityException {
         final SecretKeySpec key = ContextHintTestUtils.generateSignedHintKey();
-        final ContextHintWithSignature signedHint =
-                new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+        final PublishedContextHint signedHint =
+                new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                         .setOriginatingPackage("packageA")
                         .build();
 
         final HintInvalidationHint invalidationHint =
                 new HintInvalidationHint.Builder(signedHint.getContextHint()).build();
 
-        final ContextHintWithSignature signedInvalidationHint =
-                new ContextHintWithSignature.Builder(invalidationHint, key)
+        final PublishedContextHint signedInvalidationHint =
+                new PublishedContextHint.Builder(invalidationHint, key)
                         .setOriginatingPackage("packageB")
                         .build();
 

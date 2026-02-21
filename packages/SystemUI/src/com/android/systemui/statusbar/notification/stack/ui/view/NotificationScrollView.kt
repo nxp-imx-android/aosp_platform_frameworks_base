@@ -142,6 +142,9 @@ interface NotificationScrollView {
     /** set the alpha from 0-1f of stack fade-in on lockscreen */
     fun setAlphaForLockscreenFadeIn(alphaForLockscreenFadeIn: Float)
 
+    /** Sets whether the current scene is lockscreen */
+    fun setCurrentSceneLockscreen(isCurrentLockscreen: Boolean)
+
     /** Sets whether the view is displayed in doze mode. */
     fun setDozing(dozing: Boolean)
 

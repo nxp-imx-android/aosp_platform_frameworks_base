@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.promoted
 
 import android.app.Flags.FLAG_API_METRIC_STYLE
 import android.app.Flags.FLAG_API_NOTIFICATION_SEMANTIC_STYLE
+import android.app.Flags.FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS
 import android.app.Notification
 import android.app.Notification.BigTextStyle
 import android.app.Notification.CallStyle
@@ -148,6 +149,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT,
         FLAG_API_METRIC_STYLE,
         FLAG_API_NOTIFICATION_SEMANTIC_STYLE,
+        FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS,
     )
     fun extractContent_compactContent_compactContentExtracted() =
         kosmos.runTest {
@@ -583,7 +585,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_API_METRIC_STYLE)
+    @EnableFlags(FLAG_API_METRIC_STYLE, FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
     fun extractContent_fromMetricStyle_singleTextValue() =
         kosmos.runTest {
             val entry = createEntry {
@@ -605,11 +607,11 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             assertThat(privateVersion.metrics).hasSize(1)
             val metric = privateVersion.metrics?.get(0) as Metric.Text
             assertThat(metric.label).isEqualTo("Label1 (unit)")
-            assertThat(metric.metricValue).isEqualTo("Value1")
+            assertThat(metric.textVariants).containsExactly("Value1")
         }
 
     @Test
-    @EnableFlags(FLAG_API_METRIC_STYLE)
+    @EnableFlags(FLAG_API_METRIC_STYLE, FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
     fun extractContent_fromMetricStyle_singleIntegerValue() =
         kosmos.runTest {
             val entry = createEntry {
@@ -617,7 +619,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
                     Notification.MetricStyle()
                         .addMetric(
                             Notification.Metric(
-                                Notification.Metric.FixedInt(123, "unit"),
+                                Notification.Metric.FixedInt(12345, "unit"),
                                 "LabelInt",
                             )
                         )
@@ -631,11 +633,11 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             assertThat(privateVersion.metrics).hasSize(1)
             val metric = privateVersion.metrics?.get(0) as Metric.Text
             assertThat(metric.label).isEqualTo("LabelInt (unit)")
-            assertThat(metric.metricValue).isEqualTo("123")
+            assertThat(metric.textVariants).containsExactly("12,345", "12K")
         }
 
     @Test
-    @EnableFlags(FLAG_API_METRIC_STYLE)
+    @EnableFlags(FLAG_API_METRIC_STYLE, FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
     fun extractContent_fromMetricStyle_timeDifferenceWithInstant() =
         kosmos.runTest {
             val zeroTime = java.time.Instant.ofEpochMilli(100)
@@ -667,7 +669,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_API_METRIC_STYLE)
+    @EnableFlags(FLAG_API_METRIC_STYLE, FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
     fun extractContent_fromMetricStyle_timeDifferenceWithPausedDuration() =
         kosmos.runTest {
             val pausedDuration = java.time.Duration.ofSeconds(30)
@@ -695,7 +697,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(FLAG_API_METRIC_STYLE)
+    @EnableFlags(FLAG_API_METRIC_STYLE, FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
     fun extractContent_fromMetricStyle_multipleMetrics() =
         kosmos.runTest {
             val entry = createEntry {
@@ -725,7 +727,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
             val metric1 = privateVersion.metrics?.get(0) as Metric.Text
             assertThat(metric1.label).isEqualTo("Label1")
-            assertThat(metric1.metricValue).isEqualTo("Value1")
+            assertThat(metric1.textVariants).containsExactly("Value1")
 
             val metric2 = privateVersion.metrics?.get(1) as Metric.TimeDifference.ElapsedRealtime
             assertThat(metric2.label).isEqualTo("Timer")
@@ -735,11 +737,11 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
             val metric3 = privateVersion.metrics?.get(2) as Metric.Text
             assertThat(metric3.label).isEqualTo("Label3")
-            assertThat(metric3.metricValue).isEqualTo("42")
+            assertThat(metric3.textVariants).containsExactly("42")
         }
 
     @Test
-    @EnableFlags(FLAG_API_METRIC_STYLE)
+    @EnableFlags(FLAG_API_METRIC_STYLE, FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
     fun extractContent_fromMetricStyle_tooManyMetrics() =
         kosmos.runTest {
             val entry = createEntry {
@@ -766,16 +768,16 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             assertThat(privateVersion.style).isEqualTo(Style.Metric)
             val metric1 = privateVersion.metrics?.get(0) as Metric.Text
             assertThat(metric1.label).isEqualTo("Label1")
-            assertThat(metric1.metricValue).isEqualTo("Value1")
+            assertThat(metric1.textVariants).containsExactly("Value1")
             val metric2 = privateVersion.metrics?.get(1) as Metric.Text
             assertThat(metric2.label).isEqualTo("Label2")
-            assertThat(metric2.metricValue).isEqualTo("Value2")
+            assertThat(metric2.textVariants).containsExactly("Value2")
             val metric3 = privateVersion.metrics?.get(2) as Metric.Text
             assertThat(metric3.label).isEqualTo("Label3")
-            assertThat(metric3.metricValue).isEqualTo("Value3")
+            assertThat(metric3.textVariants).containsExactly("Value3")
             val metric4 = privateVersion.metrics?.get(3) as Metric.Text
             assertThat(metric4.label).isEqualTo("Label4")
-            assertThat(metric4.metricValue).isEqualTo("Value4")
+            assertThat(metric4.textVariants).containsExactly("Value4")
         }
 
     private fun Kosmos.requireContent(

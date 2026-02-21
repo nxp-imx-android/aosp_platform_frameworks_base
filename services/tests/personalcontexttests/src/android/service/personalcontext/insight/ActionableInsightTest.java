@@ -18,11 +18,14 @@ package android.service.personalcontext.insight;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.Mockito.mock;
+
+import android.app.PendingIntent;
 import android.content.Intent;
-import android.net.Uri;
 import android.service.personalcontext.hint.ContextHintTestUtils;
 import android.service.personalcontext.hint.InsightReferenceHint;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Test;
@@ -32,10 +35,11 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ActionableInsightTest {
     @Test
-    public void testIntentAction_ParcelUnparcel() {
+    public void testPendingIntentAction_ParcelUnparcel() {
         final InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(
-                        new Intent(Intent.ACTION_VIEW, Uri.parse("content://test")))
+                new InsightActionDetails.Builder().setPendingIntent(PendingIntent.getBroadcast(
+                                InstrumentationRegistry.getTargetContext(), 0,
+                                new Intent(), PendingIntent.FLAG_IMMUTABLE))
                         .build();
         final InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title")
@@ -60,8 +64,7 @@ public class ActionableInsightTest {
     @Test
     public void testReturnHintReportHasCorrectInsightId() {
         final InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(
-                                new Intent(Intent.ACTION_VIEW, Uri.parse("content://test")))
+                new InsightActionDetails.Builder().setPendingIntent(mock(PendingIntent.class))
                         .build();
         final InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title")

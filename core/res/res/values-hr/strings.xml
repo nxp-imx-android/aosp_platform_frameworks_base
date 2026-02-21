@@ -2197,14 +2197,10 @@
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"zaporka"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"uzorak"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
-    <!-- no translation found for app_lock_permission_review_dialog_title_photos (6193222920123912729) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_photos (1854948251386976703) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title_files (8820759644609198515) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_files (2999447193189851364) -->
-    <skip />
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"Fotografije se i dalje mogu prikazivati u drugim aplikacijama"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"Aplikacije s pristupom fotografijama"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"Datoteke se i dalje mogu prikazivati u drugim aplikacijama"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"Aplikacije s pristupom vašim datotekama"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Prikaži sve"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Nastavi"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Pokrenuti poslovne aplikacije?"</string>
@@ -2738,4 +2734,6 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Ažuriranje tvog roditelja"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"Aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g> sada je uklonjena"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Epizoda <xliff:g id="APP_NAME">%1$s</xliff:g> sada je dostupna"</string>
+    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
+    <skip />
 </resources>

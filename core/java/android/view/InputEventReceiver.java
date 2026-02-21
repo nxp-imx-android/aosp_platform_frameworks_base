@@ -41,9 +41,8 @@ public abstract class InputEventReceiver {
 
     private long mReceiverPtr;
 
-    // We keep references to the input channel and message queue objects here so that
-    // they are not GC'd while the native peer of the receiver is using them.
-    private InputChannel mInputChannel;
+    // We keep a reference to the looper object here so that it is not GC'd while the native peer
+    // of the receiver is using it.
     private Looper mLooper;
 
     // Map from InputEvent sequence numbers to dispatcher sequence numbers.
@@ -64,7 +63,8 @@ public abstract class InputEventReceiver {
     /**
      * Creates an input event receiver bound to the specified input channel.
      *
-     * @param inputChannel The input channel.
+     * @param inputChannel The input channel. This channel will be consumed, so if you want to reuse
+     *                     it, make a copy before passing it to this constructor.
      * @param looper The looper to use when invoking callbacks.
      */
     public InputEventReceiver(InputChannel inputChannel, Looper looper) {
@@ -75,10 +75,9 @@ public abstract class InputEventReceiver {
             throw new IllegalArgumentException("looper must not be null");
         }
 
-        mInputChannel = inputChannel;
         mLooper = looper;
         mReceiverPtr = nativeInit(new WeakReference<InputEventReceiver>(this),
-                mInputChannel, mLooper.getQueue());
+                inputChannel, mLooper.getQueue());
 
         mCloseGuard.open("InputEventReceiver.dispose");
     }
@@ -134,10 +133,6 @@ public abstract class InputEventReceiver {
             mReceiverPtr = 0;
         }
 
-        if (mInputChannel != null) {
-            mInputChannel.dispose();
-            mInputChannel = null;
-        }
         mLooper = null;
         Reference.reachabilityFence(this);
     }
@@ -291,7 +286,6 @@ public abstract class InputEventReceiver {
      */
     public void dump(String prefix, PrintWriter writer) {
         writer.println(prefix + getClass().getName());
-        writer.println(prefix + " mInputChannel: " + mInputChannel);
         writer.println(prefix + " mSeqMap: " + mSeqMap);
         writer.println(prefix + " mReceiverPtr:\n" + nativeDump(mReceiverPtr, prefix + "  "));
     }

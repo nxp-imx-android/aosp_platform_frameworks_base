@@ -30,7 +30,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.assistant.domain.interactor.fakeAssistantIconInteractor
 import com.android.systemui.statusbar.quickactions.assistant.shared.model.AssistantIconSharedModel
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
+import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.testKosmosNew
@@ -109,13 +109,13 @@ private fun QuickActionChipUiState.assertIsHidden(): QuickActionChipUiState.Hidd
     return this as QuickActionChipUiState.Hidden
 }
 
-private fun QuickActionChipUiState.assertIsShown(): QuickActionChipUiState.PopupChip {
+private fun QuickActionChipUiState.assertIsShown(): QuickActionChipUiState.LaunchChip {
     assertThat(this.chipId).isEqualTo(QuickActionChipId.AssistantIcon)
-    assertThat(this).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
-    return this as QuickActionChipUiState.PopupChip
+    assertThat(this).isInstanceOf(QuickActionChipUiState.LaunchChip::class.java)
+    return this as QuickActionChipUiState.LaunchChip
 }
 
-private fun QuickActionChipUiState.PopupChip.verifyIcon(res: Int) {
-    assertThat(this.icons.size).isEqualTo(1)
-    assertThat(this.icons).contains(ChipIcon(Icon.Resource(resId = res, contentDescription = null)))
+private fun QuickActionChipUiState.LaunchChip.verifyIcon(res: Int) {
+    assertThat(this.chipContent)
+        .isEqualTo(ChipContent.IconOnly(Icon.Resource(resId = res, contentDescription = null)))
 }

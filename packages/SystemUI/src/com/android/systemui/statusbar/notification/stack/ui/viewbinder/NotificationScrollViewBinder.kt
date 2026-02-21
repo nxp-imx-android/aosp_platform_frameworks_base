@@ -120,6 +120,11 @@ constructor(
                     view.setAlphaForLockscreenFadeIn(it)
                 }
             }
+            launch {
+                viewModel.isCurrentSceneLockscreen.collectTraced {
+                    view.setCurrentSceneLockscreen(it)
+                }
+            }
             launch { viewModel.isScrollable.collectTraced { view.setScrollingEnabled(it) } }
             launch { viewModel.isDozing.collectTraced { isDozing -> view.setDozing(isDozing) } }
             launch {

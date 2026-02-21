@@ -18,9 +18,9 @@ package com.android.server.personalcontext;
 
 import android.os.Bundle;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.HintFilter;
 import android.service.personalcontext.hint.HintInvalidationHint;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.HintInvalidationInsight;
 import android.service.personalcontext.insight.PublishedContextInsight;
@@ -67,20 +67,20 @@ public class HintInvalidationUnderstander implements Refiner {
 
     @Nullable
     @Override
-    public Set<Set<ContextHintWithSignature>> getInterestedHintClusters(
-            @NonNull Set<ContextHintWithSignature> allContextHints, @NonNull Set<UUID> seenIDs,
+    public Set<Set<PublishedContextHint>> getInterestedHintClusters(
+            @NonNull Set<PublishedContextHint> allContextHints, @NonNull Set<UUID> seenIDs,
             boolean isFirstRun) {
-        final Set<ContextHintWithSignature> hints = HINT_FILTER.getInterestedHintClusters(
+        final Set<PublishedContextHint> hints = HINT_FILTER.getInterestedHintClusters(
                 allContextHints, seenIDs);
         return hints == null || hints.isEmpty() ? null : Set.of(hints);
     }
 
     @Override
-    public void refine(@NonNull Set<ContextHintWithSignature> inputHints,
+    public void refine(@NonNull Set<PublishedContextHint> inputHints,
             @NonNull Consumer<Set<ContextHint>> callback,
             @NonNull RefinerWorkflow.InsightConsumer insightCallback) {
         final HashSet<ContextInsight> insights = new HashSet<>();
-        for (ContextHintWithSignature hint : inputHints) {
+        for (PublishedContextHint hint : inputHints) {
             insights.add(new HintInvalidationInsight.Builder(hint).build());
         }
         insightCallback.accept(mComponentId, insights);

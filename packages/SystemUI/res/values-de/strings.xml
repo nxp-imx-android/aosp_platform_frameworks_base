@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Bildschirm automatisch drehen"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="APPLICATION">%1$s</xliff:g> den Zugriff auf <xliff:g id="USB_DEVICE">%2$s</xliff:g> gewähren?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"<xliff:g id="APPLICATION">%1$s</xliff:g> den Zugriff auf <xliff:g id="USB_DEVICE">%2$s</xliff:g> gewähren?\nDiese App hat noch nicht die Berechtigung zum Aufnehmen erhalten, könnte jedoch Audio über dieses USB-Gerät aufnehmen."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"&lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; Zugriff auf &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; gewähren?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"&lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; öffnen, um &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; zu verwalten?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Diese App hat noch keine Berechtigung zum Aufnehmen erhalten, könnte aber Audioaufnahmen über dieses USB-Gerät machen. Wenn du <xliff:g id="APPLICATION">%1$s</xliff:g> mit diesem Gerät verwendest, hörst du möglicherweise keine Anrufe, Benachrichtigungen und Wecker mehr."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"Wenn du <xliff:g id="APPLICATION">%1$s</xliff:g> mit diesem Gerät verwendest, hörst du möglicherweise keine Anrufe, Benachrichtigungen und Wecker mehr."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"<xliff:g id="APPLICATION">%1$s</xliff:g> den Zugriff auf <xliff:g id="USB_ACCESSORY">%2$s</xliff:g> gewähren?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Selfie-Kamera anzeigen"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Berührungen anzeigen"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"App zum Aufnehmen auswählen"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"Einstellungen für Bildschirmaufzeichnung"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Markieren &amp; Zeichnen"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video gespeichert"</string>
@@ -187,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Stummschalten"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Stummschaltung aufheben"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> von <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Selfie zum Anpassen zusammenziehen, ziehen und antippen"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Bildschirmaufnahmen wurden von deinem IT-Administrator blockiert"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Screenshot des gesamten Bildschirms erstellen"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Gesamten Bildschirm aufnehmen"</string>
@@ -201,12 +202,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Ziehpunkt unten rechts – mit den Pfeiltasten die Größe ändern"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Ziehpunkt unten links – mit den Pfeiltasten die Größe ändern"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Teilen"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"App-Fenster zum Teilen auswählen"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Tab zum Teilen auswählen"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Display zum Teilen auswählen"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Audioinhalte freigeben"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"App-Fenster teilen"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Tab teilen"</string>
@@ -224,14 +222,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Die Freigabe des Bildschirms „<xliff:g id="DISPLAY_NAME">%1$s</xliff:g>“ wurde beendet. Der Bildschirm wurde mit niemandem geteilt."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Button „Schließen“. Drücke die Eingabetaste, um das Dialogfeld vor der Freigabe zu schließen."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Button zum Teilen von Tabs. Nicht ausgewählt. Drücke die Eingabetaste, um den Tab zu teilen."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"Tab wird geteilt. Rufe die verfügbaren Tabs auf."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Button zum Teilen der App. Nicht ausgewählt. Drücke die Eingabetaste, um die App zu teilen."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"App wird geteilt. Rufe die verfügbaren Apps auf."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Button „Vollbild“. Nicht ausgewählt. Drücke die Eingabetaste, um im Vollbildmodus zu teilen."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"Vollbild wird geteilt. Rufe die verfügbaren Displays auf."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Button „Teilen“. Aus. Wähle eine App, einen Tab oder ein Display zum Teilen aus."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Freigabe aktiviert. <xliff:g id="ITEM">%1$s</xliff:g> ausgewählt. Drücke die Eingabetaste, um die Freigabe zu starten."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Nicht ausgewählt. Drücke zum Auswählen die Eingabetaste."</string>
@@ -254,6 +249,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Frontkamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> × <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Freigabe beenden"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Die Bildschirmfreigabe ist aktiviert. Über die Datenschutzanzeige kannst du die Freigabe beenden."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Bildschirm wird geteilt"</string>
@@ -432,6 +429,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Tastatur"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Tastatur"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# weitere Benachrichtigung vorhanden.}other{# weitere Benachrichtigungen vorhanden.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Bildschirm bleibt im Querformat."</string>
@@ -1004,10 +1005,10 @@
     <string name="notification_channel_summary_automatic_silenced" msgid="7403004439649872047">"&lt;b&gt;Status&lt;/b&gt;: auf „Lautlos“ herabgestuft"</string>
     <string name="notification_channel_summary_automatic_promoted" msgid="1301710305149590426">"&lt;b&gt;Status&lt;/b&gt;: höher eingestuft"</string>
     <string name="notification_channel_summary_automatic_demoted" msgid="1831303964660807700">"&lt;b&gt;Status&lt;/b&gt;: niedriger eingestuft"</string>
-    <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"Wird oben im Bereich „Unterhaltungen“ sowie als Profilbild auf dem Sperrbildschirm angezeigt"</string>
-    <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"Wird oben im Bereich „Unterhaltungen“ sowie als Profilbild auf dem Sperrbildschirm angezeigt, erscheint als Bubble"</string>
-    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Wird oben im Bereich „Unterhaltungen“ sowie als Profilbild auf dem Sperrbildschirm angezeigt, unterbricht „Bitte nicht stören“"</string>
-    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Wird oben im Bereich „Unterhaltungen“ sowie als Profilbild auf dem Sperrbildschirm angezeigt, erscheint als Bubble, unterbricht „Bitte nicht stören“"</string>
+    <string name="notification_channel_summary_priority_baseline" msgid="46674690072551234">"Wird oben in den Benachrichtigungen zu Unterhaltungen sowie als Profilbild auf dem Sperrbildschirm angezeigt"</string>
+    <string name="notification_channel_summary_priority_bubble" msgid="1275413109619074576">"Wird oben in den Benachrichtigungen zu Unterhaltungen sowie als Profilbild auf dem Sperrbildschirm angezeigt, erscheint als Bubble"</string>
+    <string name="notification_channel_summary_priority_dnd" msgid="6665395023264154361">"Wird oben in den Benachrichtigungen zu Unterhaltungen sowie als Profilbild auf dem Sperrbildschirm angezeigt, unterbricht „Bitte nicht stören“"</string>
+    <string name="notification_channel_summary_priority_all" msgid="7151752959650048285">"Wird oben in den Benachrichtigungen zu Unterhaltungen sowie als Profilbild auf dem Sperrbildschirm angezeigt, erscheint als Bubble, unterbricht „Bitte nicht stören“"</string>
     <string name="notification_priority_title" msgid="2079708866333537093">"Priorität"</string>
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> unterstützt keine Funktionen für Unterhaltungen"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Feedback"</string>
@@ -1248,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Taste für Bedienungshilfen"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Du kannst die Bedienungshilfen starten, indem du die entsprechende Taste drückst."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Funktionen hinzufügen"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Taste für Bedienungshilfen einrichten"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> einrichten"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Fertig"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Funktion auswählen"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Bearbeiten"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Funktion auswählen"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Die Funktion wird geöffnet, wenn du das nächste Mal auf den Button „Bedienungshilfen“ tippst"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Bedienungshilfen"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Sperrbildschirm"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Wird heruntergefahren…"</string>
@@ -1502,7 +1500,7 @@
     <string name="build_number_clip_data_label" msgid="3623176728412560914">"Build-Nummer"</string>
     <string name="copy_to_clipboard_a11y_action" msgid="4312789069718446749">"In die Zwischenablage kopieren."</string>
     <string name="basic_status" msgid="2315371112182658176">"Offene Unterhaltung"</string>
-    <string name="select_conversation_title" msgid="6716364118095089519">"Unterhaltungs-Widgets"</string>
+    <string name="select_conversation_title" msgid="6716364118095089519">"Kommunikations-Widgets"</string>
     <string name="select_conversation_text" msgid="3376048251434956013">"Tippe auf eine Unterhaltung, um sie deinem Startbildschirm hinzuzufügen"</string>
     <string name="no_conversations_text" msgid="5354115541282395015">"Deine letzten Unterhaltungen werden hier angezeigt"</string>
     <string name="priority_conversations" msgid="3967482288896653039">"Priorisierte Unterhaltungen"</string>
@@ -1751,7 +1749,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Zwischen Apps wechseln"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Fertig"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Weiter"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"Noch einmal versuchen"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Zurück"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Wische mit drei Fingern auf dem Touchpad nach links oder rechts"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Sehr gut!"</string>
@@ -1759,14 +1758,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Wenn du mit dem Touchpad zurückgehen möchtest, wische mit drei Fingern nach links oder rechts"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Startbildschirm"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Wische an einer beliebigen Stelle auf dem Touchpad mit drei Fingern nach oben"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Gut gemacht!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Du hast das Tutorial für die Touchgeste „Zum Startbildschirm“ abgeschlossen"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Wenn du zum Startbildschirm gelangen möchtest, wische auf dem Touchpad mit drei Fingern nach oben"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Letzte Apps aufrufen"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Wische mit drei Fingern nach oben und halte das Touchpad gedrückt"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Gut gemacht!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Du hast das Tutorial für die Touchgeste zum Aufrufen der zuletzt verwendeten Apps abgeschlossen."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Wenn du zuletzt verwendete Apps aufrufen möchtest, wische mit drei Fingern nach oben und halte das Touchpad gedrückt"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Zwischen Apps wechseln"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Wische mit vier Fingern auf dem Touchpad nach rechts"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Gut gemacht!"</string>
@@ -1867,8 +1877,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d Effekte"</string>
     <string name="av_blur" msgid="405131343487260171">"Weichzeichnen"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Automatische Untertitel"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Zurück"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Akkustand: %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Akkustand links: %1$s    Akkustand rechts: %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Akkustand links: %1$s"</string>

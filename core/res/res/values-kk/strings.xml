@@ -2196,14 +2196,10 @@
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"құпия сөз"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"өрнек"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN коды"</string>
-    <!-- no translation found for app_lock_permission_review_dialog_title_photos (6193222920123912729) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_photos (1854948251386976703) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title_files (8820759644609198515) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_files (2999447193189851364) -->
-    <skip />
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"Фотосуреттеріңіз басқа қолданбаларда көрсетіле беруі мүмкін"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"Фотосуретке кіру рұқсаты бар қолданбалар"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"Фотосуреттеріңіз басқа қолданбаларда көрсетіле беруі мүмкін"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"Файлға кіру рұқсаты бар қолданбалар"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"Барлығын көру"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"Жалғастыру"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"Жұмыс қолданбаларын қайта қосасыз ба?"</string>
@@ -2686,7 +2682,7 @@
     <string name="satellite_messaging_unsupported_default_sms_app_notification_summary" msgid="17084124893763593">"Жерсерік арқылы хабар алмасу үшін Google Messages сіздің әдепкі хабар алмасу қолданбаңыз болуы керек."</string>
     <string name="satellite_messaging_location_disabled_notification_title" msgid="7270641894250928494">"Жерсерік арқылы хабар алмасу функциясы қолжетімді емес"</string>
     <string name="satellite_messaging_location_disabled_notification_summary" msgid="1450824950686221810">"Жерсерік арқылы хабар алмасу функциясының бұл елде немесе аймақта қолжетімді екенін тексеру үшін локация параметрлерін қосыңыз."</string>
-    <string name="satellite_indicator" msgid="6846063647532086110">"ЖРС"</string>
+    <string name="satellite_indicator" msgid="6846063647532086110">"SAT"</string>
     <string name="fingerprint_dangling_notification_title" msgid="7362075195588639989">"Саусақ ізімен ашу функциясын қайта реттеу"</string>
     <string name="fingerprint_dangling_notification_msg_1" msgid="5851784577768803510">"<xliff:g id="FINGERPRINT">%s</xliff:g> бұдан былай танылмайды."</string>
     <string name="fingerprint_dangling_notification_msg_2" msgid="7925203589860744456">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> және <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> бұдан былай танылмайды."</string>
@@ -2737,4 +2733,6 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Ата-анаңыз өзгеріс енгізді"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> қолданбасы әзірше өшірілді"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> енді қолжетімді"</string>
+    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
+    <skip />
 </resources>

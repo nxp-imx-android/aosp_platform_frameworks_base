@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
+package com.android.systemui.media.remedia.data.model
 
-import android.content.applicationContext
-import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.kosmos.backgroundCoroutineContext
+import android.media.session.MediaController
 
-val Kosmos.screenCaptureIconProviderKosmos by Fixture {
-    ScreenCaptureIconProvider(applicationContext, backgroundCoroutineContext)
-}
+/** Data model representing media controller and its callback */
+data class MediaControllerDataModel(
+    val controller: MediaController,
+    val callback: MediaController.Callback,
+)

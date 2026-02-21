@@ -66,7 +66,13 @@ class GameControlsHelperTest : ShellTestCase() {
     fun setUp() {
         whenever(mockContext.packageManager).thenReturn(mockPackageManager)
         whenever(mockContext.resources).thenReturn(mockResources)
-        whenever(mockPackageManager.getApplicationInfo(any<String>(), any<Int>()))
+        whenever(
+                mockPackageManager.getApplicationInfoAsUser(
+                    any<String>(),
+                    any<Int>(),
+                    any<UserHandle>(),
+                )
+            )
             .thenReturn(mockApplicationInfo)
         mockTaskInfo.topActivityInfo = mockActivityInfo
         mockTaskInfo.baseActivity = ComponentName("com.test.package", "com.test.activity")

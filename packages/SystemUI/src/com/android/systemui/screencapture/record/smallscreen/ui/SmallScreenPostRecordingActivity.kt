@@ -198,7 +198,7 @@ constructor(
                     val rowModifier = Modifier.weight(1f).heightIn(min = 40.dp)
                     PostRecordButton(
                         onClick = {
-                            actionsViewModel.retake()
+                            actionsViewModel.new()
                             finish()
                         },
                         drawableLoaderViewModel = actionsViewModel,

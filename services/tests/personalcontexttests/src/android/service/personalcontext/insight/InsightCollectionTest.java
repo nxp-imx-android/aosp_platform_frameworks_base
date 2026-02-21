@@ -18,15 +18,18 @@ package android.service.personalcontext.insight;
 
 import static com.google.common.truth.Truth.assertThat;
 
+
+import android.app.PendingIntent;
 import android.content.Intent;
-import android.net.Uri;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.PublishedContextHint;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,11 +40,20 @@ import java.util.List;
 /** Tests for {@link InsightCollection}. */
 @RunWith(AndroidJUnit4.class)
 public class InsightCollectionTest {
+    private PendingIntent mPendingIntent;
+
+    @Before
+    public void setUp() {
+        mPendingIntent = PendingIntent.getBroadcast(
+                InstrumentationRegistry.getTargetContext(), 0, new Intent(),
+                PendingIntent.FLAG_IMMUTABLE);
+    }
+
     @Test
     public void testParcelUnparcel_sameInsightType() {
         final InsightActionDetails actionDetails1 =
                 new InsightActionDetails.Builder()
-                        .setIntent(new Intent(Intent.ACTION_VIEW, Uri.parse("content://test1")))
+                        .setPendingIntent(mPendingIntent)
                         .build();
         final InsightDisplayDetails displayDetails1 =
                 new InsightDisplayDetails.Builder("title1")
@@ -52,7 +64,7 @@ public class InsightCollectionTest {
 
         final InsightActionDetails actionDetails2 =
                 new InsightActionDetails.Builder()
-                        .setIntent(new Intent(Intent.ACTION_VIEW, Uri.parse("content://test2")))
+                        .setPendingIntent(mPendingIntent)
                         .build();
         final InsightDisplayDetails displayDetails2 =
                 new InsightDisplayDetails.Builder("title2")
@@ -83,7 +95,7 @@ public class InsightCollectionTest {
     public void testParcelUnparcel_differentInsightTypes() {
         final InsightActionDetails actionDetails =
                 new InsightActionDetails.Builder()
-                        .setIntent(new Intent(Intent.ACTION_VIEW, Uri.parse("content://test")))
+                        .setPendingIntent(mPendingIntent)
                         .build();
         final InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title")
@@ -116,7 +128,8 @@ public class InsightCollectionTest {
     public void testIterator() {
         final ActionableInsight actionableInsight =
                 new ActionableInsight.Builder(
-                                new InsightActionDetails.Builder().setIntent(new Intent()).build(),
+                                new InsightActionDetails.Builder()
+                                        .setPendingIntent(mPendingIntent).build(),
                                 new InsightDisplayDetails.Builder("title").build())
                         .build();
         final DisplayInsight displayInsight =
@@ -141,8 +154,8 @@ public class InsightCollectionTest {
 
     @Test
     public void testBuilder_aggregatesHintsAndTokens() throws Exception {
-        final ContextHintWithSignature signedHint1 =
-                new ContextHintWithSignature.Builder(
+        final PublishedContextHint signedHint1 =
+                new PublishedContextHint.Builder(
                                 new BundleHint.Builder().build(),
                                 ContextHintTestUtils.generateSignedHintKey())
                         .build();
@@ -150,14 +163,15 @@ public class InsightCollectionTest {
 
         final ActionableInsight actionableInsight =
                 new ActionableInsight.Builder(
-                                new InsightActionDetails.Builder().setIntent(new Intent()).build(),
+                                new InsightActionDetails.Builder()
+                                        .setPendingIntent(mPendingIntent).build(),
                                 new InsightDisplayDetails.Builder("title").build())
                         .addOriginHint(signedHint1)
                         .addToken(token1)
                         .build();
 
-        final ContextHintWithSignature signedHint2 =
-                new ContextHintWithSignature.Builder(
+        final PublishedContextHint signedHint2 =
+                new PublishedContextHint.Builder(
                                 new BundleHint.Builder().build(),
                                 ContextHintTestUtils.generateSignedHintKey())
                         .build();

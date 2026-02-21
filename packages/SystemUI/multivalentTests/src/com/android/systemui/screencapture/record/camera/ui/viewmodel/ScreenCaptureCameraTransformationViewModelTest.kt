@@ -25,15 +25,15 @@ import androidx.compose.ui.graphics.toAndroidRectF
 import androidx.core.graphics.toRect
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.screencapture.record.camera.data.repository.fakeScreenRecordCameraRepository
 import com.android.systemui.screencapture.record.camera.domain.interactor.screenCaptureCameraTransformationInteractor
-import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screencapture.record.shared.model.ScreenRecordEvent
 import com.android.systemui.screenrecord.domain.interactor.screenRecordingServiceInteractor
-import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParametersFactory.screenRecordingParameters
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
@@ -74,6 +74,9 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
 
             transform.complete(Unit)
             assertThat(screenCaptureCameraTransformationInteractor.isTransforming).isFalse()
+            assertThat(uiEventLoggerFake.logs.map { it.eventId })
+                .containsExactly(uiEventLoggerFake.eventId(0))
+                .equals(ScreenRecordEvent.SCREEN_RECORD_SURFACE_ADJUSTED_PRE_RECORDING)
         }
 
     @Test
@@ -82,14 +85,7 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
             val uiBounds = Rect(0f, 0f, 1080f, 1920f)
             underTest.onUiBoundsChanged(uiBounds)
             underTest.onSurfaceScreenBoundsUpdated(uiBounds.deflate(10f))
-            screenRecordingServiceInteractor.startRecording(
-                ScreenRecordingParameters(
-                    captureTarget = null,
-                    audioSource = ScreenRecordingAudioSource.NONE,
-                    displayId = 0,
-                    shouldShowTaps = false,
-                )
-            )
+            screenRecordingServiceInteractor.startRecording(screenRecordingParameters())
             fakeScreenRecordCameraRepository.setCameraSubjectBounds(Region(20, 20, 100, 100))
 
             underTest.transform {
@@ -137,5 +133,19 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
             )
 
             assertThat(underTest.debugTouchBounds).isNull()
+        }
+
+    @Test
+    fun isTransforming_midRecording_uiEventTracked() =
+        kosmos.runTest {
+            screenRecordingServiceInteractor.startRecording(screenRecordingParameters())
+            val transform = CompletableDeferred<Unit>()
+
+            testScope.launch { underTest.transform { transform.await() } }
+            transform.complete(Unit)
+
+            assertThat(uiEventLoggerFake.logs.map { it.eventId })
+                .containsExactly(uiEventLoggerFake.eventId(0))
+                .equals(ScreenRecordEvent.SCREEN_RECORD_SURFACE_ADJUSTED_MID_RECORDING)
         }
 }

@@ -80,6 +80,9 @@ import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.Andro
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.PREV_CAPABILITY_FLAGS;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.CUR_CAPABILITY_FLAGS;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.REASON;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.SEQ_ID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.CPU_TIME_REASONS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessStateChangedEvent.IMPLICIT_CPU_TIME_REASONS;
 
 import static com.android.internal.app.procstats.DumpUtils.STATE_PERFETTO_TRACK_NAMES;
 import static com.android.internal.app.procstats.ProcessState.PROCESS_STATE_TO_STATE;
@@ -414,7 +417,7 @@ public abstract class OomAdjuster {
     @VisibleForTesting
     public static final long PERCEPTIBLE_TASK_TIMEOUT_MILLIS = 5 * 60 * 1000;
 
-    @VisibleForTesting
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public static final int ALL_CPU_TIME_CAPABILITIES =
             PROCESS_CAPABILITY_CPU_TIME | PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
 
@@ -2478,13 +2481,18 @@ public abstract class OomAdjuster {
                         .beginNested(PROCESS_STATE_CHANGED_EVENT)
                         .addField(UID, state.uid)
                         .addField(PID, state.getPid())
-                        .addField(PREV_PROC_STATE, oldProcState)
-                        .addField(CUR_PROC_STATE, state.getCurProcState())
+                        .addField(PREV_PROC_STATE,
+                                  ActivityManager.processStateAmToProto(oldProcState))
+                        .addField(CUR_PROC_STATE,
+                                  ActivityManager.processStateAmToProto(state.getCurProcState()))
                         .addField(PREV_OOM_SCORE, oldOomAdj)
                         .addField(CUR_OOM_SCORE, state.getCurAdj())
                         .addField(PREV_CAPABILITY_FLAGS, oldCapability)
                         .addField(CUR_CAPABILITY_FLAGS, state.getCurCapability())
                         .addField(REASON, oomAdjReason)
+                        .addField(SEQ_ID, mAdjSeq)
+                        .addField(CPU_TIME_REASONS, state.getCurCpuTimeReasons())
+                        .addField(IMPLICIT_CPU_TIME_REASONS, state.getCurImplicitCpuTimeReasons())
                         .endNested()
                         .endProto()
                         .emit();

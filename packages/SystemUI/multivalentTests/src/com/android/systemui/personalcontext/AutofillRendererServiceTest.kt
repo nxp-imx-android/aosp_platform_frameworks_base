@@ -23,7 +23,7 @@ import android.service.autofill.Dataset
 import android.service.personalcontext.RenderToken
 import android.service.personalcontext.hint.AutofillInlineRequestHint
 import android.service.personalcontext.hint.BundleHint
-import android.service.personalcontext.hint.ContextHintWithSignature
+import android.service.personalcontext.hint.PublishedContextHint
 import android.service.personalcontext.insight.DisplayInsight
 import android.service.personalcontext.insight.InsightDisplayDetails
 import android.testing.AndroidTestingRunner
@@ -92,8 +92,7 @@ class AutofillRendererServiceTest : SysuiTestCase() {
             underTest.onRender(
                 DisplayInsight.Builder(InsightDisplayDetails.Builder("title").build())
                     .addOriginHint(
-                        ContextHintWithSignature.Builder(originHint, generateSignedHintKey())
-                            .build()
+                        PublishedContextHint.Builder(originHint, generateSignedHintKey()).build()
                     )
                     .build()
                     .fakePublish(),
@@ -142,12 +141,10 @@ class AutofillRendererServiceTest : SysuiTestCase() {
             underTest.onRender(
                 DisplayInsight.Builder(InsightDisplayDetails.Builder("title").build())
                     .addOriginHint(
-                        ContextHintWithSignature.Builder(originHint, generateSignedHintKey())
-                            .build()
+                        PublishedContextHint.Builder(originHint, generateSignedHintKey()).build()
                     )
                     .addOriginHint(
-                        ContextHintWithSignature.Builder(bundleHint, generateSignedHintKey())
-                            .build()
+                        PublishedContextHint.Builder(bundleHint, generateSignedHintKey()).build()
                     )
                     .build()
                     .fakePublish(),
@@ -167,7 +164,7 @@ class AutofillRendererServiceTest : SysuiTestCase() {
         fun generateSignedHintKey(): SecretKeySpec {
             val key = ByteArray(64)
             Random().nextBytes(key)
-            return SecretKeySpec(key, ContextHintWithSignature.HMAC_ALGORITHM)
+            return SecretKeySpec(key, PublishedContextHint.HMAC_ALGORITHM)
         }
 
         val AUTOFILL_INLINE_PRESENTATION_SPEC: InlinePresentationSpec =

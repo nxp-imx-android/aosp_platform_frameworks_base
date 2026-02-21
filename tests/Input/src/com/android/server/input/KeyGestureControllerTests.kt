@@ -100,7 +100,6 @@ import org.mockito.kotlin.times
     com.android.hardware.input.Flags.FLAG_ENABLE_COLOR_INVERSION_KEY_GESTURES,
     com.android.hardware.input.Flags.FLAG_ENABLE_SELECT_TO_SPEAK_KEY_GESTURES,
     com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_KEY_GESTURES,
-    com.android.window.flags.Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
     com.android.hardware.input.Flags.FLAG_ENABLE_NEW_26Q2_KEYCODES,
     com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
     com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,

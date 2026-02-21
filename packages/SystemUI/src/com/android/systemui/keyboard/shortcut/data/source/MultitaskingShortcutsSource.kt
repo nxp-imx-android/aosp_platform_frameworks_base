@@ -31,7 +31,6 @@ import android.view.KeyEvent.KEYCODE_W
 import android.view.KeyEvent.META_CTRL_ON
 import android.view.KeyEvent.META_META_ON
 import android.view.KeyboardShortcutGroup
-import android.window.DesktopExperienceFlags
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyboard.shortcut.data.model.shortcutInfo
@@ -97,18 +96,14 @@ constructor(
             // Snap a freeform window to the left
             //  - Meta + Left bracket
             add(
-                shortcutInfo(
-                    resources.getString(R.string.system_desktop_mode_snap_left_window)
-                ) {
+                shortcutInfo(resources.getString(R.string.system_desktop_mode_snap_left_window)) {
                     command(META_META_ON, KEYCODE_LEFT_BRACKET)
                 }
             )
             // Snap a freeform window to the right
             //  - Meta + Right bracket
             add(
-                shortcutInfo(
-                    resources.getString(R.string.system_desktop_mode_snap_right_window)
-                ) {
+                shortcutInfo(resources.getString(R.string.system_desktop_mode_snap_right_window)) {
                     command(META_META_ON, KEYCODE_RIGHT_BRACKET)
                 }
             )
@@ -124,9 +119,7 @@ constructor(
             // Minimize a freeform window
             //  - Meta + Minus
             add(
-                shortcutInfo(
-                    resources.getString(R.string.system_desktop_mode_minimize_window)
-                ) {
+                shortcutInfo(resources.getString(R.string.system_desktop_mode_minimize_window)) {
                     command(META_META_ON, KEYCODE_MINUS)
                 }
             )
@@ -137,28 +130,22 @@ constructor(
                     command(META_META_ON or META_CTRL_ON, KEYCODE_W)
                 }
             )
-            if (DesktopExperienceFlags.ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS.isTrue) {
-                // Move between desktops
-                //  - Meta + Ctrl + [ or ]
-                add(
-                    shortcutInfo(
-                        resources.getString(
-                            R.string.system_multiple_desktop_mode_switch_between_desks
-                        )
-                    ) {
-                        command(META_META_ON or META_CTRL_ON, KEYCODE_LEFT_BRACKET)
-                    }
-                )
-                add(
-                    shortcutInfo(
-                        resources.getString(
-                            R.string.system_multiple_desktop_mode_switch_between_desks
-                        )
-                    ) {
-                        command(META_META_ON or META_CTRL_ON, KEYCODE_RIGHT_BRACKET)
-                    }
-                )
-            }
+            // Move between desktops
+            //  - Meta + Ctrl + [ or ]
+            add(
+                shortcutInfo(
+                    resources.getString(R.string.system_multiple_desktop_mode_switch_between_desks)
+                ) {
+                    command(META_META_ON or META_CTRL_ON, KEYCODE_LEFT_BRACKET)
+                }
+            )
+            add(
+                shortcutInfo(
+                    resources.getString(R.string.system_multiple_desktop_mode_switch_between_desks)
+                ) {
+                    command(META_META_ON or META_CTRL_ON, KEYCODE_RIGHT_BRACKET)
+                }
+            )
         }
     }
 }

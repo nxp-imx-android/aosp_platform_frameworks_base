@@ -26,7 +26,7 @@ import android.os.Bundle;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.Token;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.interaction.AttributionDetails;
 
 /**
@@ -143,7 +143,7 @@ public final class BundleInsight extends ContextInsight {
          * @param hint the origin {@link ContextHint} to add
          */
         @NonNull
-        public Builder addOriginHint(@NonNull ContextHintWithSignature hint) {
+        public Builder addOriginHint(@NonNull PublishedContextHint hint) {
             mBaseBuilder.addOriginHint(requireNonNull(hint));
             return this;
         }

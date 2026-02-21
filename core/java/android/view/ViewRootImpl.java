@@ -1654,6 +1654,12 @@ public final class ViewRootImpl implements ViewParent,
                 // Keep track of the actual window flags supplied by the client.
                 mClientWindowLayoutFlags = attrs.flags;
 
+                if ((attrs.privateFlags
+                        & WindowManager.LayoutParams.PRIVATE_FLAG_IS_ROUNDED_CORNERS_OVERLAY) != 0) {
+                    // Disable IPC Rendering
+                    mIpcRenderingEnabled = false;
+                }
+
                 adjustLayoutInDisplayCutoutMode(attrs);
                 setAccessibilityFocus(null, null);
 
@@ -2238,9 +2244,7 @@ public final class ViewRootImpl implements ViewParent,
 
     /** Set whether this ViewRootImpl is allowed to enable force invert (expanded dark theme). */
     public void setForceInvertAllowed(boolean allowed) {
-        if (android.view.accessibility.Flags.disableEdtForAutofillInlineView()) {
-            mForceInvertAllowed = allowed;
-        }
+        mForceInvertAllowed = allowed;
     }
 
     private @ForceDarkType.ForceDarkTypeDef int determineForceInvertDarkOverride(

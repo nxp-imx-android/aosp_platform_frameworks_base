@@ -26,6 +26,7 @@ import static android.appwidget.flags.Flags.securityPolicyInteractAcrossUsers;
 import static android.appwidget.flags.Flags.supportResumeRestoreAfterReboot;
 import static android.appwidget.flags.Flags.widgetDisplayChanges;
 import static android.content.Context.KEYGUARD_SERVICE;
+import static android.content.Intent.EXTRA_USER_ID;
 import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.res.Resources.ID_NULL;
@@ -55,7 +56,6 @@ import android.app.IServiceConnection;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.app.StatsManager;
-import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.admin.DevicePolicyManagerInternal.OnCrossProfileWidgetProvidersChangeListener;
 import android.app.job.JobScheduler;
@@ -1072,10 +1072,9 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
                 if (suspendingPackage != null
                         && PLATFORM_PACKAGE_NAME.equals(suspendingPackage.packageName)) {
                     if (android.app.admin.flags.Flags.policyTransparencyRefactorEnabled()) {
-                        onClickIntent =
-                                mDevicePolicyManagerInternal.createShowAdminSupportIntentForPolicy(
-                                        appUserId,
-                                        DevicePolicyIdentifiers.PACKAGES_SUSPENDED_POLICY);
+                        onClickIntent = new Intent(
+                                Settings.ACTION_SHOW_SUSPENDED_PACKAGE_ADMIN_SUPPORT_DETAILS);
+                        onClickIntent.putExtra(EXTRA_USER_ID, appUserId);
                     } else {
                         onClickIntent = mDevicePolicyManagerInternal.createShowAdminSupportIntent(
                                 appUserId, true);

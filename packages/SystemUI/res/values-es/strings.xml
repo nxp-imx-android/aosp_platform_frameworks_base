@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Girar pantalla automáticamente"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"¿Permitir que <xliff:g id="APPLICATION">%1$s</xliff:g> acceda a <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"¿Quieres que <xliff:g id="APPLICATION">%1$s</xliff:g> pueda acceder a <xliff:g id="USB_DEVICE">%2$s</xliff:g>?\nEsta aplicación no tiene permisos para grabar, pero podría capturar audio a través de este dispositivo USB."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"¿Permitir que &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; acceda a &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"¿Abrir &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; para gestionar &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Esta aplicación no tiene permiso para grabar, pero podría capturar audio con este dispositivo USB. Si usas <xliff:g id="APPLICATION">%1$s</xliff:g> en este dispositivo, puede que no oigas llamadas, notificaciones ni alarmas."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"Si usas <xliff:g id="APPLICATION">%1$s</xliff:g> en este dispositivo, puede que no oigas llamadas, notificaciones ni alarmas."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"¿Permitir que <xliff:g id="APPLICATION">%1$s</xliff:g> acceda a <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Mostrar cámara para selfies"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Mostrar toques"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Elige una aplicación para grabar"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"Ajustes de grabación de pantalla"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Anotación"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vídeo guardado"</string>
@@ -187,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Silenciar"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Activar sonido"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> de <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Pellizca, arrastra y toca el selfie para ajustarlo"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Tu administrador de TI ha bloqueado las capturas de pantalla"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Hacer captura de toda la pantalla"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Grabar toda la pantalla"</string>
@@ -201,12 +202,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Controlador inferior derecho: usa las teclas de flecha para cambiar el tamaño"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Controlador inferior izquierdo: usa las teclas de flecha para cambiar el tamaño"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Compartir"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Selecciona la ventana para compartir"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Selecciona la pestaña para compartir"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Selecciona la pantalla para compartir"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Compartir audio"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Compartir ventana de la app"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Compartir pestaña"</string>
@@ -224,14 +222,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Se ha dejado de compartir la pantalla: <xliff:g id="DISPLAY_NAME">%1$s</xliff:g>. La pantalla no se está compartiendo con nadie."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Botón Cerrar. Pulsa Intro para cerrar el cuadro de diálogo previo al uso compartido."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Botón para compartir la pestaña. No seleccionado. Pulsa Intro para compartir la pestaña."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"Compartir pestaña. Desplázate para ver las pestañas disponibles."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Botón para compartir aplicaciones. No seleccionado. Pulsa Intro para compartir la aplicación."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"Compartir aplicación. Desplázate para ver las aplicaciones disponibles."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Botón de pantalla completa. No seleccionado. Pulsa Intro para compartir la pantalla completa."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"Compartir pantalla completa. Desplázate para ver las pantallas disponibles."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Botón Compartir. Desactivado. Selecciona la aplicación, la pestaña o la pantalla que quieras compartir."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Uso compartido activado. <xliff:g id="ITEM">%1$s</xliff:g> seleccionado. Pulsa Intro para empezar a compartir."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. No seleccionado. Pulsa Intro para seleccionarlo."</string>
@@ -254,6 +249,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Micrófono"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Cámara frontal"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>x<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Dejar de compartir"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"La pantalla compartida está activada. Usa el indicador de privacidad para dejar de compartir."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Compartiendo pantalla"</string>
@@ -432,6 +429,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Asistente"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Teclado"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Teclado"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g> más"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# notificación más en el grupo.}many{# notificaciones más en el grupo.}other{# notificaciones más en el grupo.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"La pantalla está bloqueada en modo horizontal."</string>
@@ -995,7 +996,7 @@
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automática"</string>
     <string name="notification_bridged_title" msgid="4213554380230273828">"Esta notificación es de tu <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_channel_summary_low" msgid="4860617986908931158">"Sin sonido ni vibración"</string>
-    <string name="notification_conversation_summary_low" msgid="3855696451919728790">"No suena ni vibra, pero aparece en la sección de conversación"</string>
+    <string name="notification_conversation_summary_low" msgid="3855696451919728790">"No suena ni vibra, pero aparece en la sección de conversaciones"</string>
     <string name="notification_channel_summary_default" msgid="777294388712200605">"Puede sonar o vibrar según los ajustes del dispositivo"</string>
     <string name="notification_channel_summary_default_with_bubbles" msgid="3482483084451555344">"Puede sonar o vibrar según los ajustes del dispositivo. Las conversaciones de <xliff:g id="APP_NAME">%1$s</xliff:g> aparecen como burbujas de forma predeterminada."</string>
     <string name="notification_channel_summary_automatic" msgid="5813109268050235275">"Haz que el sistema determine si con esta notificación el dispositivo debe sonar o vibrar"</string>
@@ -1248,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Tecla de accesibilidad"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Puedes pulsar la tecla de accesibilidad para empezar a usar las funciones de accesibilidad."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Añadir funciones"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Configura la tecla de accesibilidad"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Configurar <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Hecho"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Seleccionar una función"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Editar"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Elige una función"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Esta función se abrirá la próxima vez que selecciones el botón de accesibilidad"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Accesibilidad"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Pantalla de bloqueo"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Apagando…"</string>
@@ -1402,7 +1400,7 @@
     <string name="accessibility_floating_button_action_remove_menu" msgid="6730432848162552135">"Quitar"</string>
     <string name="accessibility_floating_button_action_double_tap_to_toggle" msgid="7976492639670692037">"activar/desactivar"</string>
     <string name="accessibility_floating_button_action_edit" msgid="1688227814600463987">"Editar"</string>
-    <string name="quick_controls_title" msgid="6839108006171302273">"Control disposit."</string>
+    <string name="quick_controls_title" msgid="6839108006171302273">"Control de dispositivos"</string>
     <string name="controls_providers_title" msgid="6879775889857085056">"Elige una aplicación para añadir controles"</string>
     <string name="controls_number_of_favorites" msgid="4481806788981836355">"{count,plural, =1{# control añadido.}many{# controles añadidos.}other{# controles añadidos.}}"</string>
     <string name="controls_removed" msgid="3731789252222856959">"Quitado"</string>
@@ -1751,7 +1749,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Cambiar de aplicación"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Hecho"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Siguiente"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"Vuelve a intentarlo."</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Atrás"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Desliza hacia la izquierda o la derecha con tres dedos en el panel táctil"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"¡Genial!"</string>
@@ -1759,14 +1758,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Para volver atrás usando el panel táctil, desliza tres dedos hacia la izquierda o la derecha"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Ir a Inicio"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Desliza hacia arriba con tres dedos en el panel táctil"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"¡Bien hecho!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Has completado el gesto para ir a la pantalla de inicio"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Desliza tres dedos hacia arriba en el panel táctil para ir a la pantalla de inicio"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Ver apps recientes"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Desliza hacia arriba con tres dedos y mantén pulsado en el panel táctil"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"¡Bien hecho!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Has completado el gesto para ver las apps recientes."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Para ver las apps recientes, desliza tres dedos hacia arriba y mantén pulsado en el panel táctil"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Cambiar de aplicación"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Desliza hacia la derecha con cuatro dedos en el panel táctil"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"¡Bien hecho!"</string>
@@ -1807,7 +1817,7 @@
     <string name="qs_edit_mode_category_accessibility" msgid="7969091385071475922">"Accesibilidad"</string>
     <string name="qs_edit_mode_category_utilities" msgid="8123080090108420095">"Utilidades"</string>
     <string name="qs_edit_mode_category_privacy" msgid="6577774443194551775">"Privacidad"</string>
-    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"De las apps del sistema"</string>
+    <string name="qs_edit_mode_category_providedBySystemApps" msgid="8010990312139645288">"De las aplicaciones del sistema"</string>
     <string name="qs_edit_mode_category_providedByApps" msgid="4736433865199049415">"De las apps que has instalado"</string>
     <string name="qs_edit_mode_category_display" msgid="4749511439121053942">"Pantalla"</string>
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Desconocido"</string>
@@ -1867,8 +1877,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d efectos"</string>
     <string name="av_blur" msgid="405131343487260171">"Desenfocar"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Subtítulos automáticos"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Atrás"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Batería: %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Batería del izquierdo: %1$s    Batería del derecho: %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Batería del izquierdo: %1$s"</string>

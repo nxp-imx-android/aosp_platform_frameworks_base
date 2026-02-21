@@ -47,6 +47,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.LoadingIcon
@@ -79,12 +80,12 @@ fun ShareContentSelector(shareScreenViewModel: ScreenCaptureShareScreenViewModel
                             else -> throw IllegalArgumentException("Unknown TargetsViewModel type")
                         }
                     ),
-                modifier = Modifier.padding(start = 8.dp, end = 8.dp).height(24.dp).fillMaxWidth(),
+                modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth(),
                 style = MaterialTheme.typography.titleMedium,
             )
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(start = 4.dp, end = 4.dp),
+                modifier = Modifier.padding(horizontal = 4.dp),
             ) {
                 // The sharing content item list.
                 ShareContentList(viewModel = targetsViewModel)
@@ -142,7 +143,8 @@ private fun ItemPreview(
             Text(
                 text = text,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelMedium.copy(textAlign = TextAlign.Center),
+                modifier = Modifier.padding(horizontal = 52.dp),
             )
         }
     }
@@ -162,7 +164,7 @@ private fun DisclaimerText(targetsViewModel: TargetsViewModel, requestingAppName
                 requestingAppName,
             ),
         style = MaterialTheme.typography.labelMedium,
-        modifier = Modifier.padding(start = 8.dp, end = 8.dp).fillMaxWidth(),
+        modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth(),
     )
 }
 

@@ -61,5 +61,5 @@ fun TaskInfo.isDragResizable(inFullImmersive: Boolean): Boolean =
         // Task cannot be resized in full immersive.
         false
     } else {
-        isFreeform
+        isFreeform && isVisibleRequested
     }

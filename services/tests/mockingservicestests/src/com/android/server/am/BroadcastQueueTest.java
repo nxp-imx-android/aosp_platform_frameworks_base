@@ -96,6 +96,7 @@ import androidx.test.filters.MediumTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
+import com.android.server.am.psc.MockUtils;
 import com.android.server.am.psc.ProcessImportanceAssert;
 import com.android.server.am.psc.ProcessImportanceExpectations;
 
@@ -858,8 +859,9 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         for (ProcessRecord receiverApp : new ProcessRecord[] {
                 receiverGreenApp, receiverBlueApp, receiverYellowApp
         }) {
-            verify(receiverApp, times(1).description(String.valueOf(receiverApp)))
-                    .setReportedProcState(PROCESS_STATE_RECEIVER);
+            MockUtils.verifySetReportedProcState(receiverApp,
+                    times(1).description(String.valueOf(receiverApp)),
+                    PROCESS_STATE_RECEIVER);
             if (Flags.pscAutoUpdateBroadcastState()) {
                 // Confirm PSC gets notified of broadcast starts and stops.
                 verify(mAms.mProcessStateController, times(1)).noteBroadcastDeliveryStarted(

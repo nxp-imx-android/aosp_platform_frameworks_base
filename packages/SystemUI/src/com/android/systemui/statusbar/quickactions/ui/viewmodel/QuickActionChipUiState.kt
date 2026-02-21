@@ -53,7 +53,7 @@ data class ChipIcon(
 sealed class ChipContent {
     data class Text(val text: String) : ChipContent()
 
-    data class SideIcon(val icon: Icon) : ChipContent()
+    data class IconOnly(val icon: Icon) : ChipContent()
 }
 
 /** Model for individual status bar quick action chips. */
@@ -64,6 +64,16 @@ sealed class QuickActionChipUiState {
     data class Hidden(override val chipId: QuickActionChipId, val shouldAnimate: Boolean = true) :
         QuickActionChipUiState() {
         override val logName = "Hidden(id=$chipId, anim=$shouldAnimate)"
+    }
+
+    data class LaunchChip(
+        override val chipId: QuickActionChipId,
+        val chipContent: ChipContent,
+        val onClick: (Context?) -> Unit = {},
+        val isSelected: Boolean = false,
+        val contentDescription: ContentDescription? = null,
+    ) : QuickActionChipUiState() {
+        override val logName = "Launch(id=$chipId, selected=$isSelected)"
     }
 
     data class PopupChip(

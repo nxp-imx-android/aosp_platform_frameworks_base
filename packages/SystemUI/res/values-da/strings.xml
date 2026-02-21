@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"Roter skærm automatisk"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"Vil du give <xliff:g id="APPLICATION">%1$s</xliff:g> adgang til <xliff:g id="USB_DEVICE">%2$s</xliff:g>?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"Vil du give <xliff:g id="APPLICATION">%1$s</xliff:g> adgang til <xliff:g id="USB_DEVICE">%2$s</xliff:g>?\nDenne app har ikke fået tilladelse til at optage, men optager muligvis lyd via denne USB-enhed."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"Vil du give &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; adgang til &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"Vil du åbne &lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; for at håndtere &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt;?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"Denne app har ikke fået tilladelse til at optage, men optager muligvis lyd via denne USB-enhed. Hvis du bruger <xliff:g id="APPLICATION">%1$s</xliff:g> med denne enhed, kan du muligvis ikke høre opkald, notifikationer og alarmer."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"Hvis du bruger <xliff:g id="APPLICATION">%1$s</xliff:g> med denne enhed, kan du muligvis ikke høre opkald, notifikationer og alarmer."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"Vil du give <xliff:g id="APPLICATION">%1$s</xliff:g> adgang til <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Vis selfiekamera"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Vis tryk"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Vælg en app for at optage"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"Indstillinger for skærmoptagelse"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Opmærkning"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videoen er gemt"</string>
@@ -201,12 +203,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"Håndtag nederst til højre – Brug piletasterne til at tilpasse størrelsen"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"Håndtag nederst til venstre – Brug piletasterne til at tilpasse størrelsen"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"Del"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"Vælg det appvindue, du vil dele"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"Vælg den fane, du vil dele"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"Vælg den skærm, du vil dele"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"Del lyd"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"Del appvindue"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"Del fane"</string>
@@ -224,14 +223,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"Delingen af skærmen <xliff:g id="DISPLAY_NAME">%1$s</xliff:g> er stoppet. Skærmen deles ikke med nogen."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"Knappen Luk. Tryk på Enter for at lukke dialogboksen før deling."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"Knap til fanedeling. Ikke valgt. Tryk på Enter for at dele fanen."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"Deler fane. Tjek tilgængelige faner."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"Knap til appdeling. Ikke valgt. Tryk på Enter for at dele appen."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"Appen deles. Tjek tilgængelige apps."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"Knap til fuld skærm. Ikke valgt. Tryk på Enter for at dele i fuld skærm."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"Deler i fuld skærm. Tjek tilgængelige skærme."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"Knappen Del. Fra. Vælg en app, en fane eller en skærm, du vil dele."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"Deling er aktiveret. <xliff:g id="ITEM">%1$s</xliff:g> er valgt. Tryk på Enter for at starte deling."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g>. Ikke valgt. Tryk på Enter for at vælge."</string>
@@ -254,6 +250,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Frontkamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Stop deling"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Skærmdeling er aktiveret. Brug privatlivsindikatoren til at stoppe delingen."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Skærmen deles"</string>
@@ -432,6 +430,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Tastatur"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Tastatur"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g> mere"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# notifikation mere i gruppen.}one{# notifikation mere i gruppen.}other{# notifikationer mere i gruppen.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Skærmen er nu låst i liggende retning."</string>
@@ -1751,7 +1753,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Skift mellem apps"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Udfør"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Næste"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"Prøv igen!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Gå tilbage"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Stryg til venstre eller højre med tre fingre på touchpladen"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Sådan!"</string>
@@ -1759,14 +1762,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Du kan gå tilbage ved at stryge til venstre eller højre med tre fingre på touchpladen"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Gå til startskærmen"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Stryg opad med tre fingre på touchpladen"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Flot!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Du har udført bevægelsen for at gå til startsiden"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Stryg opad med tre fingre på touchpladen for at gå til din startskærm"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Se seneste apps"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Stryg opad, og hold tre fingre på touchpladen"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Godt klaret!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Du har udført bevægelsen for at se de seneste apps."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Du kan se nyligt brugte apps ved at stryge opad og holde tre fingre nede på touchpladen"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Skift mellem apps"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Stryg til højre med fire fingre på touchpladen"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Godt klaret!"</string>
@@ -1867,8 +1881,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d effekter"</string>
     <string name="av_blur" msgid="405131343487260171">"Sløring"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"Livetekstning"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"Tilbage"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"Batteri %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"Venstre batteri %1$s    Højre batteri %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"Venstre batteri %1$s"</string>

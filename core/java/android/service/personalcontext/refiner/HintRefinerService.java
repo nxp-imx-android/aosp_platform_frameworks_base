@@ -31,10 +31,10 @@ import android.os.RemoteException;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWithSignature;
-import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.HintFilter;
+import android.service.personalcontext.hint.PublishedContextHint;
+import android.service.personalcontext.hint.PublishedContextHintWrapper;
 import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.insight.interaction.InsightEvent;
 import android.service.personalcontext.util.BinderRequestProcessor;
@@ -162,14 +162,14 @@ public abstract class HintRefinerService extends Service {
         @Override
         public void refine(
                 ParcelUuid componentId,
-                List<ContextHintWithSignatureWrapper> inputHints, IRefineCallback callback,
+                List<PublishedContextHintWrapper> inputHints, IRefineCallback callback,
                 IOpCallback opCallback) {
             mRequestProcessor.execute(
                     new BinderRequestProcessor.ExecutionParams.Builder<HintRefinerService>(
                             opCallback, serviceInstance -> {
                         callback.onHintsRefined(ContextHintWrapper.wrapList(
-                                serviceInstance.onRefine(ContextHintWithSignature.unwrapList(
-                                        ContextHintWithSignatureWrapper.unwrapList(inputHints)))));
+                                serviceInstance.onRefine(PublishedContextHint.unwrapList(
+                                        PublishedContextHintWrapper.unwrapList(inputHints)))));
                     }).setComponentId(componentId)
                             .build());
 

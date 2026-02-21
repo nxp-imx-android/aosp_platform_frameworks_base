@@ -80,16 +80,20 @@ fun LocationButton(
         val contentWidth = viewModel.width - viewModel.paddingLeft - viewModel.paddingRight
         val contentHeight = viewModel.height - viewModel.paddingTop - viewModel.paddingBottom
 
+        // Use the smaller dimension as the reference height for scaling internal elements
+        // (icon, text, padding). This prevents clipping in extremely tall and narrow buttons.
+        val referenceHeight = minOf(contentWidth, contentHeight)
+
         val contentPadding =
-            remember(viewModel.textResId, contentHeight) {
+            remember(viewModel.textResId, referenceHeight) {
                 if (viewModel.textResId != null) {
-                    ButtonDefaults.contentPaddingFor(contentHeight)
+                    ButtonDefaults.contentPaddingFor(referenceHeight)
                 } else {
                     PaddingValues()
                 }
             }
 
-        val defaultShapes = ButtonDefaults.shapesFor(contentHeight)
+        val defaultShapes = ButtonDefaults.shapesFor(referenceHeight)
         val shape =
             if (viewModel.cornerRadius != null) {
                 RoundedCornerShape(viewModel.cornerRadius)
@@ -127,15 +131,15 @@ fun LocationButton(
                 painter = painterResource(id = R.drawable.ic_my_location),
                 contentDescription = null,
                 // requiredSize is needed to prevent squashing of Icon.
-                modifier = Modifier.requiredSize(ButtonDefaults.iconSizeFor(contentHeight)),
+                modifier = Modifier.requiredSize(ButtonDefaults.iconSizeFor(referenceHeight)),
                 tint = viewModel.iconTint,
             )
             viewModel.textResId?.let { textResId ->
                 Text(
                     text = stringResource(textResId),
                     modifier =
-                        Modifier.padding(start = ButtonDefaults.iconSpacingFor(contentHeight)),
-                    style = ButtonDefaults.textStyleFor(contentHeight),
+                        Modifier.padding(start = ButtonDefaults.iconSpacingFor(referenceHeight)),
+                    style = ButtonDefaults.textStyleFor(referenceHeight),
                     maxLines = 1,
                     softWrap = false,
                 )

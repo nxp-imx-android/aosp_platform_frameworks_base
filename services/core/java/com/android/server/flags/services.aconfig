@@ -2,13 +2,6 @@ package: "com.android.server.flags"
 container: "system"
 
 flag {
-    name: "keystore_in_memory_cleanup"
-    namespace: "security"
-    description: "Keystore cleans up all components of the UserSuperKeys when the user credential encrypted storage is locked"
-    bug: "384030190"
-}
-
-flag {
     name: "fix_keystore_memory_cleanup"
     namespace: "security"
     description: "Keystore cleans up all components of the UserSuperKeys when the user credential encrypted storage is locked"

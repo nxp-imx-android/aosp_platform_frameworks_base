@@ -1723,7 +1723,16 @@ public final class PowerManagerService extends SystemService
                 final DisplayInfo displayInfo =
                         mSystemReady ? mDisplayManagerInternal.getDisplayInfo(displayId) : null;
                 if (displayInfo == null) {
-                    Slog.wtf(TAG, "Tried to acquire wake lock for invalid display: " + displayId);
+                    if (mSystemReady) {
+                        Slog.wtf(TAG, "Tried to acquire wake lock for invalid display: "
+                                + displayId);
+                    } else {
+                        Slog.wtf(TAG, "Tried to acquire wake lock for display " + displayId
+                                + " before system ready: lock=" + Objects.hashCode(lock)
+                                + ", flags=0x" + Integer.toHexString(flags)
+                                + ", tag=\"" + tag + "\", ws=" + ws + ", uid=" + uid
+                                + ", pid=" + pid + ", packageName=" + packageName);
+                    }
                     return;
                 } else if (!displayInfo.hasAccess(uid)) {
                     throw new SecurityException("Caller does not have access to display");

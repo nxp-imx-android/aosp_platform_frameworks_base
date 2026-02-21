@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.media.projection.StopReason
 import android.view.accessibility.AccessibilityEvent
@@ -28,15 +29,17 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.mediaprojection.MediaProjectionUtils
 import com.android.systemui.mediaprojection.data.model.MediaProjectionState
 import com.android.systemui.mediaprojection.data.repository.MediaProjectionRepository
 import com.android.systemui.res.R
+import com.android.systemui.screenrecord.data.model.ScreenRecordModel
+import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -49,6 +52,8 @@ constructor(
     configurationRepository: ConfigurationRepository,
     @Background private val scope: CoroutineScope,
     private val mediaProjectionRepository: MediaProjectionRepository,
+    private val screenRecordRepository: ScreenRecordRepository,
+    private val packageManager: PackageManager,
     private val accessibilityManager: AccessibilityManager,
     @Application private val context: Context,
 ) : CoreStartable {
@@ -63,9 +68,21 @@ constructor(
     private var lastSharingInfo: SharingInfo? = null
 
     // The projection is active if the state is any subtype of MediaProjectionState.Projecting.
-    private val isMediaProjecting: StateFlow<Boolean> =
-        mediaProjectionRepository.mediaProjectionState
-            .map { state -> state is MediaProjectionState.Projecting }
+    private val isScreenSharing: StateFlow<Boolean> =
+        combine(
+                mediaProjectionRepository.mediaProjectionState,
+                screenRecordRepository.screenRecordState,
+            ) { projectionState, recordState ->
+                val isRecording = recordState is ScreenRecordModel.Recording
+                // We identify "sharing" by excluding "recording" and "casting" from general
+                // media projection.
+                (projectionState is MediaProjectionState.Projecting) &&
+                    !isRecording &&
+                    !MediaProjectionUtils.packageHasCastingCapabilities(
+                        packageManager,
+                        projectionState.hostPackage,
+                    )
+            }
             .stateIn(
                 scope = scope,
                 started = SharingStarted.WhileSubscribed(),
@@ -75,9 +92,9 @@ constructor(
     val isChipVisible: StateFlow<Boolean> =
         combine(
                 configurationRepository.onAnyConfigurationChange.onStart { emit(Unit) },
-                isMediaProjecting,
-            ) { _, isProjecting ->
-                resources.getBoolean(R.bool.config_largeScreenPrivacyIndicator) && isProjecting
+                isScreenSharing,
+            ) { _, isSharing ->
+                resources.getBoolean(R.bool.config_largeScreenPrivacyIndicator) && isSharing
             }
             .stateIn(
                 scope = scope,
@@ -87,12 +104,12 @@ constructor(
 
     override fun start() {
         scope.launch {
-            var wasProjecting = false
-            isMediaProjecting.collect { isProjecting ->
-                if (wasProjecting && !isProjecting) {
+            var wasSharing = false
+            isScreenSharing.collect { isSharing ->
+                if (wasSharing && !isSharing) {
                     announceStoppedSharing()
                 }
-                wasProjecting = isProjecting
+                wasSharing = isSharing
             }
         }
     }

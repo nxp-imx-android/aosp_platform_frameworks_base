@@ -382,7 +382,8 @@ class FlashNotificationsController {
             } catch (CameraAccessException e) {
                 Log.e(LOG_TAG, "CameraAccessException", e);
             }
-            mCameraManager.registerTorchCallback(mTorchCallback, null);
+            mCameraManager.registerTorchCallback(mTorchCallback,
+                    Flags.flashNotificationsTorchCallbackHandler() ? mMainHandler : null);
         }
     }
 

@@ -182,7 +182,7 @@ interface HomeStatusBarViewModel : Activatable {
     val operatorNameViewModel: StatusBarOperatorNameViewModel
 
     /** The popup chips that should be shown on the right-hand side of the status bar. */
-    val popupChips: List<QuickActionChipUiState.PopupChip>
+    val popupChips: List<QuickActionChipUiState>
 
     /**
      * True if the status bar should be visible.

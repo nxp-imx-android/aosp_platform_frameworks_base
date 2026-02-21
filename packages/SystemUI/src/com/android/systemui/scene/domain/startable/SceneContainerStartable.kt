@@ -244,9 +244,13 @@ constructor(
                 }
 
                 printSection("Power state") {
-                    println("detailedWakefulness", powerInteractor.detailedWakefulness.value)
+                    println(
+                        "detailedWakefulness",
+                        powerInteractor.detailedWakefulness.value.internalWakefulnessState,
+                    )
                     println("isDozing", keyguardInteractor.isDozing.value)
                     println("isAodAvailable", keyguardInteractor.isAodAvailable.value)
+                    println("isInteractive", powerInteractor.isInteractive.value)
                 }
             }
         }
@@ -451,7 +455,7 @@ constructor(
                         loggingReason = "device is starting to sleep",
                         transitionKey = ToAlwaysOnDisplay.takeIf { isAodAvailable },
                         keyguardState = getKeyguardStateForWakefulness(isAwake = false),
-                        freezeAndAnimateToCurrentState = !isAodAvailable,
+                        freezeAndAnimateToCurrentState = true,
                     )
                 } else {
                     if (wakeDirectlyToGoneInteractor.canWakeDirectlyToGone.value) {

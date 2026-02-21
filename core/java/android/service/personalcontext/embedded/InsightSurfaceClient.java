@@ -439,7 +439,13 @@ public class InsightSurfaceClient implements AutoCloseable {
         if (mCallbacks == null) {
             return;
         }
-        mCallbacks.executor().execute(() -> action.accept(mCallbacks.callbacks()));
+        mCallbacks.executor().execute(() -> {
+            // The client could have been unregistered by the time this executes, so check that
+            // mCallbacks isn't null here as well.
+            if (mCallbacks != null) {
+                action.accept(mCallbacks.callbacks());
+            }
+        });
     }
 
     /** Builder used to build a new {@link InsightSurfaceClient}. */

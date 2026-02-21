@@ -82,7 +82,7 @@ constructor(
         return QuickActionChipUiState.PopupChip(
             chipId = QuickActionChipId.MediaControl,
             icons = listOf(model.createIcon()),
-            chipContent = ChipContent.SideIcon(waveformIcon),
+            chipContent = ChipContent.IconOnly(waveformIcon),
             popupViewModelFactory = popupViewModelFactory,
         )
     }

@@ -19,8 +19,12 @@ import android.app.ActivityManager
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
+import android.content.Intent
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
+import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
@@ -28,6 +32,8 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.FocusTransitionObserver
+import com.android.wm.shell.transition.InteractiveTasksRepository
+import java.util.Optional
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.Before
@@ -51,6 +57,7 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     private val mockFocusTransitionObserver = mock<FocusTransitionObserver>()
     private val mockShellController = mock<ShellController>()
     private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
+    private val mockInteractiveTasksRepository = mock<InteractiveTasksRepository>()
 
     private lateinit var mShellDesktopState: ShellDesktopStateImpl
 
@@ -66,6 +73,7 @@ class ShellDesktopStateImplTest : ShellTestCase() {
                 mockFocusTransitionObserver,
                 mockShellController,
                 mockShellTaskOrganizer,
+                Optional.of(mockInteractiveTasksRepository),
             )
     }
 
@@ -76,6 +84,7 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
     fun testIsEligibleWindowDropTarget_inActiveDesktop_returnsTrue() {
         whenever(mockDesktopRepository.getActiveDeskId(DISPLAY_ID)).thenReturn(1)
 
@@ -83,6 +92,7 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
     fun testIsEligibleWindowDropTarget_homeFocusedOnDesktopSupportedDisplay_returnsTrue() {
         val taskInfo = createTask(ACTIVITY_TYPE_HOME)
         desktopState.canEnterDesktopMode = true
@@ -94,6 +104,7 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
     fun testIsEligibleWindowDropTarget_focusedTaskIsNullOnDesktopSupportedDisplay_returnsTrue() {
         desktopState.canEnterDesktopMode = true
         whenever(mockDesktopRepository.getActiveDeskId(DISPLAY_ID)).thenReturn(null)
@@ -104,6 +115,7 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
     fun testIsEligibleWindowDropTarget_notInDesktopAndHomeNotFocused_returnsFalse() {
         val taskInfo = createTask(ACTIVITY_TYPE_STANDARD)
         desktopState.canEnterDesktopMode = true
@@ -115,6 +127,7 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
     fun testIsEligibleWindowDropTarget_displayDoesNotSupportDesktop_returnsFalse() {
         val taskInfo = createTask(ACTIVITY_TYPE_HOME)
         desktopState.canEnterDesktopMode = false
@@ -125,7 +138,53 @@ class ShellDesktopStateImplTest : ShellTestCase() {
         assertFalse(mShellDesktopState.isEligibleWindowDropTarget(DISPLAY_ID))
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
+    fun testIsEligibleWindowDropTarget_deskInteractive_returnsTrue() {
+        whenever(mockDesktopRepository.getActiveDeskId(DISPLAY_ID)).thenReturn(DESK_ID)
+        whenever(mockInteractiveTasksRepository.isTaskInteractiveOnDisplay(DISPLAY_ID, DESK_ID))
+            .thenReturn(true)
+
+        assertTrue(mShellDesktopState.isEligibleWindowDropTarget(DISPLAY_ID))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
+    fun testIsEligibleWindowDropTarget_homeInteractiveOnDesktopSupportedDisplay_returnsTrue() {
+        val taskInfo = createTask(ACTIVITY_TYPE_HOME)
+        desktopState.canEnterDesktopMode = true
+        whenever(mockDesktopRepository.getActiveDeskId(DISPLAY_ID)).thenReturn(null)
+        whenever(mockInteractiveTasksRepository.getTasks(DISPLAY_ID)).thenReturn(listOf(taskInfo))
+
+        assertTrue(mShellDesktopState.isEligibleWindowDropTarget(DISPLAY_ID))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
+    fun testIsEligibleWindowDropTarget_wallpaperInteractiveOnDesktopSupportedDisplay_returnsTrue() {
+        val intent =
+            Intent().apply { component = DesktopWallpaperActivity.wallpaperActivityComponent }
+        val taskInfo = TestRunningTaskInfoBuilder().setBaseIntent(intent).build()
+        desktopState.canEnterDesktopMode = true
+        whenever(mockDesktopRepository.getActiveDeskId(DISPLAY_ID)).thenReturn(null)
+        whenever(mockInteractiveTasksRepository.getTasks(DISPLAY_ID)).thenReturn(listOf(taskInfo))
+
+        assertTrue(mShellDesktopState.isEligibleWindowDropTarget(DISPLAY_ID))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
+    fun testIsEligibleWindowDropTarget_deskAndHomeNotResumed_returnsFalse() {
+        whenever(mockDesktopRepository.getActiveDeskId(DISPLAY_ID)).thenReturn(DESK_ID)
+        whenever(mockInteractiveTasksRepository.isTaskInteractiveOnDisplay(DISPLAY_ID, DESK_ID))
+            .thenReturn(false)
+        whenever(mockInteractiveTasksRepository.getTasks(DISPLAY_ID)).thenReturn(emptyList())
+
+        assertFalse(mShellDesktopState.isEligibleWindowDropTarget(DISPLAY_ID))
+    }
+
     private companion object {
         const val DISPLAY_ID = 1
+        const val DESK_ID = 1
     }
 }

@@ -149,8 +149,11 @@ public class BrightnessDialog extends ComponentActivity {
         if (brightnessDialogOnSystemUser()) {
             window.addPrivateFlags(WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS);
         }
-
-        window.setGravity(Gravity.TOP | Gravity.START);
+        if (getResources().getBoolean(R.bool.config_endSideBrightnessDialog)) {
+            window.setGravity(Gravity.TOP | Gravity.END);
+        } else {
+            window.setGravity(Gravity.TOP | Gravity.START);
+        }
         window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         window.requestFeature(Window.FEATURE_NO_TITLE);
 

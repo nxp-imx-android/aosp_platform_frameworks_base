@@ -44,9 +44,8 @@ public abstract class InputEventSender {
 
     private long mSenderPtr;
 
-    // We keep references to the input channel and message queue objects (indirectly through
-    // Handler) here so that they are not GC'd while the native peer of the receiver is using them.
-    private InputChannel mInputChannel;
+    // We keep a reference to the message queue object (indirectly through Handler) here so that
+    // it is not GC'd while the native peer of the receiver is using it.
     private Handler mHandler;
 
     private static native long nativeInit(WeakReference<InputEventSender> sender,
@@ -59,7 +58,8 @@ public abstract class InputEventSender {
     /**
      * Creates an input event sender bound to the specified input channel.
      *
-     * @param inputChannel The input channel.
+     * @param inputChannel The input channel. This channel will be consumed, so if you want to reuse
+     *                     it, make a copy before passing it to this constructor.
      * @param looper The looper to use when invoking callbacks.
      */
     public InputEventSender(InputChannel inputChannel, Looper looper) {
@@ -70,10 +70,9 @@ public abstract class InputEventSender {
             throw new IllegalArgumentException("looper must not be null");
         }
 
-        mInputChannel = inputChannel;
         mHandler = new Handler(looper);
         mSenderPtr = nativeInit(new WeakReference<InputEventSender>(this),
-                mInputChannel, looper.getQueue());
+                inputChannel, looper.getQueue());
 
         mCloseGuard.open("InputEventSender.dispose");
     }
@@ -107,10 +106,6 @@ public abstract class InputEventSender {
             mSenderPtr = 0;
         }
         mHandler = null;
-        if (mInputChannel != null) {
-            mInputChannel.dispose();
-        }
-        mInputChannel = null;
     }
 
     /**

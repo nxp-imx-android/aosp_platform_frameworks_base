@@ -3005,7 +3005,9 @@ public class DisplayPolicy {
                 appearance = clearNavBarOpaqueFlag(appearance);
             }
         } else if (mNavBarOpacityMode == NAV_BAR_OPAQUE_WHEN_FREEFORM_OR_DOCKED) {
-            if (multiWindowTaskVisible || freeformRootTaskVisible) {
+            if (navBackgroundWin != null && navBackgroundWin == mDisplayContent.getImeWindow()) {
+                appearance = clearNavBarOpaqueFlag(appearance);
+            } else if (multiWindowTaskVisible || freeformRootTaskVisible) {
                 if (mIsFreeformWindowOverlappingWithNavBar) {
                     appearance = clearNavBarOpaqueFlag(appearance);
                 }

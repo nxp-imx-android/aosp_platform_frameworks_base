@@ -49,6 +49,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.PermissionEnforcer;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
@@ -143,17 +144,25 @@ public class ContextualModeManagerServiceTest {
         mBinderService.isModeSyncSupported();
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testIsModeSyncSupported_configEnabled() throws Exception {
         assertThat(mBinderService.isModeSyncSupported()).isTrue();
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testIsModeSyncSupported_configDisabled() throws Exception {
         when(mResources.getBoolean(com.android.internal.R.bool.config_supportContextualModeSync))
                 .thenReturn(false);
         startNewService();
 
+        assertThat(mBinderService.isModeSyncSupported()).isFalse();
+    }
+
+    @DisableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
+    @Test
+    public void testIsModeSyncSupported_flagDisabled() throws Exception {
         assertThat(mBinderService.isModeSyncSupported()).isFalse();
     }
 
@@ -176,6 +185,7 @@ public class ContextualModeManagerServiceTest {
         assertThrows(SecurityException.class, () -> mBinderService.isModeSyncEnabled(user));
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testIsModeSyncEnabled_configDisabled() throws Exception {
         when(mResources.getBoolean(com.android.internal.R.bool.config_supportContextualModeSync))
@@ -186,6 +196,7 @@ public class ContextualModeManagerServiceTest {
         assertThat(mBinderService.isModeSyncEnabled(mContext.getUser())).isFalse();
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testIsModeSyncEnabled_settingDisabled() throws Exception {
         Secure.putInt(mContentResolver, Secure.CONTEXTUAL_MODE_SYNC_ENABLED, 0);
@@ -193,6 +204,7 @@ public class ContextualModeManagerServiceTest {
         assertThat(mBinderService.isModeSyncEnabled(mContext.getUser())).isFalse();
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testIsModeSyncEnabled_settingEnabled() throws Exception {
         Secure.putInt(mContentResolver, Secure.CONTEXTUAL_MODE_SYNC_ENABLED, 1);
@@ -200,11 +212,20 @@ public class ContextualModeManagerServiceTest {
         assertThat(mBinderService.isModeSyncEnabled(mContext.getUser())).isTrue();
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testIsModeSyncEnabled_defaultEnabled() throws Exception {
         Secure.putString(mContentResolver, Secure.CONTEXTUAL_MODE_SYNC_ENABLED, null);
 
         assertThat(mBinderService.isModeSyncEnabled(mContext.getUser())).isTrue();
+    }
+
+    @DisableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
+    @Test
+    public void testIsModeSyncEnabled_flagDisabled() throws Exception {
+        Secure.putInt(mContentResolver, Secure.CONTEXTUAL_MODE_SYNC_ENABLED, 1);
+
+        assertThat(mBinderService.isModeSyncEnabled(mContext.getUser())).isFalse();
     }
 
     @Test
@@ -221,6 +242,7 @@ public class ContextualModeManagerServiceTest {
                 () -> mBinderService.isModeSyncEnabled(UserHandle.ALL));
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testIsModeSyncEnabled_currentUser() throws Exception {
         Secure.putInt(mContentResolver, Secure.CONTEXTUAL_MODE_SYNC_ENABLED, 1);
@@ -253,6 +275,7 @@ public class ContextualModeManagerServiceTest {
         assertThrows(SecurityException.class, () -> mBinderService.setModeSyncEnabled(user, true));
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testSetModeSyncEnabled() throws Exception {
         mBinderService.setModeSyncEnabled(mContext.getUser(), true);
@@ -278,6 +301,7 @@ public class ContextualModeManagerServiceTest {
                 () -> mBinderService.setModeSyncEnabled(UserHandle.ALL, true));
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testSetModeSyncEnabled_currentUser() throws Exception {
         mBinderService.setModeSyncEnabled(UserHandle.CURRENT, true);
@@ -510,6 +534,7 @@ public class ContextualModeManagerServiceTest {
                                         .build()));
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testRegisterModeSyncListener_forSelf_requiresNoPermission() throws Exception {
         denyAllPermissions();
@@ -517,6 +542,7 @@ public class ContextualModeManagerServiceTest {
         mBinderService.registerModeSyncListener(UserHandle.SYSTEM, new TestModeSyncListener());
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testRegisterModeSyncListener_forDifferentUser_requiresMultiUserPermission()
             throws Exception {
@@ -538,6 +564,7 @@ public class ContextualModeManagerServiceTest {
         mBinderService.unregisterModeSyncListener(new TestModeSyncListener());
     }
 
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testModeSyncEnabledListener() throws Exception {
         TestModeSyncListener listener = new TestModeSyncListener();
@@ -556,6 +583,22 @@ public class ContextualModeManagerServiceTest {
         assertThat(listener.mEnabled).isFalse();
     }
 
+    @DisableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
+    @Test
+    public void testModeSyncEnabledListener_flagDisabled() throws Exception {
+        TestModeSyncListener listener = new TestModeSyncListener();
+
+        mBinderService.registerModeSyncListener(mContext.getUser(), listener);
+        assertThat(listener.mEnabled).isNull();
+
+        mBinderService.setModeSyncEnabled(mContext.getUser(), true);
+        assertThat(listener.mEnabled).isNull();
+
+        mBinderService.setModeSyncEnabled(mContext.getUser(), false);
+        assertThat(listener.mEnabled).isNull();
+    }
+
+    @EnableFlags(com.android.crossdevicesync.flags.Flags.FLAG_START_SYNC_SERVICE_ON_BOOT)
     @Test
     public void testModeSyncEnabledListener_illegalUser() {
         TestModeSyncListener listener = new TestModeSyncListener();

@@ -288,18 +288,17 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun earlyWakeupSet_whenDeviceIsNotEntered() =
+    fun earlyWakeupNotSet_whenDeviceIsNotEntered() =
         kosmos.runTest {
             fakeWindowRootViewBlurRepository.isBlurSupported.value = true
             sceneInteractor.snapToScene(Scenes.Lockscreen, loggingReason = "for test")
             runCurrent()
             assertThat(deviceEntryInteractor.isDeviceEntered.value).isFalse()
-
-            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isTrue()
+            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isFalse()
         }
 
     @Test
-    fun earlyWakeupSet_whenDeviceIsEnteredAndShadeIsBeingDragged() =
+    fun earlyWakeupNotSet_whenDeviceIsEnteredAndShadeIsBeingDragged() =
         kosmos.runTest {
             fakeWindowRootViewBlurRepository.isBlurSupported.value = true
             fakeDeviceEntryRepository.deviceUnlockStatus.value =
@@ -329,19 +328,19 @@ class SceneTransitionBlurViewModelTest : SysuiTestCase() {
             sceneInteractor.setTransitionState(transitionState)
             runCurrent()
 
-            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isTrue()
+            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isFalse()
 
             shadeExpansionProgress.value = 0.1f
             userInputOngoing.value = false
             runCurrent()
 
-            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isTrue()
+            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isFalse()
 
             shadeExpansionProgress.value = 0f
             userInputOngoing.value = true
             runCurrent()
 
-            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isTrue()
+            assertThat(fakeBlurChoreographer.persistentEarlyWakeup).isFalse()
         }
 
     @Test

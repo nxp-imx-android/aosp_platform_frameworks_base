@@ -42,11 +42,13 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
+import com.android.systemui.screencapture.record.shared.model.ScreenRecordEvent
 import com.android.systemui.screencapture.record.smallscreen.ui.compose.PostRecordSnackbar
 import com.android.systemui.screencapture.record.smallscreen.ui.compose.SnackbarVisualsWithIcon
 import com.android.systemui.statusbar.phone.DialogDelegate
@@ -65,6 +67,7 @@ constructor(
     private val drawableViewModel: DrawableLoaderViewModel,
     private val activityStarter: ActivityStarter,
     private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
+    private val uiEventLogger: UiEventLogger,
 ) {
 
     fun showVideoSaved() {
@@ -93,7 +96,10 @@ constructor(
                     )
                 }
             },
-            onDismissed = { context.contentResolver.delete(uri, null) },
+            onDismissed = {
+                context.contentResolver.delete(uri, null)
+                uiEventLogger.log(ScreenRecordEvent.SCREEN_RECORD_POST_RECORDING_DELETE)
+            },
         )
     }
 

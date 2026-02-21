@@ -25,10 +25,10 @@ import static org.mockito.Mockito.when;
 import android.os.ParcelUuid;
 import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.hint.ContextHint;
-import android.service.personalcontext.hint.ContextHintWithSignature;
-import android.service.personalcontext.hint.ContextHintWithSignatureWrapper;
 import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.HintFilter;
+import android.service.personalcontext.hint.PublishedContextHint;
+import android.service.personalcontext.hint.PublishedContextHintWrapper;
 import android.service.personalcontext.testutil.FakeExecutor;
 
 import androidx.annotation.NonNull;
@@ -79,11 +79,11 @@ public class HintRefinerServiceTest {
 
     private void verifyCallbackFromInput(List<ContextHint> inHints, List<ContextHint> outputHints)
             throws Exception {
-        ArrayList<ContextHintWithSignature> signedHints = new ArrayList<>();
+        ArrayList<PublishedContextHint> signedHints = new ArrayList<>();
 
         for (ContextHint inHint : inHints) {
-            final ContextHintWithSignature contextHintWithSignature = mock(
-                    ContextHintWithSignature.class);
+            final PublishedContextHint contextHintWithSignature = mock(
+                    PublishedContextHint.class);
             when(contextHintWithSignature.getContextHint()).thenReturn(inHint);
             signedHints.add(contextHintWithSignature);
         }
@@ -108,7 +108,7 @@ public class HintRefinerServiceTest {
         final IRefineCallback refineCallback = mock(IRefineCallback.class);
         final IOpCallback callback = mock(IOpCallback.class);
         refiner.refine(new ParcelUuid(UUID.randomUUID()),
-                ContextHintWithSignatureWrapper.wrapList(signedHints),
+                PublishedContextHintWrapper.wrapList(signedHints),
                 refineCallback, callback);
         mFakeExecutor.runAll();
         verify(callback).signalCompletion();

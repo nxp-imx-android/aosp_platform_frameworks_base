@@ -25,6 +25,8 @@ import android.text.TextUtils;
 import android.util.ArraySet;
 import android.util.PackageUtils;
 import android.util.Slog;
+import android.util.apk.ApkSignatureVerifierMetrics;
+import android.util.apk.ApkSignatureVerifierMetrics.VerificationResult;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.DataClass;
@@ -702,28 +704,115 @@ public final class SigningDetails implements Parcelable {
         if (!android.security.Flags.apkPqcHybridSigning() || !matchFound) {
             return matchFound;
         }
-        // If the oldDetails is a hybrid signature, then both of its certificates need to be in
-        // the current signer or in the lineage of this instance. This will cover the case for
-        // INSTALLED_DATA to ensure that updating from a hybrid signature requires both hybrid
-        // signers to be in the lineage of the update package.
-        if (oldDetails.isV32Hybrid()) {
-            // A match was already found with the current signer above, just need to verify that
-            // a match is also found for the classical signer.
-            return hasCertificate(oldDetails.getV32ClassicalHybridSigner(), flags);
+        // If either this or the oldDetails is a hybrid signature, then ensure that either both
+        // hybrid keys are present, or that any match is not from just one of the hybrid signers;
+        // this prevents the compromise of a single hybrid signer from granting capabilities to an
+        // app signed with that single hybrid key.
+        if (isV32Hybrid() || oldDetails.isV32Hybrid()) {
+            return checkV32HybridCapability(oldDetails, flags);
         }
-        // The oldDetails is not v3.2 hybrid signed, but if this instance is, then ensure that the
-        // match found above is not from either of the hybrid signers; this prevents the compromise
-        // of a single hybrid signer from granting capabilities to an app signed with that single
-        // hybrid key.
-        if (isV32Hybrid()) {
-            Signature classicalHybridSignature = getV32ClassicalHybridSigner();
-            if (classicalHybridSignature != null && classicalHybridSignature.equals(
-                    oldDetails.mSignatures[0])) {
+        return true;
+    }
+
+    /**
+     * Returns whether the capabilities specified by {@code flags} should be granted to the {@code
+     * oldDetails} while ensuring there is no key reuse for a rotation and that a single hybrid key
+     * compromise does not grant access to signature based capabilities.
+     *
+     * This method assumes that the caller has already checked the current signer from {@code
+     * oldDetails} against a matching signer in this instance's lineage that has been granted the
+     * requested capability.
+     */
+    private boolean checkV32HybridCapability(SigningDetails oldDetails,
+            @CertCapabilities int flags) {
+        if (oldDetails.isV32Hybrid()) {
+            // A match was already found with the current signer, ensure that there is also a match
+            // for the classical signer.
+            if (!hasCertificate(oldDetails.getV32ClassicalHybridSigner(), flags)) {
+                int verificationResult;
+                if ((flags & CertCapabilities.INSTALLED_DATA) != 0) {
+                    verificationResult =
+                            VerificationResult.VERIFICATION_V32_MISSING_CLASSICAL_INSTALLED_DATA;
+                } else if ((flags & CertCapabilities.ROLLBACK) != 0) {
+                    verificationResult =
+                            VerificationResult.VERIFICATION_V32_MISSING_CLASSICAL_ROLLBACK;
+                } else {
+                    verificationResult = VerificationResult.VERIFICATION_V32_MISSING_CLASSICAL;
+                }
+                ApkSignatureVerifierMetrics.logSigningKeyPolicyFailure(mSignatureSchemeVersion,
+                        mSignatureSchemeMinorVersion, verificationResult);
                 return false;
             }
-            if (mSignatures[0].equals(oldDetails.mSignatures[0])) {
-                return false;
+        }
+
+        Signature newPrimarySignature = mSignatures[0];
+        Signature newClassicalSignature = isV32Hybrid() ? getV32ClassicalHybridSigner() : null;
+        Signature oldPrimarySignature = oldDetails.mSignatures[0];
+        Signature oldClassicalSignature = oldDetails.isV32Hybrid()
+                ? oldDetails.getV32ClassicalHybridSigner() : null;
+
+        boolean hasSamePrimary = newPrimarySignature.equals(oldPrimarySignature);
+        boolean hasSameClassical =
+                (newClassicalSignature == null && oldClassicalSignature == null)
+                        || (newClassicalSignature != null && oldClassicalSignature != null
+                        && newClassicalSignature.equals(oldClassicalSignature));
+
+        // If both signatures match, then this is the standard case where both have the same
+        // calling identity.
+        if (hasSamePrimary && hasSameClassical) {
+            return true;
+        }
+
+        // Verify that the oldDetails signer is a valid signer in this lineage and not one of the
+        // two hybrid signers being reused.
+        boolean reuseDetected = false;
+        // If the two have the same primary key but the classical is not a match, this is a
+        // reuse between a single and hybrid PQC signer.
+        if (hasSamePrimary) {
+            reuseDetected = true;
+        }
+        // If the oldDetails is hybrid signed, this is a reuse of the old classical key as the
+        // new single signing identity.
+        if (oldClassicalSignature != null
+                && newPrimarySignature.equals(oldClassicalSignature)) {
+            reuseDetected = true;
+        }
+        if (newClassicalSignature != null) {
+            // If this is a hybrid block, this is a reuse of the single signer classical key
+            // as the hybrid's classical signer.
+            if (newClassicalSignature.equals(oldPrimarySignature)) {
+                reuseDetected = true;
             }
+            // If both are hybrid blocks, this is a reuse of the classical hybrid signer as
+            // this block's classical signer.
+            if (oldClassicalSignature != null
+                    && newClassicalSignature.equals(oldClassicalSignature)) {
+                reuseDetected = true;
+            }
+        }
+
+        if (reuseDetected) {
+            int verificationResult;
+            if ((flags & CertCapabilities.INSTALLED_DATA) != 0) {
+                verificationResult = VerificationResult.VERIFICATION_V32_KEY_REUSE_INSTALLED_DATA;
+            } else if ((flags & CertCapabilities.ROLLBACK) != 0) {
+                verificationResult = VerificationResult.VERIFICATION_V32_KEY_REUSE_ROLLBACK;
+            } else {
+                verificationResult = VerificationResult.VERIFICATION_V32_KEY_REUSE;
+            }
+            ApkSignatureVerifierMetrics.logSigningKeyPolicyFailure(mSignatureSchemeVersion,
+                    mSignatureSchemeMinorVersion, verificationResult);
+            return false;
+        }
+        // This point should only be reached if the current signing identity of the oldDetails does
+        // not match that of this instance; if this is an INSTALLED_DATA or ROLLBACK, report the
+        // signing key change.
+        if ((flags & CertCapabilities.INSTALLED_DATA) != 0) {
+            ApkSignatureVerifierMetrics.logSigningKeyChangeSuccess(mSignatureSchemeVersion,
+                    mSignatureSchemeMinorVersion, true, false);
+        } else if ((flags & CertCapabilities.ROLLBACK) != 0) {
+            ApkSignatureVerifierMetrics.logSigningKeyChangeSuccess(mSignatureSchemeVersion,
+                    mSignatureSchemeMinorVersion, false, true);
         }
         return true;
     }
@@ -1115,10 +1204,10 @@ public final class SigningDetails implements Parcelable {
     }
 
     @DataClass.Generated(
-            time = 1769210042129L,
+            time = 1771433325235L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/android/content/pm/SigningDetails.java",
-            inputSignatures = "private static final  java.lang.String TAG\nprivate final @android.annotation.Nullable android.content.pm.Signature[] mSignatures\nprivate final @android.content.pm.SigningDetails.SignatureSchemeVersion int mSignatureSchemeVersion\nprivate final  int mSignatureSchemeMinorVersion\nprivate final @android.annotation.Nullable android.util.ArraySet<java.security.PublicKey> mPublicKeys\nprivate final @android.annotation.Nullable android.content.pm.Signature[] mPastSigningCertificates\nprivate static final  int PAST_CERT_EXISTS\npublic static final  android.content.pm.SigningDetails UNKNOWN\npublic static final @android.annotation.NonNull android.os.Parcelable.Creator<android.content.pm.SigningDetails> CREATOR\npublic @android.annotation.NonNull android.content.pm.SigningDetails mergeLineageWith(android.content.pm.SigningDetails)\npublic @android.annotation.NonNull android.content.pm.SigningDetails mergeLineageWith(android.content.pm.SigningDetails,int)\nprivate @android.annotation.NonNull android.content.pm.SigningDetails mergeLineageWithAncestorOrSelf(android.content.pm.SigningDetails,int)\npublic  boolean hasCommonAncestor(android.content.pm.SigningDetails)\npublic  boolean hasAncestorOrSelfWithDigest(java.util.Set<java.lang.String>)\nprivate @android.annotation.Nullable android.content.pm.SigningDetails getDescendantOrSelf(android.content.pm.SigningDetails)\npublic  boolean hasSignatures()\npublic  boolean hasPastSigningCertificates()\npublic  boolean hasAncestorOrSelf(android.content.pm.SigningDetails)\npublic  boolean hasAncestor(android.content.pm.SigningDetails)\npublic  boolean hasCommonSignerWithCapability(android.content.pm.SigningDetails,int)\nprivate  boolean isV32Hybrid()\nprivate  android.content.pm.Signature getV32ClassicalHybridSigner()\npublic  boolean checkCapability(android.content.pm.SigningDetails,int)\npublic  boolean checkCapabilityRecover(android.content.pm.SigningDetails,int)\npublic  boolean hasCertificate(android.content.pm.Signature)\npublic  boolean hasCertificate(android.content.pm.Signature,int)\npublic  boolean hasCertificate(byte[])\nprivate  boolean hasCertificateInternal(android.content.pm.Signature,int)\npublic  boolean checkCapability(java.lang.String,int)\npublic  boolean hasSha256Certificate(byte[])\npublic  boolean hasSha256Certificate(byte[],int)\nprivate  boolean hasSha256CertificateInternal(byte[],int)\npublic  boolean signaturesMatchExactly(android.content.pm.SigningDetails)\npublic @java.lang.Override int describeContents()\npublic @java.lang.Override void writeToParcel(android.os.Parcel,int)\npublic @java.lang.Override boolean equals(java.lang.Object)\npublic @java.lang.Override int hashCode()\npublic static  android.util.ArraySet<java.security.PublicKey> toSigningKeys(android.content.pm.Signature[])\nclass SigningDetails extends java.lang.Object implements [android.os.Parcelable]\nprivate @android.annotation.NonNull android.content.pm.Signature[] mSignatures\nprivate @android.content.pm.SigningDetails.SignatureSchemeVersion int mSignatureSchemeVersion\nprivate @android.content.pm.SigningDetails.SignatureSchemeMinorVersion int mSignatureSchemeMinorVersion\nprivate @android.annotation.Nullable android.content.pm.Signature[] mPastSigningCertificates\npublic  android.content.pm.SigningDetails.Builder setSignatures(android.content.pm.Signature[])\npublic  android.content.pm.SigningDetails.Builder setSignatureSchemeVersion(int)\npublic  android.content.pm.SigningDetails.Builder setSignatureSchemeMinorVersion(int)\npublic  android.content.pm.SigningDetails.Builder setPastSigningCertificates(android.content.pm.Signature[])\nprivate  void checkInvariants()\npublic  android.content.pm.SigningDetails build()\nclass Builder extends java.lang.Object implements []\n@com.android.internal.util.DataClass(genConstructor=false, genConstDefs=false, genParcelable=true, genAidl=false)")
+            inputSignatures = "private static final  java.lang.String TAG\nprivate final @android.annotation.Nullable android.content.pm.Signature[] mSignatures\nprivate final @android.content.pm.SigningDetails.SignatureSchemeVersion int mSignatureSchemeVersion\nprivate final  int mSignatureSchemeMinorVersion\nprivate final @android.annotation.Nullable android.util.ArraySet<java.security.PublicKey> mPublicKeys\nprivate final @android.annotation.Nullable android.content.pm.Signature[] mPastSigningCertificates\nprivate static final  int PAST_CERT_EXISTS\npublic static final  android.content.pm.SigningDetails UNKNOWN\npublic static final @android.annotation.NonNull android.os.Parcelable.Creator<android.content.pm.SigningDetails> CREATOR\npublic @android.annotation.NonNull android.content.pm.SigningDetails mergeLineageWith(android.content.pm.SigningDetails)\npublic @android.annotation.NonNull android.content.pm.SigningDetails mergeLineageWith(android.content.pm.SigningDetails,int)\nprivate @android.annotation.NonNull android.content.pm.SigningDetails mergeLineageWithAncestorOrSelf(android.content.pm.SigningDetails,int)\npublic  boolean hasCommonAncestor(android.content.pm.SigningDetails)\npublic  boolean hasAncestorOrSelfWithDigest(java.util.Set<java.lang.String>)\nprivate @android.annotation.Nullable android.content.pm.SigningDetails getDescendantOrSelf(android.content.pm.SigningDetails)\npublic  boolean hasSignatures()\npublic  boolean hasPastSigningCertificates()\npublic  boolean hasAncestorOrSelf(android.content.pm.SigningDetails)\npublic  boolean hasAncestor(android.content.pm.SigningDetails)\npublic  boolean hasCommonSignerWithCapability(android.content.pm.SigningDetails,int)\nprivate  boolean isV32Hybrid()\nprivate  android.content.pm.Signature getV32ClassicalHybridSigner()\npublic  boolean checkCapability(android.content.pm.SigningDetails,int)\nprivate  boolean checkV32HybridCapability(android.content.pm.SigningDetails,int)\npublic  boolean checkCapabilityRecover(android.content.pm.SigningDetails,int)\npublic  boolean hasCertificate(android.content.pm.Signature)\npublic  boolean hasCertificate(android.content.pm.Signature,int)\npublic  boolean hasCertificate(byte[])\nprivate  boolean hasCertificateInternal(android.content.pm.Signature,int)\npublic  boolean checkCapability(java.lang.String,int)\npublic  boolean hasSha256Certificate(byte[])\npublic  boolean hasSha256Certificate(byte[],int)\nprivate  boolean hasSha256CertificateInternal(byte[],int)\npublic  boolean signaturesMatchExactly(android.content.pm.SigningDetails)\npublic @java.lang.Override int describeContents()\npublic @java.lang.Override void writeToParcel(android.os.Parcel,int)\npublic @java.lang.Override boolean equals(java.lang.Object)\npublic @java.lang.Override int hashCode()\npublic static  android.util.ArraySet<java.security.PublicKey> toSigningKeys(android.content.pm.Signature[])\nclass SigningDetails extends java.lang.Object implements [android.os.Parcelable]\nprivate @android.annotation.NonNull android.content.pm.Signature[] mSignatures\nprivate @android.content.pm.SigningDetails.SignatureSchemeVersion int mSignatureSchemeVersion\nprivate @android.content.pm.SigningDetails.SignatureSchemeMinorVersion int mSignatureSchemeMinorVersion\nprivate @android.annotation.Nullable android.content.pm.Signature[] mPastSigningCertificates\npublic  android.content.pm.SigningDetails.Builder setSignatures(android.content.pm.Signature[])\npublic  android.content.pm.SigningDetails.Builder setSignatureSchemeVersion(int)\npublic  android.content.pm.SigningDetails.Builder setSignatureSchemeMinorVersion(int)\npublic  android.content.pm.SigningDetails.Builder setPastSigningCertificates(android.content.pm.Signature[])\nprivate  void checkInvariants()\npublic  android.content.pm.SigningDetails build()\nclass Builder extends java.lang.Object implements []\n@com.android.internal.util.DataClass(genConstructor=false, genConstDefs=false, genParcelable=true, genAidl=false)")
     @Deprecated
     private void __metadata() {}
 

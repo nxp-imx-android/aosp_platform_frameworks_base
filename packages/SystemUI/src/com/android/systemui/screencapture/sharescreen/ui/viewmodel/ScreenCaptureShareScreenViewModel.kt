@@ -55,6 +55,7 @@ constructor(
     private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
     @Assisted("thumbnailWidthPx") private val thumbnailWidthPx: Int,
     @Assisted("thumbnailHeightPx") private val thumbnailHeightPx: Int,
+    @Assisted("iconSizePx") private val iconSizePx: Int,
     appContentsViewModelFactory: AppContentsViewModel.Factory,
     private val recentTasksViewModel: RecentTasksViewModel,
     private val displaysViewModel: DisplaysViewModel,
@@ -65,7 +66,7 @@ constructor(
     HydratedActivatable(enableEnqueuedActivations = true),
     DrawableLoaderViewModel by drawableLoaderViewModel {
     private val appContentsViewModel =
-        appContentsViewModelFactory.create(thumbnailWidthPx, thumbnailHeightPx)
+        appContentsViewModelFactory.create(thumbnailWidthPx, thumbnailHeightPx, iconSizePx)
 
     val isAppContentSharingEnabled: Boolean
         get() =
@@ -228,6 +229,7 @@ constructor(
         fun create(
             @Assisted("thumbnailWidthPx") thumbnailWidthPx: Int,
             @Assisted("thumbnailHeightPx") thumbnailHeightPx: Int,
+            @Assisted("iconSizePx") iconSizePx: Int,
         ): ScreenCaptureShareScreenViewModel
     }
 

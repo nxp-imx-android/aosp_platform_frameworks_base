@@ -59,6 +59,6 @@ public final class ContextHintTestUtils {
     public static SecretKeySpec generateSignedHintKey() {
         final byte[] key = new byte[64];
         new Random().nextBytes(key);
-        return new SecretKeySpec(key, ContextHintWithSignature.HMAC_ALGORITHM);
+        return new SecretKeySpec(key, PublishedContextHint.HMAC_ALGORITHM);
     }
 }

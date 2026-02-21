@@ -1016,7 +1016,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX)
     public void updateRelayoutParams_header_fullyImmersive_captionVisDuringDrag() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
@@ -1550,20 +1549,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 any(),
                 /* forceShowSystemBars= */ eq(true)
         );
-    }
-
-    @Test
-    @DisableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_HANDLE_EDUCATION,
-            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION,
-            Flags.FLAG_ENABLE_APP_HANDLE_POSITION_REPORTING})
-    public void notifyCaptionStateChanged_flagDisabled_doNoNotify() {
-        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
-        final DesktopModeWindowDecoration spyWindowDecor = spy(createWindowDecoration(taskInfo));
-        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
-
-        spyWindowDecor.relayout(taskInfo, true /* hasGlobalFocus */, mExclusionRegion);
-
-        verify(mMockCaptionHandleRepository, never()).notifyCaptionChanged(any());
     }
 
     @Test

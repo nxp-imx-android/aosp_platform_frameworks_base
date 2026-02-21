@@ -32,7 +32,7 @@ import static java.util.Collections.emptySet;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.PublishedContextHint;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -68,10 +68,10 @@ public class RefinerWorkflowTest {
         Refiner refiner = mock(Refiner.class);
 
         doAnswer(invocation -> {
-            final Set<ContextHintWithSignature> hints = invocation.getArgument(0, Set.class);
+            final Set<PublishedContextHint> hints = invocation.getArgument(0, Set.class);
             final Set<UUID> seenIds = invocation.getArgument(1, Set.class);
-            final Set<Set<ContextHintWithSignature>> result = new HashSet<>();
-            for (ContextHintWithSignature hint : hints) {
+            final Set<Set<PublishedContextHint>> result = new HashSet<>();
+            for (PublishedContextHint hint : hints) {
                 if (!seenIds.contains(hint.getContextHint().getHintId())) {
                     result.add(Set.of(hint));
                 }
@@ -87,10 +87,10 @@ public class RefinerWorkflowTest {
         Refiner refiner = mock(Refiner.class);
 
         doAnswer(invocation -> {
-            final Set<ContextHintWithSignature> hints = invocation.getArgument(0, Set.class);
+            final Set<PublishedContextHint> hints = invocation.getArgument(0, Set.class);
             final Set<UUID> seenIds = invocation.getArgument(1, Set.class);
-            final Set<ContextHintWithSignature> result = new HashSet<>();
-            for (ContextHintWithSignature hint : hints) {
+            final Set<PublishedContextHint> result = new HashSet<>();
+            for (PublishedContextHint hint : hints) {
                 if (!seenIds.contains(hint.getContextHint().getHintId())) {
                     result.add(hint);
                 }
@@ -118,9 +118,9 @@ public class RefinerWorkflowTest {
         RefinerWorkflow.start(
                 provider,
                 Set.of(
-                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                        new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                                 .build(),
-                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                        new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                                 .build()),
                 /* renderToken= */ emptySet(),
                 key,
@@ -151,9 +151,9 @@ public class RefinerWorkflowTest {
         RefinerWorkflow.start(
                 provider,
                 Set.of(
-                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                        new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                                 .build(),
-                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                        new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                                 .build()),
                 /* renderToken= */ emptySet(),
                 key,
@@ -185,9 +185,9 @@ public class RefinerWorkflowTest {
         RefinerWorkflow.start(
                 provider,
                 Set.of(
-                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                        new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                                 .build(),
-                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                        new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                                 .build()),
                 /* renderToken= */ emptySet(),
                 key,
@@ -215,7 +215,7 @@ public class RefinerWorkflowTest {
         final Refiner refiner2 = mock(Refiner.class);
 
         doAnswer(invocation -> {
-            final Set<ContextHint> hints = ContextHintWithSignature.unwrapInto(
+            final Set<ContextHint> hints = PublishedContextHint.unwrapInto(
                     invocation.getArgument(0, Set.class), new HashSet<>());
             final Consumer<Set<ContextHint>> callback = invocation.getArgument(1, Consumer.class);
             if (hints.contains(hint2)) {
@@ -230,7 +230,7 @@ public class RefinerWorkflowTest {
                 .when(refiner1).refine(any(), any(), any());
 
         doAnswer(invocation -> {
-            final Set<ContextHintWithSignature> hints = invocation.getArgument(0, Set.class);
+            final Set<PublishedContextHint> hints = invocation.getArgument(0, Set.class);
             final Set<UUID> seenIds = invocation.getArgument(1, Set.class);
             if (hints.size() == 2 && seenIds.isEmpty()) {
                 return Set.of(hints);
@@ -251,7 +251,7 @@ public class RefinerWorkflowTest {
 
         RefinerWorkflow.start(
                 provider,
-                Set.of(new ContextHintWithSignature.Builder(hint1, key).build()),
+                Set.of(new PublishedContextHint.Builder(hint1, key).build()),
                 /* renderToken= */ emptySet(),
                 ContextHintTestUtils.generateSignedHintKey(),
                 listener,
@@ -281,9 +281,9 @@ public class RefinerWorkflowTest {
         final RefinerWorkflow workflow = RefinerWorkflow.start(
                 provider,
                 Set.of(
-                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                        new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                                 .build(),
-                        new ContextHintWithSignature.Builder(new BundleHint.Builder().build(), key)
+                        new PublishedContextHint.Builder(new BundleHint.Builder().build(), key)
                                 .build()),
                 /* renderToken= */ emptySet(),
                 key,

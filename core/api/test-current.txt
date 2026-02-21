@@ -3587,32 +3587,32 @@ package android.service.personalcontext.hint {
     method @NonNull public android.os.Bundle toBundle();
   }
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignature {
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
+    method @NonNull public java.util.Set<android.service.personalcontext.hint.PublishedContextHint> getInterestedHintClusters(@NonNull java.util.Set<android.service.personalcontext.hint.PublishedContextHint>, @NonNull java.util.Set<java.util.UUID>);
+  }
+
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PublishedContextHint {
     method public boolean isSignatureValid(@NonNull javax.crypto.spec.SecretKeySpec) throws java.security.GeneralSecurityException;
     field public static final String HMAC_ALGORITHM = "HmacSHA256";
   }
 
-  public static final class ContextHintWithSignature.Builder {
-    ctor public ContextHintWithSignature.Builder(@NonNull android.service.personalcontext.hint.ContextHint, @NonNull javax.crypto.spec.SecretKeySpec);
-    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder addAttributionHint(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
-    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder addAttributionHints(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>);
-    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder addRenderTokens(@NonNull java.util.Collection<android.service.personalcontext.RenderToken>);
-    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature build() throws java.security.GeneralSecurityException;
-    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature.Builder setOriginatingPackage(@Nullable String);
+  public static final class PublishedContextHint.Builder {
+    ctor public PublishedContextHint.Builder(@NonNull android.service.personalcontext.hint.ContextHint, @NonNull javax.crypto.spec.SecretKeySpec);
+    method @NonNull public android.service.personalcontext.hint.PublishedContextHint.Builder addAttributionHint(@NonNull android.service.personalcontext.hint.PublishedContextHint);
+    method @NonNull public android.service.personalcontext.hint.PublishedContextHint.Builder addAttributionHints(@NonNull java.util.Collection<android.service.personalcontext.hint.PublishedContextHint>);
+    method @NonNull public android.service.personalcontext.hint.PublishedContextHint.Builder addRenderTokens(@NonNull java.util.Collection<android.service.personalcontext.RenderToken>);
+    method @NonNull public android.service.personalcontext.hint.PublishedContextHint build() throws java.security.GeneralSecurityException;
+    method @NonNull public android.service.personalcontext.hint.PublishedContextHint.Builder setOriginatingPackage(@Nullable String);
   }
 
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class ContextHintWithSignatureWrapper implements android.os.Parcelable {
-    ctor public ContextHintWithSignatureWrapper(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class PublishedContextHintWrapper implements android.os.Parcelable {
+    ctor public PublishedContextHintWrapper(@NonNull android.service.personalcontext.hint.PublishedContextHint);
     method public int describeContents();
-    method @NonNull public android.service.personalcontext.hint.ContextHintWithSignature getContextHintWithSignature();
-    method @NonNull public static <T extends java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>> T unwrapInto(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignatureWrapper>, @NonNull T);
-    method @NonNull public static java.util.List<android.service.personalcontext.hint.ContextHintWithSignatureWrapper> wrapList(@NonNull java.util.Collection<android.service.personalcontext.hint.ContextHintWithSignature>);
+    method @NonNull public android.service.personalcontext.hint.PublishedContextHint getPublishedContextHint();
+    method @NonNull public static <T extends java.util.Collection<android.service.personalcontext.hint.PublishedContextHint>> T unwrapInto(@NonNull java.util.Collection<android.service.personalcontext.hint.PublishedContextHintWrapper>, @NonNull T);
+    method @NonNull public static java.util.List<android.service.personalcontext.hint.PublishedContextHintWrapper> wrapList(@NonNull java.util.Collection<android.service.personalcontext.hint.PublishedContextHint>);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.ContextHintWithSignatureWrapper> CREATOR;
-  }
-
-  @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public final class HintFilter implements android.os.Parcelable {
-    method @NonNull public java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature> getInterestedHintClusters(@NonNull java.util.Set<android.service.personalcontext.hint.ContextHintWithSignature>, @NonNull java.util.Set<java.util.UUID>);
+    field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.hint.PublishedContextHintWrapper> CREATOR;
   }
 
 }
@@ -3635,7 +3635,7 @@ package android.service.personalcontext.insight {
   }
 
   @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final class HintInvalidationInsight.Builder {
-    ctor public HintInvalidationInsight.Builder(@NonNull android.service.personalcontext.hint.ContextHintWithSignature);
+    ctor public HintInvalidationInsight.Builder(@NonNull android.service.personalcontext.hint.PublishedContextHint);
     method @NonNull public android.service.personalcontext.insight.HintInvalidationInsight.Builder addToken(@NonNull android.service.personalcontext.Token);
     method @NonNull public android.service.personalcontext.insight.HintInvalidationInsight build();
   }

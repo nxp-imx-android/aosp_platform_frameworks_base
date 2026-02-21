@@ -334,7 +334,7 @@ public class ContextualSearchManagerService extends SystemService {
             QUERY_USERS
     })
     private Intent getContextualSearchIntent(final int entrypoint,
-            @Nullable final ContextualSearchConfig config, final int userId,
+            @NonNull final ContextualSearchConfig config, final int userId,
             final String callingPackage, final CallbackToken token) {
         final Intent launchIntent = getResolvedLaunchIntent(userId);
         if (launchIntent == null) {
@@ -343,27 +343,23 @@ public class ContextualSearchManagerService extends SystemService {
         }
 
         if (DEBUG) Log.d(TAG, "Launch component: " + launchIntent.getComponent());
-        final ContextualSearchConfig effectiveConfig =
-                config != null ? config : ContextualSearchConfig.DEFAULT_CONFIG;
 
-        launchIntent.setFlags(effectiveConfig.getLaunchFlags());
+        launchIntent.setFlags(config.getLaunchFlags());
 
         // Add these first to avoid overwriting any extras set below.
-        launchIntent.putExtras(effectiveConfig.getIntentExtras());
+        launchIntent.putExtras(config.getIntentExtras());
 
         launchIntent.putExtra(
                 ContextualSearchManager.EXTRA_INVOCATION_TIME_MS,
                 SystemClock.uptimeMillis());
         launchIntent.putExtra(ContextualSearchManager.EXTRA_ENTRYPOINT, entrypoint);
         launchIntent.putExtra(ContextualSearchManager.EXTRA_TOKEN, token);
-        launchIntent.setSourceBounds(effectiveConfig.getSourceBounds());
+        launchIntent.setSourceBounds(config.getSourceBounds());
         if (Flags.includeAudioPlayingStatus()) {
             launchIntent.putExtra(ContextualSearchManager.EXTRA_IS_AUDIO_PLAYING,
                     mAudioManager.isMusicActive());
         }
-        if (Flags.configParameters()) {
-            launchIntent.putExtra(Intent.EXTRA_CALLING_PACKAGE, callingPackage);
-        }
+        launchIntent.putExtra(Intent.EXTRA_CALLING_PACKAGE, callingPackage);
         final boolean isAssistDataAllowed = mAtmInternal.isAssistDataAllowed();
         final List<ActivityAssistInfo> records = mAtmInternal.getTopVisibleActivities();
         final List<IBinder> activityTokens = new ArrayList<>(records.size());
@@ -445,7 +441,7 @@ public class ContextualSearchManagerService extends SystemService {
 
     @RequiresPermission(START_TASKS_FROM_RECENTS)
     private int invokeContextualSearchIntent(final Intent launchIntent, final int userId,
-            @Nullable final ContextualSearchConfig config) {
+            @NonNull final ContextualSearchConfig config) {
         // Contextual search starts with a frozen screen - so we launch without
         // any system animations or starting window.
         final ActivityOptions opts = ActivityOptions.makeCustomTaskAnimation(mContext,
@@ -511,9 +507,8 @@ public class ContextualSearchManagerService extends SystemService {
         }
     }
 
-    private static int getDisplayIdFromConfig(@Nullable final ContextualSearchConfig config) {
-        int displayId = (config != null ? config : ContextualSearchConfig.DEFAULT_CONFIG)
-                .getDisplayId();
+    private static int getDisplayIdFromConfig(@NonNull final ContextualSearchConfig config) {
+        int displayId = config.getDisplayId();
         return displayId == Display.INVALID_DISPLAY ? Display.DEFAULT_DISPLAY : displayId;
     }
 
@@ -535,7 +530,7 @@ public class ContextualSearchManagerService extends SystemService {
             }
         }
 
-        private void issueToken(@Nullable final ContextualSearchConfig config) {
+        private void issueToken(@NonNull final ContextualSearchConfig config) {
             synchronized (this) {
                 mToken = new CallbackToken();
                 mConfig = config;
@@ -568,6 +563,7 @@ public class ContextualSearchManagerService extends SystemService {
         @Override
         @RequiresPermission(START_TASKS_FROM_RECENTS)
         public void startContextualSearchForApp(@NonNull ContextualSearchConfig config) {
+            Objects.requireNonNull(config);
             synchronized (this) {
                 if (DEBUG) {
                     Log.d(TAG, "Starting contextual search from: "
@@ -589,32 +585,30 @@ public class ContextualSearchManagerService extends SystemService {
                             + ", config: " + config);
                 }
                 enforcePermission("startContextualSearch");
-                startContextualSearchInternal(entrypoint, config);
+                startContextualSearchInternal(entrypoint,
+                        config != null ? config : ContextualSearchConfig.DEFAULT_CONFIG);
             }
         }
 
-        // TODO(b/371552433): Make config @NonNull when the config_parameters flag is cleaned up.
         @RequiresPermission(allOf = {START_TASKS_FROM_RECENTS}, anyOf = {
                 MANAGE_USERS, CREATE_USERS, QUERY_USERS})
         private void startContextualSearchInternal(final int entrypoint,
-                                                   @Nullable final ContextualSearchConfig config) {
-            final ContextualSearchConfig effectiveConfig =
-                    config != null ? config : ContextualSearchConfig.DEFAULT_CONFIG;
+                                                   @NonNull final ContextualSearchConfig config) {
             final String callingPackage = mPackageManager.getNameForUid(Binder.getCallingUid());
             final int callingUserId = Binder.getCallingUserHandle().getIdentifier();
             mAssistDataRequester.cancel();
             // Creates a new CallbackToken at mToken and an expiration handler.
-            issueToken(effectiveConfig);
+            issueToken(config);
             // We get the launch intent with the system server's identity because the system
             // server has READ_FRAME_BUFFER permission to get the screenshot and because only
             // the system server can invoke non-exported activities.
             Binder.withCleanCallingIdentity(() -> {
-                final Intent launchIntent = getContextualSearchIntent(entrypoint, effectiveConfig,
+                final Intent launchIntent = getContextualSearchIntent(entrypoint, config,
                         callingUserId, callingPackage, mToken);
                 if (launchIntent != null) {
                     final int result =
                             invokeContextualSearchIntent(launchIntent, callingUserId,
-                                    effectiveConfig);
+                                    config);
                     if (DEBUG) {
                         Log.d(TAG, "Launch intent: " + launchIntent);
                         Log.d(TAG, "Launch result: " + result);
@@ -627,6 +621,8 @@ public class ContextualSearchManagerService extends SystemService {
         public void getContextualSearchState(
                 @NonNull final IBinder token,
                 @NonNull final IContextualSearchCallback callback) {
+            Objects.requireNonNull(token);
+            Objects.requireNonNull(callback);
             if (DEBUG) {
                 Log.i(TAG, "getContextualSearchState token: " + token + ", callback: " + callback);
             }

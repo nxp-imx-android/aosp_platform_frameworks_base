@@ -73,68 +73,36 @@
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Prikazuje sat, slike ili vreme dok se telefon puni"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Prikazuje sat, slike ili vreme dok se tablet puni"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Prikazuje sat, slike ili vreme dok se uređaj puni"</string>
-    <!-- no translation found for accessibility_retry_face_auth (92100916134164459) -->
-    <skip />
-    <!-- no translation found for accessibility_retry_face_auth (5630058255754932537) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_title (1533872824718008968) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_title (5218710819864377084) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face (2261934158598458578) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face (2066067154465078068) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_alt_1 (1268255053915789297) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_alt_1 (1514178179652703156) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_sfps (2492608775606333432) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_tap_confirm_with_face_sfps (7918648092655463233) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_name (5965443249759045602) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_notification_name (3705121888554395242) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_title (2719988247243428771) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_title (4217639465392210803) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_content (7290782487464426692) -->
-    <skip />
-    <!-- no translation found for face_re_enroll_dialog_content (7718739738665960268) -->
-    <skip />
-    <!-- no translation found for face_reenroll_failure_dialog_content (6318784230085101323) -->
-    <skip />
-    <!-- no translation found for face_reenroll_failure_dialog_content (1206573626798969692) -->
-    <skip />
-    <!-- no translation found for keyguard_face_unlock_unavailable (3188895702987679056) -->
-    <skip />
-    <!-- no translation found for keyguard_face_unlock_unavailable (7088502865328130614) -->
-    <skip />
-    <!-- no translation found for accesssibility_keyguard_retry (5017097587017783548) -->
-    <skip />
-    <!-- no translation found for accesssibility_keyguard_retry (5084769005671288179) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_swipe (1358318947548832086) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_swipe (4016445068612817741) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (4883782574761031564) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_confirm_button (7268520979450633978) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press (7293890116185253825) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press (6158498006084899116) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press_alt_1 (6269966346565076951) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock_press_alt_1 (1612731733090835687) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock (5544493091450184889) -->
-    <skip />
-    <!-- no translation found for keyguard_face_successful_unlock (5348626087316804379) -->
-    <skip />
+    <string name="accessibility_retry_face_auth" product="default" msgid="92100916134164459">"Probaj opet otključavanje licem"</string>
+    <string name="accessibility_retry_face_auth" product="desktop" msgid="5630058255754932537">"Probaj ponovo otključavanje pomoću lica"</string>
+    <string name="face_re_enroll_notification_title" product="default" msgid="1533872824718008968">"Ponovo podesite otključavanje licem"</string>
+    <string name="face_re_enroll_notification_title" product="desktop" msgid="5218710819864377084">"Ponovo podesite otključavanje pomoću lica"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="default" msgid="2261934158598458578">"Otključano je licem"</string>
+    <string name="biometric_dialog_tap_confirm_with_face" product="desktop" msgid="2066067154465078068">"Otključano je pomoću lica"</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="default" msgid="1268255053915789297">"Otključano je licem. Pritisnite da biste nastavili."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_alt_1" product="desktop" msgid="1514178179652703156">"Otključano je pomoću lica. Pritisnite da biste nastavili."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="default" msgid="2492608775606333432">"Otključano je licem. Dodirnite da biste nastavili."</string>
+    <string name="biometric_dialog_tap_confirm_with_face_sfps" product="desktop" msgid="7918648092655463233">"Otključano je pomoću lica. Dodirnite da biste nastavili."</string>
+    <string name="face_re_enroll_notification_name" product="default" msgid="5965443249759045602">"Otključavanje licem"</string>
+    <string name="face_re_enroll_notification_name" product="desktop" msgid="3705121888554395242">"Otključavanje pomoću lica"</string>
+    <string name="face_re_enroll_dialog_title" product="default" msgid="2719988247243428771">"Podesite otključavanje licem"</string>
+    <string name="face_re_enroll_dialog_title" product="desktop" msgid="4217639465392210803">"Podesite otključavanje pomoću lica"</string>
+    <string name="face_re_enroll_dialog_content" product="default" msgid="7290782487464426692">"Da biste ponovo podesili otključavanje licem, aktuelni model lica se briše.\n\nMoraćete ponovo da podesite ovu funkciju da biste koristili lice za otključavanje telefona."</string>
+    <string name="face_re_enroll_dialog_content" product="desktop" msgid="7718739738665960268">"Da biste ponovo podesili otključavanje pomoću lica, aktuelni model lica se briše.\n\nMoraćete ponovo da podesite ovu funkciju da biste koristili lice za otključavanje uređaja."</string>
+    <string name="face_reenroll_failure_dialog_content" product="default" msgid="6318784230085101323">"Podešavanje otključavanja licem nije uspelo. Idite u Podešavanja da biste probali ponovo."</string>
+    <string name="face_reenroll_failure_dialog_content" product="desktop" msgid="1206573626798969692">"Podešavanje otključavanja pomoću lica nije uspelo. Probajte ponovo u Podešavanjima."</string>
+    <string name="keyguard_face_unlock_unavailable" product="default" msgid="3188895702987679056">"Otključavanje licem nije dostupno"</string>
+    <string name="keyguard_face_unlock_unavailable" product="desktop" msgid="7088502865328130614">"Otključavanje pomoću lica nije dostupno"</string>
+    <string name="accesssibility_keyguard_retry" product="default" msgid="5017097587017783548">"Prevucite nagore da biste ponovo probali otključavanje licem"</string>
+    <string name="accesssibility_keyguard_retry" product="desktop" msgid="5084769005671288179">"Prevucite nagore da biste ponovo probali da otključate pomoću lica"</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="default" msgid="1358318947548832086">"Otključano je licem. Prevucite nagore da biste otvorili."</string>
+    <string name="keyguard_face_successful_unlock_swipe" product="desktop" msgid="4016445068612817741">"Otključano je pomoću lica. Prevucite nagore da biste otvorili."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="default" msgid="4883782574761031564">"Otključano je licem. Pritisnite Potvrdi za nastavak."</string>
+    <string name="keyguard_face_successful_unlock_confirm_button" product="desktop" msgid="7268520979450633978">"Otključano je pomoću lica. Pritisnite Potvrdi za nastavak."</string>
+    <string name="keyguard_face_successful_unlock_press" product="default" msgid="7293890116185253825">"Otključano licem. Pritisnite ikonu otključavanja za otvaranje."</string>
+    <string name="keyguard_face_successful_unlock_press" product="desktop" msgid="6158498006084899116">"Otključano licem. Pritisnite ikonu otključavanja za otvaranje."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="default" msgid="6269966346565076951">"Otključano je licem. Pritisnite da biste otvorili."</string>
+    <string name="keyguard_face_successful_unlock_press_alt_1" product="desktop" msgid="1612731733090835687">"Otključano je pomoću lica. Pritisnite da biste otvorili."</string>
+    <string name="keyguard_face_successful_unlock" product="default" msgid="5544493091450184889">"Otključano je licem"</string>
+    <string name="keyguard_face_successful_unlock" product="desktop" msgid="5348626087316804379">"Otključano je pomoću lica"</string>
 </resources>

@@ -19,7 +19,7 @@ package com.android.server.personalcontext;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.service.personalcontext.RenderToken;
-import android.service.personalcontext.hint.ContextHintWithSignature;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.PublishedContextInsight;
 import android.text.TextUtils;
@@ -102,7 +102,7 @@ public final class RendererWorkflow {
             Slog.d(TAG, "Validating insight " + insight);
         }
 
-        for (ContextHintWithSignature hint : insight.getOriginHints()) {
+        for (PublishedContextHint hint : insight.getOriginHints()) {
             if (Log.isLoggable(TAG, Log.DEBUG)) {
                 Slog.d(TAG, "  Validating hint " + hint);
             }

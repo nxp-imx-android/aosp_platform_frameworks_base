@@ -44,6 +44,7 @@ import com.android.systemui.media.NotificationMediaManager
 import com.android.systemui.media.controls.data.model.MediaSortKeyModel
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.util.MediaControllerFactory
+import com.android.systemui.media.remedia.data.model.MediaControllerDataModel
 import com.android.systemui.media.remedia.data.model.MediaDataModel
 import com.android.systemui.media.remedia.data.model.UpdateArtInfoModel
 import com.android.systemui.media.remedia.shared.model.MediaColorScheme
@@ -151,8 +152,7 @@ constructor(
     private var sortedMedia = TreeMap<MediaSortKeyModel, MediaDataModel>(comparator)
 
     // To store active controllers and their callbacks
-    private val activeControllers = mutableMapOf<InstanceId, MediaController>()
-    private val mediaCallbacks = mutableMapOf<InstanceId, MediaController.Callback>()
+    private val activeControllerModels = mutableMapOf<InstanceId, MediaControllerDataModel>()
     // To store active polling jobs
     private val positionPollers = mutableMapOf<InstanceId, Job>()
     private val mediaMutex = Mutex()
@@ -221,7 +221,7 @@ constructor(
     }
 
     override fun seek(sessionKey: InstanceId, to: Long) {
-        activeControllers[sessionKey]?.let { controller ->
+        activeControllerModels[sessionKey]?.controller?.let { controller ->
             controller.transportControls.seekTo(to)
             applicationScope.launch {
                 mediaMutex.withLock {
@@ -291,20 +291,23 @@ constructor(
                         systemClock.currentTimeMillis(),
                         instanceId,
                     )
+                val useCurrentController = currentModel != null && currentModel.token == token
                 val controller =
-                    if (currentModel != null && currentModel.token == token) {
-                        activeControllers[currentModel.instanceId]
+                    if (useCurrentController) {
+                        activeControllerModels[currentModel?.instanceId]?.controller
                     } else {
                         withContext(backgroundDispatcher) {
-                            // Clear controller state if changed for the same media session.
-                            currentModel?.instanceId?.let { clearControllerStateLocked(it) }
                             token?.let { mediaControllerFactory.create(applicationContext, it) }
                         }
                     }
                 val (icon, background) = getIconAndBackground(mediaData, currentModel, updateModel)
                 val mediaModel = toDataModel(controller, icon, background)
                 sortedMap[sortKey] = mediaModel
-                controller?.let { setupController(mediaModel, it) }
+
+                // Only setup controller when needed a new one.
+                if (!useCurrentController) {
+                    controller?.let { setupControllerLocked(mediaModel.instanceId, it) }
+                }
 
                 var isNewToCurrentMedia = true
                 val currentList = mutableListOf<MediaDataModel>().apply { addAll(currentMedia) }
@@ -508,17 +511,19 @@ constructor(
         }
     }
 
-    private fun setupController(dataModel: MediaDataModel, controller: MediaController) {
-        activeControllers[dataModel.instanceId] = controller
+    @GuardedBy("mediaMutex")
+    private fun setupControllerLocked(instanceId: InstanceId, controller: MediaController) {
+        // Clear controller state if changed for the same media session.
+        clearControllerStateLocked(instanceId)
         val callback =
             object : MediaController.Callback() {
                 override fun onPlaybackStateChanged(state: PlaybackState?) {
                     if (state == null || PlaybackState.STATE_NONE.equals(state)) {
                         applicationScope.launch {
-                            mediaMutex.withLock { clearControllerStateLocked(dataModel.instanceId) }
+                            mediaMutex.withLock { clearControllerStateLocked(instanceId) }
                         }
                     } else {
-                        updatePollingState(dataModel.instanceId, state)
+                        updatePollingState(instanceId, state)
                     }
                 }
 
@@ -528,7 +533,7 @@ constructor(
                             val duration =
                                 metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L
                             currentMedia
-                                .find { it.instanceId == dataModel.instanceId }
+                                .find { it.instanceId == instanceId }
                                 ?.let { latestModel ->
                                     updateMediaModelInStateLocked(latestModel) { model ->
                                         val playbackState = controller.playbackState
@@ -546,17 +551,15 @@ constructor(
 
                 override fun onSessionDestroyed() {
                     applicationScope.launch {
-                        mediaMutex.withLock { clearControllerStateLocked(dataModel.instanceId) }
+                        mediaMutex.withLock { clearControllerStateLocked(instanceId) }
                     }
                 }
             }
+        activeControllerModels[instanceId] = MediaControllerDataModel(controller, callback)
         controller.registerCallback(callback)
-        mediaCallbacks[dataModel.instanceId] = callback
 
         // Initial polling setup.
-        controller.playbackState?.let {
-            updatePollingState(dataModel.instanceId, it, requireUpdate = false)
-        }
+        controller.playbackState?.let { updatePollingState(instanceId, it, requireUpdate = false) }
     }
 
     private fun updatePollingState(
@@ -564,7 +567,7 @@ constructor(
         playbackState: PlaybackState,
         requireUpdate: Boolean = true,
     ) {
-        val controller = activeControllers[instanceId] ?: return
+        val controller = activeControllerModels[instanceId]?.controller ?: return
         val isInMotion = NotificationMediaManager.isPlayingState(playbackState.state)
 
         if (isInMotion) {
@@ -574,7 +577,7 @@ constructor(
                 positionPollers[instanceId] =
                     applicationScope.launch(backgroundDispatcher) {
                         while (isActive) {
-                            val currentController = activeControllers[instanceId]
+                            val currentController = activeControllerModels[instanceId]?.controller
                             val latestPlaybackState = currentController?.playbackState
                             checkPlaybackPosition(instanceId, latestPlaybackState)
                             delay(POSITION_UPDATE_INTERVAL_MILLIS)
@@ -631,9 +634,8 @@ constructor(
     private fun clearControllerStateLocked(instanceId: InstanceId) {
         positionPollers[instanceId]?.cancel()
         positionPollers.remove(instanceId)
-        mediaCallbacks[instanceId]?.let { activeControllers[instanceId]?.unregisterCallback(it) }
-        activeControllers.remove(instanceId)
-        mediaCallbacks.remove(instanceId)
+        activeControllerModels[instanceId]?.let { it.controller.unregisterCallback(it.callback) }
+        activeControllerModels.remove(instanceId)
 
         currentMedia
             .find { it.instanceId == instanceId }

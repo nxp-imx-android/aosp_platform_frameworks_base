@@ -39,7 +39,6 @@ import android.hardware.input.KeyGestureEvent;
 import android.util.IndentingPrintWriter;
 import android.util.SparseArray;
 import android.view.KeyEvent;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.GuardedBy;
 
@@ -312,22 +311,20 @@ final class InputGestureManager {
                         KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS,
                         /* allowCaptureByFocusedWindow = */true
                 ));
-        if (DesktopExperienceFlags.ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS.isTrue()) {
-            systemShortcuts.add(
-                    createKeyGesture(
-                            KeyEvent.KEYCODE_LEFT_BRACKET,
-                            KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK,
-                            /* allowCaptureByFocusedWindow = */false
-                    ));
-            systemShortcuts.add(
-                    createKeyGesture(
-                            KeyEvent.KEYCODE_RIGHT_BRACKET,
-                            KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK,
-                            /* allowCaptureByFocusedWindow = */false
-                    ));
-        }
+        systemShortcuts.add(
+                createKeyGesture(
+                        KeyEvent.KEYCODE_LEFT_BRACKET,
+                        KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK,
+                        /* allowCaptureByFocusedWindow = */false
+                ));
+        systemShortcuts.add(
+                createKeyGesture(
+                        KeyEvent.KEYCODE_RIGHT_BRACKET,
+                        KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
+                        KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK,
+                        /* allowCaptureByFocusedWindow = */false
+                ));
         systemShortcuts.add(
                 createKeyGesture(
                         KeyEvent.KEYCODE_W,

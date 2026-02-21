@@ -17,23 +17,26 @@
 package com.android.server.multisensory;
 
 import static android.Manifest.permission.REMOTE_MULTISENSORY_PLAYBACK;
+import static android.os.Trace.TRACE_TAG_VIBRATOR;
 
 import android.annotation.EnforcePermission;
-import android.annotation.FlaggedApi;
 import android.annotation.RequiresNoPermission;
-import android.annotation.SystemApi;
 import android.content.Context;
 import android.os.RemoteException;
+import android.os.Trace;
+import android.os.Vibrator;
 import android.os.VibratorManager;
-import android.os.multisensory.Flags;
 import android.os.multisensory.IMultisensoryPlayer;
 import android.os.multisensory.IMultisensoryService;
 import android.os.multisensory.MultisensoryContinuousEffectModifier;
+import android.util.Slog;
 
 import androidx.annotation.NonNull;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.SystemService;
+import com.android.server.multisensory.playback.MultisensoryPlayerDefault;
+import com.android.server.multisensory.repository.MultisensoryRepository;
 
 import java.util.List;
 
@@ -43,8 +46,6 @@ import java.util.List;
  *
  * @hide
  */
-@SystemApi
-@FlaggedApi(Flags.FLAG_ENABLE_MULTISENSORY_FEEDBACK)
 public class MultisensoryService extends IMultisensoryService.Stub {
 
     public static final String TAG = "MultisensoryService";
@@ -82,24 +83,43 @@ public class MultisensoryService extends IMultisensoryService.Stub {
     }
 
     private void initialize() {
-        VibratorManager vibratorManager = mContext.getSystemService(VibratorManager.class);
-        mServiceScope = new MultisensoryServiceScope();
-        mServiceScope.initializeLocked(
-                vibratorManager.getDefaultVibrator(), mContext.getContentResolver());
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "MultisensoryService#initialize");
+        try {
+            VibratorManager vibratorManager = mContext.getSystemService(VibratorManager.class);
+            Vibrator defaultVibrator = vibratorManager.getDefaultVibrator();
+            mServiceScope =
+                    new MultisensoryServiceScope(
+                            new MultisensoryRepository(),
+                            new MultisensoryPlayerDefault(defaultVibrator.getId()),
+                            defaultVibrator,
+                            mContext.getContentResolver());
+        } finally {
+            Trace.traceEnd(TRACE_TAG_VIBRATOR);
+        }
     }
 
     /** Return whether the service has initialized */
     public boolean isInitialized() {
-        if (mServiceScope != null) {
-            return mServiceScope.isInitialized();
-        }
-        return false;
+        return mServiceScope != null;
     }
 
     @Override
     @RequiresNoPermission
     public void playToken(int tokenConstant) throws RemoteException {
-        // TODO(b/475599246): Implement this API
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "MultisensoryService#playToken");
+        try {
+            if (isInitialized()) {
+                mServiceScope.playToken(tokenConstant);
+            } else {
+                Slog.w(
+                        TAG,
+                        "Ignored call to play token "
+                                + tokenConstant
+                                + ". Service has not initialized");
+            }
+        } finally {
+            Trace.traceEnd(TRACE_TAG_VIBRATOR);
+        }
     }
 
     @Override
@@ -130,8 +150,25 @@ public class MultisensoryService extends IMultisensoryService.Stub {
 
     @Override
     @EnforcePermission(REMOTE_MULTISENSORY_PLAYBACK)
-    public void setPlayer(IMultisensoryPlayer player) throws RemoteException {
+    public void setPlayer(IMultisensoryPlayer player)
+            throws RemoteException, IllegalStateException {
         setPlayer_enforcePermission();
-        // TODO(b/475599246): Implement this API
+        Trace.traceBegin(TRACE_TAG_VIBRATOR, "MultisensoryService#setPlayer");
+        try {
+            if (isInitialized()) {
+                boolean registeredSuccessfully = mServiceScope.registerRemotePlayer(player);
+                if (!registeredSuccessfully) {
+                    throw new RemoteException(
+                            "The MultisensoryService failed to register the remote player. The"
+                                + " player could have been dropped in the registration process");
+                }
+            } else {
+                throw new IllegalStateException(
+                        "The MultisensoryService has not initialized and a player cannot be"
+                                + " registered");
+            }
+        } finally {
+            Trace.traceEnd(TRACE_TAG_VIBRATOR);
+        }
     }
 }

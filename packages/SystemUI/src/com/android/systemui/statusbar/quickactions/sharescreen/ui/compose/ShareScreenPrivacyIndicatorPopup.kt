@@ -17,9 +17,7 @@
 package com.android.systemui.statusbar.quickactions.sharescreen.ui.compose
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,13 +37,12 @@ fun ShareScreenPrivacyIndicatorPopup(viewModel: ShareScreenPrivacyIndicatorPopup
         shape = RoundedCornerShape(28.dp),
         color = MaterialTheme.colorScheme.surfaceBright,
         shadowElevation = 2.dp,
-        modifier = Modifier.size(width = 129.dp, height = 56.dp),
     ) {
         Button(
             onClick = { viewModel.stopShare() },
             shape = RoundedCornerShape(20.dp), // Outer radius (28) - border (8)
-            modifier = Modifier.fillMaxSize().padding(8.dp),
-            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.padding(8.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
             colors =
                 ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error,

@@ -137,8 +137,7 @@
     <string name="handle_menu_error_icon_text" msgid="7200375184879808684">"Aikoni ya Hitilafu"</string>
     <string name="close_text" msgid="4986518933445178928">"Funga"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"Funga Menyu"</string>
-    <!-- no translation found for desktop_mode_header_chip_text (7171700244998923330) -->
-    <skip />
+    <string name="desktop_mode_header_chip_text" msgid="7171700244998923330">"<xliff:g id="APP_NAME">%1$s</xliff:g> (Matumizi kama ya kompyuta)"</string>
     <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"Panua Skrini"</string>
     <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"Badilisha ukubwa"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"Imeshindwa kuhamishia programu hapa"</string>

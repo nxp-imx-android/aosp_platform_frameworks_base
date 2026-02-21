@@ -340,9 +340,6 @@ fun ContentScope.NestedScrollingNotificationPanel(
     if (isActivated && isAlwaysComposedContentVisible()) {
         val coroutineScope = shadeSession.sessionCoroutineScope(key = "NotificationScrollingStack")
 
-        // set the bounds to null when the scrim disappears
-        DisposableEffect(Unit) { onDispose { viewModel.onScrimBoundsChanged(null) } }
-
         val isRemoteInputActive by viewModel.isRemoteInputActive.collectAsStateWithLifecycle(false)
 
         // The bottom Y bound of the currently focused remote input notification.
@@ -492,7 +489,9 @@ fun ContentScope.NestedScrollingNotificationPanel(
                         .overscroll(scrollingContentOverscrollEffect) // Content scrolling
                         .overscroll(shortContentOverscrollEffect) // Short/Empty content swipes
                 }
-                .onGloballyPositioned { coordinates ->
+                // Use onPlaced/onUnplaced instead of onGloballyPositioned to avoid
+                // receiving 0x0 bounds when the element is detached/unplaced but still composed.
+                .onPlaced { coordinates ->
                     val boundsInWindow = coordinates.boundsInWindow()
                     debugLog(viewModel) {
                         "$tag.SCRIM onGloballyPositioned:" +
@@ -507,6 +506,9 @@ fun ContentScope.NestedScrollingNotificationPanel(
                             bottom = boundsInWindow.bottom,
                         )
                     )
+                }
+                .onUnplaced {
+                    viewModel.onScrimBoundsChanged(null)
                 }
                 .thenIf(onEmptySpaceClick != null) {
                     Modifier.clickable(

@@ -2072,7 +2072,7 @@
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ठीक है"</string>
     <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"बैटरी सेवर मोड, गहरे रंग वाली थीम चालू करता है और बैकग्राउंड में होने वाली गतिविधियों को कम या बंद कर देता है. इसके अलावा, यह कुछ विज़ुअल इफ़ेक्ट, इंटरनेट कनेक्शन, और चुनिंदा सुविधाओं के इस्तेमाल को भी कम या बंद कर देता है."</string>
     <string name="battery_saver_description" msgid="2820475140307374570">"बैटरी सेवर मोड, गहरे रंग वाली थीम चालू करता है और बैकग्राउंड में होने वाली गतिविधियों को कम या बंद कर देता है. इसके अलावा, यह कुछ विज़ुअल इफ़ेक्ट, इंटरनेट कनेक्शन, और चुनिंदा सुविधाओं के इस्तेमाल को भी कम या बंद कर देता है."</string>
-    <string name="data_saver_description" msgid="4995164271550590517">"डेटा खर्च को कम करने के लिए, डेटा बचाने की सेटिंग बैकग्राउंड में चलने वाले कुछ ऐप्लिकेशन को डेटा भेजने या पाने से रोकती है. हालांकि, फ़िलहाल इस्तेमाल किया जा रहा ऐप्लिकेशन, डेटा को ऐक्सेस कर सकता है, लेकिन वह अक्सर ऐसा नहीं कर पाएगा. उदाहरण के लिए, ऐसा हो सकता है कि इमेज तब तक न दिखें, जब तक आप उन पर टैप न करें."</string>
+    <string name="data_saver_description" msgid="4995164271550590517">"डेटा खर्च कम करने की यह सेटिंग, बैकग्राउंड में चलने वाले कुछ ऐप्लिकेशन को डेटा भेजने या पाने से रोकती है. हालांकि, यह सेटिंग चालू रहने के दौरान इस्तेमाल किया जा रहा ऐप्लिकेशन, डेटा को ऐक्सेस कर सकता है, लेकिन पहले जितनी बार नहीं. इसका मतलब, ऐसा हो सकता है कि इमेज तब तक न दिखे, जब तक आप उन पर टैप न करें."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"डेटा बचाने की सेटिंग चालू करनी है?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"चालू करें"</string>
     <string name="zen_mode_duration_minutes_summary" msgid="4555514757230849789">"{count,plural, =1{एक मिनट के लिए ({formattedTime} तक)}one{# मिनट के लिए ({formattedTime} तक)}other{# मिनट के लिए ({formattedTime} तक)}}"</string>
@@ -2196,14 +2196,10 @@
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"पासवर्ड"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"पैटर्न"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"पिन"</string>
-    <!-- no translation found for app_lock_permission_review_dialog_title_photos (6193222920123912729) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_photos (1854948251386976703) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_title_files (8820759644609198515) -->
-    <skip />
-    <!-- no translation found for app_lock_permission_review_dialog_subtitle_files (2999447193189851364) -->
-    <skip />
+    <string name="app_lock_permission_review_dialog_title_photos" msgid="6193222920123912729">"अन्य ऐप्लिकेशन अब भी फ़ोटो ऐक्सेस कर सकते हैं"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_photos" msgid="1854948251386976703">"वे ऐप जो फ़ोटो ऐक्सेस कर सकते हैं"</string>
+    <string name="app_lock_permission_review_dialog_title_files" msgid="8820759644609198515">"अन्य ऐप्लिकेशन अब भी आपकी फ़ाइलें ऐक्सेस कर सकते हैं"</string>
+    <string name="app_lock_permission_review_dialog_subtitle_files" msgid="2999447193189851364">"वे ऐप जो आपकी फ़ाइलें ऐक्सेस कर सकते हैं"</string>
     <string name="app_lock_permission_review_expand_app_list_button" msgid="3214809707125223273">"सभी ऐप्लिकेशन देखें"</string>
     <string name="app_lock_permission_review_continue_button" msgid="4045066724173414043">"जारी रखें"</string>
     <string name="work_mode_off_title" msgid="6367463960165135829">"वर्क ऐप्लिकेशन चालू करने हैं?"</string>
@@ -2737,4 +2733,6 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"माता-पिता की ओर से किया गया अपडेट"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> को फ़िलहाल हटा दिया गया है"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> अब उपलब्ध है"</string>
+    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
+    <skip />
 </resources>

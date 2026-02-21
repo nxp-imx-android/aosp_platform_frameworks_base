@@ -23,8 +23,6 @@ import android.os.multisensory.MultisensoryToken;
 import android.provider.Settings;
 import android.util.SparseArray;
 
-import androidx.annotation.VisibleForTesting;
-
 import com.android.server.multisensory.repository.haptics.MultisensoryComposedEffect;
 import com.android.server.multisensory.repository.haptics.MultisensoryHapticEffect;
 import com.android.server.multisensory.repository.sound.MultisensorySoundData;
@@ -36,7 +34,6 @@ import com.android.server.multisensory.repository.sound.MultisensorySoundData;
  */
 public class MultisensoryRepository {
 
-    @VisibleForTesting
     public static final @MultisensoryToken.Token int[] MULTISENSORY_TOKENS = {
         MultisensoryToken.FAILURE_HIGH_EMPHASIS,
         MultisensoryToken.FAILURE,

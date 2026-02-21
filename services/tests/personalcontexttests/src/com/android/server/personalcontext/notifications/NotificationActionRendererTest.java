@@ -23,6 +23,7 @@ import static com.android.server.personalcontext.util.InsightUtils.fakePublishIn
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -43,9 +44,9 @@ import android.service.notification.Adjustment;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.service.personalcontext.hint.ContextHintTestUtils;
-import android.service.personalcontext.hint.ContextHintWithSignature;
 import android.service.personalcontext.hint.NotificationEvent.NotificationEnqueuedEvent;
 import android.service.personalcontext.hint.NotificationHint;
+import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.insight.ActionableInsight;
 import android.service.personalcontext.insight.BundleInsight;
 import android.service.personalcontext.insight.ContextInsight;
@@ -119,7 +120,8 @@ public class NotificationActionRendererTest {
         InsightDisplayDetails displayDetails =
                 new InsightDisplayDetails.Builder("title", FAKE_ICON).build();
         InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(new Intent()).build();
+                new InsightActionDetails.Builder().setPendingIntent(mock(PendingIntent.class))
+                        .build();
         ActionableInsight insight =
                 new ActionableInsight.Builder(actionDetails, displayDetails).build();
 
@@ -398,7 +400,8 @@ public class NotificationActionRendererTest {
             StatusBarNotification sbn, @Nullable String title, @Nullable Icon icon)
             throws GeneralSecurityException {
         InsightActionDetails actionDetails =
-                new InsightActionDetails.Builder().setIntent(new Intent("ACTION")).build();
+                new InsightActionDetails.Builder().setPendingIntent(mock(PendingIntent.class))
+                        .build();
         return createActionableInsight(sbn, title, icon, actionDetails);
     }
 
@@ -431,8 +434,8 @@ public class NotificationActionRendererTest {
                                 new NotificationEnqueuedEvent(
                                         sbn, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();
-        ContextHintWithSignature signedHint =
-                new ContextHintWithSignature.Builder(
+        PublishedContextHint signedHint =
+                new PublishedContextHint.Builder(
                                 hint, ContextHintTestUtils.generateSignedHintKey())
                         .build();
         InsightDisplayDetails.Builder displayDetailsBuilder;
@@ -467,8 +470,8 @@ public class NotificationActionRendererTest {
                                 new NotificationEnqueuedEvent(
                                         sbn, NOTIFICATION_CHANNEL, RANKING_MAP))
                         .build();
-        ContextHintWithSignature signedHint =
-                new ContextHintWithSignature.Builder(
+        PublishedContextHint signedHint =
+                new PublishedContextHint.Builder(
                                 hint, ContextHintTestUtils.generateSignedHintKey())
                         .build();
 

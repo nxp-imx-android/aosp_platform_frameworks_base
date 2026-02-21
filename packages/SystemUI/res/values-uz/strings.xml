@@ -170,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Selfi kamerani chiqarish"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Bosilgan joylarni koʻrsatish"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Yozib olish uchun ilovani tanlang"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"Ekranni yozib olish sozlamalari"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Markup"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video saqlandi"</string>
@@ -185,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Ovozsiz"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Ovozni yoqish"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> / <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Sozlash uchun selfini chimdib torting va bosing"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Ekranni tasvirga olishni AT administratori taqiqlagan"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Butun ekran skrinshotini olish"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Butun ekranni yozib olish"</string>
@@ -246,6 +249,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofon"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Old kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Namoyishni toʻxtatish"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Ekran ulashuvi yoniq. Ulashuvni tugatish uchun maxfiylik indikatoridan foydalaning."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ekran ulashilmoqda"</string>
@@ -424,6 +429,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistent"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Klaviatura"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Klaviatura"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Ichida yana # ta bildirishnoma bor.}other{Ichida yana # ta bildirishnoma bor.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Ekran eniga holatida qulflandi."</string>
@@ -1240,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Qulayliklar kaliti"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Qulayliklar funksiyalaridan foydalanishni boshlash uchun qulaylik tugmasini bosishingiz mumkin."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Funksiyalar qoʻshish"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Qulayliklar tugmasini sozlash"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Sozlash: <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Tayyor"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Funksiyani tanlang"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Tahrirlash"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Funksiyani tanlang"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Keyingi safar qulayliklar tugmasini bossangiz, bu funksiya ochiladi"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Qulayliklar"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ekran qulfi"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Oʻchirilmoqda…"</string>
@@ -1743,7 +1749,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Ilovalarni almashtirish"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Tayyor"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Keyingisi"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"Qayta urining!"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Orqaga qaytish"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Sensorli panelda uchta barmoq bilan chapga yoki oʻngga suring"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Yaxshi!"</string>
@@ -1751,14 +1758,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Sensorli panel yordamida orqaga qaytish uchun uchta barmoq bilan chapga yoki oʻngga suring"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Boshiga qaytish"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Sensorli panelda uchta barmoq bilan tepaga suring"</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Barakalla!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Bosh ekranni ochish ishorasi darsini tamomladingiz"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Asosiy ekraningizga oʻtish uchun sensorli panelda uchta barmoq bilan suring"</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Oxirgi ilovalarni koʻrish"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Sensorli panelda uchta barmoq bilan tepaga surib, bosib turing"</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Barakalla!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Oxirgi ilovalarni koʻrish ishorasini tugalladingiz."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Oxirgi ochilgan ilovalarni koʻrish uchun sensorli panelda uchta barmoq bilan tepega surib, ushlab turing"</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Ilovalarni almashtirish"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Sensorli panelda toʻrtta barmoq bilan oʻngga suring"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Barakalla!"</string>

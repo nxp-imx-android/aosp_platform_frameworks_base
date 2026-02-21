@@ -36,10 +36,8 @@
     <string name="status_bar_settings_auto_rotation" msgid="8329080442278431708">"화면 자동 회전"</string>
     <string name="usb_device_permission_prompt" msgid="4414719028369181772">"<xliff:g id="APPLICATION">%1$s</xliff:g> 앱이 <xliff:g id="USB_DEVICE">%2$s</xliff:g>에 액세스하도록 허용하시겠습니까?"</string>
     <string name="usb_device_permission_prompt_warn" msgid="2309129784984063656">"<xliff:g id="APPLICATION">%1$s</xliff:g>에서 <xliff:g id="USB_DEVICE">%2$s</xliff:g>에 액세스하도록 허용하시겠습니까?\n이 앱에는 녹음 권한이 부여되지 않았지만, 이 USB 기기를 통해 오디오를 녹음할 수 있습니다."</string>
-    <!-- no translation found for usb_audio_device_permission_prompt_title (6812876813400484157) -->
-    <skip />
-    <!-- no translation found for usb_audio_device_confirm_prompt_title (7623364019381948073) -->
-    <skip />
+    <string name="usb_audio_device_permission_prompt_title" msgid="6812876813400484157">"&lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; 앱이 &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; 기기에 액세스하도록 허용하시겠습니까?"</string>
+    <string name="usb_audio_device_confirm_prompt_title" msgid="7623364019381948073">"&lt;b&gt;<xliff:g id="APPLICATION">%1$s</xliff:g>&lt;/b&gt; 앱을 열어 &lt;b&gt;<xliff:g id="USB_DEVICE">%2$s</xliff:g>&lt;/b&gt; 기기를 처리하시겠습니까?"</string>
     <string name="usb_audio_device_prompt_warn" msgid="2504972133361130335">"이 앱에는 녹음 권한이 부여되지 않았지만, 이 USB 기기를 통해 오디오를 녹음할 수 있습니다. 이 기기와 함께 <xliff:g id="APPLICATION">%1$s</xliff:g> 앱을 사용하면 전화, 알림, 알람 소리가 들리지 않을 수 있습니다."</string>
     <string name="usb_audio_device_prompt" msgid="7944987408206252949">"이 기기와 함께 <xliff:g id="APPLICATION">%1$s</xliff:g> 앱을 사용하면 전화, 알림, 알람 소리가 들리지 않을 수 있습니다."</string>
     <string name="usb_accessory_permission_prompt" msgid="717963550388312123">"<xliff:g id="APPLICATION">%1$s</xliff:g> 앱이 <xliff:g id="USB_ACCESSORY">%2$s</xliff:g>에 액세스하도록 허용하시겠습니까?"</string>
@@ -172,6 +170,10 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"셀피 카메라 표시"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"터치한 항목 표시"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"녹화할 앱 선택"</string>
+    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
+    <skip />
+    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
+    <skip />
     <string name="screen_record_settings" msgid="2377267679200139285">"화면 녹화 설정"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"마크업"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"동영상 저장됨"</string>
@@ -187,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"음소거"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"음소거 해제"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"조정하려면 셀피를 손가락으로 모으고 드래그한 후 탭하세요"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"IT 관리자가 화면 캡처를 차단했습니다."</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"전체 화면 스크린샷 찍기"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"전체 화면 녹화"</string>
@@ -201,12 +202,9 @@
     <string name="screen_capture_region_box_bottom_right_handle_description" msgid="5444943380877006881">"오른쪽 하단 핸들 - 화살표 키를 사용하여 크기 조절"</string>
     <string name="screen_capture_region_box_bottom_left_handle_description" msgid="6095764656409143184">"왼쪽 하단 핸들 - 화살표 키를 사용하여 크기 조절"</string>
     <string name="screen_share_toolbar_share_button" msgid="9182050596136815833">"공유"</string>
-    <!-- no translation found for screen_share_no_select_app_thumbnail (1886183147809224215) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_tab_thumbnail (677801966729809584) -->
-    <skip />
-    <!-- no translation found for screen_share_no_select_display_thumbnail (4351422134286332559) -->
-    <skip />
+    <string name="screen_share_no_select_app_thumbnail" msgid="1886183147809224215">"공유할 앱 창 선택"</string>
+    <string name="screen_share_no_select_tab_thumbnail" msgid="677801966729809584">"공유할 탭 선택"</string>
+    <string name="screen_share_no_select_display_thumbnail" msgid="4351422134286332559">"공유할 디스플레이 선택"</string>
     <string name="screen_share_audio_sharing_text" msgid="7829391478284315787">"오디오 공유"</string>
     <string name="screen_share_app_window_sharing_title" msgid="2063554880747318383">"앱 창 공유"</string>
     <string name="screen_share_tab_sharing_title" msgid="1178046793832072728">"탭 공유"</string>
@@ -224,14 +222,11 @@
     <string name="screen_share_a11y_stopped_sharing_display" msgid="121502117308433983">"<xliff:g id="DISPLAY_NAME">%1$s</xliff:g> 디스플레이 공유가 중지되었습니다. 화면이 누구와도 공유되지 않습니다."</string>
     <string name="screen_share_a11y_close_button" msgid="8017115316741874857">"닫기 버튼입니다. 공유 전 대화상자를 닫으려면 Enter 키를 누르세요."</string>
     <string name="screen_share_a11y_tab_button_unselected" msgid="5363622532939787310">"탭 공유 버튼입니다. 선택되지 않았습니다. 탭을 공유하려면 Enter 키를 누르세요."</string>
-    <!-- no translation found for screen_share_a11y_tab_button_selected (3969246191128243157) -->
-    <skip />
+    <string name="screen_share_a11y_tab_button_selected" msgid="3969246191128243157">"탭을 공유 중입니다. 사용 가능한 탭을 확인하려면 이동하세요."</string>
     <string name="screen_share_a11y_app_button_unselected" msgid="4539549394242556282">"앱 공유 버튼입니다. 선택되지 않았습니다. 앱을 공유하려면 Enter 키를 누르세요."</string>
-    <!-- no translation found for screen_share_a11y_app_button_selected (4891977117777987696) -->
-    <skip />
+    <string name="screen_share_a11y_app_button_selected" msgid="4891977117777987696">"앱을 공유 중입니다. 사용 가능한 앱을 확인하려면 이동하세요."</string>
     <string name="screen_share_a11y_fullscreen_button_unselected" msgid="2492516552817892989">"전체 화면 버튼입니다. 선택되지 않았습니다. 전체 화면을 공유하려면 Enter 키를 누르세요."</string>
-    <!-- no translation found for screen_share_a11y_fullscreen_button_selected (4428416497634907009) -->
-    <skip />
+    <string name="screen_share_a11y_fullscreen_button_selected" msgid="4428416497634907009">"전체 화면을 공유 중입니다. 사용 가능한 디스플레이를 확인하려면 이동하세요."</string>
     <string name="screen_share_a11y_share_button_off" msgid="2004866083045967602">"공유 버튼입니다. 사용 중지되어 있습니다. 공유할 앱, 탭 또는 디스플레이를 선택하세요."</string>
     <string name="screen_share_a11y_share_button_on" msgid="1311279200212158833">"공유가 사용 설정되어 있습니다. <xliff:g id="ITEM">%1$s</xliff:g> 항목이 선택되었습니다. 공유를 시작하려면 Enter 키를 누르세요."</string>
     <string name="screen_share_a11y_item_unselected" msgid="7479321583507874795">"<xliff:g id="ITEM_NAME">%1$s</xliff:g> 항목입니다. 선택되지 않았습니다. 선택하려면 Enter 키를 누르세요."</string>
@@ -254,6 +249,8 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"마이크"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"전면 카메라"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>x<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
+    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"공유 중지"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"화면 공유가 사용 설정되어 있습니다. 공유를 종료하려면 개인 정보 보호 표시기를 사용하세요."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"화면 공유 중"</string>
@@ -432,6 +429,10 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"어시스턴트"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"키보드"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"키보드"</string>
+    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
+    <skip />
+    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
+    <skip />
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g>개 더보기"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{그룹에 알림이 #개 더 있습니다.}other{그룹에 알림이 #개 더 있습니다.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"화면이 가로 방향으로 잠겨 있습니다."</string>
@@ -1248,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"접근성 키"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"접근성 키를 눌러 접근성 기능을 사용할 수 있습니다."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"기능 추가"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"접근성 키 설정"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> 설정"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"완료"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"기능 선택"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"수정"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"기능 선택"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"다음번에 접근성 버튼을 선택할 때 이 기능이 열립니다"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"접근성"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"잠금 화면"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"종료 중…"</string>
@@ -1751,7 +1749,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"앱 전환"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"완료"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"다음"</string>
-    <string name="gesture_error_title" msgid="469064941635578511">"다시 시도해 보세요"</string>
+    <!-- no translation found for gesture_error_title (6041718460759544782) -->
+    <skip />
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"뒤로"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"세 손가락을 사용해 터치패드에서 왼쪽 또는 오른쪽으로 스와이프하세요."</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"훌륭합니다"</string>
@@ -1759,14 +1758,25 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"터치패드를 사용해 뒤로 돌아가려면 세 손가락을 사용해 왼쪽이나 오른쪽으로 스와이프하세요."</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"홈으로 이동"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"세 손가락을 사용해 터치패드에서 위로 스와이프하세요."</string>
+    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
+    <skip />
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"잘하셨습니다"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"홈으로 이동 동작을 완료했습니다."</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"홈 화면으로 이동하려면 터치패드에서 세 손가락을 사용해 위로 스와이프하세요."</string>
+    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
+    <skip />
+    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"최근 앱 보기"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"세 손가락을 사용해 터치패드에서 위로 스와이프한 후 잠시 기다리세요."</string>
+    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
+    <skip />
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"아주 좋습니다"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"최근 앱 보기 동작을 완료했습니다."</string>
+    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
+    <skip />
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"최근 앱을 보려면 터치패드에서 세 손가락을 사용해 위로 스와이프한 채로 유지하세요."</string>
+    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
+    <skip />
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"앱 전환"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"네 손가락을 사용해 터치패드에서 오른쪽으로 스와이프하세요."</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"잘하셨습니다"</string>
@@ -1867,8 +1877,7 @@
     <string name="av_studio_look_effects" msgid="4105109585851068415">"효과 %d개"</string>
     <string name="av_blur" msgid="405131343487260171">"흐리게 처리"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"실시간 자막"</string>
-    <!-- no translation found for av_drill_in_return_to_main (5273814393426741827) -->
-    <skip />
+    <string name="av_drill_in_return_to_main" msgid="5273814393426741827">"뒤로"</string>
     <string name="accessibility_hearing_device_battery_level" msgid="1032601787487328432">"배터리 %s"</string>
     <string name="accessibility_hearing_device_left_right_battery_level" msgid="5327672450604052979">"왼쪽 배터리 %1$s    오른쪽 배터리 %2$s"</string>
     <string name="accessibility_hearing_device_left_battery_level" msgid="327961080394238636">"왼쪽 배터리 %1$s"</string>

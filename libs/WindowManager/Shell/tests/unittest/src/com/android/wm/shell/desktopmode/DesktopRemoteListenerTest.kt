@@ -18,7 +18,11 @@ package com.android.wm.shell.desktopmode
 
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SingleInstanceRemoteListener
+import com.android.wm.shell.common.transition.TransitionStateHolder
+import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.sysui.ShellController
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
@@ -35,20 +39,33 @@ import org.mockito.kotlin.whenever
 @SmallTest
 class DesktopRemoteListenerTest : ShellTestCase() {
 
+    private val shellExecutor = mock<ShellExecutor>()
+    private val currentRepository = mock<DesktopRepository>()
+    private val userRepositories = mock<DesktopUserRepositories>()
+    private val shellController = mock<ShellController>()
+    private val transitionStateHolder = mock<TransitionStateHolder>()
     private val remoteListener =
         mock<SingleInstanceRemoteListener<DesktopTasksController, IDesktopTaskListener>>()
     private val desktopTaskListener = mock<IDesktopTaskListener>()
-    private val listener = DesktopRemoteListener()
+    private val listener =
+        DesktopRemoteListener(
+            shellExecutor,
+            userRepositories,
+            shellController,
+            transitionStateHolder,
+        )
 
     @Before
     fun setUp() {
-        listener.register(remoteListener)
+        whenever(userRepositories.current).thenReturn(currentRepository)
         // Set up the remote listener to execute the callback with the mock IDesktopTaskListener
         whenever(remoteListener.call(any())).thenAnswer {
             val callback =
                 it.getArgument(0) as SingleInstanceRemoteListener.RemoteCall<IDesktopTaskListener>
             callback.accept(desktopTaskListener)
         }
+
+        listener.register(remoteListener)
     }
 
     @Test
@@ -81,7 +98,7 @@ class DesktopRemoteListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun testUnregister() {
+    fun unregister_callbacksCannotBeCalled() {
         listener.unregister()
         // After stopping, the remote listener should not be called.
         // We can't directly verify that the internal `remoteListener` is null,

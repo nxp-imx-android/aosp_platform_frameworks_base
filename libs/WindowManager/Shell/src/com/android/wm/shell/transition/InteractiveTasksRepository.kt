@@ -18,6 +18,7 @@ package com.android.wm.shell.transition
 
 import android.app.ActivityManager
 import android.util.SparseArray
+import androidx.core.util.forEach
 import androidx.core.util.isEmpty
 import androidx.core.util.size
 import com.android.internal.protolog.ProtoLog
@@ -125,4 +126,13 @@ class InteractiveTasksRepository {
      */
     fun isTaskInteractiveOnDisplay(displayId: Int, taskId: Int): Boolean =
         displayId in interactiveTasks && taskId in interactiveTasks[displayId]
+
+    /**
+     * Returns interactive tasks [List] associated with a [displayId]. Can be empty, but never
+     * `null`.
+     */
+    fun getTasks(displayId: Int): List<ActivityManager.RunningTaskInfo> {
+        val tasks = interactiveTasks[displayId] ?: return emptyList()
+        return buildList { tasks.forEach { _, info -> add(info) } }
+    }
 }

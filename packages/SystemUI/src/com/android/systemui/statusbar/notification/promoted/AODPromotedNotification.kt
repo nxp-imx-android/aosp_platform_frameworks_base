@@ -72,6 +72,7 @@ import com.android.internal.R
 import com.android.internal.widget.CachingIconView
 import com.android.internal.widget.ImageFloatingTextView
 import com.android.internal.widget.NotificationExpandButton
+import com.android.internal.widget.NotificationMetricTextView
 import com.android.internal.widget.NotificationProgressBar
 import com.android.internal.widget.NotificationProgressDrawable
 import com.android.internal.widget.NotificationProgressModel
@@ -311,22 +312,22 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         } else {
             listOf(
                 MetricView(
-                    container = root.findViewById<View?>(R.id.metric_view_0),
-                    label = root.findViewById<TextView?>(R.id.metric_label_0),
-                    textValue = root.findViewById<TextView?>(R.id.metric_value_0),
+                    container = root.findViewById(R.id.metric_view_0),
+                    label = root.findViewById(R.id.metric_label_0),
+                    textValue = root.findViewById(R.id.metric_value_0),
                     chronometer = root.findViewById<Chronometer?>(R.id.metric_chronometer_0),
                 ),
                 MetricView(
-                    container = root.findViewById<View?>(R.id.metric_view_1),
-                    label = root.findViewById<TextView?>(R.id.metric_label_1),
-                    textValue = root.findViewById<TextView?>(R.id.metric_value_1),
-                    chronometer = root.findViewById<Chronometer?>(R.id.metric_chronometer_1),
+                    container = root.findViewById(R.id.metric_view_1),
+                    label = root.findViewById(R.id.metric_label_1),
+                    textValue = root.findViewById(R.id.metric_value_1),
+                    chronometer = root.findViewById(R.id.metric_chronometer_1),
                 ),
                 MetricView(
-                    container = root.findViewById<View?>(R.id.metric_view_2),
-                    label = root.findViewById<TextView?>(R.id.metric_label_2),
-                    textValue = root.findViewById<TextView?>(R.id.metric_value_2),
-                    chronometer = root.findViewById<Chronometer?>(R.id.metric_chronometer_2),
+                    container = root.findViewById(R.id.metric_view_2),
+                    label = root.findViewById(R.id.metric_label_2),
+                    textValue = root.findViewById(R.id.metric_value_2),
+                    chronometer = root.findViewById(R.id.metric_chronometer_2),
                 ),
             )
         }
@@ -545,7 +546,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
                 is Metric.Text -> {
                     metricView.textValue?.isVisible = true
-                    metricView.textValue?.text = metric.metricValue
+                    metricView.textValue?.setTextVariants(metric.textVariants)
                 }
             }
         }
@@ -1136,7 +1137,7 @@ private enum class AodPromotedNotificationColor(val colorInt: Int) {
 class MetricView(
     val container: View?,
     val label: TextView?,
-    val textValue: TextView?,
+    val textValue: NotificationMetricTextView?,
     val chronometer: Chronometer?,
 )
 

@@ -19,7 +19,6 @@ package com.android.server.pm;
 import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.Flags.allowUpdatedVersionBetterThanApkInApex;
 import static android.content.pm.Flags.disallowSdkLibsToBeApps;
-import static android.content.pm.Flags.trustSystemApkSignatures;
 import static android.content.pm.PackageManager.APP_METADATA_SOURCE_APK;
 import static android.content.pm.PackageManager.APP_METADATA_SOURCE_INSTALLER;
 import static android.content.pm.PackageManager.APP_METADATA_SOURCE_UNKNOWN;
@@ -1840,24 +1839,30 @@ final class InstallPackageHelper {
                 }
             }
 
-            // Static shared libs have same package with different versions where
-            // we internally use a synthetic package name to allow multiple versions
-            // of the same package, therefore we need to compare signatures against
-            // the package setting for the latest library version.
-            if (parsedPackage.isStaticSharedLibrary()) {
-                SharedLibraryInfo libraryInfo =
-                        mSharedLibraries.getLatestStaticSharedLibraVersion(parsedPackage);
-                if (libraryInfo != null) {
-                    signatureCheckPs = mPm.mSettings.getPackageLPr(libraryInfo.getPackageName());
-                }
-            } else {
-                // To prevent a new package from being installed if its package name is
-                // already in use by an existing static library on the system.
-                WatchedLongSparseArray<SharedLibraryInfo> libraryInfos =
-                        mSharedLibraries.getStaticLibraryInfos(parsedPackage.getPackageName());
-                if (libraryInfos != null && libraryInfos.size() > 0) {
+            // To prevent a new package from being installed if its package name is
+            // already in use by an existing static library on the system.
+            final WatchedLongSparseArray<SharedLibraryInfo> staticLibInfos =
+                    mSharedLibraries.getStaticLibraryInfos(parsedPackage.getPackageName());
+            if (staticLibInfos != null && staticLibInfos.size() > 0) {
+                SharedLibraryInfo anyStaticLib = staticLibInfos.valueAt(0);
+                if (!parsedPackage.isStaticSharedLibrary()) {
                     throw new PrepareFailure(INSTALL_FAILED_DUPLICATE_PACKAGE,
-                            "The package name is same as an existing shared libs");
+                            "The package name is same as an existing static library");
+                }
+                if (!anyStaticLib.getName().equals(
+                        parsedPackage.getStaticSharedLibraryName())) {
+                    throw new PrepareFailure(INSTALL_FAILED_DUPLICATE_PACKAGE,
+                            "The static library being installed has a different name than existing"
+                                    + " static library with the same package name");
+                }
+
+                // Static shared libs have same package with different versions where
+                // we internally use a synthetic package name to allow multiple versions
+                // of the same package, therefore we need to compare signatures against
+                // the package setting for the latest library version.
+                if (signatureCheckPs == null) {
+                    signatureCheckPs = mSharedLibraries.getStaticSharedLibLatestVersionSetting(
+                            request);
                 }
             }
 

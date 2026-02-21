@@ -36,6 +36,7 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 import static android.media.audio.Flags.roForegroundAudioControl;
 
 import static com.android.server.am.psc.Constants.FOREGROUND_APP_ADJ;
+import static com.android.server.am.psc.OomAdjuster.ALL_CPU_TIME_CAPABILITIES;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_ALLOW_LIST;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
 
@@ -235,6 +236,48 @@ class CapabilityController {
     private static @ProcessCapability int evaluateImplicitCpuTimePolicy(@NonNull ProcessEdge edge) {
         return edge.getTarget().hasIntrinsicImplicitCpuTime()
                 ? PROCESS_CAPABILITY_IMPLICIT_CPU_TIME : PROCESS_CAPABILITY_NONE;
+    }
+
+    /**
+     * Evaluates a filter by combining all the policies of a {@link ProviderBindingEdge}.
+     */
+    static @ProcessCapability int evaluateFilter(@NonNull ProviderBindingEdge edge) {
+        return evaluateBfslPolicy(edge) | evaluateCpuTimePolicy(edge);
+    }
+
+    /** Evaluates whether a {@link ProviderBindingEdge} propagates BFSL. */
+    private static @ProcessCapability int evaluateBfslPolicy(@NonNull ProviderBindingEdge unused) {
+        // Always propagate BFSL.
+        return PROCESS_CAPABILITY_BFSL;
+    }
+
+    /** Evaluates whether a {@link ProviderBindingEdge} propagates CPU time capabilities. */
+    private static @ProcessCapability int evaluateCpuTimePolicy(
+            @NonNull ProviderBindingEdge unused) {
+        // Always propagate CPU time capabilities since
+        // ContentProviderConnectionInternal#cpuTimeTransmissionType() always returns
+        // CPU_TIME_TRANSMISSION_NORMAL.
+        return ALL_CPU_TIME_CAPABILITIES;
+    }
+
+    /**
+     * Evaluates a filter by combining all the policies of a {@link ServiceBindingEdge}.
+     */
+    static @ProcessCapability int evaluateFilter(@NonNull ServiceBindingEdge edge) {
+        // TODO: b/476905700 - Add more policies.
+        return evaluateBfslPolicy(edge) | evaluateAudioPolicy(edge);
+    }
+
+    /** Evaluates whether a {@link ServiceBindingEdge} propagates BFSL. */
+    private static @ProcessCapability int evaluateBfslPolicy(@NonNull ServiceBindingEdge unused) {
+        // Always propagate BFSL.
+        return PROCESS_CAPABILITY_BFSL;
+    }
+
+    /** Evaluates whether a {@link ServiceBindingEdge} propagates audio control. */
+    private static @ProcessCapability int evaluateAudioPolicy(@NonNull ServiceBindingEdge unused) {
+        // Always propagate audio control.
+        return PROCESS_CAPABILITY_FOREGROUND_AUDIO_CONTROL;
     }
 
     /** Performs a partial update from a list of edges. */

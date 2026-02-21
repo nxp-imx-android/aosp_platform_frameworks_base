@@ -2449,12 +2449,14 @@ class BroadcastQueueImpl extends BroadcastQueue {
                 builder.addField(ACTION_NAME, actionName)
                         .addField(RECEIVER_UID, uid)
                         .addField(RECEIVER_TYPE, receiverType)
-                        .addField(RECEIVER_PROCESS_STATE, receiverProcessState)
+                        .addField(RECEIVER_PROCESS_STATE,
+                                  ActivityManager.processStateAmToProto(receiverProcessState))
 
                         // Sender Info
                         .addField(SENDER_UID, senderUid)
                         .addField(SENDER_PID, r.callingPid)
-                        .addField(SENDER_PROCESS_STATE, r.callerProcState)
+                        .addField(SENDER_PROCESS_STATE,
+                                  ActivityManager.processStateAmToProto(r.callerProcState))
 
                         // Timing/Latency Info
                         .addField(DISPATCH_DELAY_MS, dispatchDelay)

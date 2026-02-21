@@ -52,23 +52,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.padding
+import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.ui.compose.loadIcon
 import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureToolbarViewModel
-import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.ScreenCaptureIcons
 
 /**
  * A dropdown for selecting the save location of screen recordings.
  *
  * @param viewModel The [PreCaptureToolbarViewModel] to handle save location logic.
- * @param icons The [ScreenCaptureIcons] for displaying icons.
  * @param onClose Callback to be invoked when the dropdown is closed.
  * @param modifier The modifier for the dropdown.
  */
 @Composable
 fun SaveLocationDropdown(
     viewModel: PreCaptureToolbarViewModel,
-    icons: ScreenCaptureIcons?,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -93,9 +92,14 @@ fun SaveLocationDropdown(
                 horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                icons?.folder?.let {
-                    Icon(icon = it, modifier = Modifier.size(32.dp).padding(4.dp))
-                }
+                val folderIcon by
+                    loadIcon(
+                        viewModel = viewModel,
+                        resId = R.drawable.ic_screen_capture_folder,
+                        contentDescription = null,
+                    )
+                folderIcon?.let { Icon(icon = it, modifier = Modifier.size(32.dp).padding(4.dp)) }
+
                 Column(modifier = Modifier.weight(1f)) {
                     ProvideTextStyle(value = MaterialTheme.typography.labelMedium) {
                         Text(text = stringResource(R.string.screenshot_save_to))
@@ -106,7 +110,14 @@ fun SaveLocationDropdown(
                         )
                     }
                 }
-                icons?.downArrow?.let { Icon(icon = it) }
+
+                val downArrowIcon by
+                    loadIcon(
+                        viewModel = viewModel,
+                        resId = R.drawable.ic_arrow_down_24dp,
+                        contentDescription = null,
+                    )
+                downArrowIcon?.let { Icon(icon = it) }
             }
         }
         DropdownMenu(
@@ -121,6 +132,18 @@ fun SaveLocationDropdown(
             modifier = Modifier.width(buttonWidth).padding(vertical = { -8.dp.roundToPx() }),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                val folderIcon by
+                    loadIcon(
+                        viewModel = viewModel,
+                        resId = R.drawable.ic_arrow_down_24dp,
+                        contentDescription = null,
+                    )
+                val checkmarkIcon by
+                    loadIcon(
+                        viewModel = viewModel,
+                        resId = R.drawable.ic_check_expressive,
+                        contentDescription = null,
+                    )
                 Item(
                     label = Environment.DIRECTORY_SCREENSHOTS,
                     selected = !viewModel.isCustomSaveLocationActive,
@@ -128,11 +151,12 @@ fun SaveLocationDropdown(
                         viewModel.setCustomSaveLocationActiveStatus(false)
                         expanded = false
                     },
-                    leadingIcon = { icons?.folder?.let { Icon(icon = it) } },
-                    icons = icons,
+                    leadingIcon = folderIcon,
+                    selectedIcon = checkmarkIcon,
                     shape = shape,
                     modifier = Modifier.height(itemHeight),
                 )
+
                 viewModel.customSaveLocationDisplayName?.let { displayName ->
                     Item(
                         label = displayName,
@@ -141,12 +165,19 @@ fun SaveLocationDropdown(
                             viewModel.setCustomSaveLocationActiveStatus(true)
                             expanded = false
                         },
-                        leadingIcon = { icons?.folder?.let { Icon(icon = it) } },
-                        icons = icons,
+                        leadingIcon = folderIcon,
+                        selectedIcon = checkmarkIcon,
                         shape = shape,
                         modifier = Modifier.height(itemHeight),
                     )
                 }
+
+                val newFolderIcon by
+                    loadIcon(
+                        viewModel = viewModel,
+                        resId = R.drawable.ic_screen_capture_create_new_folder,
+                        contentDescription = null,
+                    )
                 Item(
                     label = stringResource(R.string.screenshot_select_folder),
                     selected = false,
@@ -155,8 +186,8 @@ fun SaveLocationDropdown(
                         onClose()
                         viewModel.requestLaunchDirectoryPicker()
                     },
-                    leadingIcon = { icons?.newFolder?.let { Icon(icon = it) } },
-                    icons = icons,
+                    leadingIcon = newFolderIcon,
+                    selectedIcon = checkmarkIcon,
                     shape = shape,
                     modifier = Modifier.height(itemHeight),
                 )
@@ -170,8 +201,8 @@ private fun Item(
     label: String,
     selected: Boolean,
     onSelected: () -> Unit,
-    leadingIcon: @Composable (() -> Unit),
-    icons: ScreenCaptureIcons?,
+    leadingIcon: IconModel.Loaded?,
+    selectedIcon: IconModel.Loaded?,
     shape: Shape,
     modifier: Modifier = Modifier,
 ) {
@@ -186,20 +217,20 @@ private fun Item(
         },
         onClick = onSelected,
         enabled = true,
-        leadingIcon =
-            leadingIcon.let {
-                {
-                    Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
-                        it()
-                    }
+        leadingIcon = {
+            leadingIcon?.let {
+                Box(modifier = Modifier.size(24.dp), contentAlignment = Alignment.Center) {
+                    Icon(icon = it)
                 }
-            },
-        trailingIcon =
-            if (selected) {
-                { icons?.checkMark?.let { Icon(icon = it) } }
-            } else {
-                null
-            },
+            }
+        },
+        trailingIcon = {
+            selectedIcon?.let {
+                if (selected) {
+                    Icon(icon = it)
+                }
+            }
+        },
         contentPadding = PaddingValues(12.dp, 12.dp, 16.dp, 12.dp),
         modifier = modifier.clip(shape),
     )

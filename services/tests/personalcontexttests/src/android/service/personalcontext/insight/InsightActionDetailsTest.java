@@ -36,9 +36,13 @@ import org.junit.runner.RunWith;
 @SmallTest
 public class InsightActionDetailsTest {
     @Test
-    public void testIntent_ParcelUnparcel() {
+    public void testPendingIntent_ParcelUnparcel() {
+        final PendingIntent action = PendingIntent.getBroadcast(
+                InstrumentationRegistry.getTargetContext(), 0, new Intent("TESTACTION"),
+                PendingIntent.FLAG_IMMUTABLE);
+
         final InsightActionDetails originalActionDetails =
-                new InsightActionDetails.Builder().setIntent(new Intent("ACTION")).build();
+                new InsightActionDetails.Builder().setPendingIntent(action).build();
 
         final Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(originalActionDetails, 0);

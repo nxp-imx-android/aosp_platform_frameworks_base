@@ -141,18 +141,6 @@ public abstract class DevicePolicyManagerInternal {
     public abstract Intent createShowAdminSupportIntent(int userId, boolean useDefaultIfNoAdmin);
 
     /**
-     * Creates an intent to show that an action is disallowed by admin.
-     *
-     * @param policyIdentifier a constant from {@link DevicePolicyIdentifiers}. Use {@link
-     * DevicePolicyIdentifiers#getIdentifierForUserRestriction(String)} for user restrictions.
-     * @return The intent to trigger the admin support dialog with {@link EnforcingAdmin}
-     * information. Returns null if the policy is not enforced by any admin.
-     */
-    @Nullable
-    public abstract Intent createShowAdminSupportIntentForPolicy(@UserIdInt int userId,
-            String policyIdentifier);
-
-    /**
      * Creates an intent to show the admin support dialog showing the admin who has set a user
      * restriction.
      *

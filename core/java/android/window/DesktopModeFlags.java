@@ -48,7 +48,6 @@ public enum DesktopModeFlags {
     ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS(
             Flags::enableCaptionCompatInsetForceConsumptionAlways, true),
     ENABLE_DESKTOP_APP_HANDLE_ANIMATION(Flags::enableDesktopAppHandleAnimation, true),
-    ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX(Flags::enableDesktopImmersiveDragBugfix, true),
     ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER(
             Flags::enableDesktopWallpaperActivityForSystemUser, true),
     ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION(Flags::enableDesktopWindowingAppToWebEducation,
@@ -62,7 +61,6 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY(Flags::enableDesktopWindowingWallpaperActivity,
             true),
     ENABLE_HANDLE_INPUT_FIX(Flags::enableHandleInputFix, true),
-    ENABLE_REQUEST_FULLSCREEN_BUGFIX(Flags::enableRequestFullscreenBugfix, true),
     ENABLE_RESIZING_METRICS(Flags::enableResizingMetrics, true),
     ENABLE_TASKBAR_OVERFLOW(Flags::enableTaskbarOverflow, false),
     ENABLE_TASK_STACK_OBSERVER_IN_SHELL(Flags::enableTaskStackObserverInShell, true),

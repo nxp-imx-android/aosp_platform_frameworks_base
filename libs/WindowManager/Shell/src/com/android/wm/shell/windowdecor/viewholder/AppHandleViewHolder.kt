@@ -163,10 +163,7 @@ class AppHandleViewHolder(
             captionHandle.imageTintList = ColorStateList.valueOf(getCaptionHandleBarColor(taskInfo))
         }
         this.taskInfo = taskInfo
-        if (
-            !shouldAddStatusBarInputLayer &&
-                DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue
-        ) {
+        if (!shouldAddStatusBarInputLayer) {
             return
         }
         // If handle is not in status bar region(i.e., bottom stage in vertical split),
@@ -301,11 +298,7 @@ class AppHandleViewHolder(
      * visible.
      */
     fun disposeStatusBarInputLayer() {
-        if (
-            !statusBarInputLayerExists ||
-                (!shouldAddStatusBarInputLayer &&
-                    DesktopExperienceFlags.ENABLE_APP_HANDLE_POSITION_REPORTING.isTrue)
-        ) {
+        if (!statusBarInputLayerExists || !shouldAddStatusBarInputLayer) {
             return
         }
         statusBarInputLayerExists = false

@@ -16,11 +16,10 @@
 
 package android.app.contextualsearch;
 
-import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
-import android.app.contextualsearch.flags.Flags;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -36,7 +35,6 @@ import java.util.Objects;
  *
  * @hide
  */
-@FlaggedApi(Flags.FLAG_CONFIG_PARAMETERS)
 @SystemApi
 public final class ContextualSearchConfig implements Parcelable {
 
@@ -128,8 +126,8 @@ public final class ContextualSearchConfig implements Parcelable {
      *
      * @return The launch flags if set, or the default flags if not set.
      */
-    @FlaggedApi(Flags.FLAG_ON_DEMAND_SCREENSHOT_AND_ASSIST_STATE)
     @Intent.Flags
+    @SuppressLint("UnflaggedApi")
     public int getLaunchFlags() {
         return mLaunchFlags;
     }
@@ -242,8 +240,8 @@ public final class ContextualSearchConfig implements Parcelable {
          *                    Contextual Search.
          * @return This Builder object to allow for chaining of calls.
          */
-        @FlaggedApi(Flags.FLAG_ON_DEMAND_SCREENSHOT_AND_ASSIST_STATE)
         @NonNull
+        @SuppressLint("UnflaggedApi")
         public Builder setLaunchFlags(@Intent.Flags int launchFlags) {
             mLaunchFlags = launchFlags;
             return this;

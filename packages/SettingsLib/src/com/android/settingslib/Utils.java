@@ -1,6 +1,7 @@
 package com.android.settingslib;
 
 import static android.app.admin.DevicePolicyResources.Strings.Settings.WORK_PROFILE_USER_LABEL;
+import static com.android.settingslib.Utils.fetchUserIconInfo;
 
 import android.annotation.ColorInt;
 import android.app.admin.DevicePolicyManager;

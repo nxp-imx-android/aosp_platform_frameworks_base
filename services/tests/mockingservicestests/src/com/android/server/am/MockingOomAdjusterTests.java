@@ -696,8 +696,8 @@ public class MockingOomAdjusterTests {
     public void testUpdateOomAdj_DoOne_CachedEmpty() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, true);
-        app.setCurRawAdj(CACHED_APP_MIN_ADJ);
-        app.setCurAdj(CACHED_APP_MIN_ADJ);
+        MockUtils.setCurRawAdj(app, CACHED_APP_MIN_ADJ);
+        MockUtils.setCurAdj(app, CACHED_APP_MIN_ADJ);
         setTopProcess(null);
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app);
@@ -1669,7 +1669,7 @@ public class MockingOomAdjusterTests {
     public void testUpdateOomAdj_DoOne_ServiceB() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, false);
-        app.setServiceB(true);
+        MockUtils.setServiceB(app, true);
         ServiceRecord s = makeServiceRecord();
         doReturn(new ArrayMap<IBinder, ArrayList<ConnectionRecord>>()).when(s).getConnections();
         mProcessStateController.setStartRequested(s, true);
@@ -1705,8 +1705,8 @@ public class MockingOomAdjusterTests {
     public void testUpdateOomAdj_DoOne_NonCachedToCached() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, false);
-        app.setCurRawAdj(SERVICE_ADJ);
-        app.setCurAdj(SERVICE_ADJ);
+        MockUtils.setCurRawAdj(app, SERVICE_ADJ);
+        MockUtils.setCurAdj(app, SERVICE_ADJ);
         setTopProcess(null);
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app);
@@ -1721,9 +1721,9 @@ public class MockingOomAdjusterTests {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, false);
         final int oldAdj = CACHED_APP_MIN_ADJ;
-        app.setCurRawAdj(oldAdj);
-        app.setCurAdj(oldAdj);
-        app.setSetAdj(oldAdj);
+        MockUtils.setCurRawAdj(app, oldAdj);
+        MockUtils.setCurAdj(app, oldAdj);
+        MockUtils.setSetAdj(app, oldAdj);
 
         setTopProcess(app);
         updateOomAdj(app);
@@ -3806,9 +3806,9 @@ public class MockingOomAdjusterTests {
                 SCHED_GROUP_BACKGROUND, "cch-started-services", true);
         assertThatProcess(app2).notHasImplicitCpuTimeCapability();
 
-        app.setSetProcState(PROCESS_STATE_NONEXISTENT);
-        app.setAdjType(null);
-        app.setSetAdj(UNKNOWN_ADJ);
+        MockUtils.setSetProcState(app, PROCESS_STATE_NONEXISTENT);
+        MockUtils.setAdjType(app, null);
+        MockUtils.setSetAdj(app, UNKNOWN_ADJ);
         mProcessStateController.setHasShownUi(app, false);
         updateOomAdj();
 
@@ -3816,9 +3816,9 @@ public class MockingOomAdjusterTests {
                 "started-services", false);
         assertThatProcess(app).hasImplicitCpuTimeCapability();
 
-        app.setSetProcState(PROCESS_STATE_NONEXISTENT);
-        app.setAdjType(null);
-        app.setSetAdj(UNKNOWN_ADJ);
+        MockUtils.setSetProcState(app, PROCESS_STATE_NONEXISTENT);
+        MockUtils.setAdjType(app, null);
+        MockUtils.setSetAdj(app, UNKNOWN_ADJ);
         mProcessStateController.setServiceLastActivityTime(s,
                 now - mOomConstants.mMaxServiceInactivity - 1);
         updateOomAdj();
@@ -3828,9 +3828,9 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app).notHasImplicitCpuTimeCapability();
 
         app.mServices.stopService(s);
-        app.setSetProcState(PROCESS_STATE_NONEXISTENT);
-        app.setAdjType(null);
-        app.setSetAdj(UNKNOWN_ADJ);
+        MockUtils.setSetProcState(app, PROCESS_STATE_NONEXISTENT);
+        MockUtils.setAdjType(app, null);
+        MockUtils.setSetAdj(app, UNKNOWN_ADJ);
         mProcessStateController.setHasShownUi(app, true);
         mService.mConstants.KEEP_WARMING_SERVICES.add(cn);
         mService.mConstants.KEEP_WARMING_SERVICES.add(cn2);
@@ -3850,9 +3850,9 @@ public class MockingOomAdjusterTests {
                 SCHED_GROUP_BACKGROUND, "cch-started-services", true);
         assertThatProcess(app2).notHasImplicitCpuTimeCapability();
 
-        app.setSetProcState(PROCESS_STATE_NONEXISTENT);
-        app.setAdjType(null);
-        app.setSetAdj(UNKNOWN_ADJ);
+        MockUtils.setSetProcState(app, PROCESS_STATE_NONEXISTENT);
+        MockUtils.setAdjType(app, null);
+        MockUtils.setSetAdj(app, UNKNOWN_ADJ);
         mProcessStateController.setHasShownUi(app, false);
         mProcessStateController.setServiceLastActivityTime(s,
                 now - mOomConstants.mMaxServiceInactivity - 1);
@@ -4721,9 +4721,9 @@ public class MockingOomAdjusterTests {
         mService.mOomAdjuster.configureAdjForZramWriteback(TEST_OOM_ADJ_FOR_ZRAM_WRITEBACK);
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, false);
-        app.setCurAdj(CACHED_APP_MIN_ADJ);
-        app.setCurRawAdj(CACHED_APP_MIN_ADJ);
-        app.setSetAdj(CACHED_APP_MIN_ADJ);
+        MockUtils.setCurAdj(app, CACHED_APP_MIN_ADJ);
+        MockUtils.setCurRawAdj(app, CACHED_APP_MIN_ADJ);
+        MockUtils.setSetAdj(app, CACHED_APP_MIN_ADJ);
 
         mProcessStateController.setIsZramWrittenBack(app, true);
 
@@ -5127,20 +5127,20 @@ public class MockingOomAdjusterTests {
             profile.setNextPssTime(mNextPssTime);
             profile.setLastPss(mLastPss);
             mProcessStateController.setMaxAdj(state, mMaxAdj);
-            state.setSetRawAdj(mSetRawAdj);
-            state.setCurAdj(mCurAdj);
-            state.setSetAdj(mSetAdj);
+            MockUtils.setSetRawAdj(state, mSetRawAdj);
+            MockUtils.setCurAdj(state, mCurAdj);
+            MockUtils.setSetAdj(state, mSetAdj);
             state.setCurrentSchedulingGroup(mCurSchedGroup);
             state.setSetSchedGroup(mSetSchedGroup);
-            state.setCurProcState(mCurProcState);
-            state.setReportedProcState(mRepProcState);
-            state.setCurRawProcState(mCurRawProcState);
-            state.setSetProcState(mSetProcState);
-            state.setServiceB(mServiceb);
-            state.setRepForegroundActivities(mRepForegroundActivities);
+            MockUtils.setCurProcState(state, mCurProcState);
+            MockUtils.setReportedProcState(state, mRepProcState);
+            MockUtils.setCurRawProcState(state, mCurRawProcState);
+            MockUtils.setSetProcState(state, mSetProcState);
+            MockUtils.setServiceB(state, mServiceb);
+            MockUtils.setRepForegroundActivities(state, mRepForegroundActivities);
             state.setHasForegroundActivities(mHasForegroundActivities);
-            state.setSystemNoUi(mSystemNoUi);
-            state.setHasShownUi(mHasShownUi);
+            MockUtils.setSystemNoUi(state, mSystemNoUi);
+            MockUtils.setHasShownUi(state, mHasShownUi);
             mProcessStateController.setHasTopUi(state, mHasTopUi);
             mProcessStateController.setRunningRemoteAnimation(state, mRunningRemoteAnimation);
             mProcessStateController.setHasOverlayUi(state, mHasOverlayUi);

@@ -36,12 +36,14 @@ import androidx.compose.ui.graphics.asAndroidPath
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.toAndroidRectF
 import androidx.core.graphics.toRegion
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenCaptureCameraTransformationInteractor
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
+import com.android.systemui.screencapture.record.shared.model.ScreenRecordEvent
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
-import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import com.android.systemui.util.isEmpty
+import com.android.systemui.util.kotlin.pairwiseBy
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.Objects
@@ -54,9 +56,10 @@ import kotlinx.coroutines.flow.onEach
 class ScreenCaptureCameraTransformationViewModel
 @AssistedInject
 constructor(
-    screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
+    private val screenRecordingServiceInteractor: ScreenRecordingServiceInteractor,
     cameraInteractor: ScreenRecordCameraInteractor,
     private val transformationInteractor: ScreenCaptureCameraTransformationInteractor,
+    private val uiEventLogger: UiEventLogger,
 ) :
     HydratedActivatable(),
     TransformableState by transformationInteractor.createTransformableState() {
@@ -82,7 +85,7 @@ constructor(
         screenRecordingServiceInteractor.status.mapHydrate(
             traceName = "ScreenCaptureCameraTransformationViewModel#transformableByTouchAnywhere"
         ) {
-            it.transformableByTouchAnywhere()
+            !it.isRecording
         }
     private val subjectSize by
         cameraInteractor.streamConfiguration.mapHydrate(
@@ -142,6 +145,20 @@ constructor(
         coroutineScope {
             snapshotFlow { isTransformInProgress }
                 .onEach { transformationInteractor.isTransforming = it }
+                .pairwiseBy { wasTransforming, isTransforming ->
+                    if (wasTransforming && !isTransforming) {
+                        if (screenRecordingServiceInteractor.status.value.isRecording) {
+                            uiEventLogger.log(
+                                ScreenRecordEvent.SCREEN_RECORD_SURFACE_ADJUSTED_MID_RECORDING
+                            )
+                        } else {
+                            uiEventLogger.log(
+                                ScreenRecordEvent.SCREEN_RECORD_SURFACE_ADJUSTED_PRE_RECORDING
+                            )
+                        }
+                    }
+                    false
+                }
                 .launchIn(this)
         }
     }
@@ -149,10 +166,7 @@ constructor(
     /**
      * Notifies the ViewModel that the screen bounds of the [Surface] has changed.
      *
-     * Notice that size passed to the [onSurfaceSizeUpdated] is not necessarily the same as the
-     * [bounds]#size from the [onSurfaceScreenBoundsUpdated]. The first is the size of the [Surface]
-     * (ie the drawing buffer) while the second is the size the [Surface] occupies on the screen (ie
-     * the layout size of the TextureView)
+     * This is the size the [Surface] occupies on the screen (ie the layout size of the TextureView)
      */
     fun onSurfaceScreenBoundsUpdated(bounds: Rect) {
         surfaceScreenBounds = bounds
@@ -242,8 +256,5 @@ private fun ScreenCaptureCameraTransformationInteractor.createTransformableState
     offsetX += panChange.x
     offsetY += panChange.y
 }
-
-private fun ScreenRecordingStatus.transformableByTouchAnywhere(): Boolean =
-    this is ScreenRecordingStatus.Stopped
 
 private fun Rect.toPath(): Path = Path().apply { addRect(this@toPath, Path.Direction.Clockwise) }

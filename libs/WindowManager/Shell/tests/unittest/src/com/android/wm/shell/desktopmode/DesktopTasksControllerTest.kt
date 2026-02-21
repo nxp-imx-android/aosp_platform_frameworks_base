@@ -92,6 +92,7 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.HierarchyOp
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_LAUNCH_TASK
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
@@ -4443,7 +4444,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    fun moveToNextDesktopDisplay_projectedMode_cleansUpSourceDisplay() {
+    fun moveToNextDesktopDisplay_projectedMode_fromSecondaryDisplay_doesNotCleanUpSourceDisplay() {
         // Setup state where a desktop task is running on a secondary display while the device is in
         // projected mode
         desktopState.isProjected = true
@@ -4457,7 +4458,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = deskId)
         val task = setUpFreeformTask(displayId = SECOND_DISPLAY)
         // Explicitly add task to the desk because removing the last task in a desk triggers desktop
-        // mode cleanup.
+        // mode cleanup on default displays, but should not do so on secondary displays.
         taskRepository.addTaskToDesk(
             displayId = SECOND_DISPLAY,
             deskId = deskId,
@@ -4478,10 +4479,9 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
             )
 
-        // Verify that cleanup (e.g. resetting the launcher) is performed on the source display
-        // where the task originated from.
-        wct.assertPendingIntent(launchHomeIntent(SECOND_DISPLAY))
-        wct.assertPendingIntentActivityOptionsLaunchDisplayId(SECOND_DISPLAY)
+        // Verify that cleanup (e.g. resetting the launcher) is NOT performed on the source
+        // secondary display
+        wct.assertWithoutPendingIntent(launchHomeIntent(SECOND_DISPLAY))
     }
 
     @Test
@@ -4896,6 +4896,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == 0
                 }
             )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onDesktopWindowClose_lastWindowOnSecondaryDisplay_doesNotExitDesktop() {
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = 2)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = 2)
+        val task = setUpFreeformTask(displayId = SECOND_DISPLAY, deskId = 2)
+        val wct = WindowContainerTransaction()
+
+        val transition = Binder()
+        val runOnTransitStart =
+            controller.onDesktopWindowClose(wct, displayId = SECOND_DISPLAY, task)
+        runOnTransitStart?.invoke(transition)
+
+        verify(desksOrganizer, never()).deactivateDesk(any(), any(), any())
+        verify(desksOrganizer, never()).removeDesk(any(), any(), any())
+        verifyNoInteractions(desksTransitionsObserver)
     }
 
     @Test
@@ -5363,19 +5381,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val result = controller.closeTask(task)
 
         assertThat(result).isEqualTo(DesktopTasksController.CloseTaskResult.NOT_CLOESD_MINIMIZED)
-        verifyWCTNotExecuted()
-    }
-
-    @Test
-    fun closeTask_disabledDesktopEntry_doesNothing() {
-        val task = setUpFullscreenTask()
-        task.baseActivity = ComponentName("mypacakge", "mypacakge.MyActivity")
-        doReturn(true).whenever(desktopModeCompatPolicy).shouldDisableDesktopEntryPoints(task)
-
-        val result = controller.closeTask(task)
-
-        assertThat(result)
-            .isEqualTo(DesktopTasksController.CloseTaskResult.NOT_CLOSED_DISABLED_DESKTOP_ENTRY)
         verifyWCTNotExecuted()
     }
 
@@ -7627,6 +7632,29 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun removeDesk_withRemoveTasksFalse_doesNotRemoveTasks() {
+        val transition = Binder()
+        whenever(transitions.startTransition(eq(TRANSIT_CLOSE), any(), anyOrNull()))
+            .thenReturn(transition)
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
+        val task1 = setUpFreeformTask(deskId = 2, background = true)
+        val task2 = setUpFreeformTask(deskId = 2, background = false)
+
+        controller.removeDesk(deskId = 2, exitReason = ExitReason.UNKNOWN_EXIT, removeTasks = false)
+
+        verify(recentTasksController, never()).removeBackgroundTask(task1.taskId)
+        val wct = getLatestWct(TRANSIT_CLOSE)
+        assertThat(
+                wct.hierarchyOps.any { hop ->
+                    hop.container == task2.token.asBinder() &&
+                        hop.type == HIERARCHY_OP_TYPE_REMOVE_TASK
+                }
+            )
+            .isFalse()
+    }
+
+    @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
@@ -7837,10 +7865,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun activatePreviousDesk_activates() {
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 1)
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
@@ -7856,10 +7881,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun activateNextDesk_activates() {
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 1)
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
@@ -7875,10 +7897,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun activatePreviousDesk_deskDoesNotExist_doesNotActivate() {
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
 
@@ -7892,10 +7911,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun activateNextDesk_deskDoesNotExist_doesNotActivate() {
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 1)
         taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 1)
@@ -7910,10 +7926,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun activatePreviousDesk_noDeskActive_doesNotActivate() {
         taskRepository.setDeskInactive(deskId = 0)
 
@@ -7927,10 +7940,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun activateNextDesk_noDeskActive_doesNotActivate() {
         taskRepository.setDeskInactive(deskId = 0)
 
@@ -7944,10 +7954,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun activatePreviousDesk_invalidDisplay_activatesFocusedDisplayDesk() {
         val focusedDisplayId = 5
         whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(focusedDisplayId)
@@ -7968,10 +7975,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun activateNextDesk_invalidDisplay_activatesFocusedDisplayDesk() {
         val focusedDisplayId = 6
         whenever(focusTransitionObserver.globallyFocusedDisplayId).thenReturn(focusedDisplayId)
@@ -10530,6 +10534,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 DEFAULT_DISPLAY,
                 DEFAULT_DISPLAY_UNIQUE_ID,
             )
+            taskRepository.setActiveDesk(DEFAULT_DISPLAY, DISCONNECTED_DESK_ID)
             whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
                 .thenAnswer { invocation ->
                     (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
@@ -10614,6 +10619,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 DEFAULT_DISPLAY,
                 DEFAULT_DISPLAY_UNIQUE_ID,
             )
+            taskRepository.setActiveDesk(DEFAULT_DISPLAY, DISCONNECTED_DESK_ID)
             whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
                 .thenAnswer { invocation ->
                     (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
@@ -10684,6 +10690,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 DEFAULT_DISPLAY,
                 DEFAULT_DISPLAY_UNIQUE_ID,
             )
+            taskRepository.setActiveDesk(DEFAULT_DISPLAY, DISCONNECTED_DESK_ID)
             whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
                 .thenAnswer { invocation ->
                     (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
@@ -10744,6 +10751,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 DEFAULT_DISPLAY,
                 DEFAULT_DISPLAY_UNIQUE_ID,
             )
+            taskRepository.setActiveDesk(DEFAULT_DISPLAY, DISCONNECTED_DESK_ID)
             whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
                 .thenAnswer { invocation ->
                     (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
@@ -10803,6 +10811,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 DEFAULT_DISPLAY,
                 DEFAULT_DISPLAY_UNIQUE_ID,
             )
+            taskRepository.setActiveDesk(DEFAULT_DISPLAY, DISCONNECTED_DESK_ID)
             whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
                 .thenAnswer { invocation ->
                     (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
@@ -10821,7 +10830,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 preservedDisplay = preservedDisplay,
                 userId = taskRepository.userId,
             )
-            runCurrent()
             testScopeImmediate.runCurrent()
 
             verify(transitions).startTransition(anyInt(), wctCaptor.capture(), anyOrNull())
@@ -10832,6 +10840,97 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     hop.toTop &&
                     hop.includingParents()
             }
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun restoreDisplay_allTasksRestoredFromOldInactiveDesk_removesOldDesk() =
+        testScope.runTest {
+            val oldDeskId = 10
+            val taskId = 201
+            // Set up pre-disconnect state; desk + task
+            taskRepository.addDesk(SECOND_DISPLAY, oldDeskId)
+            setUpFreeformTask(displayId = SECOND_DISPLAY, deskId = oldDeskId, taskId = taskId)
+            // Set up post-disconnect state; display preserved + desk moved; disconnected desk does
+            // not become active
+            taskRepository.preserveDisplay(SECOND_DISPLAY, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.onDeskDisplayChanged(
+                oldDeskId,
+                DEFAULT_DISPLAY,
+                DEFAULT_DISPLAY_UNIQUE_ID,
+            )
+            val transition = Binder()
+            whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+                .thenReturn(transition)
+            whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
+                .thenAnswer { invocation ->
+                    (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
+                        deskId = 5
+                    )
+                }
+            val preservedDisplay =
+                taskRepository.removePreservedDisplay(SECOND_DISPLAY_UNIQUE_ID)
+                    ?: fail("Expected preserved display")
+            taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = 0)
+
+            controller.restoreDisplay(
+                displayId = SECOND_DISPLAY_ON_RECONNECT,
+                preservedDisplay = preservedDisplay,
+                userId = taskRepository.userId,
+            )
+            testScopeImmediate.runCurrent()
+
+            verify(desksOrganizer).removeDesk(any(), eq(oldDeskId), eq(taskRepository.userId))
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun restoreDisplay_allTasksRestoredFromOldActiveDesk_oldDeskNotRemoved() =
+        testScope.runTest {
+            val oldDeskId = 10
+            val taskId = 201
+            // Set up pre-disconnect state; desk + task
+            taskRepository.addDesk(SECOND_DISPLAY, oldDeskId)
+            setUpFreeformTask(displayId = SECOND_DISPLAY, deskId = oldDeskId, taskId = taskId)
+            // Set up post-disconnect state; display preserved + desk moved; disconnected desk is
+            // now active
+            taskRepository.preserveDisplay(SECOND_DISPLAY, SECOND_DISPLAY_UNIQUE_ID)
+            taskRepository.onDeskDisplayChanged(
+                oldDeskId,
+                DEFAULT_DISPLAY,
+                DEFAULT_DISPLAY_UNIQUE_ID,
+            )
+            taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = oldDeskId)
+            val transition = Binder()
+            whenever(transitions.startTransition(eq(TRANSIT_CHANGE), any(), anyOrNull()))
+                .thenReturn(transition)
+            whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
+                .thenAnswer { invocation ->
+                    (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
+                        deskId = 5
+                    )
+                }
+            val preservedDisplay =
+                taskRepository.removePreservedDisplay(SECOND_DISPLAY_UNIQUE_ID)
+                    ?: fail("Expected preserved display")
+
+            controller.restoreDisplay(
+                displayId = SECOND_DISPLAY_ON_RECONNECT,
+                preservedDisplay = preservedDisplay,
+                userId = taskRepository.userId,
+            )
+            testScopeImmediate.runCurrent()
+
+            verify(desksOrganizer, never())
+                .removeDesk(any(), eq(oldDeskId), eq(taskRepository.userId))
         }
 
     @Test
@@ -12216,13 +12315,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         activityInfo.screenOrientation = screenOrientation
         activityInfo.windowLayout =
             ActivityInfo.WindowLayout(
-                -1 /* complexWidth */,
-                -1f /* widthFraction */,
-                -1 /* complexHeight */,
-                -1f /* heightFraction */,
+                -1, /* complexWidth */
+                -1f, /* widthFraction */
+                -1, /* complexHeight */
+                -1f, /* heightFraction */
                 gravity,
-                -1 /* complexMinWidth */,
-                -1 /* complexMinHeight */,
+                -1, /* complexMinWidth */
+                -1, /* complexMinHeight */
                 null, /* windowLayoutAffinity */
                 null, /* displayMetrics */
             )
