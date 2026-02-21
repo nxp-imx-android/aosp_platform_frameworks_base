@@ -161,12 +161,26 @@ public class PersonalContextManagerService extends SystemService {
 
     private final ActivityManagerInternal mActivityManager;
     private final PackageManagerInternal mPackageManager;
+
     private final PersonalContextManagerInternal mInternalService = new LocalService();
     public PersonalContextManagerService(Context context) {
         super(context);
 
         mActivityManager = getLocalService(ActivityManagerInternal.class);
         mPackageManager = getLocalService(PackageManagerInternal.class);
+    }
+
+    private boolean isEnabled() {
+        return Flags.enablePersonalContextServiceFeature();
+    }
+
+    private boolean checkAndLogEnabledState(String stage) {
+        final boolean enabled = isEnabled();
+        if (!enabled) {
+            Slog.i(TAG, "PersonalContext[" + stage + "]: not enabled.");
+        }
+
+        return enabled;
     }
 
     @Override
@@ -180,6 +194,10 @@ public class PersonalContextManagerService extends SystemService {
 
     @Override
     public void onUserStarting(@NonNull TargetUser user) {
+        if (!checkAndLogEnabledState("onUserStarting")) {
+            return;
+        }
+
         final int userId = user.getUserIdentifier();
         synchronized (mUserStates) {
             final UserState oldState = mUserStates.get(userId);
@@ -237,6 +255,10 @@ public class PersonalContextManagerService extends SystemService {
 
     @Override
     public void onUserUnlocked(@NonNull TargetUser user) {
+        if (!checkAndLogEnabledState("onUserUnlocked")) {
+            return;
+        }
+
         final int userId = user.getUserIdentifier();
         Slog.i(TAG, "Unlocking user " + userId);
 
@@ -288,6 +310,10 @@ public class PersonalContextManagerService extends SystemService {
 
     @Override
     public void onUserStopping(@NonNull TargetUser user) {
+        if (!checkAndLogEnabledState("onUserStopping")) {
+            return;
+        }
+
         final int userId = user.getUserIdentifier();
         Slog.i(TAG, "Stopping user " + userId);
         synchronized (mUserStates) {
@@ -335,20 +361,15 @@ public class PersonalContextManagerService extends SystemService {
                 signedHints.add(signHint(hint, processId, renderTokens, signedAttributionHints));
             }
 
-            if (Flags.enablePersonalContextServiceFeature()) {
-                RefinerWorkflow.start(
-                        componentManager,
-                        signedHints,
-                        renderTokens,
-                        HINT_SIGNING_KEY,
-                        mLogger,
-                        mExecutor,
-                        (componentId, insights)
-                                -> startInsightWorkflow(userId, componentId, insights));
-            } else {
-                Log.w(TAG, "Hint processing disabled by "
-                        + "enable_personal_context_service_breaking_bug_fixes flag");
-            }
+            RefinerWorkflow.start(
+                    componentManager,
+                    signedHints,
+                    renderTokens,
+                    HINT_SIGNING_KEY,
+                    mLogger,
+                    mExecutor,
+                    (componentId, insights)
+                            -> startInsightWorkflow(userId, componentId, insights));
         } catch (GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
@@ -761,6 +782,8 @@ public class PersonalContextManagerService extends SystemService {
             if (!DumpUtils.checkDumpPermission(service.getContext(), TAG, fout)) {
                 return;
             }
+
+            fout.println("Enabled:" + service.isEnabled());
 
             synchronized (service.mUserStates) {
                 for (int i = 0; i < service.mUserStates.size(); i++) {

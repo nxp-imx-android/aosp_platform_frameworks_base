@@ -82,6 +82,7 @@ import java.util.UUID;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
+@EnableFlags(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE_FEATURE)
 public class PersonalContextManagerServiceTest {
     private static final int USER_ID_1 = 10;
     private static final int USER_ID_2 = 11;
