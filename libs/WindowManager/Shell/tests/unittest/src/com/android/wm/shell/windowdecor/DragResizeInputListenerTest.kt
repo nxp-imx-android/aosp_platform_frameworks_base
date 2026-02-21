@@ -71,8 +71,7 @@ class DragResizeInputListenerTest : ShellTestCase() {
     private val mockWindowSession = mock<IWindowSession>()
     private val mockInputManager = mock<InputManager>()
     private val mockGeometry = mock<DragResizeWindowGeometry>()
-    private val inputChannels =
-        InputChannel.openInputChannelPair(DragResizeInputListenerTest::class.toString())
+    private val inputChannelPairs = ArrayList<Array<InputChannel>>()
     private val mockOnInputEventReceiverDisposed = mock<Runnable>()
     private lateinit var receiver: InputEventReceiver
     private val decorationSurface = SurfaceControl.Builder().setName("decoration surface").build()
@@ -96,7 +95,14 @@ class DragResizeInputListenerTest : ShellTestCase() {
                     any(), // name
                 )
             )
-            .thenReturn(inputChannels[1])
+            .thenAnswer {
+                inputChannelPairs.add(
+                    InputChannel.openInputChannelPair(
+                        "${DragResizeInputListenerTest::class}#${inputChannelPairs.size}"
+                    )
+                )
+                return@thenAnswer inputChannelPairs.last()[1]
+            }
 
         if (Looper.myLooper() == null) {
             // Prepare a looper in the test thread, but we never call Looper.loop on it.
@@ -111,8 +117,11 @@ class DragResizeInputListenerTest : ShellTestCase() {
         createdSurfaces.clear()
         removedSurfaces.clear()
         decorationSurface.release()
-        inputChannels[0].dispose()
-        inputChannels[1].dispose()
+
+        inputChannelPairs.forEach { channels ->
+            channels[0].dispose()
+            channels[1].dispose()
+        }
     }
 
     @Test
