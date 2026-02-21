@@ -247,7 +247,11 @@ public class TelecomManager {
     private static final String ACTION_MANAGE_BLOCKED_NUMBERS =
             "android.telecom.action.MANAGE_BLOCKED_NUMBERS";
 
-    private static final String TELECOM_UI_PACKAGE = "com.android.server.telecomui";
+    /**
+     * Used if the UI package can not be determined from the telecom service
+     * @hide
+     */
+    public static final String DEFAULT_TELECOM_UI_PACKAGE = "com.android.server.telecomui";
 
     /**
      * Extra value used to provide the package name for {@link #ACTION_CHANGE_DEFAULT_DIALER}.
@@ -2843,9 +2847,18 @@ public class TelecomManager {
      * {@code true} for the current user.
      */
     public Intent createManageBlockedNumbersIntent() {
-        Intent result = new Intent(ACTION_MANAGE_BLOCKED_NUMBERS);
-        result.setPackage(TELECOM_UI_PACKAGE);
-        return result;
+        String telecomUiPackage = DEFAULT_TELECOM_UI_PACKAGE;
+        ITelecomService service = getTelecomService();
+        if (service != null) {
+            try {
+                telecomUiPackage = service.getTelecomUiPackageName();
+            } catch (RemoteException e) {
+                Log.e(TAG, "Error getting telecom ui package, falling back", e);
+            }
+        }
+        Intent resultIntent = new Intent(ACTION_MANAGE_BLOCKED_NUMBERS);
+        resultIntent.setPackage(telecomUiPackage);
+        return resultIntent;
     }
 
 
