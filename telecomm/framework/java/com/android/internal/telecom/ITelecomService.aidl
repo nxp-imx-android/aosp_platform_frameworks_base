@@ -478,4 +478,9 @@ interface ITelecomService {
      */
     boolean isLocalVoicemailEnabled(in String packageName,
         in PhoneAccountHandle phoneAccountHandle);
+
+    /**
+     * @see TelecomServiceImpl#getTelecomUiPackageName
+     */
+    String getTelecomUiPackageName();
 }
