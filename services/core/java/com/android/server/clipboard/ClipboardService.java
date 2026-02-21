@@ -17,6 +17,7 @@
 package com.android.server.clipboard;
 
 import static android.app.ActivityManagerInternal.ALLOW_FULL_ONLY;
+import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CLIPBOARD;
 import static android.content.ClipDescription.MIMETYPE_APPLICATION_ACTIVITY;
@@ -173,6 +174,7 @@ public class ClipboardService extends SystemService {
     private VirtualDeviceManager.VirtualDeviceListener mVirtualDeviceListener;
     private final IUserManager mUm;
     private final PackageManager mPm;
+    private final PackageManagerInternal mPmInternal;
     private final AppOpsManager mAppOps;
     private final ContentCaptureManagerInternal mContentCaptureInternal;
     private final AutofillManagerInternal mAutofillInternal;
@@ -219,6 +221,7 @@ public class ClipboardService extends SystemService {
         mVdm = (mVdmInternal == null) ? null : getContext().getSystemService(
                 VirtualDeviceManager.class);
         mPm = getContext().getPackageManager();
+        mPmInternal = LocalServices.getService(PackageManagerInternal.class);
         mUm = (IUserManager) ServiceManager.getService(Context.USER_SERVICE);
         mAppOps = (AppOpsManager) getContext().getSystemService(Context.APP_OPS_SERVICE);
         mContentCaptureInternal = LocalServices.getService(ContentCaptureManagerInternal.class);
@@ -1291,11 +1294,10 @@ public class ClipboardService extends SystemService {
 
     @GuardedBy("mLock")
     private void addActiveOwnerLocked(int uid, int deviceId, String pkg) {
-        final PackageManagerInternal pm = LocalServices.getService(PackageManagerInternal.class);
         final int targetUserHandle = UserHandle.getCallingUserId();
         final long oldIdentity = Binder.clearCallingIdentity();
         try {
-            if (!pm.isSameApp(pkg, 0, uid, targetUserHandle)) {
+            if (!mPmInternal.isSameApp(pkg, 0, uid, targetUserHandle)) {
                 throw new SecurityException("Calling uid " + uid + " does not own package " + pkg);
             }
         } finally {
@@ -1510,7 +1512,7 @@ public class ClipboardService extends SystemService {
             return;
         }
         // Don't notify if the app accessing the clipboard is the same as the current owner.
-        if (UserHandle.isSameApp(uid, clipboard.primaryClipUid)) {
+        if (UserHandle.isSameApp(getPccAwareUid(uid), getPccAwareUid(clipboard.primaryClipUid))) {
             return;
         }
         // Exclude special cases: IME, ContentCapture, Autofill.
@@ -1765,5 +1767,15 @@ public class ClipboardService extends SystemService {
                     CLIP_DATA_TYPES_UNKNOWN, /* time_since_set_in_secs = */ 0,
                     /* is_sensitive = */ false, isUserInitiated));
         }
+    }
+
+    private int getPccAwareUid(int uid) {
+        if (enablePccFrameworkSupport() && Process.isPrivateComputeCoreUid(uid)) {
+            final int appUid = mPm.getAppUidForPrivateComputeCoreUid(uid);
+            if (appUid != Process.INVALID_UID) {
+                return appUid;
+            }
+        }
+        return uid;
     }
 }
