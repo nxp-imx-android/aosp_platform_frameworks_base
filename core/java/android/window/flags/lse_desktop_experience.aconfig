@@ -1052,13 +1052,6 @@ flag {
 }
 
 flag {
-    name: "form_factor_based_desktop_first_switch"
-    namespace: "lse_desktop_experience"
-    description: "Enables the desktop-first mode switching logic based on its form factor."
-    bug: "394736817"
-}
-
-flag {
     name: "fullscreen_key_ignores_bubble_bugfix"
     namespace: "lse_desktop_experience"
     description: "The fullscreen key does not apply the fullscreen state toggle if a a bubble is the focused task."

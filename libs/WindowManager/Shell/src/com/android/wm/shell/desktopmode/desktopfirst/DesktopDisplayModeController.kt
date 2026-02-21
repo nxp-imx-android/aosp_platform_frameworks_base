@@ -129,9 +129,7 @@ class DesktopDisplayModeController(
 
     init {
         shellInit.addInitCallback({ onInit() }, this)
-        if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-            inputManager.registerInputDeviceListener(inputDeviceListener, mainHandler)
-        }
+        inputManager.registerInputDeviceListener(inputDeviceListener, mainHandler)
         if (Flags.enableDesktopFirstLaptopStateBugfix()) {
             deviceStateManager.registerCallback(mainExecutor, deviceStateCallback)
         }
@@ -274,18 +272,16 @@ class DesktopDisplayModeController(
             if (isExtendedDisplayEnabled && hasExternalDisplay) {
                 return true
             }
-            if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-                val hasAnyTouchpadDevice = hasAnyTouchpadDevice()
-                val hasAnyPhysicalKeyboardDevice = hasAnyPhysicalKeyboardDevice()
-                logV(
-                    "canDesktopFirstModeBeEnabledOnDefaultDisplay: hasAnyTouchpadDevice=%b" +
-                        " hasAnyPhysicalKeyboardDevice=%b",
-                    hasAnyTouchpadDevice,
-                    hasAnyPhysicalKeyboardDevice,
-                )
-                if (hasAnyTouchpadDevice && hasAnyPhysicalKeyboardDevice) {
-                    return true
-                }
+            val hasAnyTouchpadDevice = hasAnyTouchpadDevice()
+            val hasAnyPhysicalKeyboardDevice = hasAnyPhysicalKeyboardDevice()
+            logV(
+                "canDesktopFirstModeBeEnabledOnDefaultDisplay: hasAnyTouchpadDevice=%b" +
+                    " hasAnyPhysicalKeyboardDevice=%b",
+                hasAnyTouchpadDevice,
+                hasAnyPhysicalKeyboardDevice,
+            )
+            if (hasAnyTouchpadDevice && hasAnyPhysicalKeyboardDevice) {
+                return true
             }
             if (Flags.enableDesktopFirstLaptopStateBugfix()) {
                 logV(
@@ -308,14 +304,7 @@ class DesktopDisplayModeController(
             return DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
         }
 
-        return if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-            TOUCH_FIRST_DISPLAY_WINDOWING_MODE
-        } else {
-            // If form factor-based desktop first switch is disabled, use the default display
-            // windowing mode here to keep the freeform mode for some form factors (e.g.,
-            // FEATURE_PC).
-            windowManager.getWindowingMode(DEFAULT_DISPLAY)
-        }
+        return TOUCH_FIRST_DISPLAY_WINDOWING_MODE
     }
 
     private fun isExtendedDisplayEnabled(): Boolean {
@@ -387,10 +376,8 @@ class DesktopDisplayModeController(
         pw.println(
             "FORCE_DESKTOP_FIRST_ON_DEFAULT_DISPLAY=" + FORCE_DESKTOP_FIRST_ON_DEFAULT_DISPLAY
         )
-        if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-            pw.println("hasAnyTouchpadDevice=" + hasAnyTouchpadDevice())
-            pw.println("hasAnyPhysicalKeyboardDevice=" + hasAnyPhysicalKeyboardDevice())
-        }
+        pw.println("hasAnyTouchpadDevice=" + hasAnyTouchpadDevice())
+        pw.println("hasAnyPhysicalKeyboardDevice=" + hasAnyPhysicalKeyboardDevice())
         if (Flags.enableDesktopFirstLaptopStateBugfix()) {
             pw.println("isDesktopFirstDeviceState=" + isDesktopFirstDeviceState)
         }

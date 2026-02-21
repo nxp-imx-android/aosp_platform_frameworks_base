@@ -229,34 +229,6 @@ class DesktopDisplayModeControllerTest(
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
-    @DisableFlags(Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH)
-    fun testTargetWindowingMode_formfactorDisabled(
-        @TestParameter param: ExternalDisplayBasedTargetModeTestCase,
-        @TestParameter hasAnyTouchpadDevice: Boolean,
-        @TestParameter hasAnyKeyboardDevice: Boolean,
-    ) {
-        whenever(mockWindowManager.getWindowingMode(anyInt()))
-            .thenReturn(param.defaultWindowingMode)
-        if (param.hasExternalDisplay) {
-            connectExternalDisplay()
-        } else {
-            disconnectExternalDisplay()
-        }
-        setTouchpadConnected(hasAnyTouchpadDevice)
-        setKeyboardConnected(hasAnyKeyboardDevice)
-        setExtendedMode(param.extendedDisplayEnabled)
-        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] =
-            param.isDefaultDisplayDesktopEligible
-
-        assertThat(controller.getTargetWindowingModeForDefaultDisplay())
-            .isEqualTo(param.expectedWindowingMode)
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
-        Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH,
-    )
     fun testTargetWindowingMode(@TestParameter param: FormFactorBasedTargetModeTestCase) {
         if (param.hasExternalDisplay) {
             connectExternalDisplay()
@@ -400,7 +372,6 @@ class DesktopDisplayModeControllerTest(
     @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
-        Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH,
         Flags.FLAG_ENABLE_DESKTOP_FIRST_LAPTOP_STATE_BUGFIX,
     )
     fun lidClosed_overridesNoPeripherals() {
@@ -428,7 +399,6 @@ class DesktopDisplayModeControllerTest(
     @EnableFlags(
         DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
         Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
-        Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH,
         Flags.FLAG_ENABLE_DESKTOP_FIRST_USER_CHANGE_BUGFIX,
     )
     fun onUserChange_updatesWindowingMode() {
@@ -523,7 +493,6 @@ class DesktopDisplayModeControllerTest(
             context: TestParameterValuesProvider.Context
         ): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH,
                 DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
                 Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
             )
@@ -534,127 +503,6 @@ class DesktopDisplayModeControllerTest(
         const val EXTERNAL_DISPLAY_ID = 100
         const val TOUCHPAD_DEVICE_ID = 10
         const val KEYBOARD_DEVICE_ID = 11
-
-        enum class ExternalDisplayBasedTargetModeTestCase(
-            val defaultWindowingMode: Int,
-            val hasExternalDisplay: Boolean,
-            val extendedDisplayEnabled: Boolean,
-            val isDefaultDisplayDesktopEligible: Boolean,
-            val expectedWindowingMode: Int,
-        ) {
-            FREEFORM_EXTERNAL_EXTENDED_NO_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
-                hasExternalDisplay = true,
-                extendedDisplayEnabled = true,
-                isDefaultDisplayDesktopEligible = true,
-                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
-            ),
-            FULLSCREEN_EXTERNAL_EXTENDED_NO_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
-                hasExternalDisplay = true,
-                extendedDisplayEnabled = true,
-                isDefaultDisplayDesktopEligible = true,
-                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
-            ),
-            FREEFORM_NO_EXTERNAL_EXTENDED_NO_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
-                hasExternalDisplay = false,
-                extendedDisplayEnabled = true,
-                isDefaultDisplayDesktopEligible = true,
-                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
-            ),
-            FULLSCREEN_NO_EXTERNAL_EXTENDED_NO_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
-                hasExternalDisplay = false,
-                extendedDisplayEnabled = true,
-                isDefaultDisplayDesktopEligible = true,
-                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
-            ),
-            FREEFORM_EXTERNAL_MIRROR_NO_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
-                hasExternalDisplay = true,
-                extendedDisplayEnabled = false,
-                isDefaultDisplayDesktopEligible = true,
-                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
-            ),
-            FULLSCREEN_EXTERNAL_MIRROR_NO_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
-                hasExternalDisplay = true,
-                extendedDisplayEnabled = false,
-                isDefaultDisplayDesktopEligible = true,
-                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
-            ),
-            FREEFORM_NO_EXTERNAL_MIRROR_NO_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
-                hasExternalDisplay = false,
-                extendedDisplayEnabled = false,
-                isDefaultDisplayDesktopEligible = true,
-                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
-            ),
-            FULLSCREEN_NO_EXTERNAL_MIRROR_NO_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
-                hasExternalDisplay = false,
-                extendedDisplayEnabled = false,
-                isDefaultDisplayDesktopEligible = true,
-                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
-            ),
-            FREEFORM_EXTERNAL_EXTENDED_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
-                hasExternalDisplay = true,
-                extendedDisplayEnabled = true,
-                isDefaultDisplayDesktopEligible = false,
-                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
-            ),
-            FULLSCREEN_EXTERNAL_EXTENDED_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
-                hasExternalDisplay = true,
-                extendedDisplayEnabled = true,
-                isDefaultDisplayDesktopEligible = false,
-                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
-            ),
-            FREEFORM_NO_EXTERNAL_EXTENDED_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
-                hasExternalDisplay = false,
-                extendedDisplayEnabled = true,
-                isDefaultDisplayDesktopEligible = false,
-                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
-            ),
-            FULLSCREEN_NO_EXTERNAL_EXTENDED_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
-                hasExternalDisplay = false,
-                extendedDisplayEnabled = true,
-                isDefaultDisplayDesktopEligible = false,
-                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
-            ),
-            FREEFORM_EXTERNAL_MIRROR_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
-                hasExternalDisplay = true,
-                extendedDisplayEnabled = false,
-                isDefaultDisplayDesktopEligible = false,
-                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
-            ),
-            FULLSCREEN_EXTERNAL_MIRROR_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
-                hasExternalDisplay = true,
-                extendedDisplayEnabled = false,
-                isDefaultDisplayDesktopEligible = false,
-                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
-            ),
-            FREEFORM_NO_EXTERNAL_MIRROR_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
-                hasExternalDisplay = false,
-                extendedDisplayEnabled = false,
-                isDefaultDisplayDesktopEligible = false,
-                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
-            ),
-            FULLSCREEN_NO_EXTERNAL_MIRROR_PROJECTED(
-                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
-                hasExternalDisplay = false,
-                extendedDisplayEnabled = false,
-                isDefaultDisplayDesktopEligible = false,
-                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
-            ),
-        }
 
         enum class FormFactorBasedTargetModeTestCase(
             val hasExternalDisplay: Boolean,
