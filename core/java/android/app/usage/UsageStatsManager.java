@@ -399,7 +399,6 @@ public final class UsageStatsManager {
      * the category of the user interaction associated with the event. The category cannot
      * be more than 127 characters, longer value will be truncated to 127 characters.
      */
-    @FlaggedApi(Flags.FLAG_USER_INTERACTION_TYPE_API)
     public static final String EXTRA_EVENT_CATEGORY =
             "android.app.usage.extra.EVENT_CATEGORY";
 
@@ -408,7 +407,6 @@ public final class UsageStatsManager {
      * the action of the user interaction associated with the event. The action cannot be
      * more than 127 characters, longer value will be truncated to 127 characters.
      */
-    @FlaggedApi(Flags.FLAG_USER_INTERACTION_TYPE_API)
     public static final String EXTRA_EVENT_ACTION =
             "android.app.usage.extra.EVENT_ACTION";
 
@@ -617,7 +615,6 @@ public final class UsageStatsManager {
      * @param query The query object used to specify the query parameters.
      * @return A {@link UsageEvents} which contains the events matching the query parameters.
      */
-    @FlaggedApi(Flags.FLAG_FILTER_BASED_EVENT_QUERY_API)
     @Nullable
     @RequiresPermission(android.Manifest.permission.PACKAGE_USAGE_STATS)
     public UsageEvents queryEvents(@NonNull UsageEventsQuery query) {
@@ -1188,7 +1185,6 @@ public final class UsageStatsManager {
      *               {@link #EXTRA_EVENT_ACTION}. Cannot be empty.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_USER_INTERACTION_TYPE_API)
     @RequiresPermission(android.Manifest.permission.REPORT_USAGE_STATS)
     public void reportUserInteraction(@NonNull String packageName, @UserIdInt int userId,
             @NonNull PersistableBundle extras) {
