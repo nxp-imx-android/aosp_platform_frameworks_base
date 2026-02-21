@@ -109,12 +109,12 @@ class BubbleEventHistoryLogger(isUserBuild: Boolean = Build.IS_USER && !Build.IS
                         else -> param.toString() // Immediately break the strong reference
                     }
                 }
-                .toTypedArray()
+                .toTypedArray<Any?>()
         @Suppress("UNCHECKED_CAST")
         recentEvents.add(
             BubbleEvent(
                 title = title,
-                titleParams = convertedParams as Array<Any?>,
+                titleParams = convertedParams,
                 eventData = eventData,
                 timestamp = timestamp,
             )

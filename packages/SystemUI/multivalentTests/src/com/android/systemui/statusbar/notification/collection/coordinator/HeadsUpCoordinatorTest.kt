@@ -1037,9 +1037,10 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
         verify(headsUpManager, never()).showNotification(bundleChild)
 
         // Capture last param
-        val decision = withArgCaptor {
-            verify(interruptLogger).logDecision(capture(), capture(), capture())
-        }
+        val decision =
+            withArgCaptor<VisualInterruptionDecisionProvider.Decision> {
+                verify(interruptLogger).logDecision(any(), any(), capture())
+            }
         assertFalse(decision.shouldInterrupt)
         assertEquals(decision.logReason, "disqualified-transfer-target")
 
