@@ -2894,7 +2894,6 @@ public class JobSchedulerServiceTest {
     public void testProxiedJobLimit_notEnforced() throws Exception {
         mService.mConstants.MAX_NUM_PROXIED_JOBS_PER_APP = TEST_MAX_PROXIED_JOBS_PER_APP;
         final String sourcePackage = "test.source.pkg";
-        final int sourceUid = 10001;
         final int sourceUserId = 0;
 
         // Schedule up to the limit and then some more. All should succeed.

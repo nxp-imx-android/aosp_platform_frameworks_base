@@ -507,6 +507,8 @@ public final class CameraExtensionSessionImpl extends CameraExtensionSession {
                     "Session already initialized");
             return;
         }
+        Log.v(TAG, "extensionType " + mExtensionType);
+
         int previewSessionType = mPreviewExtender.getSessionType();
         int imageSessionType = mImageExtender.getSessionType();
         if (previewSessionType != imageSessionType) {

@@ -859,10 +859,6 @@ public class MediaSessionService extends SystemService implements Monitor {
     }
 
     private void reportMediaInteractionEvent(MediaSessionRecordImpl record, boolean userEngaged) {
-        if (!android.app.usage.Flags.userInteractionTypeApi()) {
-            return;
-        }
-
         String packageName = record.getPackageName();
         int sessionUid = record.getUid();
         if (userEngaged) {

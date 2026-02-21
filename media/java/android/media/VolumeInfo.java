@@ -230,7 +230,8 @@ public final class VolumeInfo implements Parcelable {
          * Builder constructor for stream type-based VolumeInfo
          */
         public Builder(@AudioManager.PublicStreamTypesWithDefault int streamType) {
-            if (!AudioManager.isVolumeControlStreamType(streamType)) {
+            if (streamType != AudioManager.USE_DEFAULT_STREAM_TYPE
+                    && !AudioManager.isVolumeControlStreamType(streamType)) {
                 throw new IllegalArgumentException("Not a valid public stream type " + streamType);
             }
             mUsesStreamType = true;
@@ -318,6 +319,12 @@ public final class VolumeInfo implements Parcelable {
          * @return the new VolumeInfo instance
          */
         public @NonNull VolumeInfo build() {
+            if (mUsesStreamType && mStreamType == AudioManager.USE_DEFAULT_STREAM_TYPE) {
+                if (mMinVolIndex == INDEX_NOT_SET || mMaxVolIndex == INDEX_NOT_SET) {
+                    throw new IllegalArgumentException("Min/Max vol index must be set "
+                            + "when using USE_DEFAULT_STREAM_TYPE");
+                }
+            }
             if (mVolIndex != INDEX_NOT_SET) {
                 if (mMinVolIndex != INDEX_NOT_SET && mVolIndex < mMinVolIndex) {
                     throw new IllegalArgumentException("Volume index:" + mVolIndex

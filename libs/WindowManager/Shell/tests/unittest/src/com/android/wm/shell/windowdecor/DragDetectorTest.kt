@@ -17,13 +17,10 @@
 package com.android.wm.shell.windowdecor
 
 import android.os.SystemClock
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.InputDevice
 import android.view.MotionEvent
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import org.junit.After
 import org.junit.Assert.assertFalse
@@ -174,67 +171,6 @@ class DragDetectorTest : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_HANDLE_NON_TOUCHSCREEN_EVENTS_IN_DRAG_DETECTOR)
-    fun testMoveInSlop_mouse_passesDownMoveAndUp_nonTouchscreenEventsUnhandled() {
-        val dragDetector = createDragDetector()
-        `when`(
-                eventHandler.handleMotionEvent(
-                    any(),
-                    argThat { it.action == MotionEvent.ACTION_DOWN },
-                )
-            )
-            .thenReturn(false)
-
-        assertFalse(
-            dragDetector.onMotionEvent(createMotionEvent(MotionEvent.ACTION_DOWN, isTouch = false))
-        )
-        verify(eventHandler)
-            .handleMotionEvent(
-                any(),
-                argThat {
-                    return@argThat it.action == MotionEvent.ACTION_DOWN &&
-                        it.x == X &&
-                        it.y == Y &&
-                        it.source == InputDevice.SOURCE_MOUSE
-                },
-            )
-
-        val newX = X + SLOP - 1
-        assertTrue(
-            dragDetector.onMotionEvent(
-                createMotionEvent(MotionEvent.ACTION_MOVE, newX, Y, isTouch = false)
-            )
-        )
-        verify(eventHandler)
-            .handleMotionEvent(
-                any(),
-                argThat {
-                    return@argThat it.action == MotionEvent.ACTION_MOVE &&
-                        it.x == newX &&
-                        it.y == Y &&
-                        it.source == InputDevice.SOURCE_MOUSE
-                },
-            )
-
-        assertTrue(
-            dragDetector.onMotionEvent(
-                createMotionEvent(MotionEvent.ACTION_UP, newX, Y, isTouch = false)
-            )
-        )
-        verify(eventHandler)
-            .handleMotionEvent(
-                any(),
-                argThat {
-                    return@argThat it.action == MotionEvent.ACTION_UP &&
-                        it.x == newX &&
-                        it.y == Y &&
-                        it.source == InputDevice.SOURCE_MOUSE
-                },
-            )
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_HANDLE_NON_TOUCHSCREEN_EVENTS_IN_DRAG_DETECTOR)
     fun testMoveInSlop_mouse_passesDownAndUp() {
         val dragDetector = createDragDetector()
         `when`(

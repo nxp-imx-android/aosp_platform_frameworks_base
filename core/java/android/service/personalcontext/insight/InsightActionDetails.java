@@ -167,7 +167,14 @@ public final class InsightActionDetails implements Parcelable {
                 }
             };
 
-    /** Builder for {@link InsightActionDetails}. */
+    /**
+     * Builder for {@link InsightActionDetails}. A valid {@link InsightActionDetails} requires at
+     * least one type of action to be set, either a {@link PendingIntent} or {@link RemoteAction}.
+     * The builder will throw an {@link IllegalStateException} if neither is present when
+     * {@link #build()} is invoked. Multiple actions can be set for a {@link InsightActionDetails}.
+     * The {@link InsightActionDetails} consumer may choose the action that best fits their usage
+     * in this case.
+     */
     @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     public static final class Builder {
         private PendingIntent mPendingIntent;

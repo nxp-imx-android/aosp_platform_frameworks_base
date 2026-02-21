@@ -19,7 +19,6 @@ package android.os;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.privatecompute.flags.Flags;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.system.ErrnoException;
 import android.system.Os;
@@ -164,7 +163,7 @@ public final class SharedMemory implements Parcelable, Closeable {
      * @return true if the shared memory region is read-only, false otherwise.
      * @throws IllegalStateException if the shared memory is closed or could not be examined.
      */
-    @FlaggedApi(Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
+    @FlaggedApi(com.android.libcore.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public boolean isRegionReadOnly() {
         checkOpen();
         try {

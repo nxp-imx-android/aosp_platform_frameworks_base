@@ -97,6 +97,7 @@ import com.android.internal.widget.remotecompose.core.operations.TextLookupInt;
 import com.android.internal.widget.remotecompose.core.operations.TextMeasure;
 import com.android.internal.widget.remotecompose.core.operations.TextMerge;
 import com.android.internal.widget.remotecompose.core.operations.TextSubtext;
+import com.android.internal.widget.remotecompose.core.operations.TextTransform;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
 import com.android.internal.widget.remotecompose.core.operations.TimeAttribute;
 import com.android.internal.widget.remotecompose.core.operations.TouchExpression;
@@ -1371,6 +1372,11 @@ public class RecordingRemoteComposeBuffer extends RemoteComposeBuffer {
     @Override
     public void textSubtext(int id, int txtId, float start, float len) {
         addOperation(new TextSubtext(id, txtId, start, len), id);
+    }
+
+    @Override
+    public void textTransform(int id, int txtId, float start, float len, int operation) {
+        addOperation(new TextTransform(id, txtId, start, len, operation), id);
     }
 
     @Override

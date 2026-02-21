@@ -664,11 +664,17 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             final Map.Entry<IBinder, WindowContainerTransaction.Change> entry = entries.next();
             final WindowContainer wc = WindowContainer.fromBinder(entry.getKey());
             if (wc == null || wc.isOrganized()) continue;
-            Slog.wtf(TAG, "Attempting to externally manipulate a non-organized container: " + wc
-                    + " isAttached=" + wc.isAttached()
+            final String report = "Attempting to externally change a non-organized container: "
+                    + wc + "=" + entry.getValue()
                     + " playercount=" + mTransitionController.getTransitionPlayerCount()
-                    + " taskorg=" + mTaskOrganizerController.getTaskOrganizer());
+                    + " taskorg=" + mTaskOrganizerController.getTaskOrganizer();
             entries.remove();
+            if (wc.isAttached()) {
+                Slog.wtf(TAG, report);
+            } else {
+                // Only error-level since changing a detached container would be a no-op anyway.
+                Slog.e(TAG, report);
+            }
         }
         List<WindowContainerTransaction.HierarchyOp> hops = t.getHierarchyOps();
         for (int h = hops.size() - 1; h >= 0; --h) {
@@ -683,7 +689,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             if (binder == null) continue;
             final WindowContainer wc = WindowContainer.fromBinder(binder);
             if (wc == null || wc.isOrganized()) continue;
-            Slog.wtf(TAG, "Trying to externally manipulate a non-organized container: " + wc);
+            Slog.wtf(TAG, "Attempting to externally manipulate a non-organized container: "
+                    + wc + "=" + hop);
             hops.remove(h);
         }
     }

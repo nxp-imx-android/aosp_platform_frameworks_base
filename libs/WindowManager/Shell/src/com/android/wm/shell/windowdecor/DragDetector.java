@@ -34,8 +34,6 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
-import com.android.window.flags.Flags;
-
 /**
  * A detector for touch inputs that differentiates between drag and click inputs. It receives a flow
  * of {@link MotionEvent} and generates a new flow of motion events with slop in consideration to
@@ -95,16 +93,6 @@ public class DragDetector {
         if (ev.isSynthesizedTouchpadGesture()) {
             // Touchpad finger gestures are ignored.
             return false;
-        }
-
-        if (!Flags.handleNonTouchscreenEventsInDragDetector()) {
-            final boolean isTouchScreen =
-                    (ev.getSource() & SOURCE_TOUCHSCREEN) == SOURCE_TOUCHSCREEN;
-            if (!isTouchScreen) {
-                // Only touches generate noisy moves, so mouse/trackpad events don't need to be
-                // filtered to take the slop threshold into consideration.
-                return mEventHandler.handleMotionEvent(v, ev);
-            }
         }
         switch (ev.getActionMasked()) {
             case ACTION_DOWN: {

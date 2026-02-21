@@ -26,7 +26,6 @@ import android.os.BaseBundle;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
-import android.os.PersistableBundle;
 import android.os.SharedMemory;
 import android.os.SystemClock;
 import android.system.ErrnoException;
@@ -104,8 +103,12 @@ class PccBundleSanitizationUtil {
                 case BaseBundle subBundle -> sanitizeBundleInternal(subBundle, depth + 1);
                 case ParcelFileDescriptor pfd -> validatePfdIsReadOnly(pfd);
                 case SharedMemory sm -> {
-                    if (!sm.isRegionReadOnly()) {
-                        throw new IllegalArgumentException("SharedMemory must be read-only.");
+                    if (com.android.libcore.Flags.enablePccFrameworkSupport()) {
+                        if (!sm.isRegionReadOnly()) {
+                            throw new IllegalArgumentException("SharedMemory must be read-only.");
+                        }
+                    } else {
+                        sm.setProtect(OsConstants.PROT_READ);
                     }
                 }
                 // Bitmaps are considered safe to send across IPC. When a Bitmap is parceled, it
@@ -153,8 +156,12 @@ class PccBundleSanitizationUtil {
                 case ParcelFileDescriptor parcelFileDescriptor -> validatePfdIsReadOnly(
                         parcelFileDescriptor);
                 case SharedMemory sharedMemory -> {
-                    if (!sharedMemory.isRegionReadOnly()) {
-                        throw new IllegalArgumentException("SharedMemory must be read-only.");
+                    if (com.android.libcore.Flags.enablePccFrameworkSupport()) {
+                        if (!sharedMemory.isRegionReadOnly()) {
+                            throw new IllegalArgumentException("SharedMemory must be read-only.");
+                        }
+                    } else {
+                        sharedMemory.setProtect(OsConstants.PROT_READ);
                     }
                 }
                 case Bitmap ignored -> {

@@ -1038,7 +1038,7 @@ constructor(
                 .dumpWhileCollecting("showUnlimitedNotifications")
 
         @Suppress("UNCHECKED_CAST")
-        return combineTransform(
+        return combineTransform<Any, Int>(
                 showLimitedNotifications,
                 showUnlimitedNotifications,
                 shadeInteractor.isUserInteracting.dumpWhileCollecting("isUserInteracting"),

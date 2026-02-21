@@ -6403,7 +6403,6 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
      * @see #SHARED_SESSION_COLOR_SPACE_BT2020_HLG
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_MULTI_CLIENT)
     public static final Key<Integer> SHARED_SESSION_COLOR_SPACE =
             new Key<Integer>("android.sharedSession.colorSpace", int.class);
 
@@ -6426,7 +6425,6 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
      * <p><b>Optional</b> - The value for this key may be {@code null} on some devices.</p>
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_MULTI_CLIENT)
     public static final Key<long[]> SHARED_SESSION_OUTPUT_CONFIGURATIONS =
             new Key<long[]>("android.sharedSession.outputConfigurations", long[].class);
 
@@ -6440,7 +6438,6 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
     @SystemApi
     @NonNull
     @SyntheticKey
-    @FlaggedApi(Flags.FLAG_CAMERA_MULTI_CLIENT)
     public static final Key<android.hardware.camera2.params.SharedSessionConfiguration> SHARED_SESSION_CONFIGURATION =
             new Key<android.hardware.camera2.params.SharedSessionConfiguration>("android.sharedSession.configuration", android.hardware.camera2.params.SharedSessionConfiguration.class);
 

@@ -1088,19 +1088,6 @@ flag {
 }
 
 flag {
-   name: "handle_non_touchscreen_events_in_drag_detector"
-    namespace: "lse_desktop_experience"
-    description: "Handles non-touchscreen events from mouse/touchpad in DragDetector before \n"
-                 "passing them to MotionEventHandler. This allows filtering out irrelevant \n"
-                 "events like moves smaller than the slop threshold in an integrated way with \n"
-                 "touchscreen events."
-    bug: "435051530"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "home_package_windowing_exemptions_bug_fix"
     namespace: "lse_desktop_experience"
     description: "Fixes issue with retrieving the home package during the windowing exemptions \n"
@@ -1126,16 +1113,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Allows tasks under a root task to be have independent (non-inherited) bounds"
     bug: "402825303"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "parallel_cd_transitions_during_recents"
-    namespace: "lse_desktop_experience"
-    description: "Runs CD transitions in a separate track when the recents transition is running"
-    bug: "416499938"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

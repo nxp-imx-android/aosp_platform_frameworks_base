@@ -115,6 +115,16 @@ class SnapController() : SnapEventHandler {
         delegateIfRunning { snapEventHandler.onTaskLaunchStarted() }
     }
 
+    override fun onDeskSwitchAnimationStarting(displayId: Int, fromDeskId: Int, toDeskId: Int) {
+        delegateIfRunning {
+            snapEventHandler.onDeskSwitchAnimationStarting(displayId, fromDeskId, toDeskId)
+        }
+    }
+
+    override fun onDeskSwitchAnimationEnded(displayId: Int, deskId: Int) {
+        delegateIfRunning { snapEventHandler.onDeskSwitchAnimationEnded(displayId, deskId) }
+    }
+
     private fun <T> delegateIfRunning(fn: () -> T): T? =
         if (::snapEventHandler.isInitialized) {
             fn()

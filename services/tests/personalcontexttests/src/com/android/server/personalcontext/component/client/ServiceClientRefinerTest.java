@@ -16,29 +16,40 @@
 
 package com.android.server.personalcontext.component.client;
 
+import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
+
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.os.Bundle;
 import android.os.Handler;
+import android.os.ParcelUuid;
 import android.os.UserHandle;
+import android.os.test.FakePermissionEnforcer;
 import android.permission.PermissionManager;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.hint.BundleHint;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.ContextHintTestUtils;
+import android.service.personalcontext.hint.ContextHintWrapper;
 import android.service.personalcontext.hint.PublishedContextHint;
 import android.service.personalcontext.hint.PublishedContextHintWrapper;
+import android.service.personalcontext.insight.PublishedContextInsightWrapper;
+import android.service.personalcontext.insight.interaction.InsightEvent;
+import android.service.personalcontext.refiner.IGetFilterCallback;
+import android.service.personalcontext.refiner.IRefineCallback;
 import android.service.personalcontext.refiner.IRefiner;
+import android.testing.TestableContext;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -47,11 +58,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
@@ -62,29 +73,41 @@ import java.util.concurrent.atomic.AtomicReference;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class ServiceClientRefinerTest {
-    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-
     private static final String TEST_PACKAGE_NAME = "com.test.package";
 
-    @Mock private Context mContext;
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+
+    @Rule
+    public final TestableContext mContext = new TestableContext(getInstrumentation().getContext());
+
     @Mock private UserHandle mUserHandle;
-    @Mock private IRefiner mIRefiner;
     @Mock private PermissionManager mPermissionManager;
     @Mock private Handler mHandler;
 
     private final FakeExecutor mFakeExecutor = new FakeExecutor();
 
     private ServiceClientRefiner mServiceClientRefiner;
+    private TestIRefiner mIRefiner;
+    private FakePermissionEnforcer mFakePermissionEnforcer;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        when(mContext.getSystemService(PermissionManager.class)).thenReturn(mPermissionManager);
+        mFakePermissionEnforcer = new FakePermissionEnforcer();
+        mIRefiner = new TestIRefiner();
 
+        mFakePermissionEnforcer.grant(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
+        mContext.addMockSystemService(Context.PERMISSION_ENFORCER_SERVICE, mFakePermissionEnforcer);
+        mContext.addMockSystemService(PermissionManager.class, mPermissionManager);
+
+        // Add mock service for bindServiceAsUser call.
         final ServiceInfo serviceInfo = new ServiceInfo();
         serviceInfo.packageName = TEST_PACKAGE_NAME;
         serviceInfo.name = "baz";
+        mContext.addMockService(
+                new ComponentName(serviceInfo.packageName, serviceInfo.name), mIRefiner.asBinder());
+
         mServiceClientRefiner =
                 new ServiceClientRefiner(
                         mContext,
@@ -106,23 +129,75 @@ public class ServiceClientRefinerTest {
         final Set<PublishedContextHint> signedHints = Set.of(hint);
 
         // Submit hints to refine.
-        mServiceClientRefiner.refine(signedHints, (hints) -> {},
-                (componentId, insights) -> {
-            });
+        final Set<ContextHint> refinedHints = new HashSet<>();
+        mServiceClientRefiner.refine(
+                signedHints,
+                (hints) -> {
+                    refinedHints.addAll(hints);
+                },
+                (componentId, insights) -> {});
         mFakeExecutor.runAll();
         mServiceClientRefiner.onStarted(mIRefiner);
         mFakeExecutor.runAll();
 
         // Hints are sent to the refiner service.
-        ArgumentCaptor<List<PublishedContextHintWrapper>> hintCaptor =
-                ArgumentCaptor.forClass(List.class);
-        verify(mIRefiner).refine(any(), hintCaptor.capture(), any(), any());
-        assertThat(hintCaptor.getValue().getFirst().getPublishedContextHint()).isEqualTo(hint);
+        assertThat(mIRefiner.mInputHints).hasSize(1);
+        final PublishedContextHint refinedHint =
+                mIRefiner.mInputHints.getFirst().getPublishedContextHint();
+        assertThat(refinedHint).isEqualTo(hint);
+
+        // Refiner generates a new hint.
+        final Bundle dataBundle = new Bundle();
+        dataBundle.putString("foo", "bar");
+        BundleHint bundleHint2 = new BundleHint.Builder().build();
+        assertThat(mIRefiner.mIRefineCallback).isNotNull();
+        mIRefiner.mIRefineCallback.onHintsRefined(List.of(new ContextHintWrapper(bundleHint2)));
+
+        // Generated hint is delivered back to service.
+        assertThat(refinedHints).containsExactly(bundleHint2);
     }
 
     @EnableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
     @Test
-    public void testRefine_noPermissions_failsImmediately() throws Exception {
+    public void testRefine_noPublishHintPermissions_doesNotInvokeCallback() throws Exception {
+        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
+
+        BundleHint bundleHint = new BundleHint.Builder().build();
+        PublishedContextHint hint =
+                new PublishedContextHint.Builder(
+                                bundleHint, ContextHintTestUtils.generateSignedHintKey())
+                        .build();
+        final Set<PublishedContextHint> signedHints = Set.of(hint);
+
+        // Submit hints to refine.
+        final Set<ContextHint> refinedHints = new HashSet<>();
+        mServiceClientRefiner.refine(
+                signedHints, (hints) -> refinedHints.addAll(hints), (componentId, insights) -> {});
+        mFakeExecutor.runAll();
+        mServiceClientRefiner.onStarted(mIRefiner);
+        mFakeExecutor.runAll();
+
+        // Hints are sent to the refiner service.
+        assertThat(mIRefiner.mInputHints).hasSize(1);
+        final PublishedContextHint refinedHint =
+                mIRefiner.mInputHints.getFirst().getPublishedContextHint();
+        assertThat(refinedHint).isEqualTo(hint);
+
+        // Refiner generates a hint.
+        assertThat(mIRefiner.mIRefineCallback).isNotNull();
+        assertThrows(
+                SecurityException.class,
+                () ->
+                        mIRefiner.mIRefineCallback.onHintsRefined(
+                                List.of(new ContextHintWrapper(bundleHint))));
+
+        // Generated hint is NOT provided to the callback because the permissions check failed.
+        assertThat(refinedHints).isEmpty();
+    }
+
+    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    @Test
+    public void testRefine_noReceiveHintPermissions_failsImmediately() throws Exception {
         when(mPermissionManager.checkPackageNamePermission(
                         eq(Manifest.permission.PERSONAL_CONTEXT_RECEIVE_HINTS),
                         eq(TEST_PACKAGE_NAME),
@@ -139,16 +214,15 @@ public class ServiceClientRefinerTest {
 
         // Submit hints to refine
         AtomicReference<Set<ContextHint>> refinedHints = new AtomicReference<>();
-        mServiceClientRefiner.refine(signedHints, (hints) -> refinedHints.set(hints),
-                (componentId, insights) -> {
+        mServiceClientRefiner.refine(
+                signedHints, (hints) -> refinedHints.set(hints), (componentId, insights) -> {});
 
-                });
         mFakeExecutor.runAll();
         mServiceClientRefiner.onStarted(mIRefiner);
         mFakeExecutor.runAll();
 
-        // Hints are not sent to refiner, and an empty set is returned immediately in the callback.
-        verify(mIRefiner, never()).refine(any(), any(), any(), any());
+        // Hints are not sent to refiner, and an empty set is returned immediately the callback.
+        assertThat(mIRefiner.mInputHints).isNull();
         assertThat(refinedHints.get()).isEmpty();
     }
 
@@ -171,5 +245,38 @@ public class ServiceClientRefinerTest {
                 mQueue.remove();
             }
         }
+    }
+
+    private static class TestIRefiner extends IRefiner.Stub {
+        List<PublishedContextHintWrapper> mInputHints;
+        IRefineCallback mIRefineCallback;
+
+        @Override
+        public void refine(
+                ParcelUuid componentId,
+                List<PublishedContextHintWrapper> inputHints,
+                IRefineCallback callback,
+                IOpCallback opCallback) {
+            mInputHints = inputHints;
+            mIRefineCallback = callback;
+        }
+
+        @Override
+        public void getFilter(
+                ParcelUuid componentId, IGetFilterCallback callback, IOpCallback opCallback) {}
+
+        @Override
+        public void handleEvent(
+                ParcelUuid componentId,
+                String packageName,
+                InsightEvent event,
+                IOpCallback opCallback) {}
+
+        @Override
+        public void handleFeedback(
+                ParcelUuid componentId,
+                PublishedContextInsightWrapper insight,
+                Bundle feedback,
+                IOpCallback opCallback) {}
     }
 }

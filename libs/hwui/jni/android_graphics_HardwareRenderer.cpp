@@ -54,6 +54,7 @@
 #include <gui/SurfaceControl.h>
 #include <ui/GraphicBufferAllocator.h>
 #endif
+#include <com_android_graphics_hwui_flags.h>
 #include <utils/Color.h>
 #include <utils/RefBase.h>
 #include <utils/StrongPointer.h>
@@ -67,6 +68,7 @@
 #include "android_graphics_HardwareRendererObserver.h"
 #include "utils/ForceDark.h"
 #include "utils/SharedLib.h"
+namespace hwui_flags = com::android::graphics::hwui::flags;
 
 namespace android {
 
@@ -837,9 +839,10 @@ static jobject android_view_ThreadedRenderer_createHardwareBitmapFromRenderNode(
 
     // Create an ImageReader wired up to a BufferItemConsumer
     AImageReader* rawReader;
-    constexpr auto usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE |
-                           AHARDWAREBUFFER_USAGE_GPU_FRAMEBUFFER |
-                           AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
+    auto usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_FRAMEBUFFER;
+    if (!hwui_flags::remove_composer_overlay_usage()) {
+        usage |= AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
+    }
     media_status_t result =
             AImageReader_newWithUsage(width, height, AIMAGE_FORMAT_RGBA_8888, usage, 2, &rawReader);
     std::unique_ptr<AImageReader, decltype(&AImageReader_delete)> reader(rawReader,

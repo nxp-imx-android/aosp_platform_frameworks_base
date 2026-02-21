@@ -403,9 +403,8 @@ public abstract class InsightSurfaceVisualizerService extends Service {
             mRequestProcessor.execute(new BinderRequestProcessor
                     .ExecutionParams.Builder<InsightSurfaceVisualizerService>(
                             opCallback,
-                            serviceInstance -> {
-                                serviceInstance.onClientUpdated(oldClientInfo, newClientInfo);
-                            }).build());
+                            serviceInstance -> serviceInstance.onClientUpdated(
+                                    oldClientInfo, newClientInfo, receiver)).build());
         }
 
         @Override

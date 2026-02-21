@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.chips.ui.compose
 
-import android.platform.test.annotations.EnableFlags
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -31,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.width
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.google.common.truth.Truth.assertThat
 import java.util.Locale
@@ -187,7 +185,6 @@ class NeverDecreaseWidthTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_STATUS_BAR_CHRONOMETER_WIDTH_RESET)
     fun neverDecreaseWidth_minWidthResets_onNumCharactersChange() {
         val text = mutableStateOf("wwww")
 

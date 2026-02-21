@@ -906,6 +906,16 @@ public abstract class BaseShortcutManagerTest {
 
         LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.addService(PackageManagerInternal.class, mMockPackageManagerInternal);
+
+        when(mMockPackageManagerInternal.isSameApp(anyString(), anyLong(), anyInt(), anyInt()))
+                .thenAnswer(inv -> {
+                    String pkg = inv.getArgument(0);
+                    int uid = inv.getArgument(2);
+                    int userId = inv.getArgument(3);
+                    PackageInfo pi = getInjectedPackageInfo(pkg, userId, false);
+                    return pi != null && uid == pi.applicationInfo.uid;
+                });
+
         LocalServices.removeServiceForTest(UsageStatsManagerInternal.class);
         LocalServices.addService(UsageStatsManagerInternal.class, mMockUsageStatsManagerInternal);
         LocalServices.removeServiceForTest(ActivityManagerInternal.class);

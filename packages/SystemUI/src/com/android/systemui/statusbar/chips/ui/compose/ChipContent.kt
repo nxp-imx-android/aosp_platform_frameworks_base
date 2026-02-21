@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrain
 import androidx.compose.ui.unit.dp
-import com.android.systemui.Flags
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
@@ -235,9 +234,6 @@ private class NeverDecreaseWidthNode(
 
     var textLength = initialTextLength
         set(value) {
-            if (!Flags.statusBarChronometerWidthReset()) {
-                return
-            }
             if (field != value) {
                 // Reset minWidth in case the total number of characters has decreased. (e.g. from
                 // 1:00:00 to 59:59). See b/450956553.
