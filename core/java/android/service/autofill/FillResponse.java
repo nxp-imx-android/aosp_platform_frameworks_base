@@ -35,6 +35,7 @@ import android.content.pm.ParceledListSlice;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.service.autofill.Flags;
 import android.service.assist.classification.FieldClassification;
 import android.view.autofill.AutofillId;
 import android.widget.RemoteViews;
@@ -703,9 +704,21 @@ public final class FillResponse implements Parcelable {
                 throw new IllegalStateException("Already called #setHeader() or #setFooter()");
             }
 
-            if (authentication == null ^ (presentation == null && inlinePresentation == null)) {
-                throw new IllegalArgumentException("authentication and presentation "
-                        + "(dropdown or inline), must be both non-null or null");
+            if (Flags.addDialogPresentationCheck()) {
+                if (authentication == null
+                        ^ (presentation == null
+                                && inlinePresentation == null
+                                && dialogPresentation == null)) {
+                    throw new IllegalArgumentException(
+                            "authentication and presentation (dropdown, inline or dialog), must be"
+                                    + " both non-null or null");
+                }
+            } else {
+                if (authentication == null ^ (presentation == null && inlinePresentation == null)) {
+                    throw new IllegalArgumentException(
+                            "authentication and presentation "
+                                    + "(dropdown or inline), must be both non-null or null");
+                }
             }
             mAuthentication = authentication;
             mPresentation = presentation;

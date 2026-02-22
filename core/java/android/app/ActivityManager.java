@@ -744,17 +744,9 @@ public class ActivityManager {
 
     /**
      * Process states, describing the kind of state a particular process is in.
-     * When updating these, make sure to also check all related references to the
-     * constant in code, and update these arrays:
-     *
-     * @see com.android.internal.app.procstats.ProcessState#PROCESS_STATE_TO_STATE
-     * @see com.android.server.am.ProcessList#sProcStateToProcMem
-     * @see com.android.server.am.ProcessList#sFirstAwakePssTimes
-     * @see com.android.server.am.ProcessList#sSameAwakePssTimes
-     * @see com.android.server.am.ProcessList#sTestFirstPssTimes
-     * @see com.android.server.am.ProcessList#sTestSamePssTimes
      * @hide
      */
+    // LINT.IfChange
     @IntDef(flag = false, prefix = { "PROCESS_STATE_" }, value = {
         PROCESS_STATE_UNKNOWN, // -1
         PROCESS_STATE_PERSISTENT, // 0
@@ -777,9 +769,14 @@ public class ActivityManager {
         PROCESS_STATE_CACHED_ACTIVITY_CLIENT,
         PROCESS_STATE_CACHED_RECENT,
         PROCESS_STATE_CACHED_EMPTY,
+        PROCESS_STATE_NONEXISTENT,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ProcessState {}
+    // LINT.ThenChange(
+    //     /core/java/com/android/internal/app/procstats/ProcessState.java:process_state_to_state,
+    //     /services/core/java/com/android/server/am/ProcessList.java:process_state_to_memory
+    // )
 
     /*
      * PROCESS_STATE_* must come from frameworks/base/core/java/android/app/ProcessStateEnum.aidl.
