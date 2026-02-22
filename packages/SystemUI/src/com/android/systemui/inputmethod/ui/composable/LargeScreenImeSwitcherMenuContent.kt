@@ -17,9 +17,11 @@
 package com.android.systemui.inputmethod.ui.composable
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -85,6 +87,8 @@ fun LargeScreenImeSwitcherMenuContent(
         Column(
             modifier =
                 Modifier.fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .padding(MenuDimensions.InternalPadding)
                     .semantics {
                         paneTitle = paneTitleDescription
                         testTagsAsResourceId = true
@@ -101,6 +105,7 @@ fun LargeScreenImeSwitcherMenuContent(
                         }
                     }
             )
+            Spacer(modifier = Modifier.size(MenuDimensions.AfterHeaderSpace))
             Column(
                 modifier =
                     Modifier.weight(weight = 1f, fill = false)
@@ -130,18 +135,11 @@ private fun Header(settingsButtonAction: (() -> Unit)?) {
         stringResource(com.android.systemui.res.R.string.input_method_switcher_title_large_screen)
     val settingsButtonDescription = stringResource(R.string.input_method_language_settings)
     Row(
-        modifier =
-            Modifier.fillMaxWidth()
-                .padding(
-                    start = HeaderDimensions.PaddingStart,
-                    top = HeaderDimensions.PaddingTop,
-                    end = HeaderDimensions.PaddingEnd,
-                    bottom = HeaderDimensions.PaddingBottom,
-                ),
+        modifier = Modifier.fillMaxWidth().padding(MenuDimensions.HeaderInternalPadding),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Spacer(modifier = Modifier.size(HeaderDimensions.ButtonSize))
+        Spacer(modifier = Modifier.size(MenuDimensions.HeaderButtonSize))
         Text(
             text = title,
             modifier = Modifier.align(Alignment.CenterVertically),
@@ -149,7 +147,7 @@ private fun Header(settingsButtonAction: (() -> Unit)?) {
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
-        val endContentModifier = Modifier.size(HeaderDimensions.ButtonSize)
+        val endContentModifier = Modifier.size(MenuDimensions.HeaderButtonSize)
         if (settingsButtonAction != null) {
             IconButton(
                 modifier = endContentModifier.testTag("settings_button"),
@@ -167,10 +165,9 @@ private fun Header(settingsButtonAction: (() -> Unit)?) {
     }
 }
 
-private object HeaderDimensions {
-    val PaddingStart = 14.dp
-    val PaddingTop = 14.dp
-    val PaddingEnd = 14.dp
-    val PaddingBottom = 2.dp
-    val ButtonSize = 36.dp
+private object MenuDimensions {
+    val InternalPadding = PaddingValues(vertical = 14.dp)
+    val HeaderInternalPadding = PaddingValues(horizontal = 14.dp)
+    val HeaderButtonSize = 36.dp
+    val AfterHeaderSpace = 8.dp
 }

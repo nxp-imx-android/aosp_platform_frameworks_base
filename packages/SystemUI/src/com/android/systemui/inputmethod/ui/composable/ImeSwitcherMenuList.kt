@@ -86,7 +86,10 @@ fun ImeSwitcherMenuList(
     val specs: LayoutSpecs =
         if (useLargeScreenLayout) LayoutSpecsDefaults.largeScreen() else LayoutSpecsDefaults.base()
     // TODO(b/308488505): Add scroll indicators to the LazyColumn once implemented.
-    if (Flags.imeSwitcherMenuSystemuiStyleUpdate()) {
+    if (
+        (Flags.imeSwitcherMenuSystemuiStyleUpdate() && !useLargeScreenLayout) ||
+            (Flags.imeSwitcherMenuSystemuiStyleUpdateDesktop() && useLargeScreenLayout)
+    ) {
         LazyColumn(state = listState, modifier = Modifier.heightIn(max = 373.dp)) {
             itemsIndexed(items, key = { _, item -> "${item.imeId}:${item.subtypeIndex}" }) {
                 index,
