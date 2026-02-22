@@ -1944,7 +1944,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testSwitchToBedtimeAutoBrightnessMode_wearBedtimeEnabledAndBrightRequest() {
-        when(mDisplayManagerFlagsMock.isAutoBrightnessModeBedtimeWearEnabled()).thenReturn(true);
         Settings.Global.putInt(mContext.getContentResolver(), Settings.Global.Wearable.BEDTIME_MODE,
                 /* value= */ 1);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
@@ -1961,7 +1960,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testNotSwitchToBedtimeAutoBrightnessMode_wearBedtimeDisabled() {
-        when(mDisplayManagerFlagsMock.isAutoBrightnessModeBedtimeWearEnabled()).thenReturn(true);
         Settings.Global.putInt(mContext.getContentResolver(), Settings.Global.Wearable.BEDTIME_MODE,
                 /* value= */ 0);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
@@ -1978,7 +1976,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testSwitchToDozeAutoBrightnessMode_wearBedtimeEnabledAndDozeRequest() {
-        when(mDisplayManagerFlagsMock.isAutoBrightnessModeBedtimeWearEnabled()).thenReturn(true);
         Settings.Global.putInt(mContext.getContentResolver(), Settings.Global.Wearable.BEDTIME_MODE,
                 /* value= */ 1);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
