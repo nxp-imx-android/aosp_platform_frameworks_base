@@ -32,6 +32,7 @@ import android.app.admin.PolicyKey
 import android.app.admin.PolicyValueTransport
 import android.app.admin.metadata.EnumPolicyMetadata
 import android.app.admin.metadata.PolicyMetadata
+import android.app.admin.metadata.ResolutionMechanismMetadata
 import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.internal.infra.AndroidFuture
@@ -87,7 +88,7 @@ open class PolicyHandlerTest {
                 /*requiredPermission=*/ "testPermission",
                 /*requiredCrossUserPermission=*/ "testCrossUserPermission",
                 /*allowedDpcTypes=*/ setOf(),
-                /*resolutionMechanism=*/ null,
+                /*resolutionMechanism=*/ ResolutionMechanismMetadata.MostRestrictive<Int>(),
                 /*allowedValues=*/ setOf(VALUE_1),
             )
         val anyTransportValue: PolicyValueTransport = PolicyValueTransport.integerField(VALUE_1)
@@ -448,7 +449,7 @@ open class PolicyHandlerTest {
                 /* requiredPermission= */ null,
                 /* requiredCrossUserPermission= */ "testCrossUserPermission",
                 /* allowedDpcTypes= */ setOf(),
-                /*resolutionMechanism=*/ null,
+                /* resolutionMechanism= */ ResolutionMechanismMetadata.MostRestrictive<Int>(),
                 /* allowedValues= */ setOf(Policy.VALUE_1),
             )
 
@@ -474,7 +475,7 @@ open class PolicyHandlerTest {
                 /* requiredPermission= */ "thePermission",
                 /* requiredCrossUserPermission= */ null,
                 /* allowedDpcTypes= */ setOf(),
-                /*resolutionMechanism=*/ null,
+                /* resolutionMechanism= */ ResolutionMechanismMetadata.MostRestrictive<Int>(),
                 /* allowedValues= */ setOf(Policy.VALUE_1),
             )
 
@@ -883,7 +884,7 @@ open class PolicyHandlerTest {
                 /* requiredPermission= */ null,
                 /* requiredCrossUserPermission= */ "testCrossUserPermission",
                 /* allowedDpcTypes= */ setOf(),
-                /* resolutionMechanism= */ null,
+                /* resolutionMechanism= */ ResolutionMechanismMetadata.MostRestrictive<Int>(),
                 /* allowedValues= */ setOf(Policy.VALUE_1),
             )
 
@@ -911,7 +912,7 @@ open class PolicyHandlerTest {
                 /* requiredPermission= */ null,
                 /* requiredCrossUserPermission= */ "testCrossUserPermission",
                 /* allowedDpcTypes= */ setOf(),
-                /* resolutionMechanism= */ null,
+                /* resolutionMechanism= */ ResolutionMechanismMetadata.MostRestrictive<Int>(),
                 /* allowedValues= */ setOf(Policy.VALUE_1),
             )
 
@@ -927,5 +928,4 @@ open class PolicyHandlerTest {
 
         assertThat(error).hasMessageThat().contains("no requiredPermission")
     }
-
 }

@@ -33,7 +33,7 @@ public final class MostRecent<V> extends ResolutionMechanism<V> {
     }
 
     @Override
-    android.app.admin.MostRecent<V> getParcelableResolutionMechanism() {
+    public android.app.admin.MostRecent<V> getParcelableResolutionMechanism() {
         return new android.app.admin.MostRecent<V>();
     }
 
