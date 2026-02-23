@@ -181,6 +181,9 @@ constructor(
 
     val shouldShowSettingsButton: Boolean by derivedStateOf { isRecording }
 
+    val shouldShowDim: Boolean by derivedStateOf {
+        !isRecording && !recordDetailsParametersViewModel.shouldShowFrontCamera
+    }
     val isTransient: Boolean by screenCaptureCameraTransformationInteractor::isTransforming
 
     override suspend fun onActivated() {
