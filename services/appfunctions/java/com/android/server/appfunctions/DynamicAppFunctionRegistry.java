@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 /**
  * Manages the lifecycle of app functions registered at runtime for a single user. Unregisters
@@ -54,6 +55,12 @@ final class DynamicAppFunctionRegistry {
     private static final boolean DEBUG = Build.TYPE.equals("eng");
     private static final String TAG = "DynamicAppFuncRegistry";
     private final Object mLock = new Object();
+    private final Executor mFrozenStateListenerExecutor;
+
+    private final FrozenStateListener mFrozenStateListener = new FrozenStateListener();
+
+    @GuardedBy("mLock")
+    private final ArraySet<IBinder> mFrozenBinders = new ArraySet<>();
 
     // TODO: Considering adding our own collection class to enabling indexing with different keys.
     // Our own collection class should maintain all those maps, without the caller to keep those
@@ -72,7 +79,14 @@ final class DynamicAppFunctionRegistry {
      */
     private final RemoteCallbackList<IAppFunctionExecutor> mCallbacks;
 
-    DynamicAppFunctionRegistry(@NonNull OnBinderDeathCleanupCallback onBinderDeathCleanupCallback) {
+    private final OnRegistrationStateChangedListener mOnRegistrationStateChangedListener;
+
+    DynamicAppFunctionRegistry(
+            @NonNull Executor frozenStateListenerExecutor,
+            @NonNull OnRegistrationStateChangedListener onRegistrationStateChangedListener) {
+        mFrozenStateListenerExecutor = Objects.requireNonNull(frozenStateListenerExecutor);
+        mOnRegistrationStateChangedListener =
+                Objects.requireNonNull(onRegistrationStateChangedListener);
         mCallbacks =
                 new RemoteCallbackList<>() {
                     @Override
@@ -81,6 +95,7 @@ final class DynamicAppFunctionRegistry {
                             Log.d(TAG, "onCallbackDied for " + callback.toString());
                         }
                         synchronized (mLock) {
+                            removeFrozenStateListener(callback.asBinder());
                             ArraySet<AppFunctionRegistrationId> registrationIds =
                                     mExecutorToRegistrations.remove(callback.asBinder());
                             if (registrationIds == null) {
@@ -105,7 +120,8 @@ final class DynamicAppFunctionRegistry {
                                 }
                             }
                             if (!unregisteredFunctionNames.isEmpty()) {
-                                onBinderDeathCleanupCallback.run(unregisteredFunctionNames);
+                                mOnRegistrationStateChangedListener.onRegistrationChanged(
+                                        unregisteredFunctionNames);
                             }
                         }
                     }
@@ -135,6 +151,7 @@ final class DynamicAppFunctionRegistry {
         synchronized (mLock) {
             ArrayList<AppFunctionRegistrationId> registrationIds =
                     new ArrayList<>(functionIdentifiers.size());
+            ArraySet<AppFunctionName> registeredFunctionNames = new ArraySet<>();
             for (int index = 0; index < functionIdentifiers.size(); index++) {
                 AppFunctionName name =
                         new AppFunctionName(packageName, functionIdentifiers.get(index));
@@ -148,6 +165,7 @@ final class DynamicAppFunctionRegistry {
                                     + source);
                 }
                 registrationIds.add(new AppFunctionRegistrationId(name, source));
+                registeredFunctionNames.add(name);
             }
 
             for (AppFunctionRegistrationId registrationId : registrationIds) {
@@ -158,6 +176,13 @@ final class DynamicAppFunctionRegistry {
                 if (!mExecutorToRegistrations.containsKey(executor.asBinder())) {
                     mExecutorToRegistrations.put(executor.asBinder(), new ArraySet<>());
                     mCallbacks.register(executor);
+                    IBinder binder = executor.asBinder();
+                    try {
+                        binder.addFrozenStateChangeCallback(
+                                mFrozenStateListenerExecutor, mFrozenStateListener);
+                    } catch (UnsupportedOperationException | RemoteException e) {
+                        Log.w(TAG, "Unable to monitor frozen state for " + binder, e);
+                    }
                 }
                 Objects.requireNonNull(mExecutorToRegistrations.get(executor.asBinder()))
                         .add(registrationId);
@@ -166,6 +191,7 @@ final class DynamicAppFunctionRegistry {
                     Log.d(TAG, "registerAppFunction with ID:" + registrationId);
                 }
             }
+            mOnRegistrationStateChangedListener.onRegistrationChanged(registeredFunctionNames);
         }
     }
 
@@ -180,14 +206,15 @@ final class DynamicAppFunctionRegistry {
      * @param functionIdentifiers List of identifier of the app functions.
      * @param executor Executor of the app function.
      * @param scopeIds Identifiers of the registration source corresponding to each
-     * functionIdentifier. Activity identifier for activity scoped functions, empty class for
-     * global scoped functions, empty class for global scoped functions.
+     *     functionIdentifier. Activity identifier for activity scoped functions, empty class for
+     *     global scoped functions, empty class for global scoped functions.
      */
     public void unregisterAppFunctions(
             @NonNull String packageName,
             @NonNull List<String> functionIdentifiers,
             @NonNull IAppFunctionExecutor executor) {
         synchronized (mLock) {
+            ArraySet<AppFunctionName> unregisteredFunctionNames = new ArraySet<>();
             for (int index = 0; index < functionIdentifiers.size(); index++) {
                 AppFunctionName name =
                         new AppFunctionName(packageName, functionIdentifiers.get(index));
@@ -200,8 +227,8 @@ final class DynamicAppFunctionRegistry {
                 }
 
                 RegistrationScopeId registeredScopeId = null;
-                for (Map.Entry<RegistrationScopeId, IAppFunctionExecutor> entry
-                        : Objects.requireNonNull(mRegistrations.get(name)).entrySet()) {
+                for (Map.Entry<RegistrationScopeId, IAppFunctionExecutor> entry :
+                        Objects.requireNonNull(mRegistrations.get(name)).entrySet()) {
                     if (entry.getValue() != null
                             && entry.getValue().asBinder().equals(executor.asBinder())) {
                         registeredScopeId = entry.getKey();
@@ -210,9 +237,12 @@ final class DynamicAppFunctionRegistry {
                 }
                 if (registeredScopeId == null) {
                     if (DEBUG) {
-                        Log.w(TAG, "Skip unregistering function with name:" + name
-                                + ", as the executor is not found. Available executors: "
-                                + Objects.requireNonNull(mRegistrations.get(name)));
+                        Log.w(
+                                TAG,
+                                "Skip unregistering function with name:"
+                                        + name
+                                        + ", as the executor is not found. Available executors: "
+                                        + Objects.requireNonNull(mRegistrations.get(name)));
                     }
                     continue;
                 }
@@ -220,12 +250,11 @@ final class DynamicAppFunctionRegistry {
                 Objects.requireNonNull(mRegistrations.get(name)).remove(registeredScopeId);
                 if (Objects.requireNonNull(mRegistrations.get(name)).isEmpty()) {
                     mRegistrations.remove(name);
+                    unregisteredFunctionNames.add(name);
                 }
 
-                AppFunctionRegistrationId registrationId = new AppFunctionRegistrationId(
-                    name,
-                    registeredScopeId
-                );
+                AppFunctionRegistrationId registrationId =
+                        new AppFunctionRegistrationId(name, registeredScopeId);
                 ArraySet<AppFunctionRegistrationId> executorRegistrations =
                         mExecutorToRegistrations.get(executor.asBinder());
                 if (executorRegistrations != null) {
@@ -234,12 +263,14 @@ final class DynamicAppFunctionRegistry {
                         mExecutorToRegistrations.remove(executor.asBinder());
                         // This was the last registration for this executor.
                         mCallbacks.unregister(executor);
+                        removeFrozenStateListener(executor.asBinder());
                     }
                 }
                 if (DEBUG) {
                     Log.d(TAG, "unregisterAppFunction with ID:" + registrationId);
                 }
             }
+            mOnRegistrationStateChangedListener.onRegistrationChanged(unregisteredFunctionNames);
         }
     }
 
@@ -264,9 +295,13 @@ final class DynamicAppFunctionRegistry {
             Log.d(TAG, "executeAppFunction with ID:" + name + " with activity token: " + sourceId);
         }
         IAppFunctionExecutor executor = null;
+        boolean isFrozen = false;
         synchronized (mLock) {
             if (mRegistrations.containsKey(name)) {
                 executor = Objects.requireNonNull(mRegistrations.get(name)).get(sourceId);
+                if (executor != null) {
+                    isFrozen = mFrozenBinders.contains(executor.asBinder());
+                }
             }
         }
 
@@ -286,6 +321,16 @@ final class DynamicAppFunctionRegistry {
                                         + request.getFunctionIdentifier()
                                         + " is not found for provided activity. "));
             }
+            return;
+        }
+
+        if (isFrozen) {
+            safeExecuteAppFunctionCallback.onError(
+                    new AppFunctionException(
+                            AppFunctionException.ERROR_DISABLED,
+                            "Function with ID: "
+                                    + request.getFunctionIdentifier()
+                                    + " is disabled."));
             return;
         }
 
@@ -320,7 +365,21 @@ final class DynamicAppFunctionRegistry {
      */
     public boolean hasRegistrations(String packageName, String functionIdentifier) {
         synchronized (mLock) {
-            return mRegistrations.containsKey(new AppFunctionName(packageName, functionIdentifier));
+            AppFunctionName functionName = new AppFunctionName(packageName, functionIdentifier);
+            ArrayMap<RegistrationScopeId, IAppFunctionExecutor> registrations =
+                    mRegistrations.get(functionName);
+            if (registrations == null || registrations.isEmpty()) {
+                return false;
+            }
+
+            for (IAppFunctionExecutor executor : registrations.values()) {
+                if (!mFrozenBinders.contains(executor.asBinder())) {
+                    // At least one is not frozen, so we consider it as having registrations.
+                    return true;
+                }
+            }
+            // All executors are frozen
+            return false;
         }
     }
 
@@ -339,7 +398,14 @@ final class DynamicAppFunctionRegistry {
         synchronized (mLock) {
             AppFunctionName name = new AppFunctionName(packageName, functionIdentifier);
             ArrayMap<RegistrationScopeId, IAppFunctionExecutor> scopes = mRegistrations.get(name);
-            return scopes != null && scopes.containsKey(scopeId);
+            if (scopes == null || !scopes.containsKey(scopeId)) {
+                return false;
+            }
+            IAppFunctionExecutor executor = scopes.get(scopeId);
+            if (executor == null) {
+                return false;
+            }
+            return !mFrozenBinders.contains(executor.asBinder());
         }
     }
 
@@ -406,6 +472,40 @@ final class DynamicAppFunctionRegistry {
         return result;
     }
 
+    @GuardedBy("mLock")
+    private void removeFrozenStateListener(@NonNull IBinder binder) {
+        mFrozenBinders.remove(binder);
+        try {
+            binder.removeFrozenStateChangeCallback(mFrozenStateListener);
+        } catch (UnsupportedOperationException | IllegalArgumentException e) {
+            if (DEBUG) {
+                Log.d(TAG, "Failed to remove frozen state listener for " + binder, e);
+            }
+        }
+    }
+
+    private class FrozenStateListener implements IBinder.FrozenStateChangeCallback {
+        @Override
+        public void onFrozenStateChanged(@NonNull IBinder who, int state) {
+            final boolean isFrozen = (state != IBinder.FrozenStateChangeCallback.STATE_UNFROZEN);
+            Set<AppFunctionName> changedFunctionNames = new ArraySet<>();
+            synchronized (mLock) {
+                if (isFrozen) {
+                    mFrozenBinders.add(who);
+                } else {
+                    mFrozenBinders.remove(who);
+                }
+                Set<AppFunctionRegistrationId> registrations = mExecutorToRegistrations.get(who);
+                if (registrations != null) {
+                    for (AppFunctionRegistrationId registration : registrations) {
+                        changedFunctionNames.add(registration.getFunctionName());
+                    }
+                }
+            }
+            mOnRegistrationStateChangedListener.onRegistrationChanged(changedFunctionNames);
+        }
+    }
+
     static class AppFunctionRegistrationId {
         @Nullable private final RegistrationScopeId mScopeId;
 
@@ -466,11 +566,7 @@ final class DynamicAppFunctionRegistry {
         return cancellationCallback;
     }
 
-    /**
-     * A callback interface to be invoked when dynamic app functions are unregistered due to the
-     * process being killed.
-     */
-    interface OnBinderDeathCleanupCallback {
-        void run(Set<AppFunctionName> unregisteredFunctionNames);
+    interface OnRegistrationStateChangedListener {
+        void onRegistrationChanged(@NonNull Set<AppFunctionName> changedFunctionNames);
     }
 }

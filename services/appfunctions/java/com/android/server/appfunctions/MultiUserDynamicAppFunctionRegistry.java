@@ -31,6 +31,7 @@ import android.util.ArraySet;
 import android.util.Log;
 import android.util.SparseArray;
 
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.SystemService;
 
@@ -77,9 +78,10 @@ public final class MultiUserDynamicAppFunctionRegistry {
                 mPerUserRegistrations.put(
                         user.getUserIdentifier(),
                         new DynamicAppFunctionRegistry(
-                                unregisteredFunctionNames ->
+                                BackgroundThread.getExecutor(),
+                                changedFunctionNames ->
                                         metadataObserver.onEnabledStatesChanged(
-                                                user.getUserHandle(), unregisteredFunctionNames)));
+                                                user.getUserHandle(), changedFunctionNames)));
             }
         }
     }

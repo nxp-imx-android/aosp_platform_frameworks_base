@@ -1174,8 +1174,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         mDynamicAppFunctionRegistry.registerAppFunctions(
                 packageName, functionIdentifiers, executor, callingUserHandle, scopeIds);
-
-        onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
     }
 
     @Override
@@ -1187,8 +1185,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mCallerValidator.validateCallingPackage(packageName);
         mDynamicAppFunctionRegistry.unregisterAppFunctions(
                 packageName, functionIdentifiers, session, callingUserHandle);
-
-        onDynamicFunctionRegistrationChanged(callingUserHandle, packageName, functionIdentifiers);
     }
 
     @Nullable
@@ -1203,21 +1199,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                     "Unable to process AppFunction registration. Activity not attached.");
         }
         return new AppFunctionActivityId(assistToken);
-    }
-
-    private void onDynamicFunctionRegistrationChanged(
-            UserHandle callingUserHandle, String packageName, List<String> functionIdentifiers) {
-        Set<AppFunctionName> functionNames = new ArraySet<>();
-        for (String functionId : functionIdentifiers) {
-            functionNames.add(new AppFunctionName(packageName, functionId));
-        }
-        // TODO(b/438413081): Verify that the function is runtime enabled before notifying after
-        //   registration/unregistration to avoid redundant calls when the effective state hasn't
-        //   changed.
-        THREAD_POOL_EXECUTOR.execute(
-                () ->
-                        mAppFunctionMetadataObserver.onEnabledStatesChanged(
-                                callingUserHandle, functionNames));
     }
 
     @Override
