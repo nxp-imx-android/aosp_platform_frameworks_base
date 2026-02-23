@@ -196,7 +196,7 @@ import java.util.stream.Collectors;
 
     @Nullable
     public String getRouteIdForBluetoothAddress(@Nullable String address) {
-        if (Flags.enableMr2ServiceCacheBluetoothDeviceInfo()) {
+        if (Flags.enableFixMr2DeadlockOnBtGetAlias()) {
             BluetoothDevice bluetoothDevice;
             synchronized (mLock) {
                 var bluetoothDeviceHolder = mAddressToBondedDevice.get(address);
@@ -220,7 +220,7 @@ import java.util.stream.Collectors;
 
     @Nullable
     public String getNameForBluetoothAddress(@NonNull String address) {
-        if (Flags.enableMr2ServiceCacheBluetoothDeviceInfo()) {
+        if (Flags.enableFixMr2DeadlockOnBtGetAlias()) {
             synchronized (mLock) {
                 BluetoothDeviceHolder deviceHolder = mAddressToBondedDevice.get(address);
                 return deviceHolder != null ? deviceHolder.name : null;
@@ -234,7 +234,7 @@ import java.util.stream.Collectors;
     }
 
     public void activateBluetoothDeviceWithAddress(String address) {
-        if (Flags.enableMr2ServiceCacheBluetoothDeviceInfo()) {
+        if (Flags.enableFixMr2DeadlockOnBtGetAlias()) {
             BluetoothDevice btDevice;
             synchronized (mLock) {
                 BluetoothRouteInfo btRouteInfo = mAddressToConnectedBluetoothRoutes.get(address);
@@ -264,7 +264,7 @@ import java.util.stream.Collectors;
     }
 
     public boolean isMediaOnlyRouteInBroadcast(@NonNull String routeId) {
-        if (Flags.enableMr2ServiceCacheBluetoothDeviceInfo()) {
+        if (Flags.enableFixMr2DeadlockOnBtGetAlias()) {
             BluetoothDevice btDevice = null;
             synchronized (mLock) {
                 for (BluetoothRouteInfo info : mAddressToConnectedBluetoothRoutes.values()) {
@@ -290,7 +290,7 @@ import java.util.stream.Collectors;
     }
 
     public boolean setRouteVolume(@NonNull String routeId, int volume) {
-        if (Flags.enableMr2ServiceCacheBluetoothDeviceInfo()) {
+        if (Flags.enableFixMr2DeadlockOnBtGetAlias()) {
             List<BluetoothDevice> btDevices = new ArrayList<>();
             synchronized (mLock) {
                 for (BluetoothRouteInfo info : mAddressToConnectedBluetoothRoutes.values()) {
@@ -323,7 +323,7 @@ import java.util.stream.Collectors;
     }
 
     private void updateBluetoothRoutes() {
-        if (Flags.enableMr2ServiceCacheBluetoothDeviceInfo()) {
+        if (Flags.enableFixMr2DeadlockOnBtGetAlias()) {
             updateBluetoothRoutesLockingOnlyInternalState();
         } else {
             updateBluetoothRoutesWithFullLock();
@@ -335,7 +335,7 @@ import java.util.stream.Collectors;
      * holding a lock only while updating internal state but not during BT stack calls.
      *
      * <p>This method is the new version of {@link #updateBluetoothRoutesWithFullLock}, and the
-     * method choice is guided by {@link Flags#enableMr2ServiceCacheBluetoothDeviceInfo}.
+     * method choice is guided by {@link Flags#enableFixMr2DeadlockOnBtGetAlias}.
      */
     private void updateBluetoothRoutesLockingOnlyInternalState() {
         Set<BluetoothDevice> bondedDevices = mBluetoothAdapter.getBondedDevices();
@@ -372,7 +372,7 @@ import java.util.stream.Collectors;
      * holding a lock even while making some calls into the bluetooth stack.
      *
      * <p>This method is the old version of {@link #updateBluetoothRoutesLockingOnlyInternalState},
-     * and the method choice is guided by {@link Flags#enableMr2ServiceCacheBluetoothDeviceInfo}.
+     * and the method choice is guided by {@link Flags#enableFixMr2DeadlockOnBtGetAlias}.
      */
     private void updateBluetoothRoutesWithFullLock() {
         Set<BluetoothDevice> bondedDevices = mBluetoothAdapter.getBondedDevices();
@@ -679,7 +679,7 @@ import java.util.stream.Collectors;
     }
 
     private BluetoothDeviceHolder createHolderFor(BluetoothDevice bluetoothDevice) {
-        if (Flags.enableMr2ServiceCacheBluetoothDeviceInfo()) {
+        if (Flags.enableFixMr2DeadlockOnBtGetAlias()) {
             return new BluetoothDeviceHolder(
                     bluetoothDevice, getDeviceName(bluetoothDevice), bluetoothDevice.getAddress());
         } else {
