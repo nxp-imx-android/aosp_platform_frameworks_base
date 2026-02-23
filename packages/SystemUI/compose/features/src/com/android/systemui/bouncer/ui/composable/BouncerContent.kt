@@ -1128,43 +1128,35 @@ private fun UserSwitcherDropdownMenu(
 ) {
     val context = LocalContext.current
 
-    // TODO(b/303071855): once the FR is fixed, remove this composition local override.
-    MaterialTheme(
-        colorScheme =
-            MaterialTheme.colorScheme.copy(
-                surface = MaterialTheme.colorScheme.surfaceContainerHighest
-            ),
-        shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(28.dp)),
+    DropdownMenu(
+        expanded = isExpanded,
+        onDismissRequest = onDismissed,
+        offset = DpOffset(x = 0.dp, y = -UserSwitcherDropdownHeight),
+        modifier = Modifier.width(dropDownWidth).sysuiResTag("user_list_dropdown"),
+        shape = RoundedCornerShape(28.dp),
     ) {
-        DropdownMenu(
-            expanded = isExpanded,
-            onDismissRequest = onDismissed,
-            offset = DpOffset(x = 0.dp, y = -UserSwitcherDropdownHeight),
-            modifier = Modifier.width(dropDownWidth).sysuiResTag("user_list_dropdown"),
-        ) {
-            items.forEach { userSwitcherDropdownItem ->
-                DropdownMenuItem(
-                    modifier = Modifier.sysuiResTag("user_switcher_item"),
-                    leadingIcon = {
-                        Icon(
-                            icon = userSwitcherDropdownItem.icon,
-                            tint = Color.Unspecified, // Preserve the icon's original colors.
-                            modifier = Modifier.size(28.dp),
-                        )
-                    },
-                    text = {
-                        Text(
-                            text = checkNotNull(userSwitcherDropdownItem.text.loadText(context)),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    },
-                    onClick = {
-                        onDismissed()
-                        userSwitcherDropdownItem.onClick()
-                    },
-                )
-            }
+        items.forEach { userSwitcherDropdownItem ->
+            DropdownMenuItem(
+                modifier = Modifier.sysuiResTag("user_switcher_item"),
+                leadingIcon = {
+                    Icon(
+                        icon = userSwitcherDropdownItem.icon,
+                        tint = Color.Unspecified, // Preserve the icon's original colors.
+                        modifier = Modifier.size(28.dp),
+                    )
+                },
+                text = {
+                    Text(
+                        text = checkNotNull(userSwitcherDropdownItem.text.loadText(context)),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                },
+                onClick = {
+                    onDismissed()
+                    userSwitcherDropdownItem.onClick()
+                },
+            )
         }
     }
 }
