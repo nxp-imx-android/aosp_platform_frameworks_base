@@ -157,6 +157,7 @@ import com.android.wm.shell.desktopmode.education.AppToWebEducationController;
 import com.android.wm.shell.desktopmode.education.AppToWebEducationFilter;
 import com.android.wm.shell.desktopmode.education.data.AppHandleEducationDatastoreRepository;
 import com.android.wm.shell.desktopmode.education.data.AppToWebEducationDatastoreRepository;
+import com.android.wm.shell.desktopmode.homescreenpeeking.DesktopHomeScreenPeekController;
 import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler;
 import com.android.wm.shell.desktopmode.multidesks.DesksController;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
@@ -2220,7 +2221,8 @@ public abstract class WMShellModule {
             Optional<DesktopAiInitializer> desktopAiInitializer,
             BubbleRootTask bubbleRootTask,
             IDesktopModeProvider desktopModeProvider,
-            DesktopTasksTransitionHandler desktopTasksTransitionHandler) {
+            DesktopTasksTransitionHandler desktopTasksTransitionHandler,
+            DesktopHomeScreenPeekController desktopHomeScreenPeekController) {
         return new Object();
     }
 
