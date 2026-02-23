@@ -1124,16 +1124,11 @@ public class AccountManagerService
         intent.setPackage(packageName);
         intent.putExtra(AccountManager.KEY_ACCOUNT_NAME, account.name);
         intent.putExtra(AccountManager.KEY_ACCOUNT_TYPE, account.type);
-        final Bundle options;
-        if (Flags.coalesceAccountRemovedBroadcast()) {
-            options = BroadcastOptions.makeBasic()
-                    .setDeliveryGroupPolicy(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT)
-                    .setDeliveryGroupMatchingKey(AccountManager.ACTION_ACCOUNT_REMOVED,
-                            account.name + "/" + account.type)
-                    .toBundle();
-        } else {
-            options = null;
-        }
+        final Bundle options = BroadcastOptions.makeBasic()
+                .setDeliveryGroupPolicy(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT)
+                .setDeliveryGroupMatchingKey(AccountManager.ACTION_ACCOUNT_REMOVED,
+                        account.name + "/" + account.type)
+                .toBundle();
         mContext.sendBroadcastAsUser(intent, new UserHandle(userId),
                 null /* receiverPermission */, options);
     }
