@@ -73,7 +73,8 @@ bool NativeInteractionProviderServiceInternal::registerInteractionProvider(
             interactionProviderObj(env,
                                    env->NewObject(gNativeInteractionProviderClassInfo.clazz,
                                                   gNativeInteractionProviderClassInfo.constructor,
-                                                  interactionProvider.get()));
+                                                  reinterpret_cast<jlong>(
+                                                          interactionProvider.get())));
     if (!interactionProviderObj.get()) {
         ALOGE("Failed to obtain interaction provider obj for registerInteractionProvider.");
         return false;
