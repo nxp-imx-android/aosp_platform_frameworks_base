@@ -1009,6 +1009,16 @@ flag {
 }
 
 flag {
+    name: "log_state_on_shade_gesture_failure"
+    namespace: "systemui"
+    description: "Logs state of relevant classes if the shade fails to open."
+    bug: "467878509"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "low_light_clock_dream"
   namespace: "systemui"
   description: "Enables low light clock dream experience on mobile phones"
