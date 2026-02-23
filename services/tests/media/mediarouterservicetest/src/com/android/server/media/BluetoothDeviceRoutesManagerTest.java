@@ -99,7 +99,7 @@ public class BluetoothDeviceRoutesManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MR2_SERVICE_CACHE_BLUETOOTH_DEVICE_INFO)
+    @EnableFlags(Flags.FLAG_ENABLE_FIX_MR2_DEADLOCK_ON_BT_GET_ALIAS)
     public void start_doesNotHoldLockWhileCallingBluetoothStack() {
         AtomicBoolean getBondedDevicesLockHeld = new AtomicBoolean(false);
         doAnswer(
@@ -157,7 +157,7 @@ public class BluetoothDeviceRoutesManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MR2_SERVICE_CACHE_BLUETOOTH_DEVICE_INFO)
+    @EnableFlags(Flags.FLAG_ENABLE_FIX_MR2_DEADLOCK_ON_BT_GET_ALIAS)
     public void getNameForBluetoothAddress_doesNotCallBluetoothStack() {
         mManager.start(UserHandle.ALL, mMockListener);
         clearInvocations(mMockBluetoothDevice);
@@ -169,7 +169,7 @@ public class BluetoothDeviceRoutesManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MR2_SERVICE_CACHE_BLUETOOTH_DEVICE_INFO)
+    @EnableFlags(Flags.FLAG_ENABLE_FIX_MR2_DEADLOCK_ON_BT_GET_ALIAS)
     public void activateBluetoothDeviceWithAddress_doesNotHoldLockWhileCallingBluetoothStack() {
         mManager.start(UserHandle.ALL, mMockListener);
         clearInvocations(mMockBluetoothAdapter);
@@ -189,7 +189,7 @@ public class BluetoothDeviceRoutesManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MR2_SERVICE_CACHE_BLUETOOTH_DEVICE_INFO)
+    @EnableFlags(Flags.FLAG_ENABLE_FIX_MR2_DEADLOCK_ON_BT_GET_ALIAS)
     public void isMediaOnlyRouteInBroadcast_doesNotHoldLockWhileCallingBluetoothStack() {
         mManager.start(UserHandle.ALL, mMockListener);
         clearInvocations(mMockBluetoothProfileMonitor);
@@ -209,7 +209,7 @@ public class BluetoothDeviceRoutesManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MR2_SERVICE_CACHE_BLUETOOTH_DEVICE_INFO)
+    @EnableFlags(Flags.FLAG_ENABLE_FIX_MR2_DEADLOCK_ON_BT_GET_ALIAS)
     public void setRouteVolume_doesNotHoldLockWhileCallingBluetoothStack() {
         mManager.start(UserHandle.ALL, mMockListener);
         clearInvocations(mMockBluetoothProfileMonitor);
@@ -230,7 +230,7 @@ public class BluetoothDeviceRoutesManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MR2_SERVICE_CACHE_BLUETOOTH_DEVICE_INFO)
+    @EnableFlags(Flags.FLAG_ENABLE_FIX_MR2_DEADLOCK_ON_BT_GET_ALIAS)
     public void getRouteIdForBluetoothAddress_doesNotHoldLockWhileCallingBluetoothStack() {
         mManager.start(UserHandle.ALL, mMockListener);
         clearInvocations(mMockBluetoothProfileMonitor);
@@ -251,7 +251,7 @@ public class BluetoothDeviceRoutesManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MR2_SERVICE_CACHE_BLUETOOTH_DEVICE_INFO)
+    @EnableFlags(Flags.FLAG_ENABLE_FIX_MR2_DEADLOCK_ON_BT_GET_ALIAS)
     public void getAvailableBluetoothRoutes_doesNotCallBluetoothStack() {
         mManager.start(UserHandle.ALL, mMockListener);
         clearInvocations(mMockBluetoothAdapter);
@@ -266,7 +266,7 @@ public class BluetoothDeviceRoutesManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MR2_SERVICE_CACHE_BLUETOOTH_DEVICE_INFO)
+    @EnableFlags(Flags.FLAG_ENABLE_FIX_MR2_DEADLOCK_ON_BT_GET_ALIAS)
     public void getBroadcastingDeviceRoutes_doesNotHoldLockWhileCallingBluetoothStack() {
         mManager.start(UserHandle.ALL, mMockListener);
         clearInvocations(mMockBluetoothProfileMonitor);
@@ -297,7 +297,7 @@ public class BluetoothDeviceRoutesManagerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MR2_SERVICE_CACHE_BLUETOOTH_DEVICE_INFO)
+    @EnableFlags(Flags.FLAG_ENABLE_FIX_MR2_DEADLOCK_ON_BT_GET_ALIAS)
     public void isLEAudioBroadcastSupported_doesNotHoldLockWhileCallingBluetoothStack() {
         mManager.start(UserHandle.ALL, mMockListener);
         clearInvocations(mMockBluetoothAdapter);
