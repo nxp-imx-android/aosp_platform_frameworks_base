@@ -17,6 +17,9 @@ package com.android.server.appfunctions;
 
 import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_DEFAULT;
 import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_ENABLED;
+import static android.app.appfunctions.AppFunctionMetadata.APP_FUNCTION_TYPE_DYNAMIC_ACTIVITY;
+import static android.app.appfunctions.AppFunctionMetadata.APP_FUNCTION_TYPE_DYNAMIC_GLOBAL;
+import static android.app.appfunctions.AppFunctionMetadata.APP_FUNCTION_TYPE_STATIC;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.APP_FUNCTION_RUNTIME_NAMESPACE;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.PROPERTY_APP_FUNCTION_STATIC_METADATA_QUALIFIED_ID;
 import static android.app.appfunctions.AppFunctionRuntimeMetadata.PROPERTY_ENABLED;
@@ -33,6 +36,7 @@ import android.app.appfunctions.AppFunctionActivityId;
 import android.app.appfunctions.AppFunctionActivityState;
 import android.app.appfunctions.AppFunctionManagerHelper;
 import android.app.appfunctions.AppFunctionMetadata;
+import android.app.appfunctions.AppFunctionMetadata.AppFunctionType;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionPackageMetadata;
 import android.app.appfunctions.AppFunctionRuntimeMetadata;
@@ -41,6 +45,7 @@ import android.app.appfunctions.AppFunctionState;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.IAppFunctionSearchResultCallback;
 import android.app.appfunctions.IAppFunctionSearchResults;
+import android.app.appfunctions.flags.Flags;
 import android.app.appsearch.GenericDocument;
 import android.app.appsearch.JoinSpec;
 import android.app.appsearch.PropertyPath;
@@ -131,23 +136,39 @@ final class AppFunctionMetadataReader {
      */
     public boolean isDynamicFunction(
             String packageName, String functionIdentifier, UserHandle user) {
+        if (!Flags.enableDynamicAppFunctions()) {
+            return false;
+        }
         return mCache.isDynamicFunction(packageName, functionIdentifier, user);
     }
 
     /**
-     * Returns whether the function is activity scoped dynamic app function. Activity scoped dynamic
-     * app functions must be registered within the activity context and support multiregistration
-     * (so the same app function can be registered by multiple activities).
-     *
-     * <p>See {@link android.app.appfunctions.AppFunctionActivityId}.
+     * Returns the type of an app function.
      *
      * @param packageName The package name of the application containing the function.
      * @param functionIdentifier The unique identifier for the function within the package.
-     * @return {boolean} Whether app function is activity scoped dynamic.
+     * @param user The user for which to check the function type.
+     * @return The {@link AppFunctionType} of the function.
      */
-    public boolean isActivityScopedDynamicFunction(
-            String packageName, String functionIdentifier, UserHandle user) {
-        return mCache.isActivityScopedDynamicFunction(packageName, functionIdentifier, user);
+    @AppFunctionType
+    public int getAppFunctionType(
+            @NonNull String packageName,
+            @NonNull String functionIdentifier,
+            @NonNull UserHandle user
+    ) {
+        Objects.requireNonNull(packageName);
+        Objects.requireNonNull(functionIdentifier);
+        Objects.requireNonNull(user);
+        if (!Flags.enableDynamicAppFunctions()) {
+            return APP_FUNCTION_TYPE_STATIC;
+        }
+        if (mCache.isActivityScopedDynamicFunction(packageName, functionIdentifier, user)) {
+            return APP_FUNCTION_TYPE_DYNAMIC_ACTIVITY;
+        }
+        if (mCache.isGlobalScopedDynamicFunction(packageName, functionIdentifier, user)) {
+            return APP_FUNCTION_TYPE_DYNAMIC_GLOBAL;
+        }
+        return APP_FUNCTION_TYPE_STATIC;
     }
 
     /**

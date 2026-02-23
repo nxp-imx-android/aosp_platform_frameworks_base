@@ -170,6 +170,39 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
     @Retention(RetentionPolicy.SOURCE)
     @interface Scope {}
 
+
+    /**
+     * A static app function executed using {@link android.app.appfunctions.AppFunctionService}.
+     *
+     * @hide
+     */
+    public static final int APP_FUNCTION_TYPE_STATIC = 0;
+    /**
+     * A dynamic app function registered globally.
+     *
+     * @hide
+     */
+    public static final int APP_FUNCTION_TYPE_DYNAMIC_GLOBAL = 1;
+    /**
+     * A dynamic app function registered within an activity's context.
+     *
+     * @hide
+     */
+    public static final int APP_FUNCTION_TYPE_DYNAMIC_ACTIVITY = 2;
+
+    /**
+     * The type of an app function.
+     *
+     * @hide
+     */
+    @java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy.SOURCE)
+    @android.annotation.IntDef({
+        APP_FUNCTION_TYPE_STATIC,
+        APP_FUNCTION_TYPE_DYNAMIC_GLOBAL,
+        APP_FUNCTION_TYPE_DYNAMIC_ACTIVITY
+    })
+    public @interface AppFunctionType {}
+
     /**
      * Internal property which stores service name which should be used to execute App Function.
      * {@link #DYNAMIC_APP_FUNCTIONS_SERVICE_NAME} is set for app functions implemented using {@link
