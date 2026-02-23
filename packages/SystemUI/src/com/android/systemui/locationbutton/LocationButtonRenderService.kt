@@ -189,14 +189,15 @@ constructor(
 
     override fun onDestroy() {
         super.onDestroy()
-        if (DEBUG) {
-            Slog.d(
-                LOG_TAG,
-                "Location button service destroyed, " +
-                    "cleaning up ${activeLocationButtonSessions.size} sessions.",
-            )
-        }
+
         executor.execute {
+            if (DEBUG) {
+                Slog.d(
+                    LOG_TAG,
+                    "Location button service destroyed, " +
+                        "cleaning up ${activeLocationButtonSessions.size} sessions.",
+                )
+            }
             if (activeLocationButtonSessions.isEmpty()) {
                 return@execute
             }
