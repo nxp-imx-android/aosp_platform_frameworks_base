@@ -859,6 +859,13 @@ public class AutoclickTypePanel {
         mPanelStartX = location[0];
         mPanelStartY = location[1];
 
+        if (Flags.enableAutoclickPanelBugFixes()) {
+            // Save the starting location of the panel.
+            mParams.gravity = Gravity.LEFT | Gravity.TOP;
+            mParams.x = mPanelStartX;
+            mParams.y = mPanelStartY;
+        }
+
         // Show grabbing cursor when dragging starts.
         mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRABBING);
         mContentView.setPointerIcon(mCurrentCursor);
