@@ -54,9 +54,7 @@
 #include "effects/GainmapRenderer.h"
 #include "pipeline/skia/AnimatedDrawables.h"
 #include "pipeline/skia/FunctorDrawable.h"
-#ifdef __ANDROID__
 #include "renderthread/CanvasContext.h"
-#endif
 
 namespace android {
 namespace uirenderer {
@@ -607,12 +605,10 @@ struct DrawPoints final : Op {
             c->drawPoints(mode, {pod<SkPoint>(this), count}, paint);
         } else {
             c->save();
-#ifdef __ANDROID__
             auto pixelSnap = renderthread::CanvasContext::getActiveContext()->getPixelSnapMatrix();
             auto transform = c->getLocalToDevice();
             transform.postConcat(pixelSnap);
             c->setMatrix(transform);
-#endif
             c->drawPoints(mode, {pod<SkPoint>(this), count}, paint);
             c->restore();
         }

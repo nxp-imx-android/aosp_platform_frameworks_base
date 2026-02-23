@@ -17,21 +17,13 @@
 #include "ColorArea.h"
 
 #include <SkAndroidFrameworkUtils.h>
+#include <com_android_graphics_hwui_flags.h>
 
 #include "CanvasTransform.h"
 #include "utils/Color.h"
 #include "utils/MathUtils.h"
 
-#ifdef __linux__
-#include <com_android_graphics_hwui_flags.h>
 namespace hwui_flags = com::android::graphics::hwui::flags;
-#else   // __linux__
-namespace hwui_flags {
-constexpr bool edt_gradient_detection() {
-    return false;
-}
-}  // namespace hwui_flags
-#endif  // __linux__
 
 namespace android::uirenderer {
 

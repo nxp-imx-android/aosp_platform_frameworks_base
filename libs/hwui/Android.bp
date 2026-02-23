@@ -109,6 +109,9 @@ cc_defaults {
         "android.hardware.graphics.composer3-ndk_shared",
     ],
     shared_libs: [
+        "aconfig_text_flags_c_lib",
+        "aconfig_view_accessibility_flags_c_lib",
+        "libaconfig_storage_read_api_cc",
         "libbase",
         "libharfbuzz_ng",
         "libminikin",
@@ -116,6 +119,10 @@ cc_defaults {
 
     static_libs: [
         "libui-types",
+    ],
+
+    whole_static_libs: [
+        "hwui_flags_cc_lib",
     ],
 
     target: {
@@ -139,10 +146,7 @@ cc_defaults {
                 "libsync",
                 "libgui",
                 "libui",
-                "aconfig_text_flags_c_lib",
-                "aconfig_view_accessibility_flags_c_lib",
                 "server_configurable_flags",
-                "libaconfig_storage_read_api_cc",
                 "libgraphicsenv",
             ],
             static_libs: [
@@ -157,7 +161,6 @@ cc_defaults {
                 "libipcrenderbuffer_static",
             ],
             whole_static_libs: [
-                "hwui_flags_cc_lib",
                 "libsurfaceflingerflags",
             ],
         },
@@ -166,14 +169,6 @@ cc_defaults {
                 "libandroidfw",
                 "libhostgraphics",
                 "libutils",
-            ],
-        },
-        host_linux: {
-            shared_libs: [
-                "libaconfig_storage_read_api_cc",
-            ],
-            whole_static_libs: [
-                "hwui_flags_cc_lib",
             ],
         },
     },

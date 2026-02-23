@@ -2,9 +2,7 @@
 #include "Bitmap.h"
 
 #include <android-base/unique_fd.h>
-#ifdef __linux__
 #include <com_android_graphics_hwui_flags.h>
-#endif
 #include <fcntl.h>
 #include <hwui/Bitmap.h>
 #include <hwui/Paint.h>
