@@ -3021,7 +3021,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         }, (finishWct, t) -> {
             mSplitLayout.setDividerInteractive(true, false, "onSplitResizeFinish");
             mSplitLayout.populateTouchZones();
-        }, decorManagers);
+        });
 
         if (enableFlexibleTwoAppSplit()) {
             switch (layout.calculateCurrentSnapPosition()) {
