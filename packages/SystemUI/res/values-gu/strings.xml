@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"સેલ્ફી કૅમેરા બતાવો"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ટચ બતાવો"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"રેકોર્ડ કરવા માટે ઍપ પસંદ કરો"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"આગલી બતાવો"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"પાછલી બતાવો"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"સ્ક્રીન રેકોર્ડિંગના સેટિંગ"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"માર્કઅપ"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"વીડિયો સાચવ્યો"</string>

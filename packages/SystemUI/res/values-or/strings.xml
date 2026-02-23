@@ -1504,7 +1504,7 @@
     <string name="select_conversation_text" msgid="3376048251434956013">"ଏକ ବାର୍ତ୍ତାଳାପକୁ ଆପଣଙ୍କ ହୋମ ସ୍କ୍ରିନରେ ଯୋଗ କରିବା ପାଇଁ ସେଥିରେ ଟାପ କରନ୍ତୁ"</string>
     <string name="no_conversations_text" msgid="5354115541282395015">"ଆପଣଙ୍କ ବର୍ତ୍ତମାନର ବାର୍ତ୍ତାଳାପଗୁଡ଼ିକ ଏଠାରେ ଦେଖାଯିବ"</string>
     <string name="priority_conversations" msgid="3967482288896653039">"ପ୍ରାଥମିକତା ଦିଆଯାଇଥିବା ବାର୍ତ୍ତାଳାପ"</string>
-    <string name="recent_conversations" msgid="8531874684782574622">"ବର୍ତ୍ତମାନର ବାର୍ତ୍ତାଳାପଗୁଡ଼ିକ"</string>
+    <string name="recent_conversations" msgid="8531874684782574622">"ବର୍ତ୍ତମାନର ବାର୍ତ୍ତାଳାପ"</string>
     <string name="days_timestamp" msgid="5821854736213214331">"<xliff:g id="DURATION">%1$s</xliff:g> ଦିନ ପୂର୍ବେ"</string>
     <string name="one_week_timestamp" msgid="4925600765473875590">"1 ସପ୍ତାହ ପୂର୍ବେ"</string>
     <string name="two_weeks_timestamp" msgid="9111801081871962155">"2 ସପ୍ତାହ ପୂର୍ବେ"</string>

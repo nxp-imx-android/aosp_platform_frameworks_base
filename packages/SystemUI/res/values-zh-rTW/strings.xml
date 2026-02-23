@@ -61,9 +61,9 @@
     <string name="usb_authorization_title" msgid="3332796080113535331">"允許 USB 裝置連線嗎？"</string>
     <string name="usb_authorization_title_multi" msgid="1966181648363433366">"允許 USB 裝置連線嗎？"</string>
     <string name="usb_authorization_message" msgid="1107567912094941105">"以下裝置已連線到你的「<xliff:g id="NAME">%1$s</xliff:g>」："</string>
-    <string name="usb_authorization_message_multi" msgid="4867596373922923637">"以下裝置曾連線到你的「<xliff:g id="NAME">%1$s</xliff:g>」："</string>
-    <string name="usb_authorization_message_untrusted" msgid="4407977362840907960">"以下裝置已連結至你的「<xliff:g id="NAME">%1$s</xliff:g>」。登入後，系統才會信任這些裝置。"</string>
-    <string name="usb_authorization_message_multi_untrusted" msgid="85055448435495205">"以下裝置曾連線到你的「<xliff:g id="NAME">%1$s</xliff:g>」。登入後，系統才會信任這些裝置。"</string>
+    <string name="usb_authorization_message_multi" msgid="4867596373922923637">"以下裝置已連線到你的「<xliff:g id="NAME">%1$s</xliff:g>」："</string>
+    <string name="usb_authorization_message_untrusted" msgid="4407977362840907960">"以下裝置已連線到你的「<xliff:g id="NAME">%1$s</xliff:g>」。登入後，系統才會信任這些裝置。"</string>
+    <string name="usb_authorization_message_multi_untrusted" msgid="85055448435495205">"以下裝置已連線到你的「<xliff:g id="NAME">%1$s</xliff:g>」。登入後，系統才會信任這些裝置。"</string>
     <string name="usb_authorization_unknown_device" msgid="1107933381080189970">"不明產品 (<xliff:g id="VENDOR_ID">%1$04X</xliff:g>：<xliff:g id="PRODUCT_ID">%2$04X</xliff:g>)"</string>
     <string name="usb_authorization_allow" msgid="5517449937301874244">"允許"</string>
     <string name="usb_authorization_deny" msgid="8156333001876101456">"不允許"</string>
@@ -973,7 +973,7 @@
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"特價優惠、新功能等等"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"焦點新聞、社論等等"</string>
-    <string name="notification_guts_social_summary" msgid="3749147631983977040">"喜歡的項目、貼文等等"</string>
+    <string name="notification_guts_social_summary" msgid="3749147631983977040">"按讚的項目、貼文等等"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"電子報、推薦媒體等等"</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"在「設定」中開啟"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"如果對話較長，系統現在可以歸納成摘要，方便你快速掌握重點"</string>

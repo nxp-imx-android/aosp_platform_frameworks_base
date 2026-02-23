@@ -189,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"म्युट गर्नुहोस्"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"अनम्युट गर्नुहोस्"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="DURATION">%2$s</xliff:g> मध्ये <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"सेल्फी मिलाउन पिन्च, ड्र्याग तथा ट्याप गर्नुहोस्"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"तपाईंका IT एड्मिनले स्क्रिन क्याप्चर ब्लक गर्नुभएको छ"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"सम्पूर्ण स्क्रिनको स्क्रिनसट लिनुहोस्"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"सम्पूर्ण स्क्रिन रेकर्ड गर्नुहोस्"</string>
@@ -1250,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"एक्सेसिबिलिटी की"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"तपाईं एक्सेसिबिलिटी की थिचेर एक्सेसिबिलिटी सुविधाहरू प्रयोग गर्न थाल्न सक्नुहुन्छ।"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"सुविधाहरू हाल्नुहोस्"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"एक्सेसिबिलिटी की सेटअप गर्नुहोस्"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> सेटअप गर्नुहोस्"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"भयो"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"सुविधा चयन गर्नुहोस्"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"सम्पादन गर्नुहोस्"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"कुनै सुविधा चयन गर्नुहोस्"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"तपाईंले अर्को पटक एक्सेसिबिलिटी बटन चयन गर्दा यो सुविधा खुल्ने छ"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"एक्सेसिबिलिटी"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लक स्क्रिन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"सट डाउन गरिँदै छ..."</string>
