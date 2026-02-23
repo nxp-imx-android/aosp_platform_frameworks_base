@@ -153,6 +153,21 @@ public class SigningDetailsTest {
                     + "8648ce3d0403020348003045022100f5fefb046b64a702b030335f3c24d0"
                     + "fbc7e9f7026c07b782377e61279da40b5002203e5377f36c984ba01f7d5e"
                     + "b27bc9da84eb56d10a65d5925f198263926885e1b1";
+    private static final String HYBRID_CLASSICAL_3 =
+            "308201973082013da0030201020214705f7bf3abd4f48be6f8782c9ce70b"
+                    + "17dfe536df300a06082a8648ce3d0403023021311f301d06035504030c16"
+                    + "48796272696420436c6173736963616c204b65792033301e170d32363032"
+                    + "32323232303233375a170d3237303232323232303233375a3021311f301d"
+                    + "06035504030c1648796272696420436c6173736963616c204b6579203330"
+                    + "59301306072a8648ce3d020106082a8648ce3d030107034200041ab4354f"
+                    + "2670d1307e4b0e21c029540b9bd403e56588c57dbfa0aa181dc723cab717"
+                    + "938c7eb921fc3c95bc4823158fb4995ff97f9b5204701ebf12c24ea93a3c"
+                    + "a3533051301d0603551d0e0416041411ea7b4dcebdf578925d87494a116e"
+                    + "4f1128977e301f0603551d2304183016801411ea7b4dcebdf578925d8749"
+                    + "4a116e4f1128977e300f0603551d130101ff040530030101ff300a06082a"
+                    + "8648ce3d04030203480030450220407a388a3932c8b43bba8aea06c9dee3"
+                    + "41d69c055ca1abd388334a1538bf6baf022100db400d66282f4d7a9dcf3a"
+                    + "a29c7e251d9fc0c323440fc888e1438ed9a6e78014";
     private static final String HYBRID_PQC_1 =
             "3082018b30820131a003020102021453d1b48f9a7ed2e6ea38bc6e0ec19a"
                     + "540595f515300a06082a8648ce3d040302301b3119301706035504030c10"
@@ -183,6 +198,21 @@ public class SigningDetailsTest {
                     + "022100de99f860770d0e2237e745a39a29da1dfc65a9b3cc0ea71fca2423"
                     + "a8af3b0061022036ce7571f5a792429d37878bc52f10d9d0357311715cf9"
                     + "82c6bca6db384ec7f5";
+    private static final String HYBRID_PQC_3 =
+            "3082018b30820131a0030201020214434bdee906cc169cb36bf00caec114"
+                    + "50daa7008e300a06082a8648ce3d040302301b3119301706035504030c10"
+                    + "48796272696420505143204b65792033301e170d32363032323232323034"
+                    + "33385a170d3237303232323232303433385a301b3119301706035504030c"
+                    + "1048796272696420505143204b657920333059301306072a8648ce3d0201"
+                    + "06082a8648ce3d03010703420004e285193a3cc183b37862a86a40b2f13e"
+                    + "934fa90f97b642a7b0e726aae413f63542928bf7d5f3f2971e5fdff9b6d2"
+                    + "784f273c7338c9d96e715edf1a6404e05caba3533051301d0603551d0e04"
+                    + "160414df0004fe4e096f0ce6bd0bab9cec7a6d92ea9121301f0603551d23"
+                    + "041830168014df0004fe4e096f0ce6bd0bab9cec7a6d92ea9121300f0603"
+                    + "551d130101ff040530030101ff300a06082a8648ce3d0403020348003045"
+                    + "0221009bcc57bd4924636abc936672e2c58a6900b1baf8405787a9061e1b"
+                    + "33b1fe113b02203e8e5796e47973fb1394e1b02fcb50989f3daf2928711d"
+                    + "e99f3015c56e214a00";
 
     @Test
     public void hasAncestor_multipleSignersInLineageWithAncestor_returnsTrue() throws Exception {
@@ -996,6 +1026,210 @@ public class SigningDetailsTest {
 
         assertFalse(firstDetails.hasCommonSignerWithCapability(secondDetails, PERMISSION));
         assertFalse(secondDetails.hasCommonSignerWithCapability(firstDetails, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_bothHybridSameKeys_returnsTrue() throws Exception {
+        // When both apps are signed with the same hybrid config, the requested capability should
+        // be granted.
+        SigningDetails details1 = createHybridSigningDetails(HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+        SigningDetails details2 = createHybridSigningDetails(HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+
+        assertTrue(details1.hasCommonSignerWithCapability(details2, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_hybridDeclaringSharedAncestorRequesting_returnsTrue()
+            throws Exception {
+        // If the declaring app is hybrid signed and a requesting app is signed with a shared key in
+        // the declaring app's lineage that still has the capability granted, then the capability
+        // should be granted.
+        SigningDetails hybridDetails = createHybridSigningDetails(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+        SigningDetails singleDetails = createSigningDetails(FIRST_SIGNATURE);
+
+        assertTrue(hybridDetails.hasCommonSignerWithCapability(singleDetails, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_singleDeclaringValidAncestorHybridRequesting_returnsTrue()
+            throws Exception {
+        // If the declaring app is signed with a single signer config that is in the lineage of the
+        // requesting app, then the capability should be granted.
+        SigningDetails singleDetails = createSigningDetails(FIRST_SIGNATURE);
+        SigningDetails hybridDetails = createHybridSigningDetails(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+
+        assertTrue(singleDetails.hasCommonSignerWithCapability(hybridDetails, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_bothHybridValidHybridAncestor_returnsTrue()
+            throws Exception {
+        // If the declaring and requesting app are both hybrid signed with a diverged signing key
+        // but they still have a common hybrid config in their lineage, then the capability should
+        // be granted.
+        SigningDetails details1 = createHybridSigningDetails(FIRST_SIGNATURE, HYBRID_CLASSICAL_1,
+                HYBRID_PQC_1, HYBRID_CLASSICAL_2, HYBRID_PQC_2);
+        SigningDetails details2 = createHybridSigningDetails(FIRST_SIGNATURE, HYBRID_CLASSICAL_1,
+                HYBRID_PQC_1, HYBRID_CLASSICAL_3, HYBRID_PQC_3);
+
+        assertTrue(details1.hasCommonSignerWithCapability(details2, PERMISSION));
+        assertTrue(details2.hasCommonSignerWithCapability(details1, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_hybridDeclaringSharedClassicalRequesting_returnsFalse()
+            throws Exception {
+        // If the declaring app is hybrid signed, then the requesting app must either be signed
+        // with both of the hybrid keys, have both of them in its lineage, or have a common single
+        // signer from before the hybrid config as its current signer or in the lineage. If the
+        // requesting app is signed with only one of the keys from the declaring app's hybrid
+        // config, then the capability should not be granted.
+        SigningDetails hybridDetails = createHybridSigningDetails(HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+        SigningDetails classicalDetails = createSigningDetails(HYBRID_CLASSICAL_1);
+
+        assertFalse(hybridDetails.hasCommonSignerWithCapability(classicalDetails, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_hybridDeclaringSharedPqcRequesting_returnsFalse()
+            throws Exception {
+        // Similar to above, if the requesting app is only signed with the same PQC key as that in
+        // the declaring app's hybrid signing config, then the capability should not be granted.
+        SigningDetails hybridDetails = createHybridSigningDetails(HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+        SigningDetails pqcDetails = createSigningDetails(HYBRID_PQC_1);
+
+        assertFalse(hybridDetails.hasCommonSignerWithCapability(pqcDetails, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_sharedClassicalDeclaringHybridRequesting_returnsFalse()
+            throws Exception {
+        // If the declaring app is only signed by a single shared key from the requesting app's
+        // hybrid signing config, then the capability should be denied since the guidance is that
+        // keys intended for hybrid signing should not be reused in single signer configs.
+        SigningDetails singleDetails = createSigningDetails(HYBRID_CLASSICAL_1);
+        SigningDetails hybridDetails = createHybridSigningDetails(HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+
+        assertFalse(singleDetails.hasCommonSignerWithCapability(hybridDetails, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_sharedPqcDeclaringHybridRequesting_returnsFalse()
+            throws Exception {
+        // If the declaring app is only signed by a single shared PQC key from the requesting app's
+        // hybrid signing config, then the capability should be denied.
+        SigningDetails singleDetails = createSigningDetails(HYBRID_PQC_1);
+        SigningDetails hybridDetails = createHybridSigningDetails(HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+
+        assertFalse(singleDetails.hasCommonSignerWithCapability(hybridDetails, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_hybridDeclaringOnlyClassicalInLineage_returnsFalse()
+            throws Exception {
+        // If a hybrid signed app's match is from only one of the hybrid signers but the other
+        // hybrid signer is not present as the current signer or in the lineage, then the capability
+        // should not be granted.
+        SigningDetails hybridDetails1 = createHybridSigningDetails(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+        SigningDetails hybridDetails2 = createHybridSigningDetails(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_CLASSICAL_2, HYBRID_PQC_2);
+
+        assertFalse(hybridDetails1.hasCommonSignerWithCapability(hybridDetails2, PERMISSION));
+        assertFalse(hybridDetails2.hasCommonSignerWithCapability(hybridDetails1, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_hybridDeclaringSingleAncestorRevoked_returnsFalse()
+            throws Exception {
+        // If the requesting app is signed by a previous key in the declaring app's lineage that
+        // has revoked the requested capability, then the app's request should be denied.
+        SigningDetails hybridDetails = createVersionedSigningDetailsWithLineageAndCapabilities(
+                SIGNING_BLOCK_V3, MINOR_VERSION_32_HYBRID,
+                new String[]{FIRST_SIGNATURE, HYBRID_CLASSICAL_1, HYBRID_PQC_1},
+                new int[]{SHARED_USER_ID, DEFAULT_CAPABILITIES, DEFAULT_CAPABILITIES});
+        SigningDetails originalDetails = createSigningDetails(FIRST_SIGNATURE);
+
+        assertFalse(hybridDetails.hasCommonSignerWithCapability(originalDetails, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_bothSharedHybridKeysRevoked_returnsFalse()
+            throws Exception {
+        // When a hybrid signer is rotated, capabilities to the previous hybrid signer should be
+        // granted or revoked as a pair since the platform treats them as single signers once they
+        // are part of the lineage. If a declaring app has rotated to a new hybrid signing config
+        // and revoked the capabilities to the previous signers, then a request should be denied.
+        SigningDetails hybridDetails1 = createVersionedSigningDetailsWithLineageAndCapabilities(
+                SIGNING_BLOCK_V3, MINOR_VERSION_32_HYBRID,
+                new String[]{HYBRID_CLASSICAL_1, HYBRID_PQC_1, HYBRID_CLASSICAL_2, HYBRID_PQC_2},
+                new int[]{SHARED_USER_ID, SHARED_USER_ID, DEFAULT_CAPABILITIES,
+                        DEFAULT_CAPABILITIES});
+        SigningDetails hybridDetails2 = createHybridSigningDetails(HYBRID_CLASSICAL_1,
+                HYBRID_PQC_1);
+
+        assertFalse(
+                hybridDetails1.hasCommonSignerWithCapability(hybridDetails2, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_hybridRevokedSingleGranted_returnsTrue()
+            throws Exception {
+        // If a hybrid signed app revokes a requested capability from the previous hybrid signers
+        // and a requesting app is signed by that hybrid config, then the capability check should
+        // check the rest of the lineage to determine if there's another shared signer between the
+        // two apps. If one is found that still has the capability, then the request should be
+        // granted.
+        SigningDetails hybridDetails1 = createVersionedSigningDetailsWithLineageAndCapabilities(
+                SIGNING_BLOCK_V3, MINOR_VERSION_32_HYBRID,
+                new String[]{FIRST_SIGNATURE, HYBRID_CLASSICAL_1, HYBRID_PQC_1, HYBRID_CLASSICAL_2,
+                        HYBRID_PQC_2},
+                new int[]{DEFAULT_CAPABILITIES, SHARED_USER_ID, SHARED_USER_ID,
+                        DEFAULT_CAPABILITIES, DEFAULT_CAPABILITIES});
+        SigningDetails hybridDetails2 = createHybridSigningDetails(FIRST_SIGNATURE,
+                HYBRID_CLASSICAL_1, HYBRID_PQC_1);
+
+        assertTrue(hybridDetails1.hasCommonSignerWithCapability(hybridDetails2, PERMISSION));
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_APK_PQC_HYBRID_SIGNING)
+    public void hasCommonSignerWithCapability_hybridAsymmetricRevocation_returnsTrue()
+            throws Exception {
+        // This is a case where the developer has revoked the capabilities from only one of the
+        // signers in the hybrid block in the declaring app's lineage. If the requesting app is
+        // signed by the hybrid pair, as long as both of the hybrid keys are present in the
+        // requesting app, then the capability will be granted. The is intentional since the
+        // developer may no longer trust the classical key, but the PQC key has not been
+        // compromised. This prevents breaking cases where the developer is in the process of
+        // rotating away from a hybrid config, but still wants this common PQC key to have access
+        // to the declared capabilities; once the requesting app is rotated, the PQC key would be a
+        // common single signer in the lineage anyway, so forcing the developer to rotate before it
+        // can be granted a capability would cause unnecessary friction for the developer.
+        SigningDetails newHybridDeclaring = createVersionedSigningDetailsWithLineageAndCapabilities(
+                SIGNING_BLOCK_V3, MINOR_VERSION_32_HYBRID,
+                new String[]{HYBRID_CLASSICAL_1, HYBRID_PQC_1, HYBRID_CLASSICAL_2, HYBRID_PQC_2},
+                new int[]{SHARED_USER_ID, DEFAULT_CAPABILITIES, DEFAULT_CAPABILITIES,
+                        DEFAULT_CAPABILITIES});
+        SigningDetails oldHybridRequesting = createHybridSigningDetails(HYBRID_CLASSICAL_1,
+                HYBRID_PQC_1);
+
+        assertTrue(
+                newHybridDeclaring.hasCommonSignerWithCapability(oldHybridRequesting, PERMISSION));
     }
 
     @Test
