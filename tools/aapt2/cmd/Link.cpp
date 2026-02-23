@@ -650,10 +650,14 @@ bool ResourceFileFlattener::Flatten(ResourceTable* table, IArchiveWriter* archiv
           }
 
           FeatureFlagsFilterOptions flags_filter_options;
+          // Don't fail on unrecognized flags or flags without values as these flags might be
+          // defined and have a value by the time they are evaluated at runtime.
+          flags_filter_options.fail_on_unrecognized_flags = false;
+          flags_filter_options.flags_must_have_value = false;
+          flags_filter_options.remove_disabled_elements = true;
           FeatureFlagsFilter flags_filter(options_.feature_flag_values, flags_filter_options);
           if (!flags_filter.Consume(context_, file_op.xml_to_flatten.get())) {
-            error = true;
-            continue;
+            return 1;
           }
 
           std::vector<std::unique_ptr<xml::XmlResource>> versioned_docs =
