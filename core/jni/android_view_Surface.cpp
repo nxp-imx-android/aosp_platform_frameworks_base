@@ -156,6 +156,13 @@ static jlong nativeCreateFromSurfaceTexture(JNIEnv* env, jclass clazz,
         jobject surfaceTextureObj) {
 #if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_SURFACETEXTURE)
     sp<Surface> surface = SurfaceTexture_getSurface(env, surfaceTextureObj);
+    if (surface != nullptr) {
+        status_t res = surface->disconnect(-1, IGraphicBufferProducer::DisconnectMode::AllLocal);
+        ALOGE_IF(res != NO_INIT,
+                 "Creating a new java surface for [%s] while previously connected. Previous "
+                 "surface disconnected.",
+                 surface->getConsumerName().c_str());
+    }
 #else
     sp<IGraphicBufferProducer> producer(SurfaceTexture_getProducer(env, surfaceTextureObj));
     if (producer == NULL) {
