@@ -19,7 +19,7 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_label" msgid="4811759950673118541">"Interface"</string>
+    <string name="app_label" msgid="4811759950673118541">"UI du système"</string>
     <string name="battery_low_title" msgid="5319680173344341779">"Activer l\'économiseur de batterie ?"</string>
     <string name="battery_low_description" msgid="7848989602036547056">"Il vous reste <xliff:g id="PERCENTAGE">%s</xliff:g> de batterie. L\'économiseur de batterie active le thème sombre, limite les activités en arrière-plan et retarde les notifications."</string>
     <string name="battery_low_intro" msgid="8033783734931200690">"L\'économiseur de batterie active le thème sombre, limite les activités en arrière-plan et retarde les notifications."</string>
@@ -974,7 +974,7 @@
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Ventes, nouvelles fonctionnalités, etc."</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Actualités, éditoriaux, etc."</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Mentions \"J\'aime\", publications, etc."</string>
-    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Newsletters, médias recommandés, etc."</string>
+    <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Newsletters, recommandations multimédias, etc."</string>
     <string name="notification_onboarding_summaries_turn_on" msgid="3831339570984683297">"Activer dans les paramètres"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Vous pouvez désormais obtenir un résumé rapide de vos conversations les plus longues"</string>
     <string name="notification_onboarding_summaries_message_with_apps" msgid="5320980333818238465">"Votre appareil et vos applis peuvent désormais résumer les conversations les plus longues pour vous donner un résumé rapide"</string>

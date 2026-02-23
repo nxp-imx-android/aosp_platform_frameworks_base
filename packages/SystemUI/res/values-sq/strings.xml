@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Shfaq kamerën për selfi"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Shfaq prekjet"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Zgjidh një aplikacion për të regjistruar"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Shfaq tjetrin"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Shfaq të mëparshmin"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Cilësimet e regjistrimit të ekranit"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Shënimi"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Videoja u ruajt"</string>
@@ -249,8 +247,7 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofoni"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Kamera e përparme"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
-    <skip />
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"zgjidh"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Ndalo ndarjen"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"\"Ndarja e ekranit\" është aktive. Përdor treguesin e privatësisë për të përfunduar ndarjen."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ekrani po ndahet"</string>
@@ -429,10 +426,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Asistenti"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Tastiera"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Tastiera"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"zgjidh"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"hiq"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# njoftim tjetër në brendësi.}other{# njoftime të tjera në brendësi.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Ekrani është i kyçur në orientimin horizontal."</string>
@@ -1749,8 +1744,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Ndërro aplikacionet"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"U krye"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Para"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"Provo përsëri"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Kthehu prapa"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Rrëshqit shpejt majtas ose djathtas duke përdorur tre gishta në bllokun me prekje"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Bukur!"</string>
@@ -1758,25 +1752,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Për t\'u kthyer prapa duke përdorur bllokun me prekje, rrëshqit shpejt majtas ose djathtas duke përdorur tre gishta"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Shko tek ekrani bazë"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Rrëshqit shpejt lart me tre gishta në bllokun me prekje"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"Në fillim, rrëshqit shpejt lart me tre gishta për të shikuar aplikacionet e tua të fundit"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Punë e shkëlqyer!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"E ke përfunduar gjestin e kalimit tek ekrani bazë"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Rrëshqit shpejt lart me tre gishta në bllokun me prekje për të shkuar tek ekrani bazë"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"Thuajse ia dole!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"Më pas, rrëshqit shpejt lart me tre gishta përsëri për të shkuar tek ekrani bazë"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Shiko aplikacionet e fundit"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Rrëshqit shpejt lart dhe mbaj shtypur me tre gishta në bllokun me prekje"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"Rrëshqit shpejt lart me tre gishta në bllokun me prekje"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Punë e shkëlqyer!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"Përfundove gjestin për shikimin e aplikacioneve të fundit"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Për të shikuar aplikacionet e fundit, rrëshqit shpejt lart dhe mbaj shtypur me tre gishta në bllokun me prekje"</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"Rrëshqit shpejt lart me tre gishta në bllokun me prekje për të shkuar tek ekrani i aplikacioneve të fundit"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Ndërro aplikacionet"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Rrëshqit shpejt djathtas duke përdorur katër gishta në bllokun me prekje"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Punë e shkëlqyer!"</string>

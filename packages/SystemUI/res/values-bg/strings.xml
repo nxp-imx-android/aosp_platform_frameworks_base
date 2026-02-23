@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Показване на камерата за селфи"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Показване на докосванията"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Избор на приложение за записване"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Показване на следващото"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Показване на предишното"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Настройки за функцията за запис на екрана"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Маркиране"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Видеокл. бе запазен"</string>
