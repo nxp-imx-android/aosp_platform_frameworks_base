@@ -873,7 +873,8 @@ final class HotwordDetectionConnection {
             int flags = bindInstantServiceAllowed ? Context.BIND_ALLOW_INSTANT : 0;
             if (SYSPROP_VISUAL_QUERY_SERVICE_ENABLED
                     && mVisualQueryDetectionComponentName != null
-                    && mHotwordDetectionComponentName != null) {
+                    && mHotwordDetectionComponentName != null
+                    && mServiceType != SERVICE_TYPE_PCC) {
                 flags |= Context.BIND_SHARED_ISOLATED_PROCESS;
             }
             mBindingFlags = flags;
