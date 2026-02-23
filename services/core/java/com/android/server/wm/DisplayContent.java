@@ -1433,12 +1433,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     .setName("DisplayMirrorParent")
                     .setCallsite("DisplayContent#createMirrorForDisplay")
                     .setContainerLayer()
+                    .setHidden(true)
                     .build();
             mMirrorSurfaceControl = SurfaceControl.mirrorSurface(source);
             try (var t = mWmService.mTransactionFactory.get()) {
                 t.reparent(mMirrorSurfaceControl, mMirrorParent)
                         .show(mMirrorSurfaceControl)
-                        .show(mMirrorParent)
                         .apply();
             }
         }

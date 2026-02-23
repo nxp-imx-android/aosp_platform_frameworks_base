@@ -2290,7 +2290,8 @@ public class DisplayContentTests extends WindowTestsBase {
 
         assertNotNull(mirror.getMirrorSurfaceControl());
         verify(mTransaction).reparent(notNull(), eq(mirror.getMirrorSurfaceControl()));
-        verify(mTransaction).show(mirror.getMirrorSurfaceControl());
+        // The mirror surface control is initially hidden
+        verify(mTransaction, never()).show(mirror.getMirrorSurfaceControl());
     }
 
     @Test

@@ -16,6 +16,7 @@
 
 package com.android.server.companion.virtual.computercontrol;
 
+import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.companion.virtual.computercontrol.InteractiveMirror;
@@ -24,10 +25,10 @@ import android.util.Slog;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -41,6 +42,21 @@ import java.util.function.Supplier;
 final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     private static final String TAG = InteractiveMirrorImpl.class.getSimpleName();
 
+    /**
+     * Callbacks for events on an {@link InteractiveMirrorImpl}.
+     */
+    interface InteractiveMirrorImplCallback {
+        /**
+         * Called when the interactive state of the mirror changes.
+         */
+        void onInteractiveChanged(boolean isInteractive);
+
+        /**
+         * Called when the mirror is closed.
+         */
+        void onClose(InteractiveMirrorImpl mirror);
+    }
+
     private final DisplayInfo mDisplayInfo;
     // The mirror of the VirtualDisplay, used to control sensitive parameters of the surface.
     // NOTE: This must NOT be sent to the client app, and must remain in system_server.
@@ -50,14 +66,21 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     private final SurfaceControl mMirrorLeash;
     private final Supplier<SurfaceControl.Transaction> mTransactionSupplier;
     private final InputManagerInternal mInputManagerInternal;
-    private final Consumer<Boolean> mStatsUpdateInteractiveMirror;
-    private final Consumer<InteractiveMirrorImpl> mRemoveInteractiveMirror;
+    private final InteractiveMirrorImplCallback mCallback;
+
+    @GuardedBy("this")
+    private boolean mIsInteractivityAllowed = false;
+    @GuardedBy("this")
+    private boolean mIsInteractiveRequested = InteractiveMirror.DEFAULT_INTERACTIVE;
+    @GuardedBy("this")
+    @Nullable
+    private Boolean mIsInteractive = null;
 
     InteractiveMirrorImpl(WindowManagerInternal.DisplayMirror mirror,
             Supplier<SurfaceControl.Transaction> transactionSupplier, DisplayInfo displayInfo,
             InputManagerInternal inputManagerInternal,
-            Consumer<Boolean> statsUpdateInteractiveMirror,
-            Consumer<InteractiveMirrorImpl> removeInteractiveMirror) {
+            boolean isInteractivityAllowed,
+            InteractiveMirrorImplCallback callback) {
         mMirror = mirror;
         mTransactionSupplier = transactionSupplier;
         mDisplayInfo = displayInfo;
@@ -66,19 +89,16 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
                 .setName("InteractiveMirrorImpl#mMirrorLeash$" + mMirror.hashCode())
                 .setContainerLayer()
                 .build();
-        mStatsUpdateInteractiveMirror = statsUpdateInteractiveMirror;
-        mRemoveInteractiveMirror = removeInteractiveMirror;
+        mCallback = callback;
 
         Slog.v(TAG, "Creating interactive mirror with SurfaceControl: " + mMirrorLeash);
-        initialize();
-    }
 
-    private void initialize() {
         try (var transaction = mTransactionSupplier.get()) {
             transaction
                     .reparent(mMirror.getMirrorSurfaceControl(), mMirrorLeash)
-                    .show(mMirrorLeash);
-            setInteractiveWithTransaction(InteractiveMirror.DEFAULT_INTERACTIVE, transaction);
+                    .show(mMirror.getMirrorSurfaceControl())
+                    .hide(mMirrorLeash);
+            updateInteractivity(isInteractivityAllowed, transaction);
             transaction.apply();
         }
     }
@@ -88,20 +108,38 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
         return mMirrorLeash;
     }
 
-    @RequiresNoPermission
-    @Override
-    public void setInteractive(boolean interactive) {
-        try (var transaction = mTransactionSupplier.get()) {
-            setInteractiveWithTransaction(interactive, transaction);
-            transaction.apply();
+    /** Updates whether this mirror is allowed to be interactive. */
+    void updateInteractivity(boolean isInteractiveAllowed, SurfaceControl.Transaction transaction) {
+        synchronized (this) {
+            mIsInteractivityAllowed = isInteractiveAllowed;
+            applyInteractivityLocked(transaction);
         }
     }
 
-    private void setInteractiveWithTransaction(boolean interactive,
-            SurfaceControl.Transaction transaction) {
+    @RequiresNoPermission
+    @Override
+    public void setInteractive(boolean interactive) {
+        synchronized (this) {
+            mIsInteractiveRequested = interactive;
+            try (var transaction = mTransactionSupplier.get()) {
+                applyInteractivityLocked(transaction);
+                transaction.apply();
+            }
+        }
+    }
+
+    @GuardedBy("this")
+    private void applyInteractivityLocked(SurfaceControl.Transaction transaction) {
+        final boolean interactive = mIsInteractivityAllowed && mIsInteractiveRequested;
+        if (mIsInteractive != null && interactive == mIsInteractive) {
+            return;
+        }
+        mIsInteractive = interactive;
+        Slog.v(TAG, "Updating user interactivity: interactions are "
+                + (interactive ? "" : "not ") + "allowed");
         transaction.setDropInputMode(mMirror.getMirrorSurfaceControl(),
                 interactive ? DropInputMode.NONE : DropInputMode.ALL);
-        mStatsUpdateInteractiveMirror.accept(interactive);
+        mCallback.onInteractiveChanged(interactive);
     }
 
     @RequiresNoPermission
@@ -122,7 +160,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
     @RequiresNoPermission
     @Override
     public void close() {
-        mRemoveInteractiveMirror.accept(this);
+        mCallback.onClose(this);
     }
 
     /**
