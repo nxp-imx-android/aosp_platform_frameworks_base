@@ -16,13 +16,10 @@
 
 package com.android.server.display
 
-import android.platform.test.annotations.EnableFlags
-import android.platform.test.flag.junit.SetFlagsRule
 import android.util.SparseArray
 import android.view.Display
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
-import com.android.server.display.feature.flags.Flags
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -36,9 +33,6 @@ private const val NO_FLAGS = 0
 @SmallTest
 @RunWith(TestParameterInjector::class)
 class DisplayModeFactoryTest {
-
-    @get:Rule
-    val setFlagRule = SetFlagsRule()
 
     @Test
     fun testCreateMode_resolutionAndRefreshRate() {
@@ -213,7 +207,6 @@ class DisplayModeFactoryTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ANISOTROPIC_MODE_EXCLUDE_SIMILAR_SIZE)
     fun testAnisotropy(@TestParameter testCase: AnisotropicModesTestCase) {
         val inputRecords =
             testCase.inputModes.stream()

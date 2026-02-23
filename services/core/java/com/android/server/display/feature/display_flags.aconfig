@@ -346,16 +346,6 @@ flag {
 }
 
 flag {
-    name: "anisotropic_mode_exclude_similar_size"
-    namespace: "display_manager"
-    description: "Feature flag for filtering anisotropic modes, if similar size isotropic mode exists. "
-    bug: "443033926"
-    metadata {
-         purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "virtual_secondary_displays"
     namespace: "lse_desktop_experience"
     description: "Enable Connected Display features on virtual displays with proper configuration"
