@@ -49,6 +49,7 @@ java_library {
         "androidx.compose.material_material-icons-core",
         "androidx.compose.runtime_runtime",
         "androidx.activity_activity-compose",
+        "SystemUIPluginLib",
     ],
 }
 

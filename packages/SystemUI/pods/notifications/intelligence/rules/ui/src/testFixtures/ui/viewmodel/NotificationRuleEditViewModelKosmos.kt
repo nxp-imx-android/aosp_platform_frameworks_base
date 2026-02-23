@@ -24,9 +24,9 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.DraftR
 val Kosmos.notificationRuleEditViewModelFactory by
     Kosmos.Fixture {
         object : NotificationRuleEditViewModel.Factory {
-            override fun create(draftRule: DraftRuleModel): NotificationRuleEditViewModel {
+            override fun create(rule: DraftRuleModel): NotificationRuleEditViewModel {
                 return NotificationRuleEditViewModelImpl(
-                    draftRule,
+                    rule,
                     fakeContactsInteractor,
                     fakeInstalledAppsInteractor,
                 )

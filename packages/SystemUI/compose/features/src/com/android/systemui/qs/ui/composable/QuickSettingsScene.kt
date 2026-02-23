@@ -79,7 +79,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesShadeStateViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesParentViewModel
 import com.android.systemui.notifications.ui.composable.HeadsUpNotificationPlaceholder
 import com.android.systemui.notifications.ui.composable.ScrollingNotificationPanel
 import com.android.systemui.qs.composefragment.ui.GridAnchor
@@ -116,8 +116,7 @@ constructor(
     private val notificationsPlaceholderViewModelFactory: NotificationsPlaceholderViewModel.Factory,
     private val actionsViewModelFactory: QuickSettingsUserActionsViewModel.Factory,
     private val contentViewModelFactory: QuickSettingsSceneContentViewModel.Factory,
-    private val notificationRulesShadeStateViewModelFactory:
-        NotificationRulesShadeStateViewModel.Factory,
+    private val notificationRulesParentViewModelFactory: NotificationRulesParentViewModel.Factory,
     private val jankMonitor: InteractionJankMonitor,
 ) : ExclusiveActivatable(), Scene {
     override val key = Scenes.QuickSettings
@@ -142,10 +141,10 @@ constructor(
             rememberViewModel("QuickSettingsScene-notifPlaceholderViewModel") {
                 notificationsPlaceholderViewModelFactory.create(Scenes.QuickSettings)
             }
-        val notificationRulesShadeStateViewModel =
+        val notificationRulesParentViewModel =
             if (NmContextualDisplayLaunch.isEnabled) {
-                rememberViewModel("QuickSettingsScene-notifRulesShadeStateViewModel") {
-                    notificationRulesShadeStateViewModelFactory.create()
+                rememberViewModel("QuickSettingsScene-notifRulesParentViewModel") {
+                    notificationRulesParentViewModelFactory.create()
                 }
             } else {
                 null
@@ -175,7 +174,7 @@ constructor(
             viewModel = viewModel,
             headerViewModel = viewModel.qsContainerViewModel.shadeHeaderViewModel,
             notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
-            notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
+            notificationRulesParentViewModel = notificationRulesParentViewModel,
             modifier =
                 modifier
                     .graphicsLayer { alpha = contentAlpha }
@@ -209,7 +208,7 @@ private fun ContentScope.QuickSettingsScene(
     viewModel: QuickSettingsSceneContentViewModel,
     headerViewModel: ShadeHeaderViewModel,
     notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
-    notificationRulesShadeStateViewModel: NotificationRulesShadeStateViewModel?,
+    notificationRulesParentViewModel: NotificationRulesParentViewModel?,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
     jankMonitor: InteractionJankMonitor,
@@ -329,7 +328,7 @@ private fun ContentScope.QuickSettingsScene(
                 shadeSession = shadeSession,
                 stackScrollView = notificationStackScrollView,
                 viewModel = notificationsPlaceholderViewModel,
-                notificationRulesShadeStateViewModel = notificationRulesShadeStateViewModel,
+                notificationRulesParentViewModel = notificationRulesParentViewModel,
                 jankMonitor = jankMonitor,
                 shouldPunchHoleBehindScrim = true,
                 shouldFillMaxHeight = true,

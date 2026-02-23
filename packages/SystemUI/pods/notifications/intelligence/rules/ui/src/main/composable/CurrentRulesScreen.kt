@@ -16,7 +16,6 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
-import android.graphics.drawable.ShapeDrawable
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,10 +45,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel.Companion.toDraft
-import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
 import kotlinx.coroutines.launch
@@ -65,7 +62,7 @@ fun CurrentRulesScreen(
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.Top),
-        modifier = modifier.background(MaterialTheme.colorScheme.background).padding(16.dp),
+        modifier = modifier,
     ) {
         item("Title") {
             Row(
@@ -94,9 +91,21 @@ fun CurrentRulesScreen(
             item(rule.toString()) { CurrentRule(rule = rule, screenViewModel = viewModel) }
         }
 
-        item("Fake rule button") {
-            Button(onClick = { scope.launch { viewModel.createRule(generateFakeRule()) } }) {
-                Text("Add fake rule")
+        item("Create new rule") {
+            Button(
+                onClick = {
+                    scope.launch {
+                        viewModel.launchEditRuleScreen(
+                            DraftRuleModel(
+                                action = ActionModel.Highlight,
+                                contacts = null,
+                                includedApps = null,
+                            )
+                        )
+                    }
+                }
+            ) {
+                Text("Create new rule")
             }
         }
     }
@@ -162,19 +171,4 @@ private fun RuleModel.toText(): String {
         }
 
     return "${action.name} notifications$contactsString$includedAppsString"
-}
-
-private fun generateFakeRule(): RuleModel {
-    val id = (0..1000).random()
-    return RuleModel(
-        ActionModel.Silence,
-        filter =
-            FilterModel(
-                contacts = null,
-                includedApps =
-                    IncludedAppsModel(
-                        apps = listOf(AppModel(label = "Fake app #$id", icon = ShapeDrawable()))
-                    ),
-            ),
-    )
 }

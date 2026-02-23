@@ -1130,6 +1130,17 @@
             android:showForAllUsers="true"
             />
 
+        <activity
+            android:name=".notifications.intelligence.rules.ui.composable.NotificationRulesActivity"
+            android:theme="@style/Theme.Transparent"
+            android:label="@string/notification_rules_activity_title"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:excludeFromRecents="true"
+            android:showWhenLocked="false"
+            android:showForAllUsers="true"
+            />
+
         <service
             android:name="com.android.systemui.communal.widgets.GlanceableHubWidgetManagerService"
             android:exported="false" />

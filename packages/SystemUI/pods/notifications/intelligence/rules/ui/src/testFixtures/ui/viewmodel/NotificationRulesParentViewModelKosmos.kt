@@ -14,8 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.systemui.notifications.intelligence.rules.ui.composable
+package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.plugins.activityStarter
 
-val Kosmos.notificationRulesScreen by Kosmos.Fixture { NotificationRulesScreenImpl() }
+val Kosmos.notificationRulesParentViewModel by
+    Kosmos.Fixture { NotificationRulesParentViewModelImpl(activityStarter = activityStarter) }
+
+val Kosmos.notificationRulesParentViewModelFactory by
+    Kosmos.Fixture {
+        object : NotificationRulesParentViewModel.Factory {
+            override fun create(): NotificationRulesParentViewModel {
+                return notificationRulesParentViewModel
+            }
+        }
+    }

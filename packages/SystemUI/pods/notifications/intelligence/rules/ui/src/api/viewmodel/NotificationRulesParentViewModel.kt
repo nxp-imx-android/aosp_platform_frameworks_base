@@ -16,16 +16,15 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
-import com.android.systemui.kosmos.Kosmos
+import android.content.Context
+import com.android.systemui.lifecycle.Activatable
 
-val Kosmos.notificationRulesShadeStateViewModel by
-    Kosmos.Fixture { NotificationRulesShadeStateViewModelImpl() }
+/** A top-level view model for controlling the display of the overall notification rules screen. */
+public interface NotificationRulesParentViewModel : Activatable {
+    /** Launches an activity to control notification rules. */
+    public fun launchNotificationRulesActivity(context: Context)
 
-val Kosmos.notificationRulesShadeStateViewModelFactory by
-    Kosmos.Fixture {
-        object : NotificationRulesShadeStateViewModel.Factory {
-            override fun create(): NotificationRulesShadeStateViewModel {
-                return notificationRulesShadeStateViewModel
-            }
-        }
+    public interface Factory {
+        public fun create(): NotificationRulesParentViewModel
     }
+}
