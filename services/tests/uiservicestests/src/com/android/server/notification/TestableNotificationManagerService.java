@@ -18,17 +18,53 @@ package com.android.server.notification;
 
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+
+import android.app.ActivityManager;
+import android.app.ActivityManagerInternal;
+import android.app.AppOpsManager;
+import android.app.IActivityManager;
+import android.app.IUriGrantsManager;
+import android.app.StatsManager;
+import android.app.admin.DevicePolicyManagerInternal;
+import android.app.usage.UsageStatsManagerInternal;
 import android.companion.ICompanionDeviceManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.IPackageManager;
+import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.PowerManager;
+import android.os.UserManager;
+import android.permission.PermissionManager;
 import android.service.notification.StatusBarNotification;
+import android.telecom.TelecomManager;
+import android.testing.TestableContext;
+import android.testing.TestableLooper;
+import android.util.AtomicFile;
 
 import androidx.annotation.Nullable;
+import androidx.test.InstrumentationRegistry;
 
+import com.android.internal.config.sysui.SystemUiSystemPropertiesFlags;
+import com.android.internal.config.sysui.TestableFlagResolver;
 import com.android.internal.logging.InstanceIdSequence;
+import com.android.internal.logging.InstanceIdSequenceFake;
+import com.android.internal.logging.UiEventLogger;
+import com.android.server.LocalServices;
+import com.android.server.bitmapoffload.BitmapOffloadInternal;
+import com.android.server.lights.LightsManager;
 import com.android.server.notification.ManagedServices.ManagedServiceInfo;
 import com.android.server.notification.NotificationRecordLogger.NotificationReportedEvent;
+import com.android.server.uri.UriGrantsManagerInternal;
+import com.android.server.utils.quota.MultiRateLimiter;
+import com.android.server.wm.ActivityTaskManagerInternal;
+import com.android.server.wm.WindowManagerInternal;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,6 +75,11 @@ public class TestableNotificationManagerService extends NotificationManagerServi
     int countLogSmartSuggestionsVisible = 0;
     Set<Integer> mChannelToastsSent = new HashSet<>();
 
+    AtomicFile mPolicyFile;
+    File mFile;
+    AtomicFile mRulesFile;
+    File mFile2;
+
     String stringArrayResourceValue;
     @Nullable
     NotificationAssistantAccessGrantedCallback mNotificationAssistantAccessGrantedCallback;
@@ -47,6 +88,8 @@ public class TestableNotificationManagerService extends NotificationManagerServi
     Boolean mIsVisibleToListenerReturnValue = null;
 
     ComponentPermissionChecker permissionChecker;
+    TestableLooper mTestableLooper;
+    TestableContext mTestableContext;
 
     private static class SensitiveLog {
         public boolean hasPosted;
@@ -66,9 +109,62 @@ public class TestableNotificationManagerService extends NotificationManagerServi
     }
     public ClassificationChannelLog  lastClassificationChannelLog = null;
 
-    TestableNotificationManagerService(Context context, NotificationRecordLogger logger,
-            InstanceIdSequence notificationInstanceIdSequence) {
-        super(context, logger, notificationInstanceIdSequence);
+    TestableNotificationManagerService(TestableContext context, TestableLooper looper) {
+        super(context);
+        mTestableContext = context;
+        mTestableLooper = looper;
+    }
+
+    void init() throws IOException {
+        InstrumentationRegistry.getInstrumentation().getUiAutomation().adoptShellPermissionIdentity(
+                "android.permission.READ_CONTACTS");
+
+        // write to a test file; the system file isn't readable from tests
+        mFile = new File(getContext().getCacheDir(), "test.xml");
+        mFile.createNewFile();
+        final String preupgradeXml = "<notification-policy></notification-policy>";
+        mPolicyFile = new AtomicFile(mFile);
+        FileOutputStream fos = mPolicyFile.startWrite();
+        fos.write(preupgradeXml.getBytes());
+        mPolicyFile.finishWrite(fos);
+        mFile2 = new File(getContext().getCacheDir(), "test2.xml");
+        mFile2.createNewFile();
+        mRulesFile = new AtomicFile(mFile2);
+
+        // apps allowed as convos
+        setStringArrayResourceValue("");
+
+        LocalServices.removeServiceForTest(WindowManagerInternal.class);
+        LocalServices.addService(WindowManagerInternal.class, mock(WindowManagerInternal.class));
+        mTestableContext.addMockSystemService(AppOpsManager.class, mock(AppOpsManager.class));
+
+
+        super.init(new WorkerHandler(mTestableLooper.getLooper()),
+                mock(RankingHandler.class), new Handler(mTestableLooper.getLooper()),
+                mock(IPackageManager.class), mock(PackageManager.class),
+                mock(LightsManager.class),
+                mock(NotificationListeners.class),
+                spy(new NotificationAssistants(mTestableContext, mock(IPackageManager.class))),
+                mock(ConditionProviders.class), mock(ICompanionDeviceManager.class),
+                mock(SnoozeHelper.class), mock(NotificationUsageStats.class),
+                mPolicyFile, mRulesFile, mock(ActivityManager.class),
+                mock(GroupHelper.class), mock(IActivityManager.class),
+                mock(ActivityTaskManagerInternal.class),
+                mock(UsageStatsManagerInternal.class),
+                mock(DevicePolicyManagerInternal.class), mock(IUriGrantsManager.class),
+                mock(UriGrantsManagerInternal.class),
+                mock(AppOpsManager.class),
+                mock(NotificationHistoryManager.class), mock(StatsManager.class),
+                mock(ActivityManagerInternal.class),
+                mock(MultiRateLimiter.class), mock(PermissionHelper.class),
+                mock(UsageStatsManagerInternal.class), mock(TelecomManager.class),
+                mock(NotificationChannelLogger.class), new TestableFlagResolver(),
+                mock(PermissionManager.class),
+                mock(PowerManager.class),
+                new NotificationManagerService.PostNotificationTrackerFactory() {},
+                mock(UiEventLogger.class),
+                mock(BitmapOffloadInternal.class), new NotificationListenerStats(),
+                new NotificationRecordLoggerFake(), new InstanceIdSequenceFake(1 << 30));
     }
 
     RankingHelper getRankingHelper() {
