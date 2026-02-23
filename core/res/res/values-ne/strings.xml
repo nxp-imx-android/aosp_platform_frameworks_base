@@ -759,19 +759,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"डिभाइस अनलक"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"अनलक गर्ने अर्को तरिका प्रयोग गरी हेर्नुहोस्"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"तपाईंको फिंगरप्रिन्ट पहिचान नगरिएको अवस्थामा (जस्तै, तपाईंका औँलाहरू ओसिला भएमा) फेस अनलक प्रयोग गर्नुहोस्"</string>
-    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
-    <skip />
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"तपाईंको फिंगरप्रिन्ट पहिचान नभएका खण्डमा (जस्तै, तपाईंका औँला ओसिलो भएका बेला) अनुहार प्रयोग गरी अनलक गर्नुहोस्"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"तपाईंको अनुहार पहिचान नगरिएको अवस्थामा (जस्तै, पर्याप्त उज्यालो नभएमा) फेस अनलक प्रयोग गर्नुहोस्"</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"फेस अनलक"</string>
-    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
-    <skip />
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"अनुहार प्रयोग गरी अनलक गर्ने सुविधा"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"फेस अनलक सुविधामा अनुहार दर्ता गर्ने क्रममा त्रुटि भयो"</string>
-    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
-    <skip />
+    <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"अनुहार प्रयोग गरी अनलक गर्ने क्रममा समस्या आयो"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"आफ्नो फेस मोडेल मेटाउन ट्याप गर्नुहोस् अनि आफ्नो अनुहार फेरि दर्ता गर्नुहोस्"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"फेस अनलक प्रयोग गर्न \"सेटिङ तथा गोपनीयता\" मा गई "<b>"क्यामेरा प्रयोग गर्ने अनुमति"</b>" दिनुहोस्"</string>
-    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
-    <skip />
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"अनुहार प्रयोग गरी अनलक गर्न सेटिङ तथा गोपनीयतामा गई "<b>"क्यामेरा एक्सेस गर्ने अनुमति"</b>" दिनुहोस्"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"फिंगरप्रिन्ट अनलक"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"फिंगरप्रिन्ट सेन्सर प्रयोग गर्न मिल्दैन"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"फिंगरप्रिन्ट सेन्सर मर्मत गर्ने सेवा प्रदायक कम्पनीमा सम्पर्क गर्नुहोस्।"</string>
@@ -779,42 +775,31 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"ज्यादै चम्किलो। अझ मधुरो प्रकाश प्रयोग गरी हेर्नु…"</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"पर्याप्त उज्यालो छैन"</string>
     <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"फोन अझै पर सार्नुहोस्"</string>
-    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
-    <skip />
+    <string name="face_acquired_too_close" product="desktop" msgid="7189579448504853047">"डिभाइस अझै पर लैजानुहोस्"</string>
     <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"फोन अझै नजिक सार्नुहोस्"</string>
-    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
-    <skip />
+    <string name="face_acquired_too_far" product="desktop" msgid="6590730829823321223">"डिभाइस अझ नजिक लैजानुहोस्"</string>
     <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"फोन अझ माथि उठाउनुहोस्"</string>
-    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
-    <skip />
+    <string name="face_acquired_too_high" product="desktop" msgid="717393614154504299">"डिभाइस अझ माथि लैजानुहोस्"</string>
     <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"फोन अझै तल सार्नुहोस्"</string>
-    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
-    <skip />
+    <string name="face_acquired_too_low" product="desktop" msgid="7695733281069538045">"डिभाइस अझ तल लैजानुहोस्"</string>
     <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"फोन आफ्नो बायाँतिर सार्नुहोस्"</string>
-    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
-    <skip />
+    <string name="face_acquired_too_right" product="desktop" msgid="4058756237538843740">"डिभाइस आफ्नो बायाँतिर लैजानुहोस्"</string>
     <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"फोन आफ्नो दायाँतिर सार्नुहोस्"</string>
-    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
-    <skip />
+    <string name="face_acquired_too_left" product="desktop" msgid="5804819007366973778">"डिभाइस आफ्नो दायाँतिर लैजानुहोस्"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"आफ्नो क्यामेरामा अझ सीधा हेर्नुहोस्"</string>
     <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"तपाईंको अनुहार देखिएन। तपाईंको फोन आफ्नो आँखाअघि राखी समात्नुहोस्।"</string>
-    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
-    <skip />
+    <string name="face_acquired_not_detected" product="desktop" msgid="1047701586390904260">"तपाईंको अनुहार देखिएन। आफ्नो डिभाइस सीधा आँखा अगाडि राख्नुहोस्।"</string>
     <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"अत्यधिक हल्लियो। फोन स्थिर राख्नुहोस्।"</string>
-    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
-    <skip />
+    <string name="face_acquired_too_much_motion" product="desktop" msgid="7135563968992659161">"अत्यधिक हल्लियो। डिभाइस नहल्लाइकन समात्नुहोस्।"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"कृपया आफ्नो अनुहार पुनः दर्ता गर्नुहोस्।"</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"अनुहार मिलेन। फेरि प्रयास गर्नुहोस्।"</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"आफ्नो टाउको थोरै यताउता सार्नुहोस्"</string>
     <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"आफ्नो फोनमा अझ सीधा हेर्नुहोस्"</string>
-    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
-    <skip />
+    <string name="face_acquired_pan_too_extreme" product="desktop" msgid="821456302944137576">"आफ्नो डिभाइसमा अझ सीधा हेर्नुहोस्"</string>
     <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"आफ्नो फोनमा अझ सीधा हेर्नुहोस्"</string>
-    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
-    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="desktop" msgid="1119243364774233108">"आफ्नो डिभाइसमा अझ सीधा हेर्नुहोस्"</string>
     <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"आफ्नो फोनमा अझ सीधा हेर्नुहोस्"</string>
-    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
-    <skip />
+    <string name="face_acquired_roll_too_extreme" product="desktop" msgid="3665467581072397682">"आफ्नो डिभाइसमा अझ सीधा हेर्नुहोस्"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"आफ्नो अनुहार छोप्ने सबै कुरा हटाउनुहोस्।"</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"कालो रङको पट्टीलगायत आफ्नो स्क्रिनको माथिल्लो भाग सफा गर्नुहोस्"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -828,30 +813,24 @@
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"अनुहार पुष्टि गर्न सकिएन। हार्डवेयर उपलब्ध छैन।"</string>
     <string name="face_error_timeout" product="default" msgid="2598544068593889762">"फेरि फेस अनलक प्रयोग गरी हेर्नुहोस्"</string>
-    <!-- no translation found for face_error_timeout (8136501408214657840) -->
-    <skip />
+    <string name="face_error_timeout" product="desktop" msgid="8136501408214657840">"फेरि अनुहार प्रयोग गरी अनलक गरी हेर्नुहोस्"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"अनुहारसम्बन्धी नयाँ डेटा भण्डारण गर्न सकिएन। पहिले कुनै पुरानो डेटा मेटाउनुहोस्।"</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"अनुहार पहिचान रद्द गरियो।"</string>
     <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"प्रयोगकर्ताले फेस अनलक सेटअप गर्ने कार्य रद्द गर्नुभयो"</string>
-    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
-    <skip />
+    <string name="face_error_user_canceled" product="desktop" msgid="8903551031462609651">"प्रयोगकर्ताले अनुहार प्रयोग गरी अनलक गर्ने प्रक्रिया रद्द गर्नुभयो"</string>
     <string name="face_error_lockout" msgid="7864408714994529437">"धेरैपटक प्रयासहरू भए। पछि फेरि प्रयास गर्नुहोस्‌।"</string>
     <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"अत्यन्तै धेरै पटक प्रयास गरिसकियो। फेस अनलक उपलब्ध छैन।"</string>
-    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
-    <skip />
+    <string name="face_error_lockout_permanent" product="desktop" msgid="1885291877517229762">"निकै धेरै प्रयासहरू भए। अनुहार प्रयोग गरी अनलक गर्ने सुविधा उपलब्ध छैन।"</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"निकै धेरै प्रयासहरू भए। यसको साटो स्क्रिन लक प्रयोग गर्नुहोस्।"</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"अनुहार पुष्टि गर्न सकिएन। फेरि प्रयास गर्नुहोस्।"</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"तपाईंले फेस अनलक सेटअप गर्नुभएको छैन"</string>
-    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
-    <skip />
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"अनुहार प्रयोग गरी अनलक गर्ने सुविधा अझै सेटअप गरिएको छैन"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"यो डिभाइसमा फेस अनलक प्रयोग गर्न मिल्दैन"</string>
-    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
-    <skip />
+    <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"यो डिभाइसमा अनुहार प्रयोग गरी अनलक गर्ने सुविधा उपलब्ध छैन"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"केही समयका लागि सेन्सर असक्षम पारियो।"</string>
     <string name="face_name_template" msgid="3877037340223318119">"अनुहार <xliff:g id="FACEID">%d</xliff:g>"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"फेस अनलक प्रयोग गर्नुहोस्"</string>
-    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
-    <skip />
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"अनुहार प्रयोग गरी अनलक गर्ने सुविधा"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"फेस अनलक वा स्क्रिन लक प्रयोग गर्नुहोस्"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"जारी राख्न आफ्नो अनुहारको सहायताले पुष्टि गर्नुहोस्"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"जारी राख्न आफ्नो फेस वा स्क्रिन लक प्रयोग गरी पुष्टि गर्नुहोस्"</string>
@@ -1112,8 +1091,7 @@
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"अनलक गर्न कुनै की थिच्नुहोस्"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"सबै सुविधा र डेटा एक्सेस गर्न अनलक गर्नुहोस्"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"फेस अनलक प्रयोग गरी अनलक गर्ने प्रयास अत्यधिक धेरै भयो"</string>
-    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
-    <skip />
+    <string name="faceunlock_multiple_failures" product="desktop" msgid="5388142244463490793">"अनुहार प्रयोग गरी अनलक गर्ने अधिकतम प्रयास गरिसकिएको छ"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM कार्ड हालिएको छैन"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"ट्याब्लेटमा SIM कार्ड हालिएको छैन।"</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"तपाईंको Android TV डिभाइसमा SIM कार्ड हालिएको छैन।"</string>
@@ -1185,8 +1163,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"स्लाइड अनलक।"</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"ढाँचा अनलक।"</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"फेस अनलक।"</string>
-    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
-    <skip />
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"अनुहार प्रयोग गरी अनलक गर्नुहोस्।"</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"Pin अनलक"</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Sim को Pin मार्फत अनलक गर्ने प्रक्रिया।"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Sim को Puk मार्फत अनलक गर्ने प्रक्रिया।"</string>
@@ -1923,8 +1900,7 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"बदल्नुहोस्"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"सेटिङ"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"बदलेर <xliff:g id="NAME">%1$s</xliff:g> बनाइँदै छ…"</string>
-    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
-    <skip />
+    <string name="user_logging_out_message" msgid="2968888364742643174">"साइन आउट गरिँदै छ…"</string>
     <string name="owner_name" msgid="8713560351570795743">"मालिक"</string>
     <string name="guest_name" msgid="8502103277839834324">"अतिथि"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"सिस्टम युजर"</string>
@@ -2187,12 +2163,10 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"तपाईंले %1$s एक्सेस गर्ने अनुमति दिनुभएका AI एजेन्ट तथा सेवाहरू अझै पनि यसको डेटा एक्सेस गर्न सक्ने छन्"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"एप लक अन गर्नुहोस्"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"फेस अनलक"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"अनुहार प्रयोग गरी अनलक गर्ने सुविधा"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"फिंगरप्रिन्ट अनलक"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"फिंगरप्रिन्ट अनलक, फेस अनलक"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"फिंगरप्रिन्ट अनलक, अनुहार प्रयोग गरी अनलक गर्ने सुविधा"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"पासवर्ड"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"प्याटर्न"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
@@ -2689,11 +2663,9 @@
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> अब पहिचान गर्न सकिँदैन। फिंगरप्रिन्ट अनलक फेरि सेटअप गर्नुहोस्।"</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> र <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> अब पहिचान गर्न सकिँदैन। फिंगरप्रिन्ट अनलक फेरि सेटअप गर्नुहोस्।"</string>
     <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"फेस अनलक फेरि सेटअप गर्नुहोस्"</string>
-    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
-    <skip />
+    <string name="face_dangling_notification_title" product="desktop" msgid="4632690536207343589">"अनुहार प्रयोग गरी अनलक गर्ने सुविधा फेरि सेटअप गर्नुहोस्"</string>
     <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"तपाईंको फेस मोडेल अब पहिचान गर्न सकिँदैन। फेस अनलक फेरि सेटअप गर्नुहोस्।"</string>
-    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
-    <skip />
+    <string name="face_dangling_notification_msg" product="desktop" msgid="5982979430103820891">"तपाईंको फेस मोडेल अब पहिचान गर्न सकिँदैन। अनुहार प्रयोग गरी अनलक गर्ने सुविधा फेरि सेटअप गर्नुहोस्।"</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"सेटअप गर्नुहोस्"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"अहिले होइन"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"<xliff:g id="USER_NAME">%s</xliff:g> का निम्ति अलार्म"</string>
