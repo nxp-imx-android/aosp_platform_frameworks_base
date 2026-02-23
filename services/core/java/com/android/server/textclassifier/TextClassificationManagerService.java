@@ -26,6 +26,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.graphics.drawable.Icon;
@@ -69,6 +70,7 @@ import com.android.internal.util.FunctionalUtils.ThrowingConsumer;
 import com.android.internal.util.FunctionalUtils.ThrowingRunnable;
 import com.android.internal.util.IndentingPrintWriter;
 import com.android.internal.util.Preconditions;
+import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.textclassifier.personalcontext.PersonalContextBridge;
 import com.android.server.textclassifier.personalcontext.PersonalContextBridgeImpl;
@@ -183,6 +185,7 @@ public final class TextClassificationManagerService extends ITextClassifierServi
     private final String mDefaultTextClassifierPackage;
     @Nullable
     private final String mSystemTextClassifierPackage;
+    private final PackageManagerInternal mPmInternal;
     private final MyPackageMonitor mPackageMonitor;
     private final PersonalContextBridge mPersonalContextBridge;
 
@@ -194,6 +197,7 @@ public final class TextClassificationManagerService extends ITextClassifierServi
         PackageManager packageManager = mContext.getPackageManager();
         mDefaultTextClassifierPackage = packageManager.getDefaultTextClassifierPackageName();
         mSystemTextClassifierPackage = packageManager.getSystemTextClassifierPackageName();
+        mPmInternal = LocalServices.getService(PackageManagerInternal.class);
         mSessionCache = new SessionCache(mLock);
         mPackageMonitor = new MyPackageMonitor();
         mPersonalContextBridge = new PersonalContextBridgeImpl();
@@ -692,11 +696,10 @@ public final class TextClassificationManagerService extends ITextClassifierServi
     private void validateCallingPackage(@Nullable String callingPackage)
             throws PackageManager.NameNotFoundException {
         if (callingPackage != null) {
-            final int packageUid = mContext.getPackageManager()
-                    .getPackageUidAsUser(callingPackage, UserHandle.getCallingUserId());
             final int callingUid = Binder.getCallingUid();
+            final int callingUserId = UserHandle.getCallingUserId();
             Preconditions.checkArgument(
-                    callingUid == packageUid
+                    mPmInternal.isSameApp(callingPackage, callingUid, callingUserId)
                             // Trust the system process:
                             || callingUid == android.os.Process.SYSTEM_UID,
                     "Invalid package name. callingPackage=%s, callingUid=%d", callingPackage,
@@ -1166,7 +1169,7 @@ public final class TextClassificationManagerService extends ITextClassifierServi
 
         @GuardedBy("mLock")
         private boolean checkRequestAcceptedLocked(int requestUid, @NonNull String methodName) {
-            if (mIsTrusted || (requestUid == mBoundServiceUid)) {
+            if (mIsTrusted || mPmInternal.isSameApp(mPackageName, requestUid, mUserId)) {
                 return true;
             }
             Slog.w(LOG_TAG, String.format(
