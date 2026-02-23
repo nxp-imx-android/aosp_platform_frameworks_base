@@ -44,6 +44,7 @@ import com.android.systemui.locationbutton.ui.compose.LocationButton
 import com.android.systemui.locationbutton.ui.view.LocationButtonRootView
 import com.android.systemui.locationbutton.ui.viewmodel.LocationButtonViewModel
 import java.util.concurrent.Executor
+import java.util.function.Consumer
 
 /**
  * Manages a single location button session, handling client communication and lifecycle.
@@ -89,6 +90,7 @@ class LocationButtonSession(
     private val sessionId: Int,
 ) : ILocationButtonSession.Stub(), IBinder.DeathRecipient {
     val displayManager = context.getSystemService(DisplayManager::class.java)!!
+    private val windowManager = context.getSystemService(WindowManager::class.java)!!
 
     private val surfaceControlViewHost: SurfaceControlViewHost
 
@@ -96,6 +98,14 @@ class LocationButtonSession(
     private var onLocationButtonSessionCloseListener: OnLocationButtonSessionCloseListener? = null
     var isActive = false
     private var isButtonUiInTrustedState = false
+
+    private val trustedPresentationListener =
+        Consumer<Boolean> { inTrustedPresentationState ->
+            if (DEBUG) {
+                Slog.d(LOG_TAG, "TPL callback for session $sessionId: $inTrustedPresentationState")
+            }
+            isButtonUiInTrustedState = inTrustedPresentationState
+        }
 
     init {
         if (DEBUG) {
@@ -184,7 +194,6 @@ class LocationButtonSession(
     }
 
     private fun registerTrustedPresentationListener() {
-        val windowManager = context.getSystemService(WindowManager::class.java)!!
         val trustedPresentationThresholds =
             TrustedPresentationThresholds(
                 MIN_ALPHA_FOR_TRUSTED_PRESENTATION,
@@ -195,12 +204,8 @@ class LocationButtonSession(
             surfaceControlViewHost.windowToken.asBinder(),
             trustedPresentationThresholds,
             executor,
-        ) { inTrustedPresentationState ->
-            if (DEBUG) {
-                Slog.d(LOG_TAG, "TPL callback for session $sessionId: $inTrustedPresentationState")
-            }
-            isButtonUiInTrustedState = inTrustedPresentationState
-        }
+            trustedPresentationListener,
+        )
     }
 
     override fun setCornerRadius(cornerRadius: Float) {
@@ -347,6 +352,7 @@ class LocationButtonSession(
                 return@execute
             }
             isActive = false
+            windowManager.unregisterTrustedPresentationListener(trustedPresentationListener)
             surfaceControlViewHost.release()
             try {
                 locationButtonClient.asBinder().unlinkToDeath(this, 0)
