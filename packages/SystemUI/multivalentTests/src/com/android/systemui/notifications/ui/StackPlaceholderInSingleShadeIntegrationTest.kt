@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.ui
 
+import android.content.res.mainResources
 import android.platform.test.annotations.MotionTest
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
@@ -279,7 +280,10 @@ class StackPlaceholderInSingleShadeIntegrationTest : SysuiTestCase() {
             viewModelFactory =
                 object : GoneUserActionsViewModel.Factory {
                     override fun create(): GoneUserActionsViewModel {
-                        return GoneUserActionsViewModel(kosmos.shadeModeInteractor)
+                        return GoneUserActionsViewModel(
+                            kosmos.shadeModeInteractor,
+                            kosmos.mainResources,
+                        )
                     }
                 },
         )

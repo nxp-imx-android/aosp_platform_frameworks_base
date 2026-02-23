@@ -16,8 +16,11 @@
 
 package com.android.systemui.scene.ui.viewmodel
 
+import android.content.res.Resources
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.systemui.res.R
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shade.ui.viewmodel.dualShadeActions
@@ -28,15 +31,21 @@ import dagger.assisted.AssistedInject
 
 class OccludedUserActionsViewModel
 @AssistedInject
-constructor(private val shadeModeInteractor: ShadeModeInteractor) : UserActionsViewModel() {
+constructor(
+    private val shadeModeInteractor: ShadeModeInteractor,
+    @ShadeDisplayAware private val resources: Resources,
+) : UserActionsViewModel() {
 
     override suspend fun hydrateActions(setActions: (Map<UserAction, UserActionResult>) -> Unit) {
+        val twoFingerSwipeEnabled =
+            resources.getBoolean(R.bool.config_enableTwoFingerSwipeDownShade)
         shadeModeInteractor.shadeMode.collect { shadeMode ->
             setActions(
                 when (shadeMode) {
                     ShadeMode.Single -> singleShadeActions(requireTwoPointersForTopEdgeForQs = true)
                     ShadeMode.Split -> splitShadeActions()
-                    ShadeMode.Dual -> dualShadeActions()
+                    ShadeMode.Dual ->
+                        dualShadeActions(twoFingerSwipeEnabled = twoFingerSwipeEnabled)
                 }.associate { it }
             )
         }
