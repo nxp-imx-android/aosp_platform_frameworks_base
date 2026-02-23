@@ -13,6 +13,16 @@ flag {
 }
 
 flag {
+    name: "appheader_launch_color_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes a bug where we use the wrong app header color during app launch."
+    bug: "346528003"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "better_desk_deactivation_in_recents_transition"
     namespace: "lse_desktop_experience"
     description: "Improves desk deactivation using real Overview state and better recents signaling"
