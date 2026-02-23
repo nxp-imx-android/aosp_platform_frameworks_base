@@ -13,6 +13,16 @@ flag {
 }
 
 flag {
+    name: "enable_autoclick_panel_bug_fixes"
+    namespace: "accessibility"
+    description: "Fix autoclick panel to move and drag properly."
+    bug: "486977188"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_a11y_checker_logging"
     namespace: "accessibility"
     description: "Whether to identify and log app a11y issues."
