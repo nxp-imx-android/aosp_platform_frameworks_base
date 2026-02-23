@@ -5164,6 +5164,17 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         EventLogTags.writeAmProcBound(app.userId, pid, app.processName);
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            PerfettoTrace.instant(PROC_STATE_CATEGORY, "process_bound")
+                    .beginProto()
+                    .beginNested(PROCESS_START_EVENT)
+                    .addField(UID, app.info.uid)
+                    .addField(PID, pid)
+                    .addField(PROCESS_NAME, app.processName)
+                    .endNested()
+                    .endProto()
+                    .emit();
+        }
 
         synchronized (mProcLock) {
             mProcessStateController.setAttachingProcessStatesLSP(app);
@@ -5557,7 +5568,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                         .beginNested(PROCESS_START_EVENT)
                         .addField(UID, app.info.uid)
                         .addField(PID, pid)
-                        .addField(PROCESS_NAME, app.processName)
                         .addField(BIND_APPLICATION_DELAY_MS, bindApplicationDelay)
                         .addField(PROCESS_START_DELAY_MS, startDelay)
                         .addField(HOSTING_NAME, hostingRecord.getName())
