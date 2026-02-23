@@ -23681,7 +23681,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             int scope,
             boolean booleanValue,
             int trueValue) {
-        // Setting the value to `false` should clear the policy from the DevicePolicyEngine.
+        // In the hand-written handlers, setting the value to `false` is used to clear the policy
+        // from the DevicePolicyEngine.
+        // Retain that behavior, otherwise there would be no way to clear the policy through these
+        // handlers.
         if (booleanValue == false) {
             setPolicy(caller, id.getId(), scope, null);
         } else {
