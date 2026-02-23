@@ -67,6 +67,7 @@ import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleFeatureConfig;
 import com.android.wm.shell.shared.bubbles.BubbleFeatureConfigImpl;
+import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -93,8 +94,9 @@ public abstract class BubbleModule {
 
     @WMSingleton
     @Provides
-    static BubbleFeatureConfig providesBubbleFeatureConfig(Context context) {
-        return new BubbleFeatureConfigImpl(context);
+    static BubbleFeatureConfig providesBubbleFeatureConfig(Context context,
+            DesktopState desktopState) {
+        return new BubbleFeatureConfigImpl(context, desktopState);
     }
 
     @WMSingleton

@@ -21,13 +21,9 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.shared.desktopmode.DesktopState
 
 /** Implementation of [BubbleFeatureConfig]. */
-class BubbleFeatureConfigImpl
-@JvmOverloads
-constructor(
+class BubbleFeatureConfigImpl(
     private val context: Context,
-    private val desktopStateRetriever: (Context) -> DesktopState = { context ->
-        DesktopState.getInstance(context)
-    },
+    private val desktopState: DesktopState,
 ) : BubbleFeatureConfig {
 
     override fun areAppBubblesSupported(): Boolean {
@@ -41,8 +37,7 @@ constructor(
 
         // Do not allow any app to be bubbled on a display that supports desktop windowing.
         if (Flags.disableBubbleAnythingDesktopWindowing()) {
-            val desktopSupported =
-                desktopStateRetriever(context).isDesktopModeSupportedOnDisplay(context.displayId)
+            val desktopSupported = desktopState.isDesktopModeSupportedOnDisplay(context.displayId)
             return !desktopSupported && BubbleFlagHelper.enableCreateAnyBubble()
         }
         return true
@@ -50,6 +45,6 @@ constructor(
 
     override fun isScrimEnabled(displayId: Int): Boolean {
         return !(Flags.disableBubbleScrimLargeScreens() &&
-            desktopStateRetriever(context).isDesktopModeSupportedOnDisplay(displayId))
+            desktopState.isDesktopModeSupportedOnDisplay(displayId))
     }
 }

@@ -47,7 +47,7 @@ class BubbleFeatureConfigTest : ShellTestCase() {
         whenever(context.getSystemService(Context.ACTIVITY_SERVICE)).thenReturn(activityManager)
         whenever(activityManager.isLowRamDevice).thenReturn(false)
 
-        bubbleFeatureConfig = BubbleFeatureConfigImpl(context, { desktopState })
+        bubbleFeatureConfig = BubbleFeatureConfigImpl(context, desktopState)
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
