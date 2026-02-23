@@ -331,9 +331,6 @@ object SplitScreenUtils {
     }
 
     fun createShortcutOnHotseatIfNotExist(tapl: LauncherInstrumentation, appName: String) {
-        if (tapl.workspace.getHotseatAppIcon(0).appName == appName) {
-            return
-        }
         tapl.workspace.deleteAppIcon(tapl.workspace.getHotseatAppIcon(0))
         val allApps = tapl.workspace.switchToAllApps()
         allApps.freeze()
