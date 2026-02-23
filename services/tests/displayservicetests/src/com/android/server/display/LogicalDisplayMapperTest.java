@@ -202,6 +202,8 @@ public class LogicalDisplayMapperTest {
     @Mock
     Predicate<DisplayInfo> mIsDisplayAllowedInTopologyMock;
     @Mock
+    private ModeRequestManager mModeRequestManager;
+    @Mock
     CopyOnWriteSparseArray<LogicalDisplay.CachedDisplayInfo> mDisplayInfoCacheMock;
 
     @Captor ArgumentCaptor<LogicalDisplay> mDisplayCaptor;
@@ -1924,7 +1926,8 @@ public class LogicalDisplayMapperTest {
                 mDisplayDeviceRepo,
                 mListenerMock, new DisplayManagerService.SyncRoot(), mHandler,
                 mDeviceStateToLayoutMapSpy, mFlagsMock,
-                mDisplayGroupAllocatorSpy, mIsDisplayAllowedInTopologyMock, mDisplayInfoCacheMock);
+                mDisplayGroupAllocatorSpy, mIsDisplayAllowedInTopologyMock, mDisplayInfoCacheMock,
+                mModeRequestManager);
         mLogicalDisplayMapper.onWindowManagerReady();
     }
 

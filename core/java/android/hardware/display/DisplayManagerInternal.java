@@ -162,6 +162,14 @@ public abstract class DisplayManagerInternal {
     public abstract DisplayInfo getDisplayInfo(int displayId);
 
     /**
+     * Returns information about all the logical displays. In case there is an ongoing mode update
+     * process it returns the cached info for that display.
+     *
+     * @return a map with displayId as key and DisplayInfo as value.
+     */
+    public abstract DisplayInfos getNonOverrideDisplayInfos();
+
+    /**
      * Returns a set of DisplayInfo, for the states that may be assumed by either the given display,
      * or any other display within that display's group.
      *
@@ -998,4 +1006,5 @@ public abstract class DisplayManagerInternal {
             return Display.isSuspendedState(displayState);
         }
     }
+    public record DisplayInfos(SparseArray<DisplayInfo> displayInfos) {}
 }
