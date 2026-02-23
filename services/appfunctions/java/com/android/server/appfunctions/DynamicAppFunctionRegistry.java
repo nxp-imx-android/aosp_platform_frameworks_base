@@ -40,6 +40,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -185,43 +186,46 @@ final class DynamicAppFunctionRegistry {
     public void unregisterAppFunctions(
             @NonNull String packageName,
             @NonNull List<String> functionIdentifiers,
-            @NonNull IAppFunctionExecutor executor,
-            @NonNull List<RegistrationScopeId> scopeIds) {
-        if (functionIdentifiers.size() != scopeIds.size()) {
-            throw new IllegalArgumentException(
-                    "Scope identifiers list must be same size as function identifiers");
-        }
+            @NonNull IAppFunctionExecutor executor) {
         synchronized (mLock) {
             for (int index = 0; index < functionIdentifiers.size(); index++) {
                 AppFunctionName name =
                         new AppFunctionName(packageName, functionIdentifiers.get(index));
-                RegistrationScopeId activityToken = scopeIds.get(index);
-                AppFunctionRegistrationId registrationId =
-                        new AppFunctionRegistrationId(name, activityToken);
 
-                // Ensure the registration being removed actually belongs to the calling
-                // executor.
-                if (!mRegistrations.containsKey(name)
-                        || !mRegistrations.get(name).containsKey(activityToken)) {
+                if (!mRegistrations.containsKey(name)) {
                     if (DEBUG) {
-                        Log.d(TAG, "Skip unregistering function with ID:" + registrationId);
+                        Log.d(TAG, "Skip unregistering function:" + name);
                     }
                     continue;
                 }
-                IAppFunctionExecutor registeredExecutor =
-                        mRegistrations.get(name).get(activityToken);
-                if (registeredExecutor == null
-                        || !registeredExecutor.asBinder().equals(executor.asBinder())) {
+
+                RegistrationScopeId registeredScopeId = null;
+                for (Map.Entry<RegistrationScopeId, IAppFunctionExecutor> entry
+                        : Objects.requireNonNull(mRegistrations.get(name)).entrySet()) {
+                    if (entry.getValue() != null
+                            && entry.getValue().asBinder().equals(executor.asBinder())) {
+                        registeredScopeId = entry.getKey();
+                        break;
+                    }
+                }
+                if (registeredScopeId == null) {
                     if (DEBUG) {
-                        Log.d(TAG, "Skip unregistering function with ID:" + registrationId);
+                        Log.w(TAG, "Skip unregistering function with name:" + name
+                                + ", as the executor is not found. Available executors: "
+                                + Objects.requireNonNull(mRegistrations.get(name)));
                     }
                     continue;
                 }
-                Objects.requireNonNull(mRegistrations.get(name)).remove(activityToken);
+
+                Objects.requireNonNull(mRegistrations.get(name)).remove(registeredScopeId);
                 if (Objects.requireNonNull(mRegistrations.get(name)).isEmpty()) {
                     mRegistrations.remove(name);
                 }
 
+                AppFunctionRegistrationId registrationId = new AppFunctionRegistrationId(
+                    name,
+                    registeredScopeId
+                );
                 ArraySet<AppFunctionRegistrationId> executorRegistrations =
                         mExecutorToRegistrations.get(executor.asBinder());
                 if (executorRegistrations != null) {

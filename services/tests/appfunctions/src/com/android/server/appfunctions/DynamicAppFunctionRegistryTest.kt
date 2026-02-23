@@ -177,7 +177,7 @@ class DynamicAppFunctionRegistryTest {
     fun register_afterUnregistration_succeeds() {
         val executor = createExecutorMock()
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
 
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
@@ -269,7 +269,6 @@ class DynamicAppFunctionRegistryTest {
             TEST_PACKAGE,
             listOf(TEST_FUNCTION),
             activityExecutor,
-            activitySourceId,
         )
 
         // Verify the global function is still registered
@@ -277,11 +276,10 @@ class DynamicAppFunctionRegistryTest {
     }
 
     @Test
-    fun unregister_wrongActivityToken_noOp() {
+    fun unregister_activityScopedRegistration_succeeds() {
         val activityExecutor = createExecutorMock()
 
         val mockActivitySourceId = listOf(RegistrationScopeId(mock()))
-        val mockActivityToken: IBinder = mock()
         registry.registerAppFunctions(
             TEST_PACKAGE,
             listOf(TEST_FUNCTION),
@@ -289,15 +287,13 @@ class DynamicAppFunctionRegistryTest {
             mockActivitySourceId,
         )
 
-        val mockActivitySourceId2 = listOf(RegistrationScopeId(mock()))
         registry.unregisterAppFunctions(
             TEST_PACKAGE,
             listOf(TEST_FUNCTION),
             activityExecutor,
-            mockActivitySourceId2,
         )
 
-        assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
+        assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
     }
 
     @Test
@@ -306,7 +302,6 @@ class DynamicAppFunctionRegistryTest {
             TEST_PACKAGE,
             listOf(TEST_FUNCTION),
             createExecutorMock(),
-            globalScope,
         )
 
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
@@ -319,7 +314,7 @@ class DynamicAppFunctionRegistryTest {
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executorA, globalScope)
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
 
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executorB, globalScope)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executorB)
 
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
     }
@@ -336,7 +331,7 @@ class DynamicAppFunctionRegistryTest {
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION2)).isTrue()
 
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
 
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION)).isFalse()
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION2)).isTrue()
@@ -347,7 +342,7 @@ class DynamicAppFunctionRegistryTest {
         val executor = createExecutorMock()
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
 
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION2), executor, globalScope)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION2), executor)
 
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION)).isTrue()
     }
@@ -379,7 +374,6 @@ class DynamicAppFunctionRegistryTest {
                             TEST_PACKAGE,
                             listOf(functionName),
                             executor,
-                            globalScope,
                         )
                         assertThat(registry.hasRegistrations(TEST_PACKAGE, functionName))
                             .isFalse()
@@ -448,7 +442,7 @@ class DynamicAppFunctionRegistryTest {
         val binder = mock<IBinder>()
         val executor = createExecutorMock(binder)
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, globalScope)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor)
 
         val deathRecipientCaptor = argumentCaptor<IBinder.DeathRecipient>()
         verify(binder).linkToDeath(deathRecipientCaptor.capture(), anyInt())
@@ -574,7 +568,6 @@ class DynamicAppFunctionRegistryTest {
                     TEST_PACKAGE,
                     listOf(TEST_FUNCTION),
                     executor,
-                    globalScope,
                 )
             } finally {
                 latch.countDown()
