@@ -848,7 +848,7 @@ public class SmartReplyView extends ViewGroup {
         button.setTextColor(mCurrentTextColor);
     }
 
-    enum SmartButtonType {
+    public enum SmartButtonType {
         REPLY,
         ACTION,
         ANIMATED_ACTION,
@@ -857,7 +857,7 @@ public class SmartReplyView extends ViewGroup {
     }
 
     @VisibleForTesting
-    static class LayoutParams extends ViewGroup.LayoutParams {
+    public static class LayoutParams extends ViewGroup.LayoutParams {
 
         /** Button is not squeezed. */
         private static final int SQUEEZE_STATUS_NONE = 0;
@@ -881,7 +881,7 @@ public class SmartReplyView extends ViewGroup {
 
         private boolean show = false;
         private int squeezeStatus = SQUEEZE_STATUS_NONE;
-        SmartButtonType mButtonType = SmartButtonType.REPLY;
+        public SmartButtonType mButtonType = SmartButtonType.REPLY;
         String mNoShowReason = "new";
 
         private LayoutParams(Context c, AttributeSet attrs) {
