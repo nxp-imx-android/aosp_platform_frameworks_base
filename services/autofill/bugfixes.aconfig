@@ -174,7 +174,7 @@ flag {
   name: "add_dialog_presentation_check"
   namespace: "autofill"
   description: "Add check for dialog presentation in when setting authentication inFillResponse."
-  bug: "404917350"
+  bug: "486879419"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
