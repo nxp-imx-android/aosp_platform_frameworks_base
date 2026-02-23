@@ -369,10 +369,6 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                         if (view == null) {
                             Log.e(TAG, "onCreateEmbeddedView returned null for client: "
                                     + clientInfo);
-                            if (existingSurface != null) {
-                                clientInfo.onSurfaceReleased(existingSurface.surfacePackage());
-                                existingSurface.rootView().onDestroy();
-                            }
                             disconnectClient(clientInfo, serviceInstance);
                             sendResult(/*visualizationCreated= */ false, result);
                             return;
@@ -482,6 +478,7 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                 return false;
             }
 
+            client.onSurfaceReleased(surface.surfacePackage());
             surface.rootView().onDestroy();
             surface.host().release();
             return true;

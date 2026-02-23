@@ -42,7 +42,7 @@ public class EmbeddedInsightRenderer implements Renderer {
     private final ClientRegistry mClientRegistry;
     private final VisualizerRegistry mVisualizerRegistry;
     private final Executor mExecutor;
-
+    private boolean mIsRegistered;
 
     public EmbeddedInsightRenderer(
             Context context,
@@ -69,8 +69,35 @@ public class EmbeddedInsightRenderer implements Renderer {
     public void onRegistered() {
         logDebug("registering...");
 
+        if (mIsRegistered) {
+            Slog.w(TAG, "Already registered!");
+            return;
+        }
+
         // The visualizer registry already pushes this work to the executor's thread.
         mVisualizerRegistry.startRegisteringVisualizers();
+
+        mIsRegistered = true;
+    }
+
+    /**
+     * The embedded insight renderer has been unregistered and should remove all clients and
+     * visualizers.
+     */
+    public void onUnregistered() {
+        logDebug("unregistering...");
+
+        if (!mIsRegistered) {
+            Slog.w(TAG, "Not registered!");
+            return;
+        }
+
+        for (InsightSurfaceClientInfo client : mClientRegistry.getClients()) {
+            unregisterInsightSurfaceClient(client.getId());
+        }
+
+        mVisualizerRegistry.stopMonitoringPackagesForVisualizers();
+        mIsRegistered = false;
     }
 
     /**

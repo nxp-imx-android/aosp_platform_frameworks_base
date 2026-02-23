@@ -22,6 +22,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import android.content.ComponentName;
@@ -99,6 +100,11 @@ public class VisualizerRegistryTest {
         }
 
         @Override
+        public void unregisterPackageMonitor(PackageMonitor monitor) {
+            mMonitor = null;
+        }
+
+        @Override
         public void queueAction(Runnable action) {
             action.run();
         }
@@ -167,6 +173,16 @@ public class VisualizerRegistryTest {
         mVisualizerRegistry.createVisualizationForClient(insight, mClient, renderToken);
         verify(mVisualizerConnection).createVisualizationForClient(
                 eq(insight), eq(mClient), eq(renderToken), any(Consumer.class));
+    }
+
+    @Test
+    public void testStopRegisteringVisualizers() {
+        final TestInjector testInjectorSpy = spy(mTestInjector);
+        final VisualizerRegistry visualizerRegistry = new VisualizerRegistry(testInjectorSpy);
+        visualizerRegistry.startRegisteringVisualizers();
+        verify(testInjectorSpy).registerPackageMonitor(any(PackageMonitor.class));
+        visualizerRegistry.stopMonitoringPackagesForVisualizers();
+        verify(testInjectorSpy).unregisterPackageMonitor(any(PackageMonitor.class));
     }
 
     private ServiceInfo createServiceInfo(String packageName, String serviceName) {
