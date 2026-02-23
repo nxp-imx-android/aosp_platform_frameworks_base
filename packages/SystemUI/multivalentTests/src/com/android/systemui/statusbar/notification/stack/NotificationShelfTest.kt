@@ -777,6 +777,45 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
 
     @Test
     @EnableSceneContainer
+    fun updateState_onKeyguardAndShelfDisabled_hidesShelf() {
+        // GIVEN that the shelf is disabled on the keyguard via config
+        val disableShelfOnKeyguardField =
+            shelf.javaClass.getDeclaredField("mDisableNotificationShelfOnKeyguard")
+        disableShelfOnKeyguardField.isAccessible = true
+        disableShelfOnKeyguardField.setBoolean(shelf, true)
+
+        // GIVEN a view is scrolled into the shelf, and we are on the keyguard
+        val stackTop = 200f
+        val stackHeight = 800f
+        whenever(ambientState.stackScrollTop).thenReturn(stackTop)
+        whenever(ambientState.interpolatedStackHeight).thenReturn(stackHeight)
+        val shelfTop = stackTop + stackHeight - shelf.height
+        val stackScrollAlgorithmState = StackScrollAlgorithmState()
+        val viewInShelf = mock(ExpandableView::class.java)
+        whenever(ambientState.isShadeExpanded).thenReturn(true)
+        whenever(ambientState.lastVisibleBackgroundChild).thenReturn(viewInShelf)
+        whenever(ambientState.isOnKeyguard).thenReturn(true)
+        whenever(viewInShelf.viewState).thenReturn(ExpandableViewState())
+        whenever(viewInShelf.shelfIcon).thenReturn(mock(StatusBarIconView::class.java))
+        whenever(viewInShelf.translationY).thenReturn(shelfTop)
+        whenever(viewInShelf.actualHeight).thenReturn(10)
+        whenever(viewInShelf.isInShelf).thenReturn(true)
+        whenever(viewInShelf.minHeight).thenReturn(10)
+        whenever(viewInShelf.shelfTransformationTarget).thenReturn(null) // use translationY
+        whenever(viewInShelf.isInShelf).thenReturn(true)
+        stackScrollAlgorithmState.visibleChildren.add(viewInShelf)
+        stackScrollAlgorithmState.firstViewInShelf = viewInShelf
+
+        // WHEN Shelf's ViewState is updated
+        shelf.updateState(stackScrollAlgorithmState, ambientState)
+
+        // THEN the shelf is hidden
+        val shelfState = shelf.viewState as NotificationShelf.ShelfState
+        assertEquals(true, shelfState.hidden)
+    }
+
+    @Test
+    @EnableSceneContainer
     fun updateState_withNullLastVisibleBackgroundChild_hideShelf_withSceneContainer() {
         // GIVEN
         val stackTop = 200f
