@@ -101,6 +101,13 @@ public sealed class Icon {
     ) : Icon()
 }
 
+/** Returns a copy of the icon with the given [contentDescription]. */
+public fun Icon.copy(contentDescription: ContentDescription?): Icon =
+    when (this) {
+        is Loaded -> this.copy(contentDescription = contentDescription)
+        is Icon.Resource -> this.copy(contentDescription = contentDescription)
+    }
+
 /**
  * Creates [Icon.Loaded] for a given drawable with an optional [contentDescription], [resId] and
  * [resPackage].
