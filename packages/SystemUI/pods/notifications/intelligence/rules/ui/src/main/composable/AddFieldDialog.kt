@@ -31,8 +31,7 @@ fun AddFieldDialog(
     DropdownMenu(expanded = true, onDismissRequest = onDismissRequest) {
         for (option in options) {
             DropdownMenuItem(
-                // TODO: b/478225883 - Add translated strings describing the options.
-                text = { Text(text = option.javaClass.simpleName) },
+                text = { Text(text = "${option.javaClass.simpleName} [TK]") },
                 onClick = {
                     onDismissRequest.invoke()
                     onOptionSelected.invoke(option)

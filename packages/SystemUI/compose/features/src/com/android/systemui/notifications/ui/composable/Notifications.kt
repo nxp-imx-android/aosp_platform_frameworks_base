@@ -766,8 +766,7 @@ private fun NotificationRulesEntryPoint(
         ) {
             Icon(
                 imageVector = Icons.Filled.FilterList,
-                // TODO: b/478225883 - Translate the content description.
-                contentDescription = "Notification rules",
+                contentDescription = "Notification rules [TK]",
                 modifier = Modifier.size(18.dp),
             )
         }
