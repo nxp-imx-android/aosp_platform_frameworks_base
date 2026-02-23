@@ -301,9 +301,7 @@ class FalsingCollectorImpl implements FalsingCollector {
     private void onShowingCommunalHubChanged(boolean isShowing) {
         logDebug("REAL: onShowingCommunalHubChanged(" + isShowing + ")");
         mShowingCommunalHub = isShowing;
-        if (Flags.communalShadeTouchHandlingFixes()) {
-            mFalsingDataProvider.setShowingCommunalHub(isShowing);
-        }
+        mFalsingDataProvider.setShowingCommunalHub(isShowing);
         updateSessionActive();
     }
 

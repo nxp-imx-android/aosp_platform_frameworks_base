@@ -16,7 +16,6 @@
 
 package com.android.systemui.shade;
 
-import static com.android.systemui.Flags.communalShadeTouchHandlingFixes;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
@@ -352,9 +351,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
      */
     public void handleExternalTouch(MotionEvent event) {
         try {
-            if (communalShadeTouchHandlingFixes()) {
-                mHandlingExternalTouch = true;
-            }
+            mHandlingExternalTouch = true;
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
                 mExternalTouchIntercepted = false;
             }

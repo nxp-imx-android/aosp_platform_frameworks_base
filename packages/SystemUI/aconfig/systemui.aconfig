@@ -227,16 +227,6 @@ flag {
 }
 
 flag {
-  name: "communal_shade_touch_handling_fixes"
-  namespace: "systemui"
-  description: "Flags some minor bug fixes for opening the shade on the hub"
-  bug: "409682586"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "communal_standalone_support"
   namespace: "systemui"
   description: "Support communal features without a dock"
