@@ -20,7 +20,6 @@ import static com.android.systemui.doze.DozeMachine.State.DOZE;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_AOD_PAUSED;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_SUSPEND_TRIGGERS;
 import static com.android.systemui.doze.DozeMachine.State.FINISH;
-import static com.android.systemui.Flags.dozeTimeTickInvalidStateCheck;
 
 import android.app.AlarmManager;
 import android.content.Context;
@@ -194,7 +193,7 @@ public class DozeUi implements DozeMachine.Part {
         if (mTimeTickScheduled) {
             return;
         }
-        if (dozeTimeTickInvalidStateCheck() && invalidTimeTickStates.contains(mState)) {
+        if (invalidTimeTickStates.contains(mState)) {
             mDozeLog.traceTimeTickIgnored(mState);
             return;
         }

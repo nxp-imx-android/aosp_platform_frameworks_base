@@ -22,7 +22,6 @@ import static com.android.systemui.doze.DozeMachine.State.DOZE_AOD_PAUSED;
 import static com.android.systemui.doze.DozeMachine.State.DOZE_REQUEST_PULSE;
 import static com.android.systemui.doze.DozeMachine.State.INITIALIZED;
 import static com.android.systemui.doze.DozeMachine.State.UNINITIALIZED;
-import static com.android.systemui.Flags.FLAG_DOZE_TIME_TICK_INVALID_STATE_CHECK;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -119,7 +118,6 @@ public class DozeUiTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_DOZE_TIME_TICK_INVALID_STATE_CHECK)
     public void attemptToScheduleTimeTickWhileInInvalidStateFails() {
         mDozeUi.transitionTo(UNINITIALIZED, INITIALIZED);
         mDozeUi.transitionTo(INITIALIZED, DOZE_AOD);
