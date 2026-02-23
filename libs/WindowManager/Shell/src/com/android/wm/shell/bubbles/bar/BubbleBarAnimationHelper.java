@@ -132,7 +132,7 @@ public class BubbleBarAnimationHelper {
      */
     public void animateExpansion(BubbleViewProvider expandedBubble,
             @Nullable Runnable endRunnable) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateExpansion()");
+        BubbleLog.d("BBAnimationHelper.animateExpansion() key=%s", expandedBubble.getKey());
         mExpandedBubble = expandedBubble;
         final BubbleBarExpandedView bbev = getExpandedView();
         if (bbev == null) {
@@ -269,7 +269,7 @@ public class BubbleBarAnimationHelper {
      */
     public void animateSwitch(BubbleViewProvider fromBubble, BubbleViewProvider toBubble,
             boolean shouldApplyAsJumpcut, @Nullable Runnable endRunnable) {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBAnimationHelper.animateSwitch(): from=%s to=%s",
+        BubbleLog.d("BBAnimationHelper.animateSwitch(): from=%s to=%s",
                 fromBubble.getKey(), toBubble.getKey());
         /*
          * Switch animation
