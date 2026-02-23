@@ -5441,7 +5441,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         for (File fromFile : fromFiles) {
             final File tmpFile = File.createTempFile("inherit", ".tmp", toDir);
             if (LOGD) Slog.d(TAG, "Copying " + fromFile + " to " + tmpFile);
-            if (!FileUtils.copyFile(fromFile, tmpFile)) {
+            if (FileUtils.copy(fromFile, tmpFile) <= 0) {
                 throw new IOException("Failed to copy " + fromFile + " to " + tmpFile);
             }
             try {
