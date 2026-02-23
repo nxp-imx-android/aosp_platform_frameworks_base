@@ -16,7 +16,6 @@
 
 package com.android.systemui.shade.ui.motion
 
-import android.content.res.mainResources
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.MotionTest
@@ -130,10 +129,7 @@ class QuickSettingsShadeTransitionTest() : SysuiTestCase() {
             viewModelFactory =
                 object : GoneUserActionsViewModel.Factory {
                     override fun create(): GoneUserActionsViewModel {
-                        return GoneUserActionsViewModel(
-                            kosmos.shadeModeInteractor,
-                            kosmos.mainResources,
-                        )
+                        return GoneUserActionsViewModel(kosmos.shadeModeInteractor)
                     }
                 },
         )

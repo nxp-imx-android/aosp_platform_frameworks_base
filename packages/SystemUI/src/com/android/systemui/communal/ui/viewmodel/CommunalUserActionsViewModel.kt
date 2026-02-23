@@ -16,16 +16,13 @@
 
 package com.android.systemui.communal.ui.viewmodel
 
-import android.content.res.Resources
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
-import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys
 import com.android.systemui.scene.ui.viewmodel.UserActionsViewModel
-import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -46,12 +43,9 @@ constructor(
     private val deviceUnlockedInteractor: DeviceUnlockedInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
-    @ShadeDisplayAware private val resources: Resources,
 ) : UserActionsViewModel() {
 
     override suspend fun hydrateActions(setActions: (Map<UserAction, UserActionResult>) -> Unit) {
-        val twoFingerSwipeEnabled =
-            resources.getBoolean(R.bool.config_enableTwoFingerSwipeDownShade)
         shadeInteractor.isShadeTouchable
             .flatMapLatestConflated { isShadeTouchable ->
                 if (!isShadeTouchable) {
@@ -80,10 +74,7 @@ constructor(
                                     when (shadeMode) {
                                         ShadeMode.Single -> singleShadeActions()
                                         ShadeMode.Split -> splitShadeActions()
-                                        ShadeMode.Dual ->
-                                            dualShadeActions(
-                                                twoFingerSwipeEnabled = twoFingerSwipeEnabled
-                                            )
+                                        ShadeMode.Dual -> dualShadeActions()
                                     }
                                 )
                             }
