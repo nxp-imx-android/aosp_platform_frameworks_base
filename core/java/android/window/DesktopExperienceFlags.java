@@ -106,7 +106,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION),
     ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING(Flags::enableDisplayWindowingModeSwitching, true,
             Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING),
-    ENABLE_DRAG_TO_MAXIMIZE(Flags::enableDragToMaximize, true, Flags.FLAG_ENABLE_DRAG_TO_MAXIMIZE),
     ENABLE_DRAWING_APP_HANDLE(Flags::enableDrawingAppHandle, false,
             Flags.FLAG_ENABLE_DRAWING_APP_HANDLE),
     ENABLE_FREEFORM_BOX_SHADOWS_V2(Flags::enableFreeformBoxShadowsV2, false,

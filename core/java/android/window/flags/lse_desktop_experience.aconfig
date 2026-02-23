@@ -619,13 +619,6 @@ flag {
 }
 
 flag {
-    name: "enable_drag_to_maximize"
-    namespace: "lse_desktop_experience"
-    description: "Enables a switch to change the concequence of dragging a window to the top edge."
-    bug: "372614715"
-}
-
-flag {
     name: "enable_drawing_app_handle"
     namespace: "lse_desktop_experience"
     description: "Enables app handle being drawn programmatically instead of using Drawables."
