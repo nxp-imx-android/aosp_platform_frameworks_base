@@ -572,7 +572,7 @@ package android {
     field public static final int backgroundTint = 16843883; // 0x101046b
     field public static final int backgroundTintMode = 16843884; // 0x101046c
     field public static final int backupAgent = 16843391; // 0x101027f
-    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int backupAgentProcess;
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int backupAgentProcess = 16844470; // 0x10106b6
     field public static final int backupInForeground = 16844058; // 0x101051a
     field public static final int banner = 16843762; // 0x10103f2
     field public static final int baseline = 16843548; // 0x101031c
@@ -1253,7 +1253,7 @@ package android {
     field public static final int multiprocess = 16842771; // 0x1010013
     field public static final int name = 16842755; // 0x1010003
     field public static final int nativeHeapZeroInitialized = 16844325; // 0x1010625
-    field @FlaggedApi("android.os.native_framework_prototype") public static final int nativeService;
+    field @FlaggedApi("android.os.native_framework_prototype") public static final int nativeService = 16844462; // 0x10106ae
     field @Deprecated public static final int navigationBarColor = 16843858; // 0x1010452
     field @Deprecated public static final int navigationBarDividerColor = 16844141; // 0x101056d
     field public static final int navigationContentDescription = 16843969; // 0x10104c1
@@ -1374,7 +1374,7 @@ package android {
     field public static final int previewLayout = 16844327; // 0x1010627
     field public static final int primaryContentAlpha = 16844114; // 0x1010552
     field public static final int priority = 16842780; // 0x101001c
-    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int privateComputeCore;
+    field @FlaggedApi("android.app.privatecompute.flags.enable_pcc_framework_support") public static final int privateComputeCore = 16844469; // 0x10106b5
     field public static final int privateImeOptions = 16843299; // 0x1010223
     field public static final int process = 16842769; // 0x1010011
     field public static final int progress = 16843063; // 0x1010137
@@ -1549,7 +1549,7 @@ package android {
     field public static final int sharedUserMaxSdkVersion = 16844365; // 0x101064d
     field public static final int shell = 16844180; // 0x1010594
     field @FlaggedApi("com.android.text.flags.use_bounds_for_width") public static final int shiftDrawingOffsetForStartOverhang = 16844450; // 0x10106a2
-    field @FlaggedApi("android.view.inputmethod.ime_subtype_short_label") public static final int shortLabel;
+    field @FlaggedApi("android.view.inputmethod.ime_subtype_short_label") public static final int shortLabel = 16844468; // 0x10106b4
     field public static final int shortcutDisabledMessage = 16844075; // 0x101052b
     field public static final int shortcutId = 16844072; // 0x1010528
     field public static final int shortcutLongLabel = 16844074; // 0x101052a
@@ -1871,9 +1871,9 @@ package android {
     field public static final int useLevel = 16843167; // 0x101019f
     field @FlaggedApi("com.android.text.flags.fix_line_height_for_locale") public static final int useLocalePreferredLineHeightForMinimum = 16844445; // 0x101069d
     field public static final int userVisible = 16843409; // 0x1010291
-    field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistData;
-    field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistScreenshots;
-    field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistStructureScreenContent;
+    field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistData = 16844465; // 0x10106b1
+    field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistScreenshots = 16844466; // 0x10106b2
+    field @FlaggedApi("android.service.voice.flags.enable_assist_resource_attributes") public static final int usesAssistStructureScreenContent = 16844467; // 0x10106b3
     field @Deprecated @FlaggedApi("android.security.deprecate_uses_cleartext_traffic2") public static final int usesCleartextTraffic = 16844012; // 0x10104ec
     field public static final int usesPermissionFlags = 16844356; // 0x1010644
     field public static final int value = 16842788; // 0x1010024
@@ -1998,8 +1998,8 @@ package android {
     field public static final int yesNoPreferenceStyle = 16842896; // 0x1010090
     field public static final int zAdjustment = 16843201; // 0x10101c1
     field public static final int zygotePreloadName = 16844189; // 0x101059d
-    field @FlaggedApi("android.os.native_app_zygote") public static final int zygotePreloadNativeFunc;
-    field @FlaggedApi("android.os.native_app_zygote") public static final int zygotePreloadNativeLib;
+    field @FlaggedApi("android.os.native_app_zygote") public static final int zygotePreloadNativeFunc = 16844464; // 0x10106b0
+    field @FlaggedApi("android.os.native_app_zygote") public static final int zygotePreloadNativeLib = 16844463; // 0x10106af
   }
 
   public static final class R.bool {
@@ -2096,12 +2096,12 @@ package android {
     field @FlaggedApi("android.os.material_colors_2025_03") public static final int system_error_dim_dark;
     field @FlaggedApi("android.os.material_colors_2025_03") public static final int system_error_dim_light;
     field public static final int system_error_light = 17170552; // 0x1060078
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_on_surface_dark;
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_on_surface_light;
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_primary_dark;
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_primary_light;
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_surface_dark;
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_surface_light;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_on_surface_dark = 17170648; // 0x10600d8
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_on_surface_light = 17170642; // 0x10600d2
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_primary_dark = 17170649; // 0x10600d9
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_primary_light = 17170643; // 0x10600d3
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_surface_dark = 17170650; // 0x10600da
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_inverse_surface_light = 17170644; // 0x10600d4
     field public static final int system_neutral1_0 = 17170461; // 0x106001d
     field public static final int system_neutral1_10 = 17170462; // 0x106001e
     field public static final int system_neutral1_100 = 17170464; // 0x1060020
@@ -2182,8 +2182,8 @@ package android {
     field public static final int system_primary_fixed = 17170612; // 0x10600b4
     field public static final int system_primary_fixed_dim = 17170613; // 0x10600b5
     field public static final int system_primary_light = 17170528; // 0x1060060
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_scrim_dark;
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_scrim_light;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_scrim_dark = 17170651; // 0x10600db
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_scrim_light = 17170645; // 0x10600d5
     field public static final int system_secondary_container_dark = 17170573; // 0x106008d
     field public static final int system_secondary_container_light = 17170530; // 0x1060062
     field public static final int system_secondary_dark = 17170575; // 0x106008f
@@ -2192,8 +2192,8 @@ package android {
     field public static final int system_secondary_fixed = 17170616; // 0x10600b8
     field public static final int system_secondary_fixed_dim = 17170617; // 0x10600b9
     field public static final int system_secondary_light = 17170532; // 0x1060064
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_shadow_dark;
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_shadow_light;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_shadow_dark = 17170652; // 0x10600dc
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_shadow_light = 17170646; // 0x10600d6
     field public static final int system_surface_bright_dark = 17170590; // 0x106009e
     field public static final int system_surface_bright_light = 17170547; // 0x1060073
     field public static final int system_surface_container_dark = 17170587; // 0x106009b
@@ -2211,8 +2211,8 @@ package android {
     field public static final int system_surface_dim_light = 17170548; // 0x1060074
     field public static final int system_surface_disabled = 17170626; // 0x10600c2
     field public static final int system_surface_light = 17170540; // 0x106006c
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_surface_tint_dark;
-    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_surface_tint_light;
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_surface_tint_dark = 17170653; // 0x10600dd
+    field @FlaggedApi("android.os.material_colors_10_2024") public static final int system_surface_tint_light = 17170647; // 0x10600d7
     field public static final int system_surface_variant_dark = 17170592; // 0x10600a0
     field public static final int system_surface_variant_light = 17170549; // 0x1060075
     field public static final int system_tertiary_container_dark = 17170577; // 0x1060091

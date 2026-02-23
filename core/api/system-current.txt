@@ -549,7 +549,7 @@ package android {
     field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final int suggestionCornerRadius;
     field public static final int supportsAmbientMode = 16844173; // 0x101058d
     field public static final int userRestriction = 16844164; // 0x1010584
-    field @FlaggedApi("android.service.dreams.user_selectable_metadata") public static final int userSelectable;
+    field @FlaggedApi("android.service.dreams.user_selectable_metadata") public static final int userSelectable = 16844461; // 0x10106ad
     field public static final int visualQueryDetectionService = 16844410; // 0x101067a
   }
 
