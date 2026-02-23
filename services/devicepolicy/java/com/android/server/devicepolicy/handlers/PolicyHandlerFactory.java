@@ -20,22 +20,31 @@ import android.app.admin.PolicyIdentifier;
 import com.android.server.devicepolicy.PolicyDefinition;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-/**
- * {@code PolicyHandlerList} contains all the supported {@link PolicyHandler} instances.
- */
-public class PolicyHandlerList {
+/** {@code PolicyHandlerFactory} constructs all the supported {@link PolicyHandler} instances. */
+public class PolicyHandlerFactory {
 
-    public static List<PolicyHandler<?>> HANDLERS = new ArrayList<>();
+    public static List<PolicyHandler<?>> build() {
+        List<PolicyHandler<?>> handlers = new ArrayList<>();
 
-    static {
-        HANDLERS.add(
+        // Keep the policy handlers sorted, first on type and then on PolicyIdentifier.
+        // go/keep-sorted start ignore_prefixes='handlers.add(new '
+
+        // Note: If you are adding a new `EnumStoredAsBooleanPolicyHandler` *for a user restriction*
+        //       that has to go in
+        //       {@code DevicePolicyManagerService.createPolicyHandlersDependingOnDpms()}.
+        handlers.add(
                 new EnumStoredAsBooleanPolicyHandler(
                         PolicyIdentifier.SCREEN_CAPTURE,
                         PolicyDefinition.SCREEN_CAPTURE_DISABLED,
                         /* trueValue= */ PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED,
                         /* falseValue= */ PolicyIdentifier.SCREEN_CAPTURE_ALLOWED));
-        HANDLERS.add(new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME));
-        HANDLERS.add(new PolicyHandler<String>(PolicyIdentifier.LOCKSCREEN_MESSAGE));
+        handlers.add(new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME));
+        handlers.add(new PolicyHandler<String>(PolicyIdentifier.LOCKSCREEN_MESSAGE));
+
+        // go/keep-sorted end
+
+        return handlers;
     }
 }

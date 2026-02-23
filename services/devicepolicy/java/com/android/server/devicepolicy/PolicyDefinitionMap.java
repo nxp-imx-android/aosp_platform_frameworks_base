@@ -59,6 +59,7 @@ import com.android.server.utils.Slogf;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -86,7 +87,7 @@ public class PolicyDefinitionMap {
      * The resulting map will contain both the policy definitions passed in plus
      * the policy definitions hard-coded in this class.
      */
-    PolicyDefinitionMap(Set<PolicyDefinition<?>> extraPolicyDefinitions) {
+    PolicyDefinitionMap(Collection<PolicyDefinition<?>> extraPolicyDefinitions) {
         this(merge(loadPolicyDefinitions(), extraPolicyDefinitions), loadGenericPolicies());
     }
 
@@ -322,7 +323,7 @@ public class PolicyDefinitionMap {
      * @throws {@link IllegalStateException} if a naming conflict is encountered.
      */
     private static Map<String, PolicyDefinition<?>> merge(
-            Map<String, PolicyDefinition<?>> left, Set<PolicyDefinition<?>> right) {
+            Map<String, PolicyDefinition<?>> left, Collection<PolicyDefinition<?>> right) {
         for (PolicyDefinition<?> definition : right) {
             String identifier = definition.getPolicyKey().getIdentifier();
 

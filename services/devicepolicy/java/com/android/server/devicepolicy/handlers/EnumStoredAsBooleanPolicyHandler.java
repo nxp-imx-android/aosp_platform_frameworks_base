@@ -78,44 +78,10 @@ public class EnumStoredAsBooleanPolicyHandler extends PolicyHandler<Integer> {
             @NonNull PolicyDefinition<Boolean> definition,
             int trueValue,
             int falseValue) {
-        this(
-                identifier,
-                definition,
-                trueValue,
-                falseValue,
-                GeneratedPolicyMetadata.getPolicyMetadata(identifier));
-    }
-
-    public EnumStoredAsBooleanPolicyHandler(
-            @NonNull PolicyIdentifier<Integer> identifier,
-            @NonNull PolicyDefinition<Boolean> definition,
-            int trueValue,
-            int falseValue,
-            @NonNull PolicyMetadata<Integer> policyMetadata) {
-        // This deliberately calls the super constructor that takes the generated policy definition,
-        // so users of this handler do not need to update {@link PolicyDefinitionFactory} to return
-        // {@code null} for this {@link PolicyIdentifier}.
-        super(identifier, policyMetadata, /* policyDefinition= */ null);
+        super(identifier);
         mPolicyDefinition = definition;
         mTrueValue = trueValue;
         mFalseValue = falseValue;
-
-        checkAllowedValuesMatchGivenTrueAndFalseValues();
-    }
-
-    private void checkAllowedValuesMatchGivenTrueAndFalseValues() {
-        var enumPolicy = (EnumPolicyMetadata) getPolicyMetadata();
-        var expectedValues = Set.of(mTrueValue, mFalseValue);
-        if (!enumPolicy.getAllowedValues().equals(expectedValues)) {
-            throw new IllegalStateException(
-                    "Policy "
-                            + getKey()
-                            + " should only accept the values passed into the "
-                            + "constructor of `EnumStoredAsBooleanPolicyHandler` (which are "
-                            + expectedValues
-                            + "), but the policy actually accepts "
-                            + enumPolicy.getAllowedValues());
-        }
     }
 
     @Override
@@ -146,6 +112,17 @@ public class EnumStoredAsBooleanPolicyHandler extends PolicyHandler<Integer> {
         return boxedBooleanToEnum(booleanValue);
     }
 
+    @Override
+    public void initialize(
+            @NonNull Delegate delegate,
+            @Nullable PolicyDefinition<Integer> definition,
+            @NonNull PolicyMetadata<Integer> metadata) {
+        super.initialize(delegate, definition, metadata);
+
+        checkAllowedValuesMatchGivenTrueAndFalseValues();
+        checkPolicyDefinitionFactoryIsUpdated(definition);
+    }
+
     private Integer boxedBooleanToEnum(Boolean value) {
         if (value == null) {
             return null;
@@ -158,5 +135,31 @@ public class EnumStoredAsBooleanPolicyHandler extends PolicyHandler<Integer> {
 
     private boolean enumToBoolean(int value) {
         return (value == mTrueValue);
+    }
+
+    private void checkAllowedValuesMatchGivenTrueAndFalseValues() {
+        var enumPolicy = (EnumPolicyMetadata) getPolicyMetadata();
+        var expectedValues = Set.of(mTrueValue, mFalseValue);
+        if (!enumPolicy.getAllowedValues().equals(expectedValues)) {
+            throw new IllegalStateException(
+                    "Policy "
+                            + getKey()
+                            + " should only accept the values passed into the "
+                            + "constructor of `EnumStoredAsBooleanPolicyHandler` (which are "
+                            + expectedValues
+                            + "), but the policy actually accepts "
+                            + enumPolicy.getAllowedValues());
+        }
+    }
+
+    private void checkPolicyDefinitionFactoryIsUpdated(
+            @Nullable PolicyDefinition<Integer> generatedDefinition) {
+        if (generatedDefinition != null) {
+            throw new IllegalStateException(
+                    "When using `EnumStoredAsBooleanPolicyHandler` you must update "
+                            + "PolicyDefinitionFactory to return `null` for your key ("
+                            + getKey()
+                            + ")");
+        }
     }
 }
