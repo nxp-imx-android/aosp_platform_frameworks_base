@@ -17,6 +17,8 @@
 package com.android.settingslib.metadata.preferencesapi
 
 import android.content.Context
+import android.os.Process
+import android.os.UserHandle
 import android.provider.Settings
 import androidx.annotation.StringRes
 import com.android.settingslib.utils.applications.AppUtils
@@ -30,6 +32,7 @@ import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.ValidatedKeyParameters
+import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget
 import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPreconditions
 import com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed
@@ -42,12 +45,16 @@ import kotlinx.coroutines.runBlocking
  * operations, ensuring that each operation has a consistent and secure context to run in.
  *
  * @property context The application context, used for accessing system services and resources.
+ * @property userId The user id of the user to which the preference belongs.
+ * @property userHandle The user handle of the user to which the preference belongs.
  * @property parameters A map of validated key-value pairs that can be used to parameterize
  *   the behavior of the preference. These parameters are derived from the preference screen's
  *   configuration and are guaranteed to be valid.
  */
 class ApiOperationContext(
     val context: Context,
+    val userId: Int = Process.myUserHandle().hashCode(),
+    val userHandle: UserHandle = Process.myUserHandle(),
     val parameters: ValidatedKeyParameters
 )
 
@@ -132,8 +139,14 @@ class SetConfig<V : Any>(
  * produced when an Engineer in a partner team migrates their preference to Catalyst using the 2026
  * "Lightweight" way. It sets suitable defaults, and converts between the code we are asking
  * partner teams to write and the methods which Catalyst expects.
+ *
+ * @property flagConfig Flag configuration for the preference.
+ * @property appliesTo The [PreferenceTarget] to which the preference applies.
  */
-abstract class ApiPreference<V : Any>(val flagConfig: FlagConfig?) : PersistentPreference<V> {
+abstract class ApiPreference<V : Any>(
+    val flagConfig: FlagConfig?,
+    val appliesTo: PreferenceTarget
+) : PersistentPreference<V> {
     companion object {
         private const val VALUE_TYPE_MISMATCH_ERROR = "Value type mismatch. Expected %s, got %s"
 
@@ -175,7 +188,7 @@ abstract class ApiPreference<V : Any>(val flagConfig: FlagConfig?) : PersistentP
      * @return An initialized [ApiOperationContext] instance.
      */
     private fun getApiOperationContext(context: Context) =
-        ApiOperationContext(context, cachedKeyParameters)
+        ApiOperationContext(context = context, parameters = cachedKeyParameters)
 
     /**
      * Evaluates preconditions in order: screen-level, common, and operation-specific.
@@ -569,6 +582,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
     @StringRes val purpose: Int,
     val type: ApiType<V>,
     val valueType: Class<V>,
+    val appliesTo: PreferenceTarget,
     val screenPermissions: Permissions?,
     val screenPreconditions: PreconditionsConfig?,
     val getScreenParameters: () -> ValidatedKeyParameters?
@@ -708,7 +722,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
     }
 
     /** Create an instance of [ApiPreference] from its configuration. */
-    fun build() = object : ApiPreference<V>(flagConfig) {
+    fun build() = object : ApiPreference<V>(flagConfig, appliesTo) {
         override val screenPermissions = this@ApiPreferenceConfigBuilder.screenPermissions
         override val screenPreconditions = this@ApiPreferenceConfigBuilder.screenPreconditions
         override val permissions: Permissions? = permissionsConfig
