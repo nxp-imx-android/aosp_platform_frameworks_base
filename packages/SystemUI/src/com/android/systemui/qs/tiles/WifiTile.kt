@@ -19,6 +19,7 @@ package com.android.systemui.qs.tiles
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
+import android.os.UserManager
 import android.service.quicksettings.Tile
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
@@ -111,6 +112,8 @@ constructor(
         val model = arg as? WifiTileModel ?: return
         tileState = tileMapper.map(config, model)
 
+        checkIfRestrictionEnforcedByAdminOnly(state, UserManager.DISALLOW_CHANGE_WIFI_STATE)
+
         state?.apply {
             this.state = tileState.activationState.legacyState
             icon =
@@ -122,9 +125,11 @@ constructor(
             contentDescription = tileState.contentDescription
             expandedAccessibilityClassName = tileState.expandedAccessibilityClassName
             handlesSecondaryClick =
-                tileState.supportedActions.contains(QSTileState.UserAction.TOGGLE_CLICK)
+                !state.disabledByPolicy &&
+                    tileState.supportedActions.contains(QSTileState.UserAction.TOGGLE_CLICK)
             handlesLongClick =
-                tileState.supportedActions.contains(QSTileState.UserAction.LONG_CLICK)
+                !state.disabledByPolicy &&
+                    tileState.supportedActions.contains(QSTileState.UserAction.LONG_CLICK)
         }
     }
 
