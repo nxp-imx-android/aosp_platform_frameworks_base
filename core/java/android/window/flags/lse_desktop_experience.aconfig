@@ -674,6 +674,16 @@ flag {
 }
 
 flag {
+    name: "enable_freeform_fallback_transition_observer"
+    namespace: "lse_desktop_experience"
+    description: "Enables freeform fallback transition observer to recover orphan freeform tasks."
+    bug: "469481730"
+     metadata {
+            purpose: PURPOSE_BUGFIX
+        }
+}
+
+flag {
     name: "enable_fullscreen_in_new_task_preference"
     namespace: "lse_desktop_experience"
     description: "Enables the ability for an activity to specify if it should be kept fullscreen /n"
