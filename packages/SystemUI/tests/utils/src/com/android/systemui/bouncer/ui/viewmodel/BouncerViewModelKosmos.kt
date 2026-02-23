@@ -124,6 +124,7 @@ val Kosmos.passwordBouncerViewModelFactory by Fixture {
         override fun create(
             isInputEnabled: StateFlow<Boolean>,
             onIntentionalUserInput: () -> Unit,
+            bouncerHapticPlayer: BouncerHapticPlayer,
         ): PasswordBouncerViewModel {
             return PasswordBouncerViewModel(
                 interactor = bouncerInteractor,
@@ -131,6 +132,7 @@ val Kosmos.passwordBouncerViewModelFactory by Fixture {
                 selectedUserInteractor = selectedUserInteractor,
                 isInputEnabled = isInputEnabled,
                 onIntentionalUserInput = onIntentionalUserInput,
+                bouncerHapticPlayer = bouncerHapticPlayer,
             )
         }
     }

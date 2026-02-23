@@ -17,8 +17,6 @@ package com.android.keyguard;
 
 import static android.security.Flags.lockscreenTimeoutDeactivatePinPad;
 
-import static com.android.keyguard.NumPadAnimatableKt.DISABLED_BACKGROUND_ALPHA;
-import static com.android.keyguard.NumPadAnimatableKt.DISABLED_FOREGROUND_ALPHA;
 import static com.android.systemui.Flags.bouncerUiRevamp2;
 
 import android.content.Context;
@@ -30,7 +28,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.AttributeSet;
-import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -257,11 +254,8 @@ public class NumPadKey extends ViewGroup implements NumPadAnimationListener, Num
 
     // Cause a VIRTUAL_KEY vibration
     public void doHapticKeyClick() {
-        if (mBouncerHapticPlayer != null && mBouncerHapticPlayer.isEnabled()) {
+        if (mBouncerHapticPlayer != null) {
             mBouncerHapticPlayer.playNumpadKeyFeedback();
-        } else {
-            performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY,
-                    HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
         }
     }
 

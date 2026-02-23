@@ -29,7 +29,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.os.SystemClock;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper.RunWithLooper;
 import android.view.KeyEvent;
@@ -222,30 +221,14 @@ public class KeyguardAbsKeyInputViewControllerTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MSDL_FEEDBACK)
     public void onPasswordChecked_withMSDLFeedback_withMatch_playsUnlockToken() {
         mKeyguardAbsKeyInputViewController.onPasswordChecked(0, true, TIMEOUT, true, false);
         assertThat(mMSDLPlayer.getLatestTokenPlayed()).isEqualTo(MSDLToken.UNLOCK);
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_MSDL_FEEDBACK)
-    public void onPasswordChecked_withoutMSDLFeedback_withMatch_doesNotPlayToken() {
-        mKeyguardAbsKeyInputViewController.onPasswordChecked(0, true, TIMEOUT, true, false);
-        assertThat(mMSDLPlayer.getLatestTokenPlayed()).isNull();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_MSDL_FEEDBACK)
     public void onPasswordChecked_withMSDLFeedback_withoutMatch_playsFailureToken() {
         mKeyguardAbsKeyInputViewController.onPasswordChecked(0, false, TIMEOUT, true, false);
         assertThat(mMSDLPlayer.getLatestTokenPlayed()).isEqualTo(MSDLToken.FAILURE);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_MSDL_FEEDBACK)
-    public void onPasswordChecked_withoutMSDLFeedback_withoutMatch_doesNotPlayToken() {
-        mKeyguardAbsKeyInputViewController.onPasswordChecked(0, false, TIMEOUT, true, false);
-        assertThat(mMSDLPlayer.getLatestTokenPlayed()).isNull();
     }
 }

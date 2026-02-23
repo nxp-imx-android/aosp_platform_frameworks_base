@@ -17,14 +17,12 @@
 package com.android.systemui.bouncer.ui.viewmodel
 
 import android.content.Context
-import android.view.HapticFeedbackConstants
 import android.view.KeyEvent.KEYCODE_0
 import android.view.KeyEvent.KEYCODE_9
 import android.view.KeyEvent.KEYCODE_DEL
 import android.view.KeyEvent.KEYCODE_NUMPAD_0
 import android.view.KeyEvent.KEYCODE_NUMPAD_9
 import android.view.KeyEvent.isConfirmKey
-import android.view.View
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
@@ -198,24 +196,15 @@ constructor(
         mutablePinInput.value = mutablePinInput.value.deleteLast()
     }
 
-    fun onBackspaceButtonPressed(view: View?) {
+    fun onBackspaceButtonPressed() {
         onDown()
 
-        if (bouncerHapticPlayer?.isEnabled == true) {
-            bouncerHapticPlayer.playDeleteKeyPressFeedback()
-        } else {
-            view?.performHapticFeedback(
-                HapticFeedbackConstants.VIRTUAL_KEY,
-                HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING,
-            )
-        }
+        bouncerHapticPlayer.playDeleteKeyPressFeedback()
     }
 
     /** Notifies that the user long-pressed the backspace button. */
     fun onBackspaceButtonLongPressed() {
-        if (bouncerHapticPlayer?.isEnabled == true) {
-            bouncerHapticPlayer.playDeleteKeyLongPressedFeedback()
-        }
+        bouncerHapticPlayer.playDeleteKeyLongPressedFeedback()
         clearInput()
     }
 
@@ -293,21 +282,14 @@ constructor(
 
     /**
      * Notifies that the user has pressed down on a digit button. This function also performs haptic
-     * feedback on the view.
+     * feedback.
      */
-    fun onDigitButtonDown(view: View?) {
+    fun onDigitButtonDown() {
         // This ends up calling FalsingInteractor#avoidGesture() each time a PIN button is touched.
         // It helps make sure that legitimate touch in the PIN bouncer isn't treated as false touch.
         super.onDown()
 
-        if (bouncerHapticPlayer?.isEnabled == true) {
-            bouncerHapticPlayer.playNumpadKeyFeedback()
-        } else {
-            view?.performHapticFeedback(
-                HapticFeedbackConstants.VIRTUAL_KEY,
-                HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING,
-            )
-        }
+        bouncerHapticPlayer.playNumpadKeyFeedback()
     }
 
     @AssistedFactory

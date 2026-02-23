@@ -44,7 +44,7 @@ sealed class AuthMethodBouncerViewModel(
 
     /** Name to use for performance tracing purposes. */
     val traceName: String,
-    protected val bouncerHapticPlayer: BouncerHapticPlayer? = null,
+    protected val bouncerHapticPlayer: BouncerHapticPlayer,
 ) : HydratedActivatable() {
 
     private val _animateFailure = MutableStateFlow(false)
@@ -149,7 +149,7 @@ sealed class AuthMethodBouncerViewModel(
     private fun performAuthenticationHapticFeedback(result: AuthenticationResult) {
         if (result == AuthenticationResult.SKIPPED) return
 
-        bouncerHapticPlayer?.playAuthenticationFeedback(
+        bouncerHapticPlayer.playAuthenticationFeedback(
             authenticationSucceeded = result == AuthenticationResult.SUCCEEDED
         )
     }
