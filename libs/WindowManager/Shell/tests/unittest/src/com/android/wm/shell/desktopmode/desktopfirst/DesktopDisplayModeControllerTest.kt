@@ -54,7 +54,9 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellCommandHandler
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.sysui.UserChangeListener
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
@@ -76,6 +78,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.same
 import org.mockito.kotlin.whenever
 
 /**
@@ -92,6 +95,7 @@ class DesktopDisplayModeControllerTest(
 ) : ShellTestCase() {
     private val shellInit = mock<ShellInit>()
     private val shellCommandHandler = mock<ShellCommandHandler>()
+    private val shellController = mock<ShellController>()
     private val transitions = mock<Transitions>()
     private val rootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val mockWindowManager = mock<IWindowManager>()
@@ -143,6 +147,7 @@ class DesktopDisplayModeControllerTest(
                 context,
                 shellInit,
                 shellCommandHandler,
+                shellController,
                 transitions,
                 rootTaskDisplayAreaOrganizer,
                 mockWindowManager,
@@ -416,6 +421,39 @@ class DesktopDisplayModeControllerTest(
         callback.onDeviceStateChanged(state)
 
         assertThat(controller.getTargetWindowingModeForDefaultDisplay())
+            .isEqualTo(WINDOWING_MODE_FREEFORM)
+    }
+
+    @Test
+    @EnableFlags(
+        DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
+        Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
+        Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH,
+        Flags.FLAG_ENABLE_DESKTOP_FIRST_USER_CHANGE_BUGFIX,
+    )
+    fun onUserChange_updatesWindowingMode() {
+        val initRunnableCaptor = argumentCaptor<Runnable>()
+        verify(shellInit).addInitCallback(initRunnableCaptor.capture(), same(controller))
+        initRunnableCaptor.firstValue.run()
+        val callbackCaptor = argumentCaptor<UserChangeListener>()
+        verify(shellController).addUserChangeListener(callbackCaptor.capture())
+        val userChangeListener = callbackCaptor.firstValue
+
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayIds())
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, EXTERNAL_DISPLAY_ID))
+        defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        externalTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        whenever(mockWindowManager.getWindowingMode(anyInt())).thenReturn(WINDOWING_MODE_FULLSCREEN)
+        setExtendedMode(true)
+
+        userChangeListener.onUserChanged(10, context)
+
+        // Verify that transitions are triggered for both displays
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions, times(2)).startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
+        assertThat(arg.allValues[0].changes[defaultTDA.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_FREEFORM)
+        assertThat(arg.allValues[1].changes[externalTDA.token.asBinder()]?.windowingMode)
             .isEqualTo(WINDOWING_MODE_FREEFORM)
     }
 
