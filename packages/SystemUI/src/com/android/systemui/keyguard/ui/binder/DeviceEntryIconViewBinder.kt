@@ -196,6 +196,8 @@ object DeviceEntryIconViewBinder {
                                 }
                             } else {
                                 view.setOnClickListener(null)
+                                view.isClickable = false
+                                view.focusable = View.NOT_FOCUSABLE
                             }
                         }
                     }

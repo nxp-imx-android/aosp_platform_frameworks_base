@@ -32,7 +32,9 @@ import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.keyguard.ui.view.DeviceEntryIconView
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.customization.data.SensorLocation
 import dagger.Lazy
@@ -70,6 +72,7 @@ constructor(
     private val deviceEntrySourceInteractor: DeviceEntrySourceInteractor,
     accessibilityInteractor: AccessibilityInteractor,
     @Application private val scope: CoroutineScope,
+    private val sceneInteractor: Lazy<SceneInteractor>,
 ) {
     val isUdfpsSupported: StateFlow<Boolean> = deviceEntryUdfpsInteractor.isUdfpsSupported
     val udfpsLocation: StateFlow<SensorLocation?> =
@@ -270,7 +273,17 @@ constructor(
                 DeviceEntryIconView.IconType.LOCK
             }
         }
-    val isVisible: Flow<Boolean> = deviceEntryViewAlpha.map { it > 0f }.distinctUntilChanged()
+    val isVisible: Flow<Boolean> =
+        if (SceneContainerFlag.isEnabled) {
+            combine(
+                sceneInteractor.get().currentOverlays,
+                deviceEntryViewAlpha.map { it > 0f }.distinctUntilChanged(),
+            ) { currentOverlays, viewShowing ->
+                !currentOverlays.contains(Overlays.Bouncer) && viewShowing
+            }
+        } else {
+            deviceEntryViewAlpha.map { it > 0f }.distinctUntilChanged()
+        }
 
     private val isInteractive: Flow<Boolean> =
         combine(iconType, isUdfpsSupported) { deviceEntryStatus, isUdfps ->
@@ -284,7 +297,17 @@ constructor(
     val accessibilityDelegateHint: Flow<DeviceEntryIconView.AccessibilityHintType> =
         accessibilityInteractor.isEnabled.flatMapLatest { touchExplorationEnabled ->
             if (touchExplorationEnabled) {
-                iconType.map { it.toAccessibilityHintType() }
+                if (SceneContainerFlag.isEnabled) {
+                    isVisible.flatMapLatest { isVisible ->
+                        if (isVisible) {
+                            iconType.map { it.toAccessibilityHintType() }
+                        } else {
+                            flowOf(DeviceEntryIconView.AccessibilityHintType.NONE)
+                        }
+                    }
+                } else {
+                    iconType.map { it.toAccessibilityHintType() }
+                }
             } else {
                 flowOf(DeviceEntryIconView.AccessibilityHintType.NONE)
             }
