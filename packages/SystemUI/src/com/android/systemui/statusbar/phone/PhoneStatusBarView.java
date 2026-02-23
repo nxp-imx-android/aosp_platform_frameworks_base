@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.flags.Flags;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -256,10 +257,13 @@ public class PhoneStatusBarView extends FrameLayout {
             return false;
         }
 
-        if (mStatusBarLongPressGestureDetector != null) {
+        if (mStatusBarLongPressGestureDetector != null && !Flags.scrollToTop()) {
             mStatusBarLongPressGestureDetector.handleTouch(event);
         }
         if (mTouchEventHandler == null) {
+            if (Flags.scrollToTop()) {
+                return false;
+            }
             Log.w(
                     TAG,
                     String.format(

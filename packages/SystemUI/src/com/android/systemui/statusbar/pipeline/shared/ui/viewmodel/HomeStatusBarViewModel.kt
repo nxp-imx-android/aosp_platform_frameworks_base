@@ -61,6 +61,7 @@ import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppCh
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
+import com.android.systemui.statusbar.domain.interactor.ScrollToTopInteractor
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
@@ -159,6 +160,9 @@ interface HomeStatusBarViewModel : Activatable {
      *   full key, possibly including prefixes or non-notification keys.
      */
     fun onChipBoundsChanged(key: String, bounds: RectF)
+
+    /** Notifies that the status bar was tapped. */
+    fun onStatusBarTap(eventX: Float)
 
     /** Notifies that there was a long press on the status bar. */
     fun onStatusBarLongPressed()
@@ -293,6 +297,7 @@ constructor(
     private val uiEventLogger: StatusBarChipsUiEventLogger,
     deviceProvisioningInteractor: DeviceProvisioningInteractor,
     private val userLogoutInteractor: UserLogoutInteractor,
+    private val scrollToTopInteractor: ScrollToTopInteractor,
 ) : HomeStatusBarViewModel, HydratedActivatable(enableEnqueuedActivations = true) {
 
     val logger = loggerFactory.getOrCreate(logBufferName(thisDisplayId), 60)
@@ -626,6 +631,11 @@ constructor(
 
     override fun onChipBoundsChanged(key: String, bounds: RectF) {
         ongoingActivityChipsViewModel.onChipBoundsChanged(key, bounds)
+    }
+
+    override fun onStatusBarTap(eventX: Float) {
+        logger.d({ double1 = eventX.toDouble() }, { "Statusbar Tap at x=$double1" })
+        scrollToTopInteractor.onScrollToTop(thisDisplayId, eventX.toInt())
     }
 
     override fun onStatusBarLongPressed() {
