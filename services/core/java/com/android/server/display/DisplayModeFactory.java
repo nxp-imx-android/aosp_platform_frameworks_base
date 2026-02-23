@@ -28,7 +28,6 @@ import android.view.Display;
 import android.view.SurfaceControl;
 
 import com.android.server.display.LocalDisplayAdapter.DisplayModeRecord;
-import com.android.server.display.feature.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -171,7 +170,7 @@ public class DisplayModeFactory {
                 tallAnisotropicModes.add(mode);
             } else if (sfMode.yDpi > sfMode.xDpi * DisplayDevice.MAX_ANISOTROPY) { // "wide" pixels
                 wideAnisotropicModes.add(mode);
-            } else if (Flags.anisotropicModeExcludeSimilarSize()) {
+            } else {
                 isotropicModes.add(mode);
             }
         }
