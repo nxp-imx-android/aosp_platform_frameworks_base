@@ -52,6 +52,7 @@ import com.android.systemui.plugins.activityStarter
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.domain.interactor.PowerInteractorFactory.create
+import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.data.repository.WindowRootViewVisibilityRepository
 import com.android.systemui.scene.domain.interactor.WindowRootViewVisibilityInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -203,6 +204,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 headsUpManager,
                 activityStarter,
                 kosmos.activityManagerWrapper,
+                kosmos.powerInteractor,
             )
         gutsManager.setUpWithPresenter(
             presenter,
