@@ -449,6 +449,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_first_user_change_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes an issue where the windowing mode is not updated on user change."
+    bug: "478018943"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_ime_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to handle IME interactions in desktop windowing."
