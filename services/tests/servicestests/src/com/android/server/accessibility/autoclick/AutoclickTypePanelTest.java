@@ -50,6 +50,7 @@ import androidx.annotation.NonNull;
 
 import com.android.internal.R;
 import com.android.internal.policy.SystemBarUtils;
+import com.android.server.accessibility.Flags;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -316,15 +317,28 @@ public class AutoclickTypePanelTest {
         int x = AutoclickTypePanel.PANEL_HORIZONTAL_MARGIN;
         int yTop = AutoclickTypePanel.PANEL_VERTICAL_MARGIN
                 + mAutoclickTypePanel.getStatusBarHeightForTesting();
-        int yBottom = AutoclickTypePanel.PANEL_VERTICAL_MARGIN + SystemBarUtils.getTaskbarHeight(
-                mTestableContext.getResources());
-        int[][] expectedPositions = {
-                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, x, yBottom},
-                {CORNER_BOTTOM_LEFT, Gravity.START | Gravity.BOTTOM, x, yBottom},
-                {CORNER_TOP_LEFT, Gravity.START | Gravity.TOP, x, yTop},
-                {CORNER_TOP_RIGHT, Gravity.END | Gravity.TOP, x, yTop},
-                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, x, yBottom}
-        };
+        int[][] expectedPositions;
+        if (Flags.enableAutoclickPanelBugFixes()) {
+            int yBottom = mAutoclickTypePanel.getPanelBottomPositionForTesting();
+            expectedPositions = new int[][]{
+                    {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.TOP, x, yBottom},
+                    {CORNER_BOTTOM_LEFT, Gravity.START | Gravity.TOP, x, yBottom},
+                    {CORNER_TOP_LEFT, Gravity.START | Gravity.TOP, x, yTop},
+                    {CORNER_TOP_RIGHT, Gravity.END | Gravity.TOP, x, yTop},
+                    {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.TOP, x, yBottom}
+            };
+        } else {
+            int yBottom =
+                    AutoclickTypePanel.PANEL_VERTICAL_MARGIN + SystemBarUtils.getTaskbarHeight(
+                            mTestableContext.getResources());
+            expectedPositions = new int[][]{
+                    {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, x, yBottom},
+                    {CORNER_BOTTOM_LEFT, Gravity.START | Gravity.BOTTOM, x, yBottom},
+                    {CORNER_TOP_LEFT, Gravity.START | Gravity.TOP, x, yTop},
+                    {CORNER_TOP_RIGHT, Gravity.END | Gravity.TOP, x, yTop},
+                    {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, x, yBottom}
+            };
+        }
 
         // Check initial position
         verifyPanelPosition(expectedPositions[0]);
@@ -449,11 +463,19 @@ public class AutoclickTypePanelTest {
         // Verify panel is positioned at default bottom-right corner.
         WindowManager.LayoutParams params = panel.getLayoutParamsForTesting();
         assertThat(panel.getCurrentCornerForTesting()).isEqualTo(CORNER_BOTTOM_RIGHT);
-        assertThat(params.gravity).isEqualTo(Gravity.END | Gravity.BOTTOM);
-        assertThat(params.x).isEqualTo(AutoclickTypePanel.PANEL_HORIZONTAL_MARGIN);
-        assertThat(params.y).isEqualTo(
-                AutoclickTypePanel.PANEL_VERTICAL_MARGIN + SystemBarUtils.getTaskbarHeight(
-                        mTestableContext.getResources()));  // Default bottom offset.
+        if (Flags.enableAutoclickPanelBugFixes()) {
+            assertThat(params.gravity).isEqualTo(Gravity.END | Gravity.TOP);
+            assertThat(params.x).isEqualTo(AutoclickTypePanel.PANEL_HORIZONTAL_MARGIN);
+            assertThat(params.y).isEqualTo(
+                    mAutoclickTypePanel.getPanelBottomPositionForTesting());  // Default bottom
+            // offset.
+        } else {
+            assertThat(params.gravity).isEqualTo(Gravity.END | Gravity.BOTTOM);
+            assertThat(params.x).isEqualTo(AutoclickTypePanel.PANEL_HORIZONTAL_MARGIN);
+            assertThat(params.y).isEqualTo(
+                    AutoclickTypePanel.PANEL_VERTICAL_MARGIN + SystemBarUtils.getTaskbarHeight(
+                            mTestableContext.getResources()));  // Default bottom offset.
+        }
     }
 
     @Test
