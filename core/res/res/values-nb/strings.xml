@@ -759,19 +759,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"Enhetsopplåsing"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"Prøv å låse opp på en annen måte"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"Bruk ansiktslåsen når fingeravtrykket ditt ikke gjenkjennes, for eksempel når du har våte fingre"</string>
-    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
-    <skip />
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"Lås opp med ansiktet når fingeravtrykket ditt ikke gjenkjennes, for eksempel når du har våte fingre"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Bruk opplåsing med fingeravtrykk når ansiktet ditt ikke gjenkjennes, for eksempel når det ikke er nok lys rundt deg"</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"Ansiktslås"</string>
-    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
-    <skip />
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"Opplåsing med ansikt"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"Problem med ansiktslås"</string>
-    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
-    <skip />
+    <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"Problem med opplåsing med ansikt"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"Trykk for å slette ansiktsmodellen din, og legg deretter til ansiktet på nytt"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"For å bruke ansiktslås, slå på "<b>"Kameratilgang"</b>" i Innstillinger &gt; Personvern"</string>
-    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
-    <skip />
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"For å låse opp med ansiktet, slå på "<b>"Kameratilgang"</b>" i Innstillinger &gt; Personvern"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"Opplåsing med fingeravtrykk"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"Kan ikke bruke fingeravtrykkssensoren"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"Gå til en reparasjonsleverandør."</string>
@@ -779,42 +775,31 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"For lyst. Prøv svakere belysning."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Ikke nok lys"</string>
     <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"Flytt telefonen lengre unna"</string>
-    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
-    <skip />
+    <string name="face_acquired_too_close" product="desktop" msgid="7189579448504853047">"Flytt enheten lenger unna"</string>
     <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"Flytt telefonen nærmere"</string>
-    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
-    <skip />
+    <string name="face_acquired_too_far" product="desktop" msgid="6590730829823321223">"Flytt enheten nærmere"</string>
     <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"Flytt telefonen høyere"</string>
-    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
-    <skip />
+    <string name="face_acquired_too_high" product="desktop" msgid="717393614154504299">"Flytt enheten høyere opp"</string>
     <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"Flytt telefonen lavere"</string>
-    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
-    <skip />
+    <string name="face_acquired_too_low" product="desktop" msgid="7695733281069538045">"Flytt enheten lavere"</string>
     <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"Flytt telefonen til venstre"</string>
-    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
-    <skip />
+    <string name="face_acquired_too_right" product="desktop" msgid="4058756237538843740">"Flytt enheten til venstre"</string>
     <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"Flytt telefonen til høyre"</string>
-    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
-    <skip />
+    <string name="face_acquired_too_left" product="desktop" msgid="5804819007366973778">"Flytt enheten til høyre"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Se mer direkte på kameraet"</string>
     <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"Kan ikke se ansiktet ditt. Hold telefonen i øyehøyde."</string>
-    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
-    <skip />
+    <string name="face_acquired_not_detected" product="desktop" msgid="1047701586390904260">"Kan ikke se ansiktet ditt. Hold enheten i øyehøyde."</string>
     <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"For mye bevegelse. Hold telefonen stødig."</string>
-    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
-    <skip />
+    <string name="face_acquired_too_much_motion" product="desktop" msgid="7135563968992659161">"For mye bevegelse. Hold enheten i ro."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Registrer ansiktet ditt på nytt."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"Ansiktet ble ikke gjenkjent. Prøv på nytt."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"Endre hodeposisjonen litt"</string>
     <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"Se mer direkte på telefonen"</string>
-    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
-    <skip />
+    <string name="face_acquired_pan_too_extreme" product="desktop" msgid="821456302944137576">"Se mer direkte på enheten"</string>
     <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"Se mer direkte på telefonen"</string>
-    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
-    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="desktop" msgid="1119243364774233108">"Se mer direkte på enheten"</string>
     <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"Se mer direkte på telefonen"</string>
-    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
-    <skip />
+    <string name="face_acquired_roll_too_extreme" product="desktop" msgid="3665467581072397682">"Se mer direkte på enheten"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"Fjern alt som skjuler ansiktet ditt."</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"Rengjør den øverste delen av skjermen, inkludert den svarte linjen"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -828,30 +813,24 @@
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Kan ikke bekrefte ansikt. Utilgjengelig maskinvare."</string>
     <string name="face_error_timeout" product="default" msgid="2598544068593889762">"Prøv ansiktslås igjen"</string>
-    <!-- no translation found for face_error_timeout (8136501408214657840) -->
-    <skip />
+    <string name="face_error_timeout" product="desktop" msgid="8136501408214657840">"Prøv å låse opp med ansiktet igjen"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"Kan ikke lagre nye ansiktsdata. Slett gamle data først."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"Ansikt-operasjonen ble avbrutt."</string>
     <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"Ansiktslås ble avbrutt av brukeren"</string>
-    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
-    <skip />
+    <string name="face_error_user_canceled" product="desktop" msgid="8903551031462609651">"Opplåsing med ansikt ble avbrutt av brukeren"</string>
     <string name="face_error_lockout" msgid="7864408714994529437">"For mange forsøk. Prøv på nytt senere."</string>
     <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"For mange forsøk Ansiktslås er utilgjengelig."</string>
-    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
-    <skip />
+    <string name="face_error_lockout_permanent" product="desktop" msgid="1885291877517229762">"For mange forsøk. Opplåsing med ansikt er utilgjengelig."</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"For mange forsøk. Skriv inn skjermlås i stedet."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"Kan ikke bekrefte ansiktet. Prøv på nytt."</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"Du har ikke konfigurert ansiktslås"</string>
-    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
-    <skip />
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"Opplåsing med ansikt er ikke konfigurert ennå"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"Ansiktslås støttes ikke på denne enheten"</string>
-    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
-    <skip />
+    <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"Opplåsing med ansikt støttes ikke på denne enheten"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"Sensoren er midlertidig slått av."</string>
     <string name="face_name_template" msgid="3877037340223318119">"Ansikt <xliff:g id="FACEID">%d</xliff:g>"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"Bruk ansiktslås"</string>
-    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
-    <skip />
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"Opplåsing med ansikt"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"Bruk ansikts- eller skjermlås"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"Bruk ansiktet for å fortsette"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"Bruk ansikts- eller skjermlåsen for å fortsette"</string>
@@ -1112,8 +1091,7 @@
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Trykk på en tast for å låse opp"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Lås opp for å få alle funksjoner og data"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Du har overskredet grensen for opplåsingsforsøk med Ansiktslås"</string>
-    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
-    <skip />
+    <string name="faceunlock_multiple_failures" product="desktop" msgid="5388142244463490793">"Du har nådd det maksimale antallet forsøk på å låse opp med ansiktet"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Ingen SIM-kort"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"Det er ingen SIM-kort i nettbrettet."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"Det er ingen SIM-kort i Android TV-enheten."</string>
@@ -1185,8 +1163,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"Opplåsning ved å dra med fingeren."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"Mønsteropplåsning."</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"Ansiktslås"</string>
-    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
-    <skip />
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"Opplåsing med ansikt."</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"PIN-opplåsning."</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"PIN-opplåsing for SIM-kort."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"PUK-opplåsing for SIM-kort."</string>
@@ -1923,8 +1900,7 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Bytt"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Innstillinger"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Bytter til <xliff:g id="NAME">%1$s</xliff:g> …"</string>
-    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
-    <skip />
+    <string name="user_logging_out_message" msgid="2968888364742643174">"Logger av …"</string>
     <string name="owner_name" msgid="8713560351570795743">"Eier"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gjest"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Systembruker"</string>
@@ -2187,12 +2163,10 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"AI-agenter og -tjenester du har gitt tilgang til %1$s, kan fortsatt bruke dataene"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Legg til applås"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Ansiktslås"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"Opplåsing med ansikt"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Opplåsing med fingeravtrykk"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"Opplåsing med fingeravtrykk, ansiktslås"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"Opplåsing med fingeravtrykk, ansiktslås"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"passord"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"mønster"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN-kode"</string>
@@ -2689,11 +2663,9 @@
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> gjenkjennes ikke lenger. Konfigurer opplåsing med fingeravtrykk på nytt."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> og <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> gjenkjennes ikke lenger. Konfigurer opplåsing med fingeravtrykk på nytt."</string>
     <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"Konfigurer ansiktslåsen på nytt"</string>
-    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
-    <skip />
+    <string name="face_dangling_notification_title" product="desktop" msgid="4632690536207343589">"Konfigurer opplåsing med ansikt på nytt"</string>
     <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"Ansiktsmodellen din gjenkjennes ikke lenger. Konfigurer ansiktslåsen på nytt."</string>
-    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
-    <skip />
+    <string name="face_dangling_notification_msg" product="desktop" msgid="5982979430103820891">"Ansiktsmodellen din gjenkjennes ikke lenger. Konfigurer opplåsing med ansikt på nytt."</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"Konfigurer"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"Ikke nå"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"Alarm for <xliff:g id="USER_NAME">%s</xliff:g>"</string>

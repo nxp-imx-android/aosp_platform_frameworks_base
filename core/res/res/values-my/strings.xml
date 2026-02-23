@@ -759,19 +759,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"စက်ပစ္စည်းဖွင့်ခြင်း"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"ဖွင့်ရန် နည်းလမ်းနောက်တစ်ခု စမ်းကြည့်ပါ"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"သင့်လက်ချောင်းများ ရေစိုနေချိန်ကဲ့သို့ သင်၏လက်ဗွေကို မမှတ်မိသောအခါ ‘မျက်နှာပြ လော့ခ်ဖွင့်ခြင်း’ သုံးပါ"</string>
-    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
-    <skip />
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"လက်ချောင်းများ ရေစိုနေချိန်ကဲ့သို့ သင်၏လက်ဗွေကို မမှတ်မိသည့်အခါမျိုးတွင် မျက်နှာဖြင့် လော့ခ်ဖွင့်နိုင်သည်"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"အလင်းရောင် အလုံအလောက်မရချိန်ကဲ့သို့ သင့်မျက်နှာကို မမှတ်မိသောအခါ ‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ သုံးပါ"</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"မျက်နှာပြ လော့ခ်ဖွင့်ခြင်း"</string>
-    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
-    <skip />
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"မျက်နှာဖြင့်လော့ခ်ဖွင့်ရန်"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"‘မျက်နှာပြ လော့ခ်ဖွင့်ခြင်း’ ဆိုင်ရာ ပြဿနာ"</string>
-    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
-    <skip />
+    <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"မျက်နှာဖြင့်လော့ခ်ဖွင့်ရာတွင် ပြဿနာရှိသည်"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"သင်၏မျက်နှာနမူနာကို ဖျက်ရန် တို့ပါ။ ထို့နောက် သင့်မျက်နှာကို ထပ်ထည့်ပါ"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"မျက်နှာပြ လော့ခ်ဖွင့်ခြင်းကို သုံးရန် "<b>"ကင်မရာ သုံးခွင့်"</b>" ကို ‘ဆက်တင်များ &gt; ကန့်သတ်ဆက်တင်’ တွင်ဖွင့်ပါ"</string>
-    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
-    <skip />
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"မျက်နှာဖြင့်လော့ခ်ဖွင့်ရန် ဆက်တင်များ &gt; ကိုယ်ရေးအချက်အလက် လုံခြုံမှု တွင် "<b>"ကင်မရာသုံးခွင့်"</b>" ကို ဖွင့်ပါ"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"လက်ဗွေ အာရုံခံကိရိယာကို အသုံးပြု၍ မရပါ"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"ပြုပြင်ရေး ဝန်ဆောင်မှုပေးသူထံသို့ သွားပါ။"</string>
@@ -779,42 +775,31 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"အလွန် လင်းသည်။ အလင်းလျှော့ကြည့်ပါ။"</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"အလင်းရောင် အားနည်းသည်"</string>
     <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"ဖုန်းကို အဝေးသို့ခွာပါ"</string>
-    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
-    <skip />
+    <string name="face_acquired_too_close" product="desktop" msgid="7189579448504853047">"စက်ကို အဝေးသို့ ရွှေ့ပါ"</string>
     <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"ဖုန်းကို အနားသို့ပိုတိုးပါ"</string>
-    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
-    <skip />
+    <string name="face_acquired_too_far" product="desktop" msgid="6590730829823321223">"စက်ကို ပိုနီးအောင်ရွှေ့ပါ"</string>
     <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"ဖုန်းကို မြှင့်လိုက်ပါ"</string>
-    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
-    <skip />
+    <string name="face_acquired_too_high" product="desktop" msgid="717393614154504299">"စက်ကို ပိုမြင့်အောင်ရွှေ့ပါ"</string>
     <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"ဖုန်းကို နှိမ့်လိုက်ပါ"</string>
-    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
-    <skip />
+    <string name="face_acquired_too_low" product="desktop" msgid="7695733281069538045">"စက်ကို အောက်သို့ရွှေ့ပါ"</string>
     <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"ဖုန်းကို သင့်ဘယ်ဘက်သို့ ရွှေ့ပါ"</string>
-    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
-    <skip />
+    <string name="face_acquired_too_right" product="desktop" msgid="4058756237538843740">"စက်ကို သင့်ဘယ်ဘက်သို့ ရွှေ့ပါ"</string>
     <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"ဖုန်းကို သင့်ညာဘက်သို့ ရွှေ့ပါ"</string>
-    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
-    <skip />
+    <string name="face_acquired_too_left" product="desktop" msgid="5804819007366973778">"စက်ကို သင့်ညာဘက်သို့ ရွှေ့ပါ"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"သင့်ကင်မရာကို တည့်တည့်ကြည့်ပါ"</string>
     <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"သင့်မျက်နှာ မမြင်ရပါ။ ဖုန်းနှင့် မျက်စိ တစ်တန်းတည်းထားပါ။"</string>
-    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
-    <skip />
+    <string name="face_acquired_not_detected" product="desktop" msgid="1047701586390904260">"မျက်နှာကို မမြင်ရပါ။ စက်ကို မျက်လုံးနှင့် တစ်တန်းတည်းထားပြီး ကိုင်ထားပါ။"</string>
     <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"လှုပ်လွန်းသည်။ ဖုန်းကို ငြိမ်ငြိမ်ကိုင်ပါ။"</string>
-    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
-    <skip />
+    <string name="face_acquired_too_much_motion" product="desktop" msgid="7135563968992659161">"လှုပ်လွန်းသည်။ စက်ကို ငြိမ်ငြိမ်ကိုင်ထားပါ။"</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"သင့်မျက်နှာကို ပြန်စာရင်းသွင်းပါ။"</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"မျက်နှာကို မသိရှိပါ။ ထပ်စမ်းကြည့်ပါ။"</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"ခေါင်းအနေအထားကို အနည်းငယ်ပြောင်းပါ"</string>
     <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"သင့်ဖုန်းကို တည့်တည့်ကြည့်ပါ"</string>
-    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
-    <skip />
+    <string name="face_acquired_pan_too_extreme" product="desktop" msgid="821456302944137576">"သင့်စက်ကို တည့်တည့်ကြည့်ပါ"</string>
     <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"သင့်ဖုန်းကို တည့်တည့်ကြည့်ပါ"</string>
-    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
-    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="desktop" msgid="1119243364774233108">"သင့်စက်ကို တည့်တည့်ကြည့်ပါ"</string>
     <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"သင့်ဖုန်းကို တည့်တည့်ကြည့်ပါ"</string>
-    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
-    <skip />
+    <string name="face_acquired_roll_too_extreme" product="desktop" msgid="3665467581072397682">"သင့်စက်ကို တည့်တည့်ကြည့်ပါ"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"သင့်မျက်နှာကို ကွယ်နေသည့်အရာအားလုံး ဖယ်ပါ။"</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"အနက်ရောင်ဘားအပါအဝင် ဖန်သားပြင်ထိပ်ကို သန့်ရှင်းရေး လုပ်ပါ"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -828,30 +813,24 @@
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"မျက်နှာကို အတည်ပြု၍ မရပါ။ ဟာ့ဒ်ဝဲ မရနိုင်ပါ။"</string>
     <string name="face_error_timeout" product="default" msgid="2598544068593889762">"မျက်နှာပြ လော့ခ်ဖွင့်ခြင်းကို ထပ်စမ်းကြည့်ပါ"</string>
-    <!-- no translation found for face_error_timeout (8136501408214657840) -->
-    <skip />
+    <string name="face_error_timeout" product="desktop" msgid="8136501408214657840">"မျက်နှာဖြင့်လော့ခ်ဖွင့်ခြင်းကို ထပ်စမ်းကြည့်ပါ"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"မျက်နှာဒေတာအသစ် သိမ်း၍မရပါ။ အဟောင်းကို အရင်ဖျက်ပါ။"</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"မျက်နှာ ဆောင်ရွက်ခြင်းကို ပယ်ဖျက်လိုက်ပါပြီ။"</string>
     <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"အသုံးပြုသူက မျက်နှာပြ လော့ခ်ဖွင့်ခြင်းကို ပယ်ဖျက်ထားသည်"</string>
-    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
-    <skip />
+    <string name="face_error_user_canceled" product="desktop" msgid="8903551031462609651">"မျက်နှာဖြင့်လော့ခ်ဖွင့်ခြင်းကို အသုံးပြုသူက ပယ်ဖျက်ထားသည်"</string>
     <string name="face_error_lockout" msgid="7864408714994529437">"အကြိမ်များစွာ စမ်းပြီးပါပြီ။ နောက်မှထပ်စမ်းပါ။"</string>
     <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"ကြိုးပမ်းမှုအကြိမ်ရေ များလွန်းသည်။ မျက်နှာပြ လော့ခ်ဖွင့်ခြင်း မရနိုင်ပါ။"</string>
-    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
-    <skip />
+    <string name="face_error_lockout_permanent" product="desktop" msgid="1885291877517229762">"ကြိုးပမ်းမှုအကြိမ်ရေ များလွန်းသည်။ မျက်နှာဖြင့်လော့ခ်ဖွင့်ခြင်း မရနိုင်ပါ။"</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"ကြိုးပမ်းမှုအကြိမ်ရေ များလွန်းသည်။ ဖန်သားပြင် လော့ခ်ကို အစားထိုးထည့်သွင်းပါ။"</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"မျက်နှာကို အတည်ပြု၍ မရပါ။ ထပ်စမ်းကြည့်ပါ။"</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"မျက်နှာပြ လော့ခ်ဖွင့်ခြင်းကို ထည့်သွင်းမထားပါ"</string>
-    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
-    <skip />
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"မျက်နှာဖြင့်လော့ခ်ဖွင့်ခြင်းကို စနစ်ထည့်သွင်းမထားသေးပါ"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"ဤစက်တွင် မျက်နှာပြ လော့ခ်ဖွင့်ခြင်းကို မပံ့ပိုးပါ"</string>
-    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
-    <skip />
+    <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"ဤစက်တွင် မျက်နှာဖြင့်လော့ခ်ဖွင့်ခြင်းကို မပံ့ပိုးပါ"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"အာရုံခံကိရိယာကို ယာယီပိတ်ထားသည်။"</string>
     <string name="face_name_template" msgid="3877037340223318119">"မျက်နှာ <xliff:g id="FACEID">%d</xliff:g>"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"မျက်နှာပြ လော့ခ်ဖွင့်ရန်"</string>
-    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
-    <skip />
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"မျက်နှာဖြင့်လော့ခ်ဖွင့်ရန်"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"မျက်နှာမှတ်သော့ဖွင့်ခြင်း (သို့) ဖန်သားပြင်လော့ခ်ချခြင်းကို သုံးခြင်း"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"ရှေ့ဆက်ရန် သင့်မျက်နှာကို သုံးပါ"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"ရှေ့ဆက်ရန် သင်၏ မျက်နှာ (သို့) ဖန်သားပြင်လော့ခ်ကို သုံးပါ"</string>
@@ -1112,8 +1091,7 @@
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"လော့ခ်ဖွင့်ရန် ကီးတစ်ခုခု နှိပ်ပါ"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"ဝန်ဆောင်မှုနှင့် ဒေတာအားလုံးသုံးရန် လော့ခ်ဖွင့်ပါ"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"မျက်မှာပြ လော့ခ်ဖွင့်ခြင်း ခွင့်ပြုသော အကြိမ်ရေထက် ကျော်လွန်သွားပါပြီ"</string>
-    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
-    <skip />
+    <string name="faceunlock_multiple_failures" product="desktop" msgid="5388142244463490793">"မျက်နှာဖြင့်လော့ခ်ဖွင့်ရန် အများဆုံးကြိုးပမ်းမှု ပြည့်သွားပါပြီ"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"ဆင်းမ်ကတ် မရှိပါ"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"တက်ဘလက်တွင် ဆင်းမ်ကတ်မရှိပါ။"</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"သင့် Android TV စက်တွင် ဆင်းမ်မရှိပါ။"</string>
@@ -1185,8 +1163,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"ဘေးတိုက်ပွတ်ဆွဲ၍ သော့ဖွင့်ခြင်း"</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"ပုံစံဖြင့် သော့ဖွင့်ခြင်း"</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"မျက်နှာပြ လော့ခ်ဖွင့်ခြင်း။"</string>
-    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
-    <skip />
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"မျက်နှာဖြင့်လော့ခ်ဖွင့်ပါ။"</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"ပင်နံပါတ်ဖြင့် သော့ဖွင့်ခြင်း"</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"ဆင်းမ်ကတ် ပင်နံပါတ်လော့ခ်ဖွင့်ပါ။"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"ဆင်းမ်ကတ် Puk လော့ခ်ဖွင့်ပါ။"</string>
@@ -1923,8 +1900,7 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"ပြောင်းရန်"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"ဆက်တင်များ"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g>သို့ ပြောင်းနေသည်…"</string>
-    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
-    <skip />
+    <string name="user_logging_out_message" msgid="2968888364742643174">"ထွက်နေသည်…"</string>
     <string name="owner_name" msgid="8713560351570795743">"ပိုင်ရှင်"</string>
     <string name="guest_name" msgid="8502103277839834324">"ဧည့်သည်"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"စနစ် အသုံးပြုသူ"</string>
@@ -2187,12 +2163,10 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"%1$s သုံးခွင့်ပေးထားသော AI အေးဂျင့်နှင့် ဝန်ဆောင်မှုများသည် ၎င်း၏ဒေတာကို ဆက်သုံးနိုင်ပါမည်"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"အက်ပ်လော့ခ် ထည့်ရန်"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"မျက်နှာပြ လော့ခ်ဖွင့်ခြင်း"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"မျက်နှာဖြင့်လော့ခ်ဖွင့်ရန်"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"လက်ဗွေနှင့် မျက်နှာပြ လော့ခ်ဖွင့်ခြင်း"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"လက်ဗွေသုံး/မျက်နှာဖြင့် လော့ခ်ဖွင့်ခြင်း"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"စကားဝှက်"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"ပုံစံ"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"ပင်နံပါတ်"</string>
@@ -2689,11 +2663,9 @@
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> ကို မသိရှိနိုင်တော့ပါ။ ‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ ထပ်မံစနစ်ထည့်သွင်းပါ။"</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> နှင့် <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> ကို မသိရှိနိုင်တော့ပါ။ ‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ ထပ်မံစနစ်ထည့်သွင်းပါ။"</string>
     <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"‘မျက်နှာပြ လော့ခ်ဖွင့်ခြင်း’ ကို စနစ်ထပ်မံထည့်သွင်းပါ"</string>
-    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
-    <skip />
+    <string name="face_dangling_notification_title" product="desktop" msgid="4632690536207343589">"မျက်နှာဖြင့်လော့ခ်ဖွင့်ခြင်း ထပ်မံ စနစ်ထည့်သွင်းပါ"</string>
     <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"သင်၏မျက်နှာနမူနာကို မသိရှိနိုင်တော့ပါ။ ‘မျက်နှာပြ လော့ခ်ဖွင့်ခြင်း’ ထပ်မံစနစ်ထည့်သွင်းပါ။"</string>
-    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
-    <skip />
+    <string name="face_dangling_notification_msg" product="desktop" msgid="5982979430103820891">"သင်၏မျက်နှာနမူနာကို မသိရှိနိုင်တော့ပါ။ မျက်နှာဖြင့်လော့ခ်ဖွင့်ခြင်းကို ထပ်မံစနစ်ထည့်သွင်းပါ။"</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"စနစ်ထည့်သွင်းရန်"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"ယခုမလုပ်ပါ"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"<xliff:g id="USER_NAME">%s</xliff:g> အတွက် နှိုးစက်"</string>
@@ -2733,6 +2705,5 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"သင့်မိဘထံမှ အပ်ဒိတ်"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> ကို လောလောဆယ် ဖယ်ရှားထားသည်"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> ကို ယခုရနိုင်ပါပြီ"</string>
-    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
-    <skip />
+    <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"အခြားသူများထံ ကာစ်လုပ်ရန်"</string>
 </resources>

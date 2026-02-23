@@ -2705,6 +2705,5 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"আপোনাৰ অভিভাৱকে কৰা আপডে’ট"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g>ক এতিয়া বাবে আঁতৰোৱা হৈছে"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"এতিয়া <xliff:g id="APP_NAME">%1$s</xliff:g> উপলব্ধ"</string>
-    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
-    <skip />
+    <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"আনৰ সৈতে কাষ্ট কৰক"</string>
 </resources>
