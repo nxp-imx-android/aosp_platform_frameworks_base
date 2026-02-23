@@ -142,16 +142,6 @@ flag {
 }
 
 flag {
-  name: "app_compat_ui_restart_on_full_transparency"
-  namespace: "large_screen_experiences_app_compat"
-  description: "Whether restart button should be hidden for completely transparent activities."
-  bug: "444422899"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "vdm_force_app_universal_resizable_api"
   namespace: "large_screen_experiences_app_compat"
   description: "Whether the API for forcing apps to be universal resizable on virtual display is available"
