@@ -219,7 +219,7 @@ object WindowDecorationTestHelper {
             )
         wrapped.setCaptionListeners(
             onClickListener = touchEventListener,
-            onTouchListener = touchEventListener,
+            gestureInterceptor = touchEventListener,
             onLongClickListener = touchEventListener,
             onGenericMotionListener = touchEventListener,
         )
@@ -361,7 +361,7 @@ object WindowDecorationTestHelper {
             rootView: View?,
             context: Context,
             windowDecorationActions: WindowDecorationActions,
-            onCaptionTouchListener: View.OnTouchListener,
+            gestureInterceptor: WindowDecorLinearLayout.GestureInterceptor,
             onLongClickListener: View.OnLongClickListener,
             onCaptionGenericMotionListener: View.OnGenericMotionListener,
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
@@ -373,7 +373,7 @@ object WindowDecorationTestHelper {
                 rootView,
                 context,
                 windowDecorationActions,
-                onCaptionTouchListener,
+                gestureInterceptor,
                 onLongClickListener,
                 onCaptionGenericMotionListener,
                 onMaximizeHoverAnimationFinishedListener,

@@ -1102,6 +1102,16 @@ flag {
 }
 
 flag {
+    name: "intercept_touch_event_for_app_header_drag_move"
+    namespace: "lse_desktop_experience"
+    description: "Use View#onInterceptTouchEvent() to handle drag moves on app headers."
+    bug: "466261318"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "move_task_to_front_on_drag_resizing_bugfix"
     namespace: "lse_desktop_experience"
     description: "Moving a drag resized task to front"
