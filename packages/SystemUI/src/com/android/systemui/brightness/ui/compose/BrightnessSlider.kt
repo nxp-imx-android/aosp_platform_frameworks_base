@@ -88,7 +88,6 @@ import com.android.systemui.brightness.domain.model.GammaBrightness
 import com.android.systemui.brightness.ui.compose.AnimationSpecs.IconAppearSpec
 import com.android.systemui.brightness.ui.compose.AnimationSpecs.IconDisappearSpec
 import com.android.systemui.brightness.ui.compose.InternalDimensions.IconPadding
-import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderBackgroundRoundedCorner
 import com.android.systemui.brightness.ui.compose.InternalDimensions.SliderTrackRoundedCorner
 import com.android.systemui.brightness.ui.compose.InternalDimensions.ThumbTrackGapSize
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
@@ -338,11 +337,15 @@ fun BrightnessSlider(
     }
 }
 
-private fun Modifier.sliderBackground(backgroundFrameSize: DpSize, color: Color) = drawWithCache {
+private fun Modifier.sliderBackground(
+    backgroundFrameSize: DpSize,
+    backgroundRoundedCorner: Dp,
+    color: Color,
+) = drawWithCache {
     val offsetAround = backgroundFrameSize.toSize()
     val newSize = Size(size.width + 2 * offsetAround.width, size.height + 2 * offsetAround.height)
     val offset = Offset(-offsetAround.width, -offsetAround.height)
-    val cornerRadius = CornerRadius(SliderBackgroundRoundedCorner.toPx())
+    val cornerRadius = CornerRadius(backgroundRoundedCorner.toPx())
     onDrawBehind {
         drawRoundRect(color = color, topLeft = offset, size = newSize, cornerRadius = cornerRadius)
     }
@@ -390,12 +393,11 @@ fun BrightnessSliderContainer(
             }
         )
 
-    val backgroundFrameHeight = dimensions.verticalPadding
     val isRestricted = restriction is PolicyRestriction.Restricted
     Box(
         modifier =
             modifier
-                .padding(vertical = { backgroundFrameHeight.roundToPx() })
+                .padding(vertical = { dimensions.verticalPadding.roundToPx() })
                 .fillMaxWidth()
                 .sysuiResTag("brightness_slider")
     ) {
@@ -424,10 +426,8 @@ fun BrightnessSliderContainer(
                     )
                     .then(if (viewModel.showMirror) Modifier.drawInOverlay() else Modifier)
                     .sliderBackground(
-                        DpSize(
-                            InternalDimensions.SliderBackgroundFrameWidth,
-                            backgroundFrameHeight,
-                        ),
+                        DpSize(dimensions.backgroundFrameWidth, dimensions.backgroundFrameHeight),
+                        dimensions.backgroundRoundedCorner,
                         containerColor,
                     )
                     .fillMaxWidth()
@@ -465,6 +465,9 @@ data class BrightnessSliderDimensions(
     val thumbWidth: Dp,
     val trackHeight: Dp,
     val verticalPadding: Dp,
+    val backgroundRoundedCorner: Dp,
+    val backgroundFrameWidth: Dp,
+    val backgroundFrameHeight: Dp,
 ) {
     companion object {
         val Default =
@@ -474,13 +477,14 @@ data class BrightnessSliderDimensions(
                 thumbWidth = 4.dp,
                 trackHeight = 40.dp,
                 verticalPadding = 6.dp,
+                backgroundRoundedCorner = 24.dp,
+                backgroundFrameWidth = 10.dp,
+                backgroundFrameHeight = 6.dp,
             )
     }
 }
 
 private object InternalDimensions {
-    val SliderBackgroundFrameWidth = 10.dp
-    val SliderBackgroundRoundedCorner = 24.dp
     val SliderTrackRoundedCorner = 12.dp
     val IconPadding = 6.dp
     val ThumbTrackGapSize = 6.dp

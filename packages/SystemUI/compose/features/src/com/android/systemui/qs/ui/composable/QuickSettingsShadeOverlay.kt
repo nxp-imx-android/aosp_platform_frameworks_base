@@ -517,6 +517,9 @@ object QuickSettingsShade {
                     brightnessThumbWidth,
                     brightnessTrackHeight,
                     brightnessVerticalPadding,
+                    brightnessRoundedCorner,
+                    brightnessFrameWidth,
+                    brightnessFrameHeight,
                 )
 
         val HorizontalPadding: Dp
@@ -578,6 +581,21 @@ object QuickSettingsShade {
             @Composable
             @ReadOnlyComposable
             get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_vertical_padding)
+
+        private val brightnessRoundedCorner: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_rounded_corner)
+
+        private val brightnessFrameWidth: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_frame_width)
+
+        private val brightnessFrameHeight: Dp
+            @Composable
+            @ReadOnlyComposable
+            get() = dimensionResource(id = R.dimen.overlay_qs_layout_brightness_frame_height)
 
         private val sliderIconSize: Dp
             @Composable
