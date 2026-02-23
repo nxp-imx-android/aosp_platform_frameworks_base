@@ -130,6 +130,9 @@ android_test {
     jni_libs: [
         "libbase",
         "libbinder",
+        "libbpf",
+        "libbpf_bcc",
+        "libbpf_minimal",
         "libc++",
         "libcutils",
         "liblog",
