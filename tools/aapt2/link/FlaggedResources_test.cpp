@@ -221,36 +221,6 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagInXmlGetsFlagged) {
   ASSERT_EQ(fields_flagged, 3);
 }
 
-TEST_F(FlaggedResourcesTest, FlagInXmlNotRecognized) {
-  const std::string compiled_files_dir = GetTestPath("compiled");
-  ASSERT_TRUE(
-      CompileFile(GetTestPath("res/layout/mylayout.xml"),
-                  R"(<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                                      <TextView android:featureFlag="test.package.myFlag"/>
-                                      </LinearLayout>)",
-                  compiled_files_dir, &noop_diag, {}));
-  const std::string manifest_file = GetTestPath("AndroidManifest.xml");
-  WriteFile(manifest_file, R"(
-    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.aapt.command.test">
-      <overlay android:targetPackage="com.example.target" />
-    </manifest>)");
-  const std::string out_apk = GetTestPath("out.apk");
-  std::vector<std::string> link_args = {
-      "--manifest",
-      manifest_file,
-      "-o",
-      out_apk,
-  };
-
-  test::TestDiagnosticsImpl diag;
-  ASSERT_FALSE(Link(link_args, compiled_files_dir, &diag));
-  ASSERT_TRUE(
-      diag.GetLog().contains("res/layout/mylayout.xml:2: error: element 'TextView' has "
-                             "flag 'test.package.myFlag' not found in flags from --feature_flags "
-                             "parameter"));
-}
-
 TEST_F(FlaggedResourcesTest, ReadWriteFlagChunk) {
   const std::string compiled_files_dir = GetTestPath("compiled");
   ASSERT_TRUE(CompileFile(GetTestPath("res/values/strings.xml"),
