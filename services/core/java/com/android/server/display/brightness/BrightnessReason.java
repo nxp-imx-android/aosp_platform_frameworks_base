@@ -55,8 +55,10 @@ public final class BrightnessReason {
     public static final int MODIFIER_MIN_LUX = 0x10;
     public static final int MODIFIER_STYLUS_UNDER_USE = 0x20;
     public static final int MODIFIER_SUNLIGHT = 0x40;
+    public static final int MODIFIER_MAX_LUX = 0x80;
     public static final int MODIFIER_MASK = MODIFIER_DIMMED | MODIFIER_LOW_POWER | MODIFIER_HDR
-            | MODIFIER_THROTTLED | MODIFIER_MIN_LUX | MODIFIER_STYLUS_UNDER_USE | MODIFIER_SUNLIGHT;
+            | MODIFIER_THROTTLED | MODIFIER_MIN_LUX | MODIFIER_STYLUS_UNDER_USE | MODIFIER_SUNLIGHT
+            | MODIFIER_MAX_LUX;
 
     @IntDef(flag = true, prefix = {"MODIFIER_"}, value = {
             MODIFIER_NONE,
@@ -179,6 +181,9 @@ public final class BrightnessReason {
         }
         if ((mModifier & MODIFIER_SUNLIGHT) != 0) {
             sb.append(" sunlight");
+        }
+        if ((mModifier & MODIFIER_MAX_LUX) != 0) {
+            sb.append(" lux_upper_bound");
         }
         int strlen = sb.length();
         if (sb.charAt(strlen - 1) == '[') {

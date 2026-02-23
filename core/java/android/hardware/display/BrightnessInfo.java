@@ -66,7 +66,8 @@ public final class BrightnessInfo implements Parcelable {
                 BRIGHTNESS_MAX_REASON_WEAR_BEDTIME_MODE,
                 BRIGHTNESS_MAX_REASON_MODES,
                 BRIGHTNESS_MAX_REASON_MINMODE,
-                BRIGHTNESS_MAX_REASON_PLUGIN
+                BRIGHTNESS_MAX_REASON_PLUGIN,
+                BRIGHTNESS_MAX_REASON_LUX
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface BrightnessMaxReason {}
@@ -105,6 +106,11 @@ public final class BrightnessInfo implements Parcelable {
      * Maximum brightness is restricted due to a plugin.
      */
     public static final int BRIGHTNESS_MAX_REASON_PLUGIN = 6;
+
+    /**
+     * Maximum brightness is restricted due to the current lux.
+     */
+    public static final int BRIGHTNESS_MAX_REASON_LUX = 7;
 
     /** Brightness */
     public final float brightness;
@@ -193,6 +199,8 @@ public final class BrightnessInfo implements Parcelable {
                 return "modes";
             case BRIGHTNESS_MAX_REASON_PLUGIN:
                 return "plugin";
+            case BRIGHTNESS_MAX_REASON_LUX:
+                return "lux";
         }
         return "invalid";
     }
