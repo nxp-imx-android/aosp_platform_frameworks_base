@@ -4852,10 +4852,12 @@ public class AudioService extends IAudioService.Stub
                     // Unmute all aliasted streams
                     muteAliasStreams(streamAlias, false);
                 }
-                final int device = getDeviceForStream(streamAlias,
+                final AudioDeviceAttributes ada = getDeviceAttributesForStream(streamAlias,
                         flagsContainsAbsoluteDevices(flags));
-                final int index = streamState.getIndex(device);
-                sendVolumeUpdate(streamAlias, index, index, flags, device);
+                final int index = streamState.getIndex(ada.getInternalType());
+                handleAbsoluteVolume(streamAlias, streamAlias, ada, index,
+                        streamState.mIsMuted, /*flags=*/0, /*hasModifyAudioSettings=*/true);
+                sendVolumeUpdate(streamAlias, index, index, flags, ada.getInternalType());
             }
             if (streamAlias == AudioSystem.STREAM_MUSIC && wasMuted) {
                 synchronized (mHdmiClientLock) {
