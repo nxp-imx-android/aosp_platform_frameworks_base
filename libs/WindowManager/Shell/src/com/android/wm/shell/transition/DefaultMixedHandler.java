@@ -51,7 +51,6 @@ import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
-import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
 import com.android.wm.shell.bubbles.BubbleHelper;
@@ -838,8 +837,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                     finishCallback.onTransitionFinished(wct);
                 };
                 final boolean hasAnimateKeyguard;
-                if (Flags.fixOpenAppBubbleFromLockscreen()
-                        && MixedTransition.isAppBubbleTypeTransition(mixed.mType)) {
+                if (MixedTransition.isAppBubbleTypeTransition(mixed.mType)) {
                     hasAnimateKeyguard = animateKeyguardWithBubbles(keyguardMixed, transition, info,
                             startTransaction, finishTransaction, callback);
                 } else {

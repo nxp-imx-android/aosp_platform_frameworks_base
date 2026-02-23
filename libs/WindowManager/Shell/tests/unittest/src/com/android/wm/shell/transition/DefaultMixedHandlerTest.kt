@@ -34,7 +34,6 @@ import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn
 import com.android.testing.wm.util.MockToken
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
-import com.android.wm.shell.Flags.FLAG_FIX_OPEN_APP_BUBBLE_FROM_LOCKSCREEN
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController
@@ -364,7 +363,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_FIX_OPEN_APP_BUBBLE_FROM_LOCKSCREEN)
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
     fun test_startAnimation_bubbleOpensFromKeyguard() {
         val transition = Binder()
         val info = TransitionInfo(TRANSIT_OPEN, TRANSIT_FLAG_KEYGUARD_GOING_AWAY)

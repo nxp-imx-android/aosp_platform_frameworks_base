@@ -243,16 +243,6 @@ flag {
 }
 
 flag {
-    name: "fix_open_app_bubble_from_lockscreen"
-    namespace: "multitasking"
-    description: "Fix opening app bubble from notification on lock screen"
-    bug: "416389130"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "fix_bubble_ime_clipping"
     namespace: "multitasking"
     description: "Fix a bug where the ime clipped all of bubbles view when it shouldn't"
