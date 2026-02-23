@@ -85,10 +85,11 @@ class ShellDesktopStateImpl(
     }
 
     private fun isHomeOrDesktopWallpaperInteractive(displayId: Int): Boolean {
-        val resumedTasks = interactiveTasksRepository.get().getTasks(displayId)
-        return resumedTasks.any { taskInfo ->
-            taskInfo.activityType == ACTIVITY_TYPE_HOME ||
-                DesktopWallpaperActivity.isWallpaperTask(taskInfo)
+        val tasks = shellTaskOrganizer.getRunningTasks(displayId)
+        return tasks.any { task ->
+            (task.activityType == ACTIVITY_TYPE_HOME ||
+                DesktopWallpaperActivity.isWallpaperTask(task)) &&
+                interactiveTasksRepository.get().isTaskInteractiveOnDisplay(displayId, task.taskId)
         }
     }
 }

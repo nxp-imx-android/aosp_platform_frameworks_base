@@ -18,8 +18,6 @@ package com.android.wm.shell.transition
 
 import android.app.ActivityManager
 import android.util.SparseArray
-import androidx.core.util.forEach
-import androidx.core.util.isEmpty
 import androidx.core.util.size
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_INTERACTIVE_TASKS
@@ -32,11 +30,8 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_INTERACTIVE_TAS
  */
 class InteractiveTasksRepository {
 
-    /**
-     * Stores interactive tasks per displays. Outer [SparseArray] is `displayId -> Array<Tasks>`.
-     * Inner [SparseArray] is `taskId -> TaskInfo`.
-     */
-    private val interactiveTasks = SparseArray<SparseArray<ActivityManager.RunningTaskInfo>>()
+    /** Stores interactive tasks per displays. Outer [SparseArray] is `displayId -> Set<TaskId>`. */
+    private val interactiveTasks = SparseArray<MutableSet<Int>>()
 
     /**
      * Adds a [taskInfo] to the repository as an interactive task.
@@ -78,9 +73,9 @@ class InteractiveTasksRepository {
         removeTask(taskInfo)
 
         if (displayId !in interactiveTasks) {
-            interactiveTasks[displayId] = SparseArray<ActivityManager.RunningTaskInfo>()
+            interactiveTasks[displayId] = mutableSetOf()
         }
-        interactiveTasks[displayId][taskId] = taskInfo
+        interactiveTasks[displayId] += taskId
     }
 
     /** Removes a [ActivityManager.RunningTaskInfo] from interactive tasks. */
@@ -126,13 +121,4 @@ class InteractiveTasksRepository {
      */
     fun isTaskInteractiveOnDisplay(displayId: Int, taskId: Int): Boolean =
         displayId in interactiveTasks && taskId in interactiveTasks[displayId]
-
-    /**
-     * Returns interactive tasks [List] associated with a [displayId]. Can be empty, but never
-     * `null`.
-     */
-    fun getTasks(displayId: Int): List<ActivityManager.RunningTaskInfo> {
-        val tasks = interactiveTasks[displayId] ?: return emptyList()
-        return buildList { tasks.forEach { _, info -> add(info) } }
-    }
 }
