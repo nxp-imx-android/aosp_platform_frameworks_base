@@ -52,6 +52,14 @@ RenderNodeDrawable::~RenderNodeDrawable() {
     // TODO: Detangle the header nightmare.
 }
 
+void RenderNodeDrawable::setBackdropFilterDrawable(BackdropFilterDrawable* backdropFilterDrawable) {
+    mBackdropFilterDrawable = backdropFilterDrawable;
+}
+
+BackdropFilterDrawable* RenderNodeDrawable::getBackdropFilterDrawable() const {
+    return mBackdropFilterDrawable;
+}
+
 void RenderNodeDrawable::drawBackwardsProjectedNodes(SkCanvas* canvas,
                                                      const SkiaDisplayList& displayList,
                                                      int nestLevel) const {
@@ -396,7 +404,8 @@ void RenderNodeDrawable::drawContent(SkCanvas* canvas) const {
 }
 
 void RenderNodeDrawable::setViewProperties(const RenderNode* renderNode, SkCanvas* canvas,
-                                           float* alphaMultiplier, bool ignoreLayer) {
+                                           float* alphaMultiplier, bool ignoreLayer,
+                                           bool applyClip) {
     const RenderProperties& properties = renderNode->properties();
     if (properties.getLeft() != 0 || properties.getTop() != 0) {
         canvas->translate(properties.getLeft(), properties.getTop());
@@ -467,6 +476,13 @@ void RenderNodeDrawable::setViewProperties(const RenderNode* renderNode, SkCanva
         }
     }
 
+    if (applyClip) {
+        applyViewClips(properties, canvas, clipFlags);
+    }
+}
+
+void RenderNodeDrawable::applyViewClips(const RenderProperties& properties, SkCanvas* canvas,
+                                        int clipFlags) {
     const SkRect* pendingClip = nullptr;
     SkRect clipRect;
 
