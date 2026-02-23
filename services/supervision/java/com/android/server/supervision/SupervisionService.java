@@ -442,11 +442,11 @@ public class SupervisionService extends ISupervisionManager.Stub {
             policy.incrementVersion();
             getUserDataLocked(userId).policies.add(policy);
             mSupervisionSettings.saveUserData();
+            SupervisionManager.invalidateGetPoliciesCache();
         }
 
         executeOnServiceThread(
                 () -> {
-                    SupervisionManager.invalidateGetPoliciesCache();
                     applyPolicy(userId, policy);
                     dispatchSupervisionEvent(
                             userId, listener -> listener.onPolicyChanged(policy));
@@ -480,6 +480,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
             }
             data.policies.clear();
             mSupervisionSettings.saveUserData();
+            SupervisionManager.invalidateGetPoliciesCache();
         }
     }
 
