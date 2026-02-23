@@ -554,7 +554,6 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf("com.example.supervisionapp1"),
         )
-        injector.awaitServiceThreadIdle()
         clearInvocations(mockDpmInternal)
         setSupervisionEnabledForUser(USER_ID, true)
         setSupervisionRecoveryInfo(state = STATE_VERIFIED)
@@ -636,7 +635,6 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf(),
         )
-        injector.awaitServiceThreadIdle()
         assertThat(service.mInternal.isEscrowTokenRequired(USER_ID)).isFalse()
 
         injector.setRoleHoldersAsUser(
@@ -644,7 +642,6 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf("com.example.supervisionapp1"),
         )
-        injector.awaitServiceThreadIdle()
         assertThat(service.mInternal.isEscrowTokenRequired(USER_ID)).isTrue()
     }
 
@@ -799,7 +796,6 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf("com.example.supervisionapp1"),
         )
-        injector.awaitServiceThreadIdle()
         clearInvocations(mockDpmInternal)
         setSupervisionEnabledForUser(USER_ID, true)
         setSupervisionRecoveryInfo(state = STATE_VERIFIED)
@@ -893,10 +889,8 @@ class SupervisionServiceTest {
             UserHandle.of(USER_ID),
             listOf(packageName, "com.example.supervisionapp2", "com.example.supervisionapp3"),
         )
-        injector.awaitServiceThreadIdle()
 
         injector.setRoleHoldersAsUser(roleName, UserHandle.of(USER_ID), emptyList())
-        injector.awaitServiceThreadIdle()
 
         verify(mockPackageManagerInternal)
             .unsuspendForSuspendingPackage(eq(packageName), eq(USER_ID), eq(USER_ID))
@@ -1880,6 +1874,7 @@ private class TestInjector(val context: Context, private val serviceThread: Serv
     fun setRoleHoldersAsUser(roleName: String, user: UserHandle, packages: List<String>) {
         roleHolders[Pair(roleName, user)] = packages
         roleHoldersChangedListener?.onRoleHoldersChanged(roleName, user)
+        awaitServiceThreadIdle()
     }
 
     override fun getServiceThread(): ServiceThread {
