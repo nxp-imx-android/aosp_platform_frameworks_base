@@ -78,6 +78,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -1147,7 +1148,7 @@ private fun UserSwitcherDropdownMenu(
                     leadingIcon = {
                         Icon(
                             icon = userSwitcherDropdownItem.icon,
-                            tint = MaterialTheme.colorScheme.primary,
+                            tint = Color.Unspecified, // Preserve the icon's original colors.
                             modifier = Modifier.size(28.dp),
                         )
                     },
