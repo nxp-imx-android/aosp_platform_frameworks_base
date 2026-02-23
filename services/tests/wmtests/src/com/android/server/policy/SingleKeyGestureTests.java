@@ -24,7 +24,6 @@ import static android.view.KeyEvent.KEYCODE_POWER;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
-import static com.android.hardware.input.Flags.FLAG_ABORT_SLOW_MULTI_PRESS;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_CANCEL;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_COMPLETE;
 import static com.android.server.policy.SingleKeyGestureEvent.ACTION_START;
@@ -44,8 +43,6 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
 import android.os.SystemClock;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.Display;
@@ -321,7 +318,6 @@ public class SingleKeyGestureTests {
     }
 
     @Test
-    @EnableFlags(FLAG_ABORT_SLOW_MULTI_PRESS)
     public void testMultipress_noLongPressBehavior_longPressCancelsMultiPress()
             throws InterruptedException {
         mLongPressOnPowerBehavior = false;
@@ -333,7 +329,6 @@ public class SingleKeyGestureTests {
     }
 
     @Test
-    @EnableFlags(FLAG_ABORT_SLOW_MULTI_PRESS)
     public void testMultipress_noVeryLongPressBehavior_veryLongPressCancelsMultiPress()
             throws InterruptedException {
         mLongPressOnPowerBehavior = false;
@@ -343,19 +338,6 @@ public class SingleKeyGestureTests {
         pressKey(KEYCODE_POWER, mVeryLongPressTime /* pressTime */);
 
         assertFalse(mMultiPressed.await(mWaitTimeout, TimeUnit.MILLISECONDS));
-    }
-
-    @Test
-    @DisableFlags(FLAG_ABORT_SLOW_MULTI_PRESS)
-    public void testMultipress_flagDisabled_noLongPressBehavior_longPressDoesNotCancelMultiPress()
-            throws InterruptedException {
-        mLongPressOnPowerBehavior = false;
-        mExpectedMultiPressCount = 2;
-
-        pressKey(KEYCODE_POWER, 0 /* pressTime */);
-        pressKey(KEYCODE_POWER, mLongPressTime /* pressTime */);
-
-        assertTrue(mMultiPressed.await(mWaitTimeout, TimeUnit.MILLISECONDS));
     }
 
     @Test
