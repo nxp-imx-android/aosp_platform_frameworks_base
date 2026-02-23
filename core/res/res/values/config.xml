@@ -7989,7 +7989,7 @@
     <bool name="config_supportNativeSerialService">false</bool>
 
     <!-- Whether Airplane Mode sync is supported by this device. -->
-    <bool name="config_supportAirplaneModeSync">true</bool>
+    <bool name="config_supportAirplaneModeSync">false</bool>
 
     <!-- Enable wallpaper local color extraction by default -->
     <bool name="config_enableWallpaperLocalColorExtraction">true</bool>
