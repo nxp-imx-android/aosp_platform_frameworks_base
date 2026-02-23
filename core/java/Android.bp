@@ -551,8 +551,6 @@ filegroup {
     srcs: [
         "android/util/EmptyArray.java",
         "android/util/CharsetUtils.java",
-        "android/util/XmlPullAttributes.java",
-        "android/util/Xml.java",
         "com/android/internal/util/ArrayUtils.java",
         "com/android/internal/util/HexDump.java",
     ],
