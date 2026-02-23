@@ -608,9 +608,15 @@ public final class AutoFillUI {
     @android.annotation.UiThread
     @Nullable
     private PendingUi hideSaveUiUiThread(@Nullable AutoFillUiCallback callback) {
-        if (sVerbose) {
-            Slog.v(TAG, "hideSaveUiUiThread(): mSaveUi=" + mSaveUi + ", callback=" + callback
-                    + ", mCallback=" + mCallback);
+        if (sDebug) {
+            Slog.d(
+                    TAG,
+                    "hideSaveUiUiThread(): mSaveUi="
+                            + mSaveUi
+                            + ", callback="
+                            + callback
+                            + ", mSaveUiCallback="
+                            + mSaveUiCallback);
         }
 
         if (mSaveUi != null && mSaveUiCallback == callback) {

@@ -846,8 +846,8 @@ final class Session
             }
 
             mLastFillRequest = mPendingFillRequest;
-            if (sVerbose) {
-                Slog.v(TAG, "maybeRequestFillLocked(): sending fill request");
+            if (sDebug) {
+                Slog.d(TAG, "maybeRequestFillLocked(): sending fill request");
             }
             if (shouldRequestSecondaryProvider(mPendingFillRequest.getFlags())
                     && mSecondaryProviderHandler != null) {
@@ -1503,8 +1503,8 @@ final class Session
         mSessionFlags.mExpiredResponse = false;
         mSessionState = STATE_ACTIVE;
         if (mSessionFlags.mAugmentedAutofillOnly || mRemoteFillService == null) {
-            if (sVerbose) {
-                Slog.v(
+            if (sDebug) {
+                Slog.d(
                         TAG,
                         "requestNewFillResponse(): triggering augmented autofill instead "
                                 + "(mForAugmentedAutofillOnly="
@@ -1535,8 +1535,8 @@ final class Session
         }
         mRequestLogs.put(requestId, log);
 
-        if (sVerbose) {
-            Slog.v(
+        if (sDebug) {
+            Slog.d(
                     TAG,
                     "Requesting structure for request #"
                             + ordinal
@@ -6495,7 +6495,7 @@ final class Session
         final @SmartSuggestionMode int supportedModes =
                 mService.getSupportedSmartSuggestionModesLocked();
         if (supportedModes == 0) {
-            if (sVerbose) Slog.v(TAG, "triggerAugmentedAutofillLocked(): no supported modes");
+            if (sDebug) Slog.d(TAG, "triggerAugmentedAutofillLocked(): no supported modes");
             return null;
         }
 
@@ -6504,7 +6504,7 @@ final class Session
         final RemoteAugmentedAutofillService remoteService =
                 mService.getRemoteAugmentedAutofillServiceLocked();
         if (remoteService == null) {
-            if (sVerbose) Slog.v(TAG, "triggerAugmentedAutofillLocked(): no service for user");
+            if (sDebug) Slog.d(TAG, "triggerAugmentedAutofillLocked(): no service for user");
             return null;
         }
 
@@ -6526,8 +6526,8 @@ final class Session
                 mService.isWhitelistedForAugmentedAutofillLocked(mComponentName);
 
         if (!isAllowlisted) {
-            if (sVerbose) {
-                Slog.v(
+            if (sDebug) {
+                Slog.d(
                         TAG,
                         "triggerAugmentedAutofillLocked(): "
                                 + ComponentName.flattenToShortString(mComponentName)
@@ -6542,8 +6542,8 @@ final class Session
             return null;
         }
 
-        if (sVerbose) {
-            Slog.v(
+        if (sDebug) {
+            Slog.d(
                     TAG,
                     "calling Augmented Autofill Service ("
                             + ComponentName.flattenToShortString(remoteService.getComponentName())
@@ -6828,8 +6828,8 @@ final class Session
         }
 
         final int requestId = newResponse.getRequestId();
-        if (sVerbose) {
-            Slog.v(
+        if (sDebug) {
+            Slog.d(
                     TAG,
                     "processResponseLocked(): mCurrentViewId="
                             + mCurrentViewId
@@ -7966,8 +7966,8 @@ final class Session
 
     @GuardedBy("mLock")
     void forceRemoveFromServiceIfForAugmentedOnlyLocked() {
-        if (sVerbose) {
-            Slog.v(
+        if (sDebug) {
+            Slog.d(
                     TAG,
                     "forceRemoveFromServiceIfForAugmentedOnlyLocked("
                             + this.id
@@ -7981,7 +7981,7 @@ final class Session
 
     @GuardedBy("mLock")
     void forceRemoveFromServiceLocked(int clientState) {
-        if (sVerbose) Slog.v(TAG, "forceRemoveFromServiceLocked(): " + mPendingSaveUi);
+        if (sDebug) Slog.d(TAG, "forceRemoveFromServiceLocked(): " + mPendingSaveUi);
 
         final boolean isPendingSaveUi = isSaveUiPendingLocked();
         mPendingSaveUi = null;
@@ -8018,7 +8018,7 @@ final class Session
      */
     @GuardedBy("mLock")
     void removeFromServiceLocked() {
-        if (sVerbose) Slog.v(TAG, "removeFromServiceLocked(" + this.id + "): " + mPendingSaveUi);
+        if (sDebug) Slog.d(TAG, "removeFromServiceLocked(" + this.id + "): " + mPendingSaveUi);
         if (mDestroyed) {
             Slog.w(
                     TAG,
