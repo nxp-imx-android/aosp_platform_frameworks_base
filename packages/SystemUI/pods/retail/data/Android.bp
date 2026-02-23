@@ -39,7 +39,7 @@ java_library {
     libs: [
         "kotlinx_coroutines",
         "SystemUISharedLib",
-        "com.android.systemui.util.settings-api",
+        "com.android.systemui.util.settings_api",
         "SystemUICommon",
     ],
     static_libs: [

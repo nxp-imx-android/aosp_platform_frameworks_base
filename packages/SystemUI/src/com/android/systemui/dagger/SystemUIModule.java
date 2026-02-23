@@ -112,7 +112,6 @@ import com.android.systemui.qs.footer.dagger.FooterActionsModule;
 import com.android.systemui.qs.tiles.impl.qr.ui.model.QRCodeScannerModule;
 import com.android.systemui.recents.Recents;
 import com.android.systemui.recordissue.RecordIssueModule;
-import com.android.systemui.retail.impl.RetailModeModule;
 import com.android.systemui.rotation.impl.RotationModule;
 import com.android.systemui.scene.shared.model.SceneContainerConfig;
 import com.android.systemui.scene.shared.model.SceneDataSource;
@@ -154,8 +153,6 @@ import com.android.systemui.statusbar.notification.row.dagger.NotificationRowCom
 import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.ConfigurationControllerModule;
 import com.android.systemui.statusbar.phone.LetterboxModule;
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeDataLayerModule;
-import com.android.systemui.statusbar.pipeline.airplane.shared.impl.AirplaneModeSharedModule;
 import com.android.systemui.statusbar.pipeline.dagger.StatusBarPipelineModule;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.PolicyModule;
@@ -182,11 +179,9 @@ import com.android.systemui.util.EventLogModule;
 import com.android.systemui.util.concurrency.SysUIConcurrencyModule;
 import com.android.systemui.util.dagger.UtilModule;
 import com.android.systemui.util.kotlin.SysUICoroutinesModule;
-import com.android.systemui.util.policy.impl.PolicyRestrictionModule;
 import com.android.systemui.util.reference.ReferenceModule;
 import com.android.systemui.util.sensors.SensorModule;
 import com.android.systemui.util.settings.SettingsProxy;
-import com.android.systemui.util.settings.impl.SettingsUtilModule;
 import com.android.systemui.wallet.dagger.WalletModule;
 import com.android.systemui.wmshell.BubblesManager;
 import com.android.wm.shell.bubbles.Bubbles;
@@ -223,8 +218,6 @@ import javax.inject.Named;
         ActivityModule.class,
         AmbientModule.class,
         AppOpsModule.class,
-        AirplaneModeDataLayerModule.class,
-        AirplaneModeSharedModule.class,
         AssistModule.class,
         AuthenticationModule.class,
         AvControlsChipModule.class,
@@ -278,19 +271,16 @@ import javax.inject.Named;
         PersonalContextModule.class,
         PluginModule.class,
         PolicyModule.class,
-        PolicyRestrictionModule.class,
         PrivacyModule.class,
         QRCodeScannerModule.class,
         RecordIssueModule.class,
         ReferenceModule.class,
-        RetailModeModule.class,
         RotationModule.class,
         ScreenshotModule.class,
         SecureLockDeviceModule.class,
         SensorModule.class,
         SecurityRepositoryModule.class,
         ScreenRecordModule.class,
-        SettingsUtilModule.class,
         SmartRepliesInflationModule.class,
         SmartspaceModule.class,
         StatusBarEventsModule.class,

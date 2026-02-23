@@ -40,7 +40,7 @@ java_library {
         "com.android.systemui.log.table-api",
         "com.android.systemui.statusbar.pipeline.airplane.shared-api",
         "com.android.systemui.util.kotlin",
-        "com.android.systemui.util.settings-api",
+        "com.android.systemui.util.settings_api",
         "dagger2",
         "kotlinx_coroutines",
         "SystemUISharedLib",

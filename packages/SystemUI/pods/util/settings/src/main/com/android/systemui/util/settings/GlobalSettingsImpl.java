@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.util.settings.impl;
+package com.android.systemui.util.settings;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -22,9 +22,6 @@ import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.net.Uri;
 import android.provider.Settings;
-
-import com.android.systemui.util.settings.GlobalSettings;
-import com.android.systemui.util.settings.SettingsSingleThreadBackground;
 
 import kotlinx.coroutines.CoroutineScope;
 

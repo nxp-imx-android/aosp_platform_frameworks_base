@@ -29,6 +29,9 @@ java_library {
         "com.android.systemui.graphics_api",
         "SystemUISharedLib",
     ],
+    visibility: [
+        "//vendor:__subpackages__",
+    ],
 }
 
 java_library {

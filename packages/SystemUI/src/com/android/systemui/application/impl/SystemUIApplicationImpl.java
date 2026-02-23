@@ -289,8 +289,8 @@ public class SystemUIApplicationImpl extends SystemUIApplication implements
 
         DumpManager dumpManager = mSysUIComponent.createDumpManager();
 
-        Log.v(TAG, "Starting SystemUI services for user " +
-                Process.myUserHandle().getIdentifier() + ".");
+        Log.v(TAG, "Starting SystemUI services for user "
+                + Process.myUserHandle().getIdentifier() + ".");
         TimingsTraceLog log = new TimingsTraceLog("SystemUIBootTiming",
                 Trace.TRACE_TAG_APP);
         log.traceBegin(metricsPrefix);
