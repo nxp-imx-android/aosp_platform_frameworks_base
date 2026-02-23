@@ -1282,6 +1282,20 @@ public class AudioDeviceBroker {
         return mDeviceInventory.getPreferredDevicesForStrategy(strategy);
     }
 
+    public @Nullable AudioDeviceInfo getPreferredCommunicationDevice() {
+        if (mCommunicationStrategyId == -1) {
+            initRoutingStrategyIds();
+        }
+        List<AudioDeviceAttributes> devices =
+                mDeviceInventory.getExternalPreferredDevicesForStrategy(mCommunicationStrategyId);
+        if (devices != null && !devices.isEmpty()) {
+            AudioDeviceAttributes attr = devices.get(0);
+            // TODO remove dependency on device info
+            return AudioManager.getDeviceInfoFromTypeAndAddress(attr.getType(), attr.getAddress());
+        }
+        return null;
+    }
+
     /*package*/ int removePreferredDevicesForStrategySync(int strategy) {
         return mDeviceInventory.removePreferredDevicesForStrategyAndSave(strategy);
     }

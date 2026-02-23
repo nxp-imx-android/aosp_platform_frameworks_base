@@ -29,6 +29,7 @@ import android.content.AttributionSource;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
+import android.media.AudioSystem;
 import android.media.IAudioFocusDispatcher;
 import android.media.audio.AudioModeSessionRequest;
 import android.media.audio.DeviceIdentity;
@@ -124,6 +125,9 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     private IAudioModeSession.Route mPendingRoute = null;
 
     @GuardedBy("mLock")
+    private IAudioModeSession.Route mSelectedRoute = null;
+
+    @GuardedBy("mLock")
     private AudioDeviceInfo mSetCommDevice = null;
 
     /*package*/ void onAvailableDevicesChanged(List<AudioDeviceInfo> availableDevices) {
@@ -139,11 +143,16 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                         mCallback.onAvailableRoutesChanged(getSessionRoutes(availableDevices)));
             if (mRequestedRoute != null) {
                 for (var route : mAvailableDevices) {
-                    if (matches(mRequestedRoute.output, route)) {
+                    if (Objects.equals(mRequestedRoute, deviceToRoute(route))) {
                         return;
                     }
                 }
                 preemptClientRoute(null);
+            } else {
+                IAudioModeSession.Route newRoute = getComputedRoute();
+                if (!Objects.equals(mSelectedRoute, newRoute)) {
+                    applyRouteAndTrack();
+                }
             }
         }
     }
@@ -160,10 +169,6 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
 
     @GuardedBy("mLock")
     private void updateCommunicationRoute(@Nullable IAudioModeSession.Route route) {
-        // No async result for null devices at the moment.
-        if (route == null) {
-            return;
-        }
         if (mPendingRequestId != 0) {
             // non-null pending route
             if (Objects.equals(mPendingRoute, route)) {
@@ -251,6 +256,12 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                 return;
             }
             mIsDisplayActiveUseCase = isDisplayActiveUseCase;
+            if (mRequestedRoute == null) {
+                IAudioModeSession.Route newRoute = getComputedRoute();
+                if (!Objects.equals(mSelectedRoute, newRoute)) {
+                    applyRouteAndTrack();
+                }
+            }
         }
     }
 
@@ -413,6 +424,19 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     private int applyRouteAndTrack() {
         int requestId = getNextRequestId();
         if (isLive()) {
+            mSelectedRoute = mRequestedRoute != null ? mRequestedRoute : getComputedRoute();
+            // should always be non-null, since some device be available
+            var selectedDevice = getDeviceForRoute(mSelectedRoute);
+            if (selectedDevice == null) {
+                return -1;
+            }
+            // succeed current if already set, and no change is pending
+            if (mSetCommDevice != null && selectedDevice.equals(mSetCommDevice) &&
+                    mPendingRequestId == 0) {
+                dispatchRemote(() -> mCallback.onRoutingResult(requestId, mSelectedRoute,
+                        ROUTING_RESULT_SUCCESSFUL));
+                return requestId;
+            }
             // Preempt previous if exists
             if (mPendingRequestId != 0) {
                 final int pRequestId = mPendingRequestId;
@@ -423,29 +447,16 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                 mPendingRoute = null;
             }
 
-            // succeed current if already set
-            if ((mSetCommDevice != null && mRequestedRoute != null &&
-                    matches(mRequestedRoute.output, mSetCommDevice)) ||
-                    (mSetCommDevice == null && mRequestedRoute == null)) {
-                dispatchRemote(() -> mCallback.onRoutingResult(requestId, mRequestedRoute,
-                        ROUTING_RESULT_SUCCESSFUL));
-                return requestId;
-            }
+
 
             mDeviceBroker.setCommunicationDevice(mCallback.asBinder(), mAttributionSource,
-                    getRouteDevice(), true, TAG);
-            if (mRequestedRoute == null) {
-                // TODO: track default routes
-                dispatchRemote(() -> mCallback.onRoutingResult(requestId, null,
-                        ROUTING_RESULT_SUCCESSFUL));
-            } else {
-                mPendingRequestId = requestId;
-                mPendingRoute = mRequestedRoute;
-            }
+                    selectedDevice, true, TAG);
+
+            mPendingRequestId = requestId;
+            mPendingRoute = mSelectedRoute;
         }
         return requestId;
     }
-
 
 
     @GuardedBy("mLock")
@@ -468,15 +479,71 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
         return !mIsClosed && !mIsClientPaused && !mIsServerPaused;
     }
 
-    private AudioDeviceInfo getRouteDevice() {
-        if (mRequestedRoute != null) {
-            for (AudioDeviceInfo device : mAvailableDevices) {
-                if (matches(mRequestedRoute.output, device)) {
-                    return device;
-                }
+    @GuardedBy("mLock")
+    private AudioDeviceInfo getDeviceForRoute(IAudioModeSession.Route route) {
+        for (AudioDeviceInfo device : mAvailableDevices) {
+            if (device.getType() == route.output.type
+                    && Objects.equals(device.getAddress(), route.output.address)) {
+                return device;
             }
         }
         return null;
+    }
+
+    private IAudioModeSession.Route getComputedRoute() {
+        AudioDeviceInfo bestDevice = null;
+        int bestScore = Integer.MAX_VALUE;
+        AudioDeviceInfo preferred = mDeviceBroker.getPreferredCommunicationDevice();
+        String deviceTypes = "";
+        for (AudioDeviceInfo device : mAvailableDevices) {
+            if (DEBUG) {
+                if (!deviceTypes.isEmpty()) {
+                    deviceTypes += ", ";
+                }
+                deviceTypes += AudioSystem.getDeviceName(device.getInternalType());
+            }
+            int score = getDevicePriority(device);
+            // Externally preferred devices (via strategy APIs), have their prioritization bumped
+            // upwards to ensure backwards compat.
+            if (score > 40 && device.equals(preferred)) {
+                score = 40;
+            }
+            if (score < bestScore) {
+                bestScore = score;
+                bestDevice = device;
+            }
+        }
+        if (DEBUG) {
+            Slog.d(TAG,
+                    "Selected device: " + bestDevice + " from available devices: [" + deviceTypes
+                            + "]");
+        }
+        return deviceToRoute(bestDevice);
+    }
+
+    private int getDevicePriority(AudioDeviceInfo device) {
+        return switch (device.getType()) {
+            case AudioDeviceInfo.TYPE_BLUETOOTH_SCO -> 10;
+            case AudioDeviceInfo.TYPE_BLE_HEADSET -> 20;
+            case AudioDeviceInfo.TYPE_WIRED_HEADSET,
+                 AudioDeviceInfo.TYPE_USB_HEADSET -> 30;
+            // 40 is external strategy
+            case AudioDeviceInfo.TYPE_BLE_HEARING_AID,
+                 AudioDeviceInfo.TYPE_HEARING_AID -> 50;
+            case AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+                 AudioDeviceInfo.TYPE_USB_DEVICE,
+                 AudioDeviceInfo.TYPE_LINE_ANALOG -> 60;
+            case AudioDeviceInfo.TYPE_BUILTIN_EARPIECE -> mIsDisplayActiveUseCase ? 80 : 70;
+             // TODO: This is not relevant at the moment since the dock type isn't valid for comm
+            case AudioDeviceInfo.TYPE_DOCK,
+                 AudioDeviceInfo.TYPE_DOCK_ANALOG -> 72;
+            case AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> 75;
+            // For compat when neither earpiece nor speaker exist
+            case AudioDeviceInfo.TYPE_HDMI,
+                 AudioDeviceInfo.TYPE_AUX_LINE,
+                 AudioDeviceInfo.TYPE_BUS -> 90;
+            default -> Integer.MAX_VALUE;
+        };
     }
 
     private List<IAudioModeSession.Route> getSessionRoutes(List<AudioDeviceInfo> devices) {
@@ -487,17 +554,6 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
             }
         }
         return routes;
-    }
-
-    private static boolean matches(@NonNull DeviceIdentity identity,
-                                   @NonNull AudioDeviceInfo info) {
-        if (identity.type != info.getType()) {
-            return false;
-        }
-        if (!Objects.equals(identity.address, info.getAddress())) {
-            return false;
-        }
-        return info.isSink() == (identity.role == ROLE_OUTPUT);
     }
 
     private static IAudioModeSession.Route deviceToRoute(AudioDeviceInfo info) {
