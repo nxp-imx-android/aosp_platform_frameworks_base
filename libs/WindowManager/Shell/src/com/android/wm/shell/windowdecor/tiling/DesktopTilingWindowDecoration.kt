@@ -732,7 +732,7 @@ class DesktopTilingWindowDecoration(
 
         if (taskId == leftTaskResizingHelper?.taskInfo?.taskId) {
             logD("Removing left tiled task with id=%d", taskId)
-            logV("Stack: ${Log.getStackTraceString(Throwable())}")
+            logV("Stack: %s", Log.getStackTraceString(Throwable()))
             removeLeftTiledTaskFromDesk()
             removeTask(leftTaskResizingHelper, taskVanished, shouldDelayUpdate)
             leftTaskResizingHelper = null

@@ -991,7 +991,7 @@ class DesktopRepository(
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             val desk = desktopData.getDefaultDesk(displayId)
             if (desk == null) {
-                logE("Could not find default desk for display: $displayId")
+                logE("Could not find default desk for display: %d", displayId)
                 return false
             }
             val hasVisibleTasks = desk.visibleTasks.isNotEmpty()
