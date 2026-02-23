@@ -376,16 +376,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_first_launch_adjacent_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fix a task launch with FLAG_ACTIVITY_LAUNCH_ADJACENT on desktop-first displays."
-    bug: "440254150"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_first_multiple_launch_root_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes an issue where multiple launch roots are detected for desktop-first tasks."
