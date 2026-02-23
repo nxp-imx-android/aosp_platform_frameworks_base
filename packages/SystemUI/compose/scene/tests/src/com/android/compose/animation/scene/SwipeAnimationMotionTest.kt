@@ -64,7 +64,7 @@ import platform.test.motion.compose.ComposeFeatureCaptures
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.MotionControlFn
-import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
+import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRuleV2
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.hasMotionTestValue
 import platform.test.motion.compose.recordMotion
@@ -108,7 +108,7 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
             pathConfig,
         )
 
-    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRule(goldenPaths)
+    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRuleV2(goldenPaths)
     private val composeRule = motionRule.toolkit.composeContentTestRule
 
     @Test
