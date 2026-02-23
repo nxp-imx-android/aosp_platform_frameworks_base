@@ -106,7 +106,8 @@ public class SplitTestUtils {
                     launchAdjacentController, windowDecorViewModel, splitState,
                     desktopTasksController, desktopUserRepositories, rootTDAOrganizer,
                     rootDisplayAreaOrganizer,
-                    desktopState, activityTaskManager, msdlPlayer, Optional.empty());
+                    desktopState, activityTaskManager, msdlPlayer, Optional.empty(),
+                    Optional.empty());
 
             // Prepare root task for testing.
             mSplitRootTaskInfo = new TestRunningTaskInfoBuilder().build();

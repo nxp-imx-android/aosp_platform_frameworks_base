@@ -35,6 +35,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER;
 
+import static com.android.window.flags.Flags.enableAppRestartAfterUpdateSplitScreen;
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplitBugfix;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
@@ -167,6 +168,7 @@ import com.android.wm.shell.common.split.SplitWindowManager;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.data.DesktopRepository;
+import com.android.wm.shell.packageupdate.PackageUpdateController;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
@@ -261,6 +263,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     /** A haptics controller that plays haptic effects. */
     private final MSDLPlayer mMSDLPlayer;
     private final Optional<BubbleController> mBubbleController;
+    private final Optional<PackageUpdateController> mPackageUpdateController;
+
 
     private final Rect mTempRect1 = new Rect();
     private final Rect mTempRect2 = new Rect();
@@ -443,7 +447,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
             IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer,
-            Optional<BubbleController> bubbleController) {
+            Optional<BubbleController> bubbleController,
+            Optional<PackageUpdateController> packageUpdateController) {
         mContext = context;
         mDisplayId = displayId;
         mSyncQueue = syncQueue;
@@ -462,6 +467,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         mDesktopState = desktopState;
         mMSDLPlayer = msdlPlayer;
         mBubbleController = bubbleController;
+        mPackageUpdateController = packageUpdateController;
 
         final TaskPropertiesRequest taskProperties = new TaskPropertiesRequest()
                 .setForceOpaque(com.android.window.flags.Flags.enableForceOpaque());
@@ -543,7 +549,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
             IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer,
-            Optional<BubbleController> bubbleController) {
+            Optional<BubbleController> bubbleController,
+            Optional<PackageUpdateController> packageUpdateController) {
         mContext = context;
         mDisplayId = displayId;
         mSyncQueue = syncQueue;
@@ -572,6 +579,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         mDesktopState = desktopState;
         mMSDLPlayer = msdlPlayer;
         mBubbleController = bubbleController;
+        mPackageUpdateController = packageUpdateController;
 
         mDisplayController.addDisplayWindowListener(this);
         transitions.addHandler(this);
@@ -2601,6 +2609,9 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             mDisplayInsetsController.addInsetsChangedListener(mDisplayId, mSplitLayout);
         }
 
+        if (enableAppRestartAfterUpdateSplitScreen()) {
+            mPackageUpdateController.ifPresent(c -> c.onTaskAppeared(taskInfo));
+        }
         onRootTaskAppeared();
     }
 
@@ -2634,6 +2645,9 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             throw new IllegalArgumentException(this + "\n Unknown task vanished: " + taskInfo);
         }
 
+        if (enableAppRestartAfterUpdateSplitScreen()) {
+            mPackageUpdateController.ifPresent(c -> c.onTaskVanished(taskInfo));
+        }
         onRootTaskVanished();
 
         if (mSplitLayout != null) {

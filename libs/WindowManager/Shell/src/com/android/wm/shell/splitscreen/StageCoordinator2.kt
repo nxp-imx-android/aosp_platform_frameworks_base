@@ -33,6 +33,7 @@ import com.android.wm.shell.common.split.SplitLayout
 import com.android.wm.shell.common.split.SplitState
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.packageupdate.PackageUpdateController
 import com.android.wm.shell.recents.RecentTasksController
 import com.android.wm.shell.shared.TransactionPool
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -67,6 +68,7 @@ class StageCoordinator2 : StageCoordinator {
         activityTaskManager: IActivityTaskManager?,
         msdlPlayer: MSDLPlayer?,
         bubbleController: Optional<BubbleController?>?,
+        packageUpdateController: Optional<PackageUpdateController?>?,
     ) : super(
         context,
         displayId,
@@ -92,6 +94,7 @@ class StageCoordinator2 : StageCoordinator {
         activityTaskManager,
         msdlPlayer,
         bubbleController,
+        packageUpdateController,
     )
 
     internal constructor(
@@ -121,6 +124,7 @@ class StageCoordinator2 : StageCoordinator {
         activityTaskManager: IActivityTaskManager?,
         msdlPlayer: MSDLPlayer?,
         bubbleController: Optional<BubbleController?>?,
+        packageUpdateController: Optional<PackageUpdateController?>?,
     ) : super(
         context,
         displayId,
@@ -148,5 +152,6 @@ class StageCoordinator2 : StageCoordinator {
         activityTaskManager,
         msdlPlayer,
         bubbleController,
+        packageUpdateController,
     )
 }
