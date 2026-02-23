@@ -18,7 +18,9 @@ package com.android.server.security.authenticationpolicy.agent;
 
 import android.annotation.IntRange;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.KeyguardManager;
 import android.companion.CompanionDeviceManager;
@@ -85,11 +87,18 @@ public class AgentAuthService implements AgentAuthServiceInternal {
     }
 
     @Override
-    public boolean isAgentAuthorized(int userId, DeviceId deviceId) {
+    public boolean isAgentAuthorized(@UserIdInt int userId, int deviceId,
+            @Nullable DeviceId companionDeviceId) {
+        // for a local agent the device must be unlocked
+        if (companionDeviceId == null) {
+            return !mKeyguardManager.isDeviceLocked(userId, deviceId);
+        }
+
+        // check for a valid association with the given remote agent
         final var association = mCompanionDeviceManager != null ?
-                mCompanionDeviceManager.getAssociationByDeviceId(userId, deviceId) : null;
+                mCompanionDeviceManager.getAssociationByDeviceId(userId, companionDeviceId) : null;
         if (association == null) {
-            Slog.w(TAG, "No matching association found for deviceId: " + deviceId);
+            Slog.w(TAG, "No association found for companionDeviceId: " + companionDeviceId);
             return false;
         }
 
@@ -97,13 +106,13 @@ public class AgentAuthService implements AgentAuthServiceInternal {
     }
 
     @Override
-    public boolean isAgentAuthorizedByAssociationId(int userId, int associationId) {
+    public boolean isAgentAuthorizedByAssociationId(@UserIdInt int userId, int associationId) {
         final var info = mAgentSessionList.get(associationId);
         return info != null && (info.getUserId() == userId) && info.isAllowed();
     }
 
     @Override
-    public boolean setOverride(int userId, int associationId, boolean authorized) {
+    public boolean setOverride(@UserIdInt int userId, int associationId, boolean authorized) {
         if (Build.IS_DEBUGGABLE) {
             final AgentSession result = authorized ?
                 mAgentSessionList.authorizeIfPresent(userId, associationId) :

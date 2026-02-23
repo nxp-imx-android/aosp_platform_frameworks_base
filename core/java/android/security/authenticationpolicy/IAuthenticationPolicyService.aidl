@@ -60,7 +60,7 @@ interface IAuthenticationPolicyService {
     void isWatchRangingAvailable(in IProximityResultCallback resultCallback);
 
     @EnforcePermission("USE_BIOMETRIC_INTERNAL")
-    boolean isAgentAuthorized(in UserHandle user, in DeviceId deviceId);
+    boolean isAgentAuthorized(in UserHandle user, in int deviceId, in DeviceId companionDeviceId);
 
     @EnforcePermission("USE_BIOMETRIC_INTERNAL")
     boolean isAgentAuthorizedByAssociationId(in UserHandle user, in int associationId);

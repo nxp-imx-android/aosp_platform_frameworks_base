@@ -16,6 +16,7 @@
 
 package com.android.server.security.authenticationpolicy.agent;
 
+import android.annotation.UserIdInt;
 import android.companion.DeviceId;
 
 /** Internal interface for the AgentAuthService. */
@@ -25,10 +26,11 @@ public interface AgentAuthServiceInternal {
      * Checks if the agent can perform automation at this time.
      *
      * @param userId user id
-     * @param deviceId CDM device id of the agent connection
+     * @param deviceId device id
+     * @param companionDeviceId CDM DeviceId of the agent connection
      * @return current status
      */
-    boolean isAgentAuthorized(int userId, DeviceId deviceId);
+    boolean isAgentAuthorized(@UserIdInt int userId, int deviceId, DeviceId companionDeviceId);
 
     /**
      * Checks if the agent can perform automation at this time using the local
@@ -38,7 +40,7 @@ public interface AgentAuthServiceInternal {
      * @param associationId CDM local association id of the agent connection
      * @return current status
      */
-    boolean isAgentAuthorizedByAssociationId(int userId, int associationId);
+    boolean isAgentAuthorizedByAssociationId(@UserIdInt int userId, int associationId);
 
     /**
      * Directly set the authorization status of an existing session.
@@ -50,5 +52,5 @@ public interface AgentAuthServiceInternal {
      * @param authorized override value
      * @return current status
      */
-    boolean setOverride(int userId, int associationId, boolean authorized);
+    boolean setOverride(@UserIdInt int userId, int associationId, boolean authorized);
 }

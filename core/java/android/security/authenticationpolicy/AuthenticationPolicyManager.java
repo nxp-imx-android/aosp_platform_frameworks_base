@@ -27,16 +27,21 @@ import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
+import android.annotation.UserHandleAware;
+import android.annotation.UserIdInt;
+import android.app.KeyguardManager;
 import android.companion.DeviceId;
 import android.content.Context;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.proximity.IProximityResultCallback;
 import android.util.Log;
 import android.util.Slog;
@@ -564,17 +569,42 @@ public final class AuthenticationPolicyManager {
     /**
      * Checks if a cross device agent is authorized for automation on this device when locked.
      *
-     * @param deviceId device id from the CompanionDeviceManager
+     * When the companionDeviceId is null this method assumes the agent is running on the same
+     * device and will return the same value as calling {@link KeyguardManager#isDeviceLocked()}.
+     *
+     * @param companionDeviceId DeviceId from the CompanionDeviceManager or null
      * @return true if authorized now
      *
      * @hide
      */
     @RequiresPermission(USE_BIOMETRIC_INTERNAL)
+    @UserHandleAware
     @FlaggedApi(FLAG_SUPPORT_AI_AGENT)
-    public boolean isConnectedAgentAuthorized(DeviceId deviceId) {
+    public boolean isConnectedAgentAuthorized(@Nullable DeviceId companionDeviceId) {
         try {
             return mAuthenticationPolicyService.isAgentAuthorized(
-                    mContext.getUser(), deviceId);
+                    mContext.getUser(), mContext.getDeviceId(), companionDeviceId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Per-user per-device version of {@link #isConnectedAgentAuthorized(DeviceId)}.
+     *
+     * @param userId user id
+     * @param deviceId local device id
+     * @param companionDeviceId remote DeviceId from the CompanionDeviceManager or null
+     *
+     * @hide
+     */
+    @RequiresPermission(USE_BIOMETRIC_INTERNAL)
+    @FlaggedApi(FLAG_SUPPORT_AI_AGENT)
+    public boolean isConnectedAgentAuthorized(
+            @UserIdInt int userId, int deviceId, @Nullable DeviceId companionDeviceId) {
+        try {
+            return mAuthenticationPolicyService.isAgentAuthorized(
+                    UserHandle.of(userId), deviceId, companionDeviceId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
