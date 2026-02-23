@@ -58,7 +58,7 @@ import platform.test.motion.compose.ComposeFeatureCaptures.positionInRoot
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.MotionControlScope
-import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRuleV2
+import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.motion.testing.createGoldenPathManager
@@ -84,7 +84,7 @@ class ContentRevealTest(private val isFloating: Boolean) {
             pathConfig,
         )
 
-    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRuleV2(goldenPaths)
+    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRule(goldenPaths)
 
     private val fakeHaptics = FakeHaptics()
 

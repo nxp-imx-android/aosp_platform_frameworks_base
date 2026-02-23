@@ -39,7 +39,6 @@ import com.android.compose.animation.scene.mechanics.UserActionGesture
 import com.android.compose.animation.scene.mechanics.UserActionGestureFlag
 import com.android.mechanics.spec.MotionSpec
 import com.android.mechanics.spec.builder.spatialDirectionalMotionSpec
-import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,7 +46,7 @@ import platform.test.motion.RecordedMotion
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.MotionControlFn
-import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRuleV2
+import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.golden.DataPointTypes
 import platform.test.motion.golden.asDataPoint
@@ -62,7 +61,7 @@ class UserActionGestureMotionTest {
     private val goldenPaths =
         createGoldenPathManager("frameworks/base/packages/SystemUI/compose/scene/tests/goldens")
 
-    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRuleV2(goldenPaths)
+    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRule(goldenPaths)
     private val composeRule = motionRule.toolkit.composeContentTestRule
 
     @get:Rule val setFlagsRule = SetFlagsRule()

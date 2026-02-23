@@ -35,7 +35,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeFeatureCaptures
-import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRuleV2
+import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
 import platform.test.motion.testing.createGoldenPathManager
 
 @RunWith(AndroidJUnit4::class)
@@ -45,7 +45,7 @@ class AnchoredSizeTest {
     private val goldenPaths =
         createGoldenPathManager("frameworks/base/packages/SystemUI/compose/scene/tests/goldens")
 
-    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRuleV2(goldenPaths)
+    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRule(goldenPaths)
 
     @Test
     fun testAnchoredSizeEnter() {
