@@ -732,13 +732,8 @@ import java.util.stream.Stream;
                 callback.onRequestFailed(
                         requestId, MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE);
             } else {
-                mProxy.requestCreateSystemMediaSession(
-                        requestId,
-                        uid,
-                        packageName,
-                        targetRouteId,
-                        /* sessionHints= */ null,
-                        callback);
+                // TODO: b/479156700 - Request the creation of a new routing session by mProxy.
+                throw new UnsupportedOperationException();
             }
         }
 
