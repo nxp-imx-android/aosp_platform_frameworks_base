@@ -602,6 +602,10 @@ public final class ViewRootImpl implements ViewParent,
 
     final Thread mThread;
 
+    /** The throwable with the stack trace filled when this ViewRootImpl was initialized. */
+    @Nullable
+    private final Throwable mInitStack;
+
     final WindowLeaked mLocation;
 
     public final WindowManager.LayoutParams mWindowAttributes = new WindowManager.LayoutParams();
@@ -1396,6 +1400,7 @@ public final class ViewRootImpl implements ViewParent,
         final String name = DisplayProperties.debug_vri_package().orElse(null);
         mExtraDisplayListenerLogging = !TextUtils.isEmpty(name) && name.equals(mBasePackageName);
         mThread = Thread.currentThread();
+        mInitStack = Build.isDebuggable() ? new Throwable("Created") : null;
         mLocation = new WindowLeaked(null);
         mWidth = -1;
         mHeight = -1;
@@ -11999,7 +12004,7 @@ public final class ViewRootImpl implements ViewParent,
         return new CalledFromWrongThreadException(
                 "Only the original thread that created a view hierarchy can touch its views."
                         + " Expected: " + mThread.getName()
-                        + " Calling: " + Thread.currentThread().getName());
+                        + " Calling: " + Thread.currentThread().getName(), mInitStack);
     }
 
     /**
@@ -12807,6 +12812,11 @@ public final class ViewRootImpl implements ViewParent,
         public CalledFromWrongThreadException(String msg) {
             super(msg);
         }
+
+        @UnsupportedAppUsage
+        public CalledFromWrongThreadException(String msg, @Nullable Throwable cause) {
+            super(msg, cause);
+        }
     }
 
     static HandlerActionQueue getRunQueue() {
@@ -13301,7 +13311,8 @@ public final class ViewRootImpl implements ViewParent,
         public void runOrPost(View source, int changeType) {
             if (mLooper != Looper.myLooper()) {
                 CalledFromWrongThreadException e = new CalledFromWrongThreadException("Only the "
-                        + "original thread that created a view hierarchy can touch its views.");
+                        + "original thread that created a view hierarchy can touch its views.",
+                        mInitStack);
                 // TODO: Throw the exception
                 Log.e(TAG, "Accessibility content change on non-UI thread. Future Android "
                         + "versions will throw an exception.", e);
