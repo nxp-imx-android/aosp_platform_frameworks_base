@@ -14497,6 +14497,22 @@ public final class Settings {
                 "time_zone_offset_change_notifications";
 
         /**
+         * The user's home time zone ID.
+         *
+         * <p>This value can be used to display a specific "home" time zone in UI elements when the
+         * user's current time zone differs from this value.
+         *
+         * <p>This setting is independent of the system time zone; it does not affect the
+         * device's system clock or the behavior of {@link #AUTO_TIME_ZONE}.
+         *
+         * <p>The value is a standard time zone ID string (e.g. "America/Los_Angeles").
+         * It may be {@code null} if no preference is set.
+         *
+         * @hide
+         */
+        public static final String USER_HOME_TIME_ZONE_ID = "user_home_time_zone_id";
+
+        /**
          * URI for the car dock "in" event sound.
          * @hide
          */
