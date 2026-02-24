@@ -40,3 +40,10 @@ flag {
     description: "This flag enables logging of app function requests and responses for debugging."
     bug: "465699882"
 }
+
+flag {
+    name: "enable_multi_service"
+    namespace: "app_function"
+    description: "Enables indexing and serving app functions from multiple services."
+    bug: "468288106"
+}
