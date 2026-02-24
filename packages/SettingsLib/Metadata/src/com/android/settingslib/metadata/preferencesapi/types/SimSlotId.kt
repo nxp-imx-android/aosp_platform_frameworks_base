@@ -22,6 +22,10 @@ import com.android.settingslib.metadata.R
 /** A valid sim slot ID. */
 class SimSlotId: ApiType<String> {
 
+    override fun getType(): Class<String> = String::class.java
+
     override fun getDescription(context: Context) =
         context.getString(R.string.sim_slot_id_type_description)
+
+    override fun getKey(): String = "SimSlotId"
 }

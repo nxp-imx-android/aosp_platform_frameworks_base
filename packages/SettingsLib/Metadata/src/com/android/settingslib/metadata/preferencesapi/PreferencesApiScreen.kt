@@ -353,7 +353,7 @@ abstract class PreferencesApiScreen private constructor(
      * }
      * ```
      */
-    protected inline fun <reified V : Any> preference(
+    protected fun <V : Any> preference(
         key: String,
         purpose: Int,
         type: ApiType<V>,
@@ -364,7 +364,6 @@ abstract class PreferencesApiScreen private constructor(
             key,
             purpose,
             type,
-            V::class.java,
             appliesTo,
             screenPermissions,
             screenPreconditions,

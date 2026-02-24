@@ -46,7 +46,35 @@ data class GeneratedValue<T>(
     val description: String,
 )
 
-class GeneratedType<T : Any> private constructor(
+inline fun <reified T : Any> GeneratedType(
+    @StringRes description: Int,
+    noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
+): GeneratedType<T> = GeneratedType(T::class.java, descriptionRes = description, description = null, lambda = lambda)
+
+inline fun <reified T : Any> GeneratedType(
+        description: String,
+    noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
+): GeneratedType<T> = GeneratedType(T::class.java, descriptionRes = null, description = description, lambda = lambda)
+
+inline fun GeneratedParameterType(
+    @StringRes description: Int,
+    noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<String>>
+): GeneratedType<String> = GeneratedType(String::class.java, descriptionRes = description, description = null, lambda = lambda)
+
+inline fun GeneratedParameterType(
+        description: String,
+    noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<String>>
+): GeneratedType<String> = GeneratedType(String::class.java, descriptionRes = null, description = description, lambda = lambda)
+
+
+/**
+ * DO NOT CONSTRUCT THIS CLASS DIRECTLY.
+ *
+ * Instead, use the inline functions [GeneratedType] which provide a more convenient syntax and
+ * automatically infer the type.
+ */
+class GeneratedType<T : Any> constructor(
+    private val keyType: Class<T>,
     @field:StringRes val descriptionRes: Int?,
     val description: String?,
     private val lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
@@ -55,15 +83,7 @@ class GeneratedType<T : Any> private constructor(
         require(descriptionRes != null || description != null)
     }
 
-    constructor(
-        @StringRes description: Int,
-        lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
-    ) : this(descriptionRes = description, description = null, lambda = lambda)
-
-    constructor(
-        description: String,
-        lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
-    ) : this(descriptionRes = null, description = description, lambda = lambda)
+    override fun getType(): Class<T> = keyType
 
     /** Get the description as a string using the provided context. */
     override fun getDescription(context: Context): String =
@@ -72,6 +92,6 @@ class GeneratedType<T : Any> private constructor(
     override fun getOptions(context: Context) = lambda(GeneratedTypeContext(context)).map{
         it.value to it.description
     }
-}
 
-typealias GeneratedParameterType = GeneratedType<String>
+    override fun getKey(): String = "GeneratedType:${keyType.name}:${descriptionRes}:${description}"
+}

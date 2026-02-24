@@ -21,12 +21,29 @@ import androidx.annotation.StringRes
 import com.android.settingslib.metadata.preferencesapi.resolveString
 import kotlin.reflect.KClass
 
-/** An entry from the enum. */
-class CustomEnum<T, E> private constructor (
+inline fun <reified T, E> CustomEnum(
     enumClass: KClass<E>,
+    @StringRes description: Int
+) where E : Enum<E>, E : EnumApi<T> = CustomEnum(enumClass, T::class.java, descriptionRes = description, description = null)
+
+inline fun <reified T, E> CustomEnum(
+    enumClass: KClass<E>,
+    description: String
+) where E : Enum<E>, E : EnumApi<T> = CustomEnum(enumClass, T::class.java, descriptionRes = null, description = description)
+
+/**
+ * An entry from the enum.
+ *
+ * DO NOT CONSTRUCT DIRECTLY. Use the helper methods instead.
+*/
+class CustomEnum<T, E> constructor (
+    val enumClass: KClass<E>,
+    private val valueType: Class<T>,
     @field:StringRes val descriptionRes: Int?,
     val description: String?,
-) : FiniteOptionsType<E> where E : Enum<E>, E : EnumApi<T> {
+) : FiniteOptionsType<T> where E : Enum<E>, E : EnumApi<T> {
+    override fun getType(): Class<T> = valueType
+
     init {
         val isStringApi = EnumApiWithString::class.java.isAssignableFrom(enumClass.java)
         val isResApi = EnumApiWithRes::class.java.isAssignableFrom(enumClass.java)
@@ -35,16 +52,6 @@ class CustomEnum<T, E> private constructor (
         require(isStringApi || isResApi)
         require(descriptionRes != null || description != null)
     }
-
-    constructor(
-        enumClass: KClass<E>,
-        @StringRes description: Int
-    ) : this(enumClass, descriptionRes = description, description = null)
-
-    constructor(
-        enumClass: KClass<E>,
-        description: String
-    ) : this(enumClass, descriptionRes = null, description = description)
 
     @Suppress("UNCHECKED_CAST")
     private val entries: Array<E> = enumClass.java.enumConstants ?: (emptyArray<Any>() as Array<E>)
@@ -65,10 +72,12 @@ class CustomEnum<T, E> private constructor (
             // This case is unreachable because of the init block check
             else -> error("Enum entry does not implement EnumApiWithString or EnumApiWithRes.")
         }
-        entry to purposeString
+        entry.asApiValue to purposeString
     }.toList()
 
     override fun getDescription(context: Context): String = resolveString(context, descriptionRes, description)
+
+    override fun getKey(): String = "CustomEnum:${enumClass.qualifiedName}:${descriptionRes}:${description}"
 }
 
 /**

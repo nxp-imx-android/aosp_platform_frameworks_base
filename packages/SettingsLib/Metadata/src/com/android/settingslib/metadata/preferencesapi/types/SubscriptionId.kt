@@ -22,6 +22,10 @@ import com.android.settingslib.metadata.R
 
 class SubscriptionId : ApiType<Int> {
 
+    override fun getType(): Class<Int> = Int::class.java
+
     override fun getDescription(context: Context): String =
         context.getString(R.string.subscription_id_type_description)
+
+    override fun getKey(): String = "SubscriptionId"
 }
