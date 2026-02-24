@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.ui.viewmodel
 
+import android.annotation.StringRes
 import android.content.res.Resources
 import android.os.Build
 import android.view.MotionEvent
@@ -166,6 +167,24 @@ constructor(
             source = keyguardInteractor.dozeAmount.map { 1 - it },
             initialValue = 1f,
         )
+
+    val accessibilityTitle: Int?
+        @StringRes
+        get() {
+            val overlays = sceneInteractor.transitionState.currentOverlays
+            val topmostOverlay = if (overlays.isNotEmpty()) overlays.last() else null
+            return when {
+                topmostOverlay == Overlays.NotificationsShade ->
+                    R.string.accessibility_desc_notification_shade
+                topmostOverlay == Overlays.QuickSettingsShade ->
+                    R.string.accessibility_desc_quick_settings
+                topmostOverlay == Overlays.Bouncer -> null
+                currentScene == Scenes.Shade -> R.string.accessibility_desc_notification_shade
+                currentScene == Scenes.QuickSettings -> R.string.accessibility_desc_quick_settings
+                currentScene == Scenes.Lockscreen -> R.string.accessibility_desc_lock_screen
+                else -> null
+            }
+        }
 
     private val isDesktopStatusBarEnabled by
         hydrator.hydratedStateOf(
