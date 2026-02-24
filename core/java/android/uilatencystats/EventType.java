@@ -30,6 +30,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 public sealed interface EventType {
     int EVENT_USER_SWITCH = 0;
+    int EVENT_LAUNCHER_SHOWN = 1;
 
     /**
      * Integer IDs for event types.
@@ -40,6 +41,7 @@ public sealed interface EventType {
             prefix = {"EVENT_"},
             value = {
                 EVENT_USER_SWITCH,
+                EVENT_LAUNCHER_SHOWN,
             })
     @Retention(RetentionPolicy.SOURCE)
     @interface Id {}
@@ -58,6 +60,26 @@ public sealed interface EventType {
      * @hide
      */
     String getName();
+
+    /**
+     * The launcher is rendered to the user for the first time in the app lifecycle. Launchers still
+     * will send this multiple times as they restart.
+     *
+     * @hide
+     */
+    record LauncherShown() implements EventType {
+        /** @hide */
+        @Override
+        public @Id int getId() {
+            return EVENT_LAUNCHER_SHOWN;
+        }
+
+        /** @hide */
+        @Override
+        public String getName() {
+            return "LauncherShown";
+        }
+    }
 
     /**
      * A user switch has occurred.
