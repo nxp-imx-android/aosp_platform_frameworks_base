@@ -22,8 +22,8 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import com.android.compose.theme.LocalAndroidColorScheme
 
-object SystemUISliderColors {
-    val Defaults: SliderColors
+public object SystemUISliderColors {
+    public val Defaults: SliderColors
         @Composable
         get() =
             SliderDefaults.colors()

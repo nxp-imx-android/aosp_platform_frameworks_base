@@ -16,10 +16,5 @@
 
 package com.android.systemui.common.shared.model
 
-import androidx.annotation.ColorRes
-
-/** Models an icon with a specific tint. */
-data class TintedIcon(
-    val icon: Icon,
-    @ColorRes val tint: Int?,
-)
+/** Models a two-dimensional position */
+public data class Position(val x: Int, val y: Int)
