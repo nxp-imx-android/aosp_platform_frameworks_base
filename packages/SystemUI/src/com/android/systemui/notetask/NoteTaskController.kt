@@ -329,14 +329,16 @@ constructor(
         if (user == getCurrentRunningUser()) {
             launchUpdateNoteTaskAsUser(user)
         } else {
-            // TODO(b/278729185): Replace fire and forget service with a bounded service.
-            val intent = NoteTaskControllerUpdateService.createIntent(context)
-            try {
-                // If the user is stopped before 'startServiceAsUser' kicks-in, a
-                // 'SecurityException' will be thrown.
-                context.startServiceAsUser(intent, user)
-            } catch (e: SecurityException) {
-                debugLog(error = e) { "Unable to start 'NoteTaskControllerUpdateService'." }
+            applicationScope.launch("$TAG#updateNoteTaskAsUser", bgCoroutineContext) {
+                // TODO(b/278729185): Replace fire and forget service with a bounded service.
+                val intent = NoteTaskControllerUpdateService.createIntent(context)
+                try {
+                    // If the user is stopped before 'startServiceAsUser' kicks-in, a
+                    // 'SecurityException' will be thrown.
+                    context.startServiceAsUser(intent, user)
+                } catch (e: SecurityException) {
+                    debugLog(error = e) { "Unable to start 'NoteTaskControllerUpdateService'." }
+                }
             }
         }
     }
