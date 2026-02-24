@@ -40,7 +40,6 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
-import com.android.systemui.Flags.FLAG_DREAM_BIOMETRIC_PROMPT_FIXES
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
@@ -1482,7 +1481,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             assertThat(gestureRepository.gestureBlockedMatchers.value).isEmpty()
         }
 
-    @EnableFlags(FLAG_DREAM_BIOMETRIC_PROMPT_FIXES)
     @Test
     fun testBiometricPromptShowing_setsLifecycleState() =
         kosmos.runTest {
@@ -1514,7 +1512,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             assertThat(lifecycleRegistry.currentState).isEqualTo(Lifecycle.State.RESUMED)
         }
 
-    @EnableFlags(FLAG_DREAM_BIOMETRIC_PROMPT_FIXES)
     @Test
     fun testBiometricPromptShowing_stopsGestureBlocking() =
         kosmos.runTest {
