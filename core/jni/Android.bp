@@ -320,7 +320,6 @@ cc_defaults_for_libandroid_runtime {
                 "libstatssocket_lazy",
                 "libskia",
                 "pw_status",
-                "libPlatformProperties",
             ] + select(release_flag("RELEASE_NATIVE_FRAMEWORK_PROTOTYPE"), {
                 true: [
                     "libflatbuffers-cpp",
@@ -378,6 +377,7 @@ cc_defaults_for_libandroid_runtime {
                 "libhwui",
                 "libmediandk",
                 "libpermission",
+                "libPlatformProperties",
                 "libsensor",
                 "libinput",
                 "libicu",
