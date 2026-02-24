@@ -41,6 +41,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.internal.util.MemInfoReader;
 import com.android.server.am.MemoryLimiter.Configuration;
 
 import org.junit.After;
@@ -131,6 +132,16 @@ public class MemoryLimiterTest {
     // maximum memory in the native handlers, but the test uses -1 for consistency.
     private static final Long sProcessMemoryMax = (long) (-1);
 
+    // The available system memory.
+    private static final long sSystemMemory = getSystemMemory();
+
+    // Fetch the system memory.
+    private static long getSystemMemory() {
+        MemInfoReader memInfo = new MemInfoReader();
+        memInfo.readMemInfo();
+        return memInfo.getTotalSize();
+    }
+
     // An Injector for testing.
     private static class TestInjector extends MemoryLimiter.Injector {
 
@@ -169,8 +180,9 @@ public class MemoryLimiterTest {
         // made in the test thread are visible in the callback thread.
         private final CountDownLatch mLatch;
 
-        // A single over-limit event.
-        record Event(int pid, int uid, int limit) {}
+        // A single over-limit event.  The limit is configured limit in bytes.  The percent is the
+        // percentage of available memory represented by the limit.
+        record Event(int pid, int uid, long limit, int percent) {}
 
         // The events received by this counter.
         final ArrayList<Event> mEvents = new ArrayList<>();
@@ -207,11 +219,17 @@ public class MemoryLimiterTest {
         }
 
         // Match the n'th event.  Fail the test if there is no match.
-        void expect(int index, Helper helper, int limit) {
+        void expect(int index, Helper helper, long limit) {
             final Event event = mEvents.get(index);
             assertThat(event.pid).isEqualTo(helper.getPid());
             assertThat(event.uid).isEqualTo(helper.getUid());
             assertThat(event.limit).isEqualTo(limit);
+
+            // The computation of percent may have rounding errors, and this code is slightly
+            // different from the code in MemoryLimiter (by design).  The test therefore checks
+            // that the two values are within 1 of each other.
+            int ratio = Math.round((float) (((double) limit / (double) sSystemMemory) * 100));
+            assertThat(event.percent).isWithin(1).of(ratio);
         }
 
         // Get the memory limit for the process state.  Use one of the process states above.
@@ -230,10 +248,10 @@ public class MemoryLimiterTest {
 
         // Capture an actual event.
         @Override
-        public void onLimitExceeded(int pid, int uid, int type, long limit, String pkg) {
+        public void onLimitExceeded(int pid, int uid, int type, long limit, int pct, String pkg) {
             synchronized (mLock) {
                 mLatch.countDown();
-                mEvents.add(new Event(pid, uid, type));
+                mEvents.add(new Event(pid, uid, limit, pct));
             }
         }
 
@@ -493,7 +511,7 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, MemoryLimiter.MEMORY_LIMIT_TYPE);
+                counter.expect(0, helper, sProcessMemory100M);
             }
         }
     }
@@ -515,7 +533,7 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, MemoryLimiter.MEMORY_LIMIT_TYPE);
+                counter.expect(0, helper, sProcessMemory100M);
             }
         }
     }
@@ -679,7 +697,7 @@ public class MemoryLimiterTest {
 
                 // There should be exactly one event in the counter.
                 assertThat(counter.eventCount()).isEqualTo(1);
-                counter.expect(0, helper, MemoryLimiter.MEMORY_LIMIT_TYPE);
+                counter.expect(0, helper, sProcessMemory100M);
             }
         }
     }
