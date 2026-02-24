@@ -348,6 +348,12 @@ public abstract class ConnectionService extends Service {
      */
     public static final String EXTRA_IS_HANDOVER = TelecomManager.EXTRA_IS_HANDOVER;
 
+    /**
+     * Extra passed in when binding to a ConnectionService for the purpose of granting BAL.
+     * @hide
+     */
+    public static final String EXTRA_IS_BAL_BINDING = "android.telecom.extra.IS_BAL_BINDING";
+
     // Flag controlling whether PII is emitted into the logs
     private static final boolean PII_DEBUG = Log.isLoggable(android.util.Log.DEBUG);
 
@@ -2294,7 +2300,12 @@ public abstract class ConnectionService extends Service {
     /** {@inheritDoc} */
     @Override
     public boolean onUnbind(Intent intent) {
-        endAllConnections();
+        Bundle extras = intent.getExtras();
+        if (extras != null && extras.getBoolean(EXTRA_IS_BAL_BINDING, false)) {
+            Log.i(this, "onUnbind - skipping call disconnect for BAL binding");
+        } else {
+            endAllConnections();
+        }
         return super.onUnbind(intent);
     }
 
@@ -3914,8 +3925,10 @@ public abstract class ConnectionService extends Service {
     }
 
     private void endAllConnections() {
+
         // Unbound from telecomm.  We should end all connections and conferences.
         for (Connection connection : mIdByConnection.keySet()) {
+            Log.i(this, "endAllConnections; terminating %s", connection.getTelecomCallId());
             // only operate on top-level calls. Conference calls will be removed on their own.
             if (connection.getConference() == null) {
                 connection.onDisconnect();
