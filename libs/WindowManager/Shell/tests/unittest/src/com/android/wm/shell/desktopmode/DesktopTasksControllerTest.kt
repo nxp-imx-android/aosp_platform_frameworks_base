@@ -163,7 +163,6 @@ import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.fullscreen.FullscreenDisconnectHandler
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
-import com.android.wm.shell.pip2.phone.PipDisplayDisconnectHandler
 import com.android.wm.shell.pip2.phone.PipScheduler
 import com.android.wm.shell.pip2.phone.PipTransitionState
 import com.android.wm.shell.recents.RecentTasksController
@@ -12073,8 +12072,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(DEFAULT_DISPLAY, suggestedDeskId)
         taskRepository.addDesk(DEFAULT_DISPLAY, 1)
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, 1)
-        val task =
-            setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
 
         controller.handleFreeformTaskPlacement(
             task = task,
@@ -12380,7 +12378,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         }
         if (addToRepository) {
             if (deskId != null) {
-                taskRepository.addTaskToDesk(displayId, deskId, task.taskId, isVisible = active, bounds)
+                taskRepository.addTaskToDesk(
+                    displayId,
+                    deskId,
+                    task.taskId,
+                    isVisible = active,
+                    bounds,
+                )
             } else {
                 taskRepository.addTask(displayId, task.taskId, isVisible = active, bounds)
             }

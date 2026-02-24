@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.pip2.phone
+package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager
 import android.app.KeyguardManager
@@ -36,6 +36,8 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler
+import com.android.wm.shell.pip2.phone.PipTransitionState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import org.junit.After
@@ -52,7 +54,10 @@ import org.mockito.kotlin.mock
 /**
  * Test class for {@link PipDisplayReconnectHandlerTest}
  *
- * Usage:
+ * Usage: atest WMShellUnitTests:PipDisplayReconnectHandlerTest
+ *
+ * TODO: b/488139835 Consider moving this out of desktop package as it becomes less
+ *   desktop-specific.
  */
 @SmallTest
 @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_PIP)

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.wm.shell.pip2.phone
+package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.Rect
@@ -27,7 +27,9 @@ import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.pip.PipBoundsState
 import com.android.wm.shell.common.pip.PipDisplayLayoutState
-import com.android.wm.shell.desktopmode.ShellDesktopState
+import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler
+import com.android.wm.shell.pip2.phone.PipScheduler
+import com.android.wm.shell.pip2.phone.PipTransitionState
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -42,9 +44,12 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.whenever
 
 /**
- * Test class for {@link DesktopTasksController}
+ * Test class for {@link PipDisplayDisconnectHandlerTest}
  *
  * Usage: atest WMShellUnitTests:PipDisplayDisconnectHandlerTest
+ *
+ * TODO: b/488139835 Consider moving this out of desktop package as it becomes less
+ *   desktop-specific.
  */
 class PipDisplayDisconnectHandlerTest : ShellTestCase() {
 

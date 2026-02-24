@@ -101,7 +101,14 @@ public class PipDisplayTransferHandler implements
         mPipResizeAnimatorSupplier = PipResizeAnimator::new;
     }
 
-    void scheduleMovePipToDisplay(int originDisplayId, int targetDisplayId,
+    /**
+     * Starts a transition to move pip from one display to another.
+     *
+     * @param originDisplayId the starting display of the pip task
+     * @param targetDisplayId the destination display of the pip task
+     * @param boundsOnRelease the bounds pip should take in the new display
+     */
+    public void scheduleMovePipToDisplay(int originDisplayId, int targetDisplayId,
             Rect boundsOnRelease) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s scheduleMovePipToDisplay from=%d to=%d", TAG, originDisplayId, targetDisplayId);

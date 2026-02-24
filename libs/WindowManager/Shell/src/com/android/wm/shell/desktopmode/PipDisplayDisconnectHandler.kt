@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.pip2.phone
+package com.android.wm.shell.desktopmode
 
 import android.app.TaskInfo
 import android.view.Display.DEFAULT_DISPLAY
@@ -25,10 +25,16 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.pip.PipBoundsState
 import com.android.wm.shell.common.pip.PipDisplayLayoutState
-import com.android.wm.shell.desktopmode.ShellDesktopState
+import com.android.wm.shell.pip2.phone.PipDisplayTransferHandler
+import com.android.wm.shell.pip2.phone.PipScheduler
+import com.android.wm.shell.pip2.phone.PipTransitionState
 import com.android.wm.shell.protolog.ShellProtoLogGroup
 
-/** Transition handler that handles reparenting pip tasks on display disconnect. */
+/**
+ * Transition handler that handles reparenting pip tasks on display disconnect.
+ *
+ * TODO: b/488139835 Consider moving this out of desktop package.
+ */
 class PipDisplayDisconnectHandler(
     private val pipScheduler: PipScheduler,
     private val pipState: PipTransitionState,
