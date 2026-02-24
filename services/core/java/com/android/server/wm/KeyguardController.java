@@ -276,22 +276,13 @@ class KeyguardController {
         InputMethodManagerInternal.get().updateImeWindowStatus(false /* disableImeIcon */,
                 displayId);
 
-        boolean setReady = false;
         if (aodChanged) {
             // Ensure the new state takes effect.
             mWindowManager.mWindowPlacerLocked.performSurfacePlacement();
             if (aodShowing) {
-                setReady = true;
+                mWindowManager.mAtmService.getTransitionController().setReady(
+                        mRootWindowContainer.getDefaultDisplay());
             }
-        }
-        if (!Flags.removeSetWakeReadyImmediately()
-                && mWindowManager.mAtmService.getTransitionController()
-                        .getCollectingTransitionType() == WindowManager.TRANSIT_WAKE) {
-            setReady = true;
-        }
-        if (setReady) {
-            mWindowManager.mAtmService.getTransitionController().setReady(
-                    mRootWindowContainer.getDefaultDisplay());
         }
         mService.mChainTracker.endPartial();
     }
