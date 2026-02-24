@@ -80,7 +80,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -131,7 +131,7 @@ public class RemoteAugmentedAutofillServiceTest {
     private AutoCloseable mMockitoSession;
     private RemoteInlineSuggestionRenderService mRemoteInlineSuggestionRenderService;
     private RemoteAugmentedAutofillService mService;
-    private ExecutorService mTestExecutorService;
+    private Executor mTestExecutor;
 
     /**
      * Captured futures from {@link
@@ -143,7 +143,7 @@ public class RemoteAugmentedAutofillServiceTest {
     @Before
     public void setUp() throws Exception {
         mMockitoSession = MockitoAnnotations.openMocks(this);
-        mTestExecutorService = Executors.newSingleThreadExecutor();
+        mTestExecutor = Executors.newSingleThreadExecutor();
 
         // Immediately run any jobs posted to the service connector.
         ArgumentCaptor<
@@ -172,8 +172,8 @@ public class RemoteAugmentedAutofillServiceTest {
                 new RemoteAugmentedAutofillService(
                         new RemoteAugmentedAutofillService.Injector() {
                             @Override
-                            public ExecutorService getExecutorService() {
-                                return mTestExecutorService;
+                            public Executor getExecutor() {
+                                return mTestExecutor;
                             }
 
                             @Override
@@ -394,8 +394,7 @@ public class RemoteAugmentedAutofillServiceTest {
 
     @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     @Test
-    public void onRequestAutofillLocked_cancelledAutofillResponse_noResult()
-            throws Exception {
+    public void onRequestAutofillLocked_cancelledAutofillResponse_noResult() throws Exception {
         final int sessionId = 1234;
         AutofillId focusedId = new AutofillId(3);
         final InlineSuggestionsRequest inlineSuggestionsRequest =
@@ -432,8 +431,7 @@ public class RemoteAugmentedAutofillServiceTest {
 
     @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     @Test
-    public void onRequestAutofillLocked_noInlineSuggestionsRequest_noResult()
-            throws Exception {
+    public void onRequestAutofillLocked_noInlineSuggestionsRequest_noResult() throws Exception {
         final int sessionId = 1234;
         AutofillId focusedId = new AutofillId(3);
         final InlineSuggestionsRequest inlineSuggestionsRequest =

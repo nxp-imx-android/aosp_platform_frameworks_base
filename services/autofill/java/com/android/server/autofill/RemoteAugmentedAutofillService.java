@@ -71,7 +71,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -82,7 +82,7 @@ final class RemoteAugmentedAutofillService {
 
     private static final String TAG = RemoteAugmentedAutofillService.class.getSimpleName();
 
-    private final ExecutorService mExecutorService;
+    private final Executor mExecutor;
     private final int mUserId;
     private final ServiceConnector.Impl<IAugmentedAutofillService> mServiceConnector;
     private final int mRequestTimeoutMs;
@@ -123,7 +123,7 @@ final class RemoteAugmentedAutofillService {
         mPersonalContextManagerInternal = LocalServices.getService(
                 PersonalContextManagerInternal.class);
 
-        mExecutorService = injector.getExecutorService();
+        mExecutor = injector.getExecutor();
         mServiceConnector = injector.getServiceConnector();
         mUserId = userId;
 
@@ -338,7 +338,7 @@ final class RemoteAugmentedAutofillService {
                                     activityToken);
                         });
 
-        mExecutorService.submit(mergeFuture::join);
+        mExecutor.execute(mergeFuture::join);
     }
 
     /**
@@ -657,7 +657,7 @@ final class RemoteAugmentedAutofillService {
      */
     @VisibleForTesting
     interface Injector {
-        ExecutorService getExecutorService();
+        Executor getExecutor();
         ServiceConnector.Impl<IAugmentedAutofillService> getServiceConnector();
 
         /**
@@ -672,7 +672,7 @@ final class RemoteAugmentedAutofillService {
     }
 
     private static class DefaultInjector implements Injector {
-        private final ExecutorService mExecutorService;
+        private final Executor mExecutor;
         private final long mIdleUnbindTimeoutMs;
         private final ServiceConnector.Impl<IAugmentedAutofillService> mServiceConnector;
 
@@ -682,7 +682,7 @@ final class RemoteAugmentedAutofillService {
                 int userId,
                 boolean bindInstantServiceAllowed,
                 long idleUnbindTimeoutMs) {
-            mExecutorService = Executors.newSingleThreadExecutor();
+            mExecutor = Executors.newSingleThreadExecutor();
             mIdleUnbindTimeoutMs = idleUnbindTimeoutMs;
             mServiceConnector = new ServiceConnector.Impl<IAugmentedAutofillService>(
                     context,
@@ -722,8 +722,8 @@ final class RemoteAugmentedAutofillService {
         }
 
         @Override
-        public ExecutorService getExecutorService() {
-            return mExecutorService;
+        public Executor getExecutor() {
+            return mExecutor;
         }
 
         @Override
