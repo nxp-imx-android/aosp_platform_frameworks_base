@@ -180,7 +180,7 @@ constructor(
 
                 if (viewModel.showMedia) {
                     Element(
-                        key = Media.Elements.mediaCarousel,
+                        key = Media.Elements.MediaCarousel,
                         modifier =
                             Modifier.padding(
                                 top = notificationStackPadding,

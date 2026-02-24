@@ -393,7 +393,7 @@ private fun ContentScope.SingleShade(
                     media = {
                         if (isAlwaysComposedContentVisible()) {
                             if (viewModel.isQsEnabled && viewModel.showMedia) {
-                                Element(key = Media.Elements.mediaCarousel, modifier = Modifier) {
+                                Element(key = Media.Elements.MediaCarousel, modifier = Modifier) {
                                     Media(
                                         viewModelFactory = viewModel.mediaViewModelFactory,
                                         presentationStyle =
