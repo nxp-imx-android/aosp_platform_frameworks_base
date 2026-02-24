@@ -679,4 +679,9 @@ cc_aconfig_library {
     name: "libcore_jni_flags_c",
     aconfig_declarations: "core_jni_flags",
     host_supported: true,
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }

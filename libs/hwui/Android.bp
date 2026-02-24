@@ -42,6 +42,11 @@ cc_aconfig_library {
     name: "hwui_flags_cc_lib",
     host_supported: true,
     aconfig_declarations: "hwui_flags",
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 cc_defaults {
