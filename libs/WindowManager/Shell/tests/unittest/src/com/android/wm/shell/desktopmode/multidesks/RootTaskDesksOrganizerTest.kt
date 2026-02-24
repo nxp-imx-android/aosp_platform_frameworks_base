@@ -773,6 +773,23 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
+    fun testIsTaskInDesk() = runTest {
+        val desk = createDeskSuspending()
+        val notInDesk = createFreeformTask().apply { parentTaskId = -1 }
+        val inDeskExpanded = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
+        val inDeskMinimized = createFreeformTask()
+            .apply { parentTaskId = desk.minimizationRoot.rootId }
+
+        organizer.onTaskAppeared(notInDesk, SurfaceControl())
+        organizer.onTaskAppeared(inDeskExpanded, SurfaceControl())
+        organizer.onTaskAppeared(inDeskMinimized, SurfaceControl())
+
+        assertThat(organizer.isTaskInDesk(notInDesk.taskId, desk.deskRoot.deskId)).isFalse()
+        assertThat(organizer.isTaskInDesk(inDeskExpanded.taskId, desk.deskRoot.deskId)).isTrue()
+        assertThat(organizer.isTaskInDesk(inDeskMinimized.taskId, desk.deskRoot.deskId)).isTrue()
+    }
+
+    @Test
     fun getDeskIdFromTaskInfo_taskInDesk_returnsDesk() = runTest {
         val desk = createDeskSuspending()
         val taskInDesk = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }

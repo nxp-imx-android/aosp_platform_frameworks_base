@@ -134,14 +134,14 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskOpening_freeformTask_activeInDesktopRepository_noop() {
-        val task = createFreeformTask().apply { isVisible = true }
+    fun onTaskOpening_freeformTask_activeInDesktopRepository_addsTaskToDesk() {
+        val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = true }
         whenever(desktopUserRepositories.current.isActiveTask(task.taskId)).thenReturn(true)
         whenever(desksOrganizer.getDeskIdFromTaskInfo(task)).thenReturn(ACTIVE_DESK_ID)
 
         desktopTaskChangeListener.onTaskOpening(task)
 
-        verify(desktopUserRepositories.current, never())
+        verify(desktopUserRepositories.current)
             .addTaskToDesk(task.displayId, ACTIVE_DESK_ID, task.taskId, task.isVisible, TASK_BOUNDS)
     }
 

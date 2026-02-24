@@ -3772,10 +3772,30 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId).also { markTaskVisible(it) }
         val freeformTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
         taskRepository.minimizeTask(DEFAULT_DISPLAY, freeformTask.taskId)
+        whenever(desksOrganizer.isTaskInDesk(freeformTask.taskId, deskId)).thenReturn(true)
 
         controller.handleRequest(transition, createTransition(freeformTask, TRANSIT_OPEN))
 
         verify(desksOrganizer).unminimizeTask(any(), eq(deskId), eq(freeformTask))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun handleRequest_minimizedFreeformTask_notInDesk_movesToDesk() {
+        val deskId = 5
+        taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
+        taskRepository.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = deskId)
+
+        val transition = Binder()
+        // Create a visible task so we stay in Desktop Mode when minimizing task under test.
+        setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId).also { markTaskVisible(it) }
+        val freeformTask = setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
+        taskRepository.minimizeTask(DEFAULT_DISPLAY, freeformTask.taskId)
+        whenever(desksOrganizer.isTaskInDesk(freeformTask.taskId, deskId)).thenReturn(false)
+
+        controller.handleRequest(transition, createTransition(freeformTask, TRANSIT_OPEN))
+
+        verify(desksOrganizer).moveTaskToDesk(any(), eq(deskId), eq(freeformTask), eq(false))
     }
 
     @Test

@@ -2783,6 +2783,13 @@ class DesktopTasksController(
         displayId: Int,
         userId: Int = shellController.currentUserId,
     ) {
+        logV(
+            "startLaunchIntentTransition: displayId=%d userId=%d pendingIntent=%s options=%s",
+            displayId,
+            userId,
+            pendingIntent,
+            options,
+        )
         if (lockTaskChangeListener.isTaskLocked) {
             if (isAnyDeskActive(displayId)) {
                 error("Device is in locked task mode, but a desk is active on displayId=$displayId")
@@ -4445,6 +4452,7 @@ class DesktopTasksController(
             } else {
                 getOrCreateDefaultDeskId(displayId = targetDisplayId, userId = userId)
             }
+        val deskIdFromOrganizer = desksOrganizer.getDeskIdFromTaskInfo(task)
 
         val isKnownDesktopTask = repository.isActiveTask(task.taskId)
         val bringTaskToFront =
@@ -4456,14 +4464,15 @@ class DesktopTasksController(
 
         logV(
             "handleFreeformTaskPlacement taskId=%d sourceDisplayId=%d targetDisplayId=%d" +
-                " sourceDeskId=%d targetDeskId=%d anyDeskActive=%b isKnownDesktopTask=%b" +
-                " bringTaskToFront=%b shouldForceEnterDesktop=%b requestedTaskBounds=%s" +
-                " suggestedTargetDeskId=%d requestType=%s isTaskLocked=%b",
+                " sourceDeskId=%d targetDeskId=%d deskIdFromOrganizer=%d anyDeskActive=%b" +
+                " isKnownDesktopTask=%b bringTaskToFront=%b shouldForceEnterDesktop=%b" +
+                " requestedTaskBounds=%s suggestedTargetDeskId=%d requestType=%s isTaskLocked=%b",
             task.taskId,
             sourceDisplayId,
             targetDisplayId,
             sourceDeskId,
             targetDeskId,
+            deskIdFromOrganizer,
             anyDeskActive,
             isKnownDesktopTask,
             bringTaskToFront,
@@ -4581,8 +4590,23 @@ class DesktopTasksController(
             // Moving to a new or different desk
             sourceDeskId != targetDeskId -> desksOrganizer.moveTaskToDesk(wct, targetDeskId, task)
             // Already in target desk, but minimized. Expand it.
-            bringTaskToFront && repository.isMinimizedTask(task.taskId) ->
-                desksOrganizer.unminimizeTask(wct, targetDeskId, task)
+            bringTaskToFront && repository.isMinimizedTask(task.taskId) -> {
+                if (desksOrganizer.isTaskInDesk(task.taskId, targetDeskId)) {
+                    desksOrganizer.unminimizeTask(wct, targetDeskId, task)
+                } else {
+                    // If the task is just appearing after a reboot, it may be known as a minimized
+                    // task, but not actually be in the organizer's list of minimized tasks if it
+                    // launched outside any desk. In that case, we should treat it as a new task
+                    // and move it to the desk.
+                    logW(
+                        "handleFreeformTaskPlacement minimized taskId=%d task not found " +
+                            "in desk %d, moving it to the desk",
+                        task.taskId,
+                        targetDeskId,
+                    )
+                    desksOrganizer.moveTaskToDesk(wct, targetDeskId, task)
+                }
+            }
             // Already expanded in target desk, move it to front if needed.
             bringTaskToFront -> desksOrganizer.reorderTaskToFront(wct, targetDeskId, task)
         }

@@ -55,10 +55,11 @@ class DesktopTaskChangeListener(
             desktopUserRepositories.getProfile(taskInfo.userId)
         val isFreeformTask = taskInfo.isFreeform
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
+        val isMinimizedTask = desktopRepository.isMinimizedTask(taskInfo.taskId)
         val isTaskPinned = isTaskPinned(taskInfo)
         logD(
             "onTaskOpening for taskId=%d, displayId=%d userId=%d currentUserId=%d " +
-                "parentTaskId=%d isFreeform=%b isActive=%b isPinned=%b",
+                "parentTaskId=%d isFreeform=%b isActive=%b isMinimized=%b isPinned=%b",
             taskInfo.taskId,
             taskInfo.displayId,
             taskInfo.userId,
@@ -66,12 +67,9 @@ class DesktopTaskChangeListener(
             taskInfo.parentTaskId,
             isFreeformTask,
             isActiveTask,
+            isMinimizedTask,
             isTaskPinned,
         )
-        if (!isDesktopTask(taskInfo) && isActiveTask) {
-            removeTask(desktopRepository, taskInfo.taskId, isClosingTask = false)
-            return
-        }
         if (
             !desktopState.isDesktopModeSupportedOnDisplay(taskInfo.displayId) &&
                 DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
@@ -83,18 +81,19 @@ class DesktopTaskChangeListener(
             )
             return
         }
-        if (isDesktopTask(taskInfo) && !isActiveTask) {
-            // TODO: b/420917959 - Remove this once LaunchParams respects activity options set for
-            // [DesktopWallpaperActivity] launch which should always be in fullscreen.
-            if (DesktopWallpaperActivity.isWallpaperTask(taskInfo)) {
-                logE(
-                    "Trying to add freeform DesktopWallpaperActivity to DesktopRepository, " +
-                        "returning early instead"
-                )
-                return
+        if (!isDesktopTask(taskInfo)) {
+            if (isActiveTask) {
+                // It was previously a desktop task, so remove it from the repository.
+                removeTask(desktopRepository, taskInfo.taskId, isClosingTask = false)
             }
-            addTask(desktopRepository, taskInfo)
+            // Not a desktop task, ignore it.
+            return
         }
+        // At this point the task is known to be a desktop task, so make the repository aware of it.
+        // Note that if the task is already active in the repository (|isActiveTask| == true),
+        // then it moves task to the front, else adds the task to the desk. In the case of an OPEN,
+        // this is possible when a minimized non-running task is relaunched.
+        addTask(desktopRepository, taskInfo)
     }
 
     override fun onTaskChanging(taskInfo: RunningTaskInfo) {
