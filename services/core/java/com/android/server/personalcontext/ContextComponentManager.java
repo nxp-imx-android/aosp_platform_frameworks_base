@@ -141,6 +141,19 @@ class ContextComponentManager
         return mRefiners.values();
     }
 
+    @Override
+    public Collection<Renderer> getRenderersWithProperties(
+            @Renderer.RendererProperty int properties) {
+        final HashSet<Renderer> renderers = new HashSet<>();
+
+        for (Renderer renderer : mRenderers.values()) {
+            if (renderer.hasProperties(properties)) {
+                renderers.add(renderer);
+            }
+        }
+        return renderers;
+    }
+
     /** Gets currently registered renderers. */
     @Override
     public Collection<Renderer> getRenderers() {

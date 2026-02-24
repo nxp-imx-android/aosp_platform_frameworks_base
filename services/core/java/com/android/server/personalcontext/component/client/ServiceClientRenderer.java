@@ -16,9 +16,12 @@
 
 package com.android.server.personalcontext.component.client;
 
+import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
+
 import android.Manifest;
 import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.IBinder;
@@ -48,7 +51,11 @@ import java.util.concurrent.Executors;
  */
 public class ServiceClientRenderer
         extends BaseServiceClientComponent<IInsightRenderer> implements Renderer {
+    static final String META_DATA_RECEIVE_NOTIFICATION_INSIGHTS =
+            "android.service.personalcontext.renderer.receive_notification_insights";
     private InsightFilter mFilter = InsightFilter.REQUIRE_RENDER_TOKEN;
+
+    private final int mProperties;
 
     public ServiceClientRenderer(Context context, UUID componentId, ServiceInfo serviceInfo,
             UserHandle userHandle) {
@@ -65,6 +72,20 @@ public class ServiceClientRenderer
             UserHandle userHandle, Executor executor, Handler handler) {
         super(context, componentId, serviceInfo, userHandle, executor, handler);
 
+        int properties = 0;
+
+        final PackageManager packageManager = context.getPackageManager();
+        final boolean hasSensitiveNotificationPermission = packageManager
+                .checkPermission(RECEIVE_SENSITIVE_NOTIFICATIONS, serviceInfo.packageName)
+                == PackageManager.PERMISSION_GRANTED;
+        if (hasSensitiveNotificationPermission
+                && serviceInfo.metaData != null && serviceInfo.metaData
+                .getBoolean(META_DATA_RECEIVE_NOTIFICATION_INSIGHTS, false)) {
+            properties |= Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS;
+        }
+
+        mProperties = properties;
+
         runWithScopedBinder((binder, callback) -> {
             try {
                 binder.getFilter(getParcelComponentId(), new IGetFilterCallback.Stub() {
@@ -78,6 +99,11 @@ public class ServiceClientRenderer
                 Slog.e(TAG, "Failed to get renderer filter", e);
             }
         });
+    }
+
+    @Override
+    public int getProperties() {
+        return mProperties;
     }
 
     @Override

@@ -56,6 +56,12 @@ import java.util.concurrent.Executor;
  * and include an intent filter with the necessary action indicating that it is an
  * {@link InsightRendererService} ({@link #SERVICE_INTERFACE}).
  *
+ * <p>You can indicate support for insights resulting from
+ * {@link android.service.personalcontext.hint.NotificationHint}} by adding a meta-data tag named
+ * "android.service.personalcontext.renderer.receive_notification_insights" set to "true". The
+ * service package must be granted the {@link android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS}
+ * permission as well.</p>
+ *
  * <p>For example:
  * <pre>
  *     &lt;service android:name=".ExampleInsightRendererService"
@@ -66,6 +72,9 @@ import java.util.concurrent.Executor;
  *             android:name="android.service.personalcontext.renderer.InsightRendererService"
  *             /&gt;
  *         &lt;/intent-filter&gt;
+ *         &lt;meta-data
+ *             android:name="android.service.personalcontext.renderer.receive_notification_insights"
+ *             android:value="true"/&gt;
  *     &lt;/service&gt;
  * </pre>
  *

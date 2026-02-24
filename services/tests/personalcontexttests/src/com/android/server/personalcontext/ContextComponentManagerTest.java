@@ -19,6 +19,7 @@ package com.android.server.personalcontext;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -80,6 +81,29 @@ public class ContextComponentManagerTest {
         manager.register(renderer);
 
         assertThat(manager.getRenderers()).containsExactly(renderer);
+    }
+
+    @Test
+    public void testRendererFilter() {
+        final Renderer nonMatchingRenderer = mock(Renderer.class);
+        when(nonMatchingRenderer
+                .hasProperties(anyInt()))
+                .thenReturn(false);
+        final UserHandle userHandle = mock(UserHandle.class);
+
+        final Renderer matchingRenderer = mock(Renderer.class);
+        when(matchingRenderer
+                .hasProperties(eq(Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS)))
+                .thenReturn(true);
+
+        final ContextComponentManager manager = new ContextComponentManager(mock(Context.class),
+                userHandle);
+        manager.register(nonMatchingRenderer);
+        manager.register(matchingRenderer);
+
+        assertThat(manager.getRenderersWithProperties(
+                Renderer.PROPERTY_CAN_RECEIVE_NOTIFICATION_INSIGHTS))
+                .containsExactly(matchingRenderer);
     }
 
     @Test

@@ -27,6 +27,7 @@ import android.util.Log;
 import android.util.Slog;
 
 import com.android.server.personalcontext.component.Refiner;
+import com.android.server.personalcontext.component.Renderer;
 import com.android.server.personalcontext.util.FragileReference;
 
 import java.security.GeneralSecurityException;
@@ -340,6 +341,9 @@ public final class RefinerWorkflow {
     public interface ComponentProvider {
         /** Gets currently-configured refiners. */
         Collection<Refiner> getRefiners();
+
+        /** Gets renderers that contain the specified properties. */
+        Collection<Renderer> getRenderersWithProperties(int properties);
     }
 
     /**
