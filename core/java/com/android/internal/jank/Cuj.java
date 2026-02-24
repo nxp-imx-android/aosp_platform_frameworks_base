@@ -629,9 +629,14 @@ public class Cuj {
      */
     public static final int CUJ_TASKBAR_ICON_APPEAR = 164;
 
+    /**
+     * Tracks the app update animation.
+     */
+    public static final int CUJ_APP_UPDATE = 165;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
     @VisibleForTesting static final int LAST_CUJ =
-            CUJ_TASKBAR_ICON_APPEAR;
+            CUJ_APP_UPDATE;
 
     /** @hide */
     @IntDef({
@@ -787,7 +792,8 @@ public class Cuj {
             CUJ_CLIENT_DRAG_RESIZING,
             CUJ_DESKTOP_MODE_TASKBAR_INDICATOR_UPDATE,
             CUJ_DESKTOP_MODE_TASKBAR_MULTI_INSTANCE_MENU_OPEN,
-            CUJ_TASKBAR_ICON_APPEAR
+            CUJ_TASKBAR_ICON_APPEAR,
+            CUJ_APP_UPDATE
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -954,6 +960,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_TASKBAR_INDICATOR_UPDATE] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_TASKBAR_INDICATOR_UPDATE;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_TASKBAR_MULTI_INSTANCE_MENU_OPEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_TASKBAR_MULTI_INSTANCE_MENU_OPEN;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_TASKBAR_ICON_APPEAR] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__TASKBAR_ICON_APPEAR;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_APP_UPDATE] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__APP_UPDATE;
     }
 
     private Cuj() {
@@ -1278,6 +1285,8 @@ public class Cuj {
                 return "DESKTOP_MODE_TASKBAR_MULTI_INSTANCE_MENU_OPEN";
             case CUJ_TASKBAR_ICON_APPEAR:
                 return "TASKBAR_ICON_APPEAR";
+            case CUJ_APP_UPDATE:
+                return "APP_UPDATE";
         }
         return "UNKNOWN";
     }
