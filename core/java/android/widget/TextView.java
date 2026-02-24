@@ -573,11 +573,11 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
     private ColorStateList mTextColor;
     private ColorStateList mHintTextColor;
     private ColorStateList mLinkTextColor;
-    @ViewDebug.ExportedProperty(category = "text")
 
     /**
      * {@link #setTextColor(int)} or {@link #getCurrentTextColor()} should be used instead.
      */
+    @ViewDebug.ExportedProperty(category = "text")
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     private int mCurTextColor;
 

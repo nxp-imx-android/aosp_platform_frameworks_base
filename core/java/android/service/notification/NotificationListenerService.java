@@ -282,11 +282,11 @@ public abstract class NotificationListenerService extends Service {
      * will be restored via NotificationListeners#notifyPostedLocked()
      */
     public static final int REASON_LOCKDOWN = 23;
-    @FlaggedApi(Flags.FLAG_NM_CLASSIFICATION_NLS)
     /**
      * Notification was canceled because it was in a bundle
      * (e.g. @link android.app.NotificationChannel#PROMOTIONS_ID) that was dismissed.
      */
+    @FlaggedApi(Flags.FLAG_NM_CLASSIFICATION_NLS)
     public static final int REASON_BUNDLE_DISMISSED = 24;
     // If adding a new notification cancellation reason, you must also add handling for it in
     // NotificationCancelledEvent.fromCancelReason.

@@ -241,8 +241,8 @@ public final class TransitionInfo implements Parcelable {
         mTrack = in.readInt();
     }
 
-    @Override
     /** @hide */
+    @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeInt(mType);
         dest.writeInt(mFlags);
@@ -266,8 +266,8 @@ public final class TransitionInfo implements Parcelable {
                 }
             };
 
-    @Override
     /** @hide */
+    @Override
     public int describeContents() {
         return 0;
     }

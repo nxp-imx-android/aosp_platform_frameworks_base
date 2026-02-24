@@ -431,7 +431,7 @@ public class KeyStoreException extends Exception {
             return errorInfo;
         }
 
-        /**
+        /*
          * KeyStore/keymaster exception with positive error codes coming from the KeyStore and
          * negative ones from keymaster.
          * This is a safety fall-back: All error codes should be present in the map.

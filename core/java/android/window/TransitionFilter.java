@@ -128,8 +128,8 @@ public final class TransitionFilter implements Parcelable {
         return true;
     }
 
-    @Override
     /** @hide */
+    @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeIntArray(mTypeSet);
         dest.writeInt(mFlags);
@@ -151,8 +151,8 @@ public final class TransitionFilter implements Parcelable {
                 }
             };
 
-    @Override
     /** @hide */
+    @Override
     public int describeContents() {
         return 0;
     }
@@ -364,8 +364,8 @@ public final class TransitionFilter implements Parcelable {
                     && matchesCookie(request.getTriggerTask());
         }
 
-        @Override
         /** @hide */
+        @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeInt(mActivityType);
             dest.writeBoolean(mMustBeIndependent);
@@ -397,8 +397,8 @@ public final class TransitionFilter implements Parcelable {
                     }
                 };
 
-        @Override
         /** @hide */
+        @Override
         public int describeContents() {
             return 0;
         }

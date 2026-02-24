@@ -2879,7 +2879,7 @@ public class WallpaperManager {
     public void suggestDesiredDimensions(int minimumWidth, int minimumHeight) {
         StrictMode.assertUiContext(mContext, "suggestDesiredDimensions");
         try {
-            /**
+            /*
              * The framework makes no attempt to limit the window size
              * to the maximum texture size. Any window larger than this
              * cannot be composited.

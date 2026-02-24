@@ -3822,10 +3822,10 @@ public final class SmsManager {
                 Rlog.e(TAG, "getSmscIdentity(): IPhoneSubInfo instance is NULL");
                 throw new IllegalStateException("Telephony service is not available");
             }
-            /** Fetches the SIM EF_PSISMSC value based on subId and appType */
+            /* Fetches the SIM EF_PSISMSC value based on subId and appType */
             smscUri = info.getSmscIdentity(getSubscriptionId(), TelephonyManager.APPTYPE_ISIM);
             if (Uri.EMPTY.equals(smscUri)) {
-                /** Fallback in case where ISIM is not available */
+                /* Fallback in case where ISIM is not available */
                 smscUri = info.getSmscIdentity(getSubscriptionId(), TelephonyManager.APPTYPE_USIM);
             }
         } catch (RemoteException ex) {

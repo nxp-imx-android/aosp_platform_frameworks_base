@@ -1409,7 +1409,7 @@ public final class CameraExtensionSessionImpl extends CameraExtensionSession {
                                                long frameNumber) {
             boolean status = true;
             synchronized (mInterfaceLock) {
-                /**
+                /*
                  * Initialize and set the initial repeating request which will execute in the
                  * absence of client repeating requests.
                  */
