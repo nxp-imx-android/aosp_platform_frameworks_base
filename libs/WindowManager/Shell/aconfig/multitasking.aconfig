@@ -361,3 +361,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_bubble_bar_stashing_with_hardware_keyboard"
+    namespace: "multitasking"
+    description: "Fixes a bug where bubble bar stashes incorrectly when a hardware keyboard is connected"
+    bug: "461660471"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
