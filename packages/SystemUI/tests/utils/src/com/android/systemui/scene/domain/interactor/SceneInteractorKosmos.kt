@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.domain.interactor
 
+import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.deviceentry.domain.interactor.restrictedModeInteractor
@@ -28,6 +29,7 @@ import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.domain.resolver.sceneFamilyResolvers
 import com.android.systemui.scene.shared.logger.sceneLogger
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import platform.test.motion.compose.MotionControlScope
 
 val Kosmos.sceneInteractor: SceneInteractor by
     Kosmos.Fixture {
@@ -46,3 +48,15 @@ val Kosmos.sceneInteractor: SceneInteractor by
             dumpManager = dumpManager,
         )
     }
+
+/**
+ * Waits until the SceneContainer is idle.
+ *
+ * When [onScene] is non-null, waits until the SceneContainer is idle on that specific scene.
+ */
+suspend fun MotionControlScope.awaitTransitionIdle(kosmos: Kosmos, onScene: SceneKey? = null) {
+    awaitCondition {
+        val transitionState = kosmos.sceneInteractor.transitionState
+        transitionState.isIdle() && (onScene == null || onScene == transitionState.currentScene)
+    }
+}
