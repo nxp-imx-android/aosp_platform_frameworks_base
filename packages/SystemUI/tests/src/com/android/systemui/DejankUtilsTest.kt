@@ -16,14 +16,14 @@
 
 package com.android.systemui
 
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import androidx.test.runner.AndroidJUnit4
-import org.junit.Assert.assertFalse
-import org.junit.Test
-import org.junit.runner.RunWith
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import org.junit.Assert.assertFalse
+import org.junit.Test
+import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -54,10 +54,30 @@ class DejankUtilsTest : SysuiTestCase() {
         val latch = CountDownLatch(1)
         val r = Runnable { latch.countDown() }
 
-        mContext.mainExecutor.execute {
-             DejankUtils.postAfterTraversal(r)
-        }
+        mContext.mainExecutor.execute { DejankUtils.postAfterTraversal(r) }
 
         // nothing crashed!
+    }
+
+    @Test
+    fun testRemoveCallbacks_removesRunnable() {
+        val latch = CountDownLatch(1)
+        val r = Runnable { latch.countDown() }
+
+        mContext.mainExecutor.execute {
+            DejankUtils.postAfterTraversal(r)
+            DejankUtils.removeCallbacks(r)
+        }
+
+        val afterLatch = CountDownLatch(1)
+        mContext.mainExecutor.execute { DejankUtils.postAfterTraversal { afterLatch.countDown() } }
+
+        // Wait for the second runnable to run, which implies the first one would have run if it
+        // wasn't removed
+        afterLatch.await(5, TimeUnit.SECONDS)
+
+        // We expect the count to remain 1, meaning the runnable was NOT run.
+        // If it ran, count would be 0.
+        assertFalse("DejankUtils.removeCallbacks failed to remove runnable", latch.count == 0L)
     }
 }
