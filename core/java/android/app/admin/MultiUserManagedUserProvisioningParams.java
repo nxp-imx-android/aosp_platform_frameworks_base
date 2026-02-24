@@ -31,6 +31,9 @@ import android.stats.devicepolicy.DevicePolicyEnums;
  * Params required to provision a managed full user on a multi-user device. See
  * {@link DevicePolicyManager#provisionMultiUserManagedUser}.
  *
+ * <p>This will be removed soon. Please use
+ * {@link #MultiuserManagedUserProvisioningParams} instead.
+ *
  * @hide
  */
 @SystemApi
@@ -40,7 +43,7 @@ public final class MultiUserManagedUserProvisioningParams {
             "LEAVE_ALL_SYSTEM_APPS_ENABLED";
 
     @NonNull
-    private final MultiUserManagedUserProvisioningParamsTransport mTransport;
+    private final MultiuserManagedUserProvisioningParamsTransport mTransport;
 
     /**
      * Constructs a new {@link MultiUserManagedUserProvisioningParams} object.
@@ -49,7 +52,7 @@ public final class MultiUserManagedUserProvisioningParams {
      * @hide
      */
     public MultiUserManagedUserProvisioningParams(
-            @NonNull MultiUserManagedUserProvisioningParamsTransport transport) {
+            @NonNull MultiuserManagedUserProvisioningParamsTransport transport) {
         this.mTransport = transport;
     }
 
@@ -58,7 +61,7 @@ public final class MultiUserManagedUserProvisioningParams {
      *
      * @hide
      */
-    public @NonNull MultiUserManagedUserProvisioningParamsTransport getTransportParams() {
+    public @NonNull MultiuserManagedUserProvisioningParamsTransport getTransportParams() {
         return mTransport;
     }
 
@@ -91,11 +94,20 @@ public final class MultiUserManagedUserProvisioningParams {
                 mTransport.profileAdminComponentName).setStrings(param).setBoolean(value).write();
     }
 
-    /** Builder class for {@link MultiUserManagedUserProvisioningParams} objects. */
+    /**
+     * Builder class for {@link MultiUserManagedUserProvisioningParams} objects.
+     *
+     * <p>This will be removed soon. Please use
+     * {@link MultiuserManagedUserProvisioningParams.Builder} instead.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_MULTI_USER_MANAGEMENT_USER_PROVISIONING)
     public static final class Builder {
         @NonNull
-        private final MultiUserManagedUserProvisioningParamsTransport mTransport =
-                new MultiUserManagedUserProvisioningParamsTransport();
+        private final MultiuserManagedUserProvisioningParamsTransport mTransport =
+                new MultiuserManagedUserProvisioningParamsTransport();
 
         /**
          * Initialize a new {@link Builder} to construct a

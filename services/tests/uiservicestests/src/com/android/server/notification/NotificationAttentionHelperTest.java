@@ -99,6 +99,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.testing.TestableLooper;
 import android.util.Pair;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
@@ -148,8 +149,6 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
     @Mock android.media.IRingtonePlayer mRingtonePlayer;
     @Mock LogicalLight mLight;
     @Mock
-    NotificationManagerService.WorkerHandler mHandler;
-    @Mock
     NotificationUsageStats mUsageStats;
     @Mock
     IAccessibilityManager mAccessibilityService;
@@ -161,13 +160,10 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
     private PackageManager mPackageManager;
     @Mock
     private VibrationStatsWriter mVibrationStatsWriter;
-    NotificationRecordLoggerFake mNotificationRecordLogger = new NotificationRecordLoggerFake();
-    private InstanceIdSequence mNotificationInstanceIdSequence = new InstanceIdSequenceFake(
-        1 << 30);
     @Mock
     private ActivityTaskManager mActivityTaskManager;
 
-    private NotificationManagerService mService;
+    private TestableNotificationManagerService mService;
     private String mPkg = "com.android.server.notification";
     private int mId = 1001;
     private int mOtherId = 1002;
@@ -258,8 +254,8 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
                 Flags.FLAG_VIBRATE_WHILE_UNLOCKED,
                 Flags.FLAG_POLITE_NOTIFICATIONS_ATTN_UPDATE);
 
-        mService = spy(new NotificationManagerService(getContext(), mNotificationRecordLogger,
-            mNotificationInstanceIdSequence));
+        mService = spy(new TestableNotificationManagerService(getContext(), 
+                TestableLooper.get(this)));
 
         initAttentionHelper(mTestFlagResolver);
 

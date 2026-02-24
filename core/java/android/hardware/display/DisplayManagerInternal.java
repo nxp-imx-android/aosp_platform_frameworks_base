@@ -27,6 +27,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.util.IntArray;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
@@ -503,6 +504,11 @@ public abstract class DisplayManagerInternal {
      * Get the mapping of display group ids to the display ids that belong to them.
      */
     public abstract SparseArray<int[]> getDisplayIdsByGroupsIds();
+
+    /**
+     * Get the mapping of display ids to the group ids to which they belong.
+     */
+    public abstract SparseIntArray getGroupIdsByDisplayIds();
 
     /**
      * Get all available display ids.

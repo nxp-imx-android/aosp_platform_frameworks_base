@@ -94,7 +94,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10, globalScope)
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
 
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10, globalScope)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10)
 
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10))
             .isFalse()
@@ -105,7 +105,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
         val executor = createExecutorMock()
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10, globalScope)
 
-        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_11, globalScope)
+        registry.unregisterAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_11)
 
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
     }

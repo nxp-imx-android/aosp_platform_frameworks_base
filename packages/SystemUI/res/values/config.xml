@@ -1210,6 +1210,9 @@
     <!-- Indicates whether the tapping to open qs panel is supported -->
     <bool name="config_statusBarTapToExpandShade">false</bool>
 
+    <!-- Enable 2 finger swipe down systemUi shade (qs/notification). -->
+    <bool name="config_enableTwoFingerSwipeDownShade">true</bool>
+
     <!--
     The package name of the assistant that can show an icon in the status bar.
     When desktop status bar is enabled AND the primary assistant app package
@@ -1236,4 +1239,7 @@
     Indicates whether to include Scenes.QuickSettings and Scenes.Shade in the scene container flag.
     -->
     <bool name="config_includeQSAndShadeScenes">true</bool>
+
+    <!-- Whether to disable notification shelf on keyguard. -->
+    <bool name="config_disableNotificationShelfOnKeyguard">false</bool>
 </resources>

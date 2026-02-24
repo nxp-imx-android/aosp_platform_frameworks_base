@@ -759,19 +759,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"기기 잠금 해제"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"다른 잠금 해제 방법 사용"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"손가락에 물기가 있는 등 지문이 인식되지 않을 때는 얼굴 인식 잠금 해제를 사용하세요."</string>
-    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
-    <skip />
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"손가락에 물기가 있을 때와 같이 지문이 인식되지 않을 경우에는 얼굴로 잠금 해제하세요."</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"주변이 어두운 경우 등 얼굴이 인식되지 않을 때는 지문 잠금 해제를 사용해 보세요."</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"얼굴 인식 잠금 해제"</string>
-    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
-    <skip />
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"얼굴로 잠금 해제"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"얼굴 인식 잠금 해제 문제"</string>
-    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
-    <skip />
+    <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"얼굴로 잠금 해제하는 데 문제가 있습니다"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"탭하여 얼굴 모델을 삭제한 후 다시 얼굴을 추가하세요"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"얼굴 인식 잠금 해제를 사용하려면 설정 &gt; 개인 정보 보호에서 "<b>"카메라 액세스"</b>"를 사용 설정하세요."</string>
-    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
-    <skip />
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"얼굴로 잠금 해제하려면 설정 &gt; 개인 정보 보호에서 "<b>"카메라 액세스"</b>"를 사용 설정하세요"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"지문 잠금 해제"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"지문 센서를 사용할 수 없음"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"수리업체에 방문하세요."</string>
@@ -779,42 +775,31 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"너무 밝습니다. 조명 밝기를 조금 낮춰보세요."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"조명이 부족합니다"</string>
     <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"휴대전화를 얼굴에서 더 멀리 떨어뜨려 주세요."</string>
-    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
-    <skip />
+    <string name="face_acquired_too_close" product="desktop" msgid="7189579448504853047">"기기를 얼굴에서 더 멀리 두세요"</string>
     <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"휴대전화를 얼굴에 더 가까이 가져와 주세요."</string>
-    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
-    <skip />
+    <string name="face_acquired_too_far" product="desktop" msgid="6590730829823321223">"기기를 얼굴에 더 가까이 두세요"</string>
     <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"휴대전화를 위쪽으로 움직이세요"</string>
-    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
-    <skip />
+    <string name="face_acquired_too_high" product="desktop" msgid="717393614154504299">"기기를 위로 이동하세요"</string>
     <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"휴대전화를 아래쪽으로 움직이세요"</string>
-    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
-    <skip />
+    <string name="face_acquired_too_low" product="desktop" msgid="7695733281069538045">"기기를 아래로 이동하세요"</string>
     <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"휴대전화를 왼쪽으로 움직이세요"</string>
-    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
-    <skip />
+    <string name="face_acquired_too_right" product="desktop" msgid="4058756237538843740">"기기를 왼쪽으로 이동하세요"</string>
     <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"휴대전화를 오른쪽으로 움직이세요"</string>
-    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
-    <skip />
+    <string name="face_acquired_too_left" product="desktop" msgid="5804819007366973778">"기기를 오른쪽으로 이동하세요"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"카메라를 좀 더 똑바로 바라보세요."</string>
     <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"얼굴이 보이지 않습니다. 눈높이에 맞춰 휴대전화를 들어 주세요"</string>
-    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
-    <skip />
+    <string name="face_acquired_not_detected" product="desktop" msgid="1047701586390904260">"얼굴이 보이지 않습니다. 기기를 눈높이로 들어 주세요."</string>
     <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"너무 많이 움직였습니다. 휴대전화를 흔들리지 않게 잡으세요."</string>
-    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
-    <skip />
+    <string name="face_acquired_too_much_motion" product="desktop" msgid="7135563968992659161">"너무 많이 움직였습니다. 기기가 흔들리지 않게 잘 잡으세요."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"얼굴을 다시 등록해 주세요."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"얼굴을 인식할 수 없습니다. 다시 시도해 주세요."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"얼굴의 위치를 조금 변경해 주세요."</string>
     <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"휴대전화를 좀 더 정면에서 바라보세요."</string>
-    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
-    <skip />
+    <string name="face_acquired_pan_too_extreme" product="desktop" msgid="821456302944137576">"기기를 좀 더 똑바로 바라보세요"</string>
     <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"휴대전화를 좀 더 정면에서 바라보세요."</string>
-    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
-    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="desktop" msgid="1119243364774233108">"기기를 좀 더 똑바로 바라보세요"</string>
     <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"휴대전화를 좀 더 정면에서 바라보세요."</string>
-    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
-    <skip />
+    <string name="face_acquired_roll_too_extreme" product="desktop" msgid="3665467581072397682">"기기를 좀 더 똑바로 바라보세요"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"얼굴이 가려지지 않도록 해 주세요"</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"검은색 바를 포함한 화면 상단을 청소하세요."</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -828,30 +813,24 @@
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"얼굴을 확인할 수 없습니다. 하드웨어를 사용할 수 없습니다."</string>
     <string name="face_error_timeout" product="default" msgid="2598544068593889762">"얼굴 인식 잠금 해제를 다시 시도해 주세요."</string>
-    <!-- no translation found for face_error_timeout (8136501408214657840) -->
-    <skip />
+    <string name="face_error_timeout" product="desktop" msgid="8136501408214657840">"얼굴로 잠금 해제를 다시 시도해 보세요"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"새 얼굴 데이터를 저장할 수 없습니다. 먼저 기존 얼굴 데이터를 삭제하세요."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"얼굴 인식 작업이 취소되었습니다."</string>
     <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"사용자가 얼굴 인식 잠금 해제를 취소했습니다."</string>
-    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
-    <skip />
+    <string name="face_error_user_canceled" product="desktop" msgid="8903551031462609651">"사용자가 얼굴로 잠금 해제를 취소했습니다"</string>
     <string name="face_error_lockout" msgid="7864408714994529437">"시도 횟수가 너무 많습니다. 나중에 다시 시도하세요."</string>
     <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"시도 횟수가 너무 많습니다. 얼굴 인식 잠금 해제를 사용할 수 없습니다."</string>
-    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
-    <skip />
+    <string name="face_error_lockout_permanent" product="desktop" msgid="1885291877517229762">"시도 횟수가 너무 많습니다. 얼굴로 잠금 해제를 사용할 수 없습니다."</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"시도 횟수가 너무 많습니다. 화면 잠금을 대신 사용하세요."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"얼굴을 확인할 수 없습니다. 다시 시도하세요."</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"얼굴 인식 잠금 해제를 설정하지 않았습니다."</string>
-    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
-    <skip />
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"얼굴로 잠금 해제가 아직 설정되지 않았습니다"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"얼굴 인식 잠금 해제는 현재 사용 중인 기기에서 지원되지 않습니다."</string>
-    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
-    <skip />
+    <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"이 기기에서는 얼굴 인식 잠금 해제가 지원되지 않습니다"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"센서가 일시적으로 사용 중지되었습니다."</string>
     <string name="face_name_template" msgid="3877037340223318119">"얼굴 <xliff:g id="FACEID">%d</xliff:g>"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"얼굴 인식 잠금 해제 사용"</string>
-    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
-    <skip />
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"얼굴로 잠금 해제"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"얼굴 또는 화면 잠금 사용"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"계속하려면 얼굴로 인증하세요"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"계속하려면 얼굴 또는 화면 잠금을 사용하세요"</string>
@@ -1112,8 +1091,7 @@
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"잠금 해제하려면 아무 키나 누르세요."</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"모든 기능 및 데이터 잠금 해제"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"얼굴 인식 잠금 해제 최대 시도 횟수를 초과했습니다."</string>
-    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
-    <skip />
+    <string name="faceunlock_multiple_failures" product="desktop" msgid="5388142244463490793">"얼굴 인식 잠금 해제가 최대 시도 횟수에 도달했습니다"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"SIM 없음"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"태블릿에 SIM이 없습니다."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"Android TV 기기에 SIM이 없습니다."</string>
@@ -1185,8 +1163,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"슬라이드하여 잠금해제합니다."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"패턴을 사용하여 잠금해제합니다."</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"얼굴 인식 잠금 해제입니다."</string>
-    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
-    <skip />
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"얼굴로 잠금 해제합니다."</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"핀을 사용하여 잠금해제합니다."</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"SIM PIN 잠금 해제"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"SIM PUK 잠금 해제"</string>
@@ -1923,8 +1900,7 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"전환"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"설정"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g>로 전환하는 중…"</string>
-    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
-    <skip />
+    <string name="user_logging_out_message" msgid="2968888364742643174">"로그아웃 중…"</string>
     <string name="owner_name" msgid="8713560351570795743">"소유자"</string>
     <string name="guest_name" msgid="8502103277839834324">"게스트"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"시스템 사용자"</string>
@@ -2187,12 +2163,10 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"%1$s에 액세스하도록 허용한 AI 에이전트 및 서비스는 계속해서 데이터에 액세스할 수 있습니다."</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"앱 잠금 추가"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"얼굴 인식 잠금 해제"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"얼굴로 잠금 해제"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"지문 잠금 해제"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"지문 잠금 해제, 얼굴 인식 잠금 해제"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"지문 잠금 해제, 얼굴로 잠금 해제"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"비밀번호"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"패턴"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
@@ -2689,11 +2663,9 @@
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> 지문을 더 이상 인식할 수 없습니다. 지문 잠금 해제를 다시 설정하세요."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> 및 <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> 지문을 더 이상 인식할 수 없습니다. 지문 잠금 해제를 다시 설정하세요."</string>
     <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"얼굴 인식 잠금 해제 다시 설정"</string>
-    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
-    <skip />
+    <string name="face_dangling_notification_title" product="desktop" msgid="4632690536207343589">"얼굴로 잠금 해제 다시 설정"</string>
     <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"얼굴 모델을 더 이상 인식할 수 없습니다. 얼굴 인식 잠금 해제를 다시 설정하세요."</string>
-    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
-    <skip />
+    <string name="face_dangling_notification_msg" product="desktop" msgid="5982979430103820891">"얼굴 모델을 더 이상 인식할 수 없습니다. 얼굴로 잠금 해제를 다시 설정하세요."</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"설정"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"나중에"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"<xliff:g id="USER_NAME">%s</xliff:g>님의 알람"</string>
@@ -2733,6 +2705,5 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"부모님이 업데이트해 주셔야 합니다"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"현재 <xliff:g id="APP_NAME">%1$s</xliff:g> 앱은 삭제되었습니다"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> 이용 가능"</string>
-    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
-    <skip />
+    <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"다른 기기에 전송"</string>
 </resources>

@@ -1009,6 +1009,16 @@ flag {
 }
 
 flag {
+    name: "log_state_on_shade_gesture_failure"
+    namespace: "systemui"
+    description: "Logs state of relevant classes if the shade fails to open."
+    bug: "467878509"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "low_light_clock_dream"
   namespace: "systemui"
   description: "Enables low light clock dream experience on mobile phones"
@@ -1431,16 +1441,6 @@ flag {
     namespace: "systemui"
     description: "Enables the multi-user WiFi configuration UI in Interent detailed tiles. This flag depends on qs_tile_detailed_view flag"
     bug: "402214828"
-}
-
-flag {
-   name: "register_wallpaper_notifier_background"
-   namespace: "systemui"
-   description: "Decide whether to register wallpaper change broadcast receiver on background executor."
-   bug: "327315860"
-   metadata {
-     purpose: PURPOSE_BUGFIX
-   }
 }
 
 flag {

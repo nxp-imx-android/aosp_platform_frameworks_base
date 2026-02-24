@@ -45,8 +45,8 @@ cc_defaults {
     ],
 }
 
-cc_library_shared {
-    name: "libandroid",
+cc_defaults {
+    name: "libandroid_common",
     defaults: [
         "libandroid_defaults",
         "android.hardware.power-ndk_shared",
@@ -67,7 +67,6 @@ cc_library_shared {
         "native_activity.cpp",
         "native_service.cpp",
         "native_window_jni.cpp",
-        "net.c",
         "obb.cpp",
         "permission_manager.cpp",
         "performance_hint.cpp",
@@ -98,7 +97,6 @@ cc_library_shared {
         "libactivitymanager_aidl",
         "libandroid_runtime",
         "libminikin",
-        "libnetd_client",
         "libhwui",
         "libxml2",
         "libEGL",
@@ -108,7 +106,6 @@ cc_library_shared {
         "dynamic_instrumentation_manager_aidl-cpp",
         "libnativedisplay",
         "libfmq",
-        "libcom.android.tethering.connectivity_native",
     ],
 
     static_libs: [
@@ -131,11 +128,28 @@ cc_library_shared {
         "libandroid_com.android.npumanager",
     ],
 
-    include_dirs: ["bionic/libc/dns/include"],
-
     local_include_dirs: ["include_platform"],
 
     export_include_dirs: ["include_platform"],
+}
+
+cc_library_shared {
+    name: "libandroid_preapex",
+    defaults: ["libandroid_common"],
+}
+
+cc_library_shared {
+    name: "libandroid",
+    defaults: ["libandroid_common"],
+
+    srcs: ["net.c"],
+
+    shared_libs: [
+        "libnetd_client",
+        "libcom.android.tethering.connectivity_native",
+    ],
+
+    include_dirs: ["bionic/libc/dns/include"],
 
     version_script: "libandroid.map.txt",
     stubs: {

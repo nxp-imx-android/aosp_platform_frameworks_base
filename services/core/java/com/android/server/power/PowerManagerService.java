@@ -120,6 +120,7 @@ import android.util.PrintWriterPrinter;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
+import android.util.SparseIntArray;
 import android.util.TimeUtils;
 import android.util.proto.ProtoOutputStream;
 import android.view.Display;
@@ -702,8 +703,14 @@ public final class PowerManagerService extends SystemService
 
     private final SparseArray<UidState> mUidState = new SparseArray<>();
 
-    // A mapping from DisplayGroup Id to PowerGroup. There is a 1-1 mapping between DisplayGroups
-    // and PowerGroups. For simplicity the same ids are being used.
+    /** A mapping from Display Id to DisplayGroup Id. This is cached from DisplayManager. */
+    @GuardedBy("mLock")
+    private SparseIntArray mDisplayGroupIds = new SparseIntArray();
+
+    /**
+      * A mapping from DisplayGroup Id to PowerGroup. There is a 1-1 mapping between DisplayGroups
+      * and PowerGroups. For simplicity the same ids are being used.
+      */
     @GuardedBy("mLock")
     private final SparseArray<PowerGroup> mPowerGroups = new SparseArray<>();
 
@@ -755,7 +762,6 @@ public final class PowerManagerService extends SystemService
 
     private final class PowerGroupWakefulnessChangeListener implements
             PowerGroup.PowerGroupListener {
-        @SuppressWarnings("AndroidFrameworkSystemServerLock")
         @GuardedBy("mLock")
         @Override
         public void onWakefulnessChangedLocked(int groupId, int wakefulness, long eventTime,
@@ -821,7 +827,10 @@ public final class PowerManagerService extends SystemService
         @Override
         public void onDisplayGroupAdded(int groupId) {
             final boolean isDefaultGroupAdjacent = isDefaultGroupAdjacent(groupId);
+            final var groupIdsByDisplayIds = mDisplayManagerInternal.getGroupIdsByDisplayIds();
+
             synchronized (mLock) {
+                mDisplayGroupIds = groupIdsByDisplayIds;
                 if (mPowerGroups.contains(groupId)) {
                     Slog.e(TAG, "Tried to add already existing group:" + groupId);
                     return;
@@ -846,7 +855,10 @@ public final class PowerManagerService extends SystemService
 
         @Override
         public void onDisplayGroupRemoved(int groupId) {
+            final var groupIdsByDisplayIds = mDisplayManagerInternal.getGroupIdsByDisplayIds();
+
             synchronized (mLock) {
+                mDisplayGroupIds = groupIdsByDisplayIds;
                 if (groupId == Display.DEFAULT_DISPLAY_GROUP) {
                     Slog.wtf(TAG, "Tried to remove default display group: " + groupId);
                     return;
@@ -866,7 +878,10 @@ public final class PowerManagerService extends SystemService
 
         @Override
         public void onDisplayGroupChanged(int groupId) {
+            final var groupIdsByDisplayIds = mDisplayManagerInternal.getGroupIdsByDisplayIds();
+
             synchronized (mLock) {
+                mDisplayGroupIds = groupIdsByDisplayIds;
                 if (!mPowerGroups.contains(groupId)) {
                     Slog.e(TAG, "Tried to change non-existent group: " + groupId);
                     return;
@@ -1490,6 +1505,7 @@ public final class PowerManagerService extends SystemService
 
             // Create power groups for display groups other than DEFAULT_DISPLAY_GROUP.
             addPowerGroupsForNonDefaultDisplayGroupLocked();
+            mDisplayGroupIds = mDisplayManagerInternal.getGroupIdsByDisplayIds();
 
             try {
                 final ForegroundProfileObserver observer = new ForegroundProfileObserver();
@@ -1718,27 +1734,24 @@ public final class PowerManagerService extends SystemService
     private void acquireWakeLockInternal(IBinder lock, int displayId, int flags, String tag,
             String packageName, WorkSource ws, String historyTag, int uid, int pid,
             @Nullable IWakeLockCallback callback) {
-        synchronized (mLock) {
-            if (displayId != Display.INVALID_DISPLAY) {
-                final DisplayInfo displayInfo =
-                        mSystemReady ? mDisplayManagerInternal.getDisplayInfo(displayId) : null;
-                if (displayInfo == null) {
-                    if (mSystemReady) {
-                        Slog.wtf(TAG, "Tried to acquire wake lock for invalid display: "
-                                + displayId);
-                    } else {
-                        Slog.wtf(TAG, "Tried to acquire wake lock for display " + displayId
-                                + " before system ready: lock=" + Objects.hashCode(lock)
-                                + ", flags=0x" + Integer.toHexString(flags)
-                                + ", tag=\"" + tag + "\", ws=" + ws + ", uid=" + uid
-                                + ", pid=" + pid + ", packageName=" + packageName);
-                    }
-                    return;
-                } else if (!displayInfo.hasAccess(uid)) {
-                    throw new SecurityException("Caller does not have access to display");
-                }
+        if (displayId != Display.INVALID_DISPLAY) {
+            if (!mSystemReady) {
+                Slog.wtf(TAG, "Tried to acquire wake lock for display " + displayId
+                        + " before system ready: lock=" + Objects.hashCode(lock)
+                        + ", flags=0x" + Integer.toHexString(flags)
+                        + ", tag=\"" + tag + "\", ws=" + ws + ", uid=" + uid
+                        + ", pid=" + pid + ", packageName=" + packageName);
+                return;
             }
-
+            final DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
+            if (displayInfo == null) {
+                Slog.wtf(TAG, "Tried to acquire wake lock for invalid display: " + displayId);
+                return;
+            } else if (!displayInfo.hasAccess(uid)) {
+                throw new SecurityException("Caller does not have access to display");
+            }
+        }
+        synchronized (mLock) {
             if (DEBUG_SPEW) {
                 Slog.d(TAG, "acquireWakeLockInternal: lock=" + Objects.hashCode(lock)
                         + ", flags=0x" + Integer.toHexString(flags)
@@ -2237,10 +2250,6 @@ public final class PowerManagerService extends SystemService
      */
     private void userActivityInternal(int displayId, long eventTime,
             @PowerManager.UserActivityEvent int event, int flags, int uid) {
-        final DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
-        final int groupId =
-                (displayInfo != null ? displayInfo.displayGroupId : Display.INVALID_DISPLAY_GROUP);
-
         synchronized (mLock) {
             if (displayId == Display.INVALID_DISPLAY) {
                 if (userActivityNoUpdateLocked(eventTime, event, flags, uid)) {
@@ -2249,6 +2258,7 @@ public final class PowerManagerService extends SystemService
                 return;
             }
 
+            final int groupId = getDisplayGroupIdLocked(displayId);
             if (groupId != Display.INVALID_DISPLAY_GROUP) {
                 userActivityGroup(groupId, eventTime, event, flags, uid);
             }
@@ -3008,7 +3018,6 @@ public final class PowerManagerService extends SystemService
      *
      * This function must have no other side effects.
      */
-    @SuppressWarnings("AndroidFrameworkSystemServerLock")
     @GuardedBy("mLock")
     private void updateWakeLockSummaryLocked(int dirty) {
         if ((dirty & (DIRTY_WAKE_LOCKS | DIRTY_WAKEFULNESS | DIRTY_DISPLAY_GROUP_WAKEFULNESS))
@@ -4364,7 +4373,12 @@ public final class PowerManagerService extends SystemService
                     "uid " + uid + " does not have access to display " + displayId);
         }
         synchronized (mLock) {
-            PowerGroup powerGroup = mPowerGroups.get(displayInfo.displayGroupId);
+            final int groupId = getDisplayGroupIdLocked(displayId);
+            if (groupId == Display.INVALID_DISPLAY_GROUP) {
+                Slog.w(TAG, "Did not find DisplayGroup for displayId " + displayId);
+                return false;
+            }
+            PowerGroup powerGroup = mPowerGroups.get(groupId);
             if (powerGroup == null) {
                 Slog.w(TAG, "Did not find PowerGroup for displayId " + displayId);
                 return false;
@@ -6027,18 +6041,17 @@ public final class PowerManagerService extends SystemService
             mWorkSource = copyWorkSource(workSource);
         }
 
-        /** Returns the PowerGroup Id of this wakeLock or {@code null} if info not available.. */
+        /**
+         * Returns the PowerGroup Id of this wakeLock or {@code null} if the display group is
+         * invalid.
+         */
+        @GuardedBy("mLock")
         public Integer getPowerGroupId() {
             if (!mSystemReady || mDisplayId == Display.INVALID_DISPLAY) {
                 return Display.INVALID_DISPLAY_GROUP;
             }
-
-            final DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(mDisplayId);
-            if (displayInfo != null) {
-                return displayInfo.displayGroupId;
-            }
-
-            return null;
+            final int groupId = getDisplayGroupIdLocked(mDisplayId);
+            return (groupId == Display.INVALID_DISPLAY_GROUP) ? null : groupId;
         }
 
         @Override
@@ -6657,11 +6670,15 @@ public final class PowerManagerService extends SystemService
                 String opPackageName, int displayId) {
             validateWakeupIsEligible(eventTime);
 
-            int displayGroupId = getDisplayGroupId(displayId);
             final int uid = Binder.getCallingUid();
             final long ident = Binder.clearCallingIdentity();
             try {
                 synchronized (mLock) {
+                    int displayGroupId = getDisplayGroupIdLocked(displayId);
+                    if (displayGroupId == Display.INVALID_DISPLAY_GROUP) {
+                        Slog.w(TAG, "Did not find DisplayGroup for displayId " + displayId);
+                        return;
+                    }
                     wakeupDisplayGroupsLocked(IntArray.wrap(new int[]{displayGroupId}), eventTime,
                             reason, details, opPackageName, uid);
                 }
@@ -6693,14 +6710,13 @@ public final class PowerManagerService extends SystemService
             if (displayId == Display.INVALID_DISPLAY) {
                 groupIds = mDisplayManagerInternal.getDisplayGroupIds();
             } else {
-                DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
-                if (displayInfo == null) {
-                    Slog.w(TAG, "Can not sleep non-existent display ID " + displayId);
-                    return;
+                final int groupId;
+                synchronized (mLock) {
+                    groupId = getDisplayGroupIdLocked(displayId);
                 }
-                int groupId = displayInfo.displayGroupId;
                 if (groupId == Display.INVALID_DISPLAY_GROUP) {
-                    throw new IllegalArgumentException("invalid display group ID");
+                    Slog.w(TAG, "Invalid display group for display ID " + displayId);
+                    return;
                 }
                 groupIds = IntArray.wrap(new int[]{groupId});
             }
@@ -8073,10 +8089,12 @@ public final class PowerManagerService extends SystemService
             Slog.i(TAG, (forceDisable ? "Starting" : "Stopping")
                     + " to force disable wakelocks for displayids: " + displayIds);
             IntArray groupIds = new IntArray();
-            for (int i = 0; i < displayIds.size(); i++) {
-                final int groupId = getDisplayGroupId(displayIds.get(i));
-                if (groupId != Display.INVALID_DISPLAY_GROUP) {
-                    groupIds.add(groupId);
+            synchronized (mLock) {
+                for (int i = 0; i < displayIds.size(); i++) {
+                    final int groupId = getDisplayGroupIdLocked(displayIds.get(i));
+                    if (groupId != Display.INVALID_DISPLAY_GROUP) {
+                        groupIds.add(groupId);
+                    }
                 }
             }
             setForceDisableWakelocksByPowerGroup(forceDisable, groupIds);
@@ -8178,12 +8196,9 @@ public final class PowerManagerService extends SystemService
         }
     }
 
-    private int getDisplayGroupId(int displayId) {
-        DisplayInfo displayInfo = mDisplayManagerInternal.getDisplayInfo(displayId);
-        if (displayInfo == null) {
-            return Display.INVALID_DISPLAY_GROUP;
-        }
-        return displayInfo.displayGroupId;
+    @GuardedBy("mLock")
+    private int getDisplayGroupIdLocked(int displayId) {
+        return mDisplayGroupIds.get(displayId, Display.INVALID_DISPLAY_GROUP);
     }
 
     private void tryToLockNow() {

@@ -41,10 +41,20 @@ import static android.service.notification.Adjustment.KEY_TYPE;
 
 import static android.app.NotificationLoggingConstants.DATA_TYPE_NOTIFICATION_RULES;
 import static android.app.NotificationLoggingConstants.ERROR_XML_PARSING;
+import static android.service.notification.Adjustment.TYPE_NEWS;
+import static android.service.notification.Adjustment.TYPE_PROMOTION;
 
-import static com.android.server.notification.NotificationManagerService.DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES;
+import static com.android.server.notification.ManagedServices.ATT_USER_ID;
+import static com.android.server.notification.NotificationManagerService.NotificationAssistants.ATT_DENIED_KEY;
+import static com.android.server.notification.NotificationManagerService.NotificationAssistants.ATT_DENIED_KEY_APPS;
+import static com.android.server.notification.NotificationManagerService.NotificationAssistants.ATT_USER_LIST;
+import static com.android.server.notification.NotificationManagerService.NotificationAssistants.TAG_DENIED_KEY;
+import static com.android.server.notification.NotificationManagerService.NotificationAssistants.TAG_ENABLED_TYPES;
+import static com.android.server.notification.NotificationManagerService.NotificationAssistants.TAG_SET_BY_USERS;
+import static com.android.server.notification.NotificationManagerService.NotificationListeners.ATT_TYPES;
 import static com.android.server.notification.NotificationManagerService.TAG_NOTIFICATION_RULES;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.NotificationRule;
@@ -53,9 +63,13 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.service.notification.Adjustment;
+import android.text.TextUtils;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Slog;
 
+import com.android.internal.annotations.GuardedBy;
+import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
@@ -64,13 +78,14 @@ import com.android.server.pm.UserManagerInternal;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -92,6 +107,26 @@ public class NotificationRuleManager {
     // key: user id. value: notification rules in priority order
     private final Map<Integer, List<NotificationRule>> mNotificationRules = new ArrayMap<>();
 
+    // Bundles
+    static final Integer[] DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES = new Integer[] {
+            TYPE_PROMOTION,
+            TYPE_NEWS
+    };
+
+    // Map of user ID -> set of allowed classification types for that user.
+    @GuardedBy("mLock")
+    private final Map<Integer, Set<Integer>> mAllowedClassificationTypes = new ArrayMap<>();
+    // Set of user IDs for which the classification setting was ever explicitly changed (in
+    // other words, the current setting -- allowed or disallowed -- is not default). Used for
+    // handling default behavior for profiles until the user sets a preference.
+    @GuardedBy("mLock")
+    private Set<Integer> mClassificationPrefSetByUsers = new ArraySet<>();
+    // Map of user ID -> the disallowed packages for {@link Adjustment#KEY_TYPE}
+    @GuardedBy("mLock")
+    private final Map<Integer, Set<String>> mClassificationDeniedPackages =
+            new ArrayMap<>();
+
+
     public NotificationRuleManager(Context context, NotificationManagerPrivate nmPrivate) {
         mContext = context;
         mNmPrivate = nmPrivate;
@@ -106,6 +141,10 @@ public class NotificationRuleManager {
                 for (NotificationRule rule : mNotificationRules.get(user)) {
                     pw.println("    rule: " + rule);
                 }
+            }
+            pw.println("  Allowed bundle types: ");
+            for (int userId : mAllowedClassificationTypes.keySet()) {
+                pw.println("    user " + userId + ": " + mAllowedClassificationTypes.get(userId));
             }
         }
     }
@@ -163,7 +202,7 @@ public class NotificationRuleManager {
     }
 
     void writeXml(TypedXmlSerializer out, boolean forBackup, @UserIdInt int userId,
-            @Nullable BackupRestoreEventLogger logger, boolean useLegacyBundleStorage)
+            @Nullable BackupRestoreEventLogger logger)
             throws IOException {
         if (!forBackup && userId != USER_ALL) {
             throw new IllegalArgumentException("writing to disk with userId != USER_ALL");
@@ -187,7 +226,6 @@ public class NotificationRuleManager {
             }
             out.endTag(null, RULES_TAG);
             // TODO(b/478826998): add default highlighted behavior
-            // TODO(b/479254459): migrate bundles
             out.endTag(null, TAG_NOTIFICATION_RULES);
 
             if (logger != null) {
@@ -195,6 +233,229 @@ public class NotificationRuleManager {
             }
         }
     }
+
+    // Bundles block
+
+    @GuardedBy("mLock")
+    protected void addDefaultClassificationTypes(int userId) {
+        // Add the default classification types if the list is empty or not present.
+        // Will do so for the profile's parent if the user ID is a profile user.
+        final @UserIdInt int parentId = mUmInternal.getProfileParentId(userId);
+        // will be null if not present
+        Set<Integer> allowedTypes = mAllowedClassificationTypes.get(parentId);
+        if (allowedTypes == null || allowedTypes.isEmpty()) {
+            mAllowedClassificationTypes.put(parentId,
+                    new ArraySet<>(DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES));
+        }
+    }
+
+    // Convenience method to enforce defaults and shared settings:
+    // - if the passed-in user is a profile user, get the data for its parent instead, as
+    //   the allowed classification types are shared across all profiles of a full user.
+    // - if a user's allowed classification types do not exist yet, return the default set of
+    //   permitted classification types.
+    // - if addIfNotPresent is true, then this method will additionally ADD the default set
+    //   of adjustments for the relevant user and insert it into the allowed classification
+    //   types map. This is for ease of modification when enabling/disabling types.
+    @GuardedBy("mLock")
+    private Set<Integer> allowedClassificationTypesForUser(@UserIdInt int userId,
+            boolean addIfNotPresent) {
+        // if userId does not refer to a profile user, parentId will just be the same as userId
+        final @UserIdInt int parentId = mUmInternal.getProfileParentId(userId);
+        if (addIfNotPresent) {
+            mAllowedClassificationTypes.putIfAbsent(parentId,
+                    new ArraySet<>(DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES));
+        }
+        return mAllowedClassificationTypes.containsKey(parentId)
+                ? mAllowedClassificationTypes.get(parentId)
+                : new ArraySet<>(DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES);
+    }
+
+    protected boolean isClassificationTypeAllowed(@UserIdInt int userId, int type) {
+        synchronized (mLock) {
+            return allowedClassificationTypesForUser(userId, false).contains(type);
+        }
+    }
+
+    protected void writeLegacyBundleStorageTags(TypedXmlSerializer out) throws IOException {
+        for (int user : mAllowedClassificationTypes.keySet()) {
+            out.startTag(null, TAG_ENABLED_TYPES);
+            out.attributeInt(null, ATT_USER_ID, user);
+            out.attribute(null, ATT_TYPES,
+                    TextUtils.join(",", mAllowedClassificationTypes.get(user)));
+            out.endTag(null, TAG_ENABLED_TYPES);
+        }
+        out.startTag(null, TAG_SET_BY_USERS);
+        out.attribute(null, ATT_USER_LIST, TextUtils.join(",", mClassificationPrefSetByUsers));
+        out.endTag(null, TAG_SET_BY_USERS);
+
+        for (int user : mClassificationDeniedPackages.keySet()) {
+            Set<String> pkgs = mClassificationDeniedPackages.get(user);
+            if (pkgs != null && !pkgs.isEmpty()) {
+                out.startTag(null, TAG_DENIED_KEY);
+                out.attributeInt(null, ATT_USER_ID, user);
+                out.attribute(null, ATT_DENIED_KEY, KEY_TYPE);
+                out.attribute(null, ATT_DENIED_KEY_APPS, TextUtils.join(",", pkgs));
+                out.endTag(null, TAG_DENIED_KEY);
+            }
+        }
+    }
+
+    protected void readAllowedClassificationTypes(TypedXmlPullParser parser) {
+        final int user = XmlUtils.readIntAttribute(parser, ATT_USER_ID,
+                mContext.getUserId());
+        final String types = XmlUtils.readStringAttribute(parser, ATT_TYPES);
+        synchronized (mLock) {
+            Set<Integer> userAllowedTypes = mAllowedClassificationTypes.getOrDefault(user,
+                    new ArraySet<>());
+            userAllowedTypes.clear();
+            if (!TextUtils.isEmpty(types)) {
+                List<String> typeList = Arrays.asList(types.split(","));
+                for (String type : typeList) {
+                    try {
+                        userAllowedTypes.add(Integer.parseInt(type));
+                    } catch (NumberFormatException e) {
+                        Slog.wtf(TAG, "Bad integer specified", e);
+                    }
+                }
+                mAllowedClassificationTypes.put(user, userAllowedTypes);
+            }
+        }
+    }
+
+    protected void readSetByUsersTag(TypedXmlPullParser parser) {
+        final String users = XmlUtils.readStringAttribute(parser, ATT_USER_LIST);
+        if (!TextUtils.isEmpty(users)) {
+            for (String userIdString : Arrays.asList(users.split(","))) {
+                try {
+                    setClassificationPrefSetByUser(Integer.parseInt(userIdString), true);
+                } catch (NumberFormatException e) {
+                    Slog.wtf(TAG, "Bad type specified", e);
+                }
+            }
+        }
+    }
+
+    protected void readClassificationDeniedPkgsTag(TypedXmlPullParser parser) {
+        final int user = XmlUtils.readIntAttribute(parser, ATT_USER_ID,
+                mContext.getUserId());
+        final String key = XmlUtils.readStringAttribute(parser, ATT_DENIED_KEY);
+
+        final String pkgs = XmlUtils.readStringAttribute(parser, ATT_DENIED_KEY_APPS);
+        if (!TextUtils.isEmpty(key) && !TextUtils.isEmpty(pkgs)) {
+            Set<String> userDeniedPackages =
+                    mClassificationDeniedPackages.getOrDefault(user, new ArraySet<>());
+            List<String> pkgList = Arrays.asList(pkgs.split(","));
+            userDeniedPackages.addAll(pkgList);
+            mClassificationDeniedPackages.put(user, userDeniedPackages);
+        }
+    }
+
+    protected @NonNull int[] getAllowedClassificationTypes(@UserIdInt int userId) {
+        synchronized (mLock) {
+            return allowedClassificationTypesForUser(userId, false).stream()
+                    .mapToInt(Integer::intValue).toArray();
+        }
+    }
+
+    protected @NonNull List<Integer> getAllowedClassificationTypeList(@UserIdInt int userId) {
+        synchronized (mLock) {
+            return allowedClassificationTypesForUser(userId, false).stream().toList();
+        }
+    }
+
+    public void setAssistantClassificationTypeState(@UserIdInt int userId,
+            int type, boolean enabled) {
+        synchronized (mLock) {
+            if (enabled) {
+                allowedClassificationTypesForUser(userId, true).add(type);
+            } else {
+                allowedClassificationTypesForUser(userId, true).remove(type);
+            }
+        }
+    }
+
+    private void setClassificationPrefSetByUser(@UserIdInt int user, boolean setByUser) {
+        synchronized (mLock) {
+            if (setByUser) {
+                mClassificationPrefSetByUsers.add(user);
+            } else {
+                mClassificationPrefSetByUsers.remove(user);
+            }
+        }
+    }
+
+    public boolean isClassificationPrefSetByUser(@UserIdInt int user) {
+        synchronized (mLock) {
+            return mClassificationPrefSetByUsers.contains(user);
+        }
+    }
+
+    protected @NonNull String[] getClassificationDeniedPackages(@UserIdInt int userId) {
+        synchronized (mLock) {
+            if (mClassificationDeniedPackages.containsKey(userId)) {
+                return mClassificationDeniedPackages.getOrDefault(userId,
+                        new ArraySet<>()).toArray(new String[0]);
+            }
+        }
+        return new String[]{};
+    }
+
+    protected boolean isClassificationAllowedForPackage(@UserIdInt int userId, String pkg) {
+        synchronized (mLock) {
+            if (mClassificationDeniedPackages.containsKey(userId)) {
+                return !mClassificationDeniedPackages.getOrDefault(userId,
+                        new ArraySet<>()).contains(pkg);
+            }
+        }
+        return true;
+    }
+
+    public void setClassificationSupportedForPackage(int userId, String pkg, boolean enabled) {
+        synchronized (mLock) {
+            mClassificationDeniedPackages.putIfAbsent(userId, new ArraySet<>());
+            if (enabled) {
+                mClassificationDeniedPackages.get(userId).remove(pkg);
+            } else {
+                mClassificationDeniedPackages.get(userId).add(pkg);
+            }
+        }
+    }
+
+    protected void disallowClassificationAdjustment(@UserIdInt int userId) {
+        synchronized (mLock) {
+            setClassificationPrefSetByUser(userId, true);
+        }
+    }
+
+    protected void allowClassificationAdjustment(@UserIdInt int userId) {
+        synchronized (mLock) {
+            setClassificationPrefSetByUser(userId, true);
+            addDefaultClassificationTypes(userId);
+        }
+    }
+
+    // For logging preferences:
+    // Add KEY_TYPE data to the map of user id -> package name -> list of denied keys
+    // This is essentially a reconfiguration of the contents of mAdjustmentKeyDeniedPackages.
+    @NonNull void getClassificationDeniedPkgsForUsersAndPackages(Map<Integer, Map<String,
+            List<String>>> out) {
+        synchronized (mLock) {
+            for (int userId : mClassificationDeniedPackages.keySet()) {
+                Set<String> pkgsByType = mClassificationDeniedPackages.get(userId);
+                if (!pkgsByType.isEmpty()) {
+                    out.putIfAbsent(userId, new ArrayMap<>());
+                    Map<String, List<String>> pkgMapForUser = out.get(userId);
+                    for (String pkgName : pkgsByType) {
+                        pkgMapForUser.putIfAbsent(pkgName, new ArrayList<>());
+                        pkgMapForUser.get(pkgName).add(KEY_TYPE);
+                    }
+                }
+            }
+        }
+    }
+
+    // Rule management
 
     /**
      * Returns the notifications rules for a given user.

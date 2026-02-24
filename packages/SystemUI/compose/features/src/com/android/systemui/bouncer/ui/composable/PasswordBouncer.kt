@@ -141,14 +141,17 @@ internal fun ContentScope.PasswordBouncer(
                                     false
                                 }
                             },
-                    trailingIcon = {
-                        trailingIcons(
-                            viewModel,
-                            color,
-                            isImeSwitcherButtonVisible,
-                            isPasswordRevealed,
-                        )
-                    },
+                    trailingIcon =
+                        if (hasAnyTrailingIcons(viewModel, isImeSwitcherButtonVisible)) {
+                            {
+                                trailingIcons(
+                                    viewModel,
+                                    color,
+                                    isImeSwitcherButtonVisible,
+                                    isPasswordRevealed,
+                                )
+                            }
+                        } else null,
                     shape = RoundedCornerShape(28.dp),
                     colors =
                         OutlinedTextFieldDefaults.colors(

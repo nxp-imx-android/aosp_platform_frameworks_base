@@ -40,7 +40,7 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesShadeStateViewModelFactory
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesParentViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.ui.composable.QuickSettingsScene
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
@@ -71,7 +71,6 @@ import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.asDataPoint
-import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.motion.golden.DataPoint
@@ -109,8 +108,8 @@ class QuickSettingsElementTransitionTest : SysuiTestCase() {
                 kosmos.notificationsPlaceholderViewModelFactory,
             actionsViewModelFactory = kosmos.quickSettingsUserActionsViewModelFactory,
             contentViewModelFactory = kosmos.quickSettingsSceneContentViewModelFactory,
-            notificationRulesShadeStateViewModelFactory =
-                kosmos.notificationRulesShadeStateViewModelFactory,
+            notificationRulesParentViewModelFactory =
+                kosmos.notificationRulesParentViewModelFactory,
             jankMonitor = kosmos.interactionJankMonitor,
         )
 

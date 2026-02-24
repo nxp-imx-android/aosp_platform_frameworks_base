@@ -172,7 +172,7 @@ class LockscreenContent(
 
     @VisibleForTesting
     object LockscreenContentMotionTestKeys {
-        val Alpha = MotionTestValueKey<Float>("contentAlpha")
+        val Alpha = MotionTestValueKey<Float>("lockscreenContentAlpha")
     }
 }
 

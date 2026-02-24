@@ -18,6 +18,8 @@ package com.android.settingslib.metadata.preferencesapi
 
 import android.Manifest
 import android.content.Context
+import android.os.UserHandle
+import android.os.UserManager
 import android.provider.Settings
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -34,6 +36,7 @@ import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessage
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleParametersDefined
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.preferencesapi.category.Category
+import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget.PROFILE_GROUP
 import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.Custom
 import com.android.settingslib.metadata.preferencesapi.preconditions.EnterpriseRestriction
@@ -220,6 +223,53 @@ class PreferencesApiScreenTest {
     }
 
     @Test
+    fun createPreferencesApiScreenWithGetter_preferencePreconditionCheckWithCurrentUserId_isDisallowed() {
+        val preferenceKey = "ApiPreference"
+
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
+                ) {
+                init {
+                    preference(
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyInt,
+                        appliesTo = PROFILE_GROUP
+                    ) {
+                        preconditions("Preference is available only if the user has profiles.") {
+                            val userManager = context.getSystemService(UserManager::class.java)
+                            val numProfiles = userManager?.getProfiles(userId)?.size ?: 0
+
+                            if (numProfiles > 1) {
+                                Allowed
+                            } else {
+                                EnterpriseRestriction("No profiles on user $userId")
+                            }
+                        }
+                        get { execute { userHandle.hashCode() } }
+                    }
+                }
+            }
+
+        // Check we only have 1 preference in the list
+        assertThat(preferenceScreen.preferences.size).isEqualTo(1)
+
+        val apiOperationContext =
+            ApiOperationContext(context = context, parameters = ValidatedKeyParameters.EMPTY)
+
+        val preference = preferenceScreen.preferences[0] as ApiPreference<Int>
+        assertThat(preference.key).isEqualTo("ApiPreference")
+        runBlocking {
+            assertThat(preference.preconditions?.check?.invoke(apiOperationContext) is EnterpriseRestriction).isTrue()
+        }
+    }
+
+    @Test
     fun createPreferencesApiScreenWithGetters_succeeds() {
         val preferenceValue1 = false
         val preferenceKey1 = "ApiPreference1"
@@ -385,7 +435,7 @@ class PreferencesApiScreenTest {
             .isEqualTo(context.getString(R.string.preconditions_description1))
 
         // Create the API operation context to be used in ApiPreference calls
-        val apiOperationContext = ApiOperationContext(context, ValidatedKeyParameters.EMPTY)
+        val apiOperationContext = ApiOperationContext(context = context, parameters = ValidatedKeyParameters.EMPTY)
 
         // Evaluate each preconditions case
         for (case in ApiPreconditionsMapper.entries) {
@@ -517,7 +567,7 @@ class PreferencesApiScreenTest {
             .isEqualTo(preconditionDescription)
 
         // Create the API operation context to be used in ApiPreference calls
-        val apiOperationContext = ApiOperationContext(context, ValidatedKeyParameters.EMPTY)
+        val apiOperationContext = ApiOperationContext(context = context, parameters = ValidatedKeyParameters.EMPTY)
 
         // Evaluate each preconditions case
         for (case in ApiPreconditionsMapper.entries) {

@@ -17,6 +17,7 @@
 package com.android.systemui.dreams.ui.compose
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,11 +26,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -42,6 +43,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.paneTitle
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.systemui.dreams.ui.viewmodel.DreamSetupEvent
@@ -62,11 +66,22 @@ private object DreamSetupDimensions {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DreamSetupScreen(onExit: (DreamSetupEvent) -> Unit) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
-
     // Guard to prevent double-firing events during animation
     val isExiting = remember { mutableStateOf(false) }
+
+    val sheetState =
+        rememberModalBottomSheetState(
+            skipPartiallyExpanded = true,
+            confirmValueChange = { sheetValue ->
+                if (sheetValue == SheetValue.Hidden) {
+                    // Only allow hiding if we are explicitly exiting.
+                    isExiting.value
+                } else {
+                    true
+                }
+            },
+        )
+    val scope = rememberCoroutineScope()
 
     // Show the sheet on initial composition.
     LaunchedEffect(Unit) { sheetState.show() }
@@ -95,16 +110,23 @@ fun DreamSetupScreen(onExit: (DreamSetupEvent) -> Unit) {
     }
 
     ModalBottomSheet(
-        onDismissRequest = { animateAndExit(DreamSetupEvent.Dismiss) },
+        onDismissRequest = {
+            // Dismissal is handled via BackHandler and explicit buttons.
+            // Scrim taps are ignored because confirmValueChange vetoes the Hidden state
+            // unless isExiting is true.
+        },
         sheetState = sheetState,
         scrimColor = Color.Transparent,
+        dragHandle = null,
     ) {
+        BackHandler { animateAndExit(DreamSetupEvent.Dismiss) }
         DreamSetupContent(onEvent = animateAndExit)
     }
 }
 
 @Composable
 private fun DreamSetupContent(onEvent: (DreamSetupEvent) -> Unit) {
+    val title = stringResource(R.string.dream_setup_title)
     Column(
         modifier =
             Modifier.fillMaxWidth()
@@ -114,13 +136,15 @@ private fun DreamSetupContent(onEvent: (DreamSetupEvent) -> Unit) {
                     top = DreamSetupDimensions.TopPadding,
                     bottom = DreamSetupDimensions.BottomPadding,
                 )
-                .navigationBarsPadding(),
+                .navigationBarsPadding()
+                .semantics { paneTitle = title },
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = stringResource(R.string.dream_setup_title),
+            text = title,
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
+            modifier = Modifier.semantics { heading() },
         )
 
         Spacer(modifier = Modifier.height(DreamSetupDimensions.TitleToDescriptionSpacing))

@@ -15,9 +15,6 @@
  */
 
 package com.android.server.rollback;
-
-import static android.crashrecovery.flags.Flags.extendRollbackLifetime;
-
 import android.Manifest;
 import android.annotation.AnyThread;
 import android.annotation.NonNull;
@@ -134,9 +131,9 @@ class RollbackManagerServiceImpl extends IRollbackManager.Stub implements Rollba
     private static final String TAG = "RollbackManager";
     private static final boolean LOCAL_LOGV = Log.isLoggable(TAG, Log.VERBOSE);
 
-    // Rollbacks expire after 14 days.
+    // Rollbacks expire after 60 days.
     private static final long DEFAULT_ROLLBACK_LIFETIME_DURATION_MILLIS =
-            extendRollbackLifetime() ? TimeUnit.DAYS.toMillis(60) : TimeUnit.DAYS.toMillis(14);
+            TimeUnit.DAYS.toMillis(60);
 
     // Accessed on the handler thread only.
     private long mRollbackLifetimeDurationInMillis = DEFAULT_ROLLBACK_LIFETIME_DURATION_MILLIS;

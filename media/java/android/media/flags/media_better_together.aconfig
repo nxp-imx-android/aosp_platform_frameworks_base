@@ -99,8 +99,8 @@ flag {
 }
 
 flag {
-    name: "enable_mr2_service_cache_bluetooth_device_info"
-    namespace: "media_solutions"
+    name: "enable_fix_mr2_deadlock_on_bt_get_alias"
+    namespace: "media_better_together"
     description: "Prevents calls to the bluetooth framework while holding a lock to prevent deadlocks."
     bug: "476306639"
     metadata {

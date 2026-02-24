@@ -189,8 +189,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Sesi kapat"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Sesi aç"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Ayarlamak için selfie üzerinde sıkıştırma/açma, sürükleme ve dokunma işlemi yapın"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Ekran görüntüsü alma işlevi BT yöneticiniz tarafından engellendi"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Tüm ekranın ekran görüntüsünü al"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Tüm ekranı kaydet"</string>
@@ -1250,16 +1249,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Erişilebilirlik tuşu"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Erişilebilirlik özelliklerini kullanmaya başlamak için erişilebilirlik tuşuna basabilirsiniz."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Özellikleri ekle"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Erişilebilirlik tuşu ayarlayın"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"<xliff:g id="ID_1">%1$s</xliff:g> ayarlarını yapın"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Bitti"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Özellik seçin"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Düzenle"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Özellik seçin"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Bu özellik, erişilebilirlik düğmesini bir sonraki seçişinizde açılır"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Erişilebilirlik"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Kilit ekranı"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Kapanıyor…"</string>

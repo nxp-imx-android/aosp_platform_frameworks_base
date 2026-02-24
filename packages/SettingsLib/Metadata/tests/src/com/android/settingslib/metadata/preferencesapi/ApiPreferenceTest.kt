@@ -23,6 +23,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.ValidatedKeyParameters
+import com.android.settingslib.metadata.preferencesapi.multiusers.ManagementScope.OWN_USER
+import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget.USER
 import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed
 import com.android.settingslib.metadata.preferencesapi.types.AnyBoolean
@@ -52,6 +54,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             null,
             getScreenParameters
@@ -76,6 +79,7 @@ class ApiPreferenceTest {
                 R.string.preference_purpose1,
                 AnyBoolean,
                 Boolean::class.java,
+                USER(canManage = OWN_USER),
                 null,
                 null,
                 getScreenParameters
@@ -103,6 +107,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             PreconditionsConfig(
                 R.string.preconditions_description1
@@ -132,6 +137,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             null,
             getScreenParameters
@@ -159,6 +165,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             null,
             getScreenParameters
@@ -186,6 +193,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             null,
             getScreenParameters
@@ -213,6 +221,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             null,
             getScreenParameters
@@ -239,6 +248,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             null,
             getScreenParameters
@@ -265,6 +275,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             null,
             getScreenParameters
@@ -297,6 +308,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             null,
             getScreenParameters
@@ -326,6 +338,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             null,
             getScreenParameters
@@ -380,6 +393,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             null,
             { null }
@@ -400,6 +414,7 @@ class ApiPreferenceTest {
             R.string.preference_purpose1,
             AnyBoolean,
             Boolean::class.java,
+            USER(canManage = OWN_USER),
             null,
             null,
             { null }

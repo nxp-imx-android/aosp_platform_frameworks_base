@@ -399,7 +399,7 @@ class HighBrightnessModeController {
             // If the controller is disabled (overridden), we just check
             // for brightness being over the transition point.
             // Assumed that HBM is being handled externally.
-            return mBrightness > mHbmData.transitionPoint;
+            return mHbmData != null && mBrightness > mHbmData.transitionPoint;
         }
         return !mIsHdrLayerPresent
                 && (mIsAutoBrightnessEnabled && mIsTimeAvailable && mIsInAllowedAmbientRange

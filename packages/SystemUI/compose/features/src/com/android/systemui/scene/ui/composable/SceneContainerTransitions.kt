@@ -24,6 +24,7 @@ import com.android.systemui.scene.ui.composable.transitions.bouncerToGoneTransit
 import com.android.systemui.scene.ui.composable.transitions.bouncerToLockscreenTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToGoneTransition
+import com.android.systemui.scene.ui.composable.transitions.communalToQuickSettingsTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToSingleShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToSplitShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToBouncerTransition
@@ -384,6 +385,22 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cujTag = TAG_EXPAND,
             ) {
                 communalToSplitShadeTransition()
+            }
+            from(
+                Scenes.Communal,
+                to = Scenes.QuickSettings,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
+                cujTag = TAG_EXPAND,
+            ) {
+                communalToQuickSettingsTransition()
+            }
+            from(
+                Scenes.QuickSettings,
+                to = Scenes.Communal,
+                cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE,
+                cujTag = TAG_COLLAPSE,
+            ) {
+                reversed { communalToQuickSettingsTransition() }
             }
 
             // Overlay transitions

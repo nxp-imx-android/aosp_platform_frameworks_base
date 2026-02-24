@@ -297,6 +297,7 @@ interface ConnectivityModule {
                         labelRes = R.string.quick_settings_wifi_label,
                     ),
                 instanceId = uiEventLogger.getNewInstanceId(),
+                policy = QSTilePolicy.Restricted(listOf(UserManager.DISALLOW_CHANGE_WIFI_STATE)),
                 category = TileCategory.CONNECTIVITY,
             )
 

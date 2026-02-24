@@ -158,14 +158,18 @@ class DesktopTasksLimiter(
             info: TransitionInfo,
         ) {
             val launchDetails = pendingTaskLimitTransitionTokens.remove(transition) ?: return
-            logV("handleTaskLimitTransitionReady, transition=$transition, info=$info")
+            logV("handleTaskLimitTransitionReady, transition=%s, info=%s", transition, info)
             markClosingTasks(taskRepository, info, launchDetails)
             transitions.runOnIdle {
                 val expandedTaskIds =
                     taskRepository.getExpandedTasksIdsInDeskOrdered(launchDetails.deskId).filter {
                         !taskRepository.isClosingTask(it)
                     }
-                logV("runOnIdle, expandedTasks=$expandedTaskIds, after transition=$transition")
+                logV(
+                    "runOnIdle, expandedTasks=%s, after transition=%s",
+                    expandedTaskIds,
+                    transition,
+                )
                 triggerMinimizeTransition(launchDetails.deskId, expandedTaskIds)
             }
         }

@@ -914,10 +914,11 @@ public class LauncherAppsService extends SystemService {
                 return null;
             }
             final int callingUid = injectBinderCallingUid();
+            final int callingPid = injectBinderCallingPid();
             long ident = injectClearCallingIdentity();
             try {
                 return new ParceledListSlice<>(queryIntentLauncherActivities(intent, callingUid,
-                        user));
+                        callingPid, user));
             } finally {
                 injectRestoreCallingIdentity(ident);
             }
@@ -1028,7 +1029,13 @@ public class LauncherAppsService extends SystemService {
         @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
         List<LauncherActivityInfoInternal> queryIntentLauncherActivities(
                 Intent intent, int callingUid, UserHandle user) {
-            final int callingPid = injectBinderCallingPid();
+            return queryIntentLauncherActivities(intent, callingUid, injectBinderCallingPid(),
+                    user);
+        }
+
+        @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+        List<LauncherActivityInfoInternal> queryIntentLauncherActivities(
+                Intent intent, int callingUid, int callingPid, UserHandle user) {
             final List<ResolveInfo> apps = mPackageManagerInternal.queryIntentActivities(intent,
                     intent.resolveTypeIfNeeded(mContext.getContentResolver()),
                     PackageManager.MATCH_DIRECT_BOOT_AWARE

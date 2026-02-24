@@ -3584,7 +3584,6 @@ public class ActivityManager {
         private final @NonNull String mPackageName;
 
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
-        /** @hide */
         public ConnectionInfo(long flags,
                 @NonNull String processName,
                 @NonNull String packageName) {
@@ -3594,7 +3593,6 @@ public class ActivityManager {
         }
 
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
-        /** @hide */
         private ConnectionInfo(@NonNull Parcel source) {
             mFlags = source.readLong();
             mProcessName = source.readString8();
@@ -3602,7 +3600,6 @@ public class ActivityManager {
         }
 
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
-        /** @hide */
         public static final @NonNull Creator<ConnectionInfo> CREATOR =
                 new Creator<ConnectionInfo>() {
                     public ConnectionInfo createFromParcel(Parcel source) {
@@ -3615,7 +3612,6 @@ public class ActivityManager {
 
         /**
          * Write parcel.
-         * @hide
          */
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         public void writeToParcel(@NonNull Parcel dest, int flags) {
@@ -3626,7 +3622,6 @@ public class ActivityManager {
 
         /**
          * Describe contents.
-         * @hide
          */
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         public int describeContents() {

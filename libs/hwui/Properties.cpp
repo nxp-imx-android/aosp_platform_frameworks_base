@@ -17,6 +17,7 @@
 #include "Properties.h"
 
 #include <android-base/properties.h>
+#include <com_android_graphics_hwui_flags.h>
 #include <cutils/compiler.h>
 #include <log/log.h>
 
@@ -28,30 +29,7 @@
 #include "HWUIProperties.sysprop.h"
 #include "src/core/SkTraceEventCommon.h"
 
-#ifdef __linux__
-#include <com_android_graphics_hwui_flags.h>
 namespace hwui_flags = com::android::graphics::hwui::flags;
-#else // __linux__
-namespace hwui_flags {
-constexpr bool clip_surfaceviews() {
-    return false;
-}
-constexpr bool hdr_10bit_plus() {
-    return false;
-}
-constexpr bool initialize_gl_always() {
-    return false;
-}
-
-constexpr bool skip_eglmanager_telemetry() {
-    return false;
-}
-
-constexpr bool resample_gainmap_regions() {
-    return false;
-}
-}  // namespace hwui_flags
-#endif // __linux__
 
 namespace android {
 namespace uirenderer {

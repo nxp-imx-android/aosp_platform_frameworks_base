@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.ui.motion
 
+import android.content.res.mainResources
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.MotionTest
 import android.testing.TestableLooper.RunWithLooper
@@ -39,9 +40,7 @@ import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
-import com.android.systemui.notifications.intelligence.rules.ui.composable.notificationRulesScreen
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesScreenViewModelFactory
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesShadeStateViewModelFactory
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesParentViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.sceneContainerTransitions
@@ -110,7 +109,10 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
             viewModelFactory =
                 object : GoneUserActionsViewModel.Factory {
                     override fun create(): GoneUserActionsViewModel {
-                        return GoneUserActionsViewModel(kosmos.shadeModeInteractor)
+                        return GoneUserActionsViewModel(
+                            kosmos.shadeModeInteractor,
+                            kosmos.mainResources,
+                        )
                     }
                 },
         )
@@ -129,11 +131,8 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
             contentViewModelFactory = kosmos.shadeSceneContentViewModelFactory,
             notificationsPlaceholderViewModelFactory =
                 kosmos.notificationsPlaceholderViewModelFactory,
-            notificationRulesShadeStateViewModelFactory =
-                kosmos.notificationRulesShadeStateViewModelFactory,
-            notificationRulesScreenViewModelFactory =
-                kosmos.notificationRulesScreenViewModelFactory,
-            notificationRulesScreen = kosmos.notificationRulesScreen,
+            notificationRulesParentViewModelFactory =
+                kosmos.notificationRulesParentViewModelFactory,
             jankMonitor = kosmos.interactionJankMonitor,
         )
 

@@ -972,7 +972,7 @@
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Hiljennä ja niputa"</string>
     <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"Käytä ilmoitusten järjestäjää"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
-    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Esimerkiksi myynti ja uudet ominaisuudet"</string>
+    <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Esimerkiksi tarjoukset ja uudet ominaisuudet"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Esimerkiksi pääuutiset ja toimitukselliset sisällöt"</string>
     <string name="notification_guts_social_summary" msgid="3749147631983977040">"Esimerkiksi tykkäykset ja postaukset"</string>
     <string name="notification_guts_recs_summary" msgid="8391881843238947007">"Esimerkiksi uutiskirjeet ja suositeltu media"</string>

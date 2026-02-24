@@ -289,6 +289,13 @@ final class LogicalDisplay {
     }
 
     /**
+     * Gets the ID of the display group to which this logical display belongs.
+     */
+    public int getDisplayGroupIdLocked() {
+        return mDisplayGroupId;
+    }
+
+    /**
      * Gets the primary display device associated with this logical display.
      *
      * @return The primary display device.

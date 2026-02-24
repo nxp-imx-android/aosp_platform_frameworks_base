@@ -17,13 +17,14 @@
 package android.security.keystore2;
 
 import android.annotation.NonNull;
+import android.hardware.security.keymint.MlDsaVariant;
 import android.security.KeyStoreSecurityLevel;
 import android.security.keystore.KeyProperties;
+import android.system.keystore2.Authorization;
 import android.system.keystore2.KeyDescriptor;
 import android.system.keystore2.KeyMetadata;
 
 import java.security.ProviderException;
-import java.security.cert.X509Certificate;
 
 /**
  * {@link java.security.PublicKey} implementation for ML-DSA public keys backed by Android Keystore.
@@ -43,22 +44,17 @@ import java.security.cert.X509Certificate;
  * <ul>
  *   <li>The algorithm family ("ML-DSA") can be obtained via {@link
  *       java.security.Key#getAlgorithm()}.
- *   <li>The parameter set name (e.g. "ML-DSA-65") can be determined by calling {@link
- *       java.security.Key#getEncoded()} on an instance of this class. The parameter set is
- *       indicated by the OID in the AlgorithmIdentifier structure (which appears in the X.509
- *       certificate's preamble and in its SubjectPublicKeyInfo structure).
+ *   <li> The parameter set name (e.g. "ML-DSA-65") can be determined by calling {@link
+ *       #getMlDsaAlgorithm()} on an instance of this class.  (Alternatively, it can be determined
+ *       by calling {@link java.security.Key#getEncoded()} on an instance of this class, then
+ *       parsing the resulting ASN.1 DER-encoded SubjectPublicKeyInfo structure to examine the OID
+ *       value in the AlgorithmIdentifier structure.)
  * </ul>
  *
  * @hide
  */
 public class AndroidKeyStoreMlDsaPublicKey extends AndroidKeyStorePublicKey
         implements AndroidKeyStoreMlDsaKey {
-    // OID value for ML-DSA-65. See RFC 9881 section 2.
-    private static final String ML_DSA_65_OID = "2.16.840.1.101.3.4.3.18";
-
-    // OID value for ML-DSA-87. See RFC 9881 section 2.
-    private static final String ML_DSA_87_OID = "2.16.840.1.101.3.4.3.19";
-
     // Java Security Standard Algorithm Name for the key's ML-DSA parameter set (e.g. "ML-DSA-65").
     private final String mMlDsaAlgorithm;
 
@@ -68,41 +64,45 @@ public class AndroidKeyStoreMlDsaPublicKey extends AndroidKeyStorePublicKey
      * @param descriptor Key descriptor.
      * @param metadata Key metadata.
      * @param securityLevel Security level of the key.
-     * @param x509Certificate X.509 certificate for the public key.
+     * @param x509EncodedForm X.509/SPKI encoded public key.
      */
-    // Implementation note: The X.509 certificate is passed as a parameter instead of the algorithm
-    // name as a String to prevent callers from passing the incorrect value (e.g. the family name
-    // "ML-DSA") and therefore avoiding the need for input parameter validation.
-    public AndroidKeyStoreMlDsaPublicKey(
-            @NonNull KeyDescriptor descriptor,
-            @NonNull KeyMetadata metadata,
-            @NonNull KeyStoreSecurityLevel securityLevel,
-            @NonNull X509Certificate x509Certificate) {
+    public AndroidKeyStoreMlDsaPublicKey(@NonNull KeyDescriptor descriptor,
+            @NonNull KeyMetadata metadata, @NonNull KeyStoreSecurityLevel securityLevel,
+            @NonNull byte[] x509EncodedForm) {
         super(
                 descriptor,
                 metadata,
-                x509Certificate.getPublicKey().getEncoded(),
+                x509EncodedForm,
                 KeyProperties.KEY_ALGORITHM_ML_DSA,
                 securityLevel);
 
-        // Get the algorithm name that the OID maps to, or the OID if no mapping exists.
-        String mlDsaAlgorithm = x509Certificate.getSigAlgName();
-
-        // If the OID is returned, it means Conscrypt's mapping is incomplete. We explicitly
-        // override this fallback and do the mapping ourselves since
-        // {@link android.security.keystore2.AndroidKeyStoreMlDsaKey#getMlDsaAlgorithm()} must
-        // return the Java Security Standard Algorithm Name for the ML-DSA parameter set. See
-        // RFC 9881 section 2.
-        if (mlDsaAlgorithm.equals(ML_DSA_65_OID)) {
-            mlDsaAlgorithm = KeyProperties.KEY_ALGORITHM_ML_DSA_65;
-        } else if (mlDsaAlgorithm.equals(ML_DSA_87_OID)) {
-            mlDsaAlgorithm = KeyProperties.KEY_ALGORITHM_ML_DSA_87;
-        } else if (!mlDsaAlgorithm.equalsIgnoreCase(KeyProperties.KEY_ALGORITHM_ML_DSA_65)
-                && !mlDsaAlgorithm.equalsIgnoreCase(KeyProperties.KEY_ALGORITHM_ML_DSA_87)) {
-            throw new ProviderException("Unsupported algorithm: " + mlDsaAlgorithm);
+        // The `getAlgorithm()` method for an ML-DSA public key is required (by JEP 497) to
+        // return "ML-DSA" for any ML-DSA variant.  To determine the ML-DSA variant, the JEP
+        // instead suggests the use of the `getParams()` method; however, this is implemented
+        // by the `java.security.AsymmetricKey` class from JDK 22 which is not present in
+        // Android (see above).
+        //
+        // So instead search through the metadata for the ML_DSA_VARIANT tag, and assume that the
+        // public key matches.
+        String algorithm = null;
+        for (Authorization a : metadata.authorizations) {
+            if (a.keyParameter.tag == KeyProperties.KM_TAG_ML_DSA_VARIANT) {
+                int variant = a.keyParameter.value.getMlDsaVariant();
+                switch (variant) {
+                    case MlDsaVariant.ML_DSA_65:
+                        algorithm = KeyProperties.KEY_ALGORITHM_ML_DSA_65;
+                        break;
+                    case MlDsaVariant.ML_DSA_87:
+                        algorithm = KeyProperties.KEY_ALGORITHM_ML_DSA_87;
+                        break;
+                }
+            }
+        }
+        if (algorithm == null) {
+            throw new ProviderException("Unknown ML-DSA variant");
         }
 
-        mMlDsaAlgorithm = mlDsaAlgorithm;
+        mMlDsaAlgorithm = algorithm;
     }
 
     @Override

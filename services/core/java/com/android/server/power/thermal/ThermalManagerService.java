@@ -341,12 +341,10 @@ public class ThermalManagerService extends SystemService {
                 }
                 listener.onHeadroomChange(data.mHeadroom, data.mForecastHeadroom,
                         data.mForecastSeconds, data.mHeadroomThresholds);
-                if (Flags.adpf25q2Metrics()) {
-                    FrameworkStatsLog.write(
-                            FrameworkStatsLog.THERMAL_HEADROOM_LISTENER_DATA_REPORTED,
-                            type, uid, data.mHeadroom, data.mForecastHeadroom,
-                            data.mForecastSeconds, data.mHeadroomThresholds);
-                }
+                FrameworkStatsLog.write(
+                        FrameworkStatsLog.THERMAL_HEADROOM_LISTENER_DATA_REPORTED,
+                        type, uid, data.mHeadroom, data.mForecastHeadroom,
+                        data.mForecastSeconds, data.mHeadroomThresholds);
             } catch (RemoteException | RuntimeException e) {
                 Slog.e(TAG, "Thermal headroom callback failed to call", e);
             }
@@ -519,13 +517,11 @@ public class ThermalManagerService extends SystemService {
                     null, // use default PullAtomMetadata values
                     DIRECT_EXECUTOR,
                     this::onPullAtom);
-            if (Flags.adpf25q2Metrics()) {
-                statsManager.setPullAtomCallback(
-                        THERMAL_HEADROOM_LISTENER_INFO,
-                        null, // use default PullAtomMetadata values
-                        DIRECT_EXECUTOR,
-                        this::onPullAtom);
-            }
+            statsManager.setPullAtomCallback(
+                    THERMAL_HEADROOM_LISTENER_INFO,
+                    null, // use default PullAtomMetadata values
+                    DIRECT_EXECUTOR,
+                    this::onPullAtom);
         }
     }
 
@@ -540,7 +536,7 @@ public class ThermalManagerService extends SystemService {
                     FrameworkStatsLog.buildStatsEvent(THERMAL_HEADROOM_THRESHOLDS,
                             thresholds));
         }
-        if (Flags.adpf25q2Metrics() && atomTag == THERMAL_HEADROOM_LISTENER_INFO) {
+        if (atomTag == THERMAL_HEADROOM_LISTENER_INFO) {
             data.add(FrameworkStatsLog.buildStatsEvent(
                             THERMAL_HEADROOM_LISTENER_INFO,
                             /* thermalHalVersion= */ mHalWrapper.getThermalHalVersion(),
@@ -750,11 +746,9 @@ public class ThermalManagerService extends SystemService {
                         THERMAL_HEADROOM_LISTENER_DATA_REPORTED__CALLBACK_TYPE__LISTENER_REGISTRATION,
                         /* uid= */ Binder.getCallingUid());
             }
-            if (Flags.adpf25q2Metrics()) {
-                mCurrentHeadRoomListenerCount.incrementAndGet();
-                if (mCurrentHeadRoomListenerCount.get() >= mMaxHeadroomListenerCount.get()) {
-                    mMaxHeadroomListenerCount.set(mCurrentHeadRoomListenerCount.get());
-                }
+            mCurrentHeadRoomListenerCount.incrementAndGet();
+            if (mCurrentHeadRoomListenerCount.get() >= mMaxHeadroomListenerCount.get()) {
+                mMaxHeadroomListenerCount.set(mCurrentHeadRoomListenerCount.get());
             }
             return true;
         }
@@ -765,7 +759,7 @@ public class ThermalManagerService extends SystemService {
                 final long token = Binder.clearCallingIdentity();
                 try {
                     boolean ret = mThermalHeadroomListeners.unregister(listener);
-                    if (Flags.adpf25q2Metrics() && ret) {
+                    if (ret) {
                         mCurrentHeadRoomListenerCount.decrementAndGet();
                     }
                     return ret;
@@ -2197,15 +2191,13 @@ public class ThermalManagerService extends SystemService {
                     try {
                         final float forecastTemperature =
                                 mHalWrapper.forecastSkinTemperature(forecastSeconds);
-                        if (Flags.adpf25q2Metrics()) {
-                            FrameworkStatsLog.write(THERMAL_HEADROOM_CALLED,
-                                    /* uid= */ Binder.getCallingUid(),
-                                    /* status= */ THERMAL_HEADROOM_CALLED__API_STATUS__SUCCESS,
-                                    /* value= */ Float.NaN,
-                                    /* forecastSeconds= */ forecastSeconds,
-                                    /* isFromCache= */ false,
-                                    /* isHalSkinForecastSupported= */ true);
-                        }
+                        FrameworkStatsLog.write(THERMAL_HEADROOM_CALLED,
+                                /* uid= */ Binder.getCallingUid(),
+                                /* status= */ THERMAL_HEADROOM_CALLED__API_STATUS__SUCCESS,
+                                /* value= */ Float.NaN,
+                                /* forecastSeconds= */ forecastSeconds,
+                                /* isFromCache= */ false,
+                                /* isHalSkinForecastSupported= */ true);
                         return normalizeTemperature(forecastTemperature, threshold);
                     } catch (UnsupportedOperationException e) {
                         Slog.wtf(TAG, "forecastSkinTemperature returns unsupported");

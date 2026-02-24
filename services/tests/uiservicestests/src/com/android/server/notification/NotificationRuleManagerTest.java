@@ -41,9 +41,12 @@ import static android.service.notification.Adjustment.KEY_LIGHT;
 import static android.service.notification.Adjustment.KEY_MODE_BREAKTHROUGHS;
 import static android.service.notification.Adjustment.KEY_NOTIFICATION_RULES;
 import static android.service.notification.Adjustment.KEY_SOUND;
+import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
+import static android.service.notification.Adjustment.TYPE_CONTENT_RECOMMENDATION;
 import static android.service.notification.Adjustment.TYPE_NEWS;
 import static android.service.notification.Adjustment.TYPE_PROMOTION;
+import static android.service.notification.Adjustment.TYPE_SOCIAL_MEDIA;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -57,6 +60,7 @@ import android.app.ActivityManager;
 import android.app.Flags;
 import android.app.NotificationRule;
 import android.app.backup.BackupRestoreEventLogger;
+import android.content.pm.UserInfo;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -103,9 +107,9 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
     BackupRestoreEventLogger mLogger;
     @Mock
     private NotificationManagerPrivate mNmPrivate;
-    private int mUser;
-    private int mUserSecondary;
-    private int mUserProfile;
+    private UserInfo mUser;
+    private UserInfo mUserSecondary;
+    private UserInfo mUserProfile;
     @Mock
     private UserManagerInternal mUmInternal;
 
@@ -115,19 +119,44 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mUser = ActivityManager.getCurrentUser();
-        mUserSecondary = mUser + 10;
-        mUserProfile = mUser + 1;
+        mUser = new UserInfo(ActivityManager.getCurrentUser(), "current", UserInfo.FLAG_FULL);
+        mUserSecondary = new UserInfo(mUser.id + 10, "secondary", UserInfo.FLAG_FULL);
+        mUserProfile = new UserInfo(mUser.id + 1, "profile", UserInfo.FLAG_PROFILE);
 
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.addService(UserManagerInternal.class, mUmInternal);
 
-        when(mUmInternal.getProfileParentId(mUser)).thenReturn(mUser);
-        when(mUmInternal.getProfileParentId(mUserSecondary)).thenReturn(mUserSecondary);
-        when(mUmInternal.getProfileParentId(mUserProfile)).thenReturn(mUser);
+        when(mUmInternal.getProfileParentId(mUser.id)).thenReturn(mUser.id);
+        when(mUmInternal.getProfileParentId(mUserSecondary.id)).thenReturn(mUserSecondary.id);
+        when(mUmInternal.getProfileParentId(mUserProfile.id)).thenReturn(mUser.id);
 
         underTest = new NotificationRuleManager(mContext, mNmPrivate);
 
+    }
+
+    private void writeAndReadXml(boolean forBackupRestore, int userId)
+            throws Exception {
+        TypedXmlSerializer serializer = Xml.newFastSerializer();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
+        serializer.startDocument(null, true);
+
+        underTest.writeXml(serializer, forBackupRestore, userId,
+                (forBackupRestore && Flags.backupRestoreLogging()) ? mLogger : null);
+        serializer.endDocument();
+        serializer.flush();
+
+        // Uncomment if needed for debugging
+        // Log.v(getClass().getSimpleName(), baos.toString("UTF-8"));
+
+        TypedXmlPullParser parser = Xml.newFastPullParser();
+        byte[] byteArray = baos.toByteArray();
+        parser.setInput(new BufferedInputStream(new ByteArrayInputStream(byteArray)), null);
+        parser.nextTag();
+
+        underTest = new NotificationRuleManager(mContext, mNmPrivate);
+        underTest.readXml(parser, forBackupRestore, userId,
+                (forBackupRestore && Flags.backupRestoreLogging()) ? mLogger : null);
     }
 
     private NotificationRule createRule(int id, String name, boolean isEnabled) {
@@ -198,93 +227,93 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
     @Test
     public void addRule() {
         NotificationRule rule = createRule(100, "test", true);
-        underTest.addNotificationRule(mUser, 0, rule);
+        underTest.addNotificationRule(mUser.id, 0, rule);
 
-        assertThat(underTest.getNotificationRule(mUser, 100)).isEqualTo(rule);
+        assertThat(underTest.getNotificationRule(mUser.id, 100)).isEqualTo(rule);
     }
 
     @Test
     public void addRule_outOfRange_negative() {
         NotificationRule rule = createRule(100, "test", true);
-        underTest.addNotificationRule(mUser, -10, rule);
+        underTest.addNotificationRule(mUser.id, -10, rule);
 
-        assertThat(underTest.getNotificationRule(mUser, 100)).isEqualTo(rule);
+        assertThat(underTest.getNotificationRule(mUser.id, 100)).isEqualTo(rule);
     }
 
     @Test
     public void addRule_outOfRange_positive() {
         NotificationRule rule = createRule(100, "test", true);
-        underTest.addNotificationRule(mUser, 10, rule);
+        underTest.addNotificationRule(mUser.id, 10, rule);
 
-        assertThat(underTest.getNotificationRule(mUser, 100)).isEqualTo(rule);
+        assertThat(underTest.getNotificationRule(mUser.id, 100)).isEqualTo(rule);
     }
 
     @Test
     public void addRule_withSameId() {
         NotificationRule rule = createRule(100, "test", true);
-        underTest.addNotificationRule(mUser, 0, rule);
+        underTest.addNotificationRule(mUser.id, 0, rule);
         NotificationRule rule2 = createRule(100, "test2", true);
-        underTest.addNotificationRule(mUser, 0, rule2);
+        underTest.addNotificationRule(mUser.id, 0, rule2);
 
-        assertThat(underTest.getNotificationRules(mUser).size()).isEqualTo(1);
-        assertThat(underTest.getNotificationRule(mUser, 100)).isEqualTo(rule);
+        assertThat(underTest.getNotificationRules(mUser.id).size()).isEqualTo(1);
+        assertThat(underTest.getNotificationRule(mUser.id, 100)).isEqualTo(rule);
     }
 
     @Test
     public void addRule_multiUser() {
         NotificationRule rule = createRule(100, "test", true);
-        underTest.addNotificationRule(mUser, 0, rule);
+        underTest.addNotificationRule(mUser.id, 0, rule);
         NotificationRule rule2 = createRule(100, "test2", true);
-        underTest.addNotificationRule(mUserSecondary, 0, rule2);
+        underTest.addNotificationRule(mUserSecondary.id, 0, rule2);
 
-        assertThat(underTest.getNotificationRules(mUser)).containsExactly(rule);
-        assertThat(underTest.getNotificationRules(mUserSecondary)).containsExactly(rule2);
+        assertThat(underTest.getNotificationRules(mUser.id)).containsExactly(rule);
+        assertThat(underTest.getNotificationRules(mUserSecondary.id)).containsExactly(rule2);
     }
 
     @Test
     public void updateRule() {
         NotificationRule rule = createRule(100, "test", true);
-        underTest.addNotificationRule(mUser, 0, rule);
+        underTest.addNotificationRule(mUser.id, 0, rule);
 
         NotificationRule updatedRule = createRule(100, "test", false);
-        underTest.updateNotificationRule(mUser, updatedRule);
+        underTest.updateNotificationRule(mUser.id, updatedRule);
 
-        assertThat(underTest.getNotificationRules(mUser)).contains(updatedRule);
-        assertThat(underTest.getNotificationRules(mUser)).doesNotContain(rule);
+        assertThat(underTest.getNotificationRules(mUser.id)).contains(updatedRule);
+        assertThat(underTest.getNotificationRules(mUser.id)).doesNotContain(rule);
     }
 
     @Test
     public void removeRule() {
         NotificationRule rule = createRule(100, "test", true);
-        underTest.addNotificationRule(mUser, 0, rule);
-        assertThat(underTest.getNotificationRules(mUser)).contains(rule);
+        underTest.addNotificationRule(mUser.id, 0, rule);
+        assertThat(underTest.getNotificationRules(mUser.id)).contains(rule);
 
-        assertThat(underTest.removeNotificationRule(mUser, rule.getId())).isTrue();
-        assertThat(underTest.getNotificationRules(mUser)).doesNotContain(rule);
+        assertThat(underTest.removeNotificationRule(mUser.id, rule.getId())).isTrue();
+        assertThat(underTest.getNotificationRules(mUser.id)).doesNotContain(rule);
     }
 
     @Test
     public void removeRule_doesNotExist() {
-        assertThat(underTest.removeNotificationRule(mUser, 100)).isFalse();
+        assertThat(underTest.removeNotificationRule(mUser.id, 100)).isFalse();
     }
 
     @Test
     public void removeRule_failsForReservedIds() {
         NotificationRule rule1 = createRule(RESERVED_ID_PROMOTED, "test", true);
-        underTest.addNotificationRule(mUser, 0, rule1);
+        underTest.addNotificationRule(mUser.id, 0, rule1);
         NotificationRule rule2 = createRule(RESERVED_ID_STATIC_BUNDLES, "test", true);
-        underTest.addNotificationRule(mUser, 0, rule2);
+        underTest.addNotificationRule(mUser.id, 0, rule2);
         NotificationRule rule3 = createRule(RESERVED_ID_IMPORTANT_NOTIFICATIONS, "test", true);
-        underTest.addNotificationRule(mUser, 0, rule3);
+        underTest.addNotificationRule(mUser.id, 0, rule3);
         NotificationRule rule4 = createRule(RESERVED_ID_PRIORITY_CONVERSATIONS, "test", true);
-        underTest.addNotificationRule(mUser, 0, rule4);
+        underTest.addNotificationRule(mUser.id, 0, rule4);
 
-        underTest.removeNotificationRule(mUser, rule1.getId());
-        underTest.removeNotificationRule(mUser, rule2.getId());
-        underTest.removeNotificationRule(mUser, rule3.getId());
-        underTest.removeNotificationRule(mUser, rule4.getId());
+        underTest.removeNotificationRule(mUser.id, rule1.getId());
+        underTest.removeNotificationRule(mUser.id, rule2.getId());
+        underTest.removeNotificationRule(mUser.id, rule3.getId());
+        underTest.removeNotificationRule(mUser.id, rule4.getId());
 
-        assertThat(underTest.getNotificationRules(mUser)).containsAtLeastElementsIn(
+        assertThat(underTest.getNotificationRules(mUser.id)).containsAtLeastElementsIn(
                 List.of(rule1, rule2, rule3, rule4));
     }
 
@@ -295,20 +324,20 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         NotificationRule rule3 = createRule(RESERVED_ID_IMPORTANT_NOTIFICATIONS, "test", true);
         NotificationRule rule4 = createRule(RESERVED_ID_PRIORITY_CONVERSATIONS, "test", true);
         NotificationRule rule5 = createRule(101, "test", true);
-        underTest.setNotificationRules(mUser, List.of(rule1, rule2, rule3, rule4, rule5));
+        underTest.setNotificationRules(mUser.id, List.of(rule1, rule2, rule3, rule4, rule5));
 
-        assertThat(underTest.getNotificationRules(mUser)).containsExactly(
+        assertThat(underTest.getNotificationRules(mUser.id)).containsExactly(
                 rule1, rule2, rule3, rule4, rule5);
     }
 
     @Test
     public void onUserRemoved() {
         NotificationRule rule = createRule(RESERVED_ID_PROMOTED, "test", true);
-        underTest.addNotificationRule(mUser, 0, rule);
+        underTest.addNotificationRule(mUser.id, 0, rule);
 
-        underTest.onUserRemoved(mUser);
+        underTest.onUserRemoved(mUser.id);
 
-        assertThat(underTest.getNotificationRules(mUser)).isEmpty();
+        assertThat(underTest.getNotificationRules(mUser.id)).isEmpty();
     }
 
     @Test
@@ -318,11 +347,11 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         NotificationRule rule2 = createRule(RESERVED_ID_STATIC_BUNDLES, "test", true);
         NotificationRule rule3 = createRule(RESERVED_ID_IMPORTANT_NOTIFICATIONS, "test", true);
         NotificationRule rule4 = createRule(RESERVED_ID_PRIORITY_CONVERSATIONS, "test", true);
-        underTest.setNotificationRules(mUser, List.of(rule, rule1, rule2, rule3, rule4));
+        underTest.setNotificationRules(mUser.id, List.of(rule, rule1, rule2, rule3, rule4));
 
-        underTest.onNotificationAssistantChanged(mUser);
+        underTest.onNotificationAssistantChanged(mUser.id);
 
-        assertThat(underTest.getNotificationRules(mUser)).containsExactly(rule1, rule4);
+        assertThat(underTest.getNotificationRules(mUser.id)).containsExactly(rule1, rule4);
     }
 
     @Test
@@ -334,13 +363,14 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
                         .setLightColorOverride(Color.parseColor("blue"))
                         .build())
                 .build();
-        underTest.addNotificationRule(mUser, 0, rule);
+        underTest.addNotificationRule(mUser.id, 0, rule);
 
         Bundle signals = new Bundle();
         signals.putIntegerArrayList(KEY_NOTIFICATION_RULES, new ArrayList<>(List.of(100)));
-        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser));
+        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
-        List<Adjustment> behavioralAdjustments = underTest.getAdjustmentsForRules(mUser, original);
+        List<Adjustment> behavioralAdjustments =
+                underTest.getAdjustmentsForRules(mUser.id, original);
         assertThat(behavioralAdjustments).hasSize(1);
         Adjustment behavioralAdjustment = behavioralAdjustments.get(0);
         assertThat(behavioralAdjustment.getPackage()).isEqualTo(original.getPackage());
@@ -365,13 +395,14 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
                         .setLightColorOverride(Color.parseColor("blue"))
                         .build())
                 .build();
-        underTest.addNotificationRule(mUser, 0, rule);
+        underTest.addNotificationRule(mUser.id, 0, rule);
 
         Bundle signals = new Bundle();
         signals.putIntegerArrayList(KEY_NOTIFICATION_RULES, new ArrayList<>(List.of(100)));
-        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser));
+        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
-        List<Adjustment> behavioralAdjustments = underTest.getAdjustmentsForRules(mUser, original);
+        List<Adjustment> behavioralAdjustments =
+                underTest.getAdjustmentsForRules(mUser.id, original);
         Adjustment behavioralAdjustment = behavioralAdjustments.get(0);
         Bundle actualSignals = behavioralAdjustment.getSignals();
 
@@ -388,13 +419,14 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
                 .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_LOW)
                         .build())
                 .build();
-        underTest.addNotificationRule(mUser, 0, rule);
+        underTest.addNotificationRule(mUser.id, 0, rule);
 
         Bundle signals = new Bundle();
         signals.putIntegerArrayList(KEY_NOTIFICATION_RULES, new ArrayList<>(List.of(100)));
-        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser));
+        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
-        List<Adjustment> behavioralAdjustments = underTest.getAdjustmentsForRules(mUser, original);
+        List<Adjustment> behavioralAdjustments =
+                underTest.getAdjustmentsForRules(mUser.id, original);
         Adjustment behavioralAdjustment = behavioralAdjustments.get(0);
         Bundle actualSignals = behavioralAdjustment.getSignals();
 
@@ -410,13 +442,14 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
                 .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE)
                         .build())
                 .build();
-        underTest.addNotificationRule(mUser, 0, rule);
+        underTest.addNotificationRule(mUser.id, 0, rule);
 
         Bundle signals = new Bundle();
         signals.putIntegerArrayList(KEY_NOTIFICATION_RULES, new ArrayList<>(List.of(100)));
-        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser));
+        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
-        List<Adjustment> behavioralAdjustments = underTest.getAdjustmentsForRules(mUser, original);
+        List<Adjustment> behavioralAdjustments =
+                underTest.getAdjustmentsForRules(mUser.id, original);
         Adjustment behavioralAdjustment = behavioralAdjustments.get(0);
         Bundle actualSignals = behavioralAdjustment.getSignals();
 
@@ -429,13 +462,14 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
                 .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK)
                         .build())
                 .build();
-        underTest.addNotificationRule(mUser, 0, rule);
+        underTest.addNotificationRule(mUser.id, 0, rule);
 
         Bundle signals = new Bundle();
         signals.putIntegerArrayList(KEY_NOTIFICATION_RULES, new ArrayList<>(List.of(100)));
-        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser));
+        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
-        List<Adjustment> behavioralAdjustments = underTest.getAdjustmentsForRules(mUser, original);
+        List<Adjustment> behavioralAdjustments =
+                underTest.getAdjustmentsForRules(mUser.id, original);
         Adjustment behavioralAdjustment = behavioralAdjustments.get(0);
         Bundle actualSignals = behavioralAdjustment.getSignals();
 
@@ -461,14 +495,15 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         NotificationRule rule3 = new NotificationRule.Builder(RESERVED_ID_STATIC_BUNDLES, "test")
                 .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE).build())
                 .build();
-        underTest.setNotificationRules(mUser, List.of(rule, rule2, rule3));
+        underTest.setNotificationRules(mUser.id, List.of(rule, rule2, rule3));
 
         Bundle signals = new Bundle();
         signals.putIntegerArrayList(KEY_NOTIFICATION_RULES,
                 new ArrayList<>(List.of(RESERVED_ID_STATIC_BUNDLES, 101, 100)));
-        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser));
+        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
-        List<Adjustment> behavioralAdjustments = underTest.getAdjustmentsForRules(mUser, original);
+        List<Adjustment> behavioralAdjustments =
+                underTest.getAdjustmentsForRules(mUser.id, original);
         assertThat(behavioralAdjustments).hasSize(3);
 
         Adjustment behavioralAdjustment100 = behavioralAdjustments.get(0);
@@ -499,54 +534,29 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void readWriteXml_local() throws Exception {
-        TypedXmlSerializer serializer = Xml.newFastSerializer();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
-        serializer.startDocument(null, true);
-
         NotificationRule rule1User1 = createFullRule(100, "test", true);
         NotificationRule rule2User1 = createFullRule(101, "another", false);
         NotificationRule rule3User1 = createRule(103, "boo", true);
-        underTest.setNotificationRules(mUser, List.of(rule1User1, rule2User1, rule3User1));
+        underTest.setNotificationRules(mUser.id, List.of(rule1User1, rule2User1, rule3User1));
         NotificationRule rule1User2 = createFullRule(101, "secondary", true);
         NotificationRule rule2User2 = createFullRule(102, "third", false);
-        underTest.setNotificationRules(mUserSecondary, List.of(rule1User2, rule2User2));
+        underTest.setNotificationRules(mUserSecondary.id, List.of(rule1User2, rule2User2));
 
-        underTest.writeXml(serializer, false, UserHandle.USER_ALL, null, false);
-        serializer.endDocument();
-        serializer.flush();
+        writeAndReadXml(false, USER_ALL);
 
-        // Uncomment if needed for debugging
-        // Log.v(getClass().getSimpleName(), baos.toString("UTF-8"));
-
-        TypedXmlPullParser parser = Xml.newFastPullParser();
-        byte[] byteArray = baos.toByteArray();
-        parser.setInput(new BufferedInputStream(new ByteArrayInputStream(byteArray)), null);
-        parser.nextTag();
-
-        underTest = new NotificationRuleManager(mContext, mNmPrivate);
-        underTest.readXml(parser, false, UserHandle.USER_ALL, null);
-
-        assertThat(underTest.getNotificationRules(mUser))
+        assertThat(underTest.getNotificationRules(mUser.id))
                 .containsExactly(rule1User1, rule2User1, rule3User1).inOrder();
-        assertThat(underTest.getNotificationRules(mUserSecondary)).containsExactly(
+        assertThat(underTest.getNotificationRules(mUserSecondary.id)).containsExactly(
                 rule1User2, rule2User2).inOrder();
-        assertThat(underTest.getNotificationRules(UserHandle.USER_ALL)).isEmpty();
+        assertThat(underTest.getNotificationRules(USER_ALL)).isEmpty();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void readWriteXml_local_wrongUser_onWrite() throws Exception {
-        TypedXmlSerializer serializer = Xml.newFastSerializer();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
-        serializer.startDocument(null, true);
-
         NotificationRule rule1User1 = createFullRule(100, "test", true);
-        underTest.setNotificationRules(mUser, List.of(rule1User1));
+        underTest.setNotificationRules(mUser.id, List.of(rule1User1));
 
-        underTest.writeXml(serializer, false, mUser, null, false);
-        serializer.endDocument();
-        serializer.flush();
+        writeAndReadXml(false, mUser.id);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -557,9 +567,9 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         serializer.startDocument(null, true);
 
         NotificationRule rule1User1 = createFullRule(100, "test", true);
-        underTest.setNotificationRules(mUser, List.of(rule1User1));
+        underTest.setNotificationRules(mUser.id, List.of(rule1User1));
 
-        underTest.writeXml(serializer, false, UserHandle.USER_ALL, null, false);
+        underTest.writeXml(serializer, false, USER_ALL, null);
         serializer.endDocument();
         serializer.flush();
 
@@ -569,92 +579,77 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         parser.nextTag();
 
         underTest = new NotificationRuleManager(mContext, mNmPrivate);
-        underTest.readXml(parser, false, mUser, null);
+        underTest.readXml(parser, false, mUser.id, null);
 
-        assertThat(underTest.getNotificationRules(mUser)).isEmpty();
+        assertThat(underTest.getNotificationRules(mUser.id)).isEmpty();
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_BACKUP_RESTORE_LOGGING})
     public void readWriteXml_backupRestore() throws Exception {
-        TypedXmlSerializer serializer = Xml.newFastSerializer();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        serializer.setOutput(new BufferedOutputStream(baos), "utf-8");
-        serializer.startDocument(null, true);
-
         NotificationRule rule1User1 = createFullRule(100, "test", true);
         NotificationRule rule2User1 = createFullRule(101, "another", false);
-        NotificationRule rule3User1 = createRule(103, "boo", true);
-        underTest.setNotificationRules(mUser, List.of(rule1User1, rule2User1, rule3User1));
+        underTest.setNotificationRules(mUser.id, List.of(rule1User1, rule2User1));
         NotificationRule rule1User2 = createFullRule(101, "secondary", true);
         NotificationRule rule2User2 = createFullRule(102, "third", false);
-        underTest.setNotificationRules(mUserSecondary, List.of(rule1User2, rule2User2));
+        NotificationRule rule3User2 = createRule(103, "boo", true);
+        underTest.setNotificationRules(mUserSecondary.id,
+                List.of(rule1User2, rule2User2, rule3User2));
 
-        underTest.writeXml(serializer, true, mUser,
-                android.app.Flags.backupRestoreLogging() ? mLogger : null, false);
-        serializer.endDocument();
-        serializer.flush();
-
-        // Uncomment if needed for debugging
-        // Log.v(getClass().getSimpleName(), baos.toString("UTF-8"));
+        writeAndReadXml(true, mUserSecondary.id);
 
         if (android.app.Flags.backupRestoreLogging()) {
             verify(mLogger).logItemsBackedUp(DATA_TYPE_NOTIFICATION_RULES, 3);
-        }
-
-        TypedXmlPullParser parser = Xml.newFastPullParser();
-        byte[] byteArray = baos.toByteArray();
-        parser.setInput(new BufferedInputStream(new ByteArrayInputStream(byteArray)), null);
-        parser.nextTag();
-
-        underTest = new NotificationRuleManager(mContext, mNmPrivate);
-        underTest.readXml(parser, true, mUserSecondary, mLogger);
-
-        if (android.app.Flags.backupRestoreLogging()) {
             verify(mLogger).logItemsRestored(DATA_TYPE_NOTIFICATION_RULES, 3);
             verify(mLogger, never()).logItemsRestoreFailed(anyString(), anyInt(), anyString());
         }
 
-        assertThat(underTest.getNotificationRules(mUserSecondary))
-                .containsExactly(rule1User1, rule2User1, rule3User1).inOrder();
-        assertThat(underTest.getNotificationRules(mUser)).isEmpty();
+        assertThat(underTest.getNotificationRules(mUserSecondary.id))
+                .containsExactly(rule1User2, rule2User2, rule3User2).inOrder();
+        assertThat(underTest.getNotificationRules(mUser.id)).isEmpty();
     }
 
     @Test
     public void onUserAdded_primary() {
-        underTest.onUserAdded(mUser);
+        underTest.onUserAdded(mUser.id);
 
-        assertThat(underTest.getNotificationRules(mUser)).hasSize(4);
-        assertThat(underTest.getNotificationRules(mUserSecondary)).hasSize(0);
-        assertThat(underTest.getNotificationRules(mUserProfile)).hasSize(0);
+        assertThat(underTest.getNotificationRules(mUser.id)).hasSize(4);
+        assertThat(underTest.getNotificationRules(mUserSecondary.id)).hasSize(0);
+        assertThat(underTest.getNotificationRules(mUserProfile.id)).hasSize(0);
 
-        assertThat(underTest.getNotificationRules(mUser).stream().mapToInt(NotificationRule::getId))
+        assertThat(underTest.getNotificationRules(mUser.id)
+                .stream().mapToInt(NotificationRule::getId))
                 .containsExactly(RESERVED_ID_PROMOTED, RESERVED_ID_PRIORITY_CONVERSATIONS,
                         RESERVED_ID_STATIC_BUNDLES, RESERVED_ID_IMPORTANT_NOTIFICATIONS);
+
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).asList()
+                .containsExactlyElementsIn(List.of(TYPE_PROMOTION, TYPE_NEWS));
     }
 
     @Test
     public void onUserAdded_secondary() {
-        underTest.onUserAdded(mUserSecondary);
+        underTest.onUserAdded(mUserSecondary.id);
 
-        assertThat(underTest.getNotificationRules(mUserSecondary)).hasSize(4);
+        assertThat(underTest.getNotificationRules(mUserSecondary.id)).hasSize(4);
     }
 
     @Test
     public void onUserAdded_profile() {
-        underTest.onUserAdded(mUserProfile);
-        assertThat(underTest.getNotificationRules(mUserProfile)).hasSize(0);
+        underTest.onUserAdded(mUserProfile.id);
+        assertThat(underTest.getNotificationRules(mUserProfile.id)).hasSize(0);
     }
 
     @Test
     public void onUserAdded_bundleRule() {
-        underTest.onUserAdded(mUser);
+        underTest.onUserAdded(mUser.id);
 
         NotificationRule actual = underTest.getNotificationRule(
-                mUser, RESERVED_ID_STATIC_BUNDLES);
+                mUser.id, RESERVED_ID_STATIC_BUNDLES);
 
         assertThat(actual.getConditions()).isEmpty();
         assertThat(actual.getFilters().size()).isEqualTo(1);
-        assertThat(actual.getFilters().getFirst().getUsers()).containsExactly(UserHandle.of(mUser));
+        assertThat(actual.getFilters().getFirst().getUsers())
+                .containsExactly(UserHandle.of(mUser.id));
         assertThat(actual.getFilters().getFirst().getStaticBundleTypes())
                 .containsExactly(TYPE_NEWS, TYPE_PROMOTION);
         assertThat(actual.getAction().getPrimaryAction()).isEqualTo(PRIMARY_ACTION_BUNDLE);
@@ -678,10 +673,10 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void onUserAdded_importantRule() {
-        underTest.onUserAdded(mUser);
+        underTest.onUserAdded(mUser.id);
 
         NotificationRule actual = underTest.getNotificationRule(
-                mUser, RESERVED_ID_IMPORTANT_NOTIFICATIONS);
+                mUser.id, RESERVED_ID_IMPORTANT_NOTIFICATIONS);
 
         assertThat(actual.getConditions()).isEmpty();
         assertThat(actual.getFilters()).isEmpty();
@@ -701,10 +696,10 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void onUserAdded_promotedRule() {
-        underTest.onUserAdded(mUser);
+        underTest.onUserAdded(mUser.id);
 
         NotificationRule actual = underTest.getNotificationRule(
-                mUser, RESERVED_ID_PROMOTED);
+                mUser.id, RESERVED_ID_PROMOTED);
 
         assertThat(actual.getConditions()).isEmpty();
         assertThat(actual.getFilters().size()).isEqualTo(1);
@@ -725,10 +720,10 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void onUserAdded_conversationRule() {
-        underTest.onUserAdded(mUser);
+        underTest.onUserAdded(mUser.id);
 
         NotificationRule actual = underTest.getNotificationRule(
-                mUser, RESERVED_ID_PRIORITY_CONVERSATIONS);
+                mUser.id, RESERVED_ID_PRIORITY_CONVERSATIONS);
 
         assertThat(actual.getConditions()).isEmpty();
         assertThat(actual.getFilters().size()).isEqualTo(1);
@@ -746,5 +741,76 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
         NotificationRule fromParcel = NotificationRule.CREATOR.createFromParcel(parcel);
         assertThat(fromParcel).isEqualTo(actual);
+    }
+
+    @Test
+    public void testAllowAdjustmentType_classifListEmpty_resetDefaultClassificationTypes() {
+        underTest.onUserAdded(mUser.id);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_PROMOTION, false);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_NEWS, false);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_SOCIAL_MEDIA, false);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_CONTENT_RECOMMENDATION,
+                false);
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).isEmpty();
+        underTest.disallowClassificationAdjustment(mUser.id);
+        underTest.allowClassificationAdjustment(mUser.id);
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).asList()
+                .contains(TYPE_PROMOTION);
+    }
+
+    @Test
+    public void testAllowAdjustmentType_classifListNotEmpty_doNotResetDefaultClassificationTypes() {
+        underTest.onUserAdded(mUser.id);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_PROMOTION, false);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_SOCIAL_MEDIA, false);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_CONTENT_RECOMMENDATION,
+                false);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_NEWS, true);
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).isNotEmpty();
+        underTest.disallowClassificationAdjustment(mUser.id);
+        underTest.allowClassificationAdjustment(mUser.id);
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).asList()
+                .containsExactly(TYPE_NEWS);
+    }
+
+    @Test
+    public void testSetAssistantClassificationTypeState_allow() {
+        underTest.onUserAdded(mUser.id);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_CONTENT_RECOMMENDATION,
+                false);
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id))
+                .asList().doesNotContain(TYPE_CONTENT_RECOMMENDATION);
+
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_CONTENT_RECOMMENDATION,
+                true);
+
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id)).asList()
+                .contains(TYPE_CONTENT_RECOMMENDATION);
+    }
+
+    @Test
+    public void testSetAssistantClassificationTypeState_disallow() {
+        underTest.onUserAdded(mUser.id);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_PROMOTION, false);
+        assertThat(underTest.getAllowedClassificationTypes(mUser.id))
+                .asList().doesNotContain(TYPE_PROMOTION);
+    }
+
+    @Test
+    public void testClassificationTypes_forProfile_followsFullUser() {
+        underTest.onUserAdded(mUser.id);
+        underTest.onUserAdded(mUserProfile.id);
+        underTest.setAssistantClassificationTypeState(mUserProfile.id, TYPE_NEWS, false);
+        assertThat(underTest.getAllowedClassificationTypes(mUserProfile.id))
+                .asList().doesNotContain(TYPE_NEWS);
+
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_PROMOTION, false);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_SOCIAL_MEDIA, false);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_CONTENT_RECOMMENDATION,
+                false);
+        underTest.setAssistantClassificationTypeState(mUser.id, TYPE_NEWS, true);
+
+        assertThat(underTest.getAllowedClassificationTypes(mUserProfile.id))
+                .asList().containsExactly(TYPE_NEWS);
     }
 }

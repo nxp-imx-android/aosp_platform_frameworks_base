@@ -264,20 +264,21 @@ class DesktopRepositoryInitializerImpl(
                     )
                 }
 
-                val tilingEnabled = DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue()
-                if (tilingEnabled && task.desktopTaskTilingState == DesktopTaskTilingState.LEFT) {
-                    repository.addLeftTiledTaskToDesk(
-                        persistentDesktop.displayId,
-                        task.taskId,
-                        newDeskId,
-                    )
-                }
-                if (tilingEnabled && task.desktopTaskTilingState == DesktopTaskTilingState.RIGHT) {
-                    repository.addRightTiledTaskToDesk(
-                        persistentDesktop.displayId,
-                        task.taskId,
-                        newDeskId,
-                    )
+                when (task.desktopTaskTilingState) {
+                    DesktopTaskTilingState.LEFT ->
+                        repository.addLeftTiledTaskToDesk(
+                            persistentDesktop.displayId,
+                            task.taskId,
+                            newDeskId,
+                        )
+                    DesktopTaskTilingState.RIGHT ->
+                        repository.addRightTiledTaskToDesk(
+                            persistentDesktop.displayId,
+                            task.taskId,
+                            newDeskId,
+                        )
+                    DesktopTaskTilingState.NONE -> logV("Restoring non-tiled task")
+                    else -> logV("Unexpected tiling state=%s", task.desktopTaskTilingState.name)
                 }
             }
         val activeDeskId =

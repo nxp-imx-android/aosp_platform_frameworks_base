@@ -107,7 +107,7 @@ fun ContactChoiceDialog(
                 Text("Selected", style = MaterialTheme.typography.titleLargeEmphasized)
             }
             currentSelectedContacts.forEach {
-                item(key = it.lookupUri.toSafeString()) {
+                item(key = it.lookupUri) {
                     Contact(
                         contactModel = it,
                         isSelected = true,
@@ -123,7 +123,7 @@ fun ContactChoiceDialog(
             }
             currentSearchResults.forEach {
                 if (it !in currentSelectedContacts) {
-                    item(key = it.lookupUri.toSafeString()) {
+                    item(key = it.lookupUri) {
                         Contact(
                             contactModel = it,
                             isSelected = false,

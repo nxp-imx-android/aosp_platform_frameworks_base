@@ -741,8 +741,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         }
         Integer leftTiledTaskId = taskRepository.getLeftTiledTask(deskId);
         Integer rightTiledTaskId = taskRepository.getRightTiledTask(deskId);
-        boolean tilingAndPersistenceEnabled = DesktopExperienceFlags.ENABLE_TILE_RESIZING.isTrue()
-                && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue();
+        boolean tilingAndPersistenceEnabled =
+                DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue();
         if (leftTiledTaskId != null && leftTiledTaskId == taskInfo.taskId
                 && tilingAndPersistenceEnabled) {
             snapPersistedTaskToHalfScreen(

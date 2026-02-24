@@ -111,38 +111,15 @@
     =============================================================== -->
   <eat-comment/>
 
-  <staging-public-group type="attr" first-id="0x01a20000">
+  <staging-public-group type="attr" first-id="0x019b0000">
       <!-- @FlaggedApi("android.content.pm.sdk_lib_independence") -->
     <public name="optional"/>
     <!-- @FlaggedApi(android.content.pm.Flags.FLAG_CHANGE_LAUNCHER_BADGING) -->
     <public name="alternateLauncherIcons"/>
     <!-- @FlaggedApi(android.content.pm.Flags.FLAG_CHANGE_LAUNCHER_BADGING) -->
     <public name="alternateLauncherLabels"/>
-    <!-- @hide No longer needed. -->
-    <public name="removed_runInPccSandbox"/>
-    <!-- @FlaggedApi(android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA)
-    @hide @SystemApi -->
-    <public name="userSelectable"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_FRAMEWORK_PROTOTYPE) -->
-    <public name="nativeService"/>
     <!-- @FlaggedApi(android.permission.flags.Flags.FLAG_PPD_MANIFEST_ENABLED) -->
     <public name="purposeString"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE) -->
-    <public name="zygotePreloadNativeLib"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_NATIVE_APP_ZYGOTE) -->
-    <public name="zygotePreloadNativeFunc"/>
-    <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
-    <public name="usesAssistData"/>
-    <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
-    <public name="usesAssistScreenshots"/>
-    <!-- @FlaggedApi(android.service.voice.flags.Flags.FLAG_ENABLE_ASSIST_RESOURCE_ATTRIBUTES) -->
-    <public name="usesAssistStructureScreenContent"/>
-    <!-- @FlaggedApi(android.view.inputmethod.Flags.FLAG_IME_SUBTYPE_SHORT_LABEL) -->
-    <public name="shortLabel"/>
-    <!-- @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
-    <public name="privateComputeCore"/>
-    <!-- @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
-    <public name="backupAgentProcess"/>
     <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
     <public name="iconColor"/>
     <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
@@ -153,13 +130,13 @@
     <public name="backgroundDimColor"/>
   </staging-public-group>
 
-  <staging-public-group type="id" first-id="0x01a10000">
+  <staging-public-group type="id" first-id="0x019a0000">
   </staging-public-group>
 
-  <staging-public-group type="style" first-id="0x01a00000">
+  <staging-public-group type="style" first-id="0x01990000">
   </staging-public-group>
 
-  <staging-public-group type="string" first-id="0x019f0000">
+  <staging-public-group type="string" first-id="0x01980000">
     <!-- @FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE_MODULE)
      @hide @SystemApi -->
     <public name="config_defaultOnDeviceIntelligenceService" />
@@ -171,34 +148,10 @@
     <public name="config_defaultOnDeviceIntelligenceDeviceConfigNamespace" />
   </staging-public-group>
 
-  <staging-public-group type="dimen" first-id="0x019e0000">
+  <staging-public-group type="dimen" first-id="0x01970000">
   </staging-public-group>
 
-  <staging-public-group type="color" first-id="0x019d0000">
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_inverse_on_surface_light"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_inverse_primary_light"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_inverse_surface_light"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_scrim_light"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_shadow_light"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_surface_tint_light"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_inverse_on_surface_dark"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_inverse_primary_dark"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_inverse_surface_dark"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_scrim_dark"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_shadow_dark"/>
-    <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
-    <public name="system_surface_tint_dark"/>
+  <staging-public-group type="color" first-id="0x01960000">
     <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
     <public name="system_error_dim_light"/>
     <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_2025_03)-->
@@ -221,43 +174,43 @@
     <public name="system_tertiary_dim_dark"/>
   </staging-public-group>
 
-  <staging-public-group type="array" first-id="0x019c0000">
+  <staging-public-group type="array" first-id="0x01950000">
     <!-- @FlaggedApi(android.permission.flags.Flags.FLAG_ACTIVE_WATCH_FACE_ROLE_ENABLED)
     @hide @SystemApi -->
     <public name="config_watchFacePermissions" />
   </staging-public-group>
 
-  <staging-public-group type="drawable" first-id="0x019b0000">
+  <staging-public-group type="drawable" first-id="0x01940000">
   </staging-public-group>
 
-  <staging-public-group type="layout" first-id="0x019a0000">
+  <staging-public-group type="layout" first-id="0x01930000">
   </staging-public-group>
 
-  <staging-public-group type="anim" first-id="0x01990000">
+  <staging-public-group type="anim" first-id="0x01920000">
   </staging-public-group>
 
-  <staging-public-group type="animator" first-id="0x01980000">
+  <staging-public-group type="animator" first-id="0x01910000">
   </staging-public-group>
 
-  <staging-public-group type="interpolator" first-id="0x01970000">
+  <staging-public-group type="interpolator" first-id="0x01900000">
   </staging-public-group>
 
-  <staging-public-group type="mipmap" first-id="0x01960000">
+  <staging-public-group type="mipmap" first-id="0x018f0000">
   </staging-public-group>
 
-  <staging-public-group type="integer" first-id="0x01950000">
+  <staging-public-group type="integer" first-id="0x018e0000">
   </staging-public-group>
 
-  <staging-public-group type="transition" first-id="0x01940000">
+  <staging-public-group type="transition" first-id="0x018d0000">
   </staging-public-group>
 
-  <staging-public-group type="raw" first-id="0x01930000">
+  <staging-public-group type="raw" first-id="0x018c0000">
   </staging-public-group>
 
-  <staging-public-group type="bool" first-id="0x01920000">
+  <staging-public-group type="bool" first-id="0x018b0000">
   </staging-public-group>
 
-  <staging-public-group type="fraction" first-id="0x01910000">
+  <staging-public-group type="fraction" first-id="0x018a0000">
   </staging-public-group>
 
 </resources>

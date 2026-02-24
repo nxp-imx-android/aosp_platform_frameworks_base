@@ -6877,6 +6877,13 @@ public final class DisplayManagerService extends SystemService {
         }
 
         @Override
+        public SparseIntArray getGroupIdsByDisplayIds() {
+            synchronized (mSyncRoot) {
+                return mLogicalDisplayMapper.getGroupIdsByDisplayIdsLocked();
+            }
+        }
+
+        @Override
         public int[] getDisplayIds(boolean includeDisabled) {
             return getDisplayIdsInternal(Process.myUid(), includeDisabled);
         }

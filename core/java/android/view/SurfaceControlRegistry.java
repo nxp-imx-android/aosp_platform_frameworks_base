@@ -325,6 +325,7 @@ public class SurfaceControlRegistry {
      * @param sc the affected surface
      * @param details additional details to print with the stack track
      */
+    @SuppressWarnings("ProtoLogNoContext")
     final void checkCallStackDebugging(@NonNull String call,
             @Nullable SurfaceControl.Transaction tx, @Nullable SurfaceControl sc,
             @Nullable String details) {

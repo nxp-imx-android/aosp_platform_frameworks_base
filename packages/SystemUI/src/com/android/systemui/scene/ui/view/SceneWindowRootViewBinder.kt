@@ -121,10 +121,6 @@ object SceneWindowRootViewBinder {
                 }
             }
 
-        // Hide until initial visibility is established from viewModel below.
-        // This avoids a brief black screen on initialization.
-        onVisibilityChangedInternal(false)
-
         view.repeatWhenAttached {
             view.viewModel(
                 traceName = "SceneWindowRootViewBinder",

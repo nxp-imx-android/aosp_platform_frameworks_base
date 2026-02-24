@@ -153,7 +153,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
                 Optional.empty(),
                 mStageCoordinator, mMultiInstanceHelper, mSplitState, mMainExecutor, mMainHandler,
                 mRootDisplayAreaOrganizer, mDesktopState, activityTaskManager, mMSDLPlayer,
-                Optional.empty(), Optional.empty()));
+                Optional.empty(), Optional.empty(), Optional.empty()));
     }
 
     @Test

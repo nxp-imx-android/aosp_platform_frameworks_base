@@ -87,7 +87,8 @@ get_default_base_branch() {
 
 get_changed_line_flags() {
     local file="$1"
-    local diff_output; diff_output=$(git diff -U0 HEAD -- "$file")
+    local base="${2:-HEAD}"
+    local diff_output; diff_output=$(git diff -U0 "$base" -- "$file")
     echo "$diff_output" | awk '
     /^@@/ {
         gsub(/@@/, "", $0)
@@ -148,7 +149,8 @@ run_ktfmt() {
         if [[ "$mode" == "check" ]]; then
             echo "$out"
         else
-            echo "$out" >&2
+            printf "${RED}ktfmt error output:${RESET}\n" >&2
+            echo "$out" | sed 's/^/  /' >&2
         fi
         return $ret
     fi
@@ -206,7 +208,12 @@ run_java_format() {
         else
             args+=("--replace")
             local out; out=$("$script_path" "${args[@]}" "${files[@]}" 2>&1)
-            local ret=$?; if [[ $ret -ne 0 ]]; then echo "$out" >&2; return $ret; fi
+            local ret=$?;
+            if [[ $ret -ne 0 ]]; then
+                printf "${RED}google-java-format error output:${RESET}\n" >&2
+                echo "$out" | sed 's/^/  /' >&2
+                return $ret
+            fi
             return 0
         fi
     fi
@@ -246,10 +253,16 @@ handle_rebase_step() {
             case "$c" in y|"" ) break ;; n ) exit 0 ;; a ) exit 1 ;; * ) ;; esac
         done
     fi
-    git add "${kt_files[@]}" "${java_files[@]}" 2>/dev/null
-    git commit --amend --no-edit --no-verify >/dev/null 2>&1
-    printf "   ${GREEN}Amended.${RESET}\n"
-    exit 0
+    git add "${kt_files[@]}" "${java_files[@]}"
+    local out
+    if out=$(git commit --amend --no-edit --no-verify 2>&1); then
+        printf "   ${GREEN}Amended.${RESET}\n"
+        exit 0
+    else
+        printf "   ${RED}Amend failed:${RESET}\n"
+        echo "$out" | sed 's/^/     /'
+        exit 1
+    fi
 }
 
 show_help() {
@@ -261,7 +274,7 @@ show_help() {
     printf "\n"
     printf "${BOLD}OPTIONS:${RESET}\n"
     printf "  -a, --all-lines Format ENTIRE file (Java default is changed lines only; Kotlin is all lines always - this is the current default of our preupload hooks).\n"
-    printf "  --base <br>     Comparison branch.\n"
+    printf "  --base <br>     Defaults to m/main. Set this if you want to rebase against a different base branch.\n"
     printf "  -y, --yes       Auto-confirm.\n"
 }
 
@@ -326,7 +339,9 @@ main() {
                 ide_config_backup=$(mktemp 2>/dev/null || mktemp -t 'ide_backup')
                 cp "$ide_config_file" "$ide_config_backup"
             fi
-            git stash push -q -u -m "$stash_name" >/dev/null 2>&1
+            if ! git stash push -q -u -m "$stash_name"; then
+                die "Stash failed. Aborting rebase to avoid data loss."
+            fi
             stashed=true
         fi
 
@@ -353,7 +368,8 @@ main() {
                 fi
                 "$script_abs_path" -w -q $([[ "$auto_yes" == "true" ]] && echo "-y") $([[ "$partial_format" == "true" ]] && echo "--changed")
             else
-                log_warn "Stash conflict."
+                log_warn "Stash pop failed. You may have conflicts."
+                git status --short
             fi
         fi
         exit 0

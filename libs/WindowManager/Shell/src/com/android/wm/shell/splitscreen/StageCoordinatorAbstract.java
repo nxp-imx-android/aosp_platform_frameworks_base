@@ -59,6 +59,7 @@ import com.android.wm.shell.common.split.SplitLayout;
 import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.packageupdate.PackageUpdateController;
 import com.android.wm.shell.recents.RecentTasksController;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
@@ -105,7 +106,8 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
             IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer,
-            Optional<BubbleController> bubbleController) {
+            Optional<BubbleController> bubbleController,
+            Optional<PackageUpdateController> packageUpdateController) {
         if (enable2x1Split()) {
             return new StageCoordinator2(context, displayId, syncQueue, taskOrganizer,
                     displayController, displayImeController, displayInsetsController, transitions,
@@ -113,7 +115,7 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
                     launchAdjacentController, windowDecorViewModel, splitState,
                     desktopTasksController, desktopUserRepositories, rootTDAOrganizer,
                     rootDisplayAreaOrganizer, desktopState, activityTaskManager, msdlPlayer,
-                    bubbleController);
+                    bubbleController, packageUpdateController);
         }
 
         return new StageCoordinator(context, displayId, syncQueue, taskOrganizer,
@@ -122,7 +124,7 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
                 launchAdjacentController, windowDecorViewModel, splitState,
                 desktopTasksController, desktopUserRepositories, rootTDAOrganizer,
                 rootDisplayAreaOrganizer, desktopState, activityTaskManager, msdlPlayer,
-                bubbleController);
+                bubbleController, packageUpdateController);
     }
 
     /// ////////////////////////////////////////////////////////////////////////////////////////////

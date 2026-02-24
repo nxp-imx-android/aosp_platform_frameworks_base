@@ -160,6 +160,16 @@ flag {
 }
 
 flag {
+    name: "refactor_normal_brightness_mode_controller"
+    namespace: "display_manager"
+    description: "Integrate NormalBrightnessModeController into the brightness clamper framework."
+    bug: "431176838"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_display_content_mode_management"
     namespace: "lse_desktop_experience"
     description: "Enable switching the content mode of connected displays between mirroring and extended. Also change the default content mode to extended mode."
@@ -343,16 +353,6 @@ flag {
     namespace: "wear_frameworks"
     description: "Feature flag for loading and applying auto-brightness curve while the device is connected to the charger."
     bug: "421103840"
-}
-
-flag {
-    name: "anisotropic_mode_exclude_similar_size"
-    namespace: "display_manager"
-    description: "Feature flag for filtering anisotropic modes, if similar size isotropic mode exists. "
-    bug: "443033926"
-    metadata {
-         purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

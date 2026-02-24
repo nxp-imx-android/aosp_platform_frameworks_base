@@ -471,20 +471,20 @@ sealed class DragToDesktopTransitionHandler(
             return false
         }
 
-        logV("startAnimation: state=${state.toSimpleString()}")
+        logV("startAnimation: state=%s", state.toSimpleString())
 
         val layers = calculateStartDragLayers(info)
         val leafTaskFilter = TransitionUtil.LeafTaskFilter(info)
         info.changes.withIndex().forEach { (i, change) ->
             if (TransitionUtil.isWallpaper(change)) {
-                logV("Wallpaper change: change=$change")
+                logV("Wallpaper change: change=%s", change)
                 val layer = layers.topWallpaperLayer - i
                 startTransaction.apply {
                     setLayer(change.leash, layer)
                     show(change.leash)
                 }
             } else if (isHomeChange(change)) {
-                logV("Home change: change=$change")
+                logV("Home change: change=%s", change)
                 state.homeChange = change
                 val layer = layers.topHomeLayer - i
                 startTransaction.apply {
@@ -492,7 +492,11 @@ sealed class DragToDesktopTransitionHandler(
                     show(change.leash)
                 }
             } else if (TransitionInfo.isIndependent(change, info)) {
-                logV("Independent change: taskId=${change.taskInfo?.taskId}, change=$change")
+                logV(
+                    "Independent change: taskId=%s, change=%s",
+                    change.taskInfo?.taskId?.toString(),
+                    change,
+                )
                 // Root(s).
                 when (state) {
                     is TransitionState.FromSplit -> {
@@ -541,7 +545,7 @@ sealed class DragToDesktopTransitionHandler(
                     }
                 }
             } else if (leafTaskFilter.test(change)) {
-                logV("Leaf task: taskId=${change.taskInfo?.taskId}, change=$change")
+                logV("Leaf task: taskId=%s, change=%s", change.taskInfo?.taskId?.toString(), change)
                 // When dragging one of the split tasks, the dragged leaf needs to be re-parented
                 // so that it can be layered separately from the rest of the split root/stages.
                 // The split root including the other split side was layered behind the wallpaper
@@ -670,13 +674,16 @@ sealed class DragToDesktopTransitionHandler(
         if (!state.startInterrupted) {
             logW(
                 "Not interrupted, but received startAnimation for cancel/end drag." +
-                    "isCancel=$isCancelDragToDesktop, isEnd=$isEndDragToDesktop"
+                    "isCancel=%b, isEnd=%b",
+                isCancelDragToDesktop,
+                isEndDragToDesktop,
             )
             return false
         }
         logV(
-            "startAnimation: interrupted -> " +
-                "isCancel=$isCancelDragToDesktop, isEnd=$isEndDragToDesktop"
+            "startAnimation: interrupted -> isCancel=%b, isEnd=%b",
+            isCancelDragToDesktop,
+            isEndDragToDesktop,
         )
         if (isEndDragToDesktop) {
             setupEndDragToDesktop(info, startTransaction, finishTransaction)
@@ -771,7 +778,7 @@ sealed class DragToDesktopTransitionHandler(
             state.startTransitionFinishCb
                 ?: error("Start transition expected to be waiting for merge but wasn't")
         if (isEndTransition) {
-            logV("mergeAnimation: end-transition, target=$mergeTarget")
+            logV("mergeAnimation: end-transition, target=%s", mergeTarget)
             state.mergedEndTransition = true
             setupEndDragToDesktop(
                 info,
@@ -786,7 +793,7 @@ sealed class DragToDesktopTransitionHandler(
             return
         }
         if (isCancelTransition) {
-            logV("mergeAnimation: cancel-transition, target=$mergeTarget")
+            logV("mergeAnimation: cancel-transition, target=%s", mergeTarget)
             LatencyTracker.getInstance(context)
                 .onActionCancel(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG)
             info.changes.forEach { change ->
@@ -802,7 +809,7 @@ sealed class DragToDesktopTransitionHandler(
             clearState()
             return
         }
-        logW("unhandled merge transition: transitionInfo=$info")
+        logW("unhandled merge transition: transitionInfo=%s", info)
         // Handle unknown incoming transitions by finishing the start transition. For now, only do
         // this if we've already requested a cancel- or end transition. If we've already merged the
         // end-transition, or if the end-transition is running on its own, then just wait until that
@@ -1411,9 +1418,13 @@ constructor(
             Rect(startBounds).apply { offsetTo(startPosition.x.toInt(), startPosition.y.toInt()) }
 
         logV(
-            "animateEndDragToDesktop: startBounds=$startBounds, endBounds=$endBounds, " +
-                "startScale=$startScale, startPosition=$startPosition, " +
-                "startBoundsWithOffset=$startBoundsWithOffset"
+            "animateEndDragToDesktop: startBounds=%s, endBounds=%s, startScale=%f, " +
+                "startPosition=%s, startBoundsWithOffset=%s",
+            startBounds,
+            endBounds,
+            startScale,
+            startPosition,
+            startBoundsWithOffset,
         )
 
         dragToDesktopStateListener?.onCommitToDesktopAnimationStart()
@@ -1525,8 +1536,11 @@ constructor(
                     (endBounds.height() - startBounds.height())
             }
             logW(
-                "same start and end sizes, returning 0: " +
-                    "startBounds=$startBounds, endBounds=$endBounds, animBounds=$animBounds"
+                "same start and end sizes, returning 0: startBounds=%s, endBounds=%s, " +
+                    "animBounds=%s",
+                startBounds,
+                endBounds,
+                animBounds,
             )
             return 0f
         }

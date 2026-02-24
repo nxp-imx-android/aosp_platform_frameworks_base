@@ -127,6 +127,7 @@ import android.service.dreams.DreamManagerInternal;
 import android.sysprop.PowerProperties;
 import android.test.mock.MockContentResolver;
 import android.util.IntArray;
+import android.util.SparseIntArray;
 import android.view.Display;
 import android.view.DisplayInfo;
 
@@ -175,6 +176,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -225,6 +227,7 @@ public class PowerManagerServiceTest {
     @Mock private DeviceConfigParameterProvider mDeviceParameterProvider;
     @Mock private WakelockMapper mWakelockMapper;
     @Mock private WindowManagerInternal mWindowManagerInternalMock;
+    @Mock private DisplayInfo mDefaultDisplayInfo;
 
     @Captor private ArgumentCaptor<DisplayManager.DisplayListener> mDisplayListenerArgumentCaptor;
 
@@ -335,10 +338,11 @@ public class PowerManagerServiceTest {
 
         mClock = new OffsettableClock.Stopped();
         mTestLooper = new TestLooper(mClock::now);
-        DisplayInfo displayInfo = mock(DisplayInfo.class);
-        displayInfo.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY))
-                .thenReturn(displayInfo);
+
+        mDefaultDisplayInfo.displayId = Display.DEFAULT_DISPLAY;
+        mDefaultDisplayInfo.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
+        when(mDefaultDisplayInfo.hasAccess(anyInt())).thenReturn(true);
+        setMockDisplays(mDefaultDisplayInfo);
     }
 
     private PowerManagerService createService() {
@@ -454,6 +458,39 @@ public class PowerManagerServiceTest {
         LocalServices.removeServiceForTest(BatteryManagerInternal.class);
         LocalServices.removeServiceForTest(ActivityManagerInternal.class);
         FakeSettingsProvider.clearSettingsProvider();
+    }
+
+    private void setMockDisplays(DisplayInfo... infos) {
+        // DisplayManagerInternal.getDisplayInfo
+        for (DisplayInfo info : infos) {
+            when(mDisplayManagerInternalMock.getDisplayInfo(info.displayId))
+                    .thenReturn(info);
+        }
+        // DisplayManagerInternal.getGroupIdsByDisplayIds
+        when(mDisplayManagerInternalMock.getGroupIdsByDisplayIds())
+                .thenAnswer(inv -> {
+                    var res = new SparseIntArray(1);
+                    for (DisplayInfo info : infos) {
+                        res.put(info.displayId, info.displayGroupId);
+                    }
+                    return res;
+                });
+        // DisplayManagerInternal.getDisplayIdsForGroup
+        when(mDisplayManagerInternalMock.getDisplayIdsForGroup(anyInt()))
+                .thenAnswer(inv -> {
+                    final int groupId = inv.getArgument(0);
+                    return Arrays.stream(infos)
+                        .filter(d -> d.displayGroupId == groupId)
+                        .mapToInt(d -> d.displayId)
+                        .toArray();
+                });
+    }
+
+    private static DisplayInfo createDisplayInfo(int displayId, int displayGroupId) {
+        final DisplayInfo info = new DisplayInfo();
+        info.displayId = displayId;
+        info.displayGroupId = displayGroupId;
+        return info;
     }
 
     /**
@@ -709,9 +746,9 @@ public class PowerManagerServiceTest {
         when(mDisplayManagerInternalMock.getDisplayGroupFlags(nonDefaultPowerGroupId))
                 .thenReturn(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
         DisplayInfo displayInfo = mock(DisplayInfo.class);
+        displayInfo.displayId = displayInNonDefaultGroup;
         displayInfo.displayGroupId = nonDefaultPowerGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayInNonDefaultGroup))
-                .thenReturn(displayInfo);
+        setMockDisplays(displayInfo);
         listener.get().onDisplayGroupAdded(nonDefaultPowerGroupId);
         WakeUpDelegate wakeUpDelegate = mock(WakeUpDelegate.class);
         when(wakeUpDelegate.sleep(anyLong(), anyInt(), anyInt())).thenReturn(true);
@@ -1000,9 +1037,6 @@ public class PowerManagerServiceTest {
         final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
                 new AtomicReference<>();
         long eventTime1 = 10;
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(info);
         doAnswer((Answer<Void>) invocation -> {
             listener.set(invocation.getArgument(0));
             return null;
@@ -1077,9 +1111,6 @@ public class PowerManagerServiceTest {
         final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
                 new AtomicReference<>();
         long eventTime1 = 10;
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(info);
         doAnswer((Answer<Void>) invocation -> {
             listener.set(invocation.getArgument(0));
             return null;
@@ -1145,14 +1176,9 @@ public class PowerManagerServiceTest {
         final AtomicReference<DisplayManagerInternal.DisplayGroupListener> listener =
                 new AtomicReference<>();
         long eventTime1 = 10;
-        final DisplayInfo infoDefault = new DisplayInfo();
-        infoDefault.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        final DisplayInfo infoSecondary = new DisplayInfo();
-        infoSecondary.displayGroupId = nonDefaultPowerGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY))
-                .thenReturn(infoDefault);
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultPowerGroupId))
-                .thenReturn(infoSecondary);
+        final DisplayInfo infoSecondary =
+                createDisplayInfo(nonDefaultPowerGroupId, nonDefaultPowerGroupId);
+        setMockDisplays(mDefaultDisplayInfo, infoSecondary);
         doAnswer((Answer<Void>) invocation -> {
             listener.set(invocation.getArgument(0));
             return null;
@@ -1464,9 +1490,9 @@ public class PowerManagerServiceTest {
         when(mDisplayManagerInternalMock.getDisplayGroupFlags(nonDefaultPowerGroupId))
                 .thenReturn(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
         DisplayInfo displayInfo = mock(DisplayInfo.class);
+        displayInfo.displayId = displayInNonDefaultGroup;
         displayInfo.displayGroupId = nonDefaultPowerGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayInNonDefaultGroup))
-                .thenReturn(displayInfo);
+        setMockDisplays(displayInfo);
         listener.get().onDisplayGroupAdded(nonDefaultPowerGroupId);
         WakeUpDelegate wakeUpDelegate = mock(WakeUpDelegate.class);
         when(wakeUpDelegate.wakeUp(anyLong(), anyInt(), anyString(), anyInt())).thenReturn(true);
@@ -1532,9 +1558,9 @@ public class PowerManagerServiceTest {
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
 
         DisplayInfo displayInfo = mock(DisplayInfo.class);
+        displayInfo.displayId = displayInNonDefaultGroup;
         displayInfo.displayGroupId = nonDefaultPowerGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayInNonDefaultGroup))
-                .thenReturn(displayInfo);
+        setMockDisplays(mDefaultDisplayInfo, displayInfo);
         createService();
         startSystem();
         listener.get().onDisplayGroupAdded(nonDefaultPowerGroupId);
@@ -1602,11 +1628,12 @@ public class PowerManagerServiceTest {
         assertThat(mService.getWakefulnessLocked(nonDefaultPowerGroupId))
                 .isEqualTo(WAKEFULNESS_DOZING);
 
+        // Add the display in the non default power group
+        setMockDisplays(mDefaultDisplayInfo,
+                createDisplayInfo(displayInNonDefaultGroup, nonDefaultPowerGroupId));
+        listener.get().onDisplayGroupChanged(nonDefaultPowerGroupId);
+
         // Wakeup the display from the non default power group
-        DisplayInfo displayInfo = Mockito.mock(DisplayInfo.class);
-        displayInfo.displayGroupId = nonDefaultPowerGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayInNonDefaultGroup))
-                .thenReturn(displayInfo);
         mClock.fastForward(eventTime3);
         mService.getBinderServiceInstance().wakeUpWithDisplayId(eventTime3,
                 PowerManager.WAKE_REASON_APPLICATION, "testing IPowerManager.wakeUp()",
@@ -1837,9 +1864,9 @@ public class PowerManagerServiceTest {
         when(mDisplayManagerInternalMock.getDisplayGroupFlags(nonDefaultPowerGroupId))
                 .thenReturn(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
         DisplayInfo displayInfo = mock(DisplayInfo.class);
+        displayInfo.displayId = displayInNonDefaultGroup;
         displayInfo.displayGroupId = nonDefaultPowerGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayInNonDefaultGroup))
-                .thenReturn(displayInfo);
+        setMockDisplays(mDefaultDisplayInfo, displayInfo);
         listener.get().onDisplayGroupAdded(nonDefaultPowerGroupId);
 
         // Setup the other non default power groups
@@ -1848,9 +1875,9 @@ public class PowerManagerServiceTest {
         when(mDisplayManagerInternalMock.getDisplayGroupFlags(nonDefaultPowerGroupId2))
                 .thenReturn(0L);
         DisplayInfo displayInfo2 = mock(DisplayInfo.class);
+        displayInfo2.displayId = displayInNonDefaultGroup2;
         displayInfo2.displayGroupId = nonDefaultPowerGroupId2;
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayInNonDefaultGroup2))
-                .thenReturn(displayInfo2);
+        setMockDisplays(mDefaultDisplayInfo, displayInfo, displayInfo2);
         listener.get().onDisplayGroupAdded(nonDefaultPowerGroupId2);
 
         assertThat(mService.getGlobalWakefulnessLocked()).isEqualTo(WAKEFULNESS_AWAKE);
@@ -2301,11 +2328,8 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplayId)).thenReturn(info);
-        when(mDisplayManagerInternalMock.getDisplayIdsForGroup(nonDefaultDisplayGroupId))
-                .thenReturn(new int[] {nonDefaultDisplayId});
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplayId, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
         when(mVirtualDeviceManagerInternalMock.getDeviceIdForDisplayId(nonDefaultDisplayId))
                 .thenReturn(virtualDeviceId);
         when(mVirtualDeviceManagerInternalMock.isValidVirtualDeviceId(virtualDeviceId))
@@ -2344,12 +2368,12 @@ public class PowerManagerServiceTest {
     @Test
     public void getBrightnessConstraint_valuesMatchDisplayInfo() {
         final int displayId = 7;
-        final DisplayInfo info = new DisplayInfo();
+        final DisplayInfo info = createDisplayInfo(displayId, 123);
         info.brightnessMinimum = 0.12f;
         info.brightnessDim = 0.34f;
         info.brightnessDefault = 0.56f;
         info.brightnessMaximum = 0.78f;
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayId)).thenReturn(info);
+        setMockDisplays(mDefaultDisplayInfo, info);
 
         createService();
         startSystem();
@@ -2754,9 +2778,6 @@ public class PowerManagerServiceTest {
 
     @Test
     public void testInattentiveSleep_userActivityDismissesWarning() {
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(info);
         setMinimumScreenOffTimeoutConfig(5);
         setAttentiveWarningDuration(1900);
         setAttentiveTimeout(2000);
@@ -2896,10 +2917,6 @@ public class PowerManagerServiceTest {
 
     @Test
     public void testInattentiveSleep_wakeLockOnAfterRelease_inattentiveSleepTimeoutNotAffected() {
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(info);
-
         final String pkg = mContextSpy.getOpPackageName();
         final Binder token = new Binder();
         final String tag = "testInattentiveSleep_wakeLockOnAfterRelease";
@@ -2924,10 +2941,6 @@ public class PowerManagerServiceTest {
 
     @Test
     public void testInattentiveSleep_userActivityNoChangeLights_inattentiveSleepTimeoutNotAffected() {
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(info);
-
         setMinimumScreenOffTimeoutConfig(5);
         setAttentiveTimeout(2000);
         createService();
@@ -2946,10 +2959,6 @@ public class PowerManagerServiceTest {
 
     @Test
     public void testInattentiveSleep_userActivity_inattentiveSleepTimeoutExtended() {
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(info);
-
         setMinimumScreenOffTimeoutConfig(5);
         setAttentiveTimeout(2000);
         createService();
@@ -3047,9 +3056,6 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(info);
 
         final String pkg = mContextSpy.getOpPackageName();
         final Binder token = new Binder();
@@ -3089,9 +3095,8 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplayId)).thenReturn(info);
+        setMockDisplays(mDefaultDisplayInfo,
+                createDisplayInfo(nonDefaultDisplayId, nonDefaultDisplayGroupId));
 
         final String pkg = mContextSpy.getOpPackageName();
         final Binder token = new Binder();
@@ -3129,9 +3134,6 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(info);
 
         final String pkg = mContextSpy.getOpPackageName();
         final Binder token = new Binder();
@@ -3170,9 +3172,8 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplay)).thenReturn(info);
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
 
         doAnswer(inv -> {
             when(mDreamManagerInternalMock.isDreaming()).thenReturn(true);
@@ -3642,9 +3643,8 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplay)).thenReturn(info);
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
 
         createService();
         startSystem();
@@ -3680,9 +3680,8 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplay)).thenReturn(info);
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
         when(mBatteryManagerInternalMock.isPowered(anyInt())).thenReturn(true);
         Settings.Secure.putInt(mContextSpy.getContentResolver(),
                 Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1);
@@ -3723,9 +3722,8 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplay)).thenReturn(info);
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
 
         doAnswer(inv -> {
             when(mDreamManagerInternalMock.isDreaming()).thenReturn(true);
@@ -3867,9 +3865,9 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplay)).thenReturn(info);
+
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
 
         createService();
         startSystem();
@@ -3906,9 +3904,9 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplay)).thenReturn(info);
+
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
 
         createService();
         startSystem();
@@ -3951,9 +3949,9 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplay)).thenReturn(info);
+
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
 
         createService();
         startSystem();
@@ -4005,15 +4003,8 @@ public class PowerManagerServiceTest {
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
 
-        final DisplayInfo defaultDisplayInfo = new DisplayInfo();
-        defaultDisplayInfo.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(
-                defaultDisplayInfo);
-
-        final DisplayInfo secondDisplayInfo = new DisplayInfo();
-        secondDisplayInfo.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplay)).thenReturn(
-                secondDisplayInfo);
+        setMockDisplays(mDefaultDisplayInfo,
+                createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId));
 
         createService();
         startSystem();
@@ -4075,9 +4066,9 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplay)).thenReturn(info);
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
+
         createService();
         startSystem();
         verify(mInvalidateInteractiveCachesMock).call();
@@ -4101,9 +4092,9 @@ public class PowerManagerServiceTest {
             listener.set(invocation.getArgument(0));
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = nonDefaultDisplayGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(nonDefaultDisplay)).thenReturn(info);
+        final DisplayInfo info = createDisplayInfo(nonDefaultDisplay, nonDefaultDisplayGroupId);
+        setMockDisplays(mDefaultDisplayInfo, info);
+
         createService();
         startSystem();
         verify(mInvalidateInteractiveCachesMock).call();
@@ -4195,21 +4186,18 @@ public class PowerManagerServiceTest {
 
     @Test
     public void testDisableWakelocks_certainGroups_whenForced() {
-        createService();
-        startSystem();
-        final int powerGroupId1 = 4;
+       final int powerGroupId1 = 4;
         final int displayId1 = 13;
         final int powerGroupId2 = 8;
         final int displayId2 = 26;
 
         IBinder mockBinder = mock(IBinder.class);
         IBinder mockBinder2 = mock(IBinder.class);
-        final DisplayInfo info1 = new DisplayInfo();
-        final DisplayInfo info2 = new DisplayInfo();
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayId1)).thenReturn(info1);
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayId2)).thenReturn(info2);
-        info1.displayGroupId = powerGroupId1;
-        info2.displayGroupId = powerGroupId2;
+        final var info1 = createDisplayInfo(displayId1, powerGroupId1);
+        final var info2 = createDisplayInfo(displayId2, powerGroupId2);
+        setMockDisplays(mDefaultDisplayInfo, info1, info2);
+        createService();
+        startSystem();
 
         WakeLock wakeLock1 = acquireWakeLock("forceDisableTestWakeLock1",
                 PowerManager.PARTIAL_WAKE_LOCK, mockBinder, displayId1);
@@ -4573,10 +4561,6 @@ public class PowerManagerServiceTest {
         mService.onBootPhase(SystemService.PHASE_SYSTEM_SERVICES_READY);
         mService.onBootPhase(SystemService.PHASE_BOOT_COMPLETED);
 
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(info);
-
         final ArgumentCaptor<DeviceStateCallback> deviceStateCallbackCaptor =
                 ArgumentCaptor.forClass(DeviceStateCallback.class);
         verify(mDeviceStateManagerMock).registerCallback(any(),
@@ -4621,15 +4605,9 @@ public class PowerManagerServiceTest {
                 .thenReturn(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
 
         // Mock DisplayInfo for both groups
-        final DisplayInfo displayInfo1 = new DisplayInfo();
-        displayInfo1.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(
-                displayInfo1);
-
-        final DisplayInfo displayInfo2 = new DisplayInfo();
-        displayInfo2.displayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayInfo2.displayGroupId)).thenReturn(
-                displayInfo2);
+        final DisplayInfo displayInfo2 = createDisplayInfo(
+                Display.DEFAULT_DISPLAY_GROUP + 1, Display.DEFAULT_DISPLAY_GROUP + 1);
+        setMockDisplays(mDefaultDisplayInfo, displayInfo2);
 
         when(mContextSpy.getSystemService(DeviceStateManager.class))
                 .thenReturn(mDeviceStateManagerMock);
@@ -4656,9 +4634,9 @@ public class PowerManagerServiceTest {
 
         // Ensure that the device has been idle for only 10 (doesn't include the idle time
         // before the display state event).
-        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+        assertThat(mService.wasPowerGroupIdleForInternal(mDefaultDisplayInfo.displayGroupId,
                 timeToAdvance - 1)).isTrue();
-        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+        assertThat(mService.wasPowerGroupIdleForInternal(mDefaultDisplayInfo.displayGroupId,
                 timeToAdvance)).isFalse();
 
         assertThat(mService.wasPowerGroupIdleForInternal(displayInfo2.displayGroupId,
@@ -4671,9 +4649,9 @@ public class PowerManagerServiceTest {
         advanceTime(timeToAdvance);
         final long newTime = timeToAdvance * 2;
 
-        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+        assertThat(mService.wasPowerGroupIdleForInternal(mDefaultDisplayInfo.displayGroupId,
                 newTime - 1)).isTrue();
-        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+        assertThat(mService.wasPowerGroupIdleForInternal(mDefaultDisplayInfo.displayGroupId,
                 newTime)).isFalse();
         assertThat(mService.wasPowerGroupIdleForInternal(displayInfo2.displayGroupId,
                 newTime - 1)).isTrue();
@@ -4694,15 +4672,9 @@ public class PowerManagerServiceTest {
                 .thenReturn(DisplayGroup.FLAG_DEFAULT_GROUP_ADJACENT);
 
         // Mock DisplayInfo for both groups
-        final DisplayInfo displayInfo1 = new DisplayInfo();
-        displayInfo1.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(
-                displayInfo1);
-
-        final DisplayInfo displayInfo2 = new DisplayInfo();
-        displayInfo2.displayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1;
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayInfo2.displayGroupId)).thenReturn(
-                displayInfo2);
+        final DisplayInfo displayInfo2 = createDisplayInfo(
+                Display.DEFAULT_DISPLAY_GROUP + 1, Display.DEFAULT_DISPLAY_GROUP + 1);
+        setMockDisplays(mDefaultDisplayInfo, displayInfo2);
 
         when(mContextSpy.getSystemService(DeviceStateManager.class))
                 .thenReturn(mDeviceStateManagerMock);
@@ -4729,9 +4701,9 @@ public class PowerManagerServiceTest {
 
         // Ensure that the device has been idle for only 10 (doesn't include the idle time
         // before the display state event).
-        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+        assertThat(mService.wasPowerGroupIdleForInternal(mDefaultDisplayInfo.displayGroupId,
                 timeToAdvance - 1)).isTrue();
-        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+        assertThat(mService.wasPowerGroupIdleForInternal(mDefaultDisplayInfo.displayGroupId,
                 timeToAdvance)).isFalse();
 
         // Ensure that this display (which did not get nudged) has been idle for longer
@@ -4745,9 +4717,9 @@ public class PowerManagerServiceTest {
         advanceTime(timeToAdvance);
         final long newTime = timeToAdvance * 2;
 
-        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+        assertThat(mService.wasPowerGroupIdleForInternal(mDefaultDisplayInfo.displayGroupId,
                 newTime - 1)).isTrue();
-        assertThat(mService.wasPowerGroupIdleForInternal(displayInfo1.displayGroupId,
+        assertThat(mService.wasPowerGroupIdleForInternal(mDefaultDisplayInfo.displayGroupId,
                 newTime)).isFalse();
         assertThat(mService.wasPowerGroupIdleForInternal(displayInfo2.displayGroupId,
                 newTime - 1)).isTrue();
@@ -4967,10 +4939,6 @@ public class PowerManagerServiceTest {
         mSetFlagsRule.enableFlags(com.android.server.power.feature.flags
                 .Flags.FLAG_ENABLE_EARLY_SCREEN_TIMEOUT_DETECTOR);
 
-        final DisplayInfo info = new DisplayInfo();
-        info.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY)).thenReturn(info);
-
         setAttentiveTimeout(30000);
         setScreenTimeoutOverrideConfig(10000);
 
@@ -5132,11 +5100,6 @@ public class PowerManagerServiceTest {
         IntArray displayGroupIds = IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP});
         when(mDisplayManagerInternalMock.getDisplayGroupIds()).thenReturn(displayGroupIds);
 
-        final DisplayInfo displayInfo = new DisplayInfo();
-        displayInfo.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY))
-                .thenReturn(displayInfo);
-
         createService();
         startSystem();
 
@@ -5160,11 +5123,6 @@ public class PowerManagerServiceTest {
         IntArray displayGroupIds = IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP});
         when(mDisplayManagerInternalMock.getDisplayGroupIds()).thenReturn(displayGroupIds);
 
-        final DisplayInfo displayInfo = new DisplayInfo();
-        displayInfo.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY))
-                .thenReturn(displayInfo);
-
         createService();
         startSystem();
 
@@ -5186,11 +5144,6 @@ public class PowerManagerServiceTest {
         IntArray displayGroupIds = IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP});
         when(mDisplayManagerInternalMock.getDisplayGroupIds()).thenReturn(displayGroupIds);
 
-        final DisplayInfo displayInfo = new DisplayInfo();
-        displayInfo.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY))
-                .thenReturn(displayInfo);
-
         createService();
         startSystem();
         verify(mDisplayManagerMock).registerDisplayListener(
@@ -5207,11 +5160,6 @@ public class PowerManagerServiceTest {
             throws Exception {
         IntArray displayGroupIds = IntArray.wrap(new int[]{Display.DEFAULT_DISPLAY_GROUP});
         when(mDisplayManagerInternalMock.getDisplayGroupIds()).thenReturn(displayGroupIds);
-
-        final DisplayInfo displayInfo = new DisplayInfo();
-        displayInfo.displayGroupId = Display.DEFAULT_DISPLAY_GROUP;
-        when(mDisplayManagerInternalMock.getDisplayInfo(Display.DEFAULT_DISPLAY))
-                .thenReturn(displayInfo);
 
         createService();
         startSystem();
@@ -5679,10 +5627,8 @@ public class PowerManagerServiceTest {
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
 
-        DisplayInfo displayInfo = mock(DisplayInfo.class);
-        displayInfo.displayGroupId = nonDefaultPowerGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayInNonDefaultGroup))
-                .thenReturn(displayInfo);
+        setMockDisplays(mDefaultDisplayInfo,
+                createDisplayInfo(displayInNonDefaultGroup, nonDefaultPowerGroupId));
         createService();
         startSystem();
         listener.get().onDisplayGroupAdded(nonDefaultPowerGroupId);
@@ -5723,10 +5669,8 @@ public class PowerManagerServiceTest {
             return null;
         }).when(mDisplayManagerInternalMock).registerDisplayGroupListener(any());
 
-        DisplayInfo displayInfo = mock(DisplayInfo.class);
-        displayInfo.displayGroupId = nonDefaultPowerGroupId;
-        when(mDisplayManagerInternalMock.getDisplayInfo(displayInNonDefaultGroup))
-                .thenReturn(displayInfo);
+        setMockDisplays(mDefaultDisplayInfo,
+                createDisplayInfo(displayInNonDefaultGroup, nonDefaultPowerGroupId));
         createService();
         startSystem();
         listener.get().onDisplayGroupAdded(nonDefaultPowerGroupId);

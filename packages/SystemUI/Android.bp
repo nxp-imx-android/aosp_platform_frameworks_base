@@ -477,33 +477,6 @@ java_defaults {
     defaults_visibility: ["//visibility:public"],
 }
 
-// The set of sources that instantiate the AOSP System UI Application (including Dagger graph)
-filegroup {
-    name: "SystemUI-application-srcs",
-    srcs: [
-        "application/src/com/android/systemui/SystemUIService.java",
-        "application/src/com/android/systemui/SystemUIInitializer.java",
-        "application/src/com/android/systemui/SystemUIInitializerImpl.kt",
-        "application/src/com/android/systemui/SystemUIAppComponentFactoryBase.kt",
-        "application/src/com/android/systemui/PhoneSystemUIAppComponentFactory.kt",
-        "application/src/com/android/systemui/application/ApplicationContextInitializer.kt",
-        "application/src/com/android/systemui/application/ApplicationContextAvailableCallback.kt",
-        "application/src/com/android/systemui/application/impl/SystemUIApplicationImpl.java",
-        "application/src/com/android/systemui/dagger/DefaultComponentBinder.java",
-        "application/src/com/android/systemui/dagger/DefaultServiceBinder.java",
-        "application/src/com/android/systemui/dagger/SystemUIModule.java",
-        "application/src/com/android/systemui/dagger/SysUIComponent.java",
-        "application/src/com/android/systemui/dagger/ReferenceSysUIComponent.java",
-        "application/src/com/android/systemui/dagger/ReferenceGlobalRootComponent.java",
-        "application/src/com/android/systemui/dagger/GlobalRootComponent.java",
-        "application/src/com/android/systemui/dagger/GlobalModule.java",
-        "application/src/com/android/systemui/screenshot/policy/ScreenshotPolicyModule.kt",
-        "application/src/com/android/systemui/screenshot/dagger/ScreenshotModule.java",
-    ],
-    path: "application/src",
-    visibility: ["//visibility:private"],
-}
-
 android_library {
     name: "SystemUI-core",
     srcs: [
@@ -519,7 +492,7 @@ android_library {
     defaults: ["SystemUI-srcs-defaults"],
     static_libs: [
         "//frameworks/libs/systemui:compilelib",
-        "com.android.systemui.pods-api-aosp-handheld",
+        "com.android.systemui.bundle.phone_api",
         "SystemUI-res",
         "WifiTrackerLib",
         "WindowManager-Shell",
@@ -566,6 +539,8 @@ android_library {
         "androidx.media3.media3-session",
         "androidx.graphics_graphics-core",
         "com.google.android.material_material",
+        // Unlike most pods, this module is directly included into GlobalModule
+        "com.android.systemui.util.time_dagger",
         "device_state_flags_lib",
         "kotlinx_coroutines_android",
         "kotlinx_coroutines",
@@ -618,12 +593,13 @@ platform_compat_config {
 // SystemUI-core target.
 android_library {
     name: "SystemUI-application",
-    srcs: [":SystemUI-application-srcs"],
+    srcs: [
+        "application/src/**/*.java",
+        "application/src/**/*.kt",
+    ],
     defaults: ["SystemUI-srcs-defaults"],
     static_libs: [
         "SystemUI-core",
-        "com.android.systemui.pods-api-aosp-handheld",
-        "com.android.systemui.pods-impl-aosp-handheld",
         "com.android.systemui.bundle.phone_dagger",
         "dagger2",
     ],
@@ -691,7 +667,7 @@ java_library {
         "tests/utils/src/com/android/systemui/util/time/FakeSystemClock.java",
     ],
     static_libs: [
-        "com.android.systemui.util.time-api",
+        "com.android.systemui.util.time_api",
     ],
     libs: [
         "androidx.annotation_annotation",
@@ -818,8 +794,6 @@ android_library {
     ],
     static_libs: [
         "//frameworks/libs/systemui:compilelib",
-        "com.android.systemui.pods-api-aosp-handheld",
-        "com.android.systemui.pods-impl-aosp-handheld",
         "com.android.systemui.bundle.phone_dagger",
         "SystemUI_test_fixtures",
         "SystemUI-tests-base",

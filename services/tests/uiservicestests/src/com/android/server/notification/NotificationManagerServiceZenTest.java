@@ -566,8 +566,7 @@ public class NotificationManagerServiceZenTest extends UiServiceTestCase {
 
     @SuppressLint("MissingPermission")
     private void initNMS(int upToBootPhase) throws Exception {
-        mService = new TestableNotificationManagerService(mContext, mNotificationRecordLogger,
-                mNotificationInstanceIdSequence);
+        mService = new TestableNotificationManagerService(mContext, mTestableLooper);
 
         // apps allowed as convos
         mService.setStringArrayResourceValue(PKG_O);
@@ -582,11 +581,13 @@ public class NotificationManagerServiceZenTest extends UiServiceTestCase {
                 mPackageManagerClient, mLightsManager, mListeners, mAssistants, mConditionProviders,
                 mCompanionMgr, mSnoozeHelper, mUsageStats, mPolicyFile, mRulesFile,
                 mActivityManager, mGroupHelper, mAm, mAtm, mAppUsageStats, mDevicePolicyManager,
-                mUgm, mUgmInternal, mAppOpsManager, mUm, mHistoryManager, mStatsManager, mAmi,
+                mUgm, mUgmInternal, mAppOpsManager, mHistoryManager, mStatsManager, mAmi,
                 mToastRateLimiter, mPermissionHelper, mock(UsageStatsManagerInternal.class),
                 mTelecomManager, mLogger, mTestFlagResolver, mPermissionManager, mPowerManager,
                 mock(PostNotificationTrackerFactory.class), mUiEventLogger, mBitmapOffloader,
-                new NotificationListenerStats(MAX_CHANNELS_CREATED_BY_NLS_FOR_TESTING));
+                new NotificationListenerStats(MAX_CHANNELS_CREATED_BY_NLS_FOR_TESTING),
+                mNotificationRecordLogger,
+                mNotificationInstanceIdSequence);
 
         mService.setAttentionHelper(mAttentionHelper);
         mService.setLockPatternUtils(mock(LockPatternUtils.class));

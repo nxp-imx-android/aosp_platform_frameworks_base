@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Tampilkan kamera selfie"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Tampilkan sentuhan"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Pilih aplikasi yang akan direkam"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Tampilkan berikutnya"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Tampilkan sebelumnya"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Setelan perekaman layar"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Markup"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video disimpan"</string>
@@ -189,8 +187,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Bisukan"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Bunyikan"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> dari <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Cubit, tarik, dan ketuk selfie untuk menyesuaikan"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Screenshot diblokir oleh admin IT Anda"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Ambil screenshot seluruh layar"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Rekam seluruh layar"</string>
@@ -1250,16 +1247,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Tombol aksesibilitas"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Anda dapat menekan tombol aksesibilitas untuk mulai menggunakan fitur aksesibilitas."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Tambahkan fitur"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Siapkan tombol aksesibilitas"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Siapkan <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Selesai"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Pilih fitur"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Edit"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Pilih fitur"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Fitur ini akan terbuka saat Anda memilih tombol aksesibilitas lagi"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Aksesibilitas"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Layar kunci"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Sedang mematikan…"</string>

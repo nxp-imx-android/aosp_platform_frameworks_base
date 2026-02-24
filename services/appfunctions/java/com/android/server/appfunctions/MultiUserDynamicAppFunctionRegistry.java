@@ -31,6 +31,7 @@ import android.util.ArraySet;
 import android.util.Log;
 import android.util.SparseArray;
 
+import com.android.internal.os.BackgroundThread;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.SystemService;
 
@@ -77,9 +78,10 @@ public final class MultiUserDynamicAppFunctionRegistry {
                 mPerUserRegistrations.put(
                         user.getUserIdentifier(),
                         new DynamicAppFunctionRegistry(
-                                unregisteredFunctionNames ->
+                                BackgroundThread.getExecutor(),
+                                changedFunctionNames ->
                                         metadataObserver.onEnabledStatesChanged(
-                                                user.getUserHandle(), unregisteredFunctionNames)));
+                                                user.getUserHandle(), changedFunctionNames)));
             }
         }
     }
@@ -138,19 +140,16 @@ public final class MultiUserDynamicAppFunctionRegistry {
      * @param executor The client's executor that was used for registration. The system verifies
      *     this to ensure that only the original registrant can unregister the function.
      * @param userHandle The user for whom the app functions should be unregistered.
-     * @param scopeIds Identifiers of the registration source corresponding to each
-     *     functionIdentifier.
      * @throws IllegalStateException if the specified {@code userHandle} has not been unlocked.
      */
     public void unregisterAppFunctions(
             @NonNull String packageName,
             @NonNull List<String> functionIdentifiers,
             @NonNull IAppFunctionExecutor executor,
-            @NonNull UserHandle userHandle,
-            @NonNull List<RegistrationScopeId> scopeIds) {
+            @NonNull UserHandle userHandle) {
         maybePrintDebugLog("unregisterAppFunction " + packageName + ": ", functionIdentifiers);
         getPerUserRegistry(userHandle)
-                .unregisterAppFunctions(packageName, functionIdentifiers, executor, scopeIds);
+                .unregisterAppFunctions(packageName, functionIdentifiers, executor);
     }
 
     /**

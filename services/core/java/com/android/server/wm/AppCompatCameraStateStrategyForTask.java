@@ -124,7 +124,7 @@ class AppCompatCameraStateStrategyForTask {
             // on the camera (front, back, external) this should notify when camera changes and
             // add a method policies can call to check if camera has been running (mostly used
             // to return early).
-            policy.onCameraOpened(cameraApp, cameraActivity.getTask());
+            policy.onCameraOpened(cameraAppInfo, cameraActivity.app, cameraActivity.getTask());
         }
     }
 
@@ -172,7 +172,7 @@ class AppCompatCameraStateStrategyForTask {
         final Task cameraTask = mDisplayContent.getTask(task ->
                 task.getTaskInfo().taskId == cameraAppInfo.mTaskId);
         final boolean canClose = cameraTask == null
-                || policy.canCameraBeClosed(cameraAppInfo.mCameraId, cameraTask);
+                || policy.canCameraBeClosed(cameraAppInfo, cameraTask);
         if (canClose) {
             // Finish cleaning up. Remove only cameraId of this particular task.
             mCameraAppInfoSet.remove(cameraAppInfo);
@@ -181,7 +181,7 @@ class AppCompatCameraStateStrategyForTask {
                         cameraAppInfo.mPid);
                 // Only notify the listeners if the camera is not running - this close signal
                 // could be from switching cameras (e.g. back to front camera, and vice versa).
-                policy.onCameraClosed(app, cameraTask);
+                policy.onCameraClosed(cameraAppInfo, app, cameraTask);
             }
         }
 

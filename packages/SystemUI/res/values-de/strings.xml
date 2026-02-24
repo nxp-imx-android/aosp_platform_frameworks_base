@@ -1384,7 +1384,7 @@
     <string name="accessibility_magnification_done" msgid="263349129937348512">"Fertig"</string>
     <string name="accessibility_magnifier_edit" msgid="1522877239671820636">"Bearbeiten"</string>
     <string name="accessibility_magnification_magnifier_window_settings" msgid="2834685072221468434">"Einstellungen für das Vergrößerungsfenster"</string>
-    <string name="accessibility_floating_button_migration_tooltip" msgid="5217151214439341902">"Tippe, um die Bedienungshilfen aufzurufen. Du kannst diese Schaltfläche in den Einstellungen anpassen oder ersetzen.\n\n"<annotation id="link">"Zu den Einstellungen"</annotation></string>
+    <string name="accessibility_floating_button_migration_tooltip" msgid="5217151214439341902">"Tippe, um die Bedienungshilfen aufzurufen. Du kannst diesen Button in den Einstellungen anpassen oder ersetzen.\n\n"<annotation id="link">"Zu den Einstellungen"</annotation></string>
     <string name="accessibility_floating_button_docking_tooltip" msgid="6814897496767461517">"Durch Ziehen an den Rand wird die Schaltfläche zeitweise ausgeblendet"</string>
     <string name="accessibility_floating_button_undo" msgid="511112888715708241">"Rückgängig machen"</string>
     <string name="accessibility_floating_button_hidden_notification_title" msgid="4115036997406994799">"Button „Bedienungshilfen“ ausgeblendet"</string>

@@ -34,8 +34,6 @@ import android.view.Display;
 import android.view.KeyEvent;
 import android.view.ViewConfiguration;
 
-import com.android.hardware.input.Flags;
-
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
@@ -351,9 +349,8 @@ public final class SingleKeyGestureDetector {
         }
 
         if (event.getKeyCode() == mActiveRule.mKeyCode) {
-            if (Flags.abortSlowMultiPress()
-                    && (event.getEventTime() - mLastDownTime
-                            >= mActiveRule.getLongPressTimeoutMs())) {
+            if (event.getEventTime() - mLastDownTime
+                            >= mActiveRule.getLongPressTimeoutMs()) {
                 // In this case, we are either on a first long press (but long press behavior is not
                 // supported for this rule), or, on a non-first press that is at least as long as
                 // the long-press duration. Thus, we will cancel the multipress gesture.

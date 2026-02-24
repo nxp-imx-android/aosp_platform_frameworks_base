@@ -113,6 +113,7 @@ import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvision
 import com.android.systemui.statusbar.window.shared.model.StatusBarWindowState
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.wm.shell.scrolltotop.fakeScrollToTop
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
@@ -1757,6 +1758,16 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
 
             underTest.onShadeExpansionIntent(eventX, statusBarWidth)
             assertThat(displayId).isEqualTo(EXTERNAL_DISPLAY)
+        }
+
+    @Test
+    fun onStatusBarTap_callsScrollToTopInteractor() =
+        kosmos.runTest {
+            val eventX = 150f
+            underTest.onStatusBarTap(eventX)
+
+            assertThat(fakeScrollToTop.lastScrollToTopDisplayId).isEqualTo(DEFAULT_DISPLAY)
+            assertThat(fakeScrollToTop.lastScrollToTopX).isEqualTo(150)
         }
 
     @Test

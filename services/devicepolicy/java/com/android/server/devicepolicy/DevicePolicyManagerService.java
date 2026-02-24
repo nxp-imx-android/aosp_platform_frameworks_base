@@ -339,8 +339,8 @@ import android.app.admin.LongPolicyValue;
 import android.app.admin.ManagedProfileProvisioningParams;
 import android.app.admin.ManagedSubscriptionsPolicy;
 import android.app.admin.MultiuserManagedDeviceProvisioningParamsTransport;
-import android.app.admin.MultiUserManagedUserProvisioningParams;
-import android.app.admin.MultiUserManagedUserProvisioningParamsTransport;
+import android.app.admin.MultiuserManagedUserProvisioningParams;
+import android.app.admin.MultiuserManagedUserProvisioningParamsTransport;
 import android.app.admin.NetworkEvent;
 import android.app.admin.PackagePolicy;
 import android.app.admin.PackagePolicyKey;
@@ -365,6 +365,7 @@ import android.app.admin.UnsafeStateException;
 import android.app.admin.UserRestrictionPolicyKey;
 import android.app.admin.WifiSsidPolicy;
 import android.app.admin.flags.Flags;
+import android.app.admin.metadata.GeneratedPolicyMetadata;
 import android.app.backup.IBackupManager;
 import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
@@ -515,7 +516,8 @@ import com.android.server.SystemServiceManager;
 import com.android.server.accounts.AccountManagerService;
 import com.android.server.devicepolicy.ActiveAdmin.TrustAgentInfo;
 import com.android.server.devicepolicy.handlers.PolicyHandler;
-import com.android.server.devicepolicy.handlers.PolicyHandlerList;
+import com.android.server.devicepolicy.handlers.PolicyDefinitionFactory;
+import com.android.server.devicepolicy.handlers.PolicyHandlerFactory;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.pdb.PersistentDataBlockManagerInternal;
@@ -874,12 +876,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     ){
         List<PolicyHandler<?>> handlers = new ArrayList<PolicyHandler<?>>();
 
-        // NEW HANDLERS SHOULD GO IN {@link PolicyHandlerList.HANDLERS}, NOT HERE!
+        // NEW HANDLERS SHOULD GO IN {@link PolicyHandlerFactory}, NOT HERE!
         //
         // Handlers should only be added here if you are migrating a pre-existing policy and your
         // handler invokes the pre-existing hand-written code for this policy.
         //
-        // NEW HANDLERS SHOULD GO IN {@link PolicyHandlerList.HANDLERS}, NOT HERE!
+        // WARNING: This method is called from inside the constructor of DPMS. Not every field will
+        //   be initialized! (but they will be initialized by the time any of the methods inside
+        //   your handler is invoked).
+        //
+        // NEW HANDLERS SHOULD GO IN {@link PolicyHandlerFactory}, NOT HERE!
 
         return handlers;
     }
@@ -1727,9 +1733,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         mPermissions = new PermissionChecker(mContext, new PermissionCheckerDelegate());
         mHandler = new Handler(Objects.requireNonNull(injector.getMyLooper()));
 
-        mPolicyHandlers = createPolicyHandlers(this);
+       var generatedPolicyDefinitions = PolicyDefinitionFactory.buildAll();
         mPolicyDefinitionMap =
-                new PolicyDefinitionMap(getPolicyDefinitionsCreatedByPolicyHandlers());
+                new PolicyDefinitionMap(generatedPolicyDefinitions.values());
+        mPolicyHandlers = createPolicyHandlers(this, generatedPolicyDefinitions);
 
         mConstantsObserver = new DevicePolicyConstantsObserver(mHandler);
         mConstantsObserver.register();
@@ -2010,16 +2017,24 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
      * Initializes the policy handlers by collecting them from the hard coded list(s), setting their
      * delegate and combining them in a map keyed by the policy identifier string.
      */
-    static Map<String, PolicyHandler<?>> createPolicyHandlers(DevicePolicyManagerService dpms) {
+    static Map<String, PolicyHandler<?>> createPolicyHandlers(
+            DevicePolicyManagerService dpms,
+            Map<PolicyIdentifier<?>, PolicyDefinition<?>> generatedPolicyDefinitions) {
         var delegate = dpms.new PolicyHandlerDelegate();
         var allHandlers =
                 Stream.concat(
-                        PolicyHandlerList.HANDLERS.stream(),
+                        PolicyHandlerFactory.build().stream(),
                         createPolicyHandlersDependingOnDpms(dpms).stream());
         return allHandlers
                 .peek(
                         (handler) -> {
-                            handler.setDelegate(delegate);
+                            var definition =
+                                    generatedPolicyDefinitions.getOrDefault(handler.getKey(), null);
+                            var metadata =
+                                    GeneratedPolicyMetadata.getPolicyMetadata(handler.getKey());
+                            // this cast is safe since the type was checked when populating
+                            // `generatedPolicyDefinition`
+                            ((PolicyHandler) handler).initialize(delegate, definition, metadata);
                         })
                 .collect(
                         // `toMap` will throw an IllegalStateException when encountering
@@ -2028,16 +2043,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                                 (handler) -> handler.getKey().getId(), (handler) -> handler));
     }
 
-    /**
-     * Returns the {@link PolicyDefinition}s that are created by the {@link PolicyHandler}s based on
-     * the information in the policy definition annotations.
-     */
-    private Set<PolicyDefinition<?>> getPolicyDefinitionsCreatedByPolicyHandlers() {
-        return mPolicyHandlers.values().stream()
-                .filter((h) -> { return h.hasPolicyDefinition(); })
-                .map((h) -> { return h.getPolicyDefinition(); })
-                .collect(Collectors.toSet());
-    }
 
     /**
      * Creates a new {@link CallerIdentity} object to represent the caller's identity.
@@ -8138,11 +8143,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             CallerIdentity caller = getCallerIdentity(who, callerPackage);
             boolean deviceScope = parent || mDeviceAdmins.isDefaultDeviceOwner(caller);
             int scope = deviceScope ? POLICY_SCOPE_DEVICE : POLICY_SCOPE_USER;
-            int enumValue = disabled ? PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED
-                    : PolicyIdentifier.SCREEN_CAPTURE_ALLOWED;
-
-            setPolicy(caller, PolicyIdentifier.SCREEN_CAPTURE.getId(), scope,
-                    PolicyValueTransport.integerField(enumValue));
+            setEnumPolicyStoredAsBoolean(caller, PolicyIdentifier.SCREEN_CAPTURE, scope,
+                    /* booleanValue= */ disabled,
+                    /* trueValue= */ PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED);
             return;
         }
 
@@ -16542,7 +16545,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         }
         if (Flags.multiUserManagementUserProvisioning()
                 && DevicePolicyManager.ACTION_PROVISION_MULTIUSER_MANAGED_USER.equals(action)) {
-            return checkMultiUserManagedUserProvisioningPreCondition(userId);
+            return checkMultiuserManagedUserProvisioningPreCondition(userId);
         }
         if (!mHasFeature && !shouldEnableForRetailDemoPackage(packageName)) {
             logMissingFeatureAction("Cannot check provisioning for action " + action);
@@ -16908,7 +16911,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         return STATUS_OK;
     }
 
-    private int checkMultiUserManagedUserProvisioningPreCondition(@UserIdInt int userId) {
+    private int checkMultiuserManagedUserProvisioningPreCondition(@UserIdInt int userId) {
         // Device needs to support multi-user management.
         if (!isMultiuserManagementEnabledUnchecked()) {
             return STATUS_MULTIUSER_MANAGEMENT_NOT_SUPPORTED;
@@ -21677,13 +21680,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     }
 
     @Override
-    public void provisionMultiUserManagedUser(
-            @NonNull MultiUserManagedUserProvisioningParamsTransport provisioningParamsTransport,
+    public void provisionMultiuserManagedUser(
+            @NonNull MultiuserManagedUserProvisioningParamsTransport provisioningParamsTransport,
             @NonNull String callerPackage) {
-        MultiUserManagedUserProvisioningParams provisioningParams =
-                new MultiUserManagedUserProvisioningParams(provisioningParamsTransport);
+        MultiuserManagedUserProvisioningParams provisioningParams =
+                new MultiuserManagedUserProvisioningParams(provisioningParamsTransport);
 
-        Slogf.d(LOG_TAG, "provisionMultiUserManagedUser(pkg=%s, params=%s)", callerPackage,
+        Slogf.d(LOG_TAG, "provisionMultiuserManagedUser(pkg=%s, params=%s)", callerPackage,
                 provisioningParams);
 
         Objects.requireNonNull(provisioningParams, "provisioningParams is null");
@@ -21707,16 +21710,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
             provisioningParams.logParams(callerPackage);
 
-            provisionMultiUserManagedUserInternal(
+            provisionMultiuserManagedUserInternal(
                     /* profileAdmin= */ admin,
                     /* userId= */ userId);
         });
     }
 
-    private void provisionMultiUserManagedUserInternal(@NonNull ComponentName profileAdmin,
+    private void provisionMultiuserManagedUserInternal(@NonNull ComponentName profileAdmin,
             @UserIdInt int userId) {
         if (VERBOSE_LOG) {
-            Slogf.v(LOG_TAG, "provisionMultiUserManagedUserInternal(): profileAdmin=" + profileAdmin
+            Slogf.v(LOG_TAG, "provisionMultiuserManagedUserInternal(): profileAdmin=" + profileAdmin
                     + ", userId=" + userId);
         }
 
@@ -23660,6 +23663,27 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             return result;
         }
     }
+
+    /* Helper method to call `setPolicy` from the hand-written handler of an enum policy that's
+     * stored as a boolean inside DPE.
+     */
+    private void setEnumPolicyStoredAsBoolean(
+            CallerIdentity caller,
+            PolicyIdentifier<Integer> id,
+            int scope,
+            boolean booleanValue,
+            int trueValue) {
+        // In the hand-written handlers, setting the value to `false` is used to clear the policy
+        // from the DevicePolicyEngine.
+        // Retain that behavior, otherwise there would be no way to clear the policy through these
+        // handlers.
+        if (booleanValue == false) {
+            setPolicy(caller, id.getId(), scope, null);
+        } else {
+            setPolicy(caller, id.getId(), scope, PolicyValueTransport.integerField(trueValue));
+        }
+    }
+
 
     @Override
     public void setPolicy(

@@ -110,11 +110,9 @@ public class MediaProjectionStopController {
         try {
             mKeyguardManager.addKeyguardLockedStateListener(context.getMainExecutor(),
                     mOnKeyguardLockedStateChanged);
-            if (com.android.media.projection.flags.Flags.stopMediaProjectionOnCallEnd()) {
-                callStateChanged();
-                mTelephonyManager.registerTelephonyCallback(context.getMainExecutor(),
-                        mTelephonyCallback);
-            }
+            callStateChanged();
+            mTelephonyManager.registerTelephonyCallback(context.getMainExecutor(),
+                    mTelephonyCallback);
             mDisplayManager.registerDisplayListener(context.getMainExecutor(),
                     DisplayManager.EVENT_TYPE_DISPLAY_REMOVED,
                     mProjectionDisplayListener);
@@ -224,9 +222,6 @@ public class MediaProjectionStopController {
 
     @VisibleForTesting
     void callStateChanged() {
-        if (!com.android.media.projection.flags.Flags.stopMediaProjectionOnCallEnd()) {
-            return;
-        }
         boolean isInCall = mTelecomManager.isInCall();
         if (isInCall) {
             mLastCallStartTimeMillis = SystemClock.uptimeMillis();

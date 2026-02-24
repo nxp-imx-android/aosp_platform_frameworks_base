@@ -20,5 +20,4 @@
     <string name="spa_unavailable" msgid="567282414168720681">"不可用"</string>
     <string name="spa_learn_more" msgid="4863409275777394686">"了解详情"</string>
     <string name="spa_spinner_selected_item" msgid="8177204089902251864">"已选择"</string>
-    <string name="spa_action_button_disabled_item" msgid="6979877599230080447">"已禁用"</string>
 </resources>

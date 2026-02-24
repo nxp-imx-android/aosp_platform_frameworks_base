@@ -287,7 +287,7 @@ class VirtualInputDeviceController {
     private void closeInputDeviceDescriptorLocked(IBinder token,
             InputDeviceDescriptor inputDeviceDescriptor) {
         token.unlinkToDeath(inputDeviceDescriptor.getDeathRecipient(), /* flags= */ 0);
-        mNativeWrapper.closeUinput(inputDeviceDescriptor.getNativePointer());
+        mNativeWrapper.closeUinput(inputDeviceDescriptor.getNativePointerLocked());
         String phys = inputDeviceDescriptor.getPhys();
         mService.removeUniqueIdAssociationByPort(phys);
         if (disableSettingsForVirtualDevices()) {
@@ -344,7 +344,7 @@ class VirtualInputDeviceController {
             fout.println("  Active descriptors: ");
             for (int i = 0; i < mInputDeviceDescriptors.size(); ++i) {
                 InputDeviceDescriptor inputDeviceDescriptor = mInputDeviceDescriptors.valueAt(i);
-                fout.println("    ptr: " + inputDeviceDescriptor.getNativePointer());
+                fout.println("    ptr: " + inputDeviceDescriptor.getNativePointerLocked());
                 fout.println("      displayId: "
                         + inputDeviceDescriptor.getAssociatedDisplayId());
                 fout.println("      creationOrder: "
@@ -561,7 +561,7 @@ class VirtualInputDeviceController {
             mCreationOrderNumber = sNextCreationOrderNumber.getAndIncrement();
         }
 
-        long getNativePointer() {
+        long getNativePointerLocked() {
             return mPtr;
         }
 
@@ -896,7 +896,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeGamepadKeyEvent(
-                                    mDevice.getNativePointer(),
+                                    mDevice.getNativePointerLocked(),
                                     event.getKeyCode(),
                                     event.getAction(),
                                     event.getEventTimeNanos()));
@@ -923,7 +923,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeGamepadMotionEvent(
-                                    mDevice.getNativePointer(), event));
+                                    mDevice.getNativePointerLocked(), event));
         }
 
         private void validateAxisValue(float value, int axis) {
@@ -970,7 +970,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeKeyEvent(
-                                    mDevice.getNativePointer(),
+                                    mDevice.getNativePointerLocked(),
                                     event.getKeyCode(),
                                     event.getAction(),
                                     event.getEventTimeNanos()));
@@ -1003,7 +1003,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeTouchEvent(
-                                    mDevice.getNativePointer(),
+                                    mDevice.getNativePointerLocked(),
                                     event.getPointerId(),
                                     event.getToolType(),
                                     event.getAction(),
@@ -1041,7 +1041,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeDpadKeyEvent(
-                                    mDevice.getNativePointer(),
+                                    mDevice.getNativePointerLocked(),
                                     event.getKeyCode(),
                                     event.getAction(),
                                     event.getEventTimeNanos()));
@@ -1074,7 +1074,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeTouchEvent(
-                                    mDevice.getNativePointer(),
+                                    mDevice.getNativePointerLocked(),
                                     event.getPointerId(),
                                     event.getToolType(),
                                     event.getAction(),
@@ -1112,7 +1112,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeButtonEvent(
-                                    mDevice.getNativePointer(),
+                                    mDevice.getNativePointerLocked(),
                                     event.getButtonCode(),
                                     event.getAction(),
                                     event.getEventTimeNanos()));
@@ -1124,7 +1124,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeRelativeEvent(
-                                    mDevice.getNativePointer(),
+                                    mDevice.getNativePointerLocked(),
                                     event.getRelativeX(),
                                     event.getRelativeY(),
                                     event.getEventTimeNanos()));
@@ -1136,7 +1136,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeScrollEvent(
-                                    mDevice.getNativePointer(),
+                                    mDevice.getNativePointerLocked(),
                                     event.getXAxisMovement(),
                                     event.getYAxisMovement(),
                                     event.getEventTimeNanos()));
@@ -1184,7 +1184,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeRotaryEncoderScrollEvent(
-                                    mDevice.getNativePointer(),
+                                    mDevice.getNativePointerLocked(),
                                     event.getScrollAmount(),
                                     event.getEventTimeNanos()));
         }
@@ -1216,7 +1216,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeStylusMotionEvent(
-                                    mDevice.getNativePointer(),
+                                    mDevice.getNativePointerLocked(),
                                     event.getToolType(),
                                     event.getAction(),
                                     event.getX(),
@@ -1233,7 +1233,7 @@ class VirtualInputDeviceController {
             return mDevice.injectInput(
                     () ->
                             mNativeWrapper.writeStylusButtonEvent(
-                                    mDevice.getNativePointer(),
+                                    mDevice.getNativePointerLocked(),
                                     event.getButtonCode(),
                                     event.getAction(),
                                     event.getEventTimeNanos()));

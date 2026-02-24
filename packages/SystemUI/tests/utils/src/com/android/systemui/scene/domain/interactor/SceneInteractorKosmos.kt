@@ -19,6 +19,7 @@ package com.android.systemui.scene.domain.interactor
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.deviceentry.domain.interactor.restrictedModeInteractor
+import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.scenetransition.lockscreenSceneTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -42,5 +43,6 @@ val Kosmos.sceneInteractor: SceneInteractor by
             authenticationInteractor = { authenticationInteractor },
             lockscreenSceneTransitionInteractor = { lockscreenSceneTransitionInteractor },
             restrictedModeInteractor = { restrictedModeInteractor },
+            dumpManager = dumpManager,
         )
     }

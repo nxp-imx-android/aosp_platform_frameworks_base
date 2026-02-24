@@ -16,23 +16,27 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui
 
+import android.app.Activity
+import com.android.systemui.notifications.intelligence.rules.ui.composable.NotificationRulesActivity
 import com.android.systemui.notifications.intelligence.rules.ui.composable.NotificationRulesScreen
 import com.android.systemui.notifications.intelligence.rules.ui.composable.NotificationRulesScreenImpl
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModelImpl
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesParentViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesParentViewModelImpl
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModelImpl
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesShadeStateViewModel
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesShadeStateViewModelImpl
 import dagger.Binds
 import dagger.Module
+import dagger.multibindings.ClassKey
+import dagger.multibindings.IntoMap
 
 @Module
 interface NotificationRulesUiModule {
     @Binds
-    public fun bindRulesShadeStateViewModelFactory(
-        impl: NotificationRulesShadeStateViewModelImpl.Factory
-    ): NotificationRulesShadeStateViewModel.Factory
+    public fun bindRulesParentViewModelFactory(
+        impl: NotificationRulesParentViewModelImpl.Factory
+    ): NotificationRulesParentViewModel.Factory
 
     @Binds
     public fun bindCurrentRulesViewModelFactory(
@@ -48,4 +52,9 @@ interface NotificationRulesUiModule {
     public fun bindNotificationRulesScreen(
         impl: NotificationRulesScreenImpl
     ): NotificationRulesScreen
+
+    @Binds
+    @IntoMap
+    @ClassKey(NotificationRulesActivity::class)
+    abstract fun provideActivity(activity: NotificationRulesActivity): Activity
 }

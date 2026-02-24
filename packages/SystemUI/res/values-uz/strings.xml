@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Selfi kamerani chiqarish"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Bosilgan joylarni koʻrsatish"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Yozib olish uchun ilovani tanlang"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Keyingisi"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Avvalgisi"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Ekranni yozib olish sozlamalari"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Markup"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video saqlandi"</string>
