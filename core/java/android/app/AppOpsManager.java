@@ -80,6 +80,8 @@ import android.permission.PermissionGroupUsage;
 import android.permission.PermissionUsageHelper;
 import android.permission.flags.Flags;
 import android.provider.DeviceConfig;
+import android.ravenwood.annotation.RavenwoodIgnore;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -198,6 +200,7 @@ import java.util.function.Supplier;
  * particularly useful for an app that want to find unexpected private data accesses.
  */
 @SystemService(Context.APP_OPS_SERVICE)
+@RavenwoodKeepPartialClass
 public class AppOpsManager {
     /**
      * This is a subtle behavior change to {@link #startWatchingMode}.
@@ -11141,6 +11144,7 @@ public class AppOpsManager {
      *
      * @hide
      */
+    @RavenwoodIgnore(reason = "Only used in binder IPCs, which Ravenwood does not support")
     public static @Nullable PausedNotedAppOpsCollection pauseNotedAppOpsCollection() {
         Integer previousUid = sBinderThreadCallingUid.get();
         if (previousUid != null) {
@@ -11163,6 +11167,7 @@ public class AppOpsManager {
      *
      * @hide
      */
+    @RavenwoodIgnore(reason = "Only used in binder IPCs, which Ravenwood does not support")
     public static void resumeNotedAppOpsCollection(
             @Nullable PausedNotedAppOpsCollection prevCollection) {
         if (prevCollection != null) {
@@ -11577,6 +11582,7 @@ public class AppOpsManager {
      *
      * @hide
      */
+    @RavenwoodIgnore(reason = "Only used in binder IPCs, which Ravenwood does not support")
     public static boolean isListeningForOpNoted() {
         return sOnOpNotedCallback != null || isCollectingStackTraces();
     }

@@ -19,6 +19,7 @@ android.app.ActivityOptions
 android.app.ActivityThread
 android.app.AppCompatCallbacks
 android.app.AppComponentFactory
+android.app.AppOpsManager
 android.app.Application
 android.app.ApplicationPackageManager
 android.app.BroadcastOptions
@@ -285,6 +286,7 @@ android.os.BatteryStats
 android.os.BatteryUsageStats
 android.os.BatteryUsageStatsQuery
 android.os.Binder
+android.os.BinderProxy
 android.os.BluetoothBatteryStats
 android.os.Broadcaster
 android.os.Build
