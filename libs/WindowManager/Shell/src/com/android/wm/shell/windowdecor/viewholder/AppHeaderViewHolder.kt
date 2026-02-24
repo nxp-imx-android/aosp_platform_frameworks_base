@@ -144,14 +144,11 @@ class AppHeaderViewHolder(
     private val a11yAnnounceTextRestore: String =
         context.getString(R.string.app_header_talkback_action_restore_button_text)
 
-    private val a11yAnnounceTextOpening: String =
-        context.getString(R.string.desktop_mode_talkback_state_opening)
     private val a11yAnnounceTextMinimizing: String =
         context.getString(R.string.desktop_mode_talkback_state_minimizing)
     private val a11yAnnounceTextClosing: String =
         context.getString(R.string.desktop_mode_talkback_state_closing)
     private lateinit var a11yAnnounceTextFocused: String
-    private lateinit var a11yAnnounceTextNotFocused: String
 
     private lateinit var sizeToggleDirection: SizeToggleDirection
     private lateinit var a11yTextMaximize: String
@@ -466,8 +463,6 @@ class AppHeaderViewHolder(
         a11yTextRestore = context.getString(R.string.restore_button_text, name)
         a11yAnnounceTextFocused =
             context.getString(R.string.desktop_mode_talkback_state_focused, name)
-        a11yAnnounceTextNotFocused =
-            context.getString(R.string.desktop_mode_talkback_state_not_focused, name)
     }
 
     private fun updateMaximizeButtonContentDescription() {
