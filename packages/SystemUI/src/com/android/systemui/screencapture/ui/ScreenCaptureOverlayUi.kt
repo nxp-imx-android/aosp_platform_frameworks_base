@@ -42,6 +42,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
@@ -68,7 +69,19 @@ import com.android.systemui.statusbar.phone.create
 import com.android.systemui.util.view.listenToComputeInternalInsets
 import javax.inject.Inject
 import kotlin.coroutines.resume
+import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.suspendCancellableCoroutine
+
+/**
+ * Sample duration for the [android.view.ViewTreeObserver.OnComputeInternalInsetsListener] region
+ * changes. Updating it every time causes an underlying binder to overflow the cache and cause a
+ * crash.
+ */
+private val outsideRegionUpdateSampleDuration = 200.milliseconds
 
 @ScreenCaptureScope
 class ScreenCaptureOverlayUi
@@ -123,8 +136,8 @@ constructor(
 
     @Composable
     private fun DialogContent(window: Window) {
-        val drawingTouchableRegion = remember { Region.obtain() }
-        val cameraTouchableRegion = remember { Region.obtain() }
+        val drawingTouchableRegion = remember { Region() }
+        val cameraTouchableRegion = remember { Region() }
         LaunchedEffect(window.decorView.viewTreeObserver) {
             window.decorView.viewTreeObserver.listenToComputeInternalInsets {
                 setTouchableInsets(InternalInsetsInfo.TOUCHABLE_INSETS_REGION)
@@ -155,9 +168,8 @@ constructor(
                     cameraTransformationViewModel.create()
                 }
             var windowBounds: Rect by remember { mutableStateOf(Rect.Zero) }
-            LightLaunchedEffect(transformationViewModel.fillCameraInteractableRegionIndicator) {
-                transformationViewModel.fillCameraInteractableRegion(outTouchableRegion)
-            }
+
+            transformationViewModel.fillTouchableRegionInto(outTouchableRegion)
 
             Box(
                 contentAlignment = Alignment.BottomCenter,
@@ -267,11 +279,22 @@ constructor(
     }
 }
 
+@OptIn(FlowPreview::class)
+@Composable
+private fun ScreenCaptureCameraTransformationViewModel.fillTouchableRegionInto(outRegion: Region) {
+    LaunchedEffect(this, outRegion) {
+        snapshotFlow { touchableRegion }
+            .sample(outsideRegionUpdateSampleDuration)
+            .onEach { outRegion.set(it) }
+            .launchIn(this)
+    }
+}
+
 private fun Modifier.showDebugIfNeeded(vm: ScreenCaptureCameraTransformationViewModel): Modifier {
     return if (vm.shouldShowTouchBounds) {
         drawWithContent {
             drawContent()
-            val path = vm.debugTouchBounds?.boundaryPath?.asComposePath() ?: return@drawWithContent
+            val path = vm.touchableRegion.boundaryPath.asComposePath()
             drawPath(path = path, color = Color.Red, alpha = 0.2f)
         }
     } else {
@@ -286,14 +309,6 @@ private fun ConditionalLaunchedEffect(condition: Boolean, action: suspend () -> 
         if (condition) {
             action()
         }
-    }
-}
-
-@Composable
-private fun LightLaunchedEffect(key: Any?, action: () -> Unit) {
-    DisposableEffect(key) {
-        action()
-        onDispose {}
     }
 }
 

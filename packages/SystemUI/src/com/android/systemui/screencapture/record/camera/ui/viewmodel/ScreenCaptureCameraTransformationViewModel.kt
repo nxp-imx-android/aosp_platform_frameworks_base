@@ -46,13 +46,16 @@ import com.android.systemui.util.isEmpty
 import com.android.systemui.util.kotlin.pairwiseBy
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import java.util.Objects
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 
+private const val TAG = "ScreenCaptureCameraTransformationViewModel"
+
+@OptIn(ExperimentalCoroutinesApi::class)
 class ScreenCaptureCameraTransformationViewModel
 @AssistedInject
 constructor(
@@ -66,30 +69,16 @@ constructor(
 
     val shouldShowTouchBounds: Boolean =
         Build.IS_DEBUGGABLE && SystemProperties.getBoolean(SHOW_SELFIE_TOUCH_BOUNDS_PROPERTY, false)
-    var debugTouchBounds: Region? by mutableStateOf(null)
-        private set
-
-    /**
-     * Changes in this field indicate that the output of the [fillCameraInteractableRegion] will be
-     * different from the last one
-     */
-    val fillCameraInteractableRegionIndicator: Any by derivedStateOf {
-        if (transformableByTouchAnywhere) {
-            uiBounds
-        } else {
-            Objects.hash(surfaceSubjectBoundsPath, uiBoundsRegion)
-        }
-    }
 
     val transformableByTouchAnywhere: Boolean by
         screenRecordingServiceInteractor.status.mapHydrate(
-            traceName = "ScreenCaptureCameraTransformationViewModel#transformableByTouchAnywhere"
+            traceName = "$TAG#transformableByTouchAnywhere"
         ) {
             !it.isRecording
         }
     private val subjectSize by
         cameraInteractor.streamConfiguration.mapHydrate(
-            traceName = "ScreenCaptureCameraTransformationViewModel#transformableByTouchAnywhere"
+            traceName = "$TAG#transformableByTouchAnywhere"
         ) {
             it?.outputStreamSize ?: AndroidSize(0, 0)
         }
@@ -112,15 +101,11 @@ constructor(
             }
         }
     }
-    private var uiBounds: Rect by mutableStateOf(Rect.Zero)
-    private val uiBoundsRegion: Region by derivedStateOf { uiBounds.toAndroidRectF().toRegion() }
+    private var uiBounds: Region by mutableStateOf(Region())
     private val cameraSubjectBounds: Path? by
-        cameraInteractor.cameraSubjectBounds
-            .map { it?.boundaryPath?.asComposePath() }
-            .hydratedStateOf("ScreenCaptureCameraViewModel#cameraSubjectBounds", null)
-    private val surfaceSubjectBoundsPath: Path by derivedStateOf {
-        transformCameraSubjectBounds(cameraSubjectBounds)
-    }
+        cameraInteractor.cameraSubjectBounds.mapHydrate("$TAG#cameraSubjectBounds") {
+            it?.boundaryPath?.asComposePath()
+        }
 
     /**
      * Transformation matrix calculated based on the [offsetX], [offsetY], [scale] and [rotation]
@@ -140,6 +125,22 @@ constructor(
     val offsetY: Float by transformationInteractor::offsetY
     val scale: Float by transformationInteractor::scale
     val rotation: Float by transformationInteractor::rotation
+
+    val touchableRegion: Region by derivedStateOf {
+        Region().apply {
+            if (transformableByTouchAnywhere) {
+                set(uiBounds)
+            } else {
+                val surfaceSubjectBoundsPath = Path()
+                transformCameraSubjectBounds(
+                    cameraSubjectBounds = cameraSubjectBounds ?: surfaceScreenBounds.toPath(),
+                    outputPath = surfaceSubjectBoundsPath,
+                    shouldTransformToScreenSpace = cameraSubjectBounds != null,
+                )
+                setPath(surfaceSubjectBoundsPath.asAndroidPath(), uiBounds)
+            }
+        }
+    }
 
     override suspend fun onActivated() {
         coroutineScope {
@@ -177,24 +178,7 @@ constructor(
      * the [transformableByTouchAnywhere] is true.
      */
     fun onUiBoundsChanged(bounds: Rect) {
-        uiBounds = bounds
-    }
-
-    /**
-     * Fills the [outRegion] with the touchable bounds. Use [fillCameraInteractableRegionIndicator]
-     * to get notified about the updates.
-     */
-    fun fillCameraInteractableRegion(outRegion: Region) {
-        if (transformableByTouchAnywhere) {
-            with(uiBounds) {
-                outRegion.set(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-            }
-        } else {
-            outRegion.setPath(surfaceSubjectBoundsPath.asAndroidPath(), uiBoundsRegion)
-        }
-        if (shouldShowTouchBounds) {
-            debugTouchBounds = Region(outRegion)
-        }
+        uiBounds = bounds.toAndroidRectF().toRegion()
     }
 
     /**
@@ -202,21 +186,26 @@ constructor(
      * positioned inside the (0, 0, outputStreamSize#width, outputStreamSize#height) rect) to a
      * transformed path in the screen space (ie in [surfaceScreenBounds])
      */
-    private fun transformCameraSubjectBounds(cameraSubjectBounds: Path?): Path {
-        // First we need translate the basis from surface to screen
-        val cameraSubjectBoundsInScreenSpace =
-            cameraSubjectBounds?.apply { transform(surfaceToScreenMatrix) }
-        // Apply screen transformation to path
-        return (cameraSubjectBoundsInScreenSpace ?: surfaceScreenBounds.toPath()).apply {
-            // Pivot around the actual center of the bounds taking into account bounds position
-            // because this applies to a figure that is positioned with an arbitrary offset
-            transform(
-                createTransformationMatrix(
-                    pivotX = surfaceScreenBounds.center.x,
-                    pivotY = surfaceScreenBounds.center.y,
-                )
-            )
+    private fun transformCameraSubjectBounds(
+        cameraSubjectBounds: Path,
+        outputPath: Path,
+        shouldTransformToScreenSpace: Boolean,
+    ) {
+        outputPath.reset()
+        outputPath.addPath(cameraSubjectBounds)
+        if (shouldTransformToScreenSpace) {
+            // First we need translate the basis from surface to screen
+            outputPath.transform(surfaceToScreenMatrix)
         }
+        // Apply screen transformation to path
+        outputPath.transform(
+            createTransformationMatrix(
+                // Pivot around the actual center of the bounds taking into account bounds position
+                // because this applies to a figure that is positioned with an arbitrary offset
+                pivotX = surfaceScreenBounds.center.x,
+                pivotY = surfaceScreenBounds.center.y,
+            )
+        )
     }
 
     /** Creates a transformation matrix pivoting around ([pivotX], [pivotY]) */
