@@ -188,16 +188,14 @@ public class AccountManagerServiceTest extends AndroidTestCase {
                 assertEquals(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT,
                         bOptions.getDeliveryGroupPolicy());
             } else if (AccountManager.ACTION_ACCOUNT_REMOVED.equals(intent.getAction())) {
-                if (Flags.coalesceAccountRemovedBroadcast()) {
-                    final BroadcastOptions bOptions = new BroadcastOptions(options);
-                    assertEquals(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT,
-                            bOptions.getDeliveryGroupPolicy());
-                    assertEquals(AccountManager.ACTION_ACCOUNT_REMOVED,
-                            bOptions.getDeliveryGroupMatchingNamespaceFragment());
-                    assertEquals(intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME) + "/"
-                                    + intent.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE),
-                            bOptions.getDeliveryGroupMatchingKeyFragment());
-                }
+                final BroadcastOptions bOptions = new BroadcastOptions(options);
+                assertEquals(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT,
+                        bOptions.getDeliveryGroupPolicy());
+                assertEquals(AccountManager.ACTION_ACCOUNT_REMOVED,
+                        bOptions.getDeliveryGroupMatchingNamespaceFragment());
+                assertEquals(intent.getStringExtra(AccountManager.KEY_ACCOUNT_NAME) + "/"
+                                + intent.getStringExtra(AccountManager.KEY_ACCOUNT_TYPE),
+                        bOptions.getDeliveryGroupMatchingKeyFragment());
             }
             return null;
         }).when(mMockContext).sendBroadcastAsUser(any(), any(), any(), any());
