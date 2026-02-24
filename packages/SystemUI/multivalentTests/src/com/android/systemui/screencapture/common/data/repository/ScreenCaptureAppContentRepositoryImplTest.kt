@@ -321,7 +321,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun appContentFor_failsToBind_unbindsFromServiceAndEmitsFailure() =
+    fun appContentFor_failsToBind_doesNotUnbindFromServiceAndEmitsFailure() =
         kosmos.runTest {
             // Arrange
             val repository =
@@ -356,6 +356,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
                     any<UserHandle>(),
                 )
             assertThat(serviceConnectionCaptor.allValues).hasSize(1)
+            // If bindService returns false, unbindService SHOULD still be called.
             verify(mockedContext).unbindService(same(serviceConnectionCaptor.lastValue))
             verify(mockedContext, times(2)).packageManager
             verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
@@ -367,7 +368,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun appContentFor_failsToBind_doesNotUnbindAgainWhenCollectionStops() =
+    fun appContentFor_failsToBind_doesNotUnbindWhenCollectionStops() =
         kosmos.runTest {
             // Arrange
             val repository =
@@ -405,6 +406,7 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
             job.cancel()
 
             // Assert
+            verify(mockedContext).unbindService(any())
             verify(mockedContext, times(2)).packageManager
             verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
             verifyNoMoreInteractions(mockedContext)
@@ -502,6 +504,48 @@ class ScreenCaptureAppContentRepositoryImplTest : SysuiTestCase() {
             assertThat(fakeAppContentProjectionCallback.onContentRequestCalls).isEmpty()
             assertThat(fakeAppContentProjectionCallback.onSessionStoppedCallCount).isEqualTo(0)
             assertThat(result?.isFailure).isTrue()
+
+            // Cleanup
+            job.cancel()
+        }
+
+    @Test
+    fun onBindingDied_unbindsServiceAndEmitsFailure() =
+        kosmos.runTest {
+            // Arrange
+            val repository =
+                ScreenCaptureAppContentRepositoryImpl(
+                    scope = backgroundScope,
+                    bgContext = testDispatcher,
+                    context = mockedContext,
+                )
+            val pm = mockedContext.packageManager
+            val job = startCollection(repository)
+            verify(mockedContext)
+                .bindServiceAsUser(
+                    any<Intent>(),
+                    serviceConnectionCaptor.capture(),
+                    any<Int>(),
+                    any<UserHandle>(),
+                )
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
+            verifyNoMoreInteractions(mockedContext)
+            assertThat(serviceConnectionCaptor.allValues).hasSize(1)
+            val serviceConnection = serviceConnectionCaptor.lastValue
+            assertThat(result).isNull()
+
+            // Act
+            serviceConnection.onBindingDied(/* name= */ null)
+
+            // Assert
+            // unbindService is called via awaitClose when flow is closed by onBindingDied
+            verify(mockedContext).unbindService(same(serviceConnection))
+            verify(mockedContext, times(2)).packageManager
+            verify(pm).queryIntentServicesAsUser(any<Intent>(), any<Int>(), any<UserHandle>())
+            verifyNoMoreInteractions(mockedContext)
+            assertThat(result?.isFailure).isTrue()
+            assertThat(result?.exceptionOrNull()).isInstanceOf(IllegalStateException::class.java)
 
             // Cleanup
             job.cancel()
