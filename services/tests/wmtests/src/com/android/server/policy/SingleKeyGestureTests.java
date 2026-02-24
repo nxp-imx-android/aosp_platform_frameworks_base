@@ -173,9 +173,9 @@ public class SingleKeyGestureTests {
                         if (mDetector.beganFromNonInteractive() && !mAllowNonInteractiveForPress) {
                             return;
                         }
-                        mMultiPressed.countDown();
                         assertTrue(mMaxMultiPressCount >= count);
                         assertEquals(mExpectedMultiPressCount, count);
+                        mMultiPressed.countDown();
                     }
 
                     @Override
@@ -230,9 +230,9 @@ public class SingleKeyGestureTests {
                         if (mDetector.beganFromNonInteractive() && !mAllowNonInteractiveForPress) {
                             return;
                         }
-                        mMultiPressed.countDown();
                         assertTrue(mMaxMultiPressCount >= count);
                         assertEquals(mExpectedMultiPressCount, count);
+                        mMultiPressed.countDown();
                     }
 
                     @Override
