@@ -38,6 +38,7 @@ import static org.mockito.Mockito.when;
 
 import android.animation.Animator;
 import android.content.Intent;
+import android.content.pm.UserInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.PixelFormat;
@@ -48,8 +49,10 @@ import android.net.NetworkCapabilities;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
-import android.platform.test.annotations.EnableFlags;
+import android.os.UserHandle;
+import android.os.UserManager;
 import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.SubscriptionInfo;
@@ -86,6 +89,7 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.toast.SystemUIToast;
 import com.android.systemui.toast.ToastFactory;
+import com.android.systemui.user.data.repository.FakeUserRepository;
 import com.android.systemui.util.CarrierConfigTracker;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.settings.GlobalSettings;
@@ -124,6 +128,12 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     private static final int GRAVITY_FLAGS = Gravity.FILL_HORIZONTAL | Gravity.FILL_VERTICAL;
     private static final int TOAST_MESSAGE_STRING_ID = 1;
     private static final String TOAST_MESSAGE_STRING = "toast message";
+
+    private static final UserInfo FIRST_USER = new UserInfo(10, "user 1", UserInfo.FLAG_FULL);
+    private static final UserInfo SECOND_USER = new UserInfo(11, "user 2", UserInfo.FLAG_FULL);
+    private static final UserInfo GUEST_USER = new UserInfo(20, "guest user", UserInfo.FLAG_GUEST);
+    private static final UserInfo HEADLESS_SYSTEM_USER =
+            new UserInfo(UserHandle.USER_SYSTEM, "headless system user", UserInfo.FLAG_FULL);
 
     private final KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
 
@@ -209,6 +219,7 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     private FakeExecutor mExecutor = new FakeExecutor(new FakeSystemClock());
     private List<WifiEntry> mAccessPoints = new ArrayList<>();
     private List<WifiEntry> mWifiEntries = new ArrayList<>();
+    private FakeUserRepository mUserRepository = mKosmos.getFakeUserRepository();
 
     private Configuration mConfig;
 
@@ -255,10 +266,11 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
                 mock(KeyguardUpdateMonitor.class), mGlobalSettings, mKeyguardStateController,
                 mWindowManager, mToastFactory, mWorkerHandler, mCarrierConfigTracker,
             mLocationController, mDialogTransitionAnimator, mWifiStateWorker, mFlags,
-            mKosmos.getShadeDialogContextInteractor());
+            mKosmos.getShadeDialogContextInteractor(), mUserRepository);
         mSubscriptionManager.addOnSubscriptionsChangedListener(mExecutor,
                 mInternetDetailsContentController.mOnSubscriptionsChangedListener);
-        mInternetDetailsContentController.onStart(mInternetDialogCallback, true);
+        mInternetDetailsContentController.onStart(
+                mInternetDialogCallback, true, mKosmos.getTestScope());
         mInternetDetailsContentController.onAccessPointsChanged(mAccessPoints);
         mInternetDetailsContentController.mActivityStarter = mActivityStarter;
         mInternetDetailsContentController.mWifiIconInjector = mWifiIconInjector;
@@ -1204,12 +1216,80 @@ public class InternetDetailsContentControllerTest extends SysuiTestCase {
     }
 
     @Test
-    public void getConfiguratorQrCodeGeneratorIntentOrNull_wifiShareable() {
+    public void getConfiguratorQrCodeGeneratorIntentOrNull_guestUser_returnNull() {
+        List<UserInfo> userInfos = List.of(GUEST_USER);
+        mUserRepository.setUserInfos(userInfos);
+        mUserRepository.setSelectedUserInfoBlocking(GUEST_USER);
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
+
         mFlags.set(Flags.SHARE_WIFI_QS_BUTTON, true);
         when(mConnectedEntry.canShare()).thenReturn(true);
         when(mConnectedEntry.getWifiConfiguration()).thenReturn(mWifiConfiguration);
         assertThat(mInternetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(
+                mConnectedEntry)).isNull();
+    }
+
+    @Test
+    public void getConfiguratorQrCodeGeneratorIntentOrNull_hsu_returnNull() {
+        List<UserInfo> userInfos = List.of(HEADLESS_SYSTEM_USER);
+        mUserRepository.setUserInfos(userInfos);
+        mUserRepository.setSelectedUserInfoBlocking(HEADLESS_SYSTEM_USER);
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
+
+        mFlags.set(Flags.SHARE_WIFI_QS_BUTTON, true);
+        when(mConnectedEntry.canShare()).thenReturn(true);
+        when(mConnectedEntry.getWifiConfiguration()).thenReturn(mWifiConfiguration);
+        if (UserManager.isHeadlessSystemUserMode()) {
+            assertThat(mInternetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(
+                    mConnectedEntry)).isNull();
+        }
+    }
+
+    @Test
+    public void getConfiguratorQrCodeGeneratorIntentOrNull_singleUser_wifiShareable() {
+        List<UserInfo> userInfos = List.of(FIRST_USER);
+        mUserRepository.setUserInfos(userInfos);
+        mUserRepository.setSelectedUserInfoBlocking(FIRST_USER);
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
+
+        mFlags.set(Flags.SHARE_WIFI_QS_BUTTON, true);
+        when(mConnectedEntry.canShare()).thenReturn(true);
+        when(mConnectedEntry.getWifiConfiguration()).thenReturn(mWifiConfiguration);
+
+        assertThat(mInternetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(
                 mConnectedEntry)).isNotNull();
+    }
+
+    @Test
+    public void getConfiguratorQrCodeGeneratorIntentOrNull_ownedNetwork_wifiShareable() {
+        List<UserInfo> userInfos = List.of(FIRST_USER, SECOND_USER);
+        mUserRepository.setUserInfos(userInfos);
+        mUserRepository.setSelectedUserInfoBlocking(FIRST_USER);
+        when(mWifiConfiguration.getCreatorUserId()).thenReturn(FIRST_USER.id);
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
+
+        mFlags.set(Flags.SHARE_WIFI_QS_BUTTON, true);
+        when(mConnectedEntry.canShare()).thenReturn(true);
+        when(mConnectedEntry.getWifiConfiguration()).thenReturn(mWifiConfiguration);
+
+        assertThat(mInternetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(
+                mConnectedEntry)).isNotNull();
+    }
+
+    @Test
+    public void getConfiguratorQrCodeGeneratorIntentOrNull_notOwnedNetwork_returnNull() {
+        List<UserInfo> userInfos = List.of(FIRST_USER, SECOND_USER);
+        mUserRepository.setUserInfos(userInfos);
+        mUserRepository.setSelectedUserInfoBlocking(FIRST_USER);
+        when(mWifiConfiguration.getCreatorUserId()).thenReturn(SECOND_USER.id);
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
+
+        mFlags.set(Flags.SHARE_WIFI_QS_BUTTON, true);
+        when(mConnectedEntry.canShare()).thenReturn(true);
+        when(mConnectedEntry.getWifiConfiguration()).thenReturn(mWifiConfiguration);
+
+        assertThat(mInternetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(
+                mConnectedEntry)).isNull();
     }
 
     @Test
