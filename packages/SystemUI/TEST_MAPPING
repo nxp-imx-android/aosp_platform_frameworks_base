@@ -169,7 +169,7 @@
       "name": "SystemUITests_presubmit"
     }
   ],
-  "ravenwood-postsubmit": [
+  "ravenwood-presubmit": [
     {
       "name": "SystemUiRavenTests",
       "host": true,
