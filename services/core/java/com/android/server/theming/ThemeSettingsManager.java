@@ -69,7 +69,7 @@ public class ThemeSettingsManager {
     static final String OVERLAY_COLOR_SOURCE = KEY_PREFIX + "color_source";
 
     private final ThemeWallpaperManager mWallpaperManager;
-    private final ThemeEnvironment mEnvironment;
+    private final ThemeConfig mConfig;
 
     private ThemeSettings mDeviceDefaultSettings;
 
@@ -85,9 +85,9 @@ public class ThemeSettingsManager {
     private final SparseArray<ThemeSettings> mSettingsCache = new SparseArray<>();
 
     ThemeSettingsManager(ThemeWallpaperManager wallpaperManager,
-            ThemeEnvironment environment) {
+            ThemeConfig config) {
         mWallpaperManager = wallpaperManager;
-        mEnvironment = environment;
+        mConfig = config;
     }
 
     /**
@@ -252,7 +252,7 @@ public class ThemeSettingsManager {
         String deviceColorProperty = "ro.boot.hardware.color";
 
         HashMap<String, Pair<Integer, String>> themeMap = new HashMap<>();
-        for (String themeEntry : mEnvironment.defaultThemeData) {
+        for (String themeEntry : mConfig.defaultThemeData()) {
             String[] themeComponents = themeEntry.split("\\|");
             if (themeComponents.length != 3) {
                 continue;
@@ -271,13 +271,13 @@ public class ThemeSettingsManager {
                     + " wildcard ('*') entry for fallback.");
         }
 
-        String deviceColorPropertyValue = mEnvironment.hardwareColorCode;
+        String deviceColorPropertyValue = mConfig.hardwareColorCode();
         Pair<Integer, String> styleAndSource = themeMap.get(deviceColorPropertyValue);
         if (styleAndSource == null) {
             Slog.d(TAG, "Sysprop `" + deviceColorProperty + "` of value '"
                     + deviceColorPropertyValue
                     + "' not found in theming_defaults: " + Arrays.toString(
-                    mEnvironment.defaultThemeData)
+                    mConfig.defaultThemeData())
                     + ". Using wildcard fallback.");
             styleAndSource = fallbackTheme;
         }
@@ -290,7 +290,7 @@ public class ThemeSettingsManager {
                 return buildSettingsFromConfig(fallbackTheme, UserHandle.USER_SYSTEM);
             } catch (Exception e2) {
                 Slog.e(TAG, "Wildcard also failed! Using hardcoded.", e2);
-                return mEnvironment.hardcodedFallback;
+                return mConfig.hardcodedFallback();
             }
         }
     }
@@ -307,7 +307,7 @@ public class ThemeSettingsManager {
             if (wallpaperSeed == null) {
                 Slog.i(TAG, "User's " + userId + " Wallpaper colors not yet available. "
                         + "Using fallback palette for HOME_WALLPAPER source.");
-                seedColor = mEnvironment.hardcodedFallback.systemPalette();
+                seedColor = mConfig.hardcodedFallback().systemPalette();
             } else {
                 seedColor = Color.valueOf(wallpaperSeed);
             }
@@ -376,7 +376,7 @@ public class ThemeSettingsManager {
             if (seed != null) {
                 systemPalette = Color.valueOf(seed);
             } else {
-                systemPalette = mEnvironment.hardcodedFallback.systemPalette();
+                systemPalette = mConfig.hardcodedFallback().systemPalette();
                 Slog.d(TAG, "Legacy settings for user " + userId + " missing palette. "
                         + "Wallpaper color missing, using fallback.");
             }

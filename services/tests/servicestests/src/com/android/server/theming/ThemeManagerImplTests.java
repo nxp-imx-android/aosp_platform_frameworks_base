@@ -164,7 +164,8 @@ public class ThemeManagerImplTests {
 
         mStateManager = new ThemeStateManager(mContext, mSchedulerExecutor, mEnvironment);
         mUnderTest = new ThemeManagerImpl(mContext, mThemeSettingsManager,
-                mStateManager, mOverlayHelper, mEnvironment, themeWallpaperManager);
+                mStateManager, mOverlayHelper, mEnvironment, themeWallpaperManager,
+                mHardwareColorRule.sysPropReader);
         mUnderTest.setup(mUserLifecycle);
 
         // Fake ThemeSettingsManager behavior
@@ -333,8 +334,9 @@ public class ThemeManagerImplTests {
         assertThat(returnedValue[0].seedColor.toArgb()).isEqualTo(TEST_SEED_COLOR);
         assertThat(returnedValue[0].style).isEqualTo(TEST_STYLE);
         assertThat(returnedValue[0].contrast).isEqualTo(TEST_CONTRAST);
-        assertThat(returnedValue[0].specVersion).isEqualTo(mEnvironment.specVersion.name());
-        assertThat(returnedValue[0].platform).isEqualTo(mEnvironment.platform.name());
+        assertThat(returnedValue[0].specVersion).isEqualTo(
+                mEnvironment.getConfig().specVersion().name());
+        assertThat(returnedValue[0].platform).isEqualTo(mEnvironment.getConfig().platform().name());
     }
 
     @Test
@@ -412,8 +414,8 @@ public class ThemeManagerImplTests {
         assertThat(info.seedColor.toArgb()).isEqualTo(TEST_SEED_COLOR);
         assertThat(info.style).isEqualTo(TEST_STYLE);
         assertThat(info.contrast).isEqualTo(TEST_CONTRAST);
-        assertThat(info.specVersion).isEqualTo(mEnvironment.specVersion.name());
-        assertThat(info.platform).isEqualTo(mEnvironment.platform.name());
+        assertThat(info.specVersion).isEqualTo(mEnvironment.getConfig().specVersion().name());
+        assertThat(info.platform).isEqualTo(mEnvironment.getConfig().platform().name());
     }
 
     @Test
@@ -489,7 +491,8 @@ public class ThemeManagerImplTests {
 
         // Re-instantiate ThemeManagerImpl with the booting environment
         ThemeManagerImpl bootingImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
-                mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager()) {
+                mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager(),
+                mHardwareColorRule.sysPropReader) {
             @Override
             public boolean onBootAnimationDismissing() {
                 return false;
@@ -525,7 +528,8 @@ public class ThemeManagerImplTests {
         ThemeEnvironment bootingEnv = new ThemeEnvironment(mContext,
                 mHardwareColorRule.sysPropReader);
         ThemeManagerImpl bootingImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
-                mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager());
+                mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager(),
+                mHardwareColorRule.sysPropReader);
         bootingImpl.setup(mUserLifecycle);
 
         // 2. Register callback during boot (should succeed now)
@@ -541,6 +545,8 @@ public class ThemeManagerImplTests {
 
         // 3. Initialize system (simulate boot complete)
         bootingImpl.onBootAnimationDismissing();
+        // Manual fix: Trigger the side effect that the real lifecycle would do
+        bootingEnv.setBootingComplete(mUserLifecycle);
         // Force state manager to process
         mSchedulerExecutor.fastForwardTime(ThemeStateManager.DEBOUNCE_MS + 100L);
 
@@ -557,7 +563,8 @@ public class ThemeManagerImplTests {
         ThemeEnvironment bootingEnv = new ThemeEnvironment(mContext,
                 mHardwareColorRule.sysPropReader);
         ThemeManagerImpl bootingImpl = new ThemeManagerImpl(mContext, mThemeSettingsManager,
-                mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager());
+                mStateManager, mOverlayHelper, bootingEnv, new ThemeWallpaperManager(),
+                mHardwareColorRule.sysPropReader);
         bootingImpl.setup(mUserLifecycle);
 
         // Act

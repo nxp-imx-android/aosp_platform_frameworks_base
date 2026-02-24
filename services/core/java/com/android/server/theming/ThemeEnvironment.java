@@ -21,24 +21,12 @@ import android.annotation.Nullable;
 import android.app.ActivityManagerInternal;
 import android.app.KeyguardManager;
 import android.content.Context;
-import android.content.theming.FieldColorSource;
-import android.content.theming.ThemeSettings;
-import android.content.theming.ThemeStyle;
-import android.graphics.Color;
 import android.os.UserHandle;
-import android.provider.Settings;
-import android.text.TextUtils;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.pm.RoSystemFeatures;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
-
-import com.google.ux.material.libmonet.dynamiccolor.ColorSpec.SpecVersion;
-import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
-
-import java.util.Objects;
 
 /**
  * Centralized configuration, system signals, and policy for the Theme Service.
@@ -57,7 +45,6 @@ import java.util.Objects;
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 public final class ThemeEnvironment {
     private static final String TAG = "ThemeEnvironment";
-    private static final String KEY_COLOR_PALETTE_VERSION = "global_color_palette_version";
 
     private ThemeUserLifecycle mThemeUserLifecycle;
 
@@ -65,30 +52,7 @@ public final class ThemeEnvironment {
     private final ActivityManagerInternal mActivityManager;
     private KeyguardManager mKeyguardManager;
 
-    // --- IMMUTABLE SYSTEM SIGNALS ---
-
-    /** The target platform for color generation (e.g., PHONE, WATCH). */
-    final Platform platform;
-
-    /** The version of the color specification being used. */
-    final SpecVersion specVersion;
-
-    /** Whether the system palette is outdated and needs a forced refresh. */
-    final boolean isPaletteOutdated;
-
-    /** The hardware color code for the device. */
-    final String hardwareColorCode;
-
-    // --- STATIC RESOURCE CONFIGURATION ---
-
-    /** List of legacy overlay packages that should be cleaned up on boot. */
-    final String[] legacyOverlays;
-
-    /** Device-specific default theme data from resources. */
-    final String[] defaultThemeData;
-
-    /** The ultimate fallback theme settings when no user or device defaults are available. */
-    final ThemeSettings hardcodedFallback;
+    private final ThemeConfig mConfig;
 
     // --- DYNAMIC GLOBAL STATE ---
 
@@ -104,31 +68,11 @@ public final class ThemeEnvironment {
         mUserManager = LocalServices.getService(UserManagerInternal.class);
         mActivityManager = LocalServices.getService(ActivityManagerInternal.class);
 
-        // 1. Detect Hardware/Software Capabilities
-        platform = RoSystemFeatures.hasFeatureWatch(context)
-                ? Platform.WATCH : Platform.PHONE;
+        mConfig = new ThemeConfig(context, reader);
+    }
 
-        specVersion = context.getResources().getIdentifier(
-                "system_primary_dim_light", "color", "android") != 0
-                ? SpecVersion.SPEC_2025 : SpecVersion.SPEC_2021;
-
-        // 2. Load Static Configurations
-        legacyOverlays = context.getResources().getStringArray(
-                com.android.internal.R.array.theming_legacy_overlays);
-        defaultThemeData = context.getResources().getStringArray(
-                com.android.internal.R.array.theming_defaults);
-
-        hardcodedFallback = new ThemeSettings.Builder()
-                .setThemeStyle(ThemeStyle.TONAL_SPOT)
-                .setColorSource(FieldColorSource.VALUE_PRESET)
-                .setSystemPalette(Color.valueOf(0xFF1B6EF3))
-                .build();
-
-        // 3. One-time check for version updates (determined at start)
-        isPaletteOutdated = checkPaletteOutdated(context, reader);
-
-        // 4. Read hardware color code
-        hardwareColorCode = reader.get("ro.boot.hardware.color", "");
+    ThemeConfig getConfig() {
+        return mConfig;
     }
 
     /**
@@ -216,26 +160,6 @@ public final class ThemeEnvironment {
     Integer parentOf(int userId) {
         int possibleParentID = mUserManager.getProfileParentId(userId);
         return possibleParentID == userId ? null : possibleParentID;
-    }
-
-    private static boolean checkPaletteOutdated(Context context, SystemPropertiesReader reader) {
-        String storedVersion = Settings.Global.getString(context.getContentResolver(),
-                KEY_COLOR_PALETTE_VERSION);
-        String currentVersion = reader.get("ro.build.date.utc", null);
-
-        if (TextUtils.isEmpty(currentVersion)) {
-            Slog.i(TAG, "Palette version missing. Refreshing overlays");
-            return true;
-        }
-
-        if (storedVersion != null && Objects.equals(storedVersion, currentVersion)) {
-            return false;
-        }
-
-        Slog.i(TAG, "Palette version bumped from " + storedVersion + " to " + currentVersion);
-        Settings.Global.putString(context.getContentResolver(), KEY_COLOR_PALETTE_VERSION,
-                currentVersion);
-        return true;
     }
 
     boolean isDeviceLocked() {
