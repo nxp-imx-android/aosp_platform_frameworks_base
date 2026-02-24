@@ -56,3 +56,13 @@ java_library {
         "com.android.systemui.notifications.content.ui_main",
     ],
 }
+
+java_library {
+    name: "com.android.systemui.notifications.content.ui_testlib",
+    defaults: ["sysui_testlib"],
+    static_libs: [
+        "androidx.compose.runtime_runtime",
+        "com.android.systemui.notifications.content.ui_api",
+        "com.android.systemui.notifications.content.ui_main",
+    ],
+}

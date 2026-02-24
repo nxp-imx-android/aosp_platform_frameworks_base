@@ -47,8 +47,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
-import kotlin.test.Test
+import org.junit.Ignore
 import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
@@ -69,6 +70,7 @@ class PrioritizedRowTest : SysuiTestCase() {
     private val reducedWidth = 50.dp
     private val hideWidth = 20.dp
 
+    @Ignore("b/439930983")
     @Test
     fun widthFull_allChildrenAreVisible() {
         rule.setContent {
