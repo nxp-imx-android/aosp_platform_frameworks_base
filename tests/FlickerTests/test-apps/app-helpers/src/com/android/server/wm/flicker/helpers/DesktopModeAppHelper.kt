@@ -720,6 +720,12 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
+    /** Moves the given app to Fullscreen if it isn't already there. */
+    fun exitDesktopModeToFullScreenIfNeeded(wmHelper: WindowManagerStateHelper) {
+        if (isInFullscreenMode(wmHelper)) return
+        exitDesktopModeToFullScreenWithAppHeader(wmHelper)
+    }
+
     fun exitDesktopModeToFullScreenWithAppHeader(wmHelper: WindowManagerStateHelper) {
         clickOpenMenuButton(wmHelper)
 
