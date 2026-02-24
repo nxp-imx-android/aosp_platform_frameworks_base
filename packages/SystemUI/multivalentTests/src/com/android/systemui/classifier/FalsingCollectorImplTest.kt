@@ -15,7 +15,6 @@
  */
 package com.android.systemui.classifier
 
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper.RunWithLooper
 import android.view.KeyEvent
@@ -480,7 +479,6 @@ class FalsingCollectorImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMMUNAL_SHADE_TOUCH_HANDLING_FIXES)
     @DisableSceneContainer
     fun testCommunalShowingChanged_dataProviderUpdated() =
         kosmos.runTest {
@@ -495,7 +493,6 @@ class FalsingCollectorImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMMUNAL_SHADE_TOUCH_HANDLING_FIXES)
     @EnableSceneContainer
     fun testCommunalShowingChanged_dataProviderUpdated_sceneContainer() =
         kosmos.runTest {
@@ -514,7 +511,6 @@ class FalsingCollectorImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMMUNAL_SHADE_TOUCH_HANDLING_FIXES)
     @DisableSceneContainer
     fun testCommunalShowingChanged_hubShowing_sessionEnds() =
         kosmos.runTest {
@@ -532,7 +528,6 @@ class FalsingCollectorImplTest(flags: FlagsParameterization) : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMMUNAL_SHADE_TOUCH_HANDLING_FIXES)
     @EnableSceneContainer
     fun testCommunalShowingChanged_hubShowing_sessionEnds_sceneContainer() =
         kosmos.runTest {
