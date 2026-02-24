@@ -10,7 +10,7 @@ import com.android.compose.animation.scene.ElementMatcher
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.compose.animation.scene.UserActionDistance
 import com.android.compose.animation.scene.transformation.offsetSharedElementWithAnchor
-import com.android.systemui.media.remedia.ui.compose.Media.Elements.mediaCarousel
+import com.android.systemui.media.remedia.ui.compose.Media.Elements.MediaCarousel
 import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.qs.shared.ui.QuickSettings.Elements
 import com.android.systemui.qs.shared.ui.QuickSettings.SHARED_TILE_PICKER_THRESHOLD
@@ -48,7 +48,7 @@ fun TransitionBuilder.shadeToQuickSettingsTransition(
     // overlap.
     fractionRange(end = 0.5f) { fade(QqsTileElementMatcher) }
     anchoredTranslate(QqsTileElementMatcher, Elements.GridAnchor)
-    fade(mediaCarousel)
+    fade(MediaCarousel)
 
     val translationY = ShadeHeader.Dimensions.CollapsedHeightForTransitions
     translate(ShadeHeader.Elements.CollapsedContentStart, y = translationY)

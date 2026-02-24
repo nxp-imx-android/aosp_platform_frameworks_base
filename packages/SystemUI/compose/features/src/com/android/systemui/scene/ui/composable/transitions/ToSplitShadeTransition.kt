@@ -36,7 +36,7 @@ fun TransitionBuilder.toSplitShadeTransition(durationScale: Double = 1.0) {
     fractionRange(end = .33f) { fade(Shade.Elements.BackgroundScrim) }
 
     fractionRange(start = .33f) {
-        fade(Media.Elements.mediaCarousel)
+        fade(Media.Elements.MediaCarousel)
         fade(ShadeHeader.Elements.Clock)
         fade(ShadeHeader.Elements.CollapsedContentStart)
         fade(ShadeHeader.Elements.CollapsedContentEnd)

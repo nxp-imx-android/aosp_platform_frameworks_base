@@ -50,6 +50,7 @@ import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOf
@@ -118,15 +119,12 @@ constructor(
      */
     val isTransparencyEnabled: Boolean by
         hydrator.hydratedStateOf(
-            traceName = "transparencyEnabled",
-            initialValue =
-                Flags.notificationShadeBlur() &&
-                    windowRootViewBlurInteractor.isBlurCurrentlySupported.value,
+            traceName = "isTransparencyEnabled",
             source =
                 if (Flags.notificationShadeBlur()) {
                     windowRootViewBlurInteractor.isBlurCurrentlySupported
                 } else {
-                    flowOf(false)
+                    MutableStateFlow(false)
                 },
         )
 
