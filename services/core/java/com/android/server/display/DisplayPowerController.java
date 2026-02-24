@@ -1112,13 +1112,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             brightnessMappers.put(AUTO_BRIGHTNESS_MODE_DOZE, dozeModeBrightnessMapper);
         }
 
-        if (mFlags.isAutoBrightnessModeBedtimeWearEnabled()) {
-            BrightnessMappingStrategy bedtimeBrightnessMapper =
-                    BrightnessMappingStrategy.create(context, mDisplayDeviceConfig,
-                            AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR, mDisplayWhiteBalanceController);
-            if (bedtimeBrightnessMapper != null) {
-                brightnessMappers.put(AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR, bedtimeBrightnessMapper);
-            }
+        BrightnessMappingStrategy bedtimeBrightnessMapper =
+                BrightnessMappingStrategy.create(context, mDisplayDeviceConfig,
+                        AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR, mDisplayWhiteBalanceController);
+        if (bedtimeBrightnessMapper != null) {
+            brightnessMappers.put(AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR, bedtimeBrightnessMapper);
         }
 
         if (Flags.autoBrightnessModeCharging()) {

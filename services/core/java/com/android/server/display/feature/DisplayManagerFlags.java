@@ -86,11 +86,6 @@ public class DisplayManagerFlags {
             Flags::enableHasArrSupport
     );
 
-    private final FlagState mAutoBrightnessModeBedtimeWearFlagState = new FlagState(
-            Flags.FLAG_AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR,
-            Flags::autoBrightnessModeBedtimeWear
-    );
-
     private final FlagState mGetSupportedRefreshRatesFlagState = new FlagState(
             Flags.FLAG_ENABLE_GET_SUPPORTED_REFRESH_RATES,
             Flags::enableGetSupportedRefreshRates
@@ -215,14 +210,6 @@ public class DisplayManagerFlags {
     }
 
     /**
-     * @return {@code true} if bedtime mode specific auto-brightness curve should be loaded and be
-     * applied when bedtime mode is enabled.
-     */
-    public boolean isAutoBrightnessModeBedtimeWearEnabled() {
-        return mAutoBrightnessModeBedtimeWearFlagState.isEnabled();
-    }
-
-    /**
      * @return {@code true} if supported refresh rate api is enabled.
      */
     public boolean enableGetSupportedRefreshRates() {
@@ -326,7 +313,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
         pw.println(" " + mBlockAutobrightnessChangesOnStylusUsage);
         pw.println(" " + mHasArrSupport);
-        pw.println(" " + mAutoBrightnessModeBedtimeWearFlagState);
         pw.println(" " + mGetSupportedRefreshRatesFlagState);
         pw.println(" " + mDisplayListenerPerformanceImprovementsFlagState);
         pw.println(" " + mSubscribeGranularDisplayEvents);
