@@ -26,16 +26,30 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Process;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.security.Flags;
 import android.security.IKeyChainService;
 import android.security.KeyChain;
+import android.security.KeyChain.KeyChainConnection;
+import android.security.KeyChainException;
+import android.security.keymaster.KeymasterCertificateChain;
 import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.ParcelableKeyGenParameterSpec;
+import android.security.keystore.StrongBoxUnavailableException;
 import android.util.Slog;
 
 import com.android.server.DeviceIdleInternal;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+
+import java.io.ByteArrayInputStream;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * System service for managing KeyChain operations and certificate storage.
@@ -73,6 +87,8 @@ public class KeyChainSystemService extends SystemService {
 
     private static final String TAG = "KeyChainSystemService";
 
+    private final Context mContext;
+
     /**
      * Maximum time limit for the KeyChain app to deal with packages being removed.
      */
@@ -82,6 +98,7 @@ public class KeyChainSystemService extends SystemService {
 
     public KeyChainSystemService(final Context context) {
         super(context);
+        mContext = context;
         LocalServices.addService(KeyChainManagerInternal.class, mLocalService);
     }
 
@@ -171,30 +188,69 @@ public class KeyChainSystemService extends SystemService {
      * Delegates key pair generation to the per-user KeyChain app.
      *
      * @param userId The target user.
-     * @return A {@code KeyChain.KEY_GEN_*} status code.
+     * @return The {@link KeymasterCertificateChain} for the generated key pair, or {@code null} if
+     *     generation failed.
      */
-    public int generateUserKeyPair(@NonNull String algorithm, @NonNull KeyGenParameterSpec keySpec,
-            int userId) {
-        // TODO(b/475733339): Implement user-scoped delegation to IKeyChainService
-        Slog.i(TAG, "User-scoped generateKeyPair not yet implemented.");
-        return KeyChain.KEY_GEN_FAILURE;
+    public KeymasterCertificateChain generateUserKeyPair(
+            @NonNull String algorithm,
+            @NonNull KeyGenParameterSpec keySpec,
+            int userId) throws KeyChainException {
+        return withKeyChainService(
+                userId,
+                (keyChainService) -> {
+                    String alias = keySpec.getKeystoreAlias();
+
+                    final int generationResult =
+                            keyChainService.generateKeyPair(
+                                    algorithm, new ParcelableKeyGenParameterSpec(keySpec));
+                    if (generationResult != KeyChain.KEY_GEN_SUCCESS) {
+                        switch (generationResult) {
+                            case KeyChain.KEY_GEN_NO_SUCH_ALGORITHM:
+                                throw new IllegalArgumentException(
+                                        "Invalid algorithm: " + algorithm);
+                            case KeyChain.KEY_GEN_INVALID_ALGORITHM_PARAMETERS:
+                                throw new IllegalArgumentException(
+                                        "Invalid KeyGenParameterSpec for alias: " + alias);
+                            case KeyChain.KEY_GEN_STRONGBOX_UNAVAILABLE:
+                                throw new StrongBoxUnavailableException(
+                                        "StrongBox is not available for key pair generation for: "
+                                                + alias);
+                            case KeyChain.KEY_GEN_NO_KEYSTORE_PROVIDER:
+                                Slog.e(TAG, "Keystore provider not found for alias: " + alias);
+                                throw new KeyChainException(
+                                        "Internal error: Keystore provider not found.");
+                            case KeyChain.KEY_GEN_FAILURE:
+                            default:
+                                Slog.e(
+                                        TAG,
+                                        "Key generation failed for alias: "
+                                                + alias
+                                                + " with code: "
+                                                + generationResult);
+                                throw new KeyChainException(
+                                        "Internal key generation error in KeyChain service.");
+                        }
+                    }
+                    return getCertificateChain(keyChainService, alias);
+                });
     }
 
     /**
      * Generates a key pair directly in the device-wide keychain.
      *
-     * @return A {@code KeyChain.KEY_GEN_*} status code.
+     * @return The {@link KeymasterCertificateChain} for the generated key pair, or {@code null}
+     *         if generation failed.
      */
-    public int generateDeviceKeyPair(@NonNull String algorithm,
+    public KeymasterCertificateChain generateDeviceKeyPair(@NonNull String algorithm,
             @NonNull KeyGenParameterSpec keySpec) {
         if (!Flags.enableDeviceCertificates()) {
             Slog.w(TAG, "Device-scoped certificate generation requires "
                     + "enable_device_certificates flag.");
-            return KeyChain.KEY_GEN_FAILURE;
+            return null;
         }
         // TODO(b/476375280): Implement device-scoped generation
         Slog.i(TAG, "Device-scoped generateKeyPair not yet implemented.");
-        return KeyChain.KEY_GEN_FAILURE;
+        return null;
     }
 
     /**
@@ -227,5 +283,84 @@ public class KeyChainSystemService extends SystemService {
         // TODO(b/476375280): Implement device-scoped operation
         Slog.i(TAG, "Device-scoped setKeyPairCertificate not yet implemented.");
         return false;
+    }
+
+    /**
+     * Set a grant for the specified UID for an existing user-scoped key pair.
+     *
+     * @return {@code true} on success.
+     */
+    public boolean setUserGrant(int uid, @NonNull String alias, int userId, boolean granted) {
+        try {
+            return withKeyChainService(userId, (keyChainService) -> {
+                return keyChainService.setGrant(uid, alias, granted);
+            });
+        } catch (KeyChainException e) {
+            Slog.e(TAG, "Error setting user grant for alias: " + alias, e);
+            return false;
+        }
+    }
+
+    /**
+     * Set a grant for the specified UID for an existing device-wide key pair.
+     *
+     * @return {@code true} on success.
+     */
+    public boolean setDeviceGrant(int uid, @NonNull String alias, boolean granted) {
+        if (!Flags.enableDeviceCertificates()) {
+            Slog.w(TAG, "Device-scoped grant setting requires "
+                    + "enable_device_certificates flag.");
+            return false;
+        }
+        // TODO(b/476375280): Implement device-scoped operation
+        Slog.i(TAG, "Device-scoped setGrant not yet implemented.");
+        return false;
+    }
+
+    @FunctionalInterface
+    private interface KeyChainAction<T> {
+        T run(IKeyChainService service) throws RemoteException, KeyChainException;
+    }
+
+    private <T> T withKeyChainService(int userId, KeyChainAction<T> action)
+            throws KeyChainException {
+        UserHandle userHandle = UserHandle.of(userId);
+        try (KeyChainConnection keyChainConnection = KeyChain.bindAsUser(mContext, userHandle)) {
+            IKeyChainService keyChain = keyChainConnection.getService();
+            if (keyChain == null) {
+                Slog.e(TAG, "IKeyChainService interface is null for user " + userId);
+                throw new KeyChainException(
+                        "KeyChainService interface is unexpectedly null for user " + userId);
+            }
+            return action.run(keyChain);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new KeyChainException("Interrupted during KeyChain service operation.", e);
+        } catch (RemoteException e) {
+            throw new KeyChainException("Remote exception from KeyChain service.", e);
+        }
+    }
+
+    private KeymasterCertificateChain getCertificateChain(IKeyChainService keyChain, String alias)
+            throws KeyChainException {
+        try {
+            final List<byte[]> encodedCerts = new ArrayList<>();
+            final CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+            final byte[] certChainBytes = keyChain.getCaCertificates(alias);
+            encodedCerts.add(keyChain.getCertificate(alias));
+            if (certChainBytes != null) {
+                final Collection<X509Certificate> certs =
+                        (Collection<X509Certificate>) certFactory.generateCertificates(
+                                new ByteArrayInputStream(certChainBytes));
+                for (X509Certificate cert : certs) {
+                    encodedCerts.add(cert.getEncoded());
+                }
+            }
+
+            return new KeymasterCertificateChain(encodedCerts);
+        } catch (RemoteException | CertificateException e) {
+            Slog.e(TAG, "While retrieving certificate chain.", e);
+            throw new KeyChainException("While retrieving certificate chain.", e);
+        }
     }
 }

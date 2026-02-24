@@ -8520,6 +8520,7 @@ package android.app.admin {
     method @FlaggedApi("android.app.admin.flags.enable_nullable_admin_component") public int enableSystemApp(@Nullable android.content.ComponentName, android.content.Intent);
     method @FlaggedApi("android.app.admin.flags.enable_nullable_admin_component") public void enableSystemApp(@Nullable android.content.ComponentName, String);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_CERTIFICATES, conditional=true) public android.security.AttestedKeyPair generateKeyPair(@Nullable android.content.ComponentName, @NonNull String, @NonNull android.security.keystore.KeyGenParameterSpec, int);
+    method @FlaggedApi("android.security.enable_device_certificates") @NonNull @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_CERTIFICATES, conditional=true) public android.security.AttestedKeyPair generateKeyPair(@NonNull String, @NonNull android.security.keystore.KeyGenParameterSpec, int, int) throws android.security.KeyChainException;
     method @Nullable public String[] getAccountTypesWithManagementDisabled();
     method @Nullable public java.util.List<android.content.ComponentName> getActiveAdmins();
     method @NonNull public java.util.Set<String> getAffiliationIds(@NonNull android.content.ComponentName);
@@ -42148,6 +42149,11 @@ package android.security {
     ctor public KeyChainException(String);
     ctor public KeyChainException(String, Throwable);
     ctor public KeyChainException(Throwable);
+  }
+
+  @FlaggedApi("android.security.enable_device_certificates") public final class KeyChainManager {
+    field @FlaggedApi("android.security.enable_device_certificates") public static final int KEYPAIR_SCOPE_DEVICE = 1; // 0x1
+    field @FlaggedApi("android.security.enable_device_certificates") public static final int KEYPAIR_SCOPE_USER = 2; // 0x2
   }
 
   @Deprecated public final class KeyPairGeneratorSpec implements java.security.spec.AlgorithmParameterSpec {

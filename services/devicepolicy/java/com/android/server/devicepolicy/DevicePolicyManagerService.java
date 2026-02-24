@@ -463,6 +463,8 @@ import android.security.IKeyChainAliasCallback;
 import android.security.IKeyChainService;
 import android.security.KeyChain;
 import android.security.KeyChain.KeyChainConnection;
+import android.security.KeyChainException;
+import android.security.KeyChainManager;
 import android.security.keymaster.KeymasterCertificateChain;
 import android.security.keystore.AttestationUtils;
 import android.security.keystore.KeyGenParameterSpec;
@@ -536,6 +538,7 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.pm.UserManagerInternal.UserRestrictionsListener;
 import com.android.server.pm.UserRestrictionsUtils;
 import com.android.server.pm.pkg.AndroidPackage;
+import com.android.server.security.KeyChainManagerInternal;
 import com.android.server.storage.DeviceStorageMonitorInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
@@ -6322,6 +6325,147 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 .createEvent(DevicePolicyEnums.CREDENTIAL_MANAGEMENT_APP_GENERATE_KEY_PAIR_FAILED)
                 .setStrings(caller.getPackageName())
                 .write();
+    }
+    /**
+     * Internal implementation of key pair generation with a specified scope.
+     *
+     * @param callerPackage The package name of the caller.
+     * @param algorithm The key generation algorithm.
+     * @param parcelableKeySpec Specification of the key to generate.
+     * @param idAttestationFlags A bitmask of the identifiers that should be included in the
+     *     attestation record.
+     * @param scope The scope of the key pair: {@link KeyChainManager#KEYPAIR_SCOPE_USER} or {@link
+     *     KeyChainManager#KEYPAIR_SCOPE_DEVICE}.
+     * @return A {@code KeymasterCertificateChain} containing the attestation chain if successful,
+     *     {@code null} otherwise.
+     */
+    @Override
+    public KeymasterCertificateChain generateKeyPairWithScope(
+            String callerPackage,
+            String algorithm,
+            ParcelableKeyGenParameterSpec parcelableKeySpec,
+            int idAttestationFlags,
+            @KeyChainManager.KeyPairScope int scope) {
+        if (!android.security.Flags.enableDeviceCertificates()) {
+            throw new UnsupportedOperationException("Scoped certificate APIs are disabled.");
+        }
+
+        KeyGenParameterSpec keySpec = parcelableKeySpec.getSpec();
+        validateKeySpecInputs(keySpec, idAttestationFlags);
+
+        final CallerIdentity caller = getCallerIdentity(callerPackage);
+        if (scope == KeyChainManager.KEYPAIR_SCOPE_DEVICE) {
+            // Enforce affiliation for DEVICE scope
+            if (!mDeviceAdmins.isUserAffiliatedWithDevice(caller.getUserId())) {
+                throw new SecurityException("Only affiliated users can generate device keys.");
+            }
+        }
+
+        final int[] attestationUtilsFlags = translateIdAttestationFlags(idAttestationFlags);
+        final boolean deviceIdAttestationRequired = attestationUtilsFlags != null;
+
+        final boolean isCallerDelegate = isCallerDelegate(caller, DELEGATION_CERT_INSTALL);
+        final boolean isCredentialManagementApp = isCredentialManagementApp(caller);
+
+        checkCallerAuthorization(caller, keySpec.getKeystoreAlias(), deviceIdAttestationRequired,
+                attestationUtilsFlags, isCallerDelegate, isCredentialManagementApp);
+
+        if (deviceIdAttestationRequired) {
+            KeyGenParameterSpec.Builder specBuilder = new KeyGenParameterSpec.Builder(keySpec);
+            specBuilder.setAttestationIds(attestationUtilsFlags);
+            specBuilder.setDevicePropertiesAttestationIncluded(true);
+            keySpec = specBuilder.build();
+        }
+
+        final long id = mInjector.binderClearCallingIdentity();
+        try {
+            // Use  KeyChainManagerInternal to support device/user scoping.
+            final KeyChainManagerInternal keyChainLocalService =
+                    LocalServices.getService(KeyChainManagerInternal.class);
+
+            if (scope == KeyChainManager.KEYPAIR_SCOPE_DEVICE) {
+                KeymasterCertificateChain result =
+                        keyChainLocalService.generateDeviceKeyPair(algorithm, keySpec);
+                keyChainLocalService.setDeviceGrant(
+                        caller.getUid(), keySpec.getKeystoreAlias(), /* granted= */ true);
+                return result;
+            } else {
+                KeymasterCertificateChain result =
+                        keyChainLocalService.generateUserKeyPair(
+                                algorithm, keySpec, caller.getUserId());
+                keyChainLocalService.setUserGrant(
+                        caller.getUid(),
+                        keySpec.getKeystoreAlias(),
+                        caller.getUserId(),
+                        /* granted= */ true);
+                return result;
+            }
+        } catch (KeyChainException | AssertionError e) {
+            Slogf.e(LOG_TAG, "KeyChain error while generating a keypair", e);
+        } finally {
+            mInjector.binderRestoreCallingIdentity(id);
+        }
+        logGenerateKeyPairFailure(caller, isCredentialManagementApp);
+        return null;
+    }
+
+    /**
+     * Validates the basic KeyGenParameterSpec inputs.
+     * Throws IllegalArgumentException if validation fails.
+     */
+    private void validateKeySpecInputs(KeyGenParameterSpec keySpec, int idAttestationFlags) {
+        final String alias = keySpec.getKeystoreAlias();
+        Preconditions.checkStringNotEmpty(alias, "Empty alias provided");
+
+        final int[] attestationUtilsFlags = translateIdAttestationFlags(idAttestationFlags);
+        final boolean deviceIdAttestationRequired = attestationUtilsFlags != null;
+
+        Preconditions.checkArgument(
+                !deviceIdAttestationRequired || keySpec.getAttestationChallenge() != null,
+                "Requested Device ID attestation but challenge is empty");
+
+        // As the caller will be granted access to the key, ensure no UID was specified, as
+        // it will not have the desired effect.
+        if (keySpec.getUid() != KeyProperties.UID_SELF) {
+            throw new IllegalArgumentException(
+                    "Only the caller can be granted access to the generated keypair.");
+        }
+    }
+
+    /**
+     * Checks if the caller has the necessary permissions to generate the key pair.
+     * Throws SecurityException if authorization fails.
+     */
+    private void checkCallerAuthorization(CallerIdentity caller, String alias,
+            boolean deviceIdAttestationRequired, int[] attestationUtilsFlags,
+            boolean isCallerDelegate, boolean isCredentialManagementApp) {
+
+        if (deviceIdAttestationRequired && attestationUtilsFlags.length > 0) {
+            Preconditions.checkCallAuthorization(hasDeviceIdAccessUnchecked(
+                    caller.getPackageName(), caller.getUid()));
+            enforceIndividualAttestationSupportedIfRequested(attestationUtilsFlags);
+        } else {
+            Preconditions.checkCallAuthorization(
+                    hasBaseCertificateManipulationPermission(
+                            caller, isCallerDelegate, isCredentialManagementApp),
+                    "Caller not authorized to generate key pair");
+            if (isCredentialManagementApp) {
+                Preconditions.checkCallAuthorization(
+                        isAliasInCredentialManagementAppPolicy(caller, alias),
+                        CREDENTIAL_MANAGEMENT_APP_INVALID_ALIAS_MSG);
+            }
+        }
+    }
+
+    /**
+     * Checks if the caller has the base permissions for certificate manipulation
+     * (Device Owner, Profile Owner, delegated, or Credential Management App).
+     */
+    private boolean hasBaseCertificateManipulationPermission(CallerIdentity caller,
+            boolean isCallerDelegate, boolean isCredentialManagementApp) {
+        return   (mDeviceAdmins.isProfileOwner(caller)
+                || mDeviceAdmins.isDefaultDeviceOwner(caller))
+                || (caller.hasPackage() && (isCallerDelegate || isCredentialManagementApp));
     }
 
     private void enforceIndividualAttestationSupportedIfRequested(int[] attestationUtilsFlags) {
