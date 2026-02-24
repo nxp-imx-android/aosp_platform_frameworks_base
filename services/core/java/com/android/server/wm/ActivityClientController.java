@@ -883,10 +883,18 @@ class ActivityClientController extends IActivityClientController.Stub {
     private static boolean canGetLaunchedFromLocked(int uid, ActivityRecord r,
             IBinder callerToken, boolean isActivityCallerCall) {
         if (CompatChanges.isChangeEnabled(ACCESS_SHARED_IDENTITY, uid)) {
+            // Implicitly share the launching app's identity if the activity was directly started
+            // for a result. If the UIDs do not match, it indicates an intermediate app forwarded
+            // the request, so fall back to checking if the intermediate app explicitly opted in.
+            boolean isDirectStartForResult = false;
+            if (android.security.Flags.implicitShareIdentityForResult()) {
+                isDirectStartForResult =
+                        r.resultTo != null && r.resultTo.getUid() == r.launchedFromUid;
+            }
             boolean isShareIdentityEnabled = isActivityCallerCall
                     ? r.isCallerShareIdentityEnabled(callerToken) : r.mShareIdentity;
             int callerUid = isActivityCallerCall ? r.getCallerUid(callerToken) : r.launchedFromUid;
-            return isShareIdentityEnabled || callerUid == uid;
+            return isDirectStartForResult || isShareIdentityEnabled || callerUid == uid;
         }
         return false;
     }
