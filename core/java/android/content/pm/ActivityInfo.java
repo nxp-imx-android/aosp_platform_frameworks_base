@@ -1741,6 +1741,20 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
     public static final long OVERRIDE_AUTO_RESTART_ON_DISPLAY_MOVE = 427878712L;
 
     /**
+     * This change id masks {@link android.view.Display#FLAG_PRESENTATION} for apps that incorrectly
+     * interpret it as a security risk on internal/built-in displays.
+     *
+     * <p>Some apps refuse to function or crash if they detect a display with FLAG_PRESENTATION.
+     * This override allows masking this flag for internal displays on a per-application basis.
+     *
+     * @hide
+     */
+    @ChangeId
+    @Overridable
+    @Disabled
+    public static final long MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS = 483802160L;
+
+    /**
      * This change id enables the virtual gamepad for game apps on foldable devices.
      *
      * <p>Some game apps don't work well on foldable devices. They misbehave upon device folding

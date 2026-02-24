@@ -1115,6 +1115,16 @@ flag {
 }
 
 flag {
+    name: "mask_presentation_flags_on_internal_displays"
+    namespace: "lse_desktop_experience"
+    description: "Mask Display.FLAG_PRESENTATION for certain apps on internal displays"
+    bug: "483802160"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "move_task_to_front_on_drag_resizing_bugfix"
     namespace: "lse_desktop_experience"
     description: "Moving a drag resized task to front"
