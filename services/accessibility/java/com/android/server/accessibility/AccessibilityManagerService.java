@@ -3403,9 +3403,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             if (userState.mEnabledServices.contains(componentName)
                     && !mUiAutomationManager.suppressingAccessibilityServicesLocked()) {
                 // Skip the enabling service disallowed by device admin policy.
-                if (!isAccessibilityTargetAllowed(componentName.getPackageName(),
-                        installedService.getResolveInfo().serviceInfo.applicationInfo.uid,
-                        userState.mUserId)) {
+                if (!userState.isShortcutTargetPermittedLocked(componentName.flattenToString())) {
                     Slog.d(LOG_TAG, "Skipping enabling service disallowed by device admin policy: "
                             + componentName);
                     disableAccessibilityServiceLocked(componentName, userState.mUserId);
@@ -5578,27 +5576,24 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
     @Override
     @RequiresNoPermission
-    public boolean isAccessibilityTargetAllowed(String packageName, int uid, int userId) {
-        final long identity = Binder.clearCallingIdentity();
-        try {
-            final DevicePolicyManager dpm = mContext.getSystemService(DevicePolicyManager.class);
-            final List<String> permittedServices = dpm.getPermittedAccessibilityServices(userId);
-
-            // permittedServices null means all accessibility services are allowed.
-            return permittedServices == null || permittedServices.contains(packageName);
-        } finally {
-            Binder.restoreCallingIdentity(identity);
+    public boolean isAccessibilityServiceTargetAllowed(AccessibilityServiceInfo info, int userId) {
+        synchronized (mLock) {
+            final AccessibilityUserState userState = getUserStateLocked(userId);
+            return userState.isShortcutTargetPermittedLocked(
+                    info.getComponentName().flattenToString());
         }
     }
 
     @Override
     @RequiresNoPermission
-    public boolean sendRestrictedDialogIntent(String packageName, int uid, int userId) {
+    public boolean sendRestrictedDialogIntent(AccessibilityServiceInfo info, int userId) {
         // The accessibility service is allowed. Don't show the restricted dialog.
-        if (isAccessibilityTargetAllowed(packageName, uid, userId)) {
+        if (isAccessibilityServiceTargetAllowed(info, userId)) {
             return false;
         }
 
+        final String packageName = info.getComponentName().getPackageName();
+        final int uid = info.getResolveInfo().serviceInfo.applicationInfo.uid;
         final EnforcedAdmin admin =
                 RestrictedLockUtilsInternal.checkIfAccessibilityServiceDisallowed(
                         mContext, packageName, userId);

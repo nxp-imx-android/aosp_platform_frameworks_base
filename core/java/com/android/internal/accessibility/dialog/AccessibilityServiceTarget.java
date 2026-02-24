@@ -56,8 +56,8 @@ public class AccessibilityServiceTarget extends AccessibilityTarget {
             @ShortcutMenuMode int shortcutMenuMode) {
         super.updateActionItem(holder, shortcutMenuMode);
 
-        final boolean isAllowed = AccessibilityTargetHelper.isAccessibilityTargetAllowed(
-                getContext(), getComponentName().getPackageName(), getUid());
+        final boolean isAllowed = AccessibilityTargetHelper.isAccessibilityServiceTargetAllowed(
+                getContext(), getAccessibilityServiceInfo());
         final boolean isEditMenuMode =
                 shortcutMenuMode == ShortcutMenuMode.EDIT;
         final boolean enabled = isAllowed || (isEditMenuMode && isShortcutEnabled());
