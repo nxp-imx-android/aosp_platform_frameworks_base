@@ -191,18 +191,18 @@ private fun AudioSwitch(targetsViewModel: TargetsViewModel) {
                         contentDescription = null,
                     )
                     .value,
-            modifier = Modifier.size(20.dp).padding(2.dp),
+            modifier = Modifier.size(24.dp).padding(2.dp),
         )
         Text(
             text = stringResource(R.string.screen_share_audio_sharing_text),
             style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.width(452.dp),
+            modifier = Modifier.width(420.dp),
         )
         Switch(
             checked = checked,
             onCheckedChange = targetsViewModel::setCaptureAudio,
             modifier =
-                Modifier.height(20.dp).width(40.dp).semantics {
+                Modifier.height(20.dp).width(52.dp).semantics {
                     this.contentDescription = audioSwitchA11yDescription
                 },
             thumbContent =
