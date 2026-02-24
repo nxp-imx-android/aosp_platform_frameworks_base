@@ -70,6 +70,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.Easings
 import com.android.compose.grid.VerticalGrid
@@ -208,7 +209,7 @@ fun DigitButton(
     ) { contentColor ->
         BasicText(
             text = digit.toString(),
-            style = MaterialTheme.typography.displaySmallEmphasized,
+            style = MaterialTheme.typography.labelSmallEmphasized.merge(fontSize = 32.sp),
             color = { contentColor() },
         )
     }
@@ -539,7 +540,7 @@ private fun calculateHorizontalSpacingBetweenColumns(gridWidth: Dp): Dp {
 /** Number of columns in the PIN pad grid. */
 private const val columns = 3
 /** Maximum size (width and height) of each PIN pad button. */
-private val pinButtonMaxSize = 96.dp
+private val pinButtonMaxSize = 84.dp
 /** Scale factor to apply to buttons when animating the "error" animation on them. */
 private val pinButtonErrorShrinkFactor = 67.dp / pinButtonMaxSize
 /** Animation duration of the "shrink" phase of the error animation, on each PIN pad button. */
