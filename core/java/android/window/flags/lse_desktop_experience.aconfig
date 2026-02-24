@@ -263,13 +263,6 @@ flag {
 }
 
 flag {
-    name: "enable_camera_compat_for_desktop_windowing_opt_out_api"
-    namespace: "lse_desktop_experience"
-    description: "Introduces a developer API to opt-out of Camera Compat treatment for fixed-orientation apps in desktop windowing mode"
-    bug: "397165621"
-}
-
-flag {
     name: "enable_caption_compat_inset_conversion"
     namespace: "lse_desktop_experience"
     description: "Enables compatibility mitigation for apps that don't support caption insets well"
