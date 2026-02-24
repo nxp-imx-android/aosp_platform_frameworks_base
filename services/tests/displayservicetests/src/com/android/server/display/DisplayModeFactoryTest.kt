@@ -29,6 +29,8 @@ import org.junit.Rule
 import org.junit.runner.RunWith
 
 private const val NO_FLAGS = 0
+private const val ANISOTROPY_FLAGS =
+    Display.Mode.FLAG_ANISOTROPY_CORRECTION or Display.Mode.FLAG_SIZE_OVERRIDE
 
 @SmallTest
 @RunWith(TestParameterInjector::class)
@@ -136,73 +138,99 @@ class DisplayModeFactoryTest {
             listOf()
         ),
         NO_CORRESPONDING_SF_MODE(
-            listOf(createDisplayMode(id = 1, height = 100)),
+            listOf(createDisplayMode(id = 1)),
             sparseArrayOf(2 to createSfDisplayMode(xDpi = 2f, yDpi = 1f)),
             listOf()
         ),
         NO_XDPI(
-            listOf(createDisplayMode(id = 1, height = 100)),
+            listOf(createDisplayMode(id = 1)),
             sparseArrayOf(1 to createSfDisplayMode(xDpi = 0f, yDpi = 1f)),
             listOf()
         ),
         NO_YDPI(
-            listOf(createDisplayMode(id = 1, height = 100)),
+            listOf(createDisplayMode(id = 1)),
             sparseArrayOf(1 to createSfDisplayMode(xDpi = 0f, yDpi = 1f)),
             listOf()
         ),
         SINGLE_ANISOTROPIC_TALL(
-            listOf(createDisplayMode(id = 1, height = 100)),
+            listOf(createDisplayMode(id = 1, width = 100, height = 100)),
             sparseArrayOf(1 to createSfDisplayMode(xDpi = 2f, yDpi = 1f)),
-            listOf(createDisplayMode(parentId = 1, height = 200, flags = 6))
+            listOf(createDisplayMode(parentId = 1, width = 100, height = 200, flags = ANISOTROPY_FLAGS))
         ),
         SINGLE_ANISOTROPIC_WIDE(
-            listOf(createDisplayMode(id = 1, width = 100)),
+            listOf(createDisplayMode(id = 1, width = 100, height = 100)),
             sparseArrayOf(1 to createSfDisplayMode(xDpi = 1f, yDpi = 2f)),
-            listOf(createDisplayMode(parentId = 1, width = 200, flags = 6))
+            listOf(createDisplayMode(parentId = 1, width = 200, height = 100, flags = ANISOTROPY_FLAGS))
         ),
-        ANISOTROPIC_TALL_AND_MATCHING_ISOTROPIC(
+        ANISOTROPIC_TALL_AND_MATCHING_WIDTH_ISOTROPIC(
             listOf(
-                createDisplayMode(id = 1, height = 100, width = 100),
-                createDisplayMode(id = 2, height = 104, width = 200)
+                createDisplayMode(id = 1, width = 100, height = 100),
+                createDisplayMode(id = 2, width = 102, height = 204),
             ),
             sparseArrayOf(
                 1 to createSfDisplayMode(xDpi = 2f, yDpi = 1f),
-                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f)
+                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f),
+            ),
+            listOf()
+        ),
+        ANISOTROPIC_TALL_AND_MATCHING_HEIGHT_ISOTROPIC(
+            listOf(
+                createDisplayMode(id = 1, width = 100, height = 100),
+                createDisplayMode(id = 2, width = 51, height = 102),
+            ),
+            sparseArrayOf(
+                1 to createSfDisplayMode(xDpi = 2f, yDpi = 1f),
+                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f),
             ),
             listOf()
         ),
         ANISOTROPIC_TALL_AND_NOT_MATCHING_ISOTROPIC(
             listOf(
-                createDisplayMode(id = 1, height = 100, width = 100),
-                createDisplayMode(id = 2, height = 105, width = 200)
+                createDisplayMode(id = 1, width = 100, height = 100),
+                createDisplayMode(id = 2, width = 110, height = 210),
+                createDisplayMode(id = 3, width = 55, height = 110),
             ),
             sparseArrayOf(
                 1 to createSfDisplayMode(xDpi = 2f, yDpi = 1f),
-                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f)
+                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f),
+                3 to createSfDisplayMode(xDpi = 1f, yDpi = 1f),
             ),
-            listOf(createDisplayMode(parentId = 1, height = 200, width = 100, flags = 6))
+            listOf(createDisplayMode(parentId = 1, width = 100, height = 200, flags = ANISOTROPY_FLAGS))
         ),
-        ANISOTROPIC_WIDE_AND_MATCHING_ISOTROPIC(
+        ANISOTROPIC_WIDE_AND_MATCHING_WIDTH_ISOTROPIC(
             listOf(
                 createDisplayMode(id = 1, width = 100, height = 100),
-                createDisplayMode(id = 2, width = 104, height = 200)
+                createDisplayMode(id = 2, width = 104, height = 52),
             ),
             sparseArrayOf(
                 1 to createSfDisplayMode(xDpi = 1f, yDpi = 2f),
-                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f)
+                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f),
+            ),
+            listOf()
+        ),
+        ANISOTROPIC_WIDE_AND_MATCHING_HEIGHT_ISOTROPIC(
+            listOf(
+                createDisplayMode(id = 1, width = 100, height = 100),
+                createDisplayMode(id = 2, width = 202, height = 101),
+            ),
+            sparseArrayOf(
+                1 to createSfDisplayMode(xDpi = 1f, yDpi = 2f),
+                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f),
             ),
             listOf()
         ),
         ANISOTROPIC_WIDE_AND_NOT_MATCHING_ISOTROPIC(
             listOf(
                 createDisplayMode(id = 1, width = 100, height = 100),
-                createDisplayMode(id = 2, width = 105, height = 200)
+                createDisplayMode(id = 2, width = 210, height = 110),
+                createDisplayMode(id = 3, width = 110, height = 55),
             ),
             sparseArrayOf(
                 1 to createSfDisplayMode(xDpi = 1f, yDpi = 2f),
-                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f)
+                2 to createSfDisplayMode(xDpi = 1f, yDpi = 1f),
+                3 to createSfDisplayMode(xDpi = 1f, yDpi = 1f),
             ),
-            listOf(createDisplayMode(parentId = 1, width = 200, height = 100, flags = 6))
+            listOf(createDisplayMode(parentId = 1, width = 200, height = 100, flags = ANISOTROPY_FLAGS))
         ),
     }
 
