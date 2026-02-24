@@ -7089,10 +7089,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final KeyguardController keyguardController = mRootWindowContainer.mTaskSupervisor
                 .getKeyguardController();
         if (keyguardController.getTopOccludingActivity(mDisplayId) != null) {
-            return keyguardController.getTopOccludingActivity(mDisplayId).getRootTask();
+            return keyguardController.getTopOccludingActivity(mDisplayId).getTask();
         }
         if (keyguardController.getDismissKeyguardActivity(mDisplayId) != null) {
-            return keyguardController.getDismissKeyguardActivity(mDisplayId).getRootTask();
+            return keyguardController.getDismissKeyguardActivity(mDisplayId).getTask();
         }
         return null;
     }
