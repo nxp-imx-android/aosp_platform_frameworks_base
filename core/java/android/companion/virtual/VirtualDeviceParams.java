@@ -430,7 +430,6 @@ public final class VirtualDeviceParams implements Parcelable {
      *
      * @see Builder#setDimDuration(Duration)
      */
-    @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     public @NonNull Duration getDimDuration() {
         return Duration.ofMillis(mDimDuration);
     }
@@ -440,7 +439,6 @@ public final class VirtualDeviceParams implements Parcelable {
      *
      * @see Builder#setDimDuration(Duration)
      */
-    @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     public @NonNull Duration getScreenOffTimeout() {
         return Duration.ofMillis(mScreenOffTimeout);
     }
@@ -959,7 +957,6 @@ public final class VirtualDeviceParams implements Parcelable {
          * @see android.hardware.display.DisplayManager#VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR
          * @see #setScreenOffTimeout
          */
-        @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
         @NonNull
         public Builder setDimDuration(@NonNull Duration dimDuration) {
             if (Objects.requireNonNull(dimDuration).compareTo(Duration.ZERO) < 0) {
@@ -984,7 +981,6 @@ public final class VirtualDeviceParams implements Parcelable {
          * @see #setDimDuration
          * @see VirtualDeviceManager.VirtualDevice#goToSleep()
          */
-        @FlaggedApi(Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
         @NonNull
         public Builder setScreenOffTimeout(@NonNull Duration screenOffTimeout) {
             if (Objects.requireNonNull(screenOffTimeout).compareTo(Duration.ZERO) < 0) {
