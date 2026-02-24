@@ -120,6 +120,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
 
             // Update with new state
             datastoreRepository.addOrUpdateDesktop(
+                desktopId = DEFAULT_DESKTOP_ID,
                 visibleTasks = visibleTasks,
                 minimizedTasks = minimizedTasks,
                 freeformTasksInZOrder = freeformTasksInZOrder,
@@ -147,6 +148,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
 
             // Update with new state
             datastoreRepository.addOrUpdateDesktop(
+                desktopId = DEFAULT_DESKTOP_ID,
                 visibleTasks = visibleTasks,
                 minimizedTasks = ArraySet(),
                 freeformTasksInZOrder = freeformTasksInZOrder,
@@ -163,6 +165,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
 
             // Update with new state
             datastoreRepository.addOrUpdateDesktop(
+                desktopId = DEFAULT_DESKTOP_ID,
                 visibleTasks = visibleTasks,
                 minimizedTasks = ArraySet(),
                 freeformTasksInZOrder = freeformTasksInZOrder,
@@ -190,6 +193,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
             val minimizedTasks = ArraySet(listOf(1))
             val freeformTasksInZOrder = ArrayList(listOf(1))
             datastoreRepository.addOrUpdateDesktop(
+                desktopId = DEFAULT_DESKTOP_ID,
                 visibleTasks = visibleTasks,
                 minimizedTasks = minimizedTasks,
                 freeformTasksInZOrder = freeformTasksInZOrder,
@@ -231,6 +235,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
 
             // Update with new state
             datastoreRepository.addOrUpdateDesktop(
+                desktopId = DEFAULT_DESKTOP_ID,
                 visibleTasks = visibleTasks,
                 minimizedTasks = minimizedTasks,
                 freeformTasksInZOrder = freeformTasksInZOrder,
@@ -260,6 +265,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
 
             // Update with new state
             datastoreRepository.addOrUpdateDesktop(
+                desktopId = DEFAULT_DESKTOP_ID,
                 visibleTasks = visibleTasks,
                 minimizedTasks = minimizedTasks,
                 freeformTasksInZOrder = freeformTasksInZOrder,
@@ -288,6 +294,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
 
             // Update with new state
             datastoreRepository.addOrUpdateDesktop(
+                desktopId = DEFAULT_DESKTOP_ID,
                 visibleTasks = visibleTasks,
                 minimizedTasks = minimizedTasks,
                 freeformTasksInZOrder = freeformTasksInZOrder,
@@ -837,7 +844,7 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
         const val DESKTOP_REPOSITORY_STATES_DATASTORE_TEST_FILE = "desktop_repo_test.pb"
         const val DEFAULT_USER_ID = 1000
         const val USER_ID_2 = 2000
-        const val DEFAULT_DESKTOP_ID = 0
+        const val DEFAULT_DESKTOP_ID = 1
         const val UNIQUE_DISPLAY_ID = "unique_display_id_1"
         const val UNIQUE_DISPLAY_ID_2 = "unique_display_id_2"
 
@@ -855,7 +862,8 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
         }
 
         fun createDesktop(tasks: ArrayList<DesktopTask>): Desktop? {
-            val desktopBuilder = Desktop.newBuilder().setDisplayId(DEFAULT_DISPLAY)
+            val desktopBuilder =
+                Desktop.newBuilder().setDisplayId(DEFAULT_DISPLAY).setDesktopId(DEFAULT_DESKTOP_ID)
             tasks.forEach { task ->
                 desktopBuilder.addZOrderedTasks(task.taskId).putTasksByTaskId(task.taskId, task)
             }
