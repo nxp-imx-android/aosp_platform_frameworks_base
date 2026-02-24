@@ -63,7 +63,6 @@ import com.android.internal.infra.ServiceConnector;
 import com.android.internal.infra.ServiceConnector.Job;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.util.test.LocalServiceKeeperRule;
-import com.android.server.autofill.RemoteAugmentedAutofillService.InlineSuggestionsResponseData;
 import com.android.server.autofill.RemoteAugmentedAutofillService.RemoteAugmentedAutofillServiceCallbacks;
 import com.android.server.autofill.ui.InlineFillUi;
 import com.android.server.personalcontext.PersonalContextManagerInternal;
@@ -146,13 +145,13 @@ public class RemoteAugmentedAutofillServiceTest {
         mTestExecutor = Executors.newSingleThreadExecutor();
 
         // Immediately run any jobs posted to the service connector.
-        ArgumentCaptor<
-                        Job<
-                                IAugmentedAutofillService,
-                                CompletableFuture<InlineSuggestionsResponseData>>>
-                jobCaptor = ArgumentCaptor.forClass(Job.class);
-        when(mServiceConnector.postAsync(jobCaptor.capture()))
-                .thenAnswer(invocation -> jobCaptor.getValue().run(mAugmentedService));
+        when(mServiceConnector.run(any()))
+                .thenAnswer(
+                        invocation -> {
+                            final Job job = (Job) invocation.getArguments()[0];
+                            job.run(mAugmentedService);
+                            return null;
+                        });
 
         mLocalServiceKeeperRule.overrideLocalService(
                 PersonalContextManagerInternal.class, mContextManagerInternal);
