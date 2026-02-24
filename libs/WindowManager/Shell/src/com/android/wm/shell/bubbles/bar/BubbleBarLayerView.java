@@ -347,20 +347,26 @@ public class BubbleBarLayerView extends FrameLayout
         if (!canExpandView(b)) {
             throw new IllegalStateException("Can't prepare expand. Check canExpandView(b) first.");
         }
+        StringBuilder logMsg = new StringBuilder("BubbleBarLayerView.prepareExpandedView()");
         BubbleBarExpandedView expandedView = b.getBubbleBarExpandedView();
         BubbleViewProvider previousBubble = null;
         if (mExpandedBubble != null && !b.getKey().equals(mExpandedBubble.getKey())) {
+            logMsg.append(" previousBubble=").append(mExpandedBubble.getKey());
             if (mIsExpanded && mExpandedBubble.getBubbleBarExpandedView() != null) {
                 // Previous expanded view open, keep it visible to animate the switch
+                logMsg.append("visible;");
                 previousBubble = mExpandedBubble;
             } else {
+                logMsg.append("hidden;");
                 removeView(mExpandedView);
             }
             mExpandedView = null;
         }
         if (mExpandedView == null) {
+            logMsg.append(" new view;");
             boolean expandedViewAlreadyAdded = false;
             if (expandedView.getParent() != null) {
+                logMsg.append(" cancel animations;");
                 // Expanded view might be animating collapse and is still attached. Cancel current
                 // animations.
                 // Add temporary references to the previous and the current bubbles to prevent
@@ -436,21 +442,26 @@ public class BubbleBarLayerView extends FrameLayout
 
             final LayoutParams layoutParams = new LayoutParams(width, height, Gravity.LEFT);
             if (expandedViewAlreadyAdded) {
+                logMsg.append(" view already added;");
                 mExpandedView.setLayoutParams(layoutParams);
             } else {
+                logMsg.append(" adding view;");
                 addView(mExpandedView, layoutParams);
             }
         }
 
         if (mEducationViewController.isEducationVisible()) {
+            logMsg.append(" hide edu;");
             mEducationViewController.hideEducation(/* animated = */ true);
         }
 
         mIsExpanded = true;
         mBubbleController.getSysuiProxy().onStackExpandChanged(true);
         if (isScrimEnabled()) {
+            logMsg.append(" add scrim;");
             showScrim(true);
         }
+        BubbleLog.d(logMsg.toString());
         return previousBubble;
     }
 
