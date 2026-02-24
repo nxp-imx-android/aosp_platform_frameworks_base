@@ -19,7 +19,6 @@ package com.android.settingslib.metadata
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.StringRes
-import com.android.settingslib.metadata.R
 import org.json.JSONObject
 
 /**
@@ -337,7 +336,7 @@ class KeyParametersSchema private constructor(
     /**
      * Checks if a parameter key is defined in this schema.
      */
-    internal fun containsKey(key: String): Boolean = schema.containsKey(key)
+    fun containsKey(key: String): Boolean = schema.containsKey(key)
 
     /**
      * Checks if a parameter is defined as required in the schema.
