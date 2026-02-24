@@ -2280,7 +2280,6 @@
     <dimen name="usb_device_dialog_button_padding_vertical">10dp</dimen>
     <dimen name="usb_device_dialog_always_use_checkbox_corners_radius">20dp</dimen>
     <dimen name="usb_device_dialog_always_use_checkbox_padding_vertical">12dp</dimen>
-    <dimen name="usb_device_dialog_always_use_checkbox_margin_horizontal">16dp</dimen>
     <dimen name="usb_device_dialog_icon_size">32dp</dimen>
     <dimen name="usb_device_dialog_button_height">40dp</dimen>
 
