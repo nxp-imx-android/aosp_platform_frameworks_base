@@ -1870,7 +1870,7 @@ public class ListView extends AbsListView {
             case LAYOUT_SPECIFIC:
                 final int selectedPosition = reconcileSelectedPosition();
                 sel = fillSpecific(selectedPosition, mSpecificTop);
-                /**
+                /*
                  * When ListView is resized, FocusSelector requests an async selection for the
                  * previously focused item to make sure it is still visible. If the item is not
                  * selectable, it won't regain focus so instead we call FocusSelector

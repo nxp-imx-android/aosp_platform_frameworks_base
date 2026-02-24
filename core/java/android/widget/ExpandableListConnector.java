@@ -185,13 +185,13 @@ class ExpandableListConnector extends BaseAdapter implements Filterable {
          */
 
 
-        /**
+        /*
          * If we are to expand this group later, where would it go in the
          * mExpGroupMetadataList ?
          */
         int insertPosition = 0;
 
-        /** What is its group position in the list of all groups? */
+        /* What is its group position in the list of all groups? */
         int groupPos = 0;
 
         /*

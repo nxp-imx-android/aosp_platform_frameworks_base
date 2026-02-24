@@ -3011,7 +3011,7 @@ public final class Call {
     }
 
     private void fireCallDestroyed() {
-        /**
+        /*
          * To preserve the ordering of the Call's onCallDestroyed callback and Phone's
          * onCallRemoved callback, we remove this call from the Phone's record
          * only once all of the registered onCallDestroyed callbacks are executed.

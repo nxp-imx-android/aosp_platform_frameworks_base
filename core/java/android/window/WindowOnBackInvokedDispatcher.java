@@ -103,8 +103,8 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
     @Nullable
     private ImeBackAnimationController mImeBackAnimationController;
 
-    @GuardedBy("mLock")
     /** Convenience hashmap to quickly decide if a callback has been added. */
+    @GuardedBy("mLock")
     private final HashMap<OnBackInvokedCallback, Integer> mAllCallbacks = new HashMap<>();
     /** Holds all callbacks by priorities. */
 

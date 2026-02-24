@@ -8074,7 +8074,7 @@ public final class ActivityThread extends ClientTransactionHandler
             handleAttachAgent(agent, data.info);
         }
 
-        /**
+        /*
          * Switch this process to density compatibility mode if needed.
          */
         if ((data.appInfo.flags&ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES)

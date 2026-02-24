@@ -211,7 +211,7 @@ public class TelephonyRegistryManager {
             Log.d(TAG, "addOnOpportunisticSubscriptionsChangedListener listener already present");
             return;
         }
-        /**
+        /*
          * The callback methods need to be called on the executor thread where
          * this object was created.  If the binder did that for us it'd be nice.
          */

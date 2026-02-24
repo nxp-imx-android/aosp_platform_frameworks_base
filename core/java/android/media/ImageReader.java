@@ -798,7 +798,7 @@ public class ImageReader implements AutoCloseable {
         setOnImageAvailableListener(null, null);
         if (mSurface != null) mSurface.release();
 
-        /**
+        /*
          * Close all outstanding acquired images before closing the ImageReader. It is a good
          * practice to close all the images as soon as it is not used to reduce system instantaneous
          * memory pressure. CopyOnWrite list will use a copy of current list content. For the images
@@ -1367,7 +1367,7 @@ public class ImageReader implements AutoCloseable {
                 mRowStride = rowStride;
                 mPixelStride = pixelStride;
                 mBuffer = buffer;
-                /**
+                /*
                  * Set the byteBuffer order according to host endianness (native
                  * order), otherwise, the byteBuffer order defaults to
                  * ByteOrder.BIG_ENDIAN.
@@ -1474,7 +1474,7 @@ public class ImageReader implements AutoCloseable {
             mRowStride = rowStride;
             mPixelStride = pixelStride;
             mBuffer = buffer;
-            /**
+            /*
              * Set the byteBuffer order according to host endianness (native
              * order), otherwise, the byteBuffer order defaults to
              * ByteOrder.BIG_ENDIAN.

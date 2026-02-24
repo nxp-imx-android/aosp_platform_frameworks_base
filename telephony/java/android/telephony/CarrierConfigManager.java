@@ -6304,12 +6304,12 @@ public class CarrierConfigManager {
                     "+g.gsma.rcs.botversion=\"#=1,#=2\"",
                     "+g.gsma.rcs.cpimext"});
 
-            /**
+            /*
              * @see #KEY_MMTEL_REQUIRES_PROVISIONING_BUNDLE
              */
             defaults.putPersistableBundle(
                     KEY_MMTEL_REQUIRES_PROVISIONING_BUNDLE, new PersistableBundle());
-            /**
+            /*
              * @see #KEY_RCS_REQUIRES_PROVISIONING_BUNDLE
              */
             defaults.putPersistableBundle(

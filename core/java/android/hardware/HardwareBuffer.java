@@ -83,8 +83,8 @@ public final class HardwareBuffer implements Parcelable, AutoCloseable {
     public @interface Format {
     }
 
-    @Format
     /** Format: 8 bits each red, green, blue, alpha */
+    @Format
     public static final int RGBA_8888    = 1;
     /** Format: 8 bits each red, green, blue, alpha, alpha is always 0xFF */
     public static final int RGBX_8888    = 2;
@@ -250,8 +250,8 @@ public final class HardwareBuffer implements Parcelable, AutoCloseable {
             USAGE_GPU_CUBE_MAP, USAGE_GPU_MIPMAP_COMPLETE, USAGE_FRONT_BUFFER})
     public @interface Usage {};
 
-    @Usage
     /** Usage: The buffer will sometimes be read by the CPU */
+    @Usage
     public static final long USAGE_CPU_READ_RARELY       = 2;
     /** Usage: The buffer will often be read by the CPU */
     public static final long USAGE_CPU_READ_OFTEN        = 3;
