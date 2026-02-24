@@ -116,6 +116,12 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
         }
     }
 
+    boolean isInteractive() {
+        synchronized (this) {
+            return Boolean.TRUE.equals(mIsInteractive);
+        }
+    }
+
     @RequiresNoPermission
     @Override
     public void setInteractive(boolean interactive) {

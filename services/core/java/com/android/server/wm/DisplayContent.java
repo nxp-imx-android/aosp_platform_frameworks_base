@@ -4262,7 +4262,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @return True if this display can become the top focused display, false otherwise.
      */
     boolean canStealTopFocus() {
-        return (mDisplayInfo.flags & Display.FLAG_STEAL_TOP_FOCUS_DISABLED) == 0;
+        if ((mDisplayInfo.flags & Display.FLAG_STEAL_TOP_FOCUS_DISABLED) != 0) {
+            return false;
+        }
+        return mWmService.mDisplayWindowSettings.canStealTopFocus(this);
     }
 
     /**

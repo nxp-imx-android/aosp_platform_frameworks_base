@@ -307,6 +307,19 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             new InteractiveMirrorImpl.InteractiveMirrorImplCallback() {
                 @Override
                 public void onInteractiveChanged(boolean isInteractive) {
+                    synchronized (mInteractiveMirrors) {
+                        if (areAnyMirrorsInteractive()) {
+                            // If any mirror is interactive, allow it to steal top focus to allow
+                            // key event and IME interactions from the user.
+                            mWindowManagerInternal.setCanStealTopFocusForDisplay(
+                                    mVirtualDisplayId, /* canStealTopFocus= */ true);
+                        } else {
+                            // If all mirrors are non-interactive, disable top focus stealing for
+                            // the virtual display by clearing the override.
+                            mWindowManagerInternal.setCanStealTopFocusForDisplay(
+                                    mVirtualDisplayId, /* canStealTopFocus= */ false);
+                        }
+                    }
                     mStatsController.onMirrorViewInteractive(isInteractive);
                 }
 
@@ -419,6 +432,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mWindowManagerInternal.enablePowerOptimizations(mVirtualDisplayId, /* enable = */ true);
             mWindowManagerInternal.enableClientRenderingLimitationsOnDisplay(
                     mVirtualDisplayId, /* enable = */true);
+            mWindowManagerInternal.setCanStealTopFocusForDisplay(
+                    mVirtualDisplayId, /* canStealTopFocus= */ false);
 
             mVirtualDevice.setDisplayImePolicy(
                     mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);
@@ -519,8 +534,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private static VirtualDisplayConfig createSessionDisplayConfig(String name,
             DisplayInfo refDisplayInfo) {
         final int displayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
-                | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED
-                | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED;
+                | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
 
         final int displayWidth;
         final int displayHeight;
@@ -859,6 +873,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     // interactions.
     private boolean isMirrorInteractionAllowed() {
         return mLifecycle.getCurrentState() instanceof LifecycleState.Blocked;
+    }
+
+    private boolean areAnyMirrorsInteractive() {
+        synchronized (mInteractiveMirrors) {
+            for (int i = 0; i < mInteractiveMirrors.size(); i++) {
+                if (mInteractiveMirrors.get(i).isInteractive()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @SuppressLint("WrongConstant")
