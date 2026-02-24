@@ -50,6 +50,7 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.data.TopTransparentFullscreenTaskData
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
@@ -63,10 +64,12 @@ import org.mockito.ArgumentMatchers.eq
 import org.mockito.ArgumentMatchers.isA
 import org.mockito.Mockito
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
+import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
@@ -87,6 +90,8 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
     private val desktopWallpaperActivityTokenProvider =
         mock<DesktopWallpaperActivityTokenProvider>()
     private val displayController = mock<DisplayController>()
+    private val pinnedLayerController =
+        mock<PinnedLayerController> { on { isPinned(anyInt()) } doReturn false }
     private val wallpaperToken = MockToken().token()
     private val desktopState = FakeDesktopState()
 
@@ -110,6 +115,7 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
                 mixedHandler,
                 desktopWallpaperActivityTokenProvider,
                 displayController,
+                pinnedLayerController,
                 desktopState,
                 shellInit,
             )
@@ -432,6 +438,37 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
             )
 
         verify(taskRepository).setRememberedBoundsRatio(packageName, expectedBoundsRatio)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun onTransitionReady_changeTransitionNotDesktopTask_doNotUpdateRememberedBounds() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val startBounds = Rect(0, 0, 100, 100)
+        val endBounds = Rect(10, 20, 120, 130)
+        val stableBounds = Rect(0, 0, 200, 200)
+        val packageName = "package"
+        val task =
+            createTaskInfo(1, WINDOWING_MODE_FREEFORM).apply {
+                baseActivity = ComponentName(packageName, "component.name")
+                configuration.windowConfiguration.bounds.set(endBounds)
+            }
+        val displayLayout = mock<DisplayLayout>()
+        whenever(displayLayout.getStableBoundsForDesktopMode(any())).thenAnswer {
+            (it.arguments[0] as Rect).set(stableBounds)
+        }
+        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(displayLayout)
+        pinnedLayerController.stub { on { isPinned(1) } doReturn true }
+
+        transitionObserver.addPendingUserBoundsChangeTransition(mockTransition)
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createChangeTransition(task, startBounds, endBounds),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(taskRepository, never()).setRememberedBoundsRatio(any(), any())
     }
 
     @Test
