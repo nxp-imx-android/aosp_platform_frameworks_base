@@ -113,6 +113,10 @@ public:
 #endif
 
     uint64_t getFrameNumber() override;
+    void setFrameTimelineInfo(const ANativeWindowFrameTimelineInfo& info) override;
+    int64_t getLastDequeueDuration() override;
+
+    bool hasRenderTarget() override { return getSurface() != nullptr; }
 
 protected:
     renderthread::RenderThread& mRenderThread;

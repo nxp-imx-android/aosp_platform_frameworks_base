@@ -737,7 +737,7 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
 
     waitOnFences();
 
-    if (mNativeSurface) {
+    if (mRenderPipeline->hasRenderTarget()) {
         // TODO(b/165985262): measure performance impact
         const auto vsyncId = mCurrentFrameInfo->get(FrameInfoIndex::FrameTimelineVsyncId);
         if (vsyncId != UiFrameInfoBuilder::INVALID_VSYNC_ID) {
@@ -748,7 +748,7 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
                 frameCompleteNr, vsyncId, inputEventId);
             const auto lastDequeueDuration =
                     syncDelayDuration +
-                    ANativeWindow_getLastDequeueDuration(mNativeSurface->getNativeWindow());
+                    mRenderPipeline->getLastDequeueDuration();
             const ANativeWindowFrameTimelineInfo ftl = {
                     .frameNumber = frameCompleteNr,
                     .frameTimelineVsyncId = vsyncId,
@@ -764,7 +764,7 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
                             mCurrentFrameInfo->get(FrameInfoIndex::IntendedVsync),
                     .dequeueBufferDurationNanos = lastDequeueDuration,
             };
-            native_window_set_frame_timeline_info(mNativeSurface->getNativeWindow(), ftl);
+            mRenderPipeline->setFrameTimelineInfo(ftl);
         }
     }
 
@@ -818,7 +818,7 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
                 swap.dequeueDuration = 0;
             } else {
                 swap.dequeueDuration =
-                        ANativeWindow_getLastDequeueDuration(mNativeSurface->getNativeWindow());
+                        mRenderPipeline->getLastDequeueDuration();
             }
             swap.queueDuration =
                     ANativeWindow_getLastQueueDuration(mNativeSurface->getNativeWindow());
