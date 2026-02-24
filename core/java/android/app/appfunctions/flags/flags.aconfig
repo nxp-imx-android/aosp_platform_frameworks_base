@@ -47,3 +47,13 @@ flag {
     description: "Enables indexing and serving app functions from multiple services."
     bug: "468288106"
 }
+
+flag {
+    name: "enable_app_function_search_optimization"
+    namespace: "app_function"
+    description: "Enable optimization for app function search."
+    bug: "473468720"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
