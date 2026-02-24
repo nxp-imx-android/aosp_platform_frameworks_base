@@ -4444,14 +4444,31 @@ class DesktopTasksController(
         val userId = task.userId
         val repository = userRepositories.getProfile(userId)
         val anyDeskActive = repository.isAnyDeskActive(targetDisplayId)
+        val activeDeskId = repository.getActiveDeskId(targetDisplayId)
         val sourceDisplayId = task.displayId
         val sourceDeskId = repository.getDeskIdForTask(task.taskId)
         val targetDeskId =
-            if (suggestedTargetDeskId in repository.getDeskIds(targetDisplayId)) {
-                suggestedTargetDeskId
-            } else {
-                getOrCreateDefaultDeskId(displayId = targetDisplayId, userId = userId)
+            when {
+                suggestedTargetDeskId in repository.getDeskIds(targetDisplayId) -> {
+                    // Use the suggested desk if it exists in the target display.
+                    suggestedTargetDeskId
+                }
+                sourceDeskId != null && sourceDeskId in repository.getDeskIds(targetDisplayId) -> {
+                    // Use the source desk if it exists in the target display to prioritize
+                    // keeping the task in the same desk, such as when relaunching a minimized
+                    // task.
+                    sourceDeskId
+                }
+                activeDeskId != null -> {
+                    // Use the active desk if it exists in the target display.
+                    activeDeskId
+                }
+                else -> {
+                    // Otherwise, use the default desk.
+                    getOrCreateDefaultDeskId(displayId = targetDisplayId, userId = userId)
+                }
             }
+        val isTargetDeskActive = activeDeskId != null && activeDeskId == targetDeskId
         val deskIdFromOrganizer = desksOrganizer.getDeskIdFromTaskInfo(task)
 
         val isKnownDesktopTask = repository.isActiveTask(task.taskId)
@@ -4534,11 +4551,12 @@ class DesktopTasksController(
 
         logV(
             "handleFreeformTaskPlacement taskId=%d placeAsFullscreenTask=%b placeAsDesktopTask=%b" +
-                " departFromCurrentDesk=%b",
+                " departFromCurrentDesk=%b isTargetDeskActive=%b",
             task.taskId,
             placeAsFullscreenTask,
             placeAsDesktopTask,
             departFromCurrentDesk,
+            isTargetDeskActive,
         )
 
         if (!placeAsFullscreenTask && !placeAsDesktopTask) {
@@ -4608,10 +4626,21 @@ class DesktopTasksController(
                 }
             }
             // Already expanded in target desk, move it to front if needed.
-            bringTaskToFront -> desksOrganizer.reorderTaskToFront(wct, targetDeskId, task)
+            bringTaskToFront -> {
+                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                    desksOrganizer.reorderTaskToFront(wct, targetDeskId, task)
+                } else {
+                    wct.reorder(task.token, true)
+                }
+            }
         }
 
-        if (!anyDeskActive) {
+        val shouldActivateDesk = !isTargetDeskActive
+                // It's possible that we don't need to activate the desk even though it's not
+                // active now, for example, when the task requests repositining within an inactive
+                // desk.
+                && bringTaskToFront
+        if (shouldActivateDesk) {
             val runOnTransitStart =
                 addDeskActivationChanges(
                     deskId = targetDeskId,
@@ -4619,10 +4648,18 @@ class DesktopTasksController(
                     newTask = task,
                     userId = userId,
                     enterReason = enterReason,
+                    isDeskSwitch = anyDeskActive,
                 )
             runOnTransitStart?.invoke(transition)
             wct.reorder(task.token, true)
-        } else {
+            if (anyDeskActive) {
+                // A desk in the target display is active, but it's not the target desk,
+                // so we are switching desks.
+                desktopMixedTransitionHandler.addPendingMixedTransition(
+                    PendingMixedTransition.SwitchDesk(transition)
+                )
+            }
+        } else if (isTargetDeskActive) {
             // The task is being placed in the desk that is already active. No need to activate,
             // but cancel any scheduled deactivations on overview hide for the case where overview
             // is active in screenshot mode (and hence a deactivation was scheduled), but we know
