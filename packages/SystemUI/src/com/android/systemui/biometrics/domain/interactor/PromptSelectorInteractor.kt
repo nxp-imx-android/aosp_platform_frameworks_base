@@ -265,7 +265,8 @@ constructor(
     override val credentialKind: Flow<PromptKind> =
         promptRepository.userId.map { userId ->
             if (userId != null) {
-                getCredentialType(lockPatternUtils, userId)
+                val effectiveUserId = credentialInteractor.getCredentialOwnerOrSelfId(userId)
+                getCredentialType(lockPatternUtils, effectiveUserId)
             } else {
                 PromptKind.None
             }
