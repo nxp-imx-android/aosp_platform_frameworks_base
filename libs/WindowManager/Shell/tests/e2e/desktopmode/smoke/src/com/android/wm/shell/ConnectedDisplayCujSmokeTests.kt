@@ -33,6 +33,7 @@ import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.rule.ScreenRecordRule
+import android.platform.test.rule.SettingOverrideRule
 import android.platform.uiautomatorhelpers.BetterSwipe
 import android.platform.uiautomatorhelpers.DeviceHelpers
 import android.platform.uiautomatorhelpers.DeviceHelpers.assertInvisible
@@ -110,9 +111,13 @@ class ConnectedDisplayCujSmokeTests {
     @get:Rule(order = 3)
     val testSetupRule = Utils.testSetupRuleFunctional(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
 
-    @get:Rule(order = 4) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    @get:Rule(order = 4)
+    val includeDefaultDisplayInTopologyRule =
+        SettingOverrideRule(Settings.Secure.INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY, "1")
 
-    @get:Rule(order = 5) val desktopMouseRule = DesktopMouseTestRule(/* deferSetup= */ true)
+    @get:Rule(order = 5) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+
+    @get:Rule(order = 6) val desktopMouseRule = DesktopMouseTestRule(/* deferSetup= */ true)
 
     @Before
     fun setup() {
@@ -170,14 +175,15 @@ class ConnectedDisplayCujSmokeTests {
         } else {
             DeviceHelpers.waitForObj(
                     By.text(CONNECTED_DEVICES_TEXT),
-                    timeout = UIAUTOMATOR_TIMEOUT
+                    timeout = UIAUTOMATOR_TIMEOUT,
                 ) {
                     "Can't find a connected device on setting"
                 }
                 .click()
             DeviceHelpers.waitForObj(
                     By.text(EXTERNAL_DISPLAY_TEXT),
-                    timeout = UIAUTOMATOR_TIMEOUT) {
+                    timeout = UIAUTOMATOR_TIMEOUT,
+                ) {
                     "Can't find an external display on setting"
                 }
                 .click()

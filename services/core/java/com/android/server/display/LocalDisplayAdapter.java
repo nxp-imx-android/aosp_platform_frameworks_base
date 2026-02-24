@@ -1574,7 +1574,8 @@ final class LocalDisplayAdapter extends DisplayAdapter {
     /**
      * Dispose of the allocated resources.
      */
-    void stop() {
+    @Override
+    public void stop() {
         mInjector.mReceiver.dispose();
     }
 

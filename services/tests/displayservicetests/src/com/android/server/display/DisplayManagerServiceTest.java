@@ -109,7 +109,9 @@ import android.content.pm.UserInfo;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.Insets;
+import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.hardware.devicestate.DeviceState;
@@ -184,6 +186,7 @@ import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.server.DisplayThread;
 import com.android.server.SystemService;
+import com.android.server.UiThread;
 import com.android.server.am.BatteryStatsService;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.display.DisplayManagerService.CallbackRecord.PendingDisplayEvent;
@@ -315,9 +318,7 @@ public class DisplayManagerServiceTest {
     private int mHdrConversionMode;
 
     private int mPreferredHdrOutputType;
-    private TestLooperManager mPowerLooperManager;
-    private TestLooperManager mDisplayLooperManager;
-    private TestLooperManager mBackgroundLooperManager;
+    private final List<TestLooperManager> mLooperManagers = new ArrayList<>();
     private UserManager mUserManager;
 
     private int[] mAllowedHdrOutputTypes;
@@ -533,13 +534,14 @@ public class DisplayManagerServiceTest {
         when(mContext.getContentResolver()).thenReturn(resolver);
         resolver.addProvider(Settings.AUTHORITY, mFakeSettingsProvider);
         mResources = Mockito.spy(mContext.getResources());
-        mPowerLooperManager = InstrumentationRegistry.getInstrumentation().acquireLooperManager(
-                Looper.getMainLooper());
-        mDisplayLooperManager = InstrumentationRegistry.getInstrumentation().acquireLooperManager(
-                DisplayThread.get().getLooper());
-        mBackgroundLooperManager =
-                InstrumentationRegistry.getInstrumentation().acquireLooperManager(
-                        BackgroundThread.getHandler().getLooper());
+        mLooperManagers.add(InstrumentationRegistry.getInstrumentation().acquireLooperManager(
+                Looper.getMainLooper()));
+        mLooperManagers.add(InstrumentationRegistry.getInstrumentation().acquireLooperManager(
+                DisplayThread.get().getLooper()));
+        mLooperManagers.add(InstrumentationRegistry.getInstrumentation().acquireLooperManager(
+                BackgroundThread.getHandler().getLooper()));
+        mLooperManagers.add(InstrumentationRegistry.getInstrumentation().acquireLooperManager(
+                UiThread.getHandler().getLooper()));
         manageDisplaysPermission(/* granted= */ false);
         when(mContext.getResources()).thenReturn(mResources);
         mUserManager = Mockito.spy(mContext.getSystemService(UserManager.class));
@@ -579,9 +581,9 @@ public class DisplayManagerServiceTest {
             mDisplayManager.stop();
         }
         flushHandlers();
-        mPowerLooperManager.release();
-        mDisplayLooperManager.release();
-        mBackgroundLooperManager.release();
+        for (TestLooperManager tlm : mLooperManagers) {
+            tlm.release();
+        }
     }
 
     private void setUpDisplay() {
@@ -4414,7 +4416,9 @@ public class DisplayManagerServiceTest {
         initDisplayPowerController(localService);
         mDisplayManager.windowManagerAndInputReady();
 
-        DisplayTopology topology = mock(DisplayTopology.class);
+        var topology = spy(initDisplayTopology(mDisplayManager, displayManagerBinderService,
+                localService, new FakeDisplayManagerCallback(),
+                /*shouldEmitTopologyChangeEvent=*/ false));
         when(topology.copy()).thenReturn(topology);
         DisplayTopologyGraph graph = mock(DisplayTopologyGraph.class);
         when(topology.getGraph()).thenReturn(graph);
@@ -5914,8 +5918,8 @@ public class DisplayManagerServiceTest {
     }
 
     private void flushHandlers() {
-        com.android.server.testutils.TestUtils.flushLoopers(mDisplayLooperManager,
-                mPowerLooperManager, mBackgroundLooperManager);
+        com.android.server.testutils.TestUtils.flushLoopers(
+                mLooperManagers.toArray(new TestLooperManager[0]));
     }
 
     private void resetConfigToIgnoreSensorManager() {
@@ -5949,8 +5953,6 @@ public class DisplayManagerServiceTest {
         callback.expectsEvent(TOPOLOGY_CHANGED_EVENT);
         FakeDisplayDevice displayDevice0 =
                 createFakeDisplayDevice(displayManager, new float[]{60f}, Display.TYPE_EXTERNAL);
-        int displayId0 = getDisplayIdForDisplayDevice(displayManager, displayManagerBinderService,
-                displayDevice0);
         flushHandlers();
         if (shouldEmitTopologyChangeEvent) {
             callback.waitForExpectedEvent();
@@ -5976,9 +5978,12 @@ public class DisplayManagerServiceTest {
             callback.waitForNonExpectedEvent();
         }
 
-        var topology = new DisplayTopology();
-        topology.addDisplay(displayId0, 2048, 800, 160);
-        topology.addDisplay(displayId1, 1920, 1080, 160);
+        DisplayTopology topology = displayManagerBinderService.getDisplayTopology();
+        SparseArray<RectF> bounds = topology.getAbsoluteBounds();
+        topology.rearrange(Map.of(
+                bounds.keyAt(0), new PointF(bounds.valueAt(1).left, bounds.valueAt(1).top),
+                bounds.keyAt(1), new PointF(bounds.valueAt(0).left, bounds.valueAt(0).top)
+        ));
         return topology;
     }
 
