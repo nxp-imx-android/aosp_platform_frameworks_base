@@ -42,7 +42,6 @@ public enum WmProtoLogGroups implements IProtoLogGroup {
     WM_DEBUG_STATES(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),
     WM_DEBUG_TASKS(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),
     WM_DEBUG_TASKS_LAUNCH_PARAMS(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),
-    WM_DEBUG_ACTIVITY_START_INTENT(Consts.ENABLE_DEBUG, false, "ActivityStartIntent"),
     WM_DEBUG_STARTING_WINDOW(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),
     WM_SHOW_TRANSACTIONS(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),
     WM_SHOW_SURFACE_ALLOC(Consts.ENABLE_DEBUG, false, Consts.TAG_WM),

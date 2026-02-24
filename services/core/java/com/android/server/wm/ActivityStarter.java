@@ -48,7 +48,6 @@ import static android.content.Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED;
 import static android.content.Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS;
 import static android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP;
 import static android.content.Intent.FLAG_ACTIVITY_TASK_ON_HOME;
-import static android.content.Intent.URI_INTENT_SCHEME;
 import static android.content.pm.ActivityInfo.DOCUMENT_LAUNCH_ALWAYS;
 import static android.content.pm.ActivityInfo.FLAG_SHOW_FOR_ALL_USERS;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE;
@@ -65,7 +64,6 @@ import static android.view.WindowManager.TRANSIT_FLAG_AVOID_MOVE_TO_FRONT;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.window.TaskFragmentOperation.OP_TYPE_START_ACTIVITY_IN_TASK_FRAGMENT;
 
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ACTIVITY_START_INTENT;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CONFIGURATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TASKS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS;
@@ -126,7 +124,6 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.UserInfo;
 import android.content.res.Configuration;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.OperationCanceledException;
@@ -885,15 +882,6 @@ class ActivityStarter {
                                 || Intent.ACTION_REBOOT.equals(intentAction))) {
                     ShutdownCheckPoints.recordCheckPoint(intentAction, callingPackage, null);
                 }
-            }
-
-            if (com.android.window.flags.Flags.logStartActivityIntent()
-                    && mRequest.intent != null && Build.isDebuggable()) {
-                // For lab debug device usages.
-                ProtoLog.d(WM_DEBUG_ACTIVITY_START_INTENT,
-                        "Execute activity start request:\nIntent=%s\nIsExported=%s",
-                        mRequest.intent.toUri(URI_INTENT_SCHEME),
-                        mRequest.activityInfo != null && mRequest.activityInfo.exported);
             }
 
             int res = START_CANCELED;
