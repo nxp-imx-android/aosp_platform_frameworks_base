@@ -803,7 +803,9 @@ constructor(
                     surfaceControlBuilderSupplier,
                     surfaceControlTransactionSupplier,
                     displayController,
-                )
+                ) {
+                    captionController?.injectMotionEvent(it)
+                }
         val touchSlop = ViewConfiguration.get(decorWindowContext).scaledTouchSlop
         val res = decorWindowContext.resources
         val newGeometry =

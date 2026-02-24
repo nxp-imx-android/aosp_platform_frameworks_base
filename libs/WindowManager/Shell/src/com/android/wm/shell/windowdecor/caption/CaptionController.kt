@@ -76,6 +76,12 @@ abstract class CaptionController<T>(
     var isDragging = false
     var setExcludeLayerJob: Job? = null
 
+    /**
+     * Whether this class is receiving a gesture started inside the root view through
+     * [injectMotionEvent]
+     */
+    private var injectingGestureOfInterest = false
+
     /** Controller for layout menu or null if caption does not implement a layout menu. */
     open val layoutMenuController: LayoutMenuController? = null
     /** Controller for handle menu or null if caption does not implement a handle menu. */
@@ -455,6 +461,31 @@ abstract class CaptionController<T>(
             captionViewHost = viewHost
             return viewHost
         }
+
+    /**
+     * Inject the given [MotionEvent] into the root view if it exists and the gesture started in it.
+     */
+    fun injectMotionEvent(e: MotionEvent) {
+        val rootView = windowDecorationViewHolder?.rootView ?: return
+
+        val isDown = e.action == MotionEvent.ACTION_DOWN
+        val isUpOrCancel =
+            e.action == MotionEvent.ACTION_UP || e.action == MotionEvent.ACTION_CANCEL
+        val left = rootView.left.toFloat()
+        val top = rootView.top.toFloat()
+        e.offsetLocation(left, top)
+        if (isDown) {
+            injectingGestureOfInterest =
+                e.x >= 0 && e.y >= 0 && e.x < rootView.width && e.y < rootView.height
+        }
+        if (injectingGestureOfInterest) {
+            rootView.dispatchTouchEvent(e)
+        }
+        if (isUpOrCancel) {
+            injectingGestureOfInterest = false
+        }
+        e.offsetLocation(-left, -top)
+    }
 
     // TODO(b/478792808): Remove suppression
     @SuppressWarnings("ProtoLogNonConstantFormat")
