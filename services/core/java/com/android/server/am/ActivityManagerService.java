@@ -6436,7 +6436,10 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (intent == null) {
             return null;
         }
-        final int userId = res.key.userId;
+        final int userId = mUserController.handleIncomingUser(Binder.getCallingPid(),
+                Binder.getCallingUid(), res.key.userId,
+                res.key.type == ActivityManager.INTENT_SENDER_BROADCAST, ALLOW_NON_FULL,
+                "queryIntentComponentsForIntentSender", null);
         final int uid = res.uid;
         final String resolvedType = res.key.requestResolvedType;
         switch (res.key.type) {
