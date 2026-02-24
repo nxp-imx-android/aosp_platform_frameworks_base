@@ -123,6 +123,7 @@ cc_defaults {
 
     whole_static_libs: [
         "hwui_flags_cc_lib",
+        "libsurfaceflingerflags",
     ],
 
     target: {
@@ -159,9 +160,6 @@ cc_defaults {
                 "libtonemap",
                 "libgui_aidl",
                 "libipcrenderbuffer_static",
-            ],
-            whole_static_libs: [
-                "libsurfaceflingerflags",
             ],
         },
         host: {

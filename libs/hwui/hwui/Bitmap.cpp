@@ -16,6 +16,7 @@
 #include "Bitmap.h"
 
 #include <android-base/file.h>
+#include <com_android_graphics_surfaceflinger_flags.h>
 #include <utils/Trace.h>
 
 #include "FeatureFlags.h"
@@ -23,9 +24,7 @@
 #include "OutOfProcessRendering.h"
 #include "Properties.h"
 #include "utils/Color.h"
-
 #ifdef __ANDROID__  // Layoutlib does not support render thread
-#include <com_android_graphics_surfaceflinger_flags.h>
 #include <private/android/AHardwareBufferHelpers.h>
 #include <ui/GraphicBuffer.h>
 #include <ui/GraphicBufferMapper.h>
@@ -630,7 +629,6 @@ BitmapPalette Bitmap::computePalette(const SkImageInfo& info, const void* addr, 
 }
 
 bool Bitmap::compress(JavaCompressFormat format, int32_t quality, SkWStream* stream) {
-#ifdef __ANDROID__  // TODO: This isn't built for host for some reason?
     if (hasGainmap()) {
         SkBitmap baseBitmap = getSkBitmap();
         SkBitmap gainmapBitmap = gainmap()->bitmap->getSkBitmap();
@@ -661,7 +659,6 @@ bool Bitmap::compress(JavaCompressFormat format, int32_t quality, SkWStream* str
                 ALOGI("Format: %d doesn't support gainmap compression!", format);
         }
     }
-#endif
     SkBitmap skbitmap;
     getSkBitmap(&skbitmap);
     return compress(skbitmap, format, quality, stream);
