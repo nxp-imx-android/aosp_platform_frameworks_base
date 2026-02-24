@@ -253,13 +253,6 @@ flag {
 }
 
 flag {
-    name: "enable_camera_compat_for_desktop_windowing"
-    namespace: "lse_desktop_experience"
-    description: "Whether to apply Camera Compat treatment to fixed-orientation apps in desktop windowing mode"
-    bug: "314952133"
-}
-
-flag {
     name: "enable_camera_compat_for_desktop_windowing_opt_out"
     namespace: "lse_desktop_experience"
     description: "Whether to allow developers to opt-out of Camera Compat treatment to fixed-orientation apps in desktop windowing mode"

@@ -40,7 +40,6 @@ import static android.view.WindowManager.PROPERTY_COMPAT_IGNORE_REQUESTED_ORIENT
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.window.flags.Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES;
-import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -49,7 +48,6 @@ import android.compat.testing.PlatformCompatChangeRule;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
 import androidx.annotation.NonNull;
@@ -348,7 +346,6 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testOverrideOrientationIfNeeded_fullscrOverrideFreeform_cameraActivity_unchanged() {
         runTestScenario((robot) -> {
             robot.applyOnActivity((a) -> {
