@@ -113,6 +113,9 @@ public class HubEndpoint {
      */
     public static final int REASON_ENDPOINT_STOPPED = 6;
 
+    /** Indicates a variable sized data flow. */
+    private static final int NATIVE_ELEMENT_SIZE_VARIABLE = -1;
+
     private final Object mLock = new Object();
     private final HubEndpointInfo mPendingHubEndpointInfo;
     @Nullable private final HubEndpointLifecycleCallback mLifecycleCallback;
@@ -922,7 +925,14 @@ public class HubEndpoint {
         Objects.requireNonNull(targetHubIds);
         Objects.requireNonNull(dataConfig);
         boolean isFixedSize = dataConfig.getFormat() == DataFlowDataConfig.FORMAT_FIXED_SIZE;
-        int elementSize = dataConfig.getElementSize();
+
+        int elementSize;
+        if (Flags.fmcqSupportVariableSizedDataFlowFix()) {
+            elementSize = isFixedSize ? dataConfig.getElementSize() : NATIVE_ELEMENT_SIZE_VARIABLE;
+        } else {
+            elementSize = dataConfig.getElementSize();
+        }
+
         int elementAlignment = dataConfig.getElementAlignment();
         if (minCapacity > maxCapacity) {
             throw new IllegalArgumentException(
@@ -955,6 +965,10 @@ public class HubEndpoint {
             info.debugName = mPendingHubEndpointInfo.getName();
             int minElementCount = minCapacity / elementSize;
             int maxElementCount = maxCapacity / elementSize;
+            if (Flags.fmcqSupportVariableSizedDataFlowFix() && !isFixedSize) {
+                elementSize = -1;
+            }
+
             int[] dataFlowValues =
                     native_createDataFlowInfo(
                             mNativeHandle,
@@ -1449,15 +1463,21 @@ public class HubEndpoint {
         if (hostSinkValues == null) {
             Log.e(TAG, "enableHostSinkFromContext: failed to enable host sink");
             return null;
-        } else if (hostSinkValues.length != NATIVE_ENABLE_HOST_SINK_ARRAY_SIZE) {
+        }
+        if (hostSinkValues.length != NATIVE_ENABLE_HOST_SINK_ARRAY_SIZE) {
             Log.e(TAG, "enableHostSinkFromContext: incorrect host sink values length");
             return null;
         }
 
-        // TODO(b/460528144): Handle variable length sink type
         int elementSize = hostSinkValues[0];
         int elementAlignment = hostSinkValues[1];
-        return DataFlowDataConfig.createFixedSize(elementSize, elementAlignment);
+        if (Flags.fmcqSupportVariableSizedDataFlowFix()) {
+            return elementSize <= 0
+                    ? DataFlowDataConfig.createVariableSizeAligned(elementAlignment)
+                    : DataFlowDataConfig.createFixedSize(elementSize, elementAlignment);
+        } else {
+            return DataFlowDataConfig.createFixedSize(elementSize, elementAlignment);
+        }
     }
 
     private DataFlowSink createDataFlowSink(
