@@ -147,15 +147,6 @@ flag {
     bug: "338226475"
 }
 
-flag {
-    name: "show_confirmation_toast_on_user_deletion"
-    namespace: "multiuser"
-    description: "Show a toast to confirm that user deletion has been successful"
-    bug: "438126997"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
 
 flag {
     name: "property_invalidated_cache_bypass_mismatched_uids"
