@@ -16,6 +16,7 @@
 
 package android.companion.virtual.camera;
 
+import android.annotation.FlaggedApi;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
@@ -117,6 +118,22 @@ public final class VirtualCamera implements Closeable {
     @NonNull
     public String getId() {
         return mCameraId;
+    }
+
+    /**
+     * Closes the current session for the virtual camera instance.
+     * The client will be notified in {@link CameraDevice.StateCallback#onError(CameraDevice, int)}
+     * with {@link CameraDevice.StateCallback#ERROR_CAMERA_DEVICE}.
+     * The VirtualCamera is still registered and available, though the camera client needs to open
+     * a new camera session to use it.
+     */
+    @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_CLOSE_SESSION)
+    public void closeSessionOnError() {
+        try {
+            mVirtualDevice.closeVirtualCameraSession(mConfig);
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
     }
 
     @Override
