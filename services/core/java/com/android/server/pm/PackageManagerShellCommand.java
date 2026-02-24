@@ -108,6 +108,7 @@ import android.text.format.DateUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.IntArray;
+import android.util.Log;
 import android.util.Pair;
 import android.util.PrintWriterPrinter;
 import android.util.Slog;
@@ -128,6 +129,7 @@ import com.android.server.pm.PackageManagerShellCommandDataLoader.Metadata;
 import com.android.server.pm.permission.LegacyPermissionManagerInternal;
 import com.android.server.pm.permission.PermissionAllowlist;
 import com.android.server.pm.verify.domain.DomainVerificationShell;
+import com.android.server.utils.Slogf;
 
 import libcore.io.IoUtils;
 import libcore.io.Streams;
@@ -163,6 +165,8 @@ class PackageManagerShellCommand extends ShellCommand {
     private static final String STDIN_PATH = "-";
     private static final int DEFAULT_STAGED_READY_TIMEOUT_MS = 60 * 1000;
     private static final String TAG = "PackageManagerShellCommand";
+    @SuppressWarnings("IsLoggableTagLength") // TODO(b/487285689): shouldn't be needed
+    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
     private static final Set<String> UNSUPPORTED_INSTALL_CMD_OPTS = Set.of(
             "--multi-package"
     );
@@ -3137,6 +3141,8 @@ class PackageManagerShellCommand extends ShellCommand {
             } else if ("--for-testing".equals(opt)) {
                 flags |= UserInfo.FLAG_FOR_TESTING;
             } else if ("--pre-create-only".equals(opt)) {
+                // TODO(b/282987119): preCreated users is deprecated, we should remove this option
+                // and/or explicitly throw when passed on
                 preCreateOnly = true;
             } else if ("--user-type".equals(opt)) {
                 newUserType = getNextArgRequired();
@@ -3173,19 +3179,40 @@ class PackageManagerShellCommand extends ShellCommand {
             userType = UserInfo.getDefaultUserType(flags);
         }
         Trace.traceBegin(Trace.TRACE_TAG_PACKAGE_MANAGER, "shell_runCreateUser");
+        if (DEBUG) {
+            Slogf.d(TAG,
+                    "runCreateUser(): userId=%d, name=%s, userType=%s, flags=%d (%s)",
+                    userId, name, userType, flags, UserInfo.flagsToString(flags));
+        }
         try {
             if (UserManager.isUserTypeRestricted(userType)) {
                 // In non-split user mode, userId can only be SYSTEM
                 int parentUserId = userId >= 0 ? userId : UserHandle.USER_SYSTEM;
+                if (DEBUG) {
+                    Slogf.v(TAG, "runCreateUser(): calling "
+                            + "createRestrictedProfileWithThrow(%s, %d)", name, parentUserId);
+                }
                 info = um.createRestrictedProfileWithThrow(name, parentUserId);
                 accm.addSharedAccountsFromParentUser(parentUserId, userId,
                         (Process.myUid() == Process.ROOT_UID) ? "root" : "com.android.shell");
             } else if (userId < 0) {
-                info = preCreateOnly ?
-                        um.preCreateUserWithThrow(userType) :
-                        um.createUserWithThrow(name, userType, flags);
+                if (preCreateOnly) {
+                    Slogf.w(TAG, "runCreateUser(): calling preCreateUserWithThrow(%s), but "
+                            + "pre-created users is deprecated", userType);
+                    info = um.preCreateUserWithThrow(userType);
+                } else {
+                    if (DEBUG) {
+                        Slogf.v(TAG, "runCreateUser(): calling createUserWithThrow(%s, %s, %d)",
+                                name, userType, flags);
+                    }
+                    info =  um.createUserWithThrow(name, userType, flags);
+                }
             } else {
-                info = um.createProfileForUserWithThrow(name, userType, flags, userId, null);
+                Slogf.v(TAG, "runCreateUser(): calling "
+                        + "createProfileForUserWithThrow(%s, %s, %d, %d, null)",
+                        name, userType, flags, userId);
+                info = um.createProfileForUserWithThrow(name, userType, flags, userId,
+                        /* disallowedPackages=*/ null);
             }
         } catch (ServiceSpecificException e) {
             getErrPrintWriter().println("Error: " + e);
@@ -3194,6 +3221,9 @@ class PackageManagerShellCommand extends ShellCommand {
         }
 
         if (info != null) {
+            if (DEBUG) {
+                Slogf.d(TAG, "runCreateUser(): created %s", info.toFullString());
+            }
             getOutPrintWriter().println("Success: created user id " + info.id);
             return 0;
         } else {

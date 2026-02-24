@@ -26,6 +26,7 @@ import static android.content.pm.PackageManager.FEATURE_AUTOMOTIVE;
 import static android.content.pm.PackageManager.FEATURE_EMBEDDED;
 import static android.content.pm.PackageManager.FEATURE_LEANBACK;
 import static android.content.pm.PackageManager.FEATURE_WATCH;
+import static android.content.pm.UserInfo.flagsToString;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserManager.DEV_CREATE_OVERRIDE_PROPERTY;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
@@ -4841,7 +4842,7 @@ public class UserManagerService extends IUserManager.Stub {
                 Slogf.i(LOG_TAG, "Persisting emulated system user data: type changed from %s to "
                         + "%s, flags changed from %s to %s",
                         systemUserData.info.userType, newUserType,
-                        UserInfo.flagsToString(oldSysFlags), UserInfo.flagsToString(newSysFlags));
+                        UserInfo.flagsToString(oldSysFlags), flagsToString(newSysFlags));
 
                 systemUserData.info.userType = newUserType;
                 systemUserData.info.flags = newSysFlags;
@@ -6466,7 +6467,6 @@ public class UserManagerService extends IUserManager.Stub {
                 }
 
                 userId = getNextAvailableId();
-                Slog.i(LOG_TAG, "Creating user " + userId + " of type " + userType);
                 Environment.getUserSystemDirectory(userId).mkdirs();
 
                 synchronized (mUsersLock) {
@@ -6485,7 +6485,8 @@ public class UserManagerService extends IUserManager.Stub {
                     if ((flags & UserInfo.FLAG_EPHEMERAL) != 0) {
                         flags |= UserInfo.FLAG_EPHEMERAL_ON_CREATE;
                     }
-
+                    Slogf.i(LOG_TAG, "Creating user %d of type %s with flags %d (%s)", userId,
+                            userType, flags, flagsToString(flags));
                     userInfo = new UserInfo(userId, truncatedName, null, flags, userType);
                     userInfo.serialNumber = mNextSerialNumber++;
                     userInfo.creationTime = getCreationTime();
@@ -6516,6 +6517,13 @@ public class UserManagerService extends IUserManager.Stub {
                             writeUserLP(parent);
                         }
                         userInfo.restrictedProfileParentId = parent.info.restrictedProfileParentId;
+                    } else {
+                        // TODO(b/485640218): this is unlikely to happen on real API calls, but
+                        // could happen using `pm create-user`. Ideally we should throw an
+                        // IllegalArgumentException here, but that could break stuff...
+                        Slogf.w(LOG_TAG, "createUser...() was called with a parent user (%d), but "
+                                + "the user type (%s) is not a profile, so the user is being "
+                                + "created without a parent", parentId, userType);
                     }
                 }
             }
@@ -6710,7 +6718,7 @@ public class UserManagerService extends IUserManager.Stub {
             return null;
         }
         Slog.i(LOG_TAG, "Reusing pre-created user " + preCreatedUser.id + " of type "
-                + userType + " and bestowing on it flags " + UserInfo.flagsToString(flags));
+                + userType + " and bestowing on it flags " + flagsToString(flags));
         preCreatedUser.name = name;
         preCreatedUser.flags = newFlags;
         preCreatedUser.preCreated = false;
@@ -8439,7 +8447,7 @@ public class UserManagerService extends IUserManager.Stub {
         pw.println();
         pw.print("    Type: "); pw.println(userInfo.userType);
         pw.print("    Flags: "); pw.print(userInfo.flags); pw.print(" (");
-        pw.print(UserInfo.flagsToString(userInfo.flags)); pw.println(")");
+        pw.print(flagsToString(userInfo.flags)); pw.println(")");
         pw.print("    State: ");
         final int state;
         synchronized (mUserStates) {
