@@ -47,7 +47,7 @@ import platform.test.motion.RecordedMotion
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.MotionControlFn
-import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
+import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRuleV2
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.golden.DataPointTypes
 import platform.test.motion.golden.asDataPoint
@@ -62,7 +62,7 @@ class UserActionGestureMotionTest {
     private val goldenPaths =
         createGoldenPathManager("frameworks/base/packages/SystemUI/compose/scene/tests/goldens")
 
-    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRule(goldenPaths)
+    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRuleV2(goldenPaths)
     private val composeRule = motionRule.toolkit.composeContentTestRule
 
     @get:Rule val setFlagsRule = SetFlagsRule()

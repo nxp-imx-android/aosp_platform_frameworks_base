@@ -70,7 +70,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
-import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
+import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRuleV2
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.motion.golden.DataPoint
@@ -86,7 +86,8 @@ class TransitionScopedMechanicsAdapterTest {
         createGoldenPathManager("frameworks/base/packages/SystemUI/compose/scene/tests/goldens")
 
     private val testScope = TestScope()
-    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRule(goldenPaths, testScope)
+    @get:Rule
+    val motionRule = createFixedConfigurationComposeMotionTestRuleV2(goldenPaths, testScope)
     private val composeRule = motionRule.toolkit.composeContentTestRule
 
     @Test
@@ -437,6 +438,9 @@ class TransitionScopedMechanicsAdapterTest {
             waitForIdle()
             iterationCount++
         }
+        // Complete the transition; if still ongoing during test cleanup, some STL coroutines would
+        // be executed on the wrong thread and throw as a result.
+        mainClock.autoAdvance = true
         waitForIdle()
 
         return result

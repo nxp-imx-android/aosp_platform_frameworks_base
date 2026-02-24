@@ -51,7 +51,7 @@ import platform.test.motion.RecordedMotion
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.MotionControlScope
-import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
+import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRuleV2
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.on
 import platform.test.motion.compose.recordMotion
@@ -68,7 +68,8 @@ class RemoteControlledTransitionTest {
         createGoldenPathManager("frameworks/base/packages/SystemUI/compose/scene/tests/goldens")
 
     private val testScope = TestScope()
-    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRule(goldenPaths, testScope)
+    @get:Rule
+    val motionRule = createFixedConfigurationComposeMotionTestRuleV2(goldenPaths, testScope)
     private val composeRule = motionRule.toolkit.composeContentTestRule
 
     @Test
