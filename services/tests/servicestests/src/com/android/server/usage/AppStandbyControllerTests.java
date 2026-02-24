@@ -45,7 +45,6 @@ import static android.app.usage.UsageStatsManager.STANDBY_BUCKET_RARE;
 import static android.app.usage.UsageStatsManager.STANDBY_BUCKET_RESTRICTED;
 import static android.app.usage.UsageStatsManager.STANDBY_BUCKET_WORKING_SET;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.platform.test.flag.junit.SetFlagsRule.DefaultInitValueType.NULL_DEFAULT;
 
 import static com.android.server.usage.AppStandbyController.ConstantsObserver.KEY_NOTIFICATION_SEEN_PROMOTED_BUCKET;
 import static com.android.server.usage.AppStandbyController.DEFAULT_ELAPSED_TIME_THRESHOLDS;
@@ -143,7 +142,7 @@ import java.util.stream.Collectors;
 public class AppStandbyControllerTests {
 
     @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule(NULL_DEFAULT);
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
     private static final String PACKAGE_1 = "com.example.foo.1";
     private static final int UID_1 = 10000;
     private static final String PACKAGE_2 = "com.example.foo.2";
