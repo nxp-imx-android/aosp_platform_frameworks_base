@@ -32,8 +32,7 @@ fun ActionChoiceDialog(onDismissRequest: () -> Unit, onActionSelected: (ActionMo
     DropdownMenu(expanded = true, onDismissRequest = onDismissRequest) {
         for (action in ActionModel.entries) {
             DropdownMenuItem(
-                // TODO: b/478225883 - Add translated strings describing the actions.
-                text = { Text(text = action.name) },
+                text = { Text(text = "${action.name} [TK]") },
                 onClick = {
                     onActionSelected.invoke(action)
                     onDismissRequest.invoke()

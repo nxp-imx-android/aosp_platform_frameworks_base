@@ -94,7 +94,7 @@ fun ContactChoiceDialog(
                     onQueryChange(newQuery)
                 },
                 onSearch = { onQueryChange(it) },
-                placeholder = { Text(text = "Search") },
+                placeholder = { Text(text = "Search [TK]") },
                 expanded = expanded,
                 onExpandedChange = { expanded = it },
             )
@@ -104,7 +104,7 @@ fun ContactChoiceDialog(
     ) {
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
             item(key = "Selected") {
-                Text("Selected", style = MaterialTheme.typography.titleLargeEmphasized)
+                Text("Selected [TK]", style = MaterialTheme.typography.titleLargeEmphasized)
             }
             currentSelectedContacts.forEach {
                 item(key = it.lookupUri) {
@@ -119,7 +119,7 @@ fun ContactChoiceDialog(
             }
 
             item(key = "Search results") {
-                Text("Search results", style = MaterialTheme.typography.titleLargeEmphasized)
+                Text("Search results [TK]", style = MaterialTheme.typography.titleLargeEmphasized)
             }
             currentSearchResults.forEach {
                 if (it !in currentSelectedContacts) {
@@ -137,7 +137,7 @@ fun ContactChoiceDialog(
 
             item(key = "Save") {
                 Button(onClick = { onContactsSaved(currentSelectedContacts.toList()) }) {
-                    Text("Save")
+                    Text("Save [TK]")
                 }
             }
         }
@@ -176,13 +176,13 @@ private fun Contact(
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Filled.Clear,
-                    contentDescription = "Remove contact",
+                    contentDescription = "Remove contact [TK]",
                     modifier = iconModifier,
                 )
             } else {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "Add contact",
+                    contentDescription = "Add contact [TK]",
                     modifier = iconModifier,
                 )
             }

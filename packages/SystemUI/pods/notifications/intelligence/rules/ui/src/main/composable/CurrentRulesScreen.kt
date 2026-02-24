@@ -72,13 +72,11 @@ fun CurrentRulesScreen(
                 Button(onClick = dismissRulesScreen, modifier = Modifier) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        // TODO: b/478225883 - Translate content description (requires moving
-                        // resources to pods)
-                        contentDescription = "Back",
+                        contentDescription = "Back [TK]",
                     )
                 }
                 Text(
-                    text = "Notification Rules",
+                    text = "Notification Rules [TK]",
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                     textAlign = TextAlign.Center,
@@ -105,7 +103,7 @@ fun CurrentRulesScreen(
                     }
                 }
             ) {
-                Text("Create new rule")
+                Text("Create new rule [TK]")
             }
         }
     }
@@ -145,7 +143,7 @@ private fun CurrentRule(rule: RuleModel, screenViewModel: NotificationRulesScree
 
         if (isExpanded) {
             Button(onClick = { screenViewModel.launchEditRuleScreen(rule.toDraft()) }) {
-                Text("Edit")
+                Text("Edit [TK]")
             }
         }
     }
@@ -157,7 +155,7 @@ private fun RuleModel.toText(): String {
     val contactsList = filter.contacts?.contacts
     val contactsString =
         if (contactsList != null) {
-            " from ${contactsList.joinToString { it.name }}"
+            " from ${contactsList.joinToString { it.name }} [TK]"
         } else {
             ""
         }
@@ -165,10 +163,10 @@ private fun RuleModel.toText(): String {
     val includedAppsList = filter.includedApps?.apps
     val includedAppsString =
         if (includedAppsList != null) {
-            " from ${includedAppsList.joinToString { it.label }}"
+            " from ${includedAppsList.joinToString { it.label }} [TK]"
         } else {
             ""
         }
 
-    return "${action.name} notifications$contactsString$includedAppsString"
+    return "${action.name} notifications$contactsString$includedAppsString [TK]"
 }

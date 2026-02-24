@@ -92,9 +92,7 @@ fun NotificationRuleEdit(
         Button(onClick = dismissEditScreen) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                // TODO: b/478225883 - Translate content description (requires moving
-                // resources to pods)
-                contentDescription = "Back",
+                contentDescription = "Back [TK]",
             )
         }
 
@@ -178,10 +176,10 @@ private fun buildAnnotatedText(
             textStyles = textStyles,
         )
 
-        append(" all Conversation notifications")
+        append(" all Conversation notifications [TK]")
 
         selectedIncludedApps?.let {
-            append(" from ")
+            append(" from [TK]")
             createIncludedAppsText(
                 selectedIncludedApps = selectedIncludedApps,
                 editDialogShowing = shownDialogType,
@@ -191,7 +189,7 @@ private fun buildAnnotatedText(
         }
 
         selectedContacts?.let {
-            append(" from ")
+            append(" from [TK]")
             createContactsText(
                 selectedContacts = it,
                 editDialogShowing = shownDialogType,
@@ -200,7 +198,7 @@ private fun buildAnnotatedText(
             )
         }
 
-        append(" on weekdays")
+        append(" on weekdays [TK]")
     }
 }
 
@@ -224,7 +222,7 @@ private fun AddButton(
             )
         }
     ) {
-        Text("+ Add")
+        Text("+ Add [TK]")
     }
 }
 
@@ -271,7 +269,7 @@ private fun AnnotatedString.Builder.createIncludedAppsText(
                 check(apps.isNotEmpty()) { "IncludedAppsModel.apps must be non-empty" }
                 val first = apps[0].label
                 if (apps.size > 1) {
-                    "$first +${apps.size - 1} more"
+                    "$first +${apps.size - 1} more [TK]"
                 } else {
                     first
                 }
@@ -309,7 +307,7 @@ private fun AnnotatedString.Builder.createContactsText(
             val first = contacts[0].name
             val text =
                 if (contacts.size > 1) {
-                    "$first +${contacts.size - 1} more"
+                    "$first +${contacts.size - 1} more [TK]"
                 } else {
                     first
                 }
