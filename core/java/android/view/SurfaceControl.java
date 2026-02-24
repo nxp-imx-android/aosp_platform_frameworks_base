@@ -299,7 +299,8 @@ public final class SurfaceControl implements Parcelable {
     private static native void nativeSetPostProcess(long transactionObj, long nativeObject,
             IBinder shader, byte[] uniforms, int target);
 
-    private static native IBinder nativeRegisterShader(String debugName, String shaderString);
+    private static native IBinder nativeRegisterShader(String uniqueShaderName,
+            String shaderString);
     private static native void nativeUnregisterShader(IBinder shader);
 
     private static native void nativeSetFrameRate(long transactionObj, long nativeObject,
@@ -456,12 +457,15 @@ public final class SurfaceControl implements Parcelable {
      *
      * Requires having the android.permission.READ_FRAME_BUFFER permission
      *
-     * @param shaderString The shader code.
+     * @param uniqueShaderName The name for this shader effect, it should be
+     *                         unique across all shaders registered with the system.
+     * @param shaderString     The shader code.
      * @return A handle to the registered shader.
      * @hide
      */
-    public static IBinder registerShader(@NonNull String debugName, @NonNull String shaderString) {
-        return nativeRegisterShader(debugName, shaderString);
+    public static IBinder registerShader(@NonNull String uniqueShaderName,
+            @NonNull String shaderString) {
+        return nativeRegisterShader(uniqueShaderName, shaderString);
     }
 
     /**

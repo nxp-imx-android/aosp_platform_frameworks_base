@@ -2762,9 +2762,9 @@ static void nativeSetPostProcess(JNIEnv* env, jclass clazz, jlong transactionObj
     transaction->setPostProcess(ctrl, shaderBinder, uniforms, sampleTarget);
 }
 
-static jobject nativeRegisterShader(JNIEnv* env, jclass clazz, jstring debugName,
+static jobject nativeRegisterShader(JNIEnv* env, jclass clazz, jstring uniqueShaderName,
                                     jstring shaderString) {
-    ScopedUtfChars name(env, debugName);
+    ScopedUtfChars name(env, uniqueShaderName);
     if (!name.c_str()) {
         return nullptr;
     }
