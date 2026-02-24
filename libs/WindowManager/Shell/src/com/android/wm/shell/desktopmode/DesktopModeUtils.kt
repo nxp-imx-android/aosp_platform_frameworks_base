@@ -438,35 +438,29 @@ fun cascadeWindow(
     }
 
     val expandedTasks = taskRepository.getExpandedTasksIdsInDeskOrdered(deskId)
-    expandedTasks
-        .firstOrNull { !taskRepository.isClosingTask(it) }
-        ?.let { taskId: Int ->
-            val taskInfo =
-                shellTaskOrganizer.getRunningTaskInfo(taskId)
-                    ?: recentTasksController?.findTaskInBackground(taskId)
-            taskInfo?.let {
-                val taskBounds = it.configuration.windowConfiguration.bounds
-                val prevBounds =
-                    if (!taskBounds.isEmpty()) {
-                        taskBounds
-                    } else if (it is RecentTaskInfo) {
-                        // RecentsTaskInfo might not have configuration bounds populated yet so use
-                        // task lastNonFullscreenBounds if available. If null or empty bounds are
-                        // found do not cascade.
-                        it.lastNonFullscreenBounds?.takeIf { !it.isEmpty }
-                    } else {
-                        null
-                    }
-                if (prevBounds != null) {
-                    if (Flags.enableSteppedCascading()) {
-                        cascadeWindowStepped(
-                            context.resources,
-                            stableBounds,
-                            prevBounds,
-                            bounds,
-                            isRememberedBounds,
-                        )
-                    } else {
+    if (!Flags.enableSteppedCascading()) {
+        expandedTasks
+            .firstOrNull { !taskRepository.isClosingTask(it) }
+            ?.let { taskId: Int ->
+                val taskInfo =
+                    shellTaskOrganizer.getRunningTaskInfo(taskId)
+                        ?: recentTasksController?.findTaskInBackground(taskId)
+                taskInfo?.let {
+                    val taskBounds = it.configuration.windowConfiguration.bounds
+                    val prevBounds =
+                        if (!taskBounds.isEmpty()) {
+                            taskBounds
+                        } else if (it is RecentTaskInfo) {
+                            // RecentsTaskInfo might not have configuration bounds populated yet so
+                            // use
+                            // task lastNonFullscreenBounds if available. If null or empty bounds
+                            // are
+                            // found do not cascade.
+                            it.lastNonFullscreenBounds?.takeIf { !it.isEmpty }
+                        } else {
+                            null
+                        }
+                    if (prevBounds != null) {
                         cascadeWindow(
                             context.resources,
                             stableBounds,
@@ -474,11 +468,37 @@ fun cascadeWindow(
                             bounds,
                             isRememberedBounds,
                         )
+                        return@let
                     }
-                    return@let
                 }
             }
-        }
+        return
+    }
+
+    val prevBoundsList =
+        expandedTasks
+            .filter { !taskRepository.isClosingTask(it) }
+            .mapNotNull { taskId ->
+                val taskInfo =
+                    shellTaskOrganizer.getRunningTaskInfo(taskId)
+                        ?: recentTasksController?.findTaskInBackground(taskId)
+                        ?: return@mapNotNull null
+
+                val taskBounds = taskInfo.configuration.windowConfiguration.bounds
+                when {
+                    !taskBounds.isEmpty -> taskBounds
+                    taskInfo is RecentTaskInfo ->
+                        taskInfo.lastNonFullscreenBounds?.takeIf { !it.isEmpty }
+                    else -> null
+                }
+            }
+    cascadeWindowStepped(
+        stableBounds,
+        bounds,
+        prevBoundsList,
+        isRememberedBounds,
+        context.resources,
+    )
 }
 
 /**

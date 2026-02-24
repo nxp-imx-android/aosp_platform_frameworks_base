@@ -6471,6 +6471,9 @@
   <!-- Default height of desktop view's large header for desktop tasks on launch. -->
   <java-symbol type="dimen" name="desktop_view_default_large_header_height" />
 
+  <!-- The cascading offset in desktop mode. -->
+  <java-symbol type="dimen" name="desktop_mode_cascading_offset" />
+
   <!-- Enable OEMs to support different frr notification target component activity -->
   <java-symbol type="string" name="config_fingerprintFrrTargetComponent" />
   <java-symbol type="string" name="fingerprint_frr_notification_title" />
