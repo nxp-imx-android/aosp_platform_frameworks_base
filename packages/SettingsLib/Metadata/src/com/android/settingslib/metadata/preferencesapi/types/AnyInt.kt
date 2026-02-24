@@ -22,7 +22,8 @@ import com.android.settingslib.metadata.R
 
 /** Any int value. */
 object AnyInt: ApiType<Int> {
-
+    override fun getType(): Class<Int> = Int::class.java
     override fun getDescription(context: Context): String =
         context.getString(R.string.any_int_type_description)
+    override fun getKey(): String = "AnyInt"
 }

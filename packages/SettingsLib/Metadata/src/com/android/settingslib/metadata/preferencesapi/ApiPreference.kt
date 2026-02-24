@@ -21,6 +21,8 @@ import android.os.Process
 import android.os.UserHandle
 import android.provider.Settings
 import androidx.annotation.StringRes
+import com.android.settingslib.metadata.preferencesapi.types.CustomEnum
+import com.android.settingslib.metadata.preferencesapi.types.EnumApi
 import com.android.settingslib.utils.applications.AppUtils
 import com.android.settingslib.datastore.KeyValueStore
 import com.android.settingslib.datastore.NoOpKeyedObservable
@@ -340,7 +342,7 @@ internal annotation class ApiPreferenceDsl
  * ```
  */
 @ApiPreferenceDsl
-class GetConfigBuilder<V : Any> {
+class GetConfigBuilder<V : Any>(private val type: ApiType<V>) {
     private var permissionsConfig: Permissions? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var executeBlock: (suspend ApiOperationContext.() -> V)? = null
@@ -418,6 +420,24 @@ class GetConfigBuilder<V : Any> {
         executeBlock = lambda
     }
 
+    /**
+     * Declare the execute block of the get.
+     *
+     *
+     * This is used for enum types as an alternative to the `execute` block.
+     */
+    fun executeEnum(lambda: suspend ApiOperationContext.() -> EnumApi<V>) {
+        if (executeBlock != null) {
+            error(getExceptionMessageMultipleDefines("executeEnum"))
+        }
+
+        if (type !is CustomEnum<V, *>) {
+            error("executeEnum is only supported for CustomEnum types")
+        }
+
+        executeBlock = { lambda().asApiValue }
+    }
+
     internal fun build(): GetConfig<V> {
         return GetConfig(
             permissions = permissionsConfig,
@@ -440,7 +460,7 @@ class GetConfigBuilder<V : Any> {
  * ```
  */
 @ApiPreferenceDsl
-class SetConfigBuilder<V : Any> {
+class SetConfigBuilder<V : Any>(private val type: ApiType<V>) {
     private var permissionsConfig: Permissions? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var valuePreconditionsConfig: ValuePreconditionsConfig<V>? = null
@@ -550,6 +570,22 @@ class SetConfigBuilder<V : Any> {
         executeBlock = lambda
     }
 
+    /**
+     * Declare the execute block of the set.
+     *
+     * This is used for enum types as an alternative to the `execute` block.
+     */
+    fun executeEnum(lambda: suspend ApiOperationContext.(EnumApi<V>) -> Unit) {
+        if (executeBlock != null) {
+            error(getExceptionMessageMultipleDefines("execute"))
+        }
+        if (type !is CustomEnum<V, *>) {
+            error("executeEnum is only supported for CustomEnum types")
+        }
+
+        executeBlock = { value -> lambda(type.fromApiValue(value) ?: error("Invalid enum value: $value")) }
+    }
+
     internal fun build(): SetConfig<V> {
         return SetConfig(
             permissions = permissionsConfig,
@@ -581,7 +617,6 @@ class ApiPreferenceConfigBuilder<V : Any>(
     val key: String,
     @StringRes val purpose: Int,
     val type: ApiType<V>,
-    val valueType: Class<V>,
     val appliesTo: PreferenceTarget,
     val screenPermissions: Permissions?,
     val screenPreconditions: PreconditionsConfig?,
@@ -593,6 +628,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
     private var tagsList: List<String>? = null
     private var getConfig: GetConfig<V>? = null
     private var setConfig: SetConfig<V>? = null
+    private val valueType: Class<V> = type.getType()
 
     /**
      * Build the [FlagConfig] from the given block.
@@ -703,7 +739,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
             error(getExceptionMessageWrongOrder("get"))
         }
 
-        val builder = GetConfigBuilder<V>()
+        val builder = GetConfigBuilder<V>(type)
         builder.lambda()
         getConfig = builder.build()
     }
@@ -716,7 +752,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
             error(getExceptionMessageMultipleDefines("set"))
         }
 
-        val builder = SetConfigBuilder<V>()
+        val builder = SetConfigBuilder<V>(type)
         builder.lambda()
         setConfig = builder.build()
     }

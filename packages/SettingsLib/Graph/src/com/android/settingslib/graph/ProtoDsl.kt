@@ -35,6 +35,7 @@ import com.android.settingslib.graph.proto.PreferenceScreenProto
 import com.android.settingslib.graph.proto.PreferenceScreenProtoOrBuilder
 import com.android.settingslib.graph.proto.PreferenceValueDescriptorProto
 import com.android.settingslib.graph.proto.PreferenceValueProto
+import com.android.settingslib.graph.proto.PossibleValueProto
 import com.android.settingslib.graph.proto.RangeValueProto
 import com.android.settingslib.graph.proto.TextProto
 import com.android.settingslib.metadata.KeyParameters
@@ -122,6 +123,11 @@ inline fun actionTargetProto(init: ActionTarget.Builder.() -> Unit): ActionTarge
 inline fun preferenceValueProto(
     init: PreferenceValueProto.Builder.() -> Unit
 ): PreferenceValueProto = PreferenceValueProto.newBuilder().also(init).build()
+
+/** Kotlin DSL-style builder for [PossibleValueProto]. */
+@JvmSynthetic
+inline fun possibleValueProto(init: PossibleValueProto.Builder.() -> Unit): PossibleValueProto =
+    PossibleValueProto.newBuilder().also(init).build()
 
 /** Kotlin DSL-style builder for [PreferenceValueDescriptorProto]. */
 @JvmSynthetic
