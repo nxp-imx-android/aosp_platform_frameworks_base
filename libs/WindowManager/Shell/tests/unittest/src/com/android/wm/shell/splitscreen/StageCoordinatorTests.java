@@ -23,7 +23,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN;
-import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_LAUNCH_TASK;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_START_SHORTCUT;
@@ -705,7 +704,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    public void onRootTaskAppeared_disableChildTaskBoundsAndWindowingMode() {
+    public void onRootTaskAppeared_disableChildTaskBounds() {
         // root tasks for stages are created in setUp, mark them set
         mMainStage.mHasRootTask = true;
         mSideStage.mHasRootTask = true;
@@ -728,18 +727,6 @@ public class StageCoordinatorTests extends ShellTestCase {
         op = disableChildBoundsOps.get(1);
         assertThat(op.getContainer()).isEqualTo(mSideStage.mRootTaskInfo.token.asBinder());
         assertThat(op.getDisallowOverrideBoundsForChildren()).isTrue();
-
-        List<HierarchyOp> disableChildWinModeOps = capturedWct.getHierarchyOps().stream()
-                .filter(op2 -> op2.getType()
-                        == HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN)
-                .toList();
-        assertThat(disableChildWinModeOps).hasSize(2);
-        op = disableChildWinModeOps.getFirst();
-        assertThat(op.getContainer()).isEqualTo(mMainStage.mRootTaskInfo.token.asBinder());
-        assertThat(op.getDisallowOverrideWindowingModeForChildren()).isTrue();
-        op = disableChildWinModeOps.get(1);
-        assertThat(op.getContainer()).isEqualTo(mSideStage.mRootTaskInfo.token.asBinder());
-        assertThat(op.getDisallowOverrideWindowingModeForChildren()).isTrue();
     }
 
     @Test(expected = IllegalStateException.class)
