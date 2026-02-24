@@ -31,6 +31,7 @@ interface ScreenRecordCameraRepository {
     val state: StateFlow<CameraState>
     val isConnected: StateFlow<Boolean>
     val cameraSubjectBounds: StateFlow<Region?>
+    val isBackgroundColorAvailable: StateFlow<Boolean>
 
     fun connect()
 

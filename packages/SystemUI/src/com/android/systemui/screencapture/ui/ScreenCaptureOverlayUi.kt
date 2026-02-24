@@ -54,6 +54,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
@@ -220,11 +221,13 @@ constructor(
                                 scaleX = transformationViewModel.scale
                                 scaleY = transformationViewModel.scale
                             }
-                            .clickable(
-                                interactionSource = null,
-                                indication = null,
-                                onClick = { viewModel.onSurfaceClicked() },
-                            )
+                            .thenIf(viewModel.areTapsSupported) {
+                                Modifier.clickable(
+                                    interactionSource = null,
+                                    indication = null,
+                                    onClick = { viewModel.onSurfaceClicked() },
+                                )
+                            }
                 )
             }
         }

@@ -163,9 +163,8 @@ constructor(
         )
 
     private val isCameraBackgroundColorSupported: Boolean by
-        screenRecordCameraInteractor.isBackgroundColorSupported.hydratedStateOf(
-            traceName = "SmallScreenCaptureRecordViewModel#isBackgroundColorSupported",
-            initialValue = false,
+        screenRecordCameraInteractor.canChangeBackgroundColor.hydratedStateOf(
+            traceName = "SmallScreenCaptureRecordViewModel#isBackgroundColorSupported"
         )
     val shouldShowColorPickerButton: Boolean by derivedStateOf {
         val canSelectCameraBackgroundColor =
