@@ -135,6 +135,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.PermissionChecker;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
 import android.net.Uri;
@@ -277,6 +278,8 @@ public final class AlarmManagerServiceTest {
     private UserManagerInternal mUserManagerInternal;
     @Mock
     private ActivityManager mActivityManager;
+    @Mock
+    private PackageManager mPackageManager;
     @Mock
     private PackageManagerInternal mPackageManagerInternal;
     @Mock
@@ -440,6 +443,7 @@ public final class AlarmManagerServiceTest {
             .mockStatic(MetricsHelper.class)
             .mockStatic(PermissionChecker.class)
             .mockStatic(PermissionManagerService.class)
+            .mockStatic(Process.class)
             .mockStatic(ServiceManager.class)
             .mockStatic(SystemProperties.class)
             .mockStatic(Environment.class)
@@ -474,6 +478,7 @@ public final class AlarmManagerServiceTest {
                 LocalServices.addService(eq(AlarmManagerInternal.class), any()));
         doCallRealMethod().when(() -> LocalServices.getService(AlarmManagerInternal.class));
         doReturn(false).when(() -> UserHandle.isCore(anyInt()));
+        doReturn(false).when(() -> Process.isPrivateComputeCoreUid(anyInt()));
         when(mUsageStatsManagerInternal.getAppStandbyBucket(eq(TEST_CALLING_PACKAGE),
                 eq(TEST_CALLING_USER), anyLong())).thenReturn(STANDBY_BUCKET_ACTIVE);
         doReturn(Looper.getMainLooper()).when(Looper::myLooper);
@@ -515,6 +520,12 @@ public final class AlarmManagerServiceTest {
         when(mMockContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
         when(mMockContext.getSystemService(BatteryManager.class)).thenReturn(mBatteryManager);
         when(mMockContext.getSystemService(ActivityManager.class)).thenReturn(mActivityManager);
+        when(mMockContext.getPackageManager()).thenReturn(mPackageManager);
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(anyInt()))
+                .thenReturn(Process.INVALID_UID);
+        when(mPackageManagerInternal.isSameApp(anyString(), anyLong(), anyInt(), anyInt()))
+                .thenReturn(true);
+        when(mPackageManagerInternal.isSameApp(anyString(), anyInt(), anyInt())).thenReturn(true);
 
         registerAppIds(new String[]{TEST_CALLING_PACKAGE},
                 new Integer[]{UserHandle.getAppId(TEST_CALLING_UID)});
@@ -4340,6 +4351,90 @@ public final class AlarmManagerServiceTest {
         }
 
         return transition.toEpochSecond() * 1000;
+    }
+
+    @Test
+    public void testIsSameAppPcc() {
+        final int pccUid = 30187;
+        final int appUid = 10187;
+        final int otherAppUid = 10188;
+
+        doReturn(true).when(() -> Process.isPrivateComputeCoreUid(pccUid));
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(pccUid)).thenReturn(appUid);
+
+        // Same app (PCC UID vs App UID)
+        assertTrue(mService.isSameApp(pccUid, appUid));
+
+        // Different app
+        assertFalse(mService.isSameApp(pccUid, otherAppUid));
+
+        // Same PCC app (PCC UID vs PCC UID) - mapped to same appUid
+        assertTrue(mService.isSameApp(pccUid, pccUid));
+    }
+
+    @Test
+    public void setAttributionPcc() throws RemoteException {
+        final int pccUid = 30187;
+        mTestCallingUid = pccUid;
+        when(mPackageManagerInternal.isSameApp(eq(TEST_CALLING_PACKAGE), anyLong(), eq(pccUid),
+                anyInt())).thenReturn(true);
+
+        mBinder.set(TEST_CALLING_PACKAGE, ELAPSED_REALTIME_WAKEUP, 1234, WINDOW_HEURISTIC, 0, 0,
+                getNewMockPendingIntent(), null, null, null, null);
+        // Should not throw SecurityException
+    }
+
+    @Test
+    public void setAllowWhileIdleUnrestrictedPcc() throws RemoteException {
+        final int pccUid = 30187;
+        mTestCallingUid = pccUid;
+        when(mPackageManagerInternal.isSameApp(eq(TEST_CALLING_PACKAGE), anyLong(), eq(pccUid),
+                anyInt())).thenReturn(true);
+
+        // Mock pccUid is same app as SYSTEM_UI_UID
+        doReturn(true).when(() -> Process.isPrivateComputeCoreUid(pccUid));
+        when(mPackageManager.getAppUidForPrivateComputeCoreUid(pccUid)).thenReturn(SYSTEM_UI_UID);
+
+        mBinder.set(TEST_CALLING_PACKAGE, ELAPSED_REALTIME_WAKEUP, 1234, WINDOW_EXACT, 0, 0,
+                getNewMockPendingIntent(), null, null, null, null);
+
+        verify(mService).setImpl(anyInt(), anyLong(), anyLong(), anyLong(), any(), any(), any(),
+                eq(FLAG_STANDALONE | FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED), any(), any(), eq(pccUid),
+                eq(TEST_CALLING_PACKAGE), any(), anyInt());
+    }
+
+    @Test
+    public void canScheduleExactAlarmsBinderCallPcc() throws RemoteException {
+        final int pccUid = 30187;
+        final int appUid = 10187;
+        mTestCallingUid = pccUid;
+        when(mPackageManagerInternal.isSameApp(TEST_CALLING_PACKAGE, 0, pccUid,
+                UserHandle.getUserId(pccUid))).thenReturn(true);
+
+        registerAppIds(new String[]{TEST_CALLING_PACKAGE},
+                new Integer[]{UserHandle.getAppId(appUid)});
+
+        mockChangeEnabled(AlarmManager.REQUIRE_EXACT_ALARM_PERMISSION, true);
+        mockChangeEnabled(AlarmManager.ENABLE_USE_EXACT_ALARM, true);
+        mockChangeEnabled(AlarmManager.SCHEDULE_EXACT_ALARM_DENIED_BY_DEFAULT, true);
+
+        mockScheduleExactAlarmStatePcc(true);
+
+        assertTrue(mBinder.canScheduleExactAlarms(TEST_CALLING_PACKAGE));
+    }
+
+    private void mockScheduleExactAlarmStatePcc(boolean granted) {
+        String[] requesters = granted ? new String[]{TEST_CALLING_PACKAGE} : EmptyArray.STRING;
+        when(mPermissionManagerInternal.getAppOpPermissionPackages(SCHEDULE_EXACT_ALARM))
+                .thenReturn(requesters);
+        mService.refreshExactAlarmCandidates();
+
+        final int result = granted ? PermissionChecker.PERMISSION_GRANTED
+                : PermissionChecker.PERMISSION_HARD_DENIED;
+        doReturn(result).when(
+                () -> PermissionChecker.checkPermissionForPreflight(eq(mMockContext),
+                        eq(SCHEDULE_EXACT_ALARM), anyInt(), anyInt(),
+                        eq(TEST_CALLING_PACKAGE)));
     }
 
     private static ZoneOffsetTransition getNextTzOffsetChange(String timeZoneId, Instant instant) {
