@@ -118,6 +118,32 @@ class AppFunctionsMetadataCache {
         }
     }
 
+    /**
+     * Returns whether the function is dynamic and global scoped.
+     *
+     * @param packageName The package name of the application containing the function.
+     * @param functionIdentifier The unique identifier for the function within the package.
+     * @return true if the function is dynamic and global scoped. false otherwise.
+     */
+    boolean isGlobalScopedDynamicFunction(
+        String packageName, String functionIdentifier, UserHandle user) {
+        synchronized (mCrossUserLock) {
+            if (!mPerUserDynamicFunctionsCache.contains(user.getIdentifier())) {
+                throw new IllegalArgumentException("User is not unlocked");
+            }
+            return mPerUserDynamicFunctionsCache
+                    .get(user.getIdentifier())
+                    .isGlobalScopedDynamicFunction(packageName, functionIdentifier);
+        }
+    }
+
+    /**
+     * Returns whether the function is dynamic and activity scoped.
+     *
+     * @param packageName The package name of the application containing the function.
+     * @param functionIdentifier The unique identifier for the function within the package.
+     * @return true if the function is dynamic and activity scoped. false otherwise.
+     */
     boolean isActivityScopedDynamicFunction(
             String packageName, String functionIdentifier, UserHandle user) {
         synchronized (mCrossUserLock) {
@@ -294,6 +320,14 @@ class AppFunctionsMetadataCache {
                             packageName, functionIdentifier);
             return mGlobalScopeFunctions.contains(documentId)
                     || mActivityScopeFunctions.contains(documentId);
+        }
+
+        @GuardedBy("mCrossUserLock")
+        boolean isGlobalScopedDynamicFunction(String packageName, String functionIdentifier) {
+            String documentId =
+                    AppFunctionStaticMetadataHelper.getDocumentIdForAppFunction(
+                            packageName, functionIdentifier);
+            return mGlobalScopeFunctions.contains(documentId);
         }
 
         @GuardedBy("mCrossUserLock")

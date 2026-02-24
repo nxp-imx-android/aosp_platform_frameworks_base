@@ -19,6 +19,7 @@ import android.app.AppInteractionAttribution
 import android.app.IUriGrantsManager
 import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.app.appfunctions.AppFunctionException
+import android.app.appfunctions.AppFunctionMetadata
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest
 import android.app.appfunctions.ExecuteAppFunctionRequest
 import android.app.appfunctions.ExecuteAppFunctionResponse
@@ -375,13 +376,13 @@ class AppFunctionsLoggingTest {
                 System.currentTimeMillis(),
             )
         whenever(
-                mMetadataReader.isDynamicFunction(
+                mMetadataReader.getAppFunctionType(
                     eq(TEST_TARGET_PACKAGE),
                     eq(TEST_FUNCTION_ID),
                     any(),
                 )
             )
-            .thenReturn(false)
+            .thenReturn(AppFunctionMetadata.APP_FUNCTION_TYPE_STATIC)
         val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(
                 aidlRequest,
@@ -413,7 +414,7 @@ class AppFunctionsLoggingTest {
 
     @RequiresFlagsEnabled(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
     @Test
-    fun testOnError_logsFailureResponse_withDynamicAppFunctionType() {
+    fun testOnSuccess_logsSuccessResponse_withDynamicActivityFunctionType() {
         val aidlRequest =
             ExecuteAppFunctionAidlRequest(
                 ExecuteAppFunctionRequest.Builder(TEST_TARGET_PACKAGE, TEST_FUNCTION_ID).build(),
@@ -423,13 +424,61 @@ class AppFunctionsLoggingTest {
                 System.currentTimeMillis(),
             )
         whenever(
-                mMetadataReader.isDynamicFunction(
+                mMetadataReader.getAppFunctionType(
                     eq(TEST_TARGET_PACKAGE),
                     eq(TEST_FUNCTION_ID),
                     any(),
                 )
             )
-            .thenReturn(true)
+            .thenReturn(AppFunctionMetadata.APP_FUNCTION_TYPE_DYNAMIC_ACTIVITY)
+        val safeCallback =
+            mServiceImpl.initializeSafeExecuteAppFunctionCallback(
+                aidlRequest,
+                mock<IExecuteAppFunctionCallback>(),
+                TEST_CALLING_UID,
+            )
+        val response =
+            ExecuteAppFunctionResponse(
+                GenericDocument.Builder<GenericDocument.Builder<*>>("", "", "").build()
+            )
+
+        safeCallback.onResult(response)
+
+        ExtendedMockito.verify {
+            AppFunctionsStatsLog.write(
+                /* atomId= */ eq<Int>(AppFunctionsStatsLog.APP_FUNCTIONS_REQUEST_REPORTED),
+                /* callerPackageUid= */ eq<Int>(TEST_CALLING_UID),
+                /* targetPackageUid= */ eq<Int>(TEST_TARGET_UID),
+                /* errorCode= */ eq<Int>(AppFunctionsLoggerWrapper.SUCCESS_RESPONSE_CODE),
+                /* requestSizeBytes= */ any(),
+                /* responseSizeBytes= */ any(),
+                /* requestDurationMs= */ any(),
+                /* requestOverheadMs= */ any(),
+                /* interactionType= */ any(),
+                /* functionType= */ eq<Int>(AppFunctionsLoggerWrapper.FUNCTION_TYPE_DYNAMIC_ACTIVITY),
+            )
+        }
+    }
+
+    @RequiresFlagsEnabled(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
+    @Test
+    fun testOnError_logsFailureResponse_withDynamicGlobalAppFunctionType() {
+        val aidlRequest =
+            ExecuteAppFunctionAidlRequest(
+                ExecuteAppFunctionRequest.Builder(TEST_TARGET_PACKAGE, TEST_FUNCTION_ID).build(),
+                UserHandle.CURRENT,
+                TEST_CALLING_PKG,
+                TEST_INITIAL_REQUEST_TIME_MILLIS,
+                System.currentTimeMillis(),
+            )
+        whenever(
+                mMetadataReader.getAppFunctionType(
+                    eq(TEST_TARGET_PACKAGE),
+                    eq(TEST_FUNCTION_ID),
+                    any(),
+                )
+            )
+            .thenReturn(AppFunctionMetadata.APP_FUNCTION_TYPE_DYNAMIC_GLOBAL)
         val safeCallback =
             mServiceImpl.initializeSafeExecuteAppFunctionCallback(
                 aidlRequest,
@@ -451,7 +500,7 @@ class AppFunctionsLoggingTest {
                 /* requestDurationMs= */ any(),
                 /* requestOverheadMs= */ any(),
                 /* interactionType= */ any(),
-                /* functionType= */ eq<Int>(AppFunctionsLoggerWrapper.FUNCTION_TYPE_DYNAMIC),
+                /* functionType= */ eq<Int>(AppFunctionsLoggerWrapper.FUNCTION_TYPE_DYNAMIC_GLOBAL),
             )
         }
     }

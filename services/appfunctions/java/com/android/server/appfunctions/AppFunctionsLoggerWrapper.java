@@ -18,8 +18,11 @@ package com.android.server.appfunctions;
 
 import static com.android.server.appfunctions.AppFunctionExecutors.LOGGING_THREAD_EXECUTOR;
 
+import com.android.server.appfunctions.AppFunctionMetadataReader;
+
 import android.annotation.NonNull;
 import android.app.AppInteractionAttribution;
+import android.app.appfunctions.AppFunctionMetadata;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
 import android.content.Context;
@@ -45,7 +48,8 @@ public class AppFunctionsLoggerWrapper {
 
     @VisibleForTesting static final int FUNCTION_TYPE_UNSPECIFIED = 0;
     @VisibleForTesting static final int FUNCTION_TYPE_STATIC = 1;
-    @VisibleForTesting static final int FUNCTION_TYPE_DYNAMIC = 2;
+    @VisibleForTesting static final int FUNCTION_TYPE_DYNAMIC_GLOBAL = 2;
+    @VisibleForTesting static final int FUNCTION_TYPE_DYNAMIC_ACTIVITY = 3;
 
     private final PackageManager mPackageManager;
     private final Executor mLoggingExecutor;
@@ -70,14 +74,14 @@ public class AppFunctionsLoggerWrapper {
             ExecuteAppFunctionResponse response,
             int callingUid,
             long executionStartTimeMillis,
-            boolean isDynamicAppFunction) {
+            @AppFunctionMetadata.AppFunctionType int appFunctionType) {
         logAppFunctionsRequestReported(
                 request,
                 SUCCESS_RESPONSE_CODE,
                 response.getResponseDataSize(),
                 callingUid,
                 executionStartTimeMillis,
-                isDynamicAppFunction);
+                appFunctionType);
     }
 
     void logAppFunctionError(
@@ -85,14 +89,14 @@ public class AppFunctionsLoggerWrapper {
             int errorCode,
             int callingUid,
             long executionStartTimeMillis,
-            boolean isDynamicAppFunction) {
+            @AppFunctionMetadata.AppFunctionType int appFunctionType) {
         logAppFunctionsRequestReported(
                 request,
                 errorCode,
                 /* responseSizeBytes= */ 0,
                 callingUid,
                 executionStartTimeMillis,
-                isDynamicAppFunction);
+                appFunctionType);
     }
 
     private void logAppFunctionsRequestReported(
@@ -101,14 +105,28 @@ public class AppFunctionsLoggerWrapper {
             int responseSizeBytes,
             int callingUid,
             long executionStartTimeMillis,
-            boolean isDynamicAppFunction) {
+            @AppFunctionMetadata.AppFunctionType int appFunctionType) {
         final long e2eRequestLatencyMillis =
                 mLoggerClock.getCurrentTimeMillis() - request.getRequestTime();
         final long requestOverheadMillis =
                 executionStartTimeMillis > 0
                         ? (executionStartTimeMillis - request.getRequestTime())
                         : e2eRequestLatencyMillis;
-        int functionType = isDynamicAppFunction ? FUNCTION_TYPE_DYNAMIC : FUNCTION_TYPE_STATIC;
+        final int functionType;
+        switch (appFunctionType) {
+            case AppFunctionMetadata.APP_FUNCTION_TYPE_STATIC:
+                functionType = FUNCTION_TYPE_STATIC;
+                break;
+            case AppFunctionMetadata.APP_FUNCTION_TYPE_DYNAMIC_GLOBAL:
+                functionType = FUNCTION_TYPE_DYNAMIC_GLOBAL;
+                break;
+            case AppFunctionMetadata.APP_FUNCTION_TYPE_DYNAMIC_ACTIVITY:
+                functionType = FUNCTION_TYPE_DYNAMIC_ACTIVITY;
+                break;
+            default:
+                functionType = FUNCTION_TYPE_UNSPECIFIED;
+                break;
+        }
         mLoggingExecutor.execute(
                 () ->
                         AppFunctionsStatsLog.write(
