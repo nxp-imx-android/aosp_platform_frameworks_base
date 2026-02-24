@@ -3033,7 +3033,8 @@ public final class SystemServer implements Dumpable {
         }
 
         // AiSeal
-        if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_AISEAL)) {
+        if (mPackageManager.hasSystemFeature(PackageManager.FEATURE_AISEAL)
+                && android.aiseal.Flags.aisealHostApis()) {
             t.traceBegin("StartAiSealSystemService");
             try {
                 mSystemServiceManager.startService(AiSealSystemService.class);
