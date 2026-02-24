@@ -134,9 +134,11 @@ class AppHeaderViewHolder(
     private val expandMenuErrorImageView: ImageView =
         rootView.requireViewById(R.id.expand_menu_error)
 
+    /** The width of the application name. */
     val appNameTextWidth: Int
         get() = appNameTextView.width
 
+    /** The width of the maximize button view. */
     val maximizeButtonWidth: Int
         get() = maximizeButtonView.width
 
