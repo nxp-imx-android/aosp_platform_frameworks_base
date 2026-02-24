@@ -116,8 +116,7 @@ public class DesktopModeCompatPolicy {
     public boolean isTopActivityExemptFromDesktopWindowing(@Nullable ComponentName baseActivity,
             boolean isTopActivityNoDisplay, boolean isActivityStackTransparent, int numActivities,
             int userId, ActivityInfo info, @WindowConfiguration.ActivityType int topActivityType) {
-        if (Flags.enableDesktopFirstSysUserHsumBugfix()
-                && isHeadlessSystemUserMode() && userId == USER_SYSTEM) {
+        if (isHeadlessSystemUserMode() && userId == USER_SYSTEM) {
             // An activity for system user in HSUM should not activate desktop windowing.
             return true;
         }

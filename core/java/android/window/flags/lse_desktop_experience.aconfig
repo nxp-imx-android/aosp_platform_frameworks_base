@@ -409,16 +409,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_first_sys_user_hsum_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fix the bug around desktop-first policy for system user in HSUM."
-    bug: "430154044"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_first_top_fullscreen_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fix desktop-first policy for the case where any fullscreen app is focused."
