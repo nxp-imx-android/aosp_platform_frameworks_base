@@ -9,13 +9,6 @@ flag {
 }
 
 flag {
-    name: "enable_print_debug_option"
-    namespace: "printing"
-    description: "Enable extra debug logging by checking a runtime system property."
-    bug: "397418860"
-}
-
-flag {
     name: "skip_service_warning"
     namespace: "printing"
     description: "Skip displaying the first-use print service warning."
