@@ -88,21 +88,21 @@ constructor(
     // elements behind the dialog.
     // TODO: ag/34061541 - once landed, see if we can refactor with simpler fix
     private fun setupA11yTraversal() {
-        dialogTitle.accessibilityTraversalBefore =
+        dialogTitle.accessibilityTraversalAfter =
             R.id.open_by_default_settings_dialog_confirm_button
-        dialogTitle.accessibilityTraversalAfter = R.id.dialog_subheader
+        dialogTitle.accessibilityTraversalBefore = R.id.dialog_subheader
 
-        dialogSubheader.accessibilityTraversalBefore = R.id.application_name
-        dialogSubheader.accessibilityTraversalAfter = R.id.open_in_app_button
+        dialogSubheader.accessibilityTraversalAfter = R.id.application_name
+        dialogSubheader.accessibilityTraversalBefore = R.id.open_in_app_button
 
-        openInAppButton.accessibilityTraversalBefore = R.id.dialog_subheader
-        openInAppButton.accessibilityTraversalAfter = R.id.open_in_browser_button
+        openInAppButton.accessibilityTraversalAfter = R.id.dialog_subheader
+        openInAppButton.accessibilityTraversalBefore = R.id.open_in_browser_button
 
-        openInBrowserButton.accessibilityTraversalBefore = R.id.open_in_app_button
-        openInBrowserButton.accessibilityTraversalAfter =
+        openInBrowserButton.accessibilityTraversalAfter = R.id.open_in_app_button
+        openInBrowserButton.accessibilityTraversalBefore =
             R.id.open_by_default_settings_dialog_confirm_button
 
-        dismissButton.accessibilityTraversalBefore = R.id.open_in_browser_button
-        dismissButton.accessibilityTraversalAfter = R.id.application_name
+        dismissButton.accessibilityTraversalAfter = R.id.open_in_browser_button
+        dismissButton.accessibilityTraversalBefore = R.id.application_name
     }
 }
