@@ -10767,13 +10767,13 @@
 
     <!-- Top-level theme for personal context related styles. -->
     <declare-styleable name="PersonalContextTheme">
-        <!-- Reference to a theme for a view to be embedded in a client app. -->
+        <!-- Reference to a theme for a view to be embedded in a client app. @hide @SystemApi -->
         <attr name="embeddedViewTheme" format="reference" />
     </declare-styleable>
 
     <!-- Styleable resource for an embedded view in PersonalContextTheme. -->
     <declare-styleable name="PersonalContextEmbedded">
-        <!-- Reference to a theme for an inline suggestion. -->
+        <!-- Reference to a theme for an inline suggestion. @hide @SystemApi -->
         <attr name="inlineSuggestion" format="reference" />
     </declare-styleable>
 
@@ -10788,6 +10788,6 @@
         <!-- Suggestion background color. @hide @SystemApi -->
         <attr name="suggestionBackgroundColor" format="reference|color" />
         <!-- Suggestion corner radius. @hide @SystemApi -->
-        <attr name="suggestionCornerRadius" format="integer" />
+        <attr name="suggestionCornerRadius" format="dimension" />
     </declare-styleable>
 </resources>

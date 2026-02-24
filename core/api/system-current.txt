@@ -534,10 +534,12 @@ package android {
   public static final class R.attr {
     field public static final int allowClearUserDataOnFailedRestore = 16844288; // 0x1010600
     field @FlaggedApi("android.permission.flags.replace_body_sensor_permission_enabled") public static final int backgroundPermission = 16844455; // 0x10106a7
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final int embeddedViewTheme;
     field @FlaggedApi("android.content.res.manifest_flagging") public static final int featureFlag = 16844428; // 0x101068c
     field public static final int gameSessionService = 16844373; // 0x1010655
     field public static final int hotwordDetectionService = 16844326; // 0x1010626
     field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final int iconColor;
+    field @FlaggedApi("android.service.personalcontext.enable_personal_context_service") public static final int inlineSuggestion;
     field @FlaggedApi("android.companion.virtual.flags.vdm_custom_ime") public static final int isVirtualDeviceOnly = 16844425; // 0x1010689
     field public static final int isVrOnly = 16844152; // 0x1010578
     field public static final int minExtensionVersion = 16844305; // 0x1010611

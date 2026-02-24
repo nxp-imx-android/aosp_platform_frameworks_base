@@ -128,6 +128,10 @@
     <public name="suggestionCornerRadius"/>
     <!-- @FlaggedApi(com.android.window.flags.Flags.FLAG_SUPPORT_CUSTOM_DIM_COLOR) -->
     <public name="backgroundDimColor"/>
+    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+    <public name="embeddedViewTheme"/>
+    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+    <public name="inlineSuggestion"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x019a0000">
