@@ -47,6 +47,9 @@ import static com.android.server.am.psc.OomAdjuster.ALL_CPU_TIME_CAPABILITIES;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_ALLOW_LIST;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_NONE;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_OTHER;
+import static com.android.server.am.psc.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_LEGACY;
+import static com.android.server.am.psc.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_NONE;
+import static com.android.server.am.psc.OomAdjusterImpl.Connection.CPU_TIME_TRANSMISSION_NORMAL;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -60,6 +63,7 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 
+import com.android.server.am.psc.OomAdjusterImpl.Connection.CpuTimeTransmissionType;
 import com.android.server.tests.assertutils.FlagAssert;
 
 import org.junit.Rule;
@@ -409,6 +413,25 @@ public class CapabilityControllerTest {
                 edge.evaluateCapabilityFilter());
     }
 
+    @Test
+    public void testEvaluateServiceBindingCpuTimePolicy_TransmissionTypes() {
+        final TestServiceBindingEdge edge1 = new TestServiceBindingEdge.Builder()
+                .withCpuTimeTransmissionType(CPU_TIME_TRANSMISSION_NORMAL)
+                .build();
+        FlagAssert.assertThat(edge1.evaluateCapabilityFilter()).hasSet(ALL_CPU_TIME_CAPABILITIES);
+
+        final TestServiceBindingEdge edge2 = new TestServiceBindingEdge.Builder()
+                .withCpuTimeTransmissionType(CPU_TIME_TRANSMISSION_LEGACY)
+                .build();
+        FlagAssert.assertThat(edge2.evaluateCapabilityFilter()).hasSet(ALL_CPU_TIME_CAPABILITIES);
+
+        final TestServiceBindingEdge edge3 = new TestServiceBindingEdge.Builder()
+                .withCpuTimeTransmissionType(CPU_TIME_TRANSMISSION_NONE)
+                .build();
+        FlagAssert.assertThat(edge3.evaluateCapabilityFilter()).hasNotSet(
+                ALL_CPU_TIME_CAPABILITIES);
+    }
+
     private static class TestServiceRecord {
         final boolean mIsForegroundService;
         final boolean mIsFgsAllowedWiuForCapabilities;
@@ -666,8 +689,11 @@ public class CapabilityControllerTest {
     }
 
     private static class TestServiceBindingEdge extends ServiceBindingEdge {
-        private TestServiceBindingEdge() {
+        private final @CpuTimeTransmissionType int mCpuTimeTransmissionType;
+
+        private TestServiceBindingEdge(@CpuTimeTransmissionType int cpuTimeTransmissionType) {
             super(buildMockConnectionRecord());
+            mCpuTimeTransmissionType = cpuTimeTransmissionType;
         }
 
         private static ConnectionRecordInternal buildMockConnectionRecord() {
@@ -677,9 +703,24 @@ public class CapabilityControllerTest {
             return conn;
         }
 
+        @Override
+        @CpuTimeTransmissionType
+        int getCpuTimeTransmissionType() {
+            return mCpuTimeTransmissionType;
+        }
+
         static class Builder {
+            private @CpuTimeTransmissionType int mCpuTimeTransmissionType =
+                    CPU_TIME_TRANSMISSION_NONE;
+
+            Builder withCpuTimeTransmissionType(
+                    @CpuTimeTransmissionType int cpuTimeTransmissionType) {
+                mCpuTimeTransmissionType = cpuTimeTransmissionType;
+                return this;
+            }
+
             TestServiceBindingEdge build() {
-                return new TestServiceBindingEdge();
+                return new TestServiceBindingEdge(mCpuTimeTransmissionType);
             }
         }
     }
