@@ -1381,6 +1381,15 @@ public class KeyEvent extends InputEvent implements Parcelable {
      */
     @FlaggedApi(Flags.FLAG_ENABLE_NEW_26Q2_KEYCODES)
     public static final int KEYCODE_CONTEXTUAL_SEARCH = 339;
+    /**
+     * Key code constant: Contextual Insert key.
+     * <p>
+     * Introduced by HUTRR119, triggers a contextual overlay that enables the
+     * user to search, retrieve, and generate content for immediate insertion
+     * into the active focused element.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_NEW_26Q2_KEYCODES)
+    public static final int KEYCODE_CONTEXTUAL_INSERT = 340;
 
     /**
      * Integer value of the last KEYCODE. Increases as new keycodes are added to KeyEvent.
@@ -1388,7 +1397,7 @@ public class KeyEvent extends InputEvent implements Parcelable {
      */
     @TestApi
     @SuppressWarnings("FlaggedApi")
-    public static final int LAST_KEYCODE = KEYCODE_CONTEXTUAL_SEARCH;
+    public static final int LAST_KEYCODE = KEYCODE_CONTEXTUAL_INSERT;
 
     /** @hide */
     @IntDef(prefix = {"KEYCODE_"}, value = {
@@ -1732,6 +1741,7 @@ public class KeyEvent extends InputEvent implements Parcelable {
             KEYCODE_F24,
             KEYCODE_ACCESSIBILITY,
             KEYCODE_CONTEXTUAL_SEARCH,
+            KEYCODE_CONTEXTUAL_INSERT,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface KeyCode {}
@@ -2934,6 +2944,7 @@ public class KeyEvent extends InputEvent implements Parcelable {
             case KeyEvent.KEYCODE_STEM_PRIMARY:
             case KeyEvent.KEYCODE_ACCESSIBILITY:
             case KeyEvent.KEYCODE_CONTEXTUAL_SEARCH:
+            case KeyEvent.KEYCODE_CONTEXTUAL_INSERT:
                 return true;
         }
 
