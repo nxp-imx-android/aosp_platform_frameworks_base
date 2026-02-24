@@ -23,10 +23,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
@@ -89,7 +91,12 @@ class ActionButtonsTest {
             )
         }
 
-        composeTestRule.onNodeWithText("Open").performClick()
+        val actionButtonNode = composeTestRule.onNodeWithText("Open")
+
+        // Perform touches from top to bottom of the action button
+        actionButtonNode.performTouchInput { click(topCenter) }
+        actionButtonNode.performTouchInput { click(center) }
+        actionButtonNode.performTouchInput { click(bottomCenter) } // where the text is
 
         assertThat(clicked).isFalse()
     }
