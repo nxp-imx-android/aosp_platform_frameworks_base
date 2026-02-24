@@ -30,6 +30,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.PixelFormat;
 import android.hardware.biometrics.BiometricAuthenticator.Modality;
@@ -438,7 +439,10 @@ public class AuthContainerView extends LinearLayout
      * @param animatePanel if the credential view needs to own the panel expansion animation
      */
     private void addCredentialView(boolean animatePanel, boolean animateContents) {
-        if (Flags.largeScreenBp()) {
+        // Ensure we don't use the large screen compose path on Wear OS devices
+        final boolean isWatch = mContext.getPackageManager().hasSystemFeature(
+                PackageManager.FEATURE_WATCH);
+        if (Flags.largeScreenBp() && !isWatch) {
             ComposeView credentialView = mLayout.findViewById(R.id.compose_credential_view);
             mCredentialView = credentialView;
             CredentialViewBinder.bindCompose(credentialView, mCredentialViewModelFactory,
