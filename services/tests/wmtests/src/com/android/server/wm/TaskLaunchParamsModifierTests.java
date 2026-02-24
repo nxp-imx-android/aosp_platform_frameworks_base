@@ -1062,11 +1062,7 @@ public class TaskLaunchParamsModifierTests extends
         assertEquals(RESULT_CONTINUE,
                 new CalculateRequestBuilder().setSource(source).setTask(bubbleTask).calculate());
 
-        if (com.android.window.flags.Flags.enablePreserveLeafTaskIfRelaunch()) {
-            assertEquals(WINDOWING_MODE_MULTI_WINDOW, mResult.mWindowingMode);
-        } else {
-            assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
-        }
+        assertEquals(WINDOWING_MODE_MULTI_WINDOW, mResult.mWindowingMode);
     }
 
     // ================================

@@ -924,11 +924,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
                 ACTIVITY_TYPE_STANDARD, null /* options */, sourceTask, 0 /* launchFlags */,
                 candidateTask);
 
-        if (com.android.window.flags.Flags.enablePreserveLeafTaskIfRelaunch()) {
-            assertThat(launchRootTask).isEqualTo(candidateRoot);
-        } else {
-            assertThat(launchRootTask).isEqualTo(sourceDeskRoot);
-        }
+        assertThat(launchRootTask).isEqualTo(candidateRoot);
     }
 
     @Test
@@ -954,11 +950,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
                 ACTIVITY_TYPE_STANDARD, null /* options */, sourceTask, 0 /* launchFlags */,
                 candidateTask);
 
-        if (com.android.window.flags.Flags.enablePreserveLeafTaskIfRelaunch()) {
-            assertThat(launchRootTask).isEqualTo(candidateRoot);
-        } else {
-            assertThat(launchRootTask).isEqualTo(sourceRoot);
-        }
+        assertThat(launchRootTask).isEqualTo(candidateRoot);
     }
 
     @Test

@@ -203,16 +203,6 @@ flag {
 }
 
 flag {
-    namespace: "windowing_sdk"
-    name: "enable_preserve_leaf_task_if_relaunch"
-    description: "Enable preserving the leaf task in the current root task if the relaunch originates from other source task"
-    bug: "432604687"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "large_screen_experiences_app_compat"
     name: "defer_resume_end_before_ensure_activity_configuration_bugfix"
     description: "End defer resume before ensureActivityConfiguration()."
