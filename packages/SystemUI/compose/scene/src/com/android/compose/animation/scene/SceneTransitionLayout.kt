@@ -817,7 +817,15 @@ internal object DefaultSwipeDistance : UserActionDistance {
         toContent: ContentKey,
         orientation: Orientation,
     ): Float {
-        val fromContentSize = checkNotNull(fromContent.targetSize())
+        val fromContentSize =
+            checkNotNull(fromContent.targetSize()) {
+                buildString {
+                    appendLine("fromContent does not have a targetSize")
+                    appendLine("  fromContent: $fromContent")
+                    appendLine("  toContent: $toContent")
+                    appendLine("  toContentSize: ${toContent.targetSize()}")
+                }
+            }
         return when (orientation) {
             Orientation.Horizontal -> fromContentSize.width
             Orientation.Vertical -> fromContentSize.height
