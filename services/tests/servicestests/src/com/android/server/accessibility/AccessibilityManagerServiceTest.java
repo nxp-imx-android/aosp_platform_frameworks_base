@@ -2929,7 +2929,7 @@ public class AccessibilityManagerServiceTest {
 
     @Test
     @EnableFlags(android.security.Flags.FLAG_EXTEND_AAPM_TO_A11Y_SERVICES)
-    public void testGetPermittedA11yServices_withPolicy_apmOn_systemAppOrTool() {
+    public void testGetPermittedA11yServices_withPolicy_apmOn_adminOverridesApm() {
         final int userId = mA11yms.mCurrentUserId;
         setupApmUserRestriction(userId, true);
         List<String> adminPermittedServices = Arrays.asList(
@@ -2958,8 +2958,10 @@ public class AccessibilityManagerServiceTest {
         Set<String> permitted = mA11yms.getPermittedAccessibilityServicePackages(
                 adminPermittedServices, userId);
 
-        // Expected: Intersection of admin policy and APM rules
-        assertThat(permitted).containsExactly("com.system.tool", "com.user.tool");
+        // Expected: Admin policy overrides APM. APM logic is skipped, legacy logic applies.
+        // Legacy logic keeps the admin allowlist AND appends any installed system apps.
+        assertThat(permitted).containsExactly("com.system.tool", "com.user.tool", "com.user.test",
+                "com.system.nontool");
     }
 
     @Test
@@ -3086,9 +3088,10 @@ public class AccessibilityManagerServiceTest {
         doReturn(false).when(spyUserState).isShortcutTargetPermittedLocked(
                 eq(nonToolShortcutComp.flattenToString()), any());
 
-        // 3. Mock DPM to return only Tool when APM is ON
+        // 3. Mock DPM to return null so we calculate AAPM-specific restricted counts.
+        // (If DPM returned a list, AAPM would be ignored).
         when(mDevicePolicyManager.getPermittedAccessibilityServices(anyInt()))
-                .thenReturn(Arrays.asList("com.pkg.tool"));
+                .thenReturn(null);
 
         // 4. Verify Stats (calculate counts as if APM were enabled)
         AccessibilityFeatureRestrictedCounts counts =
