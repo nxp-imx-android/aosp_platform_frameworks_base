@@ -250,11 +250,11 @@ public class DesktopModeTouchEventListener
             return false;
         }
         final ActivityManager.RunningTaskInfo taskInfo = decoration.getTaskInfo();
-        final boolean isAppHandle = !taskInfo.isFreeform();
+        final boolean isAppHeader = isAppHeader(taskInfo);
         final boolean intercepted =
-                isAppHandle
-                        ? mHandleDragDetector.onInterceptTouchEvent(v, e)
-                        : mHeaderDragDetector.onInterceptTouchEvent(v, e);
+                isAppHeader
+                        ? mHeaderDragDetector.onInterceptTouchEvent(v, e)
+                        : mHandleDragDetector.onInterceptTouchEvent(v, e);
         if (intercepted) {
             mInputPilferer.pilferPointers(v);
         }
@@ -293,7 +293,7 @@ public class DesktopModeTouchEventListener
             return false;
         }
 
-        final boolean isAppHandle = !taskInfo.isFreeform();
+        final boolean isAppHeader = isAppHeader(taskInfo);
         final int actionMasked = e.getActionMasked();
         final boolean isDown = actionMasked == MotionEvent.ACTION_DOWN;
         final boolean isUpOrCancel = actionMasked == MotionEvent.ACTION_CANCEL
@@ -355,10 +355,10 @@ public class DesktopModeTouchEventListener
             mIsCustomHeaderGesture = false;
             mIsResizeGesture = false;
         }
-        if (isAppHandle) {
-            return mHandleDragDetector.onMotionEvent(v, e);
-        } else {
+        if (isAppHeader) {
             return mHeaderDragDetector.onMotionEvent(v, e);
+        } else {
+            return mHandleDragDetector.onMotionEvent(v, e);
         }
     }
 
@@ -464,7 +464,7 @@ public class DesktopModeTouchEventListener
         }
         final ActivityManager.RunningTaskInfo taskInfo = decoration.getTaskInfo();
         if (mShellDesktopState.canEnterDesktopModeOrShowAppHandle()
-                && !taskInfo.isFreeform()) {
+                && !isAppHeader(taskInfo)) {
             return handleNonFreeformMotionEvent(decoration, v, e);
         } else {
             return handleFreeformMotionEvent(decoration, taskInfo, v, e);
@@ -779,6 +779,10 @@ public class DesktopModeTouchEventListener
         mWindowDecorationActions.onMaximizeOrRestore(mTaskId,
                 ToggleTaskSizeInteraction.AmbiguousSource.DOUBLE_TAP, mInputMethod);
         return true;
+    }
+
+    private static boolean isAppHeader(ActivityManager.RunningTaskInfo taskInfo) {
+        return taskInfo.isFreeform();
     }
 
     private DesktopModeEventLogger.Companion.InputMethod getInputMethod(MotionEvent ev) {
