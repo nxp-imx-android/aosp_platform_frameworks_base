@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 import android.annotation.Nullable;
 import android.app.TaskInfo;
 import android.graphics.Rect;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.window.AppCompatTransitionInfo;
@@ -156,69 +155,7 @@ public class AppCompatUtilsTest extends WindowTestsBase {
             robot.checkTaskInfoEligibleForUserAspectRatioButton(true);
         });
     }
-
     @Test
-    @DisableFlags(Flags.FLAG_APP_COMPAT_UI_RESTART_ON_FULL_TRANSPARENCY)
-    public void testTopActivityEligibleForRestartButton() {
-        // Transparent activity in size compat mode and fillparent to false
-        runTestScenario((robot) -> {
-            robot.conf().enableTranslucentPolicy(true);
-            robot.applyOnActivity((a) -> {
-                a.createActivityWithComponentInNewTask();
-                a.setTopActivityVisible(true);
-                robot.setTopTaskAsOrganized();
-                a.setTopActivityInSizeCompatMode(true);
-                a.setTopActivityFillsParent(false);
-            });
-
-            robot.checkTaskInfoTopActivityAsInSizeCompatMode(false);
-        });
-
-        // Transparent activity in size compat mode and fillparent to true
-        runTestScenario((robot) -> {
-            robot.conf().enableTranslucentPolicy(true);
-            robot.applyOnActivity((a) -> {
-                a.createActivityWithComponentInNewTask();
-                a.setTopActivityVisible(true);
-                robot.setTopTaskAsOrganized();
-                a.setTopActivityInSizeCompatMode(true);
-                a.setTopActivityFillsParent(true);
-            });
-
-            robot.checkTaskInfoTopActivityAsInSizeCompatMode(true);
-        });
-
-        // Transparent activity NOT in size compat mode and fillparent to false
-        runTestScenario((robot) -> {
-            robot.conf().enableTranslucentPolicy(true);
-            robot.applyOnActivity((a) -> {
-                a.createActivityWithComponentInNewTask();
-                a.setTopActivityVisible(true);
-                robot.setTopTaskAsOrganized();
-                a.setTopActivityInSizeCompatMode(false);
-                a.setTopActivityFillsParent(false);
-            });
-
-            robot.checkTaskInfoTopActivityAsInSizeCompatMode(false);
-        });
-
-        // Transparent activity NOT in size compat mode and fillparent to true
-        runTestScenario((robot) -> {
-            robot.conf().enableTranslucentPolicy(true);
-            robot.applyOnActivity((a) -> {
-                a.createActivityWithComponentInNewTask();
-                a.setTopActivityVisible(true);
-                robot.setTopTaskAsOrganized();
-                a.setTopActivityInSizeCompatMode(false);
-                a.setTopActivityFillsParent(true);
-            });
-
-            robot.checkTaskInfoTopActivityAsInSizeCompatMode(false);
-        });
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_APP_COMPAT_UI_RESTART_ON_FULL_TRANSPARENCY)
     public void testTopFullyTransparentActivityEligibleForRestartButton() {
         // Transparent activity in size compat mode and TransparentPolicy NOT running
         runTestScenario((robot) -> {
