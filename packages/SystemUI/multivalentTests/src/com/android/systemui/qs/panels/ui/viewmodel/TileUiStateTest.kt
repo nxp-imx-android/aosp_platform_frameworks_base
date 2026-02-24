@@ -346,6 +346,18 @@ class TileUiStateTest : SysuiTestCase() {
             .contains(context.getString(R.string.switch_bar_on))
     }
 
+    @Test
+    fun nullContentDescription_usesLabel() {
+        val label = "test"
+        val state =
+            QSTile.State().apply {
+                this.label = label
+                contentDescription = null
+            }
+        val uiState = state.toUiState()
+        assertThat(uiState.accessibilityUiState.contentDescription).isEqualTo(label)
+    }
+
     private fun QSTile.State.toUiState() = toUiState(resources)
 }
 
