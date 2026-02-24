@@ -21,13 +21,12 @@ import android.app.TaskInfo
 import android.app.WallpaperColors
 import android.app.WallpaperManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.res.Configuration
 import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.WindowManager
 import android.window.DesktopExperienceFlags
 import androidx.activity.addCallback
@@ -35,9 +34,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.FragmentActivity
 import com.android.window.flags.Flags
-import com.android.wm.shell.desktopmode.multidesks.animation.DeskWallpaperAnimator
-import com.android.wm.shell.desktopmode.multidesks.animation.DeskWallpaperAnimator.Companion.JUMP_CUT_ANIMATION
-import com.android.wm.shell.desktopmode.multidesks.animation.DeskWallpaperAnimator.Companion.SLIDE_ANIMATION
 
 /**
  * A transparent activity used in the desktop mode to show the wallpaper under the freeform windows.
@@ -138,6 +134,20 @@ class DesktopWallpaperActivity : FragmentActivity() {
         finish()
     }
 
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (
+            Flags.changeDisplayFocusOnWallpaperTouch() &&
+                event.actionMasked == MotionEvent.ACTION_DOWN
+        ) {
+            Log.d(TAG, "onTouchEvent: " + event)
+            val intent = Intent(ACTION_WALLPAPER_TOUCH)
+            intent.putExtra(WALLPAPER_TOUCH_EXTRA_DISPLAY_ID, displayId)
+            intent.setPackage(packageName)
+            sendBroadcast(intent)
+        }
+        return super.onTouchEvent(event)
+    }
+
     override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         Log.d(TAG, "onTopResumedActivityChanged: $isTopResumedActivity")
@@ -168,6 +178,10 @@ class DesktopWallpaperActivity : FragmentActivity() {
     companion object {
         private const val TAG = "DesktopWallpaperActivity"
         private const val SYSTEM_UI_PACKAGE_NAME = "com.android.systemui"
+
+        /** Action for the broadcast intent sent when the wallpaper is touched. */
+        const val ACTION_WALLPAPER_TOUCH = "com.android.wm.shell.desktop.action.WALLPAPER_TOUCH"
+        const val WALLPAPER_TOUCH_EXTRA_DISPLAY_ID = "display_id"
 
         @JvmStatic
         val wallpaperActivityComponent =
