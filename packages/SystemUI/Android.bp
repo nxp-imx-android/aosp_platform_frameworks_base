@@ -747,7 +747,6 @@ android_library {
         "monet",
         "libmonet",
         "lottie_compose",
-        "dagger2",
         "jsr330",
         "WindowManager-Shell",
         "LowLightDreamLib",
