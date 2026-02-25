@@ -19,10 +19,12 @@ package android.app.admin;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.role.RoleManager;
+import android.app.supervision.SupervisionManager;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Class that contains information about the admins that are enforcing a specific policy.
@@ -41,8 +43,8 @@ public class PolicyEnforcementInfo {
     public PolicyEnforcementInfo(@NonNull List<EnforcingAdmin> enforcingAdmins) {
         Objects.requireNonNull(enforcingAdmins);
         mAllAdmins = enforcingAdmins.stream().sorted(Comparator.comparingInt(admin -> {
-            if (isSupervisionRole(admin)) {
-                return 0; // Supervision role holders have the highest priority.
+            if (isSupervisionAdmin(admin)) {
+                return 0; // Supervision admin have the highest priority.
             }
             if (isDpcAdmin(admin)) {
                 return 1; // DPC are next.
@@ -98,16 +100,42 @@ public class PolicyEnforcementInfo {
         return mAllAdmins.isEmpty() ? null : mAllAdmins.getFirst();
     }
 
+    /**
+     * Returns true if UI should be shown to the user to explain the setting is restricted by the
+     * admin. If the policy is enforced by system authorities (except supervision), it won't be
+     * shown as disabled by admin.
+     *
+     * @hide
+     */
+    public boolean shouldShowEnforcingAdminDetails() {
+        return isEnforced()
+                && (!isOnlyEnforcedBySystem()
+                    || isSupervisionAdmin(getMostImportantEnforcingAdmin()));
+    }
+
     private static boolean isSystemAuthority(EnforcingAdmin enforcingAdmin) {
         return enforcingAdmin.getAuthority() instanceof SystemAuthority;
+    }
+
+    private static boolean isSupervisionAdmin(EnforcingAdmin admin) {
+        return isSupervisionRole(admin) || isSupervisionSystemEntity(admin);
     }
 
     private static boolean isSupervisionRole(EnforcingAdmin enforcingAdmin) {
         if (!(enforcingAdmin.getAuthority() instanceof RoleAuthority)) {
             return false;
         }
-        return ((RoleAuthority) enforcingAdmin.getAuthority()).getRoles().contains(
-                RoleManager.ROLE_SYSTEM_SUPERVISION);
+        Set<String> adminRoles = ((RoleAuthority) enforcingAdmin.getAuthority()).getRoles();
+        return adminRoles.contains(RoleManager.ROLE_SYSTEM_SUPERVISION)
+                || adminRoles.contains(RoleManager.ROLE_SUPERVISION);
+    }
+
+    private static boolean isSupervisionSystemEntity(EnforcingAdmin admin) {
+        if (!(admin.getAuthority() instanceof SystemAuthority)) {
+            return false;
+        }
+        return ((SystemAuthority) admin.getAuthority()).getSystemEntity().contains(
+                SupervisionManager.SUPERVISION_SYSTEM_ENTITY);
     }
 
     private static boolean isDpcAdmin(EnforcingAdmin enforcingAdmin) {
