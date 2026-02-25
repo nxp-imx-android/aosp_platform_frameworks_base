@@ -28,7 +28,9 @@
 #include <nativehelper/JNIHelp.h>
 #include <nativehelper/ScopedUtfChars.h>
 
+#include <optional>
 #include <sstream>
+#include <string_view>
 
 #include "android_os_Parcel.h"
 #include "android_util_Binder.h"
@@ -516,7 +518,8 @@ static void android_view_MotionEvent_nativeWriteToParcel(JNIEnv* env, jclass cla
 
 static jstring android_view_MotionEvent_nativeAxisToString(JNIEnv* env, jclass clazz,
         jint axis) {
-    return env->NewStringUTF(MotionEvent::getLabel(static_cast<int32_t>(axis)));
+    const std::optional<std::string_view> label = MotionEvent::getLabel(static_cast<int32_t>(axis));
+    return label.has_value() ? env->NewStringUTF(std::string(label.value()).c_str()) : nullptr;
 }
 
 static jint android_view_MotionEvent_nativeAxisFromString(JNIEnv* env, jclass clazz,
