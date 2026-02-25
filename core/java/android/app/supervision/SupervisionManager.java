@@ -55,12 +55,12 @@ import java.util.List;
 public class SupervisionManager {
 
     private static final int GET_POLICIES_CACHE_SIZE = 8;
-    private final static String GET_POLICIES_API = "get_supervision_policies";
-    private final static String GET_POLICIES_CACHE_NAME = "SupervisionManagerPolicies";
-    private static final IpcDataCache.Config sSupervisionManagerCache = new IpcDataCache.Config(
-            GET_POLICIES_CACHE_SIZE, IpcDataCache.MODULE_SYSTEM,  GET_POLICIES_API);
+    private static final String GET_POLICIES_API = "get_supervision_policies";
+    private static final String GET_POLICIES_CACHE_NAME = "SupervisionManagerPolicies";
+    private static final IpcDataCache.Config sSupervisionManagerCache =
+            new IpcDataCache.Config(
+                    GET_POLICIES_CACHE_SIZE, IpcDataCache.MODULE_SYSTEM, GET_POLICIES_API);
     private final IpcDataCache<Integer, List<Policy>> mGetPoliciesCache;
-
 
     /**
      * Listener for supervision state changes.
@@ -170,18 +170,19 @@ public class SupervisionManager {
         mContext = context;
         mService = service;
 
-        mGetPoliciesCache = new IpcDataCache<>(
-                sSupervisionManagerCache.child(GET_POLICIES_CACHE_NAME),
-                (userId) -> {
-                    try {
-                        if (service == null) {
-                            return new ArrayList<>();
-                        }
-                        return service.getPolicies((int) userId);
-                    } catch (RemoteException e) {
-                        throw e.rethrowFromSystemServer();
-                    }
-                });
+        mGetPoliciesCache =
+                new IpcDataCache<>(
+                        sSupervisionManagerCache.child(GET_POLICIES_CACHE_NAME),
+                        (userId) -> {
+                            try {
+                                if (service == null) {
+                                    return new ArrayList<>();
+                                }
+                                return service.getPolicies((int) userId);
+                            } catch (RemoteException e) {
+                                throw e.rethrowFromSystemServer();
+                            }
+                        });
     }
 
     /**

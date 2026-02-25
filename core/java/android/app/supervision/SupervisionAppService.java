@@ -26,10 +26,9 @@ import android.annotation.TestApi;
 import android.app.Service;
 import android.app.supervision.flags.Flags;
 import android.content.Intent;
-import android.os.IBinder;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
-
 
 /**
  * Base class for a service that the holders of the {@link
@@ -65,20 +64,22 @@ public class SupervisionAppService extends Service {
             new ISupervisionListener.Stub() {
                 @Override
                 public void onSetSupervisionEnabled(int userId, boolean enabled) {
-                    mHandler.post(() -> {
-                        if (enabled) {
-                            SupervisionAppService.this.onSupervisionEnabled();
-                        } else {
-                            SupervisionAppService.this.onSupervisionDisabled();
-                        }
-                    });
+                    mHandler.post(
+                            () -> {
+                                if (enabled) {
+                                    SupervisionAppService.this.onSupervisionEnabled();
+                                } else {
+                                    SupervisionAppService.this.onSupervisionDisabled();
+                                }
+                            });
                 }
 
                 @Override
                 public void onPolicyChanged(Policy policy) {
-                    mHandler.post(() -> {
-                        SupervisionAppService.this.onPolicyChanged(policy);
-                    });
+                    mHandler.post(
+                            () -> {
+                                SupervisionAppService.this.onPolicyChanged(policy);
+                            });
                 }
             };
 
@@ -89,17 +90,16 @@ public class SupervisionAppService extends Service {
         return mBinder.asBinder();
     }
 
-      /**
-      * Called when the service is bound.
-      *
-      * <p>Used for testing since {@code onBind} is final.</p>
-      *
-      * @hide
-      */
+    /**
+     * Called when the service is bound.
+     *
+     * <p>Used for testing since {@code onBind} is final.
+     *
+     * @hide
+     */
     @TestApi
     @SuppressWarnings("UnflaggedApi")
     public void onServiceBound(@Nullable Intent intent) {}
-
 
     /**
      * Called when supervision is enabled.

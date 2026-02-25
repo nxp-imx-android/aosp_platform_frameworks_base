@@ -448,8 +448,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         executeOnServiceThread(
                 () -> {
                     applyPolicy(userId, policy);
-                    dispatchSupervisionEvent(
-                            userId, listener -> listener.onPolicyChanged(policy));
+                    dispatchSupervisionEvent(userId, listener -> listener.onPolicyChanged(policy));
                 });
     }
 
@@ -664,26 +663,32 @@ public class SupervisionService extends ISupervisionManager.Stub {
         if (!Flags.enableSupervisionSettingsUiUpdates()) {
             return List.of();
         }
-        List<UserInfo> users = mInjector
-                .getUserManagerInternal()
-                .getUsers(UserManagerInternal.USER_FILTER_WITH_ALL_COMPLETE_USERS);
-        return users.stream().filter(userInfo -> {
-            if (!isSupervisionEnabledForUser(userInfo.id)) {
-                return false;
-            }
-            // Get active supervision role holders for this user.
-            List<String> roleHolders =
-                    mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, UserHandle.of(userInfo.id));
-            // Get all packages that have a supervision approval activity for this user.
-            List<String> packagesWithSupervisionApprovalActivities =
-                    querySupervisionApprovalActivities(userInfo.id)
-                            .stream()
-                            .map(resolveInfo -> resolveInfo.activityInfo.packageName)
-                            .toList();
-            return roleHolders.isEmpty() || roleHolders
-                    .stream()
-                    .anyMatch(pkg -> !packagesWithSupervisionApprovalActivities.contains(pkg));
-        }).toList();
+        List<UserInfo> users =
+                mInjector
+                        .getUserManagerInternal()
+                        .getUsers(UserManagerInternal.USER_FILTER_WITH_ALL_COMPLETE_USERS);
+        return users.stream().filter(this::doesUserRequirePlatformCredential).toList();
+    }
+
+    /**
+     * Returns true if the user requires a platform credential.
+     *
+     * <p>A user requires a platform credential if they have supervision enabled and there is no
+     * supervision approval activity for the user.
+     */
+    private boolean doesUserRequirePlatformCredential(UserInfo userInfo) {
+        if (!isSupervisionEnabledForUser(userInfo.id)) {
+            return false;
+        }
+        List<String> roleHolders =
+                mInjector.getRoleHoldersAsUser(ROLE_SUPERVISION, UserHandle.of(userInfo.id));
+        List<String> packagesWithSupervisionApprovalActivities =
+                querySupervisionApprovalActivities(userInfo.id).stream()
+                        .map(resolveInfo -> resolveInfo.activityInfo.packageName)
+                        .toList();
+        return roleHolders.isEmpty()
+                || roleHolders.stream()
+                        .anyMatch(pkg -> !packagesWithSupervisionApprovalActivities.contains(pkg));
     }
 
     /**
@@ -694,8 +699,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private boolean hasNonTestDefaultUsers() {
         UserManagerInternal userManager = mInjector.getUserManagerInternal();
         // Headless system user mode has two default users: system and main/primary users.
-        int numOfDefaultUsers = userManager.isHeadlessSystemUserMode()
-                ? 2 : 1;
+        int numOfDefaultUsers = userManager.isHeadlessSystemUserMode() ? 2 : 1;
         List<UserInfo> users = userManager.getUsers(true);
         return users.stream().filter(user -> !user.isForTesting()).count() > numOfDefaultUsers;
     }
@@ -728,8 +732,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
             pw.println("SupervisionService state:");
             pw.increaseIndent();
 
-            pw.println("bypassingRoleQualification: "
-                    + mAllowBypassingSupervisionRoleQualification);
+            pw.println(
+                    "bypassingRoleQualification: " + mAllowBypassingSupervisionRoleQualification);
             pw.println();
 
             List<UserInfo> users = mInjector.getUserManagerInternal().getUsers(false);
@@ -846,8 +850,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
                             userId, listener -> listener.onSetSupervisionEnabled(userId, false));
                     if (Flags.appBindingServiceRework()) {
                         Objects.requireNonNull(mInjector.getAppBindingService())
-                                .unbindAndRemoveInvalidConnections(userId,
-                                        SupervisionAppServiceFinder.class);
+                                .unbindAndRemoveInvalidConnections(
+                                        userId, SupervisionAppServiceFinder.class);
                     }
                     clearAllDevicePoliciesAndSuspendedPackages(userId);
                     clearAllPolicies(userId);
