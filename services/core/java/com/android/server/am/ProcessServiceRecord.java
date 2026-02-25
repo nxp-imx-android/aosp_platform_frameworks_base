@@ -231,7 +231,7 @@ final class ProcessServiceRecord extends ProcessServiceRecordInternal {
 
     @GuardedBy("mService")
     boolean incServiceCrashCountLocked(long now) {
-        final boolean procIsBoundForeground = mApp.getCurProcState()
+        final boolean procIsBoundForeground = mApp.getProcState()
                 == ActivityManager.PROCESS_STATE_BOUND_FOREGROUND_SERVICE;
         boolean tryAgain = false;
         // Bump up the crash count of any services currently running in the proc.

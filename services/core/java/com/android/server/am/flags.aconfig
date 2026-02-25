@@ -433,3 +433,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "encapsulate_cur_proc_state"
+    namespace: "backstage_power"
+    description: "Use setProcState instead of curProcState outside of psc package."
+    bug: "485394632"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

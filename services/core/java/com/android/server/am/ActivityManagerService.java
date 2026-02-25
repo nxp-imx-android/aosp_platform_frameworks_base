@@ -3668,7 +3668,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         "Unable to set a higher trim level than current level");
             }
             if (!(level < ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN ||
-                    app.getCurProcState() > PROCESS_STATE_IMPORTANT_FOREGROUND)) {
+                    app.getProcState() > PROCESS_STATE_IMPORTANT_FOREGROUND)) {
                 throw new IllegalArgumentException("Unable to set a background trim level "
                     + "on a foreground process");
             }
@@ -6647,7 +6647,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                             newestTime = pendingTopTime;
                         }
                     } else {
-                        states[i] = pr.getCurProcState();
+                        states[i] = pr.getProcState();
                         if (scores != null) {
                             scores[i] = pr.getCurAdj();
                         }
@@ -7036,8 +7036,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                         synchronized (mPidsSelfLocked) {
                             proc = mPidsSelfLocked.get(callingPid);
                         }
-                        if (proc != null && !ActivityManager.isProcStateBackground(
-                                proc.getCurProcState())) {
+                        if (proc != null
+                                && !ActivityManager.isProcStateBackground(proc.getProcState())) {
                             // Whoever is instigating this is in the foreground, so we will allow it
                             // to go through.
                             return ActivityManager.APP_START_MODE_NORMAL;
@@ -7180,7 +7180,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             return true;
         }
 
-        final int procstate = pr.getCurProcState();
+        final int procstate = pr.getProcState();
         if (procstate <= PROCESS_STATE_BOUND_TOP) {
             if (doesReasonCodeAllowSchedulingUserInitiatedJobs(
                     getReasonCodeFromProcState(procstate), uid)) {
@@ -20226,7 +20226,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                             + " adjSource: " + app.getAdjSource()
                             + " adjSourcePrcState: " + app.getAdjSourceProcState()
                             + " serviceB: " + app.isServiceB()
-                            + " curProcState: " + app.getCurProcState()
+                            + " procState: " + app.getProcState()
                             + " curRawProcState: " + app.getCurRawProcState()
                             + " curSchedGroup: " + app.getCurrentSchedulingGroup());
                 }

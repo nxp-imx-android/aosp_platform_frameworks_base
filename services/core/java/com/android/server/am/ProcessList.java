@@ -4340,7 +4340,7 @@ public final class ProcessList extends ProcessListInternal
         }
         outInfo.lastTrimLevel = app.mProfile.getTrimMemoryLevel();
         final ProcessRecordInternal state = app;
-        final int procState = state.getCurProcState();
+        final int procState = state.getProcState();
         outInfo.importance = ActivityManager.RunningAppProcessInfo
                                 .procStateToImportanceForTargetSdk(procState, clientTargetSdk);
         if (outInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_BACKGROUND) {
@@ -4515,7 +4515,7 @@ public final class ProcessList extends ProcessListInternal
         pw.print(": ");
         pw.print(makeOomAdjString(proc.getSetAdj(), false));
         pw.print(' ');
-        pw.print(makeProcStateString(proc.getCurProcState()));
+        pw.print(makeProcStateString(proc.getProcState()));
         pw.print(' ');
         ActivityManager.printCapabilitiesSummary(pw, proc.getCurCapability());
         pw.print(' ');
@@ -4840,7 +4840,7 @@ public final class ProcessList extends ProcessListInternal
                 proto.write(ProcessOomProto.SERVICES, true);
             }
             proto.write(ProcessOomProto.STATE,
-                    makeProcStateProtoEnum(state.getCurProcState()));
+                    makeProcStateProtoEnum(state.getProcState()));
             proto.write(ProcessOomProto.TRIM_MEMORY_LEVEL, r.mProfile.getTrimMemoryLevel());
             r.dumpDebug(proto, ProcessOomProto.PROC);
             proto.write(ProcessOomProto.ADJ_TYPE, state.getAdjType());
@@ -4937,7 +4937,7 @@ public final class ProcessList extends ProcessListInternal
             } else {
                 foreground = ' ';
             }
-            String procState = makeProcStateString(state.getCurProcState());
+            String procState = makeProcStateString(state.getProcState());
             pw.print(prefix);
             pw.print(r.isPersistent() ? persistentLabel : normalLabel);
             pw.print(" #");
@@ -4996,7 +4996,7 @@ public final class ProcessList extends ProcessListInternal
                 pw.print(" set="); pw.println(state.getSetAdj());
                 pw.print(prefix);
                 pw.print("    ");
-                pw.print("state: cur="); pw.print(makeProcStateString(state.getCurProcState()));
+                pw.print("state: cur="); pw.print(makeProcStateString(state.getProcState()));
                 pw.print(" set="); pw.print(makeProcStateString(state.getSetProcState()));
                 // These values won't be collected if the flag is enabled.
                 if (service.mAppProfiler.isProfilingPss()) {

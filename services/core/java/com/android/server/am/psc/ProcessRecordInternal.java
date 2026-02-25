@@ -1088,7 +1088,21 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public int getCurProcState() {
+    int getCurProcState() {
+        return mCurProcState;
+    }
+
+    /**
+     * Returns the process state for usage outside the psc package.
+     *
+     * <p>If {@link Flags#encapsulateCurProcState()} is enabled, it returns the stable
+     * {@link #getSetProcState()}; otherwise, it returns the transient {@link #getCurProcState()}.
+     */
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public int getProcState() {
+        if (Flags.encapsulateCurProcState()) {
+            return mSetProcState;
+        }
         return mCurProcState;
     }
 
@@ -1115,6 +1129,9 @@ public abstract class ProcessRecordInternal {
         return false;
     }
 
+    /**
+     * TODO: b/485394632 - Make this method package-private.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public int getCurRawProcState() {
         return mCurRawProcState;
@@ -1127,6 +1144,10 @@ public abstract class ProcessRecordInternal {
         mObserver.onReportedProcStateChanged(mRepProcState);
     }
 
+    /**
+     * TODO: b/485394632 - Migrate to the {@link #getProcState()} method after the
+     *                     {@link Flags#encapsulateCurProcState()} is enabled.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public int getReportedProcState() {
         return mRepProcState;
@@ -1142,6 +1163,10 @@ public abstract class ProcessRecordInternal {
         mSetProcState = setProcState;
     }
 
+    /**
+     * TODO: b/485394632 - Switch to the {@link #getProcState()} method after the
+     *                     {@link Flags#encapsulateCurProcState()} is enabled.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public int getSetProcState() {
         return mSetProcState;
@@ -1375,6 +1400,10 @@ public abstract class ProcessRecordInternal {
         mAdjSourceProcState = adjSourceProcState;
     }
 
+    /**
+     * TODO: b/485394632 - Migrate to the {@link #getProcState()} method after the
+     *                     {@link Flags#encapsulateCurProcState()} is enabled.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public int getAdjSourceProcState() {
         return mAdjSourceProcState;
@@ -1494,6 +1523,9 @@ public abstract class ProcessRecordInternal {
         mCachedForegroundActivities = cachedForegroundActivities;
     }
 
+    /**
+     * TODO: b/485394632 - Make this method package-private.
+     */
     @GuardedBy("mServiceLock")
     public int getCachedProcState() {
         return mCachedProcState;

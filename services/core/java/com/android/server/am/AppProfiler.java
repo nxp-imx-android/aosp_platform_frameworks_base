@@ -110,7 +110,6 @@ import com.android.internal.util.FrameworkStatsLog;
 import com.android.internal.util.MemInfoReader;
 import com.android.internal.util.QuickSelect;
 import com.android.server.am.LowMemDetector.MemFactor;
-import com.android.server.am.MemoryUsageStats;
 import com.android.server.power.stats.BatteryStatsImpl;
 import com.android.server.utils.PriorityDump;
 
@@ -1403,7 +1402,7 @@ public class AppProfiler {
                 true,
                 app -> {
                     final IApplicationThread thread;
-                    int procState = app.getCurProcState();
+                    final int procState = app.getProcState();
                     if (((procState >= ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND
                                             && procState
                                                     < ActivityManager.PROCESS_STATE_CACHED_ACTIVITY)
@@ -1427,7 +1426,7 @@ public class AppProfiler {
 
     @GuardedBy({"mService", "mProcLock"})
     private void trimMemoryUiHiddenIfNecessaryLSP(ProcessRecord app) {
-        if ((app.getCurProcState() >= ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND
+        if ((app.getProcState() >= ActivityManager.PROCESS_STATE_IMPORTANT_BACKGROUND
                 || app.isSystemNoUi()) && app.mProfile.hasPendingUiClean()) {
             // If this application is now in the background and it
             // had done UI, then give it the special trim level to
