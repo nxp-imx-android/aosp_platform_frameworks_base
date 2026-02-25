@@ -211,8 +211,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         fout.print("\n");
     }
 
-    private final ScheduledExecutorService mScheduler =
-            Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService mScheduler;
+
     /** Executor for the shared FgThread. */
     private final Executor mFgThreadExecutor;
 
@@ -243,7 +243,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private boolean mIsTopActivityScreenshotAllowed = false;
 
     // Handle state transitions for the session lifecycle.
-    // NOTE: Do not make lifecycle transitions from these callbacks.
     private final ComputerControlSession.LifecycleCallback mStateTransitions =
             new ComputerControlSession.LifecycleCallback() {
                 @Override
@@ -275,7 +274,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             };
 
     // Keeps track of the current lifecycle state. Thread safe.
-    private final SessionLifecycle mLifecycle = new SessionLifecycle(mStateTransitions);
+    private final SessionLifecycle mLifecycle;
 
     private final Object mNotificationLock = new Object();
     @GuardedBy("mNotificationLock")
@@ -349,7 +348,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 ViewConfiguration.get(context), DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS,
                 SurfaceControl.Transaction::new, appToken, params, appThread, attributionSource,
                 virtualDeviceFactory, onClosedListener, FgThread.getExecutor(),
-                referenceDisplayAddress);
+                referenceDisplayAddress, Executors.newSingleThreadScheduledExecutor());
     }
 
     @VisibleForTesting
@@ -361,7 +360,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             AttributionSource attributionSource,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
             Consumer<ComputerControlSessionImpl> onClosedListener, Executor fgThreadExecutor,
-            @Nullable String referenceDisplayAddress) {
+            @Nullable String referenceDisplayAddress, ScheduledExecutorService scheduler) {
         Trace.asyncTraceForTrackBegin(mTraceTrack, "Session", TRACE_COOKIE_SESSION);
         mFgThreadExecutor = fgThreadExecutor;
         mViewConfiguration = viewConfiguration;
@@ -374,6 +373,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAppThread = appThread;
         mAttributionTag = attributionSource.getAttributionTag();
         mReferenceDisplayAddress = referenceDisplayAddress;
+        mScheduler = scheduler;
+        mLifecycle = new SessionLifecycle(mScheduler, mStateTransitions);
 
         mOwnerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
         mOwnerContext = context.createContextAsUser(mOwnerUser, /* flags = */ 0);

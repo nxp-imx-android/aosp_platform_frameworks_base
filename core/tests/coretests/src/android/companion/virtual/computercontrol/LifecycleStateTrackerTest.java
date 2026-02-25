@@ -18,7 +18,6 @@ package android.companion.virtual.computercontrol;
 
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
@@ -34,11 +33,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.concurrent.Executor;
+
 @RunWith(AndroidJUnit4.class)
 public class LifecycleStateTrackerTest {
 
     @Mock
     private ComputerControlSession.LifecycleCallback mMockCallback;
+    @Mock
+    private Executor mExecutor;
 
     private LifecycleStateTracker mLifecycle;
     private AutoCloseable mMockitoSession;
@@ -47,6 +50,10 @@ public class LifecycleStateTrackerTest {
     public void setUp() {
         mMockitoSession = MockitoAnnotations.openMocks(this);
         mLifecycle = new LifecycleStateTracker();
+        doAnswer((invocation) -> {
+            ((Runnable) invocation.getArgument(0)).run();
+            return null;
+        }).when(mExecutor).execute(any());
     }
 
     @After
@@ -56,7 +63,7 @@ public class LifecycleStateTrackerTest {
 
     @Test
     public void addCallback_startsInUninitializedState() {
-        mLifecycle.addCallback(mMockCallback);
+        mLifecycle.addCallback(mExecutor, mMockCallback);
 
         verifyNoInteractions(mMockCallback);
     }
@@ -65,35 +72,38 @@ public class LifecycleStateTrackerTest {
     public void addCallback_notifiesInitialState() {
         mLifecycle.onActive();
 
-        mLifecycle.addCallback(mMockCallback);
+        mLifecycle.addCallback(mExecutor, mMockCallback);
 
         verify(mMockCallback).onActive();
+        verify(mExecutor).execute(any());
     }
 
     @Test
     public void onClose_notifiesCallback() {
-        mLifecycle.addCallback(mMockCallback);
+        mLifecycle.addCallback(mExecutor, mMockCallback);
 
         mLifecycle.onClosed(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED);
 
         verify(mMockCallback).onClosed(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED);
+        verify(mExecutor).execute(any());
     }
 
     @Test
     public void onClose_doesNotChangeCloseReason() {
-        mLifecycle.addCallback(mMockCallback);
+        mLifecycle.addCallback(mExecutor, mMockCallback);
 
         mLifecycle.onClosed(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED);
         mLifecycle.onClosed(ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT);
 
         verify(mMockCallback, times(1)).onClosed(
                 eq(ComputerControlSession.CLOSE_REASON_CALLER_INITIATED));
+        verify(mExecutor, times(1)).execute(any());
     }
 
     @Test
     public void onBlocked_notifiesCallback() {
         // Add a callback to the tracker.
-        mLifecycle.addCallback(mMockCallback);
+        mLifecycle.addCallback(mExecutor, mMockCallback);
 
         // Transition to the blocked state.
         mLifecycle.onBlocked(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT, "test.package");
@@ -101,6 +111,7 @@ public class LifecycleStateTrackerTest {
         // Verify that the callback's onBlocked method was called with the correct parameters.
         verify(mMockCallback).onBlocked(
                 eq(ComputerControlSession.BLOCK_REASON_SECURE_CONTENT), eq("test.package"));
+        verify(mExecutor).execute(any());
     }
 
     @Test
