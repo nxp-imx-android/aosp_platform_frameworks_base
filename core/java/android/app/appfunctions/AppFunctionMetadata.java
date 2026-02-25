@@ -166,6 +166,15 @@ public final class AppFunctionMetadata implements AbstractAppFunctionMetadata, P
      */
     public static final int SCOPE_ACTIVITY = 1;
 
+    /**
+     * Property name for the app function's package name hash.
+     *
+     * <p>This is preserved by platform and can only be populated by the indexer.
+     *
+     * @hide
+     */
+    public static final String PROPERTY_PACKAGE_NAME_HASH = "packageNameHash";
+
     @IntDef({SCOPE_GLOBAL, SCOPE_ACTIVITY})
     @Retention(RetentionPolicy.SOURCE)
     @interface Scope {}
