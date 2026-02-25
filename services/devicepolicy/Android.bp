@@ -22,6 +22,7 @@ java_library_static {
         ":statslog-devicepolicy-java-gen",
     ],
     libs: [
+        "services.contentrestriction",
         "services.core",
         "app-compat-annotations",
         "service-permission.stubs.system_server",

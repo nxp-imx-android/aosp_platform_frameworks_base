@@ -17,6 +17,8 @@
 package android.app.admin;
 
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE;
 import static android.Manifest.permission.SET_TIME;
@@ -37,11 +39,13 @@ import android.os.UserManager;
 import android.processor.devicepolicy.AllowedDpcTypes;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.EnumResolutionMechanism;
+import android.processor.devicepolicy.ListOfStringPolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
 import android.processor.devicepolicy.StringPolicyDefinition;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 
 /**
  * Represents a type safe identifier for a policy. Use it as a key for {@link
@@ -271,6 +275,38 @@ public final class PolicyIdentifier<T> {
             emptyStringAllowed = false)
     public static final PolicyIdentifier<String> LOCKSCREEN_MESSAGE =
             new PolicyIdentifier<>("LOCKSCREEN_MESSAGE");
+
+    /**
+     * Policy that sets the list of packages as the holders of the {@link
+     * android.app.role.RoleManager#ROLE_CONTENT_RESTRICTION} role.
+     *
+     * <p>If the value is {@code null}, any previously set role holder set through this policy will
+     * be removed.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    @NonNull
+    @ListOfStringPolicyDefinition(
+            base =
+                    @StringPolicyDefinition(
+                            base =
+                                    @PolicyDefinition(
+                                            allowedScopes = {POLICY_SCOPE_USER},
+                                            affectedResource = RESOURCE_PER_USER,
+                                            requiredPermission =
+                                                    MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS,
+                                            requiredCrossUserPermission =
+                                                    MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL,
+                                            allowedDpcTypes =
+                                            @AllowedDpcTypes(
+                                                    deviceOwner = ALLOWED,
+                                                    managedProfileOwnerOfOrganizationOwnedDevice =
+                                                            ALLOWED,
+                                                    managedProfileOwnerOfPersonalOwnedDevice =
+                                                            DISALLOWED,
+                                                    unaffiliatedFullUserProfileOwner =
+                                                            DISALLOWED))))
+    public static final PolicyIdentifier<List<String>> CONTENT_RESTRICTION_APPS =
+            new PolicyIdentifier<>("CONTENT_RESTRICTION_APPS");
 
     // LINT.ThenChange(/tools/policymetadata/policies.textproto)
 }

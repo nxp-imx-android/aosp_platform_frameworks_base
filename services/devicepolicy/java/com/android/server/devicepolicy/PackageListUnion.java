@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 // TODO(b/482394284): Change String to Package once the Package type is introduced.
-final class PackageListUnion extends ResolutionMechanism<List<String>> {
+public final class PackageListUnion extends ResolutionMechanism<List<String>> {
 
     @Override
     ResolvedPolicy<List<String>> resolve(

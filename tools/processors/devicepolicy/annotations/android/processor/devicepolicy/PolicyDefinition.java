@@ -45,7 +45,7 @@ public @interface PolicyDefinition {
      * Does the policy affect the entire device or is the effect per-user?
      * Can be one of:
      * {@link android.app.admin.DevicePolicyManager.RESOURCE_DEVICE_WIDE} or
-     * {@link android.app.admin.DevicePolicyManager.PER_USER}.
+     * {@link android.app.admin.DevicePolicyManager.RESOURCE_PER_USER}.
      * This controls how the effective policy value can be retrieved.
      * All policies must define their resource type.
      */
