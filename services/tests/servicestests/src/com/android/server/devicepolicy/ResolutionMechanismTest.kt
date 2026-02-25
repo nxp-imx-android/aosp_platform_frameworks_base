@@ -17,6 +17,7 @@
 package com.android.server.devicepolicy
 
 import android.app.admin.BooleanPolicyValue
+import android.app.admin.ListOfStringPolicyValue
 import android.app.admin.IntegerPolicyValue
 import android.app.admin.PackageSetPolicyValue
 import android.app.admin.PolicyValue
@@ -139,6 +140,27 @@ class ResolutionMechanismTest {
     }
 
     @Test
+    fun resolve_packageListUnion() {
+        val adminPolicies: LinkedHashMap<EnforcingAdmin, PolicyValue<List<String>>> = LinkedHashMap()
+        adminPolicies.put(
+            SYSTEM_ADMIN,
+            ListOfStringPolicyValue(listOf("package1", "package2")) as PolicyValue<List<String>>,
+        )
+        adminPolicies.put(
+            DEVICE_OWNER_ADMIN,
+            ListOfStringPolicyValue(listOf("package1", "package3")) as PolicyValue<List<String>>,
+        )
+
+        val resolvedPolicy = PackageListUnion().resolve(adminPolicies)
+
+        assertThat(resolvedPolicy).isNotNull()
+        assertThat(resolvedPolicy?.resolvedPolicyValue?.value)
+            .containsExactly("package1", "package2", "package3")
+        assertThat(resolvedPolicy?.contributingAdmins)
+            .containsExactly(SYSTEM_ADMIN, DEVICE_OWNER_ADMIN)
+    }
+
+    @Test
     fun resolve_topPriority() {
         val adminPolicies: LinkedHashMap<EnforcingAdmin, PolicyValue<Integer>> = LinkedHashMap()
         adminPolicies.put(SYSTEM_ADMIN, INT_POLICY_A as PolicyValue<Integer>)
@@ -222,6 +244,37 @@ class ResolutionMechanismTest {
             resolutionMechanism.isPolicyApplied(
                 PackageSetPolicyValue(setOf("package1", "package3")),
                 PackageSetPolicyValue(setOf("package1", "package2")))
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_packageListUnion_listIncluded_returnsTrue() {
+        val resolutionMechanism = PackageListUnion()
+
+        assertTrue {
+            resolutionMechanism.isPolicyApplied(ListOfStringPolicyValue(listOf("package1")),
+                ListOfStringPolicyValue(listOf("package1", "package2")))
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_packageListUnion_listDoesNotIntersect_returnsFalse() {
+        val resolutionMechanism = PackageListUnion()
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(ListOfStringPolicyValue(listOf("package3")),
+                ListOfStringPolicyValue(listOf("package1", "package2")))
+        }
+    }
+
+    @Test
+    fun isPolicyApplied_packageListUnion_listPartiallyIncluded_returnsFalse() {
+        val resolutionMechanism = PackageListUnion()
+
+        assertFalse {
+            resolutionMechanism.isPolicyApplied(
+                ListOfStringPolicyValue(listOf("package1", "package3")),
+                ListOfStringPolicyValue(listOf("package1", "package2")))
         }
     }
 
