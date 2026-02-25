@@ -61,9 +61,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.android.compose.modifiers.padding
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
@@ -117,10 +118,13 @@ constructor(
             }
 
     private fun setupWindow(window: Window) {
+        val isRtl = context.resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        val horizontalGravity = if (isRtl) Gravity.RIGHT else Gravity.LEFT
+
         window.attributes =
             window.attributes.apply {
                 title = "PostRecordingShelf"
-                gravity = Gravity.BOTTOM or Gravity.START
+                gravity = Gravity.BOTTOM or horizontalGravity
             }
         with(window) {
             setBackgroundDrawableResource(android.R.color.transparent)
@@ -272,6 +276,7 @@ constructor(
                     )
                 }
             }
+        val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
         Box(
             modifier =
@@ -284,10 +289,16 @@ constructor(
                 visibleState = visibleState,
                 enter =
                     fadeIn(animationSpec = spring()) +
-                        slideInHorizontally(animationSpec = spring(), initialOffsetX = { -it }),
+                        slideInHorizontally(
+                            animationSpec = spring(),
+                            initialOffsetX = { it -> if (isRtl) it else -it },
+                        ),
                 exit =
                     fadeOut(animationSpec = spring()) +
-                        slideOutHorizontally(animationSpec = spring(), targetOffsetX = { -it }),
+                        slideOutHorizontally(
+                            animationSpec = spring(),
+                            targetOffsetX = { it -> if (isRtl) it else -it },
+                        ),
             ) {
                 Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.Start) {
                     PostRecordingThumbnail(
