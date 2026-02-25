@@ -307,9 +307,10 @@ public class EnableRequestAttributes implements Parcelable {
     @Override
     public String toString() {
         return "EnableRequestAttributes{"
-                + ", mIsEnabled=" + mIsEnabled
+                + "mIsEnabled=" + mIsEnabled
                 + ", mIsDemoMode=" + mIsDemoMode
                 + ", mIsEmergencyMode=" + mIsEmergencyMode
+                + ", mConnectType=" + mConnectType
                 + ", mSatelliteEnablementRequestReason=" + mSatelliteEnablementRequestReason
                 + ", mIsPrioritizedScanningRequired=" + mIsPrioritizedScanningRequired
                 + '}';
@@ -325,6 +326,7 @@ public class EnableRequestAttributes implements Parcelable {
         dest.writeBoolean(mIsEnabled);
         dest.writeBoolean(mIsDemoMode);
         dest.writeBoolean(mIsEmergencyMode);
+        dest.writeInt(mConnectType);
         dest.writeInt(mSatelliteEnablementRequestReason);
         dest.writeBoolean(mIsPrioritizedScanningRequired);
     }
@@ -336,6 +338,7 @@ public class EnableRequestAttributes implements Parcelable {
         mIsEnabled = in.readBoolean();
         mIsDemoMode = in.readBoolean();
         mIsEmergencyMode = in.readBoolean();
+        mConnectType = in.readInt();
         mSatelliteEnablementRequestReason = in.readInt();
         mIsPrioritizedScanningRequired = in.readBoolean();
     }
@@ -364,13 +367,14 @@ public class EnableRequestAttributes implements Parcelable {
         return mIsEnabled == that.mIsEnabled
                 && mIsDemoMode == that.mIsDemoMode
                 && mIsEmergencyMode == that.mIsEmergencyMode
+                && mConnectType == that.mConnectType
                 && mSatelliteEnablementRequestReason == that.mSatelliteEnablementRequestReason
                 && mIsPrioritizedScanningRequired == that.mIsPrioritizedScanningRequired;
     }
 
     @Override
     public int hashCode() {
-        return java.util.Objects.hash(mIsEnabled, mIsDemoMode, mIsEmergencyMode,
+        return java.util.Objects.hash(mIsEnabled, mIsDemoMode, mIsEmergencyMode, mConnectType,
                 mSatelliteEnablementRequestReason, mIsPrioritizedScanningRequired);
     }
 }
