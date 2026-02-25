@@ -209,21 +209,23 @@ class KeyParametersSchema private constructor(
          * @param required Whether this parameter must be provided. Defaults to `false`.
          * @throws IllegalArgumentException if a parameter with the same name is already defined.
          */
-        fun parameter(name: String, @StringRes purpose: Int, required: Boolean = false) {
+        fun parameter(name: String, @StringRes purpose: Int, required: Boolean = false): Builder {
             if (parameters.containsKey(name)) {
                 throw IllegalArgumentException("Parameter '$name' is already defined.")
             }
             parameters[name] = ParameterDefinition(name, purpose, required)
+            return this
         }
 
         // TODO (b/468973102): remove this when all current parameterized screens migrated to string res purpose
         @Deprecated("This method is no longer used")
-        fun parameter(name: String, description: String, required: Boolean = false) {
+        fun parameter(name: String, description: String, required: Boolean = false): Builder {
             if (parameters.containsKey(name)) {
                 throw IllegalArgumentException("Parameter '$name' is already defined.")
             }
 
             parameters[name] = ParameterDefinition(name, description, required)
+            return this
         }
 
         /**

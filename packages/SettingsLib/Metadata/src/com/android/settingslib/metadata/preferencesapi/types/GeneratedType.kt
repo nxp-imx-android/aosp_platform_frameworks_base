@@ -18,6 +18,7 @@ package com.android.settingslib.metadata.preferencesapi.types
 
 import android.content.Context
 import androidx.annotation.StringRes
+import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.preferencesapi.resolveString
 
 /**
@@ -48,23 +49,27 @@ data class GeneratedValue<T>(
 
 inline fun <reified T : Any> GeneratedType(
     @StringRes description: Int,
+    unit: String? = null,
     noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
-): GeneratedType<T> = GeneratedType(T::class.java, descriptionRes = description, description = null, lambda = lambda)
+): GeneratedType<T> = GeneratedType(T::class.java, descriptionRes = description, description = null, unit = unit, lambda = lambda)
 
 inline fun <reified T : Any> GeneratedType(
         description: String,
+        unit: String? = null,
     noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
-): GeneratedType<T> = GeneratedType(T::class.java, descriptionRes = null, description = description, lambda = lambda)
+): GeneratedType<T> = GeneratedType(T::class.java, descriptionRes = null, description = description, unit = unit, lambda = lambda)
 
 inline fun GeneratedParameterType(
     @StringRes description: Int,
+    unit: String? = null,
     noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<String>>
-): GeneratedType<String> = GeneratedType(String::class.java, descriptionRes = description, description = null, lambda = lambda)
+): GeneratedType<String> = GeneratedType(String::class.java, descriptionRes = description, description = null, unit = unit, lambda = lambda)
 
 inline fun GeneratedParameterType(
         description: String,
+        unit: String? = null,
     noinline lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<String>>
-): GeneratedType<String> = GeneratedType(String::class.java, descriptionRes = null, description = description, lambda = lambda)
+): GeneratedType<String> = GeneratedType(String::class.java, descriptionRes = null, description = description, unit = unit, lambda = lambda)
 
 
 /**
@@ -77,11 +82,20 @@ class GeneratedType<T : Any> constructor(
     private val keyType: Class<T>,
     @field:StringRes val descriptionRes: Int?,
     val description: String?,
-    private val lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>
+    private val lambda: GeneratedTypeContext.() -> Collection<GeneratedValue<T>>,
+    private val unit: String? = null,
 ) : FiniteOptionsType<T> {
     init {
         require(descriptionRes != null || description != null)
     }
+
+    override fun getParametersSchema() = KeyParametersSchema.Builder()
+        .parameter("unit", "The unit of measurement (if any) such as dB or milliseconds.")
+        .build()
+
+    override fun getParameters() = getParametersSchema().prepare(buildMap {
+        unit?.let { put("unit", it) }
+    })
 
     override fun getType(): Class<T> = keyType
 

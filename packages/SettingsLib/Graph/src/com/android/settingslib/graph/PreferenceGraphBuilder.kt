@@ -721,6 +721,10 @@ fun PreferenceMetadata.toProto(
             if (descriptorKey != null) valueDescriptorKey = descriptorKey
             if (metadata is ApiPreference<*>) {
                 description = metadata.type.getDescription(context)
+                metadata.type.getParametersSchema()?.let {
+                    parametersSchema = it.toJsonString(context)
+                }
+                metadata.type.getParameters()?.let { parameters = it.toProto() }
             }
 
             setType()

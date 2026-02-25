@@ -18,12 +18,26 @@ package com.android.settingslib.metadata.preferencesapi.types
 
 import android.content.Context
 import androidx.annotation.StringRes
+import com.android.settingslib.metadata.KeyParameters
+import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.R
+import com.android.settingslib.metadata.ValidatedKeyParameters
 
 /** Any int value. */
-object AnyInt: ApiType<Int> {
+sealed class AnyInt(private val unitOfMeasurement: String? = null): ApiType<Int> {
+
+    override fun getParametersSchema() = KeyParametersSchema.Builder()
+        .parameter("unit", "The unit of measurement (if any) such as dB or milliseconds.")
+        .build()
+
+    override fun getParameters() = getParametersSchema().prepare(buildMap {
+        unitOfMeasurement?.let { put("unit", it) }
+    })
+
     override fun getType(): Class<Int> = Int::class.java
     override fun getDescription(context: Context): String =
         context.getString(R.string.any_int_type_description)
     override fun getKey(): String = "AnyInt"
+
+    companion object : AnyInt()
 }
