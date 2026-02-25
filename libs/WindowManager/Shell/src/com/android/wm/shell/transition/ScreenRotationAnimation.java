@@ -236,15 +236,13 @@ class ScreenRotationAnimation {
                 t.setColor(mBackColorSurface, color);
                 t.show(mBackColorSurface);
 
-                if (com.android.window.flags.Flags.noAlphaRotationEnterAnimation()) {
-                    mColorOverlay = new SurfaceControl.Builder()
-                            .setCallsite("ShellRotationAnimation").setParent(rootLeash)
-                            .setColorLayer().setOpaque(true).setName("ColorOverlay").build();
-                    t.setColor(mColorOverlay, color);
-                    t.setLayer(mColorOverlay, SCREEN_FREEZE_LAYER_BASE - 1);
-                    t.setWindowCrop(mColorOverlay, mEndWidth, mEndHeight);
-                    t.show(mColorOverlay);
-                }
+                mColorOverlay = new SurfaceControl.Builder()
+                        .setCallsite("ShellRotationAnimation").setParent(rootLeash)
+                        .setColorLayer().setOpaque(true).setName("ColorOverlay").build();
+                t.setColor(mColorOverlay, color);
+                t.setLayer(mColorOverlay, SCREEN_FREEZE_LAYER_BASE - 1);
+                t.setWindowCrop(mColorOverlay, mEndWidth, mEndHeight);
+                t.show(mColorOverlay);
             }
 
         } catch (Surface.OutOfResourcesException e) {

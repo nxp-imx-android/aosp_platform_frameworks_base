@@ -1286,7 +1286,7 @@ public abstract class WindowManagerInternal {
         /**
          * Get the mirror surface. The same SurfaceControl reference is returned throughout the
          * lifecycle of this mirror. This SurfaceControl will be released automatically on
-         * {@link #close()}.
+         * {@link #close()}. The SurfaceControl is initially hidden.
          */
         SurfaceControl getMirrorSurfaceControl();
     }
@@ -1356,4 +1356,13 @@ public abstract class WindowManagerInternal {
      * animations on the display.
      */
     public abstract void enableClientRenderingLimitationsOnDisplay(int displayId, boolean enable);
+
+    /**
+     * Allows for applying the behavior of {@link Display#FLAG_STEAL_TOP_FOCUS_DISABLED} dynamically
+     * when the flag is not set on a display.
+     *
+     * @param displayId The display to override.
+     * @param canStealTopFocus The override value, or {@code null} to clear the override.
+     */
+    public abstract void setCanStealTopFocusForDisplay(int displayId, boolean canStealTopFocus);
 }

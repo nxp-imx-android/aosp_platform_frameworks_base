@@ -16,11 +16,9 @@
 
 package com.android.systemui.bouncer.ui.viewmodel
 
-import android.platform.test.annotations.EnableFlags
 import androidx.compose.ui.geometry.Offset
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.data.repository.authenticationRepository
@@ -362,10 +360,9 @@ class PatternBouncerViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_MSDL_FEEDBACK)
     fun performDotFeedback_deliversDragToken() =
         kosmos.runTest {
-            underTest.performDotFeedback(null)
+            underTest.performDotFeedback()
 
             assertThat(fakeMSDLPlayer.latestTokenPlayed)
                 .isEqualTo(MSDLToken.DRAG_INDICATOR_DISCRETE)

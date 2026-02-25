@@ -2055,6 +2055,7 @@
         <enum name="KEYCODE_F24" value="337" />
         <enum name="KEYCODE_ACCESSIBILITY" value="338" />
         <enum name="KEYCODE_CONTEXTUAL_SEARCH" value="339" />
+        <enum name="KEYCODE_CONTEXTUAL_INSERT" value="340" />
     </attr>
 
     <!-- @hide same as keycode enum defined above, but to be used to define keycode output.
@@ -2400,6 +2401,7 @@
         <enum name="KEYCODE_F24" value="337" />
         <enum name="KEYCODE_ACCESSIBILITY" value="338" />
         <enum name="KEYCODE_CONTEXTUAL_SEARCH" value="339" />
+        <enum name="KEYCODE_CONTEXTUAL_INSERT" value="340" />
     </attr>
 
     <!-- ***************************************************************** -->

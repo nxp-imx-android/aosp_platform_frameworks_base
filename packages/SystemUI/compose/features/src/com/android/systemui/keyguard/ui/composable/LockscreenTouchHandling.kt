@@ -62,6 +62,8 @@ fun LockscreenTouchHandling(
                             viewModel.onSceneClick(press.position.x, press.position.y)
                         }
                     }
+                }
+                .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = { viewModel.onClick(it.x, it.y) },
                         onDoubleTap = { viewModel.onDoubleClick() },

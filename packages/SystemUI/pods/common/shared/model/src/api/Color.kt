@@ -26,11 +26,11 @@ import androidx.compose.runtime.Stable
  * [Color.Attribute]
  */
 @Stable
-sealed interface Color {
+public sealed interface Color {
 
-    data class Loaded(@ColorInt val color: Int) : Color
+    public data class Loaded(@ColorInt val color: Int) : Color
 
-    data class Attribute(@AttrRes val attribute: Int) : Color
+    public data class Attribute(@AttrRes val attribute: Int) : Color
 
-    data class Resource(@ColorRes val colorRes: Int) : Color
+    public data class Resource(@ColorRes val colorRes: Int) : Color
 }

@@ -2111,6 +2111,7 @@ public interface WindowManager extends ViewManager {
          * @see #TYPE_APPLICATION_MEDIA
          * @see #TYPE_APPLICATION_SUB_PANEL
          * @see #TYPE_APPLICATION_ATTACHED_DIALOG
+         * @see #TYPE_APPLICATION_CAPTION_BAR
          * @see #TYPE_STATUS_BAR
          * @see #TYPE_SEARCH_BAR
          * @see #TYPE_PHONE
@@ -2143,6 +2144,8 @@ public interface WindowManager extends ViewManager {
                         to = "APPLICATION_ABOVE_SUB_PANEL"),
                 @ViewDebug.IntToString(from = TYPE_APPLICATION_ATTACHED_DIALOG,
                         to = "APPLICATION_ATTACHED_DIALOG"),
+                @ViewDebug.IntToString(from = TYPE_APPLICATION_CAPTION_BAR,
+                        to = "APPLICATION_CAPTION_BAR"),
                 @ViewDebug.IntToString(from = TYPE_APPLICATION_MEDIA_OVERLAY,
                         to = "APPLICATION_MEDIA_OVERLAY"),
                 @ViewDebug.IntToString(from = TYPE_STATUS_BAR,
@@ -2671,6 +2674,7 @@ public interface WindowManager extends ViewManager {
                 TYPE_APPLICATION_MEDIA,
                 TYPE_APPLICATION_SUB_PANEL,
                 TYPE_APPLICATION_ATTACHED_DIALOG,
+                TYPE_APPLICATION_CAPTION_BAR,
                 TYPE_APPLICATION_MEDIA_OVERLAY,
                 TYPE_APPLICATION_ABOVE_SUB_PANEL,
                 TYPE_STATUS_BAR,

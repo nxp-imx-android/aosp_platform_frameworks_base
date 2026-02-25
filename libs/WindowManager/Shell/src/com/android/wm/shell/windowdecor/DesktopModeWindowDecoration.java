@@ -177,7 +177,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
 
     private WindowDecorationViewHolder mWindowDecorViewHolder;
     private View.OnClickListener mOnCaptionButtonClickListener;
-    private View.OnTouchListener mOnCaptionTouchListener;
+    private WindowDecorLinearLayout.GestureInterceptor mGestureInterceptor;
     private View.OnLongClickListener mOnCaptionLongClickListener;
     private View.OnGenericMotionListener mOnCaptionGenericMotionListener;
     private DragPositioningCallback mDragPositioningCallback;
@@ -399,10 +399,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     void setCaptionListeners(
-            View.OnTouchListener onCaptionTouchListener,
+            WindowDecorLinearLayout.GestureInterceptor gestureInterceptor,
             View.OnLongClickListener onLongClickListener,
             View.OnGenericMotionListener onGenericMotionListener) {
-        mOnCaptionTouchListener = onCaptionTouchListener;
+        mGestureInterceptor = gestureInterceptor;
         mOnCaptionLongClickListener = onLongClickListener;
         mOnCaptionGenericMotionListener = onGenericMotionListener;
     }
@@ -988,7 +988,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mResult.mRootView,
                     mDecorWindowContext,
                     mWindowDecorationActions,
-                    mOnCaptionTouchListener,
+                    mGestureInterceptor,
                     mWindowManagerWrapper,
                     mHandler,
                     mDesktopModeUiEventLogger
@@ -998,7 +998,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mResult.mRootView,
                     mDecorWindowContext,
                     mWindowDecorationActions,
-                    mOnCaptionTouchListener,
+                    mGestureInterceptor,
                     mOnCaptionLongClickListener,
                     mOnCaptionGenericMotionListener,
                     /* onMaximizeHoverAnimationFinishedListener= */ () -> {

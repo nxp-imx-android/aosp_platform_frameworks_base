@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.ui.motion
 
+import android.content.res.mainResources
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.MotionTest
 import android.testing.TestableLooper.RunWithLooper
@@ -169,7 +170,10 @@ class BouncerOverlayToGoneSceneTransitionTest : SysuiTestCase() {
             viewModelFactory =
                 object : GoneUserActionsViewModel.Factory {
                     override fun create(): GoneUserActionsViewModel {
-                        return GoneUserActionsViewModel(kosmos.shadeModeInteractor)
+                        return GoneUserActionsViewModel(
+                            shadeModeInteractor = kosmos.shadeModeInteractor,
+                            resources = kosmos.mainResources,
+                        )
                     }
                 },
         )

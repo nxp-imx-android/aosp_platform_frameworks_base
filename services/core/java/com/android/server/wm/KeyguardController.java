@@ -505,7 +505,7 @@ class KeyguardController {
         try {
             if (visibleChange && tc.isShellTransitionsEnabled()) {
                 final Task trigger = (state.mOccluded && topActivity != null)
-                        ? topActivity.getRootTask() : null;
+                        ? topActivity.getTask() : null;
                 tc.requestTransitionIfNeeded(transitType, transitFlags, trigger, dc, chain);
                 final Transition transition = chain.getTransition();
                 if ((transition.getFlags() & notFlags) != 0) {

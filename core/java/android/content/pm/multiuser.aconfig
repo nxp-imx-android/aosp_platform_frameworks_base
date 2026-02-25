@@ -63,35 +63,6 @@ flag {
     }
 }
 
-# Begin Multiuser Widget flags #
-
-flag {
-    name: "multiuser_widget"
-    namespace: "multiuser"
-    description: "Implement the Multiuser Widget"
-    bug: "365748524"
-}
-
-flag {
-    name: "widget_current_user_view"
-    namespace: "multiuser"
-    description: "When flag is enabled, widget shows the current user only"
-    bug: "409327566"
-}
-
-flag {
-    name: "widget_scaling_bugfix"
-    namespace: "multiuser"
-    description: "When flag is enabled, scaling fixes are applied to the widget"
-    bug: "430040190"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-
-# End Multiuser Widget flags #
-
 flag {
     name: "enable_biometrics_to_unlock_private_space"
     is_exported: true

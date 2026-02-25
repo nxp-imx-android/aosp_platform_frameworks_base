@@ -29,6 +29,7 @@ import com.android.systemui.authentication.domain.interactor.authenticationInter
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.authentication.shared.model.AuthenticationResult
 import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
+import com.android.systemui.haptics.msdl.bouncerHapticPlayer
 import com.android.systemui.inputmethod.data.model.InputMethodModel
 import com.android.systemui.inputmethod.data.repository.fakeInputMethodRepository
 import com.android.systemui.inputmethod.domain.interactor.inputMethodInteractor
@@ -75,6 +76,7 @@ class PasswordBouncerViewModelTest : SysuiTestCase() {
         kosmos.passwordBouncerViewModelFactory.create(
             isInputEnabled = isInputEnabled,
             onIntentionalUserInput = onIntentionalUserInputMock,
+            bouncerHapticPlayer = kosmos.bouncerHapticPlayer,
         )
     }
 

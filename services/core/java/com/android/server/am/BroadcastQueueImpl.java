@@ -2433,9 +2433,10 @@ class BroadcastQueueImpl extends BroadcastQueue {
                     receiverType, type, dispatchDelay, receiveDelay, finishDelay, packageState,
                     app != null ? app.info.packageName : null, r.callerPackage,
                     broadcastType, r.getDeliveryGroupPolicy(), r.intent.getFlags(),
-                    BroadcastRecord.getReceiverPriority(receiver), r.callerProcState,
-                    receiverProcessState, queue.getActiveFirstLaunch(),
-                    0L /* TODO: stoppedDuration */);
+                    BroadcastRecord.getReceiverPriority(receiver),
+                    ActivityManager.processStateAmToProto(r.callerProcState),
+                    ActivityManager.processStateAmToProto(receiverProcessState),
+                    queue.getActiveFirstLaunch(), 0L /* TODO: stoppedDuration */);
             if (android.os.Flags.perfettoSdkTracingV3()) {
                 PerfettoTrackEventBuilder builder = PerfettoTrace
                         .instant(BROADCAST_V3, "broadcast_delivered")

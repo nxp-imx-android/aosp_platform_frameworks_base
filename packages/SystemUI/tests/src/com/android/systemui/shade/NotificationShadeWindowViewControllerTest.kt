@@ -17,7 +17,6 @@
 package com.android.systemui.shade
 
 import android.content.Context
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
@@ -605,7 +604,6 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMMUNAL_SHADE_TOUCH_HANDLING_FIXES)
     @DisableSceneContainer
     fun handleExternalTouch_hubDoesNotSeeTouches() =
         testScope.runTest {

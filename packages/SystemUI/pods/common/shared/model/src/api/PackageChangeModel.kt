@@ -22,29 +22,29 @@ import android.content.pm.PackageManager
 import android.os.UserHandle
 
 /** Represents changes to an installed package. */
-sealed interface PackageChangeModel {
+public sealed interface PackageChangeModel {
     /** The package which this change corresponds to, eg "com.android.systemui". */
-    val packageName: String
+    public val packageName: String
 
     /**
      * The uid for this package, which uniquely identifies this package and user. The same package
      * running on different users will have differing uids.
      */
-    val packageUid: Int
+    public val packageUid: Int
 
     /**
      * The time in milliseconds that this update was received from [PackageManager].
      *
      * @see System.currentTimeMillis()
      */
-    @get:CurrentTimeMillisLong val timeMillis: Long
+    @get:CurrentTimeMillisLong public val timeMillis: Long
 
     /** The user from which this change originated. */
-    val user: UserHandle
+    public val user: UserHandle
         get() = UserHandle.getUserHandleForUid(packageUid)
 
     /** Empty change, provided for convenience when a sensible default value is needed. */
-    data object Empty : PackageChangeModel {
+    public data object Empty : PackageChangeModel {
         override val packageName: String
             get() = ""
 
@@ -61,7 +61,7 @@ sealed interface PackageChangeModel {
      * Equivalent to receiving the [Intent.ACTION_PACKAGE_REMOVED] broadcast with
      * [Intent.EXTRA_REPLACING] set to false.
      */
-    data class Uninstalled(
+    public data class Uninstalled(
         override val packageName: String,
         override val packageUid: Int,
         @CurrentTimeMillisLong override val timeMillis: Long = 0,
@@ -73,7 +73,7 @@ sealed interface PackageChangeModel {
      * Equivalent to receiving the [Intent.ACTION_PACKAGE_REMOVED] broadcast with
      * [Intent.EXTRA_REPLACING] set to true.
      */
-    data class UpdateStarted(
+    public data class UpdateStarted(
         override val packageName: String,
         override val packageUid: Int,
         @CurrentTimeMillisLong override val timeMillis: Long = 0,
@@ -86,7 +86,7 @@ sealed interface PackageChangeModel {
      * Equivalent to receiving the [Intent.ACTION_PACKAGE_ADDED] broadcast with
      * [Intent.EXTRA_REPLACING] set to true.
      */
-    data class UpdateFinished(
+    public data class UpdateFinished(
         override val packageName: String,
         override val packageUid: Int,
         @CurrentTimeMillisLong override val timeMillis: Long = 0,
@@ -98,7 +98,7 @@ sealed interface PackageChangeModel {
      * Equivalent to receiving the [Intent.ACTION_PACKAGE_ADDED] broadcast with
      * [Intent.EXTRA_REPLACING] set to false.
      */
-    data class Installed(
+    public data class Installed(
         override val packageName: String,
         override val packageUid: Int,
         @CurrentTimeMillisLong override val timeMillis: Long = 0,
@@ -110,12 +110,12 @@ sealed interface PackageChangeModel {
      *
      * Equivalent to receiving the [Intent.ACTION_PACKAGE_CHANGED] broadcast.
      */
-    data class Changed(
+    public data class Changed(
         override val packageName: String,
         override val packageUid: Int,
         @CurrentTimeMillisLong override val timeMillis: Long = 0,
     ) : PackageChangeModel
 
-    fun isSamePackage(other: PackageChangeModel) =
+    public fun isSamePackage(other: PackageChangeModel): Boolean =
         this.packageName == other.packageName && this.packageUid == other.packageUid
 }

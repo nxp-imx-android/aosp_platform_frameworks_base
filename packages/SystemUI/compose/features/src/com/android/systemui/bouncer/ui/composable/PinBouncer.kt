@@ -17,7 +17,6 @@
 package com.android.systemui.bouncer.ui.composable
 
 import android.security.Flags.lockscreenTimeoutDeactivatePinPad
-import android.view.View
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
@@ -188,7 +187,7 @@ fun DigitButton(
     digit: Int,
     isInputEnabled: Boolean,
     onClicked: (Int) -> Unit,
-    onPointerDown: (View?) -> Unit,
+    onPointerDown: () -> Unit,
     scaling: () -> Float,
     isAnimationEnabled: Boolean,
 ) {
@@ -220,7 +219,7 @@ fun ActionButton(
     isInputEnabled: Boolean,
     onClicked: () -> Unit,
     elementId: String,
-    onPointerDown: ((View?) -> Unit),
+    onPointerDown: () -> Unit,
     onLongPressed: (() -> Unit)? = null,
     onLongClickLabel: String? = null,
     appearance: ActionButtonAppearance,
@@ -267,7 +266,7 @@ private fun PinPadButton(
     foregroundColor: Color,
     isAnimationEnabled: Boolean,
     modifier: Modifier = Modifier,
-    onPointerDown: ((View?) -> Unit),
+    onPointerDown: () -> Unit,
     elementId: String? = null,
     onLongPressed: (() -> Unit)? = null,
     onLongClickLabel: String? = null,
@@ -335,7 +334,7 @@ private fun PinPadButton(
                 .clip(CircleShape)
                 .pinPadButtonInput(
                     isEnabled = isEnabled,
-                    onPointerDown = { onPointerDown(view) },
+                    onPointerDown = onPointerDown,
                     onClicked = onClicked,
                     onLongPressed = onLongPressed,
                     onLongClickLabel = onLongClickLabel,

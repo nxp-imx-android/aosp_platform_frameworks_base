@@ -861,6 +861,9 @@ final class AutofillManagerServiceImpl
 
     @GuardedBy("mLock")
     void removeSessionLocked(int sessionId) {
+        if (sDebug) {
+            Slog.d(TAG, "removeSessionLocked(): removing session " + sessionId);
+        }
         mSessions.remove(sessionId);
         if (Flags.autofillSessionDestroyed()) {
             mHandler.sendMessage(

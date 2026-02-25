@@ -356,6 +356,7 @@ cc_defaults_for_libandroid_runtime {
                 "android.hardware.common.fmq-V1-ndk",
                 "android.hardware.common-V2-ndk",
                 "android.hardware.contexthub-V5-ndk",
+                "chre_flags_c_lib",
                 "contexthub_data_flow",
                 "libfmq",
                 "libbattery",

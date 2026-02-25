@@ -18,7 +18,6 @@ package com.android.systemui.bouncer.ui.viewmodel
 
 import android.content.Context
 import android.util.TypedValue
-import android.view.View
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -243,7 +242,7 @@ constructor(
         max(min(outValue.float, 1f), MIN_DOT_HIT_FACTOR)
     }
 
-    fun performDotFeedback(view: View?) = bouncerHapticPlayer?.playPatternDotFeedback(view)
+    fun performDotFeedback() = bouncerHapticPlayer.playPatternDotFeedback()
 
     @AssistedFactory
     interface Factory {

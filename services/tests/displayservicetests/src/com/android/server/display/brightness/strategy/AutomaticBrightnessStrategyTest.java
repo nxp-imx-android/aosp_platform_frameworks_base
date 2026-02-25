@@ -624,19 +624,7 @@ public class AutomaticBrightnessStrategyTest {
                 AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT,
                 /* sendUpdate= */ false);
 
-        // Wear Bedtime autobrightness mode feature disabled.
-        when(mDisplayManagerFlags.isAutoBrightnessModeBedtimeWearEnabled()).thenReturn(false);
-        mAutomaticBrightnessStrategy.setAutoBrightnessState(Display.STATE_ON,
-                allowAutoBrightnessWhileDozing, brightnessReason, policy,
-                useNormalBrightnessForDoze, lastUserSetBrightness, userSetBrightnessChanged,
-                /* isBedtimeModeWearEnabled= */ true,
-                /* isChargingModeEnabled= */ false);
-        verify(mAutomaticBrightnessController, times(2)).switchMode(
-                AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_DEFAULT,
-                /* sendUpdate= */ false);
-
-        // Wear Bedtime autobrightness mode feature enabled.
-        when(mDisplayManagerFlags.isAutoBrightnessModeBedtimeWearEnabled()).thenReturn(true);
+        // Wear Bedtime autobrightness mode
         mAutomaticBrightnessStrategy.setAutoBrightnessState(Display.STATE_ON,
                 allowAutoBrightnessWhileDozing, brightnessReason, policy,
                 useNormalBrightnessForDoze, lastUserSetBrightness, userSetBrightnessChanged,

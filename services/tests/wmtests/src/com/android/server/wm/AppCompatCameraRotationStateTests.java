@@ -21,14 +21,11 @@ import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.view.Surface.ROTATION_0;
-import static android.view.Surface.ROTATION_180;
-import static android.view.Surface.ROTATION_270;
 import static android.view.Surface.ROTATION_90;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX;
-import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
 
 import static org.junit.Assert.assertEquals;
 
@@ -64,7 +61,6 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
 
     @Test
     @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testFeatureDisabled_returnsCurrentDisplayRotation() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_90, ORIENTATION_PORTRAIT, TYPE_INTERNAL);
@@ -78,8 +74,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
-            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     public void testFeatureEnabled_internalDisplay_returnsCurrentDisplayRotation() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_0, ORIENTATION_PORTRAIT, TYPE_INTERNAL);
@@ -93,8 +88,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
-            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     public void testFeatureEnabled_externalDisplay_returnsSensorRotation() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_90, ORIENTATION_PORTRAIT, TYPE_INTERNAL);
@@ -113,8 +107,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
-            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     public void testIsCameraDeviceOrientationPortrait_rotatesToLandscape_returnsFalse() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_0, ORIENTATION_PORTRAIT, TYPE_INTERNAL);
@@ -134,8 +127,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
-            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     public void testIsPortraitCamera_portraitInnerDisplay_rotatesToLandscape_true() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_0, ORIENTATION_PORTRAIT, TYPE_INTERNAL);
@@ -153,8 +145,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
-            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     public void testIsCamera_DeviceNaturalOrientationPortrait_landscapeDisplay_returnsFalse() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_0, ORIENTATION_LANDSCAPE,
@@ -166,8 +157,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
-            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     public void testTransformSensorOrientationToDisplayRotation_mapsCorrectly() {
         runTestScenario((robot) -> {
             // Setup external display to enable sensor orientation listener
@@ -204,8 +194,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
-            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     public void testIsCameraDeviceOrientationPortrait_naturalPortrait_noRotate_returnsTrue() {
         runTestScenario((robot) -> {
             // Setup: Default display natural orientation is portrait.
@@ -223,8 +212,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
-            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     public void testIsCameraDeviceOrientationPortrait_naturalLandscape_rotated_returnsTrue() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_0, ORIENTATION_LANDSCAPE, TYPE_INTERNAL);
@@ -241,8 +229,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX,
-            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING})
+    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX)
     public void testIsCameraDeviceOrientationPortrait_naturalLandscape_returnsFalse() {
         runTestScenario((robot) -> {
             robot.configureActivityAndDisplay(ROTATION_0, ORIENTATION_LANDSCAPE, TYPE_INTERNAL);

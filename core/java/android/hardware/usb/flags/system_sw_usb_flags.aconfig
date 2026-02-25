@@ -58,3 +58,10 @@ flag {
     description: "Feature flag to migrate usbdp library to upstream irq reporting"
     bug: "396745823"
 }
+
+flag {
+    name: "enable_usbdp_utils_library"
+    namespace: "system_sw_usb"
+    description: "Feature flag to enable use of UsbDpUtils library in USB HALs"
+    bug: "484049535"
+}

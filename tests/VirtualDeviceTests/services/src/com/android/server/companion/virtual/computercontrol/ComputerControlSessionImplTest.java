@@ -382,7 +382,6 @@ public class ComputerControlSessionImplTest {
         assertThat(virtualDisplayConfig.isIgnoreActivitySizeRestrictions()).isTrue();
 
         final int expectedDisplayFlags = DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
-                | DisplayManager.VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED
                 | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
         assertThat(virtualDisplayConfig.getFlags()).isEqualTo(expectedDisplayFlags);
 
@@ -1600,6 +1599,77 @@ public class ComputerControlSessionImplTest {
 
         verify(mVirtualDevice, never()).wakeUp();
         verify(mVirtualDevice, never()).goToSleep();
+    }
+
+    @Test
+    public void setInteractive_inBlockedState_enablesInteractivity() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        mirror.setInteractive(false);
+
+        try (InBlockedState inBlockedState = new InBlockedState()) {
+            clearInvocations(mTransaction);
+            mirror.setInteractive(true);
+
+            verify(mTransaction).setDropInputMode(any(), eq(DropInputMode.NONE));
+        }
+    }
+
+    @Test
+    public void setInteractive_inBlockedState_disablesInteractivity() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+
+        try (InBlockedState inBlockedState = new InBlockedState()) {
+            mirror.setInteractive(true);
+            clearInvocations(mTransaction);
+
+            mirror.setInteractive(false);
+
+            verify(mTransaction).setDropInputMode(any(), eq(DropInputMode.ALL));
+        }
+    }
+
+    @Test
+    public void setInteractive_inActiveState_doesNotEnableInteractivity() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+
+        clearInvocations(mTransaction);
+        mirror.setInteractive(true);
+
+        verify(mTransaction, never()).setDropInputMode(any(), eq(DropInputMode.NONE));
+    }
+
+    @Test
+    public void setInteractive_transitionToBlocked_enablesInteractivity() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        mirror.setInteractive(true);
+        clearInvocations(mTransaction);
+
+        try (InBlockedState inBlockedState = new InBlockedState()) {
+            verify(mTransaction).setDropInputMode(any(), eq(DropInputMode.NONE));
+        }
+    }
+
+    @Test
+    public void setInteractive_transitionToActive_disablesInteractivity() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+
+        try (InBlockedState inBlockedState = new InBlockedState()) {
+            mirror.setInteractive(true);
+            clearInvocations(mTransaction);
+        }
+        mSession.requestUnblock();
+
+        verify(mTransaction).setDropInputMode(any(), eq(DropInputMode.ALL));
     }
 
     private void setupMockMirror() {

@@ -25,12 +25,12 @@ import androidx.compose.runtime.Stable
  * be a [reference][ContentDescription.Resource] to a resource.
  */
 @Stable
-sealed class ContentDescription {
-    data class Loaded(val description: String?) : ContentDescription()
+public sealed class ContentDescription {
+    public data class Loaded(val description: String?) : ContentDescription()
 
-    data class Resource(@StringRes val res: Int) : ContentDescription()
+    public data class Resource(@StringRes val res: Int) : ContentDescription()
 
-    companion object {
+    public companion object {
         /**
          * Returns the loaded content description string, or null if we don't have one.
          *
@@ -40,7 +40,7 @@ sealed class ContentDescription {
          * method should only be used for testing or concatenation purposes.
          */
         @JvmStatic
-        fun ContentDescription?.loadContentDescription(context: Context): String? {
+        public fun ContentDescription?.loadContentDescription(context: Context): String? {
             return when (this) {
                 null -> null
                 is Loaded -> this.description

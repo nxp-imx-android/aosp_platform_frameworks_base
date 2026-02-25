@@ -51,6 +51,7 @@ import com.android.internal.R.color.materialColorSurfaceContainerHigh
 import com.android.internal.R.color.materialColorSurfaceContainerLow
 import com.android.internal.R.color.materialColorSurfaceDim
 import com.android.internal.util.FrameworkStatsLog
+import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
@@ -87,7 +88,7 @@ class AppHeaderViewHolder(
     appHeaderView: View?,
     private val context: Context,
     windowDecorationActions: WindowDecorationActions,
-    onCaptionTouchListener: View.OnTouchListener,
+    gestureInterceptor: WindowDecorLinearLayout.GestureInterceptor,
     private val onLongClickListener: OnLongClickListener,
     onCaptionGenericMotionListener: View.OnGenericMotionListener,
     onMaximizeHoverAnimationFinishedListener: () -> Unit,
@@ -117,7 +118,8 @@ class AppHeaderViewHolder(
             } else {
                 error("App Header root view should not be null")
             }
-    private val captionView: View = rootView.requireViewById(R.id.desktop_mode_caption)
+    private val captionView: WindowDecorLinearLayout =
+        rootView.requireViewById(R.id.desktop_mode_caption)
     private val captionHandle: View = rootView.requireViewById(R.id.caption_handle)
     private val openMenuButton: View = rootView.requireViewById(R.id.open_menu_button)
     private val closeWindowButton: ImageButton = rootView.requireViewById(R.id.close_window)
@@ -142,14 +144,11 @@ class AppHeaderViewHolder(
     private val a11yAnnounceTextRestore: String =
         context.getString(R.string.app_header_talkback_action_restore_button_text)
 
-    private val a11yAnnounceTextOpening: String =
-        context.getString(R.string.desktop_mode_talkback_state_opening)
     private val a11yAnnounceTextMinimizing: String =
         context.getString(R.string.desktop_mode_talkback_state_minimizing)
     private val a11yAnnounceTextClosing: String =
         context.getString(R.string.desktop_mode_talkback_state_closing)
     private lateinit var a11yAnnounceTextFocused: String
-    private lateinit var a11yAnnounceTextNotFocused: String
 
     private lateinit var sizeToggleDirection: SizeToggleDirection
     private lateinit var a11yTextMaximize: String
@@ -157,12 +156,16 @@ class AppHeaderViewHolder(
     private lateinit var currentTaskInfo: RunningTaskInfo
 
     init {
-        captionView.setOnTouchListener(onCaptionTouchListener)
-        captionHandle.setOnTouchListener(onCaptionTouchListener)
-        closeWindowButton.setOnTouchListener(onCaptionTouchListener)
-        maximizeWindowButton.setOnTouchListener(onCaptionTouchListener)
-        minimizeWindowButton.setOnTouchListener(onCaptionTouchListener)
-        openMenuButton.setOnTouchListener(onCaptionTouchListener)
+        if (Flags.interceptTouchEventForAppHeaderDragMove()) {
+            captionView.setGestureInterceptor(gestureInterceptor)
+        } else {
+            captionView.setOnTouchListener(gestureInterceptor)
+            captionHandle.setOnTouchListener(gestureInterceptor)
+            closeWindowButton.setOnTouchListener(gestureInterceptor)
+            maximizeWindowButton.setOnTouchListener(gestureInterceptor)
+            minimizeWindowButton.setOnTouchListener(gestureInterceptor)
+            openMenuButton.setOnTouchListener(gestureInterceptor)
+        }
 
         closeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
             windowDecorationActions.onClose(currentTaskInfo)
@@ -460,8 +463,6 @@ class AppHeaderViewHolder(
         a11yTextRestore = context.getString(R.string.restore_button_text, name)
         a11yAnnounceTextFocused =
             context.getString(R.string.desktop_mode_talkback_state_focused, name)
-        a11yAnnounceTextNotFocused =
-            context.getString(R.string.desktop_mode_talkback_state_not_focused, name)
     }
 
     private fun updateMaximizeButtonContentDescription() {
@@ -952,7 +953,7 @@ class AppHeaderViewHolder(
             rootView: View?,
             context: Context,
             windowDecorationActions: WindowDecorationActions,
-            onCaptionTouchListener: View.OnTouchListener,
+            gestureInterceptor: WindowDecorLinearLayout.GestureInterceptor,
             onLongClickListener: OnLongClickListener,
             onCaptionGenericMotionListener: View.OnGenericMotionListener,
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
@@ -968,7 +969,7 @@ class AppHeaderViewHolder(
             rootView: View?,
             context: Context,
             windowDecorationActions: WindowDecorationActions,
-            onCaptionTouchListener: View.OnTouchListener,
+            gestureInterceptor: WindowDecorLinearLayout.GestureInterceptor,
             onLongClickListener: OnLongClickListener,
             onCaptionGenericMotionListener: View.OnGenericMotionListener,
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
@@ -980,7 +981,7 @@ class AppHeaderViewHolder(
                 rootView,
                 context,
                 windowDecorationActions,
-                onCaptionTouchListener,
+                gestureInterceptor,
                 onLongClickListener,
                 onCaptionGenericMotionListener,
                 onMaximizeHoverAnimationFinishedListener,

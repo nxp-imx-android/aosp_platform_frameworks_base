@@ -17,7 +17,7 @@
 package com.android.systemui.common.shared.model
 
 /** Models the bounds of the notification container. */
-data class NotificationContainerBounds(
+public data class NotificationContainerBounds(
     /** The position of the top of the container in its window coordinate system, in pixels. */
     val top: Float = 0f,
     /** The position of the bottom of the container in its window coordinate system, in pixels. */

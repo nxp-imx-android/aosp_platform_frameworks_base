@@ -84,9 +84,8 @@ public class KeyguardPatternViewController
         }
     };
 
-    private final LockPatternView.ExternalHapticsPlayer mExternalHapticsPlayer = () -> {
-        mBouncerHapticPlayer.playPatternDotFeedback(mView);
-    };
+    private final LockPatternView.ExternalHapticsPlayer mExternalHapticsPlayer =
+            mBouncerHapticPlayer::playPatternDotFeedback;
 
     /**
      * Useful for clearing out the wrong pattern after a delay

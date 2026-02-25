@@ -35,8 +35,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon as IconModel
@@ -54,6 +57,10 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
 
     val settingsButtonContentDescription =
         stringResource(R.string.screen_capture_toolbar_settings_button_a11y)
+    val expandedStateDescription =
+        stringResource(R.string.screen_capture_a11y_settings_menu_expanded)
+    val collapsedStateDescription =
+        stringResource(R.string.screen_capture_a11y_settings_menu_collapsed)
 
     val settingsButtonIcon by
         loadIcon(viewModel = viewModel, resId = R.drawable.ic_settings, contentDescription = null)
@@ -67,7 +74,10 @@ fun CaptureSettingsMenu(viewModel: PreCaptureToolbarViewModel, screenRecordingSe
                 shape = IconButtonDefaults.smallSquareShape,
                 modifier =
                     Modifier.semantics {
+                        this.role = Role.DropdownList
                         this.contentDescription = settingsButtonContentDescription
+                        this.stateDescription =
+                            if (showMenu) expandedStateDescription else collapsedStateDescription
                     },
             ) {
                 LoadingIcon(settingsButtonIcon)

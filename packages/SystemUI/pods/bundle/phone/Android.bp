@@ -46,6 +46,8 @@ java_library {
         // go/keep-sorted start
         "com.android.systemui-api",
         "com.android.systemui.brightness_api",
+        "com.android.systemui.common.shared.colors_api",
+        "com.android.systemui.common.shared.model_api",
         "com.android.systemui.flags_api",
         "com.android.systemui.graphics_api",
         "com.android.systemui.lifecycle_api",

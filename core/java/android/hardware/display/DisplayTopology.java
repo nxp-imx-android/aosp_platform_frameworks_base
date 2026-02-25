@@ -1003,6 +1003,10 @@ public final class DisplayTopology implements Parcelable {
             return mPosition;
         }
 
+        public void setPosition(@Position int position) {
+            mPosition = position;
+        }
+
         public float getOffset() {
             return mOffset;
         }

@@ -217,6 +217,7 @@ android_app {
         "com.android.nfc.module.flags-aconfig",
         "android.service.chooser.flags-aconfig",
         "com.android.server.flags.services-aconfig",
+        "uilatencystats_flags",
     ],
 }
 

@@ -170,6 +170,13 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
     private final ArrayList<OverlayDisplayHandle> mOverlays =
             new ArrayList<OverlayDisplayHandle>();
     private String mCurrentOverlaySetting = "";
+    private boolean mStopped;
+    private final ContentObserver mSettingsObserver = new ContentObserver(getHandler()) {
+        @Override
+        public void onChange(boolean selfChange) {
+            updateOverlayDisplayDevices();
+        }
+    };
 
     // Called with SyncRoot lock held.
     public OverlayDisplayAdapter(DisplayManagerService.SyncRoot syncRoot,
@@ -194,20 +201,23 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
     public void registerLocked() {
         super.registerLocked();
 
-        getHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                getContext().getContentResolver().registerContentObserver(
-                        Settings.Global.getUriFor(Settings.Global.OVERLAY_DISPLAY_DEVICES),
-                        true, new ContentObserver(getHandler()) {
-                            @Override
-                            public void onChange(boolean selfChange) {
-                                updateOverlayDisplayDevices();
-                            }
-                        });
-
-                updateOverlayDisplayDevices();
+        getHandler().post(() -> {
+            if (mStopped) {
+                return;
             }
+            getContext().getContentResolver().registerContentObserver(
+                    Settings.Global.getUriFor(Settings.Global.OVERLAY_DISPLAY_DEVICES),
+                    true, mSettingsObserver);
+
+            updateOverlayDisplayDevices();
+        });
+    }
+
+    @Override
+    public void stop() {
+        getHandler().post(() -> {
+            mStopped = true;
+            getContext().getContentResolver().unregisterContentObserver(mSettingsObserver);
         });
     }
 

@@ -22,6 +22,7 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_PREPARE_BACK_NAVIGATION;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
+import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 
 import android.Manifest;
 import android.annotation.Nullable;
@@ -556,18 +557,20 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
             boolean hasClosingChangeModeRequirement = false;
             for (int i = 0; i < filter.mRequirements.length; i++) {
                 TransitionFilter.Requirement req = filter.mRequirements[i];
+                Log.d(TAG, "updateTransitionFilterForInfo: checking filter req: " + req);
+
                 if (req.mNot) {
                     Log.d(TAG, "updateTransitionFilterForInfo skipping exclusion req: " + req);
                     continue;
                 }
-                 if (isFilterModeOpening(req.mModes)) {
+                if (isFilterRequirementOpening(req)) {
                     req.mTopActivity =
                             info.launchingActivity == null
                                     ? info.launchingTaskInfo.topActivity : info.launchingActivity;
                     Log.d(TAG, "updateTransitionFilterForInfo: "
                             + "opening change expects topActivity: " + req.mTopActivity);
                     hasOpeningModeRequirement = true;
-                } else if (isFilterModeClosingOrChange(req.mModes)) {
+                } else if (isFilterRequirementClosingOrChange(req)) {
                     if (info.launchedTaskInfo != null) {
                         // For task transitions, the closing task's cookie must match the task we
                         // just launched.
@@ -625,21 +628,27 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
         return false;
     }
 
-    private static boolean isFilterModeOpening(int[] modes) {
+    private static boolean isFilterRequirementOpening(TransitionFilter.Requirement req) {
         boolean hasOpen = false;
         boolean hasToFront = false;
+        boolean hasChangeWithMoveToTop = false;
+        final int[] modes = req.mModes;
 
         for (int mode : modes) {
             if (mode == TRANSIT_OPEN) {
                 hasOpen = true;
             } else if (mode == TRANSIT_TO_FRONT) {
                 hasToFront = true;
+            } else if (mode == TRANSIT_CHANGE) {
+                // possibly already already open - only change, due to translucency.
+                hasChangeWithMoveToTop = (req.mFlags & FLAG_MOVED_TO_TOP) != 0;
             }
         }
-        return hasOpen && hasToFront;
+        return hasOpen || hasToFront || hasChangeWithMoveToTop;
     }
 
-    private static boolean isFilterModeClosingOrChange(int[] modes) {
+    private static boolean isFilterRequirementClosingOrChange(TransitionFilter.Requirement req) {
+        final int[] modes = req.mModes;
         boolean hasClosing = false;
         boolean hasToBack = false;
         boolean hasChange = false;
@@ -653,7 +662,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                 hasChange = true;
             }
         }
-        return (hasClosing && hasToBack) || hasChange;
+        return hasClosing || hasToBack || hasChange;
     }
 
     /** A data container to hold the extracted transition information. */

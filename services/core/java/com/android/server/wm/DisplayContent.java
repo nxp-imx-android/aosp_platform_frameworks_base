@@ -1433,12 +1433,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     .setName("DisplayMirrorParent")
                     .setCallsite("DisplayContent#createMirrorForDisplay")
                     .setContainerLayer()
+                    .setHidden(true)
                     .build();
             mMirrorSurfaceControl = SurfaceControl.mirrorSurface(source);
             try (var t = mWmService.mTransactionFactory.get()) {
                 t.reparent(mMirrorSurfaceControl, mMirrorParent)
                         .show(mMirrorSurfaceControl)
-                        .show(mMirrorParent)
                         .apply();
             }
         }
@@ -4262,7 +4262,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      * @return True if this display can become the top focused display, false otherwise.
      */
     boolean canStealTopFocus() {
-        return (mDisplayInfo.flags & Display.FLAG_STEAL_TOP_FOCUS_DISABLED) == 0;
+        if ((mDisplayInfo.flags & Display.FLAG_STEAL_TOP_FOCUS_DISABLED) != 0) {
+            return false;
+        }
+        return mWmService.mDisplayWindowSettings.canStealTopFocus(this);
     }
 
     /**
@@ -7086,10 +7089,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final KeyguardController keyguardController = mRootWindowContainer.mTaskSupervisor
                 .getKeyguardController();
         if (keyguardController.getTopOccludingActivity(mDisplayId) != null) {
-            return keyguardController.getTopOccludingActivity(mDisplayId).getRootTask();
+            return keyguardController.getTopOccludingActivity(mDisplayId).getTask();
         }
         if (keyguardController.getDismissKeyguardActivity(mDisplayId) != null) {
-            return keyguardController.getDismissKeyguardActivity(mDisplayId).getRootTask();
+            return keyguardController.getDismissKeyguardActivity(mDisplayId).getTask();
         }
         return null;
     }

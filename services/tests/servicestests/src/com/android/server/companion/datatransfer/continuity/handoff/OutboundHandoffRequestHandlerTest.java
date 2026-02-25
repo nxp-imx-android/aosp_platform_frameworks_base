@@ -18,6 +18,7 @@ package com.android.server.companion.datatransfer.continuity.handoff;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -33,6 +34,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.os.PersistableBundle;
+import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.TaskContinuityTest;
 import com.android.server.companion.datatransfer.continuity.connectivity.TaskContinuityMessenger;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataMessage;
@@ -40,8 +42,10 @@ import com.android.server.companion.datatransfer.continuity.messages.HandoffRequ
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskListenerHolder;
+import com.android.server.wm.ActivityTaskManagerInternal;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -94,8 +98,8 @@ public class OutboundHandoffRequestHandlerTest extends TaskContinuityTest {
                         eq(expectedComponentName), eq(PackageManager.MATCH_DEFAULT_ONLY)))
                 .thenReturn(new ActivityInfo());
         doReturn(ActivityManager.START_SUCCESS)
-                .when(mMockContext)
-                .startActivitiesAsUser(any(), any(), any());
+                .when(mMockActivityTaskManagerInternal)
+                .startActivityWithConfig(any(), any(), any(), any(), anyInt());
 
         HandoffRequestResultMessage handoffRequestResultMessage =
                 new HandoffRequestResultMessage(
@@ -106,9 +110,10 @@ public class OutboundHandoffRequestHandlerTest extends TaskContinuityTest {
                 associationId, handoffRequestResultMessage);
 
         // Verify the intent was launched.
-        ArgumentCaptor<Intent[]> intentCaptor = ArgumentCaptor.forClass(Intent[].class);
-        verify(mMockContext, times(1)).startActivitiesAsUser(intentCaptor.capture(), any(), any());
-        Intent actualIntent = intentCaptor.getValue()[0];
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mMockActivityTaskManagerInternal, times(1))
+                .startActivityWithConfig(any(), any(), intentCaptor.capture(), any(), anyInt());
+        Intent actualIntent = intentCaptor.getValue();
         assertThat(actualIntent.getComponent()).isEqualTo(expectedComponentName);
         assertThat(actualIntent.getExtras().size()).isEqualTo(1);
         for (String key : actualIntent.getExtras().keySet()) {
@@ -186,7 +191,8 @@ public class OutboundHandoffRequestHandlerTest extends TaskContinuityTest {
         callback.verifyInvoked(associationId, taskId, failureStatusCode);
 
         // Verify no intent was launched.
-        verify(mMockContext, never()).startActivitiesAsUser(any(), any(), any());
+        verify(mMockActivityTaskManagerInternal, never())
+                .startActivityWithConfig(any(), any(), any(), any(), anyInt());
     }
 
     @Test
@@ -213,7 +219,8 @@ public class OutboundHandoffRequestHandlerTest extends TaskContinuityTest {
                 TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
 
         // Verify no intent was launched.
-        verify(mMockContext, never()).startActivitiesAsUser(any(), any(), any());
+        verify(mMockActivityTaskManagerInternal, never())
+                .startActivityWithConfig(any(), any(), any(), any(), anyInt());
     }
 
     @Test
@@ -243,7 +250,8 @@ public class OutboundHandoffRequestHandlerTest extends TaskContinuityTest {
                 TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
 
         // Verify no intent was launched.
-        verify(mMockContext, never()).startActivitiesAsUser(any(), any(), any());
+        verify(mMockActivityTaskManagerInternal, never())
+                .startActivityWithConfig(any(), any(), any(), any(), anyInt());
     }
 
     @Test
@@ -294,6 +302,7 @@ public class OutboundHandoffRequestHandlerTest extends TaskContinuityTest {
         FakeHandoffRequestCallback callback = new FakeHandoffRequestCallback();
         mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, callback);
         callback.verifyInvoked(associationId, taskId, expectedStatusCode);
-        verify(mMockContext, never()).startActivitiesAsUser(any(), any(), any());
+        verify(mMockActivityTaskManagerInternal, never())
+                .startActivityWithConfig(any(), any(), any(), any(), anyInt());
     }
 }

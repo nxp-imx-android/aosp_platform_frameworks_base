@@ -17,6 +17,7 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager
+import android.app.TaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.graphics.Rect
 import android.graphics.RectF
@@ -35,6 +36,8 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
+import com.android.wm.shell.pinnedlayer.phone.isNotPinned
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil.isClosingMode
 import com.android.wm.shell.shared.TransitionUtil.isOpeningMode
@@ -54,6 +57,7 @@ class DesktopTasksTransitionObserver(
     private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     private val displayController: DisplayController,
+    private val pinnedLayerController: PinnedLayerController?,
     desktopState: DesktopState,
     shellInit: ShellInit,
 ) : Transitions.TransitionObserver {
@@ -284,7 +288,7 @@ class DesktopTasksTransitionObserver(
                     // Has any bounds change.
                     if (change.startAbsBounds == change.endAbsBounds) return@forEachLoop
                     // Is a freeform task.
-                    if (!taskInfo.isFreeform) return@forEachLoop
+                    if (!taskInfo.isDesktopTask()) return@forEachLoop
                     // TODO: b/477848767 - Remember only position if the task is unresizable.
                     // Is resizable.
                     if (!taskInfo.isResizeable) {
@@ -347,6 +351,9 @@ class DesktopTasksTransitionObserver(
         }
         pendingUserBoundsChangeTransitions.add(transition)
     }
+
+    private fun TaskInfo.isDesktopTask(): Boolean =
+        isFreeform && pinnedLayerController?.isNotPinned(taskId) == true
 
     // TODO(b/478792808): Remove suppression
     @SuppressWarnings("ProtoLogNonConstantFormat")

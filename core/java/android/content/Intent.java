@@ -13390,7 +13390,11 @@ public class Intent implements Parcelable, Cloneable {
                 && hasExtra(BluetoothDevice.EXTRA_DEVICE)) {
             final BluetoothDevice device = getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice.class);
             if (device != null) {
-                device.prepareToEnterProcess(source);
+                AttributionSource sanitizedSource =
+                    source.getDeviceId() != Context.DEVICE_ID_DEFAULT
+                        ? source.withDeviceId(Context.DEVICE_ID_DEFAULT)
+                        : source;
+                device.prepareToEnterProcess(sanitizedSource);
             }
         }
     }

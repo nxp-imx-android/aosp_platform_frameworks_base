@@ -2057,6 +2057,24 @@ public final class SystemServiceRegistry {
                     }
                 });
 
+        registerService(Context.UI_LATENCY_STATS_SERVICE,
+                android.uilatencystats.UiLatencyStatsManager.class,
+                new CachedServiceFetcher<android.uilatencystats.UiLatencyStatsManager>() {
+                    @Override
+                    public android.uilatencystats.UiLatencyStatsManager createService(
+                            ContextImpl ctx) throws ServiceNotFoundException {
+                        if (!com.android.server.ui_latency_stats.Flags.uiLatencyStatsService()) {
+                            throw new ServiceNotFoundException(
+                                    "UiLatencyStatsManager is not supported");
+                        }
+                        android.uilatencystats.IUiLatencyStats service =
+                                android.uilatencystats.IUiLatencyStats.Stub.asInterface(
+                                        ServiceManager.getServiceOrThrow(
+                                                Context.UI_LATENCY_STATS_SERVICE));
+                        return new android.uilatencystats.UiLatencyStatsManager(ctx, service);
+                    }
+                });
+
         if (interactiveChooser()) {
             registerService(
                     Context.CHOOSER_SERVICE,

@@ -41,7 +41,6 @@ import android.annotation.NonNull;
 import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraManager;
 import android.util.proto.ProtoOutputStream;
-import android.window.DesktopModeFlags;
 
 import com.android.internal.hidden_from_bootclasspath.com.android.window.flags.Flags;
 import com.android.server.wm.utils.OptPropFactory;
@@ -217,18 +216,14 @@ class AppCompatCameraOverrides {
      * provides changes to the camera and display orientation signals to match those expected on a
      * portrait device in that orientation (for example, on a standard phone).
      *
-     * <p>The treatment is enabled when the following conditions are met:
+     * <p>The treatment is enabled if either of the following conditions is met:
      * <ul>
-     * <li>Feature flag gating the camera compatibility free-form treatment is enabled.
-     * <li>Activity is opted-in using per-app override, or the treatment is enabled for all apps.
+     * <li>Camera compatibility is enabled via device config, and the activity is not opted-out
+     * via per-app override,
+     * <li>The treatment is force-enabled for all apps for testing.
      * </ul>
      */
     boolean shouldApplyCameraCompatSimReqOrientationTreatment() {
-        return DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
-                && shouldEnableCameraCompatSimulateRequestedOrientationTreatmentForApp();
-    }
-
-    private boolean shouldEnableCameraCompatSimulateRequestedOrientationTreatmentForApp() {
         if (!mAppCompatConfiguration.isCameraCompatSimReqOrientationTreatmentEnabled()) {
             return false;
         }

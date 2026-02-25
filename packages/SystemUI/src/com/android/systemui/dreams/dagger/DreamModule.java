@@ -38,20 +38,18 @@ import com.android.systemui.dreams.DreamOverlayService;
 import com.android.systemui.dreams.DreamStartable;
 import com.android.systemui.dreams.SystemDialogsCloser;
 import com.android.systemui.dreams.complication.dagger.DreamComplicationComponent;
+import com.android.systemui.dreams.data.repository.DreamRepository;
+import com.android.systemui.dreams.data.repository.DreamRepositoryImpl;
 import com.android.systemui.dreams.homecontrols.HomeControlsDreamService;
 import com.android.systemui.dreams.homecontrols.dagger.HomeControlsDataSourceModule;
 import com.android.systemui.dreams.homecontrols.dagger.HomeControlsRemoteServiceComponent;
 import com.android.systemui.dreams.homecontrols.system.HomeControlsRemoteService;
 import com.android.systemui.dreams.suppression.dagger.DreamSuppressionStartableModule;
 import com.android.systemui.lowlightclock.LowLightClockDreamService;
-import com.android.systemui.qs.QsEventLogger;
-import com.android.systemui.qs.pipeline.shared.TileSpec;
-import com.android.systemui.qs.shared.model.TileCategory;
-import com.android.systemui.qs.tiles.base.shared.model.QSTileConfig;
-import com.android.systemui.qs.tiles.base.shared.model.QSTilePolicy;
-import com.android.systemui.qs.tiles.base.shared.model.QSTileUIConfig;
 import com.android.systemui.res.R;
 import com.android.systemui.touch.TouchInsetManager;
+import com.android.systemui.user.utils.UserScopedService;
+import com.android.systemui.user.utils.UserScopedServiceImpl;
 
 import dagger.Binds;
 import dagger.BindsOptionalOf;
@@ -59,7 +57,6 @@ import dagger.Module;
 import dagger.Provides;
 import dagger.multibindings.ClassKey;
 import dagger.multibindings.IntoMap;
-import dagger.multibindings.StringKey;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -215,8 +212,18 @@ public interface DreamModule {
      * Provides dream manager.
      */
     @Provides
+    @SysUISingleton
     static DreamManager providesDreamManager(Context context) {
         return Objects.requireNonNull(context.getSystemService(DreamManager.class));
+    }
+
+    /**
+     * Provides user scoped dream manager.
+     */
+    @Provides
+    @SysUISingleton
+    static UserScopedService<DreamManager> providesUserScopedDreamManager(Context context) {
+        return new UserScopedServiceImpl<>(context, DreamManager.class);
     }
 
     /**
@@ -278,4 +285,8 @@ public interface DreamModule {
     @IntoMap
     @ClassKey(DreamStartable.class)
     CoreStartable bindDreamStartable(DreamStartable impl);
+
+    /** */
+    @Binds
+    DreamRepository bindDreamRepository(DreamRepositoryImpl impl);
 }

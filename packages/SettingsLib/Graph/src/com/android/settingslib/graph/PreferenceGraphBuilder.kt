@@ -47,6 +47,7 @@ import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.IntRangeValuePreference
 import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.PersistentPreference
+import com.android.settingslib.metadata.KEY_PACKAGE_NAME
 import com.android.settingslib.metadata.PreferenceAvailabilityProvider
 import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceMetadata
@@ -75,6 +76,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withContext
 
 private const val TAG = "PreferenceGraphBuilder"
@@ -103,6 +105,8 @@ private constructor(
         "com.android.settings.EXCLUDE_UI_ONLY_PREFERENCES",
         1
     ) == 1
+
+    private val HIERARCHY_CHILD_LIMIT = 50
 
     private suspend fun init() {
         val factories = PreferenceScreenRegistry.preferenceScreenMetadataFactories
@@ -275,16 +279,17 @@ private constructor(
             }
         }
         if (includeHierarchy) {
+            val takeCount = if (factory.parametersSchema.containsKey(KEY_PACKAGE_NAME)) 1 else HIERARCHY_CHILD_LIMIT
             var flagEnabled: Boolean? = null
             if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
-                factory.keyParameters(context).collect {
+                factory.keyParameters(context).take(takeCount).collect {
                     if (flagEnabled == false) return@collect
                     val screenMetadata = factory.createWithKeyParameters(context, it)
                     if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
                     if (flagEnabled) addPreferenceScreen(screenMetadata)
                 }
             } else {
-                factory.parameters(context).collect {
+                factory.parameters(context).take(takeCount).collect {
                     if (flagEnabled == false) return@collect
                     val screenMetadata = factory.create(context, it)
                     if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)

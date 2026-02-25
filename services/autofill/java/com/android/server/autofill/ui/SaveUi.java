@@ -678,7 +678,7 @@ final class SaveUi {
     }
 
     PendingUi hide() {
-        if (sVerbose) Slog.v(TAG, "Hiding save dialog.");
+        if (sDebug) Slog.d(TAG, "Hiding save dialog for session " + mPendingUi.sessionId);
         mDialog.hide();
         return mPendingUi;
     }
@@ -702,6 +702,7 @@ final class SaveUi {
         }
         mListener.onDestroy();
         mHandler.removeCallbacksAndMessages(mListener);
+        if (sDebug) Slog.d(TAG, "Dismissing save dialog for session " + mPendingUi.sessionId);
         mDialog.dismiss();
         mDestroyed = true;
     }

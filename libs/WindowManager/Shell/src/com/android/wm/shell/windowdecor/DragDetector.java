@@ -31,6 +31,7 @@ import android.graphics.PointF;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
@@ -58,6 +59,9 @@ public class DragDetector {
 
     private boolean mResultOfDownAction;
 
+    private MotionEvent mInterceptedDown;
+    private int mInterceptingViewId = View.NO_ID;
+
     /**
      * Initialises a drag detector.
      *
@@ -71,6 +75,82 @@ public class DragDetector {
         mEventHandler = eventHandler;
         mHoldToDragMinDurationMs = holdToDragMinDurationMs;
         mTouchSlop = touchSlop;
+    }
+
+    /**
+     * Passes events {@link ViewGroup#onInterceptTouchEvent(MotionEvent)} receives if this drag
+     * detector is used to intercept drags. This receives the event flow of the intercepted events.
+     * The caller is responsible to pass events {@link View#onTouchEvent(MotionEvent)} receives to
+     * {@link #onMotionEvent(MotionEvent)}.
+     *
+     * <p>It only intercepts drags. The caller is responsible for all other gestures.
+     *
+     * @param v the view group that receives the intercepted event
+     * @param ev the intercepted event
+     * @return {@code true} if intercepted, {@code false} otherwise
+     */
+    public boolean onInterceptTouchEvent(ViewGroup v, MotionEvent ev) {
+        if (ev.isSynthesizedTouchpadGesture()) {
+            // Touchpad finger gestures are ignored.
+            return false;
+        }
+
+        switch (ev.getActionMasked()) {
+            case ACTION_DOWN: {
+                updateStateForDown(ev);
+                mInterceptedDown = ev.copy();
+                // We never know if this down is going to be a drag gesture.
+                return false;
+            }
+            case ACTION_MOVE: {
+                if (mDragPointerId == -1) {
+                    // The primary pointer was lifted, ignore the rest of the gesture.
+                    return false;
+                }
+                final int dragPointerIndex = ev.findPointerIndex(mDragPointerId);
+                // TODO(b/400635953): Separate the app header and its buttons'
+                // touch listeners so they're not handled by the same DragDetector.
+                if (dragPointerIndex == -1) {
+                    Log.w(TAG, "Invalid pointer index on intercepting ACTION_MOVE. Drag"
+                            + " pointer id: " + mDragPointerId);
+                    return false;
+                }
+                if (!mIsDragEvent) {
+                    updateDragState(ev, dragPointerIndex);
+                }
+                if (mIsDragEvent && mInterceptedDown != null) {
+                    mResultOfDownAction = mEventHandler.handleMotionEvent(v, mInterceptedDown);
+                    mInterceptedDown = null;
+                    mInterceptingViewId = v.getId();
+                }
+                // The event handler should only be notified about 'move' events if a drag has been
+                // detected.
+                return mIsDragEvent;
+            }
+            case ACTION_POINTER_UP: {
+                if (mDragPointerId == -1) {
+                    // The primary pointer was lifted, ignore the rest of the gesture.
+                    return false;
+                }
+                if (mDragPointerId != ev.getPointerId(ev.getActionIndex())) {
+                    // Ignore a secondary pointer being lifted.
+                    return false;
+                }
+                // The primary pointer that triggered ACTION_DOWN is being lifted before we
+                // intercept anything.
+                mDragPointerId = -1;
+                return false;
+            }
+            case ACTION_UP:
+            case ACTION_CANCEL: {
+                final boolean wasDrag = mIsDragEvent;
+                resetState();
+                return wasDrag;
+            }
+            default: {
+                return mIsDragEvent;
+            }
+        }
     }
 
     /**
@@ -89,17 +169,22 @@ public class DragDetector {
      * @return the result returned by {@link #mEventHandler}, or the result when
      * {@link #mEventHandler} handles the previous down event if the event shouldn't be passed
      */
-    public boolean onMotionEvent(View v, MotionEvent ev) {
+    public boolean onMotionEvent(@Nullable View v, MotionEvent ev) {
         if (ev.isSynthesizedTouchpadGesture()) {
             // Touchpad finger gestures are ignored.
             return false;
         }
+        // Due to the current code structure, one instance of this class can be used to filter
+        // events for multiple views. Particularly, if a parent view group starts to intercept a
+        // gesture, child views of it receives cancel events. We don't want to pass that cancel
+        // event to the event handler.
+        // TODO(b/400635953): Remove this logic after we use a separate DragDetector for each view.
+        if (mInterceptingViewId != View.NO_ID && (v == null || mInterceptingViewId != v.getId())) {
+            return false;
+        }
         switch (ev.getActionMasked()) {
             case ACTION_DOWN: {
-                mDragPointerId = ev.getPointerId(0);
-                float rawX = ev.getRawX(0);
-                float rawY = ev.getRawY(0);
-                mInputDownPoint.set(rawX, rawY);
+                updateStateForDown(ev);
                 mResultOfDownAction = mEventHandler.handleMotionEvent(v, ev);
                 return mResultOfDownAction;
             }
@@ -117,32 +202,7 @@ public class DragDetector {
                     return mResultOfDownAction;
                 }
                 if (!mIsDragEvent) {
-                    final boolean isTouchScreen =
-                            (ev.getSource() & SOURCE_TOUCHSCREEN) == SOURCE_TOUCHSCREEN;
-                    float dx = ev.getRawX(dragPointerIndex) - mInputDownPoint.x;
-                    float dy = ev.getRawY(dragPointerIndex) - mInputDownPoint.y;
-                    final boolean pastTouchSlop = Math.hypot(dx, dy) > mTouchSlop;
-                    if (!isTouchScreen || mHoldToDragMinDurationMs <= 0) {
-                        // No need to apply the hold-to-drag logic if the event is from a
-                        // non-touchscreen source like mouse/touchpad, or the minimum hold duration
-                        // is not set to a positive value.
-                        mDidHoldForMinDuration = true;
-                    } else {
-                        final float dt = ev.getEventTime() - ev.getDownTime();
-                        final boolean withinHoldRegion = !pastTouchSlop;
-                        if (!withinHoldRegion && dt < mHoldToDragMinDurationMs) {
-                            // Mark as having strayed so that in case the (x,y) ends up in the
-                            // original position we know it's not actually valid.
-                            mDidStrayBeforeFullHold = true;
-                        }
-                        if (!mDidStrayBeforeFullHold && dt >= mHoldToDragMinDurationMs) {
-                            mDidHoldForMinDuration = true;
-                        }
-                    }
-
-                    // Touches generate noisy moves, so only once the move is past the touch
-                    // slop threshold should it be considered a drag.
-                    mIsDragEvent = mDidHoldForMinDuration && pastTouchSlop;
+                    updateDragState(ev, dragPointerIndex);
                 }
                 // The event handler should only be notified about 'move' events if a drag has been
                 // detected.
@@ -192,6 +252,43 @@ public class DragDetector {
         return ev.getPointerCount() > 1 ? ev.split(1 << pointerId) : ev;
     }
 
+    private void updateStateForDown(MotionEvent downEvent) {
+        mDragPointerId = downEvent.getPointerId(0);
+        final float rawX = downEvent.getRawX(0);
+        final float rawY = downEvent.getRawY(0);
+        mInputDownPoint.set(rawX, rawY);
+    }
+
+    private void updateDragState(MotionEvent ev, int dragPointerIndex) {
+        final boolean isTouchScreen =
+                (ev.getSource() & SOURCE_TOUCHSCREEN) == SOURCE_TOUCHSCREEN;
+        final float dx = ev.getRawX(dragPointerIndex) - mInputDownPoint.x;
+        final float dy = ev.getRawY(dragPointerIndex) - mInputDownPoint.y;
+        final boolean pastTouchSlop = Math.hypot(dx, dy) > mTouchSlop;
+
+        if (!isTouchScreen || mHoldToDragMinDurationMs <= 0) {
+            // No need to apply the hold-to-drag logic if the event is from a
+            // non-touchscreen source like mouse/touchpad, or the minimum hold duration
+            // is not set to a positive value.
+            mDidHoldForMinDuration = true;
+        } else {
+            final boolean withinHoldRegion = !pastTouchSlop;
+            final float dt = ev.getEventTime() - ev.getDownTime();
+            if (!withinHoldRegion && dt < mHoldToDragMinDurationMs) {
+                // Mark as having strayed so that in case the (x,y) ends up in the
+                // original position we know it's not actually valid.
+                mDidStrayBeforeFullHold = true;
+            }
+            if (!mDidStrayBeforeFullHold && dt >= mHoldToDragMinDurationMs) {
+                mDidHoldForMinDuration = true;
+            }
+        }
+
+        // Touches generate noisy moves, so only once the move is past the touch
+        // slop threshold should it be considered a drag.
+        mIsDragEvent = mDidHoldForMinDuration && pastTouchSlop;
+    }
+
     void setTouchSlop(int touchSlop) {
         mTouchSlop = touchSlop;
     }
@@ -203,6 +300,8 @@ public class DragDetector {
         mResultOfDownAction = false;
         mDidStrayBeforeFullHold = false;
         mDidHoldForMinDuration = false;
+        mInterceptedDown = null;
+        mInterceptingViewId = View.NO_ID;
     }
 
     /**

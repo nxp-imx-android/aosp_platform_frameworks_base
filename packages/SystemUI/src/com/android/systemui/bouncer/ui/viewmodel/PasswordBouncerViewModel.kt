@@ -16,7 +16,7 @@
 
 package com.android.systemui.bouncer.ui.viewmodel
 
-import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodManager
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
@@ -26,6 +26,7 @@ import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.systemui.Flags
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
+import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer
 import com.android.systemui.inputmethod.domain.interactor.InputMethodInteractor
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Overlays
@@ -63,11 +64,13 @@ constructor(
     private val selectedUserInteractor: SelectedUserInteractor,
     @Assisted isInputEnabled: StateFlow<Boolean>,
     @Assisted private val onIntentionalUserInput: () -> Unit,
+    @Assisted bouncerHapticPlayer: BouncerHapticPlayer,
 ) :
     AuthMethodBouncerViewModel(
         interactor = interactor,
         isInputEnabled = isInputEnabled,
         traceName = "PasswordBouncerViewModel",
+        bouncerHapticPlayer = bouncerHapticPlayer,
     ) {
 
     val textFieldState = TextFieldState()
@@ -277,6 +280,7 @@ constructor(
         fun create(
             isInputEnabled: StateFlow<Boolean>,
             onIntentionalUserInput: () -> Unit,
+            bouncerHapticPlayer: BouncerHapticPlayer,
         ): PasswordBouncerViewModel
     }
 

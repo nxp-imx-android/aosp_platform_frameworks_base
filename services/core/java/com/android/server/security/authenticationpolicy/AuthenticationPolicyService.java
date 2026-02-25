@@ -673,11 +673,13 @@ public class AuthenticationPolicyService extends SystemService {
 
         @Override
         @EnforcePermission(USE_BIOMETRIC_INTERNAL)
-        public boolean isAgentAuthorized(UserHandle user, DeviceId deviceId) {
+        public boolean isAgentAuthorized(@NonNull UserHandle user, int deviceId,
+                @Nullable DeviceId companionDeviceId) {
             isAgentAuthorized_enforcePermission();
 
             if (android.companion.Flags.supportAiAgent()) {
-                return mAgentAuthService.isAgentAuthorized(user.getIdentifier(), deviceId);
+                return mAgentAuthService.isAgentAuthorized(
+                        user.getIdentifier(), deviceId, companionDeviceId);
             } else {
                 return false;
             }

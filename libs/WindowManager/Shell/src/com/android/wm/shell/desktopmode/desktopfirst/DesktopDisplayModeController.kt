@@ -47,7 +47,9 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellCommandHandler
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.sysui.UserChangeListener
 import com.android.wm.shell.transition.Transitions
 import java.io.PrintWriter
 
@@ -55,7 +57,8 @@ import java.io.PrintWriter
 class DesktopDisplayModeController(
     private val context: Context,
     shellInit: ShellInit,
-    shellCommandHandler: ShellCommandHandler,
+    private val shellCommandHandler: ShellCommandHandler,
+    private val shellController: ShellController,
     private val transitions: Transitions,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val windowManager: IWindowManager,
@@ -125,12 +128,35 @@ class DesktopDisplayModeController(
         }
 
     init {
-        shellInit.addInitCallback({ shellCommandHandler.addDumpCallback(this::dump, this) }, this)
+        shellInit.addInitCallback({ onInit() }, this)
         if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
             inputManager.registerInputDeviceListener(inputDeviceListener, mainHandler)
         }
         if (Flags.enableDesktopFirstLaptopStateBugfix()) {
             deviceStateManager.registerCallback(mainExecutor, deviceStateCallback)
+        }
+    }
+
+    private fun onInit() {
+        shellCommandHandler.addDumpCallback(this::dump, this)
+        if (Flags.enableDesktopFirstUserChangeBugfix()) {
+            shellController.addUserChangeListener(
+                object : UserChangeListener {
+                    override fun onUserChanged(newUserId: Int, userContext: Context) {
+                        val displayIds = rootTaskDisplayAreaOrganizer.displayIds.toSet()
+                        logV("onUserChanged newUserId=%d displays=%s", newUserId, displayIds)
+                        // Changing a user results in reconfiguring a display so we here ensure the
+                        // windowing mode.
+                        displayIds.forEach { displayId ->
+                            if (displayId == DEFAULT_DISPLAY) {
+                                updateDefaultDisplayWindowingMode()
+                            } else {
+                                updateExternalDisplayWindowingMode(displayId)
+                            }
+                        }
+                    }
+                }
+            )
         }
     }
 

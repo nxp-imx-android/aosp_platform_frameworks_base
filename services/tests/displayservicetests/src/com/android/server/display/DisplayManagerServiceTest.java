@@ -102,13 +102,16 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.Insets;
+import android.graphics.PointF;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.hardware.devicestate.DeviceState;
@@ -183,6 +186,7 @@ import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.server.DisplayThread;
 import com.android.server.SystemService;
+import com.android.server.UiThread;
 import com.android.server.am.BatteryStatsService;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.display.DisplayManagerService.CallbackRecord.PendingDisplayEvent;
@@ -314,9 +318,7 @@ public class DisplayManagerServiceTest {
     private int mHdrConversionMode;
 
     private int mPreferredHdrOutputType;
-    private TestLooperManager mPowerLooperManager;
-    private TestLooperManager mDisplayLooperManager;
-    private TestLooperManager mBackgroundLooperManager;
+    private final List<TestLooperManager> mLooperManagers = new ArrayList<>();
     private UserManager mUserManager;
 
     private int[] mAllowedHdrOutputTypes;
@@ -532,13 +534,14 @@ public class DisplayManagerServiceTest {
         when(mContext.getContentResolver()).thenReturn(resolver);
         resolver.addProvider(Settings.AUTHORITY, mFakeSettingsProvider);
         mResources = Mockito.spy(mContext.getResources());
-        mPowerLooperManager = InstrumentationRegistry.getInstrumentation().acquireLooperManager(
-                Looper.getMainLooper());
-        mDisplayLooperManager = InstrumentationRegistry.getInstrumentation().acquireLooperManager(
-                DisplayThread.get().getLooper());
-        mBackgroundLooperManager =
-                InstrumentationRegistry.getInstrumentation().acquireLooperManager(
-                        BackgroundThread.getHandler().getLooper());
+        mLooperManagers.add(InstrumentationRegistry.getInstrumentation().acquireLooperManager(
+                Looper.getMainLooper()));
+        mLooperManagers.add(InstrumentationRegistry.getInstrumentation().acquireLooperManager(
+                DisplayThread.get().getLooper()));
+        mLooperManagers.add(InstrumentationRegistry.getInstrumentation().acquireLooperManager(
+                BackgroundThread.getHandler().getLooper()));
+        mLooperManagers.add(InstrumentationRegistry.getInstrumentation().acquireLooperManager(
+                UiThread.getHandler().getLooper()));
         manageDisplaysPermission(/* granted= */ false);
         when(mContext.getResources()).thenReturn(mResources);
         mUserManager = Mockito.spy(mContext.getSystemService(UserManager.class));
@@ -578,9 +581,9 @@ public class DisplayManagerServiceTest {
             mDisplayManager.stop();
         }
         flushHandlers();
-        mPowerLooperManager.release();
-        mDisplayLooperManager.release();
-        mBackgroundLooperManager.release();
+        for (TestLooperManager tlm : mLooperManagers) {
+            tlm.release();
+        }
     }
 
     private void setUpDisplay() {
@@ -999,6 +1002,57 @@ public class DisplayManagerServiceTest {
         assertEquals(ddi.ownerPackageName, displayInfo.ownerPackageName);
         assertEquals(ddi.uniqueId, displayInfo.uniqueId);
         assertEquals(ddi.renderFrameRate, displayInfo.getRefreshRate(), 0.1f);
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS)
+    @EnableCompatChanges({ActivityInfo.MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS})
+    public void getDisplayInfo_maskPresentationFlagOnInternalDisplay() {
+        assertPresentationFlagMasking(Display.TYPE_INTERNAL, /* shouldBeMasked= */ true);
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS)
+    @DisableCompatChanges({ActivityInfo.MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS})
+    public void getDisplayInfo_noMaskPresentationFlagOnInternalDisplay_overrideDisabled() {
+        assertPresentationFlagMasking(Display.TYPE_INTERNAL, /* shouldBeMasked= */ false);
+    }
+
+    @Test
+    @DisableFlags(com.android.window.flags.Flags.FLAG_MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS)
+    @EnableCompatChanges({ActivityInfo.MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS})
+    public void getDisplayInfo_noMaskPresentationFlagOnInternalDisplay_featureDisabled() {
+        assertPresentationFlagMasking(Display.TYPE_INTERNAL, /* shouldBeMasked= */ false);
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS)
+    @EnableCompatChanges({ActivityInfo.MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS})
+    public void getDisplayInfo_noMaskPresentationFlagOnExternalDisplay() {
+        assertPresentationFlagMasking(Display.TYPE_EXTERNAL, /* shouldBeMasked= */ false);
+    }
+
+    private void assertPresentationFlagMasking(int displayType, boolean shouldBeMasked) {
+        mDisplayManager = new DisplayManagerService(mContext, mShortMockedInjector);
+        registerDefaultDisplays(mDisplayManager);
+        DisplayManagerService.BinderService bs = mDisplayManager.new BinderService();
+        int displayId = Display.DEFAULT_DISPLAY;
+
+        // Force set FLAG_PRESENTATION for testing
+        synchronized (mDisplayManager.getSyncRoot()) {
+            LogicalDisplay display = mDisplayManager.getLogicalDisplayMapper().getDisplayLocked(
+                    displayId);
+            DisplayInfo internalInfo = display.getDisplayInfoLocked();
+            internalInfo.type = displayType;
+            internalInfo.flags |= Display.FLAG_PRESENTATION;
+        }
+
+        DisplayInfo info = bs.getDisplayInfo(displayId);
+        if (shouldBeMasked) {
+            assertEquals(0, info.flags & Display.FLAG_PRESENTATION);
+        } else {
+            assertNotEquals(0, info.flags & Display.FLAG_PRESENTATION);
+        }
     }
 
     /**
@@ -4362,7 +4416,9 @@ public class DisplayManagerServiceTest {
         initDisplayPowerController(localService);
         mDisplayManager.windowManagerAndInputReady();
 
-        DisplayTopology topology = mock(DisplayTopology.class);
+        var topology = spy(initDisplayTopology(mDisplayManager, displayManagerBinderService,
+                localService, new FakeDisplayManagerCallback(),
+                /*shouldEmitTopologyChangeEvent=*/ false));
         when(topology.copy()).thenReturn(topology);
         DisplayTopologyGraph graph = mock(DisplayTopologyGraph.class);
         when(topology.getGraph()).thenReturn(graph);
@@ -5862,8 +5918,8 @@ public class DisplayManagerServiceTest {
     }
 
     private void flushHandlers() {
-        com.android.server.testutils.TestUtils.flushLoopers(mDisplayLooperManager,
-                mPowerLooperManager, mBackgroundLooperManager);
+        com.android.server.testutils.TestUtils.flushLoopers(
+                mLooperManagers.toArray(new TestLooperManager[0]));
     }
 
     private void resetConfigToIgnoreSensorManager() {
@@ -5897,8 +5953,6 @@ public class DisplayManagerServiceTest {
         callback.expectsEvent(TOPOLOGY_CHANGED_EVENT);
         FakeDisplayDevice displayDevice0 =
                 createFakeDisplayDevice(displayManager, new float[]{60f}, Display.TYPE_EXTERNAL);
-        int displayId0 = getDisplayIdForDisplayDevice(displayManager, displayManagerBinderService,
-                displayDevice0);
         flushHandlers();
         if (shouldEmitTopologyChangeEvent) {
             callback.waitForExpectedEvent();
@@ -5924,9 +5978,12 @@ public class DisplayManagerServiceTest {
             callback.waitForNonExpectedEvent();
         }
 
-        var topology = new DisplayTopology();
-        topology.addDisplay(displayId0, 2048, 800, 160);
-        topology.addDisplay(displayId1, 1920, 1080, 160);
+        DisplayTopology topology = displayManagerBinderService.getDisplayTopology();
+        SparseArray<RectF> bounds = topology.getAbsoluteBounds();
+        topology.rearrange(Map.of(
+                bounds.keyAt(0), new PointF(bounds.valueAt(1).left, bounds.valueAt(1).top),
+                bounds.keyAt(1), new PointF(bounds.valueAt(0).left, bounds.valueAt(0).top)
+        ));
         return topology;
     }
 

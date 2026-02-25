@@ -52,6 +52,7 @@ cc_defaults {
         //"hwui_bugreport_font_cache_usage",
         //"hwui_compile_for_perf",
         "hwui_lto",
+        "no_bti",
     ],
 
     cflags: [

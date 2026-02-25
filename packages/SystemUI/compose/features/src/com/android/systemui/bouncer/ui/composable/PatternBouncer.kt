@@ -143,7 +143,7 @@ fun PatternBouncer(
         // Perform haptic feedback, but only if the current dot is not null, so we don't perform it
         // when the UI first shows up or when the user lifts their pointer/finger.
         if (currentDot != null) {
-            viewModel.performDotFeedback(view)
+            viewModel.performDotFeedback()
         }
 
         if (!isAnimationEnabled) {

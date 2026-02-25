@@ -213,16 +213,6 @@ flag {
 }
 
 flag {
-    namespace: "windowing_sdk"
-    name: "log_start_activity_intent"
-    description: "DO NOT MOVE TO TRUNK. Debug log for start activity Intent."
-    bug: "457486147"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "large_screen_experiences_app_compat"
     name: "defer_resume_end_before_ensure_activity_configuration_bugfix"
     description: "End defer resume before ensureActivityConfiguration()."

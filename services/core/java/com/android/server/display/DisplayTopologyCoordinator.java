@@ -243,6 +243,7 @@ class DisplayTopologyCoordinator {
         synchronized (mSyncRoot) {
             Trace.traceBegin(Trace.TRACE_TAG_POWER, "setTopology");
             try {
+                verifyRearrangement(mTopology, topology);
                 topology.normalize();
                 mTopology = topology;
                 sendTopologyUpdateLocked();
@@ -359,6 +360,27 @@ class DisplayTopologyCoordinator {
                 Trace.traceEnd(Trace.TRACE_TAG_POWER);
             }
         });
+    }
+
+    private void verifyRearrangement(DisplayTopology oldTopology, DisplayTopology newTopology) {
+        if (newTopology == null) {
+            throw new IllegalArgumentException("Newly set topology cannot be null");
+        }
+        Map<Integer, DisplayTopology.TreeNode> oldTopologyNodes = oldTopology.allNodesIdMap();
+        Map<Integer, DisplayTopology.TreeNode> newTopologyNodes = newTopology.allNodesIdMap();
+        if (!oldTopologyNodes.keySet().equals(newTopologyNodes.keySet())) {
+            throw new IllegalArgumentException("Newly set topology cannot add or remove displays");
+        }
+        for (int displayId : oldTopologyNodes.keySet()) {
+            DisplayTopology.TreeNode oldDisplay = oldTopologyNodes.get(displayId);
+            DisplayTopology.TreeNode newDisplay = newTopologyNodes.get(displayId);
+            if (oldDisplay.getLogicalDensity() != newDisplay.getLogicalDensity()
+                    || oldDisplay.getLogicalWidth() != newDisplay.getLogicalWidth()
+                    || oldDisplay.getLogicalHeight() != newDisplay.getLogicalHeight()) {
+                throw new IllegalArgumentException(
+                        "Newly set topology cannot change a display's density or size");
+            }
+        }
     }
 
     @VisibleForTesting

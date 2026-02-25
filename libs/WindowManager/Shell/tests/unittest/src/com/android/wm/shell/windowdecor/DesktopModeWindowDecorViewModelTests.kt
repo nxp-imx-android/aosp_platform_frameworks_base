@@ -963,12 +963,12 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @Test
     fun testCloseButtonInFreeform_closeWindow_ignoreMoveEventsWithoutBoundsChange() {
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
-        val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
+        val gestureInterceptorCaptor = argumentCaptor<WindowDecorLinearLayout.GestureInterceptor>()
         val decor =
             createOpenTaskDecoration(
                 windowingMode = WINDOWING_MODE_FREEFORM,
                 onCaptionButtonClickListener = onClickListenerCaptor,
-                onCaptionButtonTouchListener = onTouchListenerCaptor,
+                gestureInterceptor = gestureInterceptorCaptor,
             )
 
         mockTaskPositioner.stub {
@@ -984,7 +984,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 on { getViewRootImpl() } doReturn viewRootImpl
             }
 
-        onTouchListenerCaptor.firstValue.onTouch(
+        gestureInterceptorCaptor.firstValue.onTouch(
             view,
             MotionEvent.obtain(
                 SystemClock.uptimeMillis(),
@@ -995,7 +995,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 /* metaState= */ 0,
             ),
         )
-        onTouchListenerCaptor.firstValue.onTouch(
+        gestureInterceptorCaptor.firstValue.onTouch(
             view,
             MotionEvent.obtain(
                 SystemClock.uptimeMillis(),
@@ -1006,7 +1006,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 /* metaState= */ 0,
             ),
         )
-        onTouchListenerCaptor.firstValue.onTouch(
+        gestureInterceptorCaptor.firstValue.onTouch(
             view,
             MotionEvent.obtain(
                 SystemClock.uptimeMillis(),
@@ -1025,17 +1025,17 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     @Test
     fun testOnTouchWithClassification_doesNothing() {
         val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
-        val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
+        val gestureInterceptorCaptor = argumentCaptor<WindowDecorLinearLayout.GestureInterceptor>()
         val decor =
             createOpenTaskDecoration(
                 windowingMode = WINDOWING_MODE_FREEFORM,
                 onCaptionButtonClickListener = onClickListenerCaptor,
-                onCaptionButtonTouchListener = onTouchListenerCaptor,
+                gestureInterceptor = gestureInterceptorCaptor,
             )
 
         val view = mock<View> { on { id } doReturn R.id.desktop_mode_caption }
 
-        val onTouchListener = onTouchListenerCaptor.firstValue
+        val onTouchListener = gestureInterceptorCaptor.firstValue
         assertFalse(
             onTouchListener.onTouch(
                 view,
@@ -1343,14 +1343,14 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     fun testOnFreeformWindowDragEnd_toDesktopModeDisplay_updateBounds() {
-        val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
+        val gestureInterceptorCaptor = argumentCaptor<WindowDecorLinearLayout.GestureInterceptor>()
         val decor =
             createOpenTaskDecoration(
                 windowingMode = WINDOWING_MODE_FREEFORM,
-                onCaptionButtonTouchListener = onTouchListenerCaptor,
+                gestureInterceptor = gestureInterceptorCaptor,
             )
 
-        val touchListener = onTouchListenerCaptor.firstValue
+        val touchListener = gestureInterceptorCaptor.firstValue
         if (touchListener is DesktopModeTouchEventListener) {
             val taskInfo = decor.taskInfo
             shellDesktopState.overrideWindowDropTargetEligibility[DEFAULT_DISPLAY] = true
@@ -1469,14 +1469,14 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     fun testOnFreeformWindowDragMove_toNonDesktopModeDisplay_setsNoDropIcon() {
-        val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
+        val gestureInterceptorCaptor = argumentCaptor<WindowDecorLinearLayout.GestureInterceptor>()
         val decor =
             createOpenTaskDecoration(
                 windowingMode = WINDOWING_MODE_FREEFORM,
-                onCaptionButtonTouchListener = onTouchListenerCaptor,
+                gestureInterceptor = gestureInterceptorCaptor,
             )
 
-        val touchListener = onTouchListenerCaptor.firstValue
+        val touchListener = gestureInterceptorCaptor.firstValue
         if (touchListener is DesktopModeTouchEventListener) {
             val taskInfo = decor.taskInfo
             shellDesktopState.overrideWindowDropTargetEligibility[DEFAULT_DISPLAY] = true
@@ -1611,7 +1611,8 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         requestingImmersive: Boolean = false,
         displayId: Int = DEFAULT_DISPLAY,
         onCaptionButtonClickListener: KArgumentCaptor<View.OnClickListener> = argumentCaptor(),
-        onCaptionButtonTouchListener: KArgumentCaptor<View.OnTouchListener> = argumentCaptor(),
+        gestureInterceptor: KArgumentCaptor<WindowDecorLinearLayout.GestureInterceptor> =
+            argumentCaptor(),
     ): WindowDecorationWrapper {
         val task =
             createTask(
@@ -1623,7 +1624,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         verify(decor)
             .setCaptionListeners(
                 onCaptionButtonClickListener.capture(),
-                onCaptionButtonTouchListener.capture(),
+                gestureInterceptor.capture(),
                 any(),
                 any(),
             )

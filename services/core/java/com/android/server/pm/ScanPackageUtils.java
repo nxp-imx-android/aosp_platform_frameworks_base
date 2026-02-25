@@ -1097,11 +1097,6 @@ final class ScanPackageUtils {
     static boolean enableAlignmentChecks(@NonNull ParsedPackage parsedPackage,
             Context context, String initiatingPackage, boolean isSystemApp,
             boolean isPlatformPackage, int scanFlags) {
-        // Run alignment checks when feature flag is enabled
-        if (!Flags.appCompatWarnings16kb()) {
-            return false;
-        }
-
         final boolean isApex = (scanFlags & SCAN_AS_APEX) != 0;
         final boolean isNewInstall = (scanFlags & SCAN_NEW_INSTALL) != 0;
         if ((Build.SUPPORTED_64_BIT_ABIS.length == 0)

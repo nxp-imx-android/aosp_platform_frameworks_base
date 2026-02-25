@@ -654,25 +654,28 @@ public class AuthenticationPolicyServiceTest {
     @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void testIsAgentAuthorized_callsAgentAuthService() throws RemoteException {
         DeviceId deviceId = new DeviceId.Builder().setCustomId("123").build();
-        when(mAgentAuthService.isAgentAuthorized(PRIMARY_USER_ID, deviceId)).thenReturn(true);
+        int mainDeviceId = Context.DEVICE_ID_DEFAULT;
+        when(mAgentAuthService.isAgentAuthorized(PRIMARY_USER_ID, mainDeviceId, deviceId))
+                .thenReturn(true);
 
         boolean result = mAuthenticationPolicyService.getBinderService().isAgentAuthorized(
-                UserHandle.of(PRIMARY_USER_ID), deviceId);
+                UserHandle.of(PRIMARY_USER_ID), mainDeviceId, deviceId);
 
         assertThat(result).isTrue();
-        verify(mAgentAuthService).isAgentAuthorized(PRIMARY_USER_ID, deviceId);
+        verify(mAgentAuthService).isAgentAuthorized(PRIMARY_USER_ID, mainDeviceId, deviceId);
     }
 
     @Test
     @DisableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void testIsAgentAuthorized_flagDisabled_returnsFalse() throws RemoteException {
         DeviceId deviceId = new DeviceId.Builder().setCustomId("123").build();
+        int mainDeviceId = Context.DEVICE_ID_DEFAULT;
 
         boolean result = mAuthenticationPolicyService.getBinderService().isAgentAuthorized(
-                UserHandle.of(PRIMARY_USER_ID), deviceId);
+                UserHandle.of(PRIMARY_USER_ID), mainDeviceId, deviceId);
 
         assertThat(result).isFalse();
-        verify(mAgentAuthService, never()).isAgentAuthorized(anyInt(), any());
+        verify(mAgentAuthService, never()).isAgentAuthorized(anyInt(), anyInt(), any());
     }
 
     @Test

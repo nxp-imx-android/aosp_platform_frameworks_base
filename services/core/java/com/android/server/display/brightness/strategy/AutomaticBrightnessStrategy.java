@@ -547,9 +547,7 @@ public class AutomaticBrightnessStrategy implements DisplayBrightnessStrategy{
             return;
         }
 
-        final boolean shouldUseBedtimeMode =
-                mDisplayManagerFlags.isAutoBrightnessModeBedtimeWearEnabled()
-                        && isWearBedtimeModeEnabled;
+        final boolean shouldUseBedtimeMode = isWearBedtimeModeEnabled;
         if (shouldUseBedtimeMode) {
             mAutomaticBrightnessController.switchMode(AUTO_BRIGHTNESS_MODE_BEDTIME_WEAR,
                     sendUpdate);

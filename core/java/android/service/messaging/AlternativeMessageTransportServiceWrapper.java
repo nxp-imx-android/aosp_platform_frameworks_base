@@ -16,9 +16,11 @@
 
 package android.service.messaging;
 
+import static android.service.messaging.AlternativeMessageTransportService.UPGRADE_STATUS_REJECTED;
+
 import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
-import android.annotation.RequiresPermission;
+import android.annotation.Nullable;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -27,13 +29,17 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.os.UserHandle;
-import android.telephony.MessageUpgradeController.MessageUpgradeCallback;
+import android.text.TextUtils;
+import android.util.Log;
 
-import com.android.internal.util.Preconditions;
+import com.android.internal.annotations.GuardedBy;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 /**
  * Provides basic structure for platform to connect to the
@@ -55,6 +61,12 @@ import java.util.concurrent.Executor;
  */
 // TODO(b/474304887): Make this class thread-safe
 public final class AlternativeMessageTransportServiceWrapper implements AutoCloseable {
+    private static final String TAG = "AMTSWrapper";
+    private static final int SERVICE_BIND_TIMEOUT = 10; // Seconds
+
+    private final Context mContext;
+    private final ScheduledExecutorService mScheduler;
+    private final Object mServiceTimeoutLock = new Object();
     // Populated by bindToService. bindToService must complete
     // prior to calling close so that mServiceConnection is initialized.
     private volatile MessageUpgradeServiceConnection
@@ -63,40 +75,44 @@ public final class AlternativeMessageTransportServiceWrapper implements AutoClos
     private volatile IAlternativeMessageTransportService mAlternativeMessageTransportService;
     private Runnable mOnServiceReadyCallback;
     private Executor mOnServiceReadyCallbackExecutor;
-    private Context mContext;
+    @GuardedBy("mServiceTimeoutLock")
+    @Nullable
+    private ScheduledFuture<?> mServiceCloseFuture;
+    /** @hide */
+    public AlternativeMessageTransportServiceWrapper(
+            Context context, ScheduledExecutorService scheduler) {
+        mContext = Objects.requireNonNull(context);
+        mScheduler = scheduler;
+    }
 
     /**
      * Binds to the {@link AlternativeMessageTransportService} under package
      * {@code smsAppPackageName}. This method should be called exactly once.
      *
-     * @param context the context
-     * @param smsAppPackageName the default SMS app's package name
+     * @param defaultSmsPackage the default SMS app's package name
      * @param executor the executor to run the callback.
      * @param onServiceReadyCallback the callback when service becomes ready.
      * @return true upon successfully binding to a message upgrade service, false otherwise
      * @hide
      */
-    @RequiresPermission(anyOf = {android.Manifest.permission.INTERACT_ACROSS_USERS_FULL,
-            android.Manifest.permission.INTERACT_ACROSS_USERS,
-            android.Manifest.permission.INTERACT_ACROSS_PROFILES})
-    public boolean bindToService(Context context,
-            String smsAppPackageName,
+    private boolean bindToService(
+            String defaultSmsPackage,
             @CallbackExecutor Executor executor,
             Runnable onServiceReadyCallback) {
-        Preconditions.checkState(mServiceConnection == null);
-        Objects.requireNonNull(context, "context cannot be null");
-        Objects.requireNonNull(smsAppPackageName, "smsAppPackageName cannot be null");
-        Objects.requireNonNull(executor, "executor cannot be null");
-        Objects.requireNonNull(onServiceReadyCallback, "onServiceReadyCallback cannot be null");
-
         Intent intent = new Intent(AlternativeMessageTransportService.SERVICE_INTERFACE);
-        intent.setPackage(smsAppPackageName);
+        intent.setPackage(defaultSmsPackage);
         mServiceConnection = new MessageUpgradeServiceConnection();
         mOnServiceReadyCallback = onServiceReadyCallback;
         mOnServiceReadyCallbackExecutor = executor;
-        mContext = context;
-        return context.bindServiceAsUser(intent, mServiceConnection, Context.BIND_AUTO_CREATE,
-                UserHandle.CURRENT);
+        boolean bindResult;
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            bindResult = mContext.bindServiceAsUser(intent, mServiceConnection,
+                    Context.BIND_AUTO_CREATE, mContext.getUser());
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+        return bindResult;
     }
 
     /**
@@ -105,7 +121,7 @@ public final class AlternativeMessageTransportServiceWrapper implements AutoClos
      *
      * @hide
      */
-    public void disconnect() {
+    private void disconnect() {
         if (mServiceConnection != null) {
             mContext.unbindService(mServiceConnection);
             mServiceConnection = null;
@@ -118,23 +134,48 @@ public final class AlternativeMessageTransportServiceWrapper implements AutoClos
     /**
      * Upgrades SMS/MMS message to the default SMS app supported transport.
      *
-     * @param contentUri the content URI of the SMS/MMS message.
-     * @param mClientCallbackExecutor the executor to run the callback on.
+     * @param messageUri the URI of the SMS/MMS message.
+     * @param defaultSmsPackage the default SMS app's package name.
+     * @param clientCallbackExecutor the executor to run the callback on.
      * @param clientCallback the callback to notify about the upgrade status.
      *
      * @hide
      */
     public void upgradeMessage(
-            @NonNull Uri contentUri,
-            @NonNull @CallbackExecutor Executor mClientCallbackExecutor,
-            @NonNull MessageUpgradeCallback clientCallback) {
+            @NonNull Uri messageUri,
+            @NonNull String defaultSmsPackage,
+            @NonNull @CallbackExecutor Executor clientCallbackExecutor,
+            @NonNull Consumer<Integer> clientCallback) {
+        Objects.requireNonNull(messageUri, "messageUri cannot be null");
+        Objects.requireNonNull(clientCallbackExecutor, "clientCallbackExecutor cannot be null");
+        Objects.requireNonNull(clientCallback, "clientCallback cannot be null");
+        if (TextUtils.isEmpty(defaultSmsPackage)) {
+            throw new IllegalArgumentException("defaultSmsPackage cannot be null or empty");
+        }
+
+        if (bindToService(defaultSmsPackage, Runnable::run,
+                () -> upgradeMessageInternal(messageUri, clientCallbackExecutor, clientCallback))) {
+            Log.d(TAG, "bindService() to the message upgrade service: " + defaultSmsPackage
+                    + " succeeded.");
+            scheduleServiceClose();
+        } else {
+            Log.e(TAG, "bindService() to the message upgrade service: "
+                    + defaultSmsPackage + " failed.");
+            clientCallbackExecutor.execute(() -> clientCallback.accept(UPGRADE_STATUS_REJECTED));
+        }
+    }
+
+    private void upgradeMessageInternal(
+            Uri messageUri, Executor clientCallbackExecutor,
+            Consumer<Integer> clientCallback) {
         Objects.requireNonNull(mAlternativeMessageTransportService);
         try {
             mAlternativeMessageTransportService.upgradeMessage(
-                    contentUri,
-                    new MessageUpgradeCallbackInternal(mClientCallbackExecutor, clientCallback));
+                    messageUri,
+                    new MessageUpgradeCallbackInternal(clientCallbackExecutor, clientCallback));
         } catch (RemoteException e) {
-            throw new RuntimeException(e);
+            Log.e(TAG, "Error while upgrading message", e);
+            clientCallbackExecutor.execute(() -> clientCallback.accept(UPGRADE_STATUS_REJECTED));
         }
     }
 
@@ -148,12 +189,24 @@ public final class AlternativeMessageTransportServiceWrapper implements AutoClos
             IAlternativeMessageTransportService alternativeMessageTransportService) {
         mAlternativeMessageTransportService = alternativeMessageTransportService;
         if (mOnServiceReadyCallback != null && mOnServiceReadyCallbackExecutor != null) {
-            final long identity = Binder.clearCallingIdentity();
-            try {
+            Binder.withCleanCallingIdentity(() -> {
                 mOnServiceReadyCallbackExecutor.execute(mOnServiceReadyCallback);
-            } finally {
-                Binder.restoreCallingIdentity(identity);
+            });
+        }
+    }
+
+    private void scheduleServiceClose() {
+        synchronized (mServiceTimeoutLock) {
+            if (mServiceCloseFuture != null) {
+                Log.w(TAG, "Cancelling previous hard service close timer.");
+                mServiceCloseFuture.cancel(false);
             }
+
+            mServiceCloseFuture = mScheduler.schedule(
+                    this::disconnect,
+                    SERVICE_BIND_TIMEOUT,
+                    TimeUnit.SECONDS);
+            Log.d(TAG, "Scheduled hard service close in " + SERVICE_BIND_TIMEOUT + "s.");
         }
     }
 
@@ -175,18 +228,18 @@ public final class AlternativeMessageTransportServiceWrapper implements AutoClos
     private static final class MessageUpgradeCallbackInternal
             extends IMessageUpgradeCallback.Stub {
         private final Executor mClientCallbackExecutor;
-        private final MessageUpgradeCallback mClientCallback;
+        private final Consumer<Integer> mClientCallback;
 
         private MessageUpgradeCallbackInternal(
-                Executor executor, MessageUpgradeCallback callback) {
+                Executor executor, Consumer<Integer> callback) {
             mClientCallbackExecutor = executor;
             mClientCallback = callback;
         }
 
         @Override
         public void onUpgradeStatusAvailable(int status) throws RemoteException {
-            mClientCallbackExecutor.execute(() ->
-                    mClientCallback.onUpgradeStatusAvailable(status));
+            Binder.withCleanCallingIdentity(
+                    () -> mClientCallbackExecutor.execute(() -> mClientCallback.accept(status)));
         }
     }
 }

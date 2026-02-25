@@ -7,13 +7,3 @@ flag {
     bug: "444846497"
     description: "Do not ATTACH AccountsDb DE and CE DBs, and enable WAL"
 }
-
-flag {
-    name: "coalesce_account_removed_broadcast"
-    namespace: "backstage_power"
-    bug: "450702332"
-    description: "Set delivery group policy to coalesce ACCOUNT_REMOVED broadcasts"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}

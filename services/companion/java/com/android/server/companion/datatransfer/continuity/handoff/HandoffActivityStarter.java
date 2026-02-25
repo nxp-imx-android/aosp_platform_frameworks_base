@@ -19,18 +19,20 @@ package com.android.server.companion.datatransfer.continuity.handoff;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
-import android.app.ActivityOptions;
 import android.app.HandoffActivityData;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.util.Slog;
+import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffActivityDataMessage;
+import com.android.server.wm.ActivityTaskManagerInternal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -130,9 +132,7 @@ final class HandoffActivityStarter {
 
         Intent intent = new Intent(Intent.ACTION_VIEW, fallbackUri);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        // Add a flag to allow this URI to be handled by a non-browser app.
-        intent.addFlags(Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER);
-        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.addFlags(Intent.FLAG_IGNORE_EPHEMERAL);
         return startIntents(Objects.requireNonNull(context), new Intent[] {intent});
     }
 
@@ -141,12 +141,16 @@ final class HandoffActivityStarter {
 
         intents[intents.length - 1].addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
+            Configuration configuration = new Configuration();
+            configuration.setToDefaults();
             int result =
-                    Objects.requireNonNull(context)
-                            .startActivitiesAsUser(
-                                    intents,
-                                    ActivityOptions.makeBasic().toBundle(),
-                                    UserHandle.CURRENT);
+                    LocalServices.getService(ActivityTaskManagerInternal.class)
+                            .startActivityWithConfig(
+                                    context.getBasePackageName(),
+                                    context.getAttributionTag(),
+                                    intents[0],
+                                    configuration,
+                                    UserHandle.USER_CURRENT);
             Slog.i(TAG, "Launched activities: " + result);
             return result == ActivityManager.START_SUCCESS;
         } catch (ActivityNotFoundException e) {

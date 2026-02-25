@@ -33,6 +33,16 @@ flag {
 }
 
 flag {
+   name: "change_display_focus_on_wallpaper_touch"
+   namespace: "lse_desktop_experience"
+   description: "Change display focus on touching wallpaper"
+   bug: "440655802"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "close_fullscreen_and_splitscreen_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enable keyboard shortcut to close fullscreen and split screen tasks"
@@ -243,13 +253,6 @@ flag {
 }
 
 flag {
-    name: "enable_camera_compat_for_desktop_windowing"
-    namespace: "lse_desktop_experience"
-    description: "Whether to apply Camera Compat treatment to fixed-orientation apps in desktop windowing mode"
-    bug: "314952133"
-}
-
-flag {
     name: "enable_camera_compat_for_desktop_windowing_opt_out"
     namespace: "lse_desktop_experience"
     description: "Whether to allow developers to opt-out of Camera Compat treatment to fixed-orientation apps in desktop windowing mode"
@@ -257,13 +260,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "enable_camera_compat_for_desktop_windowing_opt_out_api"
-    namespace: "lse_desktop_experience"
-    description: "Introduces a developer API to opt-out of Camera Compat treatment for fixed-orientation apps in desktop windowing mode"
-    bug: "397165621"
 }
 
 flag {
@@ -406,16 +402,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_first_splitscreen_refocus_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fix desktop-first policy for the case where the existing splitscreen app is focused."
-    bug: "440274989"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_first_sys_user_hsum_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fix the bug around desktop-first policy for system user in HSUM."
@@ -430,6 +416,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Fix desktop-first policy for the case where any fullscreen app is focused."
     bug: "431066262"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_desktop_first_user_change_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes an issue where the windowing mode is not updated on user change."
+    bug: "478018943"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1096,6 +1092,26 @@ flag {
     description: "Fixes issue with retrieving the home package during the windowing exemptions \n"
                  "check."
     bug: "447111827"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "intercept_touch_event_for_app_header_drag_move"
+    namespace: "lse_desktop_experience"
+    description: "Use View#onInterceptTouchEvent() to handle drag moves on app headers."
+    bug: "466261318"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "mask_presentation_flags_on_internal_displays"
+    namespace: "lse_desktop_experience"
+    description: "Mask Display.FLAG_PRESENTATION for certain apps on internal displays"
+    bug: "483802160"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
