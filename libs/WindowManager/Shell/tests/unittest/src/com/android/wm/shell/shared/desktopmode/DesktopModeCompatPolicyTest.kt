@@ -480,7 +480,6 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_FIRST_SYS_USER_HSUM_BUGFIX)
     fun testIsTopActivityExemptFromDesktopWindowing_headlessSystemUser() {
         ExtendedMockito.doReturn(false).`when` { UserManager.isHeadlessSystemUserMode() }
         assertFalse(
