@@ -16,6 +16,10 @@
 
 package android.os;
 
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidMessageQueue.MESSAGE_CODE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidMessageQueue.MESSAGE_DELAY_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidMessageQueue.RECEIVING_THREAD_NAME;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.MESSAGE_QUEUE;
 import static android.os.Message.*;
 
 import android.annotation.IntDef;
@@ -39,14 +43,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.NoSuchElementException;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.LockSupport;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Low-level class holding the list of messages to be dispatched by a
@@ -1324,25 +1323,14 @@ public final class MessageQueue {
             traceMessageCount();
             final long messageDelayMs = Math.max(0L, when - SystemClock.uptimeMillis());
             if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
-                com.android.internal.dev.perfetto.sdk.PerfettoTrace.instant(
-                                PerfettoTrace.MQ_CATEGORY_V3, "message_queue_send")
+                com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                        .instant(PerfettoCategories.MQ_CATEGORY, "message_queue_send")
                         .setFlow(eventId)
                         .beginProto()
-                        .beginNested(2004 /* message_queue */)
-                        .addField(2 /* receiving_thread_name */, mThreadName)
-                        .addField(3 /* message_code */, msg.what)
-                        .addField(4 /* message_delay_ms */, messageDelayMs)
-                        .endNested()
-                        .endProto()
-                        .emit();
-            } else {
-                PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
-                        .setFlow(eventId)
-                        .beginProto()
-                        .beginNested(2004 /* message_queue */)
-                        .addField(2 /* receiving_thread_name */, mThreadName)
-                        .addField(3 /* message_code */, msg.what)
-                        .addField(4 /* message_delay_ms */, messageDelayMs)
+                        .beginNested(MESSAGE_QUEUE)
+                        .addField(RECEIVING_THREAD_NAME, mThreadName)
+                        .addField(MESSAGE_CODE, msg.what)
+                        .addField(MESSAGE_DELAY_MS, messageDelayMs)
                         .endNested()
                         .endProto()
                         .emit();
@@ -1352,12 +1340,8 @@ public final class MessageQueue {
 
     private void traceMessageCount() {
         if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
-            com.android.internal.dev.perfetto.sdk.PerfettoTrace.counter(
-                            PerfettoTrace.MQ_CATEGORY_V3, mMessageCount.get())
-                    .usingThreadCounterTrack(mTid, mThreadName)
-                    .emit();
-        } else {
-            PerfettoTrace.counter(PerfettoTrace.MQ_CATEGORY, mMessageCount.get())
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                    .counter(PerfettoCategories.MQ_CATEGORY, mMessageCount.get())
                     .usingThreadCounterTrack(mTid, mThreadName)
                     .emit();
         }

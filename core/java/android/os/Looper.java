@@ -16,6 +16,12 @@
 
 package android.os;
 
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidMessageQueue.MESSAGE_CODE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidMessageQueue.MESSAGE_DELAY_MS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidMessageQueue.RECEIVING_THREAD_NAME;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidMessageQueue.SENDING_THREAD_NAME;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.MESSAGE_QUEUE;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.compat.CompatChanges;
@@ -230,26 +236,15 @@ public final class Looper {
         if (PerfettoTrace.isMQCategoryEnabled()) {
             final long messageDelayMs = Math.max(0L, msg.when - SystemClock.uptimeMillis());
             if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
-                com.android.internal.dev.perfetto.sdk.PerfettoTrace.begin(
-                                PerfettoTrace.MQ_CATEGORY_V3, "message_queue_receive")
+                com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                        .begin(PerfettoCategories.MQ_CATEGORY, "message_queue_receive")
                         .beginProto()
-                        .beginNested(2004 /* message_queue */)
-                        .addField(1 /* sending_thread_name */, msg.sendingThreadName)
-                        .addField(2 /* receiving_thread_name */, Thread.currentThread().getName())
-                        .addField(3 /* message_code */, msg.what)
-                        .addField(4 /* message_delay_ms */, messageDelayMs)
-                        .endNested()
-                        .endProto()
-                        .setTerminatingFlow(msg.eventId)
-                        .emit();
-            } else {
-                PerfettoTrace.begin(PerfettoTrace.MQ_CATEGORY, "message_queue_receive")
-                        .beginProto()
-                        .beginNested(2004 /* message_queue */)
-                        .addField(1 /* sending_thread_name */, msg.sendingThreadName)
-                        .addField(2 /* receiving_thread_name */, Thread.currentThread().getName())
-                        .addField(3 /* message_code */, msg.what)
-                        .addField(4 /* message_delay_ms */, messageDelayMs)
+                        .beginNested(MESSAGE_QUEUE)
+                        .addField(SENDING_THREAD_NAME, msg.sendingThreadName)
+                        .addField(RECEIVING_THREAD_NAME,
+                                    Thread.currentThread().getName())
+                        .addField(MESSAGE_CODE, msg.what)
+                        .addField(MESSAGE_DELAY_MS, messageDelayMs)
                         .endNested()
                         .endProto()
                         .setTerminatingFlow(msg.eventId)
@@ -353,8 +348,8 @@ public final class Looper {
         }
         if (PerfettoTrace.isMQCategoryEnabled()) {
             if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
-                com.android.internal.dev.perfetto.sdk.PerfettoTrace.end(
-                                PerfettoTrace.MQ_CATEGORY_V3)
+                com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                        .end(PerfettoCategories.MQ_CATEGORY)
                         .emit();
             } else {
                 PerfettoTrace.end(PerfettoTrace.MQ_CATEGORY).emit();
