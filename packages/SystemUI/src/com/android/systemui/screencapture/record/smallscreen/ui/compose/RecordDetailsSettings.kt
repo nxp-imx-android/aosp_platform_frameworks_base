@@ -21,6 +21,10 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -101,15 +105,15 @@ fun RecordDetailsSettings(
                     modifier = Modifier.padding(vertical = 12.dp),
                 )
             }
-            AnimatedVisibility(visible = targetViewModel.shouldShowAppSelector) {
-                AppSelectorButton(
-                    appLabel = targetViewModel.selectedAppLabel?.toString(),
-                    viewModel = drawableLoaderViewModel,
-                    onClick = onAppSelectorClicked,
-                )
-            }
+            AppSelectorButton(
+                visible = targetViewModel.shouldShowAppSelector,
+                appLabel = targetViewModel.selectedAppLabel?.toString(),
+                viewModel = drawableLoaderViewModel,
+                onClick = onAppSelectorClicked,
+            )
 
             RichSwitch(
+                visible = true,
                 icon =
                     loadIcon(
                         viewModel = drawableLoaderViewModel,
@@ -124,6 +128,7 @@ fun RecordDetailsSettings(
                 modifier = Modifier,
             )
             RichSwitch(
+                visible = true,
                 icon =
                     loadIcon(
                         viewModel = drawableLoaderViewModel,
@@ -137,40 +142,45 @@ fun RecordDetailsSettings(
                 onCheckedChange = { parametersViewModel.shouldRecordMicrophone = it },
                 modifier = Modifier,
             )
-            AnimatedVisibility(parametersViewModel.canUseFrontCamera) {
-                RichSwitch(
-                    icon =
-                        loadIcon(
-                            viewModel = drawableLoaderViewModel,
-                            resId = R.drawable.ic_selfie_expressive,
-                            contentDescription = null,
-                        ),
-                    label = stringResource(R.string.screen_record_should_show_camera_label),
-                    checked = parametersViewModel.shouldShowFrontCamera,
-                    onCheckedChange = { parametersViewModel.shouldShowFrontCamera = it },
-                    modifier = Modifier,
-                )
-            }
-            AnimatedVisibility(targetViewModel.canShowTouches) {
-                RichSwitch(
-                    icon =
-                        loadIcon(
-                            viewModel = drawableLoaderViewModel,
-                            resId = R.drawable.ic_touch_expressive,
-                            contentDescription = null,
-                        ),
-                    label = stringResource(R.string.screen_record_should_show_touches_label),
-                    checked = parametersViewModel.shouldShowTaps,
-                    onCheckedChange = { parametersViewModel.shouldShowTaps = it },
-                    modifier = Modifier,
-                )
-            }
-            SettingsRow(modifier = Modifier.padding(top = 4.dp)) {
-                Crossfade(targetViewModel.warningMessageRes) { warningMessageRes ->
+            RichSwitch(
+                visible = parametersViewModel.canUseFrontCamera,
+                icon =
+                    loadIcon(
+                        viewModel = drawableLoaderViewModel,
+                        resId = R.drawable.ic_selfie_expressive,
+                        contentDescription = null,
+                    ),
+                label = stringResource(R.string.screen_record_should_show_camera_label),
+                checked = parametersViewModel.shouldShowFrontCamera,
+                onCheckedChange = { parametersViewModel.shouldShowFrontCamera = it },
+                modifier = Modifier,
+            )
+            RichSwitch(
+                visible = targetViewModel.canShowTouches,
+                icon =
+                    loadIcon(
+                        viewModel = drawableLoaderViewModel,
+                        resId = R.drawable.ic_touch_expressive,
+                        contentDescription = null,
+                    ),
+                label = stringResource(R.string.screen_record_should_show_touches_label),
+                checked = parametersViewModel.shouldShowTaps,
+                onCheckedChange = { parametersViewModel.shouldShowTaps = it },
+                modifier = Modifier,
+            )
+            SettingsRow(visible = true, modifier = Modifier.padding(top = 4.dp)) {
+                Crossfade(
+                    targetState = targetViewModel.warningMessageRes,
+                    animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+                ) { warningMessageRes ->
                     Text(
                         text = stringResource(warningMessageRes),
                         color = MaterialTheme.colorScheme.onSurface,
                         style = MaterialTheme.typography.bodySmall,
+                        modifier =
+                            Modifier.animateContentSize(
+                                MaterialTheme.motionScheme.fastSpatialSpec()
+                            ),
                     )
                 }
             }
@@ -183,6 +193,7 @@ private fun RichSwitch(
     icon: State<IconModel?>,
     label: String,
     checked: Boolean,
+    visible: Boolean,
     onCheckedChange: (isChecked: Boolean) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -194,26 +205,28 @@ private fun RichSwitch(
     }
     val disabledMessage: String? = if (enabled) null else stringResource(disabledMessageRes)
     SettingsRow(
-        modifier
-            .clickable(
-                onClick = {
-                    if (enabled) {
-                        onCheckedChange(!checked)
-                    } else {
-                        Toast.makeText(context, disabledMessage, Toast.LENGTH_SHORT).show()
+        visible = visible,
+        modifier =
+            modifier
+                .clickable(
+                    onClick = {
+                        if (enabled) {
+                            onCheckedChange(!checked)
+                        } else {
+                            Toast.makeText(context, disabledMessage, Toast.LENGTH_SHORT).show()
+                        }
                     }
-                }
-            )
-            .clearAndSetSemantics {
-                role = Role.Switch
-                toggleableState = if (checked) ToggleableState.On else ToggleableState.Off
-                if (enabled) {
-                    contentDescription = label
-                } else {
-                    contentDescription = "$label. ${disabledMessage!!}"
-                    disabled()
-                }
-            }
+                )
+                .clearAndSetSemantics {
+                    role = Role.Switch
+                    toggleableState = if (checked) ToggleableState.On else ToggleableState.Off
+                    if (enabled) {
+                        contentDescription = label
+                    } else {
+                        contentDescription = "$label. ${disabledMessage!!}"
+                        disabled()
+                    }
+                },
     ) {
         LoadingIcon(icon = icon.value, modifier = Modifier.size(40.dp).padding(8.dp))
         Text(
@@ -236,9 +249,13 @@ private fun AppSelectorButton(
     appLabel: String?,
     viewModel: DrawableLoaderViewModel,
     onClick: () -> Unit,
+    visible: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    SettingsRow(modifier.semantics { role = Role.Button }.clickable(onClick = onClick)) {
+    SettingsRow(
+        visible = visible,
+        modifier = modifier.semantics { role = Role.Button }.clickable(onClick = onClick),
+    ) {
         LoadingIcon(
             icon =
                 loadIcon(
@@ -282,15 +299,30 @@ private fun AppSelectorButton(
 }
 
 @Composable
-private fun SettingsRow(modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier =
-            modifier
-                .heightIn(min = 64.dp)
-                .padding(horizontal = 20.dp)
-                .fillMaxWidth()
-                .animateContentSize(),
-        content = content,
-    )
+private fun SettingsRow(
+    visible: Boolean,
+    modifier: Modifier = Modifier,
+    content: @Composable RowScope.() -> Unit,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter =
+            fadeIn(MaterialTheme.motionScheme.fastEffectsSpec()) +
+                expandVertically(
+                    animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+                    expandFrom = Alignment.Top,
+                ),
+        exit =
+            fadeOut(MaterialTheme.motionScheme.fastEffectsSpec()) +
+                shrinkVertically(
+                    animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+                    shrinkTowards = Alignment.Top,
+                ),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier.heightIn(min = 64.dp).padding(horizontal = 20.dp).fillMaxWidth(),
+            content = content,
+        )
+    }
 }

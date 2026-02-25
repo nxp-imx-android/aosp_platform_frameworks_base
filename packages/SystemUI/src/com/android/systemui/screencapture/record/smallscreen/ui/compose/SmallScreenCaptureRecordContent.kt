@@ -26,7 +26,6 @@ import android.view.WindowManager
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandHorizontally
@@ -304,10 +303,9 @@ constructor(
                         shape = RoundedCornerShape(28.dp),
                         modifier =
                             Modifier.fillBoundsInWindowIf(
-                                    region = settingsBounds,
-                                    condition = viewTreeObserver != null,
-                                )
-                                .animateContentSize(),
+                                region = settingsBounds,
+                                condition = viewTreeObserver != null,
+                            ),
                     ) {
                         AnimatedContent(
                             targetState = viewModel.detailsPopup,
