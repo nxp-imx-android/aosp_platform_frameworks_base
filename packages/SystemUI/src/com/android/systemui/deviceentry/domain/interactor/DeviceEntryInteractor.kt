@@ -258,9 +258,16 @@ constructor(
      *
      * @param callback An optional callback to invoke when the attempt succeeds, fails, or is
      *   canceled
+     * @param skipShowingAlternateBouncer an optional setting - if true, will skip showing the
+     *   alternate bouncer even if it could show. Instead, it will directly show the primary bouncer
+     *   if authentication is required.
      */
     @JvmOverloads
-    fun attemptDeviceEntry(loggingReason: String, callback: IKeyguardDismissCallback? = null) {
+    fun attemptDeviceEntry(
+        loggingReason: String,
+        callback: IKeyguardDismissCallback? = null,
+        skipShowingAlternateBouncer: Boolean = false,
+    ) {
         callback?.let { dismissCallbackRegistry.get().addCallback(it) }
 
         // Check if the device is already authenticated by trust agent/passive biometrics.
@@ -272,7 +279,10 @@ constructor(
         //     current Scene and remove the lockscreen from the backstack
         applicationScope.launch {
             if (isAuthenticationRequired()) {
-                if (alternateBouncerInteractor.get().canShowAlternateBouncer.value) {
+                if (
+                    !skipShowingAlternateBouncer &&
+                        alternateBouncerInteractor.get().canShowAlternateBouncer.value
+                ) {
                     alternateBouncerInteractor.get().forceShow()
                 } else {
                     sceneInteractor
