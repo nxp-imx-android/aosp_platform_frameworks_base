@@ -61,6 +61,7 @@ import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.LocalServices;
 import com.android.server.accessibility.AccessibilityLogUtil;
 import com.android.server.accessibility.AccessibilityManagerService;
+import com.android.server.accessibility.Flags;
 import com.android.server.wm.WindowManagerInternal;
 
 import java.util.concurrent.Executor;
@@ -127,6 +128,7 @@ public class MagnificationController implements MagnificationConnectionManager.C
     private long mLastPannedTime = 0;
     private long mLastMotionEventTriggeredUiChangeTime = 0;
     private boolean mLastMotionEventTriggeredByMouse = false;
+    private boolean mShouldHideModeSwitchButton = false;
     private boolean mRepeatKeysEnabled = true;
 
     private @ZoomDirection int mActiveZoomDirection = ZOOM_DIRECTION_IN;
@@ -378,6 +380,24 @@ public class MagnificationController implements MagnificationConnectionManager.C
     }
 
     @Override
+    public void onTemporaryModeStart(int displayId, int mode) {
+        mShouldHideModeSwitchButton = true;
+        updateMagnificationUIControls(displayId, mode);
+    }
+
+    @Override
+    public void onTemporaryModeEnd(int displayId, int mode) {
+        mShouldHideModeSwitchButton = false;
+        updateMagnificationUIControls(displayId, mode);
+    }
+
+    @Override
+    public void onShortcutTriggerChanged(int displayId, int mode, boolean isShortcutTrigger) {
+        mShouldHideModeSwitchButton = isShortcutTrigger;
+        updateMagnificationUIControls(displayId, mode);
+    }
+
+    @Override
     public void onPanMagnificationStart(int displayId,
             @MagnificationController.PanDirection int direction) {
         // Update the current panning state for any callbacks.
@@ -551,8 +571,12 @@ public class MagnificationController implements MagnificationConnectionManager.C
         final boolean showMagnificationUIForFullScreen =
                 capabilities == ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN
                 && mLastMotionEventTriggeredByMouse;
+        final boolean shouldHideSwitchButton =
+                Flags.enableMagnificationHideSettingsButtonInTemporaryMode()
+                && mShouldHideModeSwitchButton;
         final boolean showModeSwitchButton = isActivated
-                && (capabilities == ACCESSIBILITY_MAGNIFICATION_MODE_ALL
+                && ((capabilities == ACCESSIBILITY_MAGNIFICATION_MODE_ALL
+                && !shouldHideSwitchButton)
                 || showMagnificationUIForFullScreen);
         final boolean enableSettingsPanel = isActivated
                 && (capabilities == ACCESSIBILITY_MAGNIFICATION_MODE_ALL

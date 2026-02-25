@@ -90,6 +90,32 @@ public abstract class MagnificationGestureHandler extends BaseEventStreamTransfo
          * @param mode The magnification mode
          */
         void onMouseMove(int displayId, int mode);
+
+        /**
+         * Called when entering "Temporary Magnification Mode" (e.g., triple-tap-and-hold).
+         *
+         * @param displayId The logical display id
+         * @param mode The magnification mode
+         */
+        void onTemporaryModeStart(int displayId, int mode);
+
+        /**
+         * Called when exiting "Temporary Magnification Mode" upon finger release.
+         *
+         * @param displayId The logical display id
+         * @param mode The magnification mode
+         */
+        void onTemporaryModeEnd(int displayId, int mode);
+
+        /**
+         * Called when the magnification shortcut (e.g., Accessibility Button) is clicked,
+         * or when the user taps the screen to zoom after the shortcut is triggered.
+         *
+         * @param displayId The logical display id
+         * @param mode The magnification mode
+         * @param isShortcutTrigger True if initiated by a shortcut trigger, false otherwise.
+         */
+        void onShortcutTriggerChanged(int displayId, int mode, boolean isShortcutTrigger);
     }
 
     private final AccessibilityTraceManager mTrace;
