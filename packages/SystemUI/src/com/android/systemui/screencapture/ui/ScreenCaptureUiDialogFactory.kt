@@ -20,9 +20,9 @@ import android.content.Context
 import android.view.Display
 import android.view.Window
 import android.view.WindowManager
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.Transition
+import androidx.compose.animation.core.TransitionState
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -73,7 +73,6 @@ constructor(
 
     fun create(display: Display, type: ScreenCaptureType): SystemUIDialog {
         val dialogViewModel = dialogViewModelFactory.create()
-        val visibleState = MutableTransitionState(true)
         return dialogFactory
             .create(
                 context =
@@ -90,13 +89,23 @@ constructor(
                 isTransient = !dialogViewModel.isLargeScreen,
             ) { dialog: SystemUIDialog ->
                 LaunchedEffect(dialogViewModel) { dialogViewModel.activate() }
-                dialog.DialogContent(visibleState = visibleState, type = type, display = display)
+                dialog.DialogContent(
+                    dialogViewModel = dialogViewModel,
+                    type = type,
+                    display = display,
+                )
             }
             .apply {
                 setupWindow(window!!)
                 setCancelable(false)
                 setCanceledOnTouchOutside(false)
-                setDismissOverride { visibleState.targetState = false }
+                setDismissOverride {
+                    if (dialogViewModel.visibleTransitionState.isIdleAt(false)) {
+                        dismissImmediately()
+                    } else {
+                        dialogViewModel.dismiss()
+                    }
+                }
             }
     }
 
@@ -115,7 +124,7 @@ constructor(
 
     @Composable
     private fun SystemUIDialog.DialogContent(
-        visibleState: MutableTransitionState<Boolean>,
+        dialogViewModel: ScreenCaptureUiDialogViewModel,
         type: ScreenCaptureType,
         display: Display,
     ) {
@@ -130,29 +139,49 @@ constructor(
         // Wait until parameters are passed down to Compose
         val parameters = parametersState ?: return
 
-        DisposableEffect(visibleState.isIdle) {
-            if (visibleState.isIdle) {
+        val transition: Transition<Boolean> =
+            rememberTransition(dialogViewModel.visibleTransitionState)
+        val builder: ScreenCaptureUiComponent.Builder =
+            componentBuilders.getValue(parameters.screenCaptureType)
+        val coroutineScope = rememberCoroutineScope()
+        val component =
+            remember(parameters, coroutineScope) {
+                builder
+                    .setScope(coroutineScope)
+                    .setDisplay(display)
+                    .setWindow(window)
+                    .setVisibilityTransition(transition)
+                    .build()
+            }
+        Box(modifier = Modifier.focusable()) { component.screenCaptureContent.Content() }
+
+        DisposableEffect(dialogViewModel) {
+            // set off the animation once after ScreenCaptureContent#Content has a chance to
+            // populate the transition with its animation
+            dialogViewModel.show()
+            onDispose {}
+        }
+        SideEffect {
+            if (dialogViewModel.isDismissed && transition.isIdle) {
+                dismissImmediately()
+            }
+        }
+        DisposableEffect(transition.isIdle) {
+            if (transition.isIdle) {
                 viewModel.onFinishedChangingVisibility()
             }
             onDispose {}
         }
-        if (!visibleState.targetState && visibleState.isIdle) {
-            SideEffect {
-                setDismissOverride(null)
-                dismissWithoutAnimation()
-            }
-        }
-
-        // Individual screen capture content control their own animation transitions.
-        AnimatedVisibility(visibleState = visibleState, enter = EnterTransition.None) {
-            val builder: ScreenCaptureUiComponent.Builder =
-                componentBuilders.getValue(parameters.screenCaptureType)
-            val coroutineScope = rememberCoroutineScope()
-            val component =
-                remember(parameters, coroutineScope) {
-                    builder.setScope(coroutineScope).setDisplay(display).setWindow(window).build()
-                }
-            Box(modifier = Modifier.focusable()) { component.screenCaptureContent.Content() }
-        }
     }
 }
+
+private fun SystemUIDialog.dismissImmediately() {
+    setDismissOverride(null)
+    dismissWithoutAnimation()
+}
+
+private fun <T> TransitionState<T>.isIdleAt(state: T): Boolean =
+    currentState == state && targetState == state
+
+private val Transition<*>.isIdle
+    get() = (currentState == targetState) && !isRunning

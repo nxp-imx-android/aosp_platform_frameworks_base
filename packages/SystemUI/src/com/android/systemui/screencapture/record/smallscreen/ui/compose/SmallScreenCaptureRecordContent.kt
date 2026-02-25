@@ -26,7 +26,7 @@ import android.view.WindowManager
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
@@ -120,6 +120,7 @@ class SmallScreenCaptureRecordContent
 @Inject
 constructor(
     @ScreenCaptureUi private val window: Window?,
+    @ScreenCaptureUi private val transition: Transition<Boolean>,
     private val viewModelFactory: SmallScreenCaptureRecordViewModel.Factory,
 ) : ScreenCaptureContent {
 
@@ -147,13 +148,8 @@ constructor(
             }
         }
 
-        val uiVisibilityState = remember { MutableTransitionState(false) }
-
-        // When the component loads, animate in.
-        LaunchedEffect(Unit) { uiVisibilityState.targetState = true }
-
-        AnimatedVisibility(
-            visibleState = uiVisibilityState,
+        transition.AnimatedVisibility(
+            visible = { it },
             enter = scaleIn(transformOrigin = scaleTransformOrigin) + slideInVertically(),
             exit = scaleOut(transformOrigin = scaleTransformOrigin) + slideOutVertically(),
         ) {
