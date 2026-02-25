@@ -19,7 +19,6 @@ package android.app.admin.metadata;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.admin.PolicyIdentifier;
-
 import java.util.Set;
 
 /**
@@ -37,8 +36,27 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
             @Nullable String requiredPermission,
             @Nullable String requiredCrossUserPermission,
             @NonNull Set<Integer> allowedDpcTypes,
-            boolean emptyStringAllowed
-    ) {
+            boolean emptyStringAllowed) {
+        this(
+                id,
+                allowedScopes,
+                affectedResource,
+                requiredPermission,
+                requiredCrossUserPermission,
+                allowedDpcTypes,
+                null,
+                emptyStringAllowed);
+    }
+
+    public StringPolicyMetadata(
+            @NonNull PolicyIdentifier<String> id,
+            @NonNull Set<Integer> allowedScopes,
+            int affectedResource,
+            @Nullable String requiredPermission,
+            @Nullable String requiredCrossUserPermission,
+            @NonNull Set<Integer> allowedDpcTypes,
+            @Nullable ResolutionMechanismMetadata<String> resolutionMechanism,
+            boolean emptyStringAllowed) {
         super(
                 id,
                 allowedScopes,
@@ -46,7 +64,7 @@ public class StringPolicyMetadata extends PolicyMetadata<String> {
                 requiredPermission,
                 requiredCrossUserPermission,
                 allowedDpcTypes,
-                null);
+                resolutionMechanism);
 
         mEmptyStringAllowed = emptyStringAllowed;
     }

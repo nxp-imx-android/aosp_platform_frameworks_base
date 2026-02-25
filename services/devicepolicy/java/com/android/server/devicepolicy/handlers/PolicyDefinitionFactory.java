@@ -29,11 +29,13 @@ import android.annotation.Nullable;
 import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.NoArgsPolicyKey;
 import android.app.admin.PolicyIdentifier;
+import android.app.admin.PolicyValue;
 import android.app.admin.metadata.EnumPolicyMetadata;
 import android.app.admin.metadata.GeneratedPolicyMetadata;
 import android.app.admin.metadata.IntegerPolicyMetadata;
 import android.app.admin.metadata.ListPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
+import android.app.admin.metadata.ResolutionMechanismMetadata;
 import android.app.admin.metadata.StringPolicyMetadata;
 import android.util.Pair;
 import androidx.annotation.VisibleForTesting;
@@ -41,9 +43,11 @@ import com.android.server.devicepolicy.EnforcingAdmin;
 import com.android.server.devicepolicy.IntegerPolicySerializer;
 import com.android.server.devicepolicy.ListOfStringPolicySerializer;
 import com.android.server.devicepolicy.MostRecent;
+import com.android.server.devicepolicy.MostRestrictive;
 import com.android.server.devicepolicy.PolicyDefinition;
 import com.android.server.devicepolicy.PolicyEnforcerCallbacks;
 import com.android.server.devicepolicy.PolicySerializer;
+import com.android.server.devicepolicy.ResolutionMechanism;
 import com.android.server.devicepolicy.StringPolicySerializer;
 import com.android.server.devicepolicy.TopPriority;
 import java.util.Collection;
@@ -142,74 +146,114 @@ public class PolicyDefinitionFactory {
 
     @Nullable
     private static <T> PolicyDefinition<T> build(@NonNull PolicyMetadata<T> metadata) {
-        var builder = createPrePopulatedBuilder(metadata);
+        return new Helper(metadata).build();
+    }
 
-        if (FACTORIES.containsKey(metadata.getId())) {
-            return FACTORIES.get(metadata.getId()).build(builder);
-        }
-
-        return builder.build();
+    @VisibleForTesting
+    public static <T> PolicyDefinition.Builder<T> createPrePopulatedBuilder(
+            @NonNull PolicyMetadata<T> metadata) {
+        return new Helper(metadata).createPrePopulatedBuilder();
     }
 
     private static <T> void addFactory(PolicyIdentifier<T> identifier, Factory<T> factory) {
         FACTORIES.put(identifier, factory);
     }
 
-    @VisibleForTesting
-    public static <T> PolicyDefinition.Builder<T> createPrePopulatedBuilder(
-            @NonNull PolicyMetadata<T> metadata) {
-        var builder =
-                PolicyDefinition.<T>builder()
-                        .setKey(new NoArgsPolicyKey(metadata.getId().getId()))
-                        .setEnforcerCallback(PolicyEnforcerCallbacks::noOp)
-                        .setSerializer(getSerializer(metadata));
+    private static class Helper<T> {
+        private @NonNull PolicyIdentifier<T> mIdentifier;
+        private @NonNull PolicyMetadata<T> mMetadata;
 
-        if (isGlobalOnly(metadata)) {
-            builder.addFlag(POLICY_FLAG_GLOBAL_ONLY_POLICY);
+        Helper(@NonNull PolicyMetadata<T> metadata) {
+            this.mIdentifier = metadata.getId();
+            this.mMetadata = metadata;
         }
 
-        if (isLocalOnly(metadata)) {
-            builder.addFlag(POLICY_FLAG_LOCAL_ONLY_POLICY);
+        public PolicyDefinition<T> build() {
+            var builder = createPrePopulatedBuilder();
+
+            if (FACTORIES.containsKey(mIdentifier)) {
+                return FACTORIES.get(mIdentifier).build(builder);
+            }
+
+            return builder.build();
         }
 
-        return builder;
-    }
+        public PolicyDefinition.Builder<T> createPrePopulatedBuilder() {
+            var builder =
+                    PolicyDefinition.<T>builder()
+                            .setKey(new NoArgsPolicyKey(mIdentifier.getId()))
+                            .setEnforcerCallback(PolicyEnforcerCallbacks::noOp)
+                            .setSerializer(getSerializer());
 
-    private static boolean isGlobalOnly(@NonNull PolicyMetadata<?> metadata) {
-        return metadata.getAllowedScopes().contains(POLICY_SCOPE_DEVICE)
-                && !metadata.getAllowedScopes().contains(POLICY_SCOPE_USER)
-                && !metadata.getAllowedScopes().contains(POLICY_SCOPE_PARENT_USER);
-    }
+            if (mMetadata.getResolutionMechanism() != null) {
+                builder.setResolutionMechanism(
+                        convertResolutionMechanism(mMetadata.getResolutionMechanism()));
+            }
 
-    private static boolean isLocalOnly(@NonNull PolicyMetadata<?> metadata) {
-        return (metadata.getAllowedScopes().contains(POLICY_SCOPE_USER)
-                        || metadata.getAllowedScopes().contains(POLICY_SCOPE_PARENT_USER))
-                && !metadata.getAllowedScopes().contains(POLICY_SCOPE_DEVICE);
-    }
+            if (isGlobalOnly()) {
+                builder.addFlag(POLICY_FLAG_GLOBAL_ONLY_POLICY);
+            }
 
-    private static <T> PolicySerializer<T> getSerializer(@NonNull PolicyMetadata<T> metadata) {
-        // Cast is safe since metadata already checked the type when building.
-        return (PolicySerializer<T>)
-                switch (metadata) {
-                    case EnumPolicyMetadata e -> new IntegerPolicySerializer();
-                    case IntegerPolicyMetadata e -> new IntegerPolicySerializer();
-                    case StringPolicyMetadata s -> new StringPolicySerializer();
-                    case ListPolicyMetadata l -> getListSerializer(l);
-                    default ->
-                            throw new UnsupportedOperationException(
-                                    "Unsupported policy: " + metadata.getId());
-                };
-    }
+            if (isLocalOnly()) {
+                builder.addFlag(POLICY_FLAG_LOCAL_ONLY_POLICY);
+            }
 
-    private static <T> PolicySerializer<List<T>> getListSerializer(
-            ListPolicyMetadata<T> listPolicy) {
-        // Cast is safe since metadata already checked the type when building.
-        return (PolicySerializer)
-                switch (listPolicy.getElementMetadata()) {
-                    case StringPolicyMetadata s -> new ListOfStringPolicySerializer();
-                    default ->
-                            throw new UnsupportedOperationException(
-                                    "Unsupported list policy: " + listPolicy.getId());
-                };
+            return builder;
+        }
+
+        private boolean isGlobalOnly() {
+            return mMetadata.getAllowedScopes().contains(POLICY_SCOPE_DEVICE)
+                    && !mMetadata.getAllowedScopes().contains(POLICY_SCOPE_USER)
+                    && !mMetadata.getAllowedScopes().contains(POLICY_SCOPE_PARENT_USER);
+        }
+
+        private boolean isLocalOnly() {
+            return (mMetadata.getAllowedScopes().contains(POLICY_SCOPE_USER)
+                            || mMetadata.getAllowedScopes().contains(POLICY_SCOPE_PARENT_USER))
+                    && !mMetadata.getAllowedScopes().contains(POLICY_SCOPE_DEVICE);
+        }
+
+        // Converts from the metadata version of the resolution mechanism to the
+        // version used by the `DevicePolicyEngine`.
+        private ResolutionMechanism<T> convertResolutionMechanism(
+                @NonNull ResolutionMechanismMetadata<T> input) {
+            return switch (input) {
+                case ResolutionMechanismMetadata.MostRestrictive m ->
+                        new MostRestrictive<T>(convertValues(m.getMostToLeastRestrictiveValues()));
+                default ->
+                        throw new UnsupportedOperationException(
+                                "Unsupported resolution mechanism: " + input.getClass());
+            };
+        }
+
+        private List<PolicyValue<T>> convertValues(Collection<T> values) {
+            var convertor = PolicyValueConvertor.getInstance(mMetadata);
+            return values.stream().map(v -> convertor.toPolicyValue(v)).toList();
+        }
+
+        private PolicySerializer<T> getSerializer() {
+            // Cast is safe since metadata already checked the type when building.
+            return (PolicySerializer<T>)
+                    switch (mMetadata) {
+                        case EnumPolicyMetadata e -> new IntegerPolicySerializer();
+                        case IntegerPolicyMetadata e -> new IntegerPolicySerializer();
+                        case StringPolicyMetadata s -> new StringPolicySerializer();
+                        case ListPolicyMetadata l -> getListSerializer(l);
+                        default ->
+                                throw new UnsupportedOperationException(
+                                        "Unsupported policy: " + mMetadata.getId());
+                    };
+        }
+
+        private PolicySerializer<List<T>> getListSerializer(ListPolicyMetadata<T> listPolicy) {
+            // Cast is safe since metadata already checked the type when building.
+            return (PolicySerializer)
+                    switch (listPolicy.getElementMetadata()) {
+                        case StringPolicyMetadata s -> new ListOfStringPolicySerializer();
+                        default ->
+                                throw new UnsupportedOperationException(
+                                        "Unsupported list policy: " + listPolicy.getId());
+                    };
+        }
     }
 }
