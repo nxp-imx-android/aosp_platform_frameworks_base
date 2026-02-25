@@ -28,8 +28,10 @@ cc_library_shared {
         "libnativehelper",
         "libutils",
         "libcutils",
+        "libbinder_ndk",
     ],
     static_libs: [
+        "ravenwood_bivalent_aidl-ndk",
         "libaconfig_storage_read_api_cc",
         "com.android.internal.os_flags_c_lib",
     ],
@@ -43,6 +45,7 @@ java_defaults {
         "androidx.test.ext.junit",
         "androidx.test.rules",
 
+        "ravenwood_bivalent_aidl-java",
         "flag-junit",
         "junit-params",
         "platform-compat-test-rules",
@@ -109,4 +112,12 @@ android_test {
         enabled: true,
         flags: ["--no-jdk-patch"],
     },
+}
+
+aidl_interface {
+    name: "ravenwood_bivalent_aidl",
+    srcs: ["test/**/*.aidl"],
+    local_include_dir: "test",
+    unstable: true,
+    host_supported: true,
 }
