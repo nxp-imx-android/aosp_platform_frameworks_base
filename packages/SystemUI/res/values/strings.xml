@@ -2661,10 +2661,47 @@
     <!-- Notification: Promoted Ongoing specific long click [CHAR LIMIT=NONE] -->
     <string name="notification_promoted_ongoing_long_click">to open demotion menu</string>
 
-    <!-- Notification rules strings -->
+    <!-- Notification rules strings. Marked as not translatable for now because the strings are not
+         final yet.
+         TODO: b/478225883 - Translate the strings once they're ready.
+         TODO: b/478225883 - Move strings to pod once pod resources are ready.
+     -->
 
     <!-- Title for a page where users can edit rules for how their notifications are displayed. [CHAR LIMIT=NONE]-->
-    <string name="notification_rules_activity_title">Notification rules</string>
+    <string name="notification_rules_activity_title" translatable="false">Notification Rules</string>
+    <!-- Text for a button that will let users create a new notification rule. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_create_new_rule" translatable="false">Create new rule</string>
+
+    <!-- Notifications with this action will be highlighted in the list and will alert the user via sound and/or vibration if enabled. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_action_highlight_and_alert" translatable="false">Highlight &amp; Alert</string>
+    <!-- Notifications with this action will be highlighted in the list. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_action_highlight" translatable="false">Highlight</string>
+    <!-- Notifications with this action will be silenced, with no sound or vibration. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_action_silence" translatable="false">Silence</string>
+    <!-- Notifications with this action will be silenced, with no sound or vibration, and be bundled into a single group. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_action_bundle" translatable="false">Silence &amp; Bundle</string>
+    <!-- Notifications with this action will not be shown to the user at all. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_action_block" translatable="false">Block</string>
+
+    <!-- Title for a page where users can add or remove people/contacts/group chats that will be affected by a notification rule. [CHAR LIMIT=30]-->
+    <string name="notification_rules_field_people" translatable="false">People</string>
+    <!-- Title for a page where users can add or remove apps that will be affected by a notification rule. [CHAR LIMIT=30]-->
+    <string name="notification_rules_field_app" translatable="false">App</string>
+
+    <!-- Text for a button letting users edit a particular notification rule. [CHAR LIMIT=30]-->
+    <string name="notification_rules_edit" translatable="false">Edit</string>
+    <!-- Search box placeholder text for notification rules [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_search" translatable="false">Search</string>
+    <!-- Title for a page showing matching search results [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_search_results" translatable="false">Search results</string>
+    <!-- Text explaining that no items have been selected yet [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_nothing_selected" translatable="false">Nothing selected</string>
+    <!-- Text explaining how many items are currently selected [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_number_selected" translatable="false"><xliff:g id="number">%1$d</xliff:g> selected</string>
+    <!-- Text for a button that will save the given number of items [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_save_number_selected" translatable="false">Save <xliff:g id="number">%1$d</xliff:g> selected</string>
+    <!-- Text for a button that will un-select all selected items. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_deselect_all" translatable="false">Deselect all</string>
 
     <!-- Summary of battery saver not available [CHAR LIMIT=NONE] -->
 
@@ -4075,6 +4112,8 @@
 
     <!-- Generic "add" string [CHAR LIMIT=NONE] -->
     <string name="add">Add</string>
+    <!-- Generic "remove" string [CHAR LIMIT=NONE] -->
+    <string name="remove">Remove</string>
     <!-- Add supervised user -->
     <string name="add_user_supervised" translatable="false">@*android:string/supervised_user_creation_label</string>
     <!-- Manage users - For system user management [CHAR LIMIT=40]  -->

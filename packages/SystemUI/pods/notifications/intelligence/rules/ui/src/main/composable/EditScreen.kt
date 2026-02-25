@@ -60,12 +60,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformOutlinedButton
+import com.android.systemui.res.R
 import kotlinx.coroutines.launch
 
 /**
@@ -121,7 +123,7 @@ fun <T> EditScreen(
                 onSearch = { scope.launch { searchBarState.animateToCollapsed() } },
                 placeholder = {
                     Text(
-                        text = "Search [TK]",
+                        text = stringResource(R.string.notification_rules_search),
                         // Use `clearAndSetSemantics` because `ExpandedFullScreenSearchBar` will
                         // handle accessibility for us.
                         modifier = Modifier.clearAndSetSemantics {},
@@ -202,7 +204,7 @@ private fun Header(title: String, onDismissRequest: () -> Unit) {
             IconButton(onClick = onDismissRequest) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back [TK]",
+                    contentDescription = stringResource(R.string.accessibility_back),
                 )
             }
         },
@@ -229,7 +231,7 @@ private fun <T> SearchResults(
     ) {
         item(key = "Search results") {
             Text(
-                "Search results [TK]",
+                stringResource(R.string.notification_rules_search_results),
                 style = MaterialTheme.typography.titleLargeEmphasized,
                 modifier = Modifier.fillMaxWidth().padding(start = 8.dp),
             )
@@ -264,11 +266,17 @@ private fun <T> SelectedItems(
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp),
             ) {
                 Text(
-                    "${currentSelection.size} selected [TK]",
+                    stringResource(
+                        R.string.notification_rules_number_selected,
+                        currentSelection.size,
+                    ),
                     style = MaterialTheme.typography.titleLargeEmphasized,
                     modifier = Modifier.weight(1f),
                 )
-                Text("Deselect all [TK]", modifier = Modifier.clickable { onClearSelection() })
+                Text(
+                    stringResource(R.string.notification_rules_deselect_all),
+                    modifier = Modifier.clickable { onClearSelection() },
+                )
             }
         }
         items(currentSelection, key = uniqueId) {
@@ -322,7 +330,7 @@ private fun <T> Item(
             PlatformOutlinedButton(onClick = onClick) {
                 Icon(
                     imageVector = Icons.Filled.Clear,
-                    contentDescription = "Remove [TK]",
+                    contentDescription = stringResource(R.string.remove),
                     modifier = buttonIconModifier,
                 )
             }
@@ -330,7 +338,7 @@ private fun <T> Item(
             PlatformButton(onClick = onClick) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "Add [TK]",
+                    contentDescription = stringResource(R.string.add),
                     modifier = buttonIconModifier,
                 )
             }
@@ -340,7 +348,10 @@ private fun <T> Item(
 
 @Composable
 private fun NoSelection() {
-    Text("Nothing selected [TK]", modifier = Modifier.padding(top = 8.dp))
+    Text(
+        stringResource(R.string.notification_rules_nothing_selected),
+        modifier = Modifier.padding(top = 8.dp),
+    )
 }
 
 @Composable
@@ -384,7 +395,7 @@ private fun <T> BoxScope.FloatingSaveButton(
                 .clickable { onSelectionSaved(currentSelection.sortedBy { sortKey(it) }) },
     ) {
         Text(
-            "Save ${currentSelection.size} selected [TK]",
+            stringResource(R.string.notification_rules_save_number_selected, currentSelection.size),
             modifier = Modifier.padding(horizontal = 12.dp),
         )
     }

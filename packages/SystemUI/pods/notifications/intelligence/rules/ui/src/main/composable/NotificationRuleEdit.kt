@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
+import android.content.res.Resources
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
@@ -31,6 +32,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -39,6 +43,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
+import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
@@ -46,6 +51,7 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.Includ
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
+import com.android.systemui.res.R
 
 /**
  * A composable rendering a page to edit a specific notification rule.
@@ -70,13 +76,15 @@ fun NotificationRuleEdit(
     var isAddFieldDialogShowing by remember { mutableStateOf(false) }
 
     val textStyles = rememberTextStyles()
+    val resources = LocalResources.current
     val text =
-        remember(viewModel, onEnterEditField, textStyles) {
+        remember(viewModel, onEnterEditField, onExitEditField, textStyles, resources) {
             buildAnnotatedText(
                 viewModel = viewModel,
                 onEnterEditField = onEnterEditField,
                 onExitEditField = onExitEditField,
                 textStyles = textStyles,
+                resources = resources,
             )
         }
 
@@ -85,7 +93,7 @@ fun NotificationRuleEdit(
         Button(onClick = onDismissRuleEditScreen) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back [TK]",
+                contentDescription = stringResource(R.string.accessibility_back),
             )
         }
 
@@ -114,10 +122,11 @@ private fun buildAnnotatedText(
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
     onExitEditField: () -> Unit,
     textStyles: TextStyles,
+    resources: Resources,
 ): AnnotatedString {
     return buildAnnotatedString {
         clickableText(
-            text = viewModel.rule.action.name,
+            text = viewModel.rule.action.toText(resources),
             isAmbiguous = false,
             onClick = {
                 onEnterEditField(
@@ -169,7 +178,7 @@ private fun AddButton(
         return
     }
 
-    Button(onClick = { toggleAddFieldDialogShowing() }) { Text("+ Add [TK]") }
+    Button(onClick = { toggleAddFieldDialogShowing() }) { Text(stringResource(R.string.add)) }
 }
 
 /**
