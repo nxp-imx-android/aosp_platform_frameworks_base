@@ -23,6 +23,8 @@ import com.android.systemui.dreams.shared.model.DreamPlaylistModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 
 /**
@@ -55,6 +57,14 @@ class DreamInteractor @Inject constructor(private val repository: DreamRepositor
 
     /** The current dream playlist. */
     val dreamState: Flow<DreamPlaylistModel> = repository.dreamState
+
+    /** Emits whether the user can switch between dreams. */
+    val canSwitchDreams: Flow<Boolean> =
+        dreamState
+            .map { state ->
+                state.dreams.size > 1 && (state.nextDream ?: state.previousDream) != null
+            }
+            .distinctUntilChanged()
 
     /**
      * Sets the active dream.

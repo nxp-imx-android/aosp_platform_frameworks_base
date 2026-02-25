@@ -26,16 +26,23 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FakeDreamRepository(userRepository: UserRepository) : DreamRepository {
 
     private val dreamStates = mutableMapOf<Int, MutableStateFlow<DreamPlaylistModel>>()
 
+    private val _activeDreamStateCollectors = MutableStateFlow(0)
+    val activeDreamStateCollectors: Flow<Int> = _activeDreamStateCollectors
+
     override val dreamState: Flow<DreamPlaylistModel> =
         userRepository.selectedUser
             .map { it.userInfo.id }
             .flatMapLatest { userId -> getFlowForUser(userId) }
+            .onStart { _activeDreamStateCollectors.value++ }
+            .onCompletion { _activeDreamStateCollectors.value-- }
 
     override suspend fun setActiveDream(componentName: ComponentName, user: UserHandle): Boolean {
         val flow = getFlowForUser(user.identifier)

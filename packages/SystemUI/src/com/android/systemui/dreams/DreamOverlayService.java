@@ -17,6 +17,7 @@
 package com.android.systemui.dreams;
 
 import static android.service.dreams.Flags.dreamWakeRedirect;
+import static android.service.dreams.Flags.dreamsSwitcher;
 import static android.service.dreams.Flags.dreamsV2;
 
 import static com.android.systemui.Flags.glanceableHubAllowKeyguardWhenDreaming;
@@ -565,6 +566,9 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
                             "exiting dream from dismiss touch on preview");
                 }
             }));
+        }
+        if (dreamsSwitcher()) {
+            touchHandlers.add(dreamOverlayComponent.getLongPressTouchHandler());
         }
 
         final AmbientTouchComponent ambientTouchComponent = mAmbientTouchComponentFactory.create(
