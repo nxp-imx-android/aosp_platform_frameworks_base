@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Прикажи предњу камеру"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Прикажи додире"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Одаберите апликацију за снимање"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Прикажи следећу"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Прикажи претходну"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Подешавања снимања екрана"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Означавање"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Видео је сачуван"</string>
@@ -249,8 +247,9 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Микрофон"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Предња камера"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>×<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
-    <skip />
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"изабери"</string>
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"Мени је проширен"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"Мени је скупљен"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Заустави дељење"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Дељење садржаја екрана је укључено. Користите индикатор приватности да бисте прекинули дељење."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Екран се дели"</string>
@@ -429,10 +428,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Помоћник"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Тастатура"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Тастатура"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"изабери"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"одбаци"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"и још <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Унутра је још # обавештење.}one{Унутра је још # обавештење.}few{Унутра су још # обавештења.}other{Унутра је још # обавештења.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Екран је закључан у хоризонталном положају."</string>
@@ -1045,6 +1042,7 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# сат}=2{# сата}one{# сат}few{# сата}other{# сати}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# минут}one{# минут}few{# минута}other{# минута}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"за отварање менија за нижи ниво"</string>
+    <string name="notification_rules_activity_title" msgid="3580318899872813414">"Правила обавештења"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Уштеда батерије"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Дугме <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Тастер Почетна"</string>
@@ -1055,8 +1053,8 @@
     <string name="keyboard_key_backspace" msgid="4095278312039628074">"Backspace"</string>
     <string name="keyboard_key_media_play_pause" msgid="8389984232732277478">"Тастер за репродукцију/паузирање"</string>
     <string name="keyboard_key_media_stop" msgid="1509943745250377699">"Тастер за заустављање"</string>
-    <string name="keyboard_key_media_next" msgid="8502476691227914952">"Тастер Следећа"</string>
-    <string name="keyboard_key_media_previous" msgid="5637875709190955351">"Тастер Претходна"</string>
+    <string name="keyboard_key_media_next" msgid="8502476691227914952">"Даље"</string>
+    <string name="keyboard_key_media_previous" msgid="5637875709190955351">"Назад"</string>
     <string name="keyboard_key_media_rewind" msgid="3450387734224327577">"Тастер за премотавање уназад"</string>
     <string name="keyboard_key_media_fast_forward" msgid="3572444327046911822">"Тастер за премотавање унапред"</string>
     <string name="keyboard_key_page_up" msgid="173914303254199845">"Тастер за страницу нагоре"</string>
@@ -1749,8 +1747,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Пређи на другу апликацију"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Готово"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Даље"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"Пробајте поново"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Назад"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Превуците улево или удесно са три прста на тачпеду"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Супер!"</string>
@@ -1758,25 +1755,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Да бисте се вратили помоћу тачпеда, превуците улево или удесно са три прста"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Иди на почетни екран"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Превуците нагоре са три прста на тачпеду"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"Прво превуците нагоре са три прста да бисте прегледали недавно коришћене апликације"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Одлично!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Довршили сте покрет за повратак на почетну страницу."</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Да бисте отишли на почетни екран, превуците нагоре са три прста на тачпеду"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"Још само мало!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"Затим поново превуците нагоре са три прста да бисте отишли на почетни екран"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Прикажи недавно коришћене апликације"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Превуците нагоре и задржите са три прста на тачпеду"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"Превуците нагоре са три прста на тачпеду"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Одлично!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"Довршили сте покрет за преглед недавно коришћених апликација"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Да бисте прегледали недавне апликације, превуците нагоре и задржите са три прста на тачпеду"</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"Да бисте отишли на екран са недавним апликацијама, превуците нагоре са три прста на тачпеду"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Пређи на другу апликацију"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Превуците удесно са четири прста на тачпеду"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Одлично!"</string>
@@ -1836,8 +1827,8 @@
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Назад"</string>
     <string name="sign_in_button_on_bouncer" msgid="3595960142516902559">"Пријави ме"</string>
     <string name="accessibility_button_on_bouncer_description" msgid="9186344135931507168">"Приступачност"</string>
-    <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Претходно"</string>
-    <string name="pager_dots_next_content_description" msgid="613943992626163120">"Следеће"</string>
+    <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Назад"</string>
+    <string name="pager_dots_next_content_description" msgid="613943992626163120">"Даље"</string>
     <string name="accessibility_pager_dots_navigate_to_next_page_action" msgid="7662720613169169465">"идите на следећу страницу"</string>
     <string name="accessibility_close_overlay_action" msgid="3581095146209387670">"иди назад"</string>
     <string name="ambient_cue_autofill_action" msgid="9213025887835308128">"аутоматско попуњавање"</string>
@@ -1846,7 +1837,7 @@
     <string name="location_button_text_use_precise_location" msgid="3499475231656390476">"Користи прецизну локацију"</string>
     <string name="location_button_text_share_precise_location" msgid="5341882050169860712">"Дели прецизну локацију"</string>
     <string name="location_button_text_near_my_precise_location" msgid="7590342799002942963">"У близини моје прецизне локације"</string>
-    <string name="location_button_text_near_your_precise_location" msgid="3792598666253599055">"У близини моје прецизне локације"</string>
+    <string name="location_button_text_near_your_precise_location" msgid="3792598666253599055">"У близини ваше прецизне локације"</string>
     <string name="privacy_chip_use_string" msgid="979159484631969073">"<xliff:g id="SENSOR">%1$s</xliff:g> се користи"</string>
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="APP">%2$s</xliff:g> користи: <xliff:g id="SENSOR">%1$s</xliff:g>"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"Камера и микрофон"</string>

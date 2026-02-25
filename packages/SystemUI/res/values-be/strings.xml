@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Паказаць сэлфі-камеру"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Паказваць дотыкі"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Выберыце праграму для запісу"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Паказаць наступную праграму"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Паказаць папярэднюю праграму"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Налады запісу экрана"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Разметка"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Відэа захавана"</string>
@@ -189,8 +187,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Выключыць гук"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Уключыць гук"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> з <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Каб скарэкціраваць кадр для сэлфі, зводзьце і разводзьце пальцы, перацягвайце і націскайце"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Здыманне экрана заблакіравана вашым ІТ-адміністратарам"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Зрабіць здымак усяго экрана"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Запісаць змесціва ўсяго экрана"</string>
@@ -250,7 +247,10 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Мікрафон"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Пярэдняя камера"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"выбраць"</string>
+    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
+    <skip />
+    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
     <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Спыніць абагульванне"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Абагульванне экрана ўключана. Каб спыніць абагульванне, выкарыстайце індыкатар прыватнасці."</string>
@@ -430,10 +430,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Памочнік"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Клавіятура"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Клавіятура"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"выбраць"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"закрыць"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Яшчэ # апавяшчэнне ўнутры.}one{Яшчэ # апавяшчэнне ўнутры.}few{Яшчэ # апавяшчэнні ўнутры.}many{Яшчэ # апавяшчэнняў унутры.}other{Яшчэ # апавяшчэння ўнутры.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Экран заблакiраваны ў альбомнай арыентацыі."</string>
@@ -1046,6 +1044,8 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# гадз}=2{# гадзіны}one{# гадзіна}few{# гадзіны}many{# гадзін}other{# гадзіны}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# хвіліна}one{# хвіліна}few{# хвіліны}many{# хвілін}other{# хвіліны}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"каб адкрыць меню паніжэння"</string>
+    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Рэжым энергазберажэння"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Кнопка <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1250,16 +1250,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Клавіша спецыяльных магчымасцей"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Каб пачаць выкарыстоўваць функцыі спецыяльных магчымасцей, націсніце клавішу спецыяльных магчымасцей."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Дадаць функцыі"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Наладзіць клавішу спецыяльных магчымасцей"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Наладзьце функцыю \"<xliff:g id="ID_1">%1$s</xliff:g>\""</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Гатова"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Выберыце функцыю"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Змяніць"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Выберыце функцыю"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Гэта функцыя адкрыецца, калі вы наступным разам націснеце на кнопку спецыяльных магчымасцей"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Спецыяльныя магчымасці"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Экран блакіроўкі"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Ідзе завяршэнне працы…"</string>
@@ -1753,8 +1750,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Пераключэнне праграм"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Гатова"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Далей"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"Паўтарыць спробу"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Назад"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Правядзіце па сэнсарнай панэлі трыма пальцамі ўлева ці ўправа"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Выдатна!"</string>
@@ -1762,25 +1758,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Каб вярнуцца назад з дапамогай сэнсарнай панэлі, правядзіце трыма пальцамі ўлева ці ўправа"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"На галоўны экран"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Правядзіце па сэнсарнай панэлі трыма пальцамі ўверх"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"Спачатку правядзіце трыма пальцамі ўверх, каб праглядзець нядаўнія праграмы"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Выдатная праца!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Вы навучыліся рабіць жэст для пераходу на галоўны экран"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Каб перайсці на галоўны экран, правядзіце трыма пальцамі ўверх па сэнсарным экране"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"Амаль гатова!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"Затым зноў правядзіце трыма пальцамі ўверх, каб перайсці на галоўны экран"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Прагляд нядаўніх праграм"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Правядзіце па сэнсарнай панэлі трыма пальцамі ўверх і затрымайце пальцы"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"Правядзіце па сэнсарнай панэлі трыма пальцамі ўверх"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Выдатная праца!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"Вы навучыліся рабіць жэст для прагляду нядаўніх праграм"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Каб праглядзець нядаўнія праграмы, правядзіце трыма пальцамі ўверх па сэнсарным экране і затрымайце пальцы"</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"Каб перайсці на экран нядаўніх праграм, правядзіце па сэнсарнай панэлі трыма пальцамі ўверх"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Пераключэнне праграм"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Правядзіце па сэнсарнай панэлі чатырма пальцамі ўправа"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Выдатная праца!"</string>

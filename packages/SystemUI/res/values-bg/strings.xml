@@ -187,8 +187,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Спиране на звука"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Включване на звука"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> от <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Съберете/раздалечете пръсти, плъзнете и докоснете селфито, за да коригирате"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Заснемането на екрана е блокирано от системния ви администратор"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Създаване на екранна снимка на целия екран"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Записване на целия екран"</string>
@@ -248,7 +247,10 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Микрофон"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Предна камера"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"избиране"</string>
+    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
+    <skip />
+    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
     <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Спиране на споделянето"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Споделянето на екрана е включено. Използвайте индикатора за поверителност, за да спрете споделянето."</string>
@@ -428,10 +430,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Асистент"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Клавиатура"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Клавиатура"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"избиране"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"отхвърляне"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Съдържа още # известие.}other{Съдържа още # известия.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Екранът е заключен в хоризонтална ориентация."</string>
@@ -1044,6 +1044,8 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# час}=2{# часа}other{# часа}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# минута}other{# минути}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"за да отворите менюто за понижаване"</string>
+    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Запазване на батерията"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Бутон „<xliff:g id="NAME">%1$s</xliff:g>“"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Начало"</string>
@@ -1248,16 +1250,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Клавиш за достъпност"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Можете да натиснете клавиша за достъпност, за да започнете да използвате функциите за достъпност."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Добавяне на функции"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Настройване на клавиша за достъпност"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Настройване на <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Готово"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Избор на функция"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Редактиране"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Изберете функция"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Тази функция ще се отвори при следващото избиране на бутона за достъпност"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Достъпност"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Заключен екран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Изключва се…"</string>
@@ -1751,8 +1750,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Превключване на приложенията"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Готово"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Напред"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"Нов опит"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Назад"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Плъзнете три пръста наляво или надясно по сензорния панел"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Чудесно!"</string>
@@ -1760,25 +1758,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"За да се върнете назад чрез сензорния панел, прекарайте три пръста наляво или надясно"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Към началния екран"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Плъзнете три пръста нагоре по сензорния панел"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"Първо плъзнете нагоре с три пръста, за да видите скорошните си приложения"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Отлично!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Изпълнихте жеста за преминаване към началния екран"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Плъзнете три пръста нагоре по сензорния панел, за да преминете към началния екран"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"Почти приключихте!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"След това плъзнете отново три пръста нагоре, за да преминете към началния екран"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Преглед на скорошните приложения"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Плъзнете три пръста нагоре по сензорния панел и задръжте"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"Плъзнете три пръста нагоре по сензорния панел"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Отлично!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"Изпълнихте жеста за преглед на скорошните приложения"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"За да прегледате скорошните приложения, плъзнете три пръста нагоре по сензорния панел и задръжте"</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"Плъзнете три пръста нагоре по сензорния панел, за да преминете към екрана със скорошните приложения"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Превключване на приложенията"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Прекарайте четири пръста надясно по сензорния панел"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Отлично!"</string>

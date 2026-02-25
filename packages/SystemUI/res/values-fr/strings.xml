@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Afficher l\'appareil photo pour selfies"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Afficher les éléments sélectionnés"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Choisissez une appli pour l\'enregistrement"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Afficher la suivante"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Afficher la précédente"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Paramètres d\'enregistrement d\'écran"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Annoter"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vidéo enregistrée"</string>
@@ -249,7 +247,10 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Micro"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Caméra avant"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"sélectionner"</string>
+    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
+    <skip />
+    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
     <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Arrêter le partage"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Le partage d\'écran est activé. Utilisez l\'indicateur de confidentialité pour arrêter le partage."</string>
@@ -429,10 +430,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Clavier"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Clavier"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"sélectionner"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"fermer"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g> autres"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# autre notification dans le groupe.}one{# autre notification dans le groupe.}many{# autres notifications dans le groupe.}other{# autres notifications dans le groupe.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"L\'écran est verrouillé en mode paysage."</string>
@@ -1045,6 +1044,8 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# heure}=2{# heures}one{# heure}many{# heures}other{# heures}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minute}one{# minute}many{# minutes}other{# minutes}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"pour ouvrir le menu de rétrogradation"</string>
+    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Économiseur de batterie"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Bouton <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Accueil"</string>
@@ -1749,8 +1750,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Passer d\'une application à l\'autre"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"OK"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Suivant"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"Réessayer"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Retour"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Balayez vers la gauche ou la droite avec trois doigts sur le pavé tactile"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Bravo !"</string>
@@ -1758,25 +1758,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Pour revenir en arrière à l\'aide du pavé tactile, balayez vers la gauche ou la droite avec trois doigts"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Retour à l\'accueil"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Balayez vers le haut avec trois doigts sur le pavé tactile"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"Pour commencer, balayez l\'écran vers le haut avec trois doigts pour afficher vos applis récentes"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Bravo !"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Vous connaissez maintenant le geste pour revenir à l\'écran d\'accueil"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Balayez vers le haut avec trois doigts sur le pavé tactile pour accéder à l\'écran d\'accueil"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"Vous y êtes presque !"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"Ensuite, balayez à nouveau vers le haut avec trois doigts pour accéder à l\'écran d\'accueil"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Afficher les applis récentes"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Avec trois doigts, balayez le pavé tactile vers le haut et maintenez la position"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"Balayez vers le haut avec trois doigts sur le pavé tactile"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Bravo !"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"Vous avez appris le geste pour afficher les applis récentes"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Pour afficher les applis récentes, balayez le pavé tactile vers le haut avec trois doigts et maintenez la position"</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"Balayez vers le haut avec trois doigts sur le pavé tactile pour accéder à l\'écran des applis récentes"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Passer d\'une application à l\'autre"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Balayez vers la droite avec quatre doigts sur le pavé tactile"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Bravo !"</string>

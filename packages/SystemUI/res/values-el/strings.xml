@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Εμφάνιση κάμερας selfie"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Εμφάνιση αγγιγμάτων"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Επιλογή εφαρμογής για εγγραφή"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Εμφάνιση επόμενης"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Εμφάνιση προηγούμενης"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Ρυθμίσεις εγγραφής οθόνης"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Σήμανση"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Το βίντεο αποθηκεύτηκε"</string>
@@ -249,7 +247,10 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Μικρόφωνο"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Μπροστινή κάμερα"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"επιλογή"</string>
+    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
+    <skip />
+    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
     <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Διακοπή κοινής χρήσης"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Η κοινή χρήση οθόνης είναι ενεργή. Χρησιμοποιήστε την ένδειξη απορρήτου για να τερματίσετε την κοινή χρήση."</string>
@@ -429,10 +430,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Βοηθός"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Πληκτρολόγιο"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Πληκτρολόγιο"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"επιλογή"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"παράβλεψη"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{# ακόμη ειδοποίηση μέσα στην ομάδα.}other{# ακόμη ειδοποιήσεις μέσα στην ομάδα.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Η οθόνη έχει κλειδωθεί σε οριζόντιο προσανατολισμό."</string>
@@ -1045,6 +1044,8 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ώρα}=2{# ώρες}other{# ώρες}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# λεπτό}other{# λεπτά}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"για άνοιγμα του μενού υποβιβασμού"</string>
+    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Εξοικονόμηση μπαταρίας"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Κουμπί <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1749,8 +1750,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Εναλλαγή μεταξύ εφαρμογών"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Τέλος"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Επόμενο"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"Δοκιμάστε ξανά"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Επιστροφή"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Σύρετε προς τα αριστερά ή τα δεξιά με τρία δάχτυλα στην επιφάνεια αφής"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Ωραία!"</string>
@@ -1758,25 +1758,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Για επιστροφή με χρήση της επιφάνειας αφής, σύρετε προς τα αριστερά ή προς τα δεξιά με τρία δάχτυλα"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Αρχική"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Σύρετε προς τα επάνω με τρία δάχτυλα στην επιφάνεια αφής"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"Αρχικά, σύρετε προς τα επάνω με τρία δάχτυλα για να δείτε τις πρόσφατες εφαρμογές σας"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Μπράβο!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Ολοκληρώσατε την κίνηση μετάβασης στην αρχική οθόνη"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Για μετάβαση στην αρχική οθόνη, σύρετε προς τα επάνω με τρία δάχτυλα στην επιφάνεια αφής"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"Είστε πολύ κοντά!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"Στη συνέχεια, σύρετε προς τα επάνω με τρία δάχτυλα ξανά για να μεταβείτε στην αρχική οθόνη"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Προβολή πρόσφατων εφαρμογών"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Σύρετε προς τα επάνω με τρία δάχτυλα στην επιφάνεια αφής και μην τα σηκώσετε"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"Σύρετε προς τα επάνω με τρία δάχτυλα στην επιφάνεια αφής"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Μπράβο!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"Ολοκληρώσατε την κίνηση για την προβολή πρόσφατων εφαρμογών"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Για προβολή πρόσφατων εφαρμογών, σύρετε προς τα επάνω με τρία δάχτυλα και κρατήστε τα δάχτυλά σας στην επιφάνεια αφής"</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"Σύρετε προς τα επάνω με τρία δάχτυλα στην επιφάνεια αφής για να μεταβείτε στην οθόνη πρόσφατων εφαρμογών"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Εναλλαγή μεταξύ εφαρμογών"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Σύρετε προς τα δεξιά με τέσσερα δάχτυλα στην επιφάνεια αφής"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Μπράβο!"</string>

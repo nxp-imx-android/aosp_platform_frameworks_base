@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"সেলফি ক্যামেরা দেখুন"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"স্পর্শ করা সংক্রান্ত সেটিং দেখুন"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"রেকর্ড করার জন্য অ্যাপ বেছে নিন"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"পরেরটি দেখুন"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"আগেরটি দেখুন"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"স্ক্রিন রেকর্ডিং সেটিংস"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Markup"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ভিডিও সেভ করা হয়েছে"</string>
@@ -249,7 +247,10 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"মাইক্রোফোন"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"সামনের ক্যামেরা"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"বেছে নিন"</string>
+    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
+    <skip />
+    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
     <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"শেয়ার করা বন্ধ করুন"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"স্ক্রিন শেয়ার করা চালু আছে। শেয়ারিং বন্ধ করতে গোপনীয়তা নির্দেশক ব্যবহার করুন।"</string>
@@ -429,10 +430,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"অ্যাসিস্ট্যান্ট"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"কীবোর্ড"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"কীবোর্ড"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"বেছে নিন"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"বাতিল করুন"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>টি"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ভিতরে আরও #টি বিজ্ঞপ্তি আছে।}one{ভিতরে আরও #টি বিজ্ঞপ্তি আছে।}other{ভিতরে আরও #টি বিজ্ঞপ্তি আছে।}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ল্যান্ডস্কেপ সজ্জাতে স্ক্রিন লক করা আছে৷"</string>
@@ -1045,6 +1044,8 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ঘণ্টা}=2{# ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# মিনিট}one{# মিনিট}other{# মিনিট}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ডিমোশন মেনু খোলার জন্য"</string>
+    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"ব্যাটারি সেভার"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g> বোতাম"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"হোম"</string>
@@ -1749,8 +1750,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"অ্যাপ পরিবর্তন করুন"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"হয়ে গেছে"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"এরপর"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"আবার চেষ্টা করুন"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ফিরে যান"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"আপনার টাচপ্যাডে তিনটি আঙুল ব্যবহার করে বাঁদিকে বা ডানদিকে সোয়াইপ করুন"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"সাবাস!"</string>
@@ -1758,25 +1758,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"নিজের টাচপ্যাড ব্যবহার করে ফিরে যেতে, তিনটি আঙুল ব্যবহার করে বাঁদিকে বা ডানদিকে সোয়াইপ করুন"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"হোমে যান"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"আপনার টাচপ্যাডে তিনটি আঙুলের সাহায্যে উপরের দিকে সোয়াইপ করুন"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"প্রথমে, আপনার সাম্প্রতিক অ্যাপ দেখতে তিনটি আঙুল দিয়ে উপরের দিকে সোয়াইপ করুন"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"অসাধারণ!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"জেসচার ব্যবহার করে কীভাবে হোমে ফিরে যাওয়া যায় সেই সম্পর্কে আপনি জেনেছেন"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"আপনার হোম স্ক্রিনে যেতে নিজের টাচপ্যাডে তিনটি আঙুল ব্যবহার করে উপরের দিকে সোয়াইপ করুন"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"লক্ষ্য প্রায় পূরণ করে ফেলেছেন!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"এরপরে, আপনার হোম স্ক্রিনে যেতে আবার তিনটি আঙুল দিয়ে উপরের দিকে সোয়াইপ করুন"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"সম্প্রতি ব্যবহার করা হয়েছে এমন অ্যাপ দেখুন"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"আপনার টাচপ্যাডে তিনটি আঙুল ব্যবহার করে উপরের দিকে সোয়াইপ করে ধরে রাখুন"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"আপনার টাচপ্যাডে তিনটি আঙুলের সাহায্যে উপরের দিকে সোয়াইপ করুন"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"অসাধারণ!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"সম্প্রতি ব্যবহার করা হয়েছে এমন অ্যাপের জেসচার দেখা সম্পূর্ণ করেছেন।"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"সাম্প্রতিক অ্যাপ দেখতে, নিজের টাচপ্যাডে তিনটি আঙুল ব্যবহার করে উপরের দিকে সোয়াইপ করে হোল্ড করুন"</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"আপনার সাম্প্রতিক অ্যাপ স্ক্রিনে যেতে নিজের টাচপ্যাডে তিনটি আঙুল ব্যবহার করে উপরের দিকে সোয়াইপ করুন"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"অ্যাপ পরিবর্তন করুন"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"আপনার টাচপ্যাডে চারটি আঙুল ব্যবহার করে ডানদিকে সোয়াইপ করুন"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"অসাধারণ!"</string>

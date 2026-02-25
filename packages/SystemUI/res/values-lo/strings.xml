@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"ສະແດງກ້ອງເຊວຟີ"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"ສະແດງການສຳຜັດ"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"ເລືອກແອັບເພື່ອບັນທຶກ"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"ສະແດງແອັບຖັດໄປ"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"ສະແດງແອັບກ່ອນໜ້າ"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"ການຕັ້ງຄ່າການບັນທຶກໜ້າຈໍ"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"ມາກອັບ"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"ບັນທຶກວິດີໂອແລ້ວ"</string>
@@ -249,7 +247,10 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"ໄມໂຄຣໂຟນ"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ກ້ອງຖ່າຍຮູບໜ້າ"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"ເລືອກ"</string>
+    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
+    <skip />
+    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
     <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"ຢຸດການແບ່ງປັນ"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"ການແບ່ງປັນໜ້າຈໍເປີດຢູ່. ໃຊ້ສັນຍານບອກສະຖານະຄວາມເປັນສ່ວນຕົວເພື່ອສິ້ນສຸດການແບ່ງປັນ."</string>
@@ -429,10 +430,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"ຜູ້ຊ່ວຍ"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"ແປ້ນພິມ"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"ແປ້ນພິມ"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"ເລືອກ"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"ປິດໄວ້"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{ມີ # ການແຈ້ງເຕືອນເພີ່ມເຕີມຢູ່ທາງໃນ.}other{ມີ # ການແຈ້ງເຕືອນເພີ່ມເຕີມຢູ່ທາງໃນ.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"ໜ້າຈໍຖືກລັອກໃນລວງນອນ."</string>
@@ -1045,6 +1044,8 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ຊົ່ວໂມງ}=2{# ຊົ່ວໂມງ}other{# ຊົ່ວໂມງ}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# ນາທີ}other{# ນາທີ}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ເພື່ອເປີດເມນູການຫຼຸດລະດັບ"</string>
+    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"ຕົວປະຢັດ​ແບັດເຕີຣີ"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"ປຸ່ມ <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1749,8 +1750,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ສະຫຼັບແອັບ"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"ແລ້ວໆ"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"ຕໍ່ໄປ"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"ລອງໃໝ່"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ກັບຄືນ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ປັດຊ້າຍ ຫຼື ຂວາໂດຍໃຊ້ມືສາມນິ້ວຢູ່ແຜ່ນສໍາຜັດຂອງທ່ານ"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"ດີ!"</string>
@@ -1758,25 +1758,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"ເພື່ອກັບຄືນໂດຍໃຊ້ແຜ່ນສໍາຜັດຂອງທ່ານ, ໃຫ້ປັດຊ້າຍ ຫຼື ຂວາໂດຍໃຊ້ສາມນິ້ວ"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"ໄປຫາໜ້າຫຼັກ"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"ປັດຂຶ້ນໂດຍໃຊ້ມືສາມນິ້ວຢູ່ແຜ່ນສໍາຜັດຂອງທ່ານ"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"ທຳອິດ, ໃຫ້ໃຊ້ 3 ນິ້ວປັດຂຶ້ນເພື່ອເບິ່ງແອັບຫຼ້າສຸດຂອງທ່ານ"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"ດີຫຼາຍ!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"ທ່ານໃຊ້ທ່າທາງໄປໜ້າຫຼັກສຳເລັດແລ້ວ"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"ປັດຂຶ້ນດ້ວຍສາມນິ້ວເທິງແຜ່ນສຳຜັດຂອງທ່ານເພື່ອໄປຫາໂຮມສະກຣີນຂອງທ່ານ"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"ໃກ້ສຳເລັດແລ້ວ!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"ຈາກນັ້ນ, ໃຊ້ 3 ນິ້ວປັດຂຶ້ນອີກຄັ້ງເພື່ອເຂົ້າໄປໂຮມສະກຣີນຂອງທ່ານ"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"ເບິ່ງແອັບຫຼ້າສຸດ"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"ປັດຂຶ້ນໂດຍໃຊ້ມືສາມນິ້ວແລ້ວຄ້າງໄວ້ຢູ່ແຜ່ນສໍາຜັດຂອງທ່ານ"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"ໃຊ້ 3 ນິ້ວປັດຂຶ້ນຢູ່ແຜ່ນສຳຜັດຂອງທ່ານ"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"ດີຫຼາຍ!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"ທ່ານເຮັດທ່າທາງເພື່ອເບິ່ງແອັບຫຼ້າສຸດສຳເລັດແລ້ວ"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"ເພື່ອເບິ່ງແອັບຫຼ້າສຸດ, ໃຫ້ປັດຂຶ້ນແລ້ວຄ້າງໄວ້ໂດຍໃຊ້ສາມນິ້ວເທິງແຜ່ນສຳຜັດຂອງທ່ານ"</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"ໃຊ້ 3 ນິ້ວປັດຂຶ້ນຢູ່ແຜ່ນສຳຜັດຂອງທ່ານເພື່ອໄປຫາໜ້າຈໍແອັບຫຼ້າສຸດຂອງທ່ານ"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"ສະຫຼັບແອັບ"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"ໃຊ້ 4 ນິ້ວປັດຂວາເທິງແຜ່ນສຳຜັດຂອງທ່ານ"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"ດີຫຼາຍ!"</string>

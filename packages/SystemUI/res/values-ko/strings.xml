@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"셀피 카메라 표시"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"터치한 항목 표시"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"녹화할 앱 선택"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"다음 앱 표시"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"이전 앱 표시"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"화면 녹화 설정"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"마크업"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"동영상 저장됨"</string>
@@ -249,7 +247,10 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"마이크"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"전면 카메라"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g>x<xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"선택"</string>
+    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
+    <skip />
+    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
     <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"공유 중지"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"화면 공유가 사용 설정되어 있습니다. 공유를 종료하려면 개인 정보 보호 표시기를 사용하세요."</string>
@@ -429,10 +430,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"어시스턴트"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"키보드"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"키보드"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"선택"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"닫기"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"<xliff:g id="NUMBER">%s</xliff:g>개 더보기"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{그룹에 알림이 #개 더 있습니다.}other{그룹에 알림이 #개 더 있습니다.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"화면이 가로 방향으로 잠겨 있습니다."</string>
@@ -528,13 +527,13 @@
     <string name="quick_settings_work_mode_label" msgid="6440531507319809121">"직장 앱"</string>
     <string name="quick_settings_work_mode_paused_state" msgid="6681788236383735976">"일시중지됨"</string>
     <string name="quick_settings_night_display_label" msgid="8180030659141778180">"야간 조명"</string>
-    <string name="quick_settings_night_secondary_label_on_at_sunset" msgid="3358706312129866626">"일몰에"</string>
+    <string name="quick_settings_night_secondary_label_on_at_sunset" msgid="3358706312129866626">"일몰에 사용 설정"</string>
     <string name="quick_settings_night_secondary_label_until_sunrise" msgid="4063448287758262485">"일출까지"</string>
     <string name="quick_settings_night_secondary_label_on_at" msgid="3584738542293528235">"<xliff:g id="TIME">%s</xliff:g>에 켜짐"</string>
     <string name="quick_settings_secondary_label_until" msgid="1883981263191927372">"<xliff:g id="TIME">%s</xliff:g>에 꺼짐"</string>
     <string name="quick_settings_ui_mode_night_label" msgid="1398928270610780470">"어두운 테마"</string>
     <string name="quick_settings_dark_mode_secondary_label_battery_saver" msgid="4990712734503013251">"절전 모드"</string>
-    <string name="quick_settings_dark_mode_secondary_label_on_at_sunset" msgid="6017379738102015710">"일몰에"</string>
+    <string name="quick_settings_dark_mode_secondary_label_on_at_sunset" msgid="6017379738102015710">"일몰에 사용 설정"</string>
     <string name="quick_settings_dark_mode_secondary_label_until_sunrise" msgid="4404885070316716472">"일출까지"</string>
     <string name="quick_settings_dark_mode_secondary_label_on_at" msgid="5128758823486361279">"<xliff:g id="TIME">%s</xliff:g>에 켜짐"</string>
     <string name="quick_settings_dark_mode_secondary_label_until" msgid="2289774641256492437">"<xliff:g id="TIME">%s</xliff:g>까지"</string>
@@ -1045,6 +1044,8 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{#시간}=2{#시간}other{#시간}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{#분}other{#분}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"하위 메뉴 열기"</string>
+    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"절전 모드"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g> 버튼"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1749,8 +1750,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"앱 전환"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"완료"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"다음"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"다시 시도"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"뒤로"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"세 손가락을 사용해 터치패드에서 왼쪽 또는 오른쪽으로 스와이프하세요."</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"훌륭합니다"</string>
@@ -1758,25 +1758,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"터치패드를 사용해 뒤로 돌아가려면 세 손가락을 사용해 왼쪽이나 오른쪽으로 스와이프하세요."</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"홈으로 이동"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"세 손가락을 사용해 터치패드에서 위로 스와이프하세요."</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"먼저 세 손가락을 사용해 위로 스와이프하여 최근 앱을 확인하세요."</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"잘하셨습니다"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"홈으로 이동 동작을 완료했습니다."</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"홈 화면으로 이동하려면 터치패드에서 세 손가락을 사용해 위로 스와이프하세요."</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"거의 완료됨"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"다음으로, 홈 화면으로 이동하려면 세 손가락을 사용해 다시 위로 스와이프하세요."</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"최근 앱 보기"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"세 손가락을 사용해 터치패드에서 위로 스와이프한 후 잠시 기다리세요."</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"세 손가락을 사용해 터치패드에서 위로 스와이프하세요."</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"아주 좋습니다"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"최근 앱 보기 동작을 완료했습니다."</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"최근 앱을 보려면 터치패드에서 세 손가락을 사용해 위로 스와이프한 채로 유지하세요."</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"최근 앱 화면으로 이동하려면 터치패드에서 세 손가락을 사용해 위로 스와이프하세요."</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"앱 전환"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"네 손가락을 사용해 터치패드에서 오른쪽으로 스와이프하세요."</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"잘하셨습니다"</string>

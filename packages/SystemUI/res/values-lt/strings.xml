@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Rodyti asmenukių vaizdo kamerą"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Rodyti palietimus"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Norėdami įrašyti pasirinkite programą"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Rodyti kitą mediją"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Rodyti ankstesnę mediją"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Ekrano vaizdo įrašymo nustatymai"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Žymėjimas"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vaizdo įrašas išsaugotas"</string>
@@ -249,7 +247,10 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofonas"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Priekinis fotoaparatas"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"pasirinkti"</string>
+    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
+    <skip />
+    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
     <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Nebebendrinti"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Ekrano bendrinimas įjungtas. Naudokite privatumo indikatorių, kad sustabdytumėte bendrinimą."</string>
@@ -429,10 +430,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Padėjėjas"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Klaviatūra"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Klaviatūra"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"pasirinkti"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"uždaryti"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"Dar <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Grupėje yra dar # pranešimas.}one{Grupėje yra dar # pranešimas.}few{Grupėje yra dar # pranešimai.}many{Grupėje yra dar # pranešimo.}other{Grupėje yra dar # pranešimų.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Užrakintas ekranas yra horizontalios orientacijos."</string>
@@ -1045,6 +1044,8 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# valanda}=2{# valandos}one{# valanda}few{# valandos}many{# valandos}other{# valandų}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minutė}one{# minutė}few{# minutės}many{# minutės}other{# minučių}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"atidaryti prioriteto sumažinimo meniu"</string>
+    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Akum. taus. pr."</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Mygtukas <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Pagrindinis"</string>
@@ -1749,8 +1750,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Perjungti programas"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Atlikta"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Kitas"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"Bandyti dar kartą"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Grįžti"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Braukite kairėn arba dešinėn trimis pirštais bet kur jutiklinėje dalyje"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Šaunu!"</string>
@@ -1758,25 +1758,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Jei norite grįžti naudodami jutiklinę dalį, perbraukite kairėn arba dešinėn trimis pirštais"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Eikite į pagrindinį ekraną"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Braukite viršun trimis pirštais bet kur jutiklinėje dalyje"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"Pirmiausia perbraukite aukštyn trimis pirštais, kad peržiūrėtumėte naujausias programas"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Puiku!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Atlikote perėjimo į pagrindinį ekraną gestą"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Perbraukite viršun trimis pirštais jutiklinėje dalyje, kad pereitumėte į pagrindinį ekraną"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"Beveik baigta!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"Tada dar kartą perbraukite aukštyn trimis pirštais, kad pereitumėte į pagrindinį ekraną"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Peržiūrėti naujausias programas"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Braukite viršun trimis pirštais bet kur jutiklinėje dalyje ir palaikykite"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"Braukite viršun trimis pirštais bet kur jutiklinėje dalyje"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Puiku!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"Atlikote naujausių programų peržiūros gestą"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Peržiūrėkite naujausias programas, jutiklinėje dalyje perbraukę aukštyn trimis pirštais ir palaikę"</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"Perbraukite viršun trimis pirštais jutiklinėje dalyje, kad pereitumėte į naujausių programų ekraną"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Perjungti programas"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Braukite dešinėn keturiais pirštais jutiklinėje dalyje"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Puiku!"</string>

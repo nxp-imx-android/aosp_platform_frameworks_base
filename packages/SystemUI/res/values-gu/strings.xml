@@ -247,8 +247,9 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"માઇક્રોફોન"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"ફ્રન્ટ કૅમેરા"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
-    <skip />
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"પસંદ કરો"</string>
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"મેનૂ મોટું કર્યું"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"મેનૂ નાનું કર્યું"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"શેર કરવાનું રોકો"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"સ્ક્રીન શેરિંગ ચાલુ છે. શેરિંગ બંધ કરવા માટે પ્રાઇવસી સૂચકનો ઉપયોગ કરો."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"સ્ક્રીન શેર કરી રહ્યાં છીએ"</string>
@@ -427,10 +428,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"આસિસ્ટંટ"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"કીબોર્ડ"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"કીબોર્ડ"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"પસંદ કરો"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"છોડી દો"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{વધુ # નોટિફિકેશન અંદર છે.}one{વધુ # નોટિફિકેશન અંદર છે.}other{વધુ # નોટિફિકેશન અંદર છે.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"સ્ક્રીન લેન્ડસ્કેપ ઓરિએન્ટેશનમાં લૉક કરેલ છે."</string>
@@ -526,7 +525,7 @@
     <string name="quick_settings_work_mode_label" msgid="6440531507319809121">"ઑફિસ માટેની ઍપ"</string>
     <string name="quick_settings_work_mode_paused_state" msgid="6681788236383735976">"થોભાવ્યું"</string>
     <string name="quick_settings_night_display_label" msgid="8180030659141778180">"રાત્રિ પ્રકાશ"</string>
-    <string name="quick_settings_night_secondary_label_on_at_sunset" msgid="3358706312129866626">"સૂર્યાસ્ત વખતે"</string>
+    <string name="quick_settings_night_secondary_label_on_at_sunset" msgid="3358706312129866626">"સૂર્યાસ્ત વખતે ચાલુ"</string>
     <string name="quick_settings_night_secondary_label_until_sunrise" msgid="4063448287758262485">"સૂર્યોદય સુધી"</string>
     <string name="quick_settings_night_secondary_label_on_at" msgid="3584738542293528235">"<xliff:g id="TIME">%s</xliff:g> વાગ્યે"</string>
     <string name="quick_settings_secondary_label_until" msgid="1883981263191927372">"<xliff:g id="TIME">%s</xliff:g> સુધી"</string>
@@ -1043,6 +1042,7 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# કલાક}=2{# કલાક}one{# કલાક}other{# કલાક}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# મિનિટ}one{# મિનિટ}other{# મિનિટ}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ડિમોશન મેનૂ ખોલવા માટે"</string>
+    <string name="notification_rules_activity_title" msgid="3580318899872813414">"નોટિફિકેશન માટેના નિયમો"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"બૅટરી સેવર"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"બટન <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1747,8 +1747,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ઍપ સ્વિચ કરો"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"થઈ ગયું"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"આગળ"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"ફરી પ્રયાસ કરો"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"પાછા જાઓ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"તમારા ટચપૅડ પર ત્રણ આંગળીનો ઉપયોગ કરીને ડાબે કે જમણે સ્વાઇપ કરો"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"સરસ!"</string>
@@ -1756,25 +1755,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"તમારા ટચપૅડ વડે પાછા જવા માટે, ત્રણ આંગળીનો ઉપયોગ કરીને ડાબે કે જમણે સ્વાઇપ કરો"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"હોમ પર જાઓ"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"તમારા ટચપૅડ પર ત્રણ આંગળી વડે ઉપરની તરફ સ્વાઇપ કરો"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"પહેલા, તમારી તાજેતરની ઍપ જોવા માટે ત્રણ આંગળી વડે ઉપરની તરફ સ્વાઇપ કરો"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"ખૂબ સરસ કામ!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"તમે હોમ સ્ક્રીન પર જવાનો સંકેત પૂર્ણ કર્યો"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"તમારી હોમ સ્ક્રીન પર જવા માટે, તમારા ટચપૅડ પર ત્રણ આંગળી વડે ઉપરની તરફ સ્વાઇપ કરો"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"બસ થઈ ગયું સમજો!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"આગળ, તમારી હોમ સ્ક્રીન પર જવા માટે ફરીથી ત્રણ આંગળી વડે ઉપરની તરફ સ્વાઇપ કરો"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"તાજેતરની ઍપ જુઓ"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"તમારા ટચપૅડ પર ત્રણ આંગળીઓનો ઉપયોગ કરીને ઉપર સ્વાઇપ કરો અને દબાવી રાખો"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"તમારા ટચપૅડ પર ત્રણ આંગળી વડે ઉપરની તરફ સ્વાઇપ કરો"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"ખૂબ સરસ કામ!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"તમે \'તાજેતરની ઍપ જુઓ\' સંકેત પૂર્ણ કર્યો"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"તાજેતરની ઍપ જોવા માટે, તમારા ટચપૅડ પર ત્રણ આંગળી વડે ઉપરની તરફ સ્વાઇપ કરો અને દબાવી રાખો"</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"તમારી તાજેતરની ઍપની સ્ક્રીન પર જવા માટે, તમારા ટચપૅડ પર ત્રણ આંગળી વડે ઉપરની તરફ સ્વાઇપ કરો"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"ઍપ સ્વિચ કરો"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"તમારા ટચપૅડ પર ચાર આંગળીઓનો ઉપયોગ કરીને જમણે સ્વાઇપ કરો"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"ખૂબ સરસ કામ!"</string>
