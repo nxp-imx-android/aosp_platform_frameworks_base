@@ -20,12 +20,14 @@ import android.app.contextualsearch.ContextualSearchManager
 import android.content.res.Resources
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_CURSOR
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
 import android.util.Slog
+import com.android.hardware.input.Flags.enableContextualCursorDesktopEntrypoints
 import com.android.hardware.input.Flags.enableContextualSearchDesktopEntrypoints
 import com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut
 import com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut
@@ -79,6 +81,9 @@ constructor(
         if (enableContextualSearchDesktopEntrypoints()) {
             supportedGestures.add(KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH)
         }
+        if (enableContextualCursorDesktopEntrypoints()) {
+            supportedGestures.add(KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_CURSOR)
+        }
         if (supportedGestures.isEmpty()) {
             return
         }
@@ -106,6 +111,10 @@ constructor(
                     }
                     commandQueue.toggleQuickSettingsPanel()
                 }
+                // TODO: b/484184229 - Temporarily mapping the contextual cursor
+                // shortcut to contextual search. A dedicated implementation for
+                // the contextual cursor will follow in a later iteration.
+                KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_CURSOR,
                 KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH -> {
                     launcherProxyService.proxy?.invokeContextualSearch(
                         ContextualSearchManager.ENTRYPOINT_KEYBOARD_SHORTCUT,
