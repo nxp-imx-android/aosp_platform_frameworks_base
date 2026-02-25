@@ -41,7 +41,7 @@ sealed class DesktopTaskPosition {
         private const val WINDOW_HEIGHT_PROPORTION = 0.375
 
         override fun getTopLeftCoordinates(frame: Rect, window: Rect): Point {
-            val x = (frame.width() - window.width()) / 2
+            val x = (frame.width() - window.width()) / 2 + frame.left
             // Position with more margin at the bottom.
             val y = (frame.height() - window.height()) * WINDOW_HEIGHT_PROPORTION + frame.top
             return Point(x, y.toInt())
