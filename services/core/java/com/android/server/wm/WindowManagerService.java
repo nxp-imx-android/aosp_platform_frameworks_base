@@ -8839,6 +8839,9 @@ public class WindowManagerService extends IWindowManager.Stub
                         "requestHardwareRendererOutputEnabled", false /* parallel */);
                 dc.forAllWindows(win -> {
                     if (win.isVisibleNow()) {
+                        // Reset the draw state to accurately know when the window has fully redrawn
+                        // following the re-enabling of hardware renderer output.
+                        win.mWinAnimator.resetDrawState();
                         mSyncEngine.addToSyncSet(syncId, win);
                     }
                 }, true /* traverseTopToBottom */);
