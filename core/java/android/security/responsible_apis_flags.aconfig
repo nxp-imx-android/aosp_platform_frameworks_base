@@ -191,10 +191,13 @@ flag {
 }
 
 flag {
-    name: "implicit_share_identity_for_result"
+    name: "implicit_share_launching_identity_for_result"
     namespace: "responsible_apis"
     description: "Implicitly shares launching app identity with startActivityForResult"
     bug: "452941408"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

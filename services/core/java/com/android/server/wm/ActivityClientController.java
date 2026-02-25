@@ -886,7 +886,7 @@ class ActivityClientController extends IActivityClientController.Stub {
             // for a result. If the UIDs do not match, it indicates an intermediate app forwarded
             // the request, so fall back to checking if the intermediate app explicitly opted in.
             boolean isDirectStartForResult = false;
-            if (android.security.Flags.implicitShareIdentityForResult()) {
+            if (android.security.Flags.implicitShareLaunchingIdentityForResult()) {
                 isDirectStartForResult =
                         r.resultTo != null && r.resultTo.getUid() == r.launchedFromUid;
             }
