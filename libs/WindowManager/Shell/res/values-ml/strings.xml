@@ -141,7 +141,6 @@
     <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"സ്‌ക്രീൻ മാക്‌സിമൈസ് ചെയ്യുക"</string>
     <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"വലുപ്പം മാറ്റുക"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"ആപ്പ് ഇവിടേക്ക് നീക്കാനാകില്ല"</string>
-    <string name="desktop_mode_talkback_state_opening" msgid="8505494249513712682">"പുതിയ ആപ്പ് വിൻഡോ തുറക്കുന്നു"</string>
     <string name="desktop_mode_talkback_state_closing" msgid="6791583518636526904">"ആപ്പ് വിൻഡോ അടയ്‌ക്കുന്നു"</string>
     <string name="desktop_mode_talkback_state_minimizing" msgid="7406911785134757827">"ആപ്പ് വിൻഡോ മിനിമൈസ് ചെയ്യുന്നു"</string>
     <string name="desktop_mode_talkback_state_focused" msgid="6287982923335568236">"<xliff:g id="APP_NAME">%1$s</xliff:g> (ഫോക്കസ് ചെയ്‌തവ)"</string>

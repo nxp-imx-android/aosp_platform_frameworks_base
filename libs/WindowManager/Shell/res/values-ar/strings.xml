@@ -141,7 +141,6 @@
     <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"تكبير الشاشة"</string>
     <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"تغيير الحجم"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"لا يمكن نقل التطبيق إلى هنا"</string>
-    <string name="desktop_mode_talkback_state_opening" msgid="8505494249513712682">"جارٍ فتح نافذة تطبيق جديدة"</string>
     <string name="desktop_mode_talkback_state_closing" msgid="6791583518636526904">"جارٍ إغلاق نافذة التطبيق"</string>
     <string name="desktop_mode_talkback_state_minimizing" msgid="7406911785134757827">"جارٍ تصغير نافذة التطبيق"</string>
     <string name="desktop_mode_talkback_state_focused" msgid="6287982923335568236">"‫\"<xliff:g id="APP_NAME">%1$s</xliff:g>\" (تم التركيز عليه)"</string>
