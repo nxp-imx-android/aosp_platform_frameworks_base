@@ -175,7 +175,11 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     private IApplicationThread mThread;
     // Currently desired scheduling class
     private volatile @SchedGroup int mCurSchedGroup;
-    // Currently computed process state
+    /**
+     * Currently computed process state.
+     * When {@link com.android.server.am.Flags#encapsulateCurProcState()} is enabled, the value is
+     * updated after the computation is done.
+     */
     private volatile int mCurProcState = PROCESS_STATE_NONEXISTENT;
     // Last reported process state;
     private volatile int mRepProcState = PROCESS_STATE_NONEXISTENT;
@@ -448,6 +452,15 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
 
     @SchedGroup int getCurrentSchedulingGroup() {
         return mCurSchedGroup;
+    }
+
+    /**
+     * Sets the current process state.
+     *
+     * @param procState The new process state.
+     */
+    public void setCurrentProcState(int procState) {
+        mCurProcState = procState;
     }
 
     int getCurrentProcState() {
