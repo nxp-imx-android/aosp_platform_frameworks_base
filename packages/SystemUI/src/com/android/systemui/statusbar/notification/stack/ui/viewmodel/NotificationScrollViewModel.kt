@@ -51,7 +51,7 @@ import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.domain.interactor.RemoteInputInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.LockscreenDisplayConfig
-import com.android.systemui.statusbar.notification.stack.domain.interactor.LockscreenNotificationDisplayConfigInteractor
+import com.android.systemui.statusbar.notification.stack.domain.interactor.LockscreenNotificationsInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.NotificationStackAppearanceInteractor
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimClipping
@@ -87,7 +87,7 @@ constructor(
     @ShadeDisplayAware private val configuration: ConfigurationState,
     placeholderStateStorage: NotificationPlaceholderStateStorage,
     private val stackAppearanceInteractor: NotificationStackAppearanceInteractor,
-    private val lockscreenAppearanceInteractor: LockscreenNotificationDisplayConfigInteractor,
+    private val lockscreenNotificationsInteractor: LockscreenNotificationsInteractor,
     brightnessMirrorShowingInteractorLazy: Lazy<BrightnessMirrorShowingInteractor>,
     private val shadeInteractor: ShadeInteractor,
     shadeModeInteractor: ShadeModeInteractor,
@@ -371,7 +371,7 @@ constructor(
     fun getLockscreenDisplayConfig(
         calculateMaxNotifications: (Int, Boolean) -> Int
     ): Flow<LockscreenDisplayConfig> {
-        return lockscreenAppearanceInteractor.getLockscreenDisplayConfig {
+        return lockscreenNotificationsInteractor.getLockscreenDisplayConfig {
             availableSpace,
             useExtraShelfSpace ->
             calculateMaxNotifications(availableSpace, useExtraShelfSpace)

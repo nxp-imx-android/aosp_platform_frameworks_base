@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.flowOf
 data class LockscreenDisplayConfig(val isOnLockscreen: Boolean, val maxNotifications: Int)
 
 @SysUISingleton
-class LockscreenNotificationDisplayConfigInteractor
+class LockscreenNotificationsInteractor
 @Inject
 constructor(
     private val sceneInteractor: SceneInteractor,
@@ -49,7 +49,7 @@ constructor(
     private val notificationStackAppearanceInteractor: NotificationStackAppearanceInteractor,
 ) {
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val showOnlyFullHeightNotifications: Flow<Boolean> =
+    val isStackConstrained: Flow<Boolean> =
         sceneInteractor.transitionStateFlow.flatMapLatest { transitionState ->
             when (transitionState) {
                 is Idle ->
@@ -96,7 +96,7 @@ constructor(
     ): Flow<LockscreenDisplayConfig> {
         @Suppress("UNCHECKED_CAST")
         return combine(
-                showOnlyFullHeightNotifications,
+                isStackConstrained,
                 notificationStackAppearanceInteractor.constrainedAvailableSpace,
                 sharedNotificationContainerInteractor.useExtraShelfSpace,
                 sharedNotificationContainerInteractor.notificationStackChanged,
