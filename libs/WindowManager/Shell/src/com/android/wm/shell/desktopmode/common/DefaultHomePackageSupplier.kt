@@ -69,7 +69,8 @@ class DefaultHomePackageSupplier(
                     0,
                     currentUserId,
                 )
-            defaultHomePackage = defaultHomeInfo?.let { defaultHomeInfo.activityInfo.packageName }
+            defaultHomePackage =
+                defaultHomeInfo?.takeIf { it.priority >= 0 }?.activityInfo?.packageName
         } else {
             defaultHomePackage =
                 context
