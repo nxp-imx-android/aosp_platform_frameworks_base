@@ -84,6 +84,10 @@ narayan@google.com #{LAST_RESORT_SUGGESTION}
 # Memory usage stats
 per-file MemoryUsageStats.java = file:/MEMORY_OWNERS
 
+# ANRs
+per-file *Anr*.java = file:/PERFORMANCE_OWNERS
+per-file TraceErrorLogger.java = file:/PERFORMANCE_OWNERS
+
 # Default
 yamasani@google.com #{LAST_RESORT_SUGGESTION}
 hackbod@google.com #{LAST_RESORT_SUGGESTION}
