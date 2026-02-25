@@ -19,7 +19,8 @@ package com.android.systemui.common.ui.compose
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.layoutId
 
-inline fun <reified LayoutIdType> List<Measurable>.byLayoutId(): Map<LayoutIdType, Measurable> {
+public inline fun <reified LayoutIdType> List<Measurable>.byLayoutId():
+    Map<LayoutIdType, Measurable> {
     var index = -1
     return associateBy { measurable ->
         index++
@@ -37,7 +38,7 @@ inline fun <reified LayoutIdType> List<Measurable>.byLayoutId(): Map<LayoutIdTyp
     }
 }
 
-fun <LayoutIdType> List<Measurable>.singleton(layoutId: LayoutIdType): Measurable {
+public fun <LayoutIdType> List<Measurable>.singleton(layoutId: LayoutIdType): Measurable {
     check(size == 1) {
         "Only one Measurable expected but there are actually $size measurables. Use byLayoutId instead"
     }

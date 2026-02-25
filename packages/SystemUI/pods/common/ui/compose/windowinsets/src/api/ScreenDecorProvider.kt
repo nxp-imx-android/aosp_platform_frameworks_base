@@ -40,15 +40,18 @@ import com.android.internal.policy.ScreenDecorationsUtils
  * provided and the value was read during recomposition, it would result in a frame using the wrong
  * value after new insets are received.
  */
-val LocalDisplayCutout: ProvidableCompositionLocal<() -> DisplayCutout> = staticCompositionLocalOf {
-    { DisplayCutout() }
-}
+public val LocalDisplayCutout: ProvidableCompositionLocal<() -> DisplayCutout> =
+    staticCompositionLocalOf {
+        { DisplayCutout() }
+    }
 
 /** The corner radius in px of the current display. */
-val LocalScreenCornerRadius = staticCompositionLocalOf { 0.dp }
+public val LocalScreenCornerRadius: ProvidableCompositionLocal<Dp> = staticCompositionLocalOf {
+    0.dp
+}
 
 @Composable
-fun ScreenDecorProvider(windowInsets: () -> WindowInsets?, content: @Composable () -> Unit) {
+public fun ScreenDecorProvider(windowInsets: () -> WindowInsets?, content: @Composable () -> Unit) {
     CompositionLocalProvider(
         LocalScreenCornerRadius provides rememberScreenCornerRadius(),
         LocalDisplayCutout provides rememberDisplayCutout(windowInsets),
@@ -58,7 +61,7 @@ fun ScreenDecorProvider(windowInsets: () -> WindowInsets?, content: @Composable 
 }
 
 @Composable
-fun rememberScreenCornerRadius(): Dp {
+public fun rememberScreenCornerRadius(): Dp {
     val context = LocalContext.current
     val screenCornerRadiusPx =
         remember(context.display.uniqueId) { ScreenDecorationsUtils.getWindowCornerRadius(context) }
@@ -66,7 +69,7 @@ fun rememberScreenCornerRadius(): Dp {
 }
 
 @Composable
-fun rememberDisplayCutout(windowInsets: () -> WindowInsets?): () -> DisplayCutout {
+public fun rememberDisplayCutout(windowInsets: () -> WindowInsets?): () -> DisplayCutout {
     val context = LocalContext.current
     return remember(windowInsets, context) {
         val cutoutState = derivedStateOf { windowInsets().toCutout(context) }

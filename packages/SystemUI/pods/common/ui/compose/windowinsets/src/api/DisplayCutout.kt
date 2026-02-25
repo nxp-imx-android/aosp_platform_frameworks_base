@@ -27,7 +27,7 @@ import kotlin.math.abs
  * computed after composition but before layout. Moreover, these insets can be animated and we don't
  * want to recompose every frame.
  */
-data class DisplayCutout(
+public data class DisplayCutout(
     val left: Int = 0,
     val top: Int = 0,
     val right: Int = 0,
@@ -44,7 +44,7 @@ data class DisplayCutout(
     val height: Int = abs(bottom - top)
 }
 
-enum class CutoutLocation {
+public enum class CutoutLocation {
     NONE,
     CENTER,
     LEFT,
