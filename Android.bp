@@ -418,6 +418,7 @@ java_defaults {
         "tv_tuner_resource_manager_aidl_interface-java",
         "media_quality_aidl_interface-java",
         "soundtrigger_middleware-aidl-java",
+        "media_metrics_aidl_interface-V1-java",
         "audio-aidl-java",
         "modules-utils-binary-xml",
         "modules-utils-build",
