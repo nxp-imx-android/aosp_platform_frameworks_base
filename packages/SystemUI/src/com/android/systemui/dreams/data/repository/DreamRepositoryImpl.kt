@@ -18,6 +18,7 @@ package com.android.systemui.dreams.data.repository
 
 import android.app.DreamManager
 import android.content.ComponentName
+import android.content.pm.PackageManager
 import android.os.RemoteException
 import android.os.UserHandle
 import android.service.dreams.DreamPlaylist
@@ -28,10 +29,12 @@ import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.app.tracing.coroutines.withContextTraced
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dreams.shared.model.DreamAppModel
 import com.android.systemui.dreams.shared.model.DreamPlaylistModel
 import com.android.systemui.log.dagger.CommunalTableLog
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
+import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.utils.UserScopedService
 import javax.inject.Inject
@@ -45,6 +48,7 @@ import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 @SysUISingleton
 class DreamRepositoryImpl
@@ -54,18 +58,18 @@ constructor(
     @param:Background private val bgScope: CoroutineScope,
     @param:CommunalTableLog private val tableLogBuffer: TableLogBuffer,
     private val userScopedDreamManager: UserScopedService<DreamManager>,
+    private val userContextProvider: UserContextProvider,
     userRepository: UserRepository,
 ) : DreamRepository {
+    private val userHandle: Flow<UserHandle> =
+        userRepository.selectedUser.map { it.userInfo.userHandle }.distinctUntilChanged()
 
-    private val dreamManager: Flow<DreamManager> =
-        userRepository.selectedUser
-            .map { it.userInfo.userHandle }
-            .distinctUntilChanged()
-            .map(userScopedDreamManager::forUser)
+    private val dreamManager: Flow<DreamManager> = userHandle.map(userScopedDreamManager::forUser)
 
     override val dreamState: Flow<DreamPlaylistModel> =
         dreamManager
             .flatMapLatest(::listenForDreamChanges)
+            .map { populateAppInfo(it, userContextProvider.userContext.packageManager) }
             .logDiffsForTable(
                 tableLogBuffer = tableLogBuffer,
                 columnPrefix = "dreamState",
@@ -109,6 +113,35 @@ constructor(
                     manager.unregisterListener(listener)
                 }
             }
+        }
+
+    /**
+     * Populates the [DreamPlaylistModel] with [DreamAppModel] info by querying the
+     * [PackageManager].
+     */
+    private suspend fun populateAppInfo(
+        playlist: DreamPlaylistModel,
+        packageManager: PackageManager,
+    ): DreamPlaylistModel =
+        withContext(bgDispatcher) {
+            val dreamsByPackage = playlist.dreams.groupBy { it.componentName.packageName }
+            val appInfoByPackage =
+                dreamsByPackage.keys.associateWith { packageName ->
+                    DreamAppModel(
+                        appName =
+                            packageManager.getApplicationLabel(
+                                packageManager.getApplicationInfo(packageName, 0)
+                            ),
+                        launchIntent = packageManager.getLaunchIntentForPackage(packageName),
+                    )
+                }
+
+            val dreamsWithAppInfo =
+                playlist.dreams.map {
+                    it.copy(appInfo = appInfoByPackage[it.componentName.packageName])
+                }
+
+            playlist.copy(dreams = dreamsWithAppInfo)
         }
 
     private inline fun <T> runCatchingRemote(
