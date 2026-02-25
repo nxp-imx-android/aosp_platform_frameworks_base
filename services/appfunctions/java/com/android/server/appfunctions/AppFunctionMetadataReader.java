@@ -68,6 +68,7 @@ import com.android.internal.infra.AndroidFuture;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -90,6 +91,20 @@ final class AppFunctionMetadataReader {
             new JoinSpec.Builder(PROPERTY_APP_FUNCTION_STATIC_METADATA_QUALIFIED_ID)
                     .setNestedSearch("", RUNTIME_SEARCH_SPEC)
                     .build();
+
+    /**
+     * The ranking strategy for App Function search query to sort the function documents by the
+     * package name hash.
+     *
+     * <p>`sum` is used since AppSearch store property values as a list of values. However, in App
+     * Function's case, this is simply the only hash value of package name.
+     */
+    private static final String PACKAGE_NAME_RANKING_STRATEGY =
+            TextUtils.formatSimple(
+                    "sum(getScorableProperty(\"%s\", \"%s\"))",
+                    AppFunctionStaticMetadataHelper.STATIC_SCHEMA_TYPE,
+                    AppFunctionMetadata.PROPERTY_PACKAGE_NAME_HASH);
+
     private final MultiUserDynamicAppFunctionRegistry mMultiUserDynamicAppFunctionRegistry;
     private final AppFunctionsMetadataCache mCache;
     private final ServiceConfig mServiceConfig;
@@ -154,8 +169,7 @@ final class AppFunctionMetadataReader {
     public int getAppFunctionType(
             @NonNull String packageName,
             @NonNull String functionIdentifier,
-            @NonNull UserHandle user
-    ) {
+            @NonNull UserHandle user) {
         Objects.requireNonNull(packageName);
         Objects.requireNonNull(functionIdentifier);
         Objects.requireNonNull(user);
@@ -420,6 +434,8 @@ final class AppFunctionMetadataReader {
                         .setVerbatimSearchEnabled(true)
                         .setNumericSearchEnabled(true)
                         .setListFilterQueryLanguageEnabled(true)
+                        .setScorablePropertyRankingEnabled(true)
+                        .setRankingStrategy(PACKAGE_NAME_RANKING_STRATEGY)
                         .setResultCountPerPage(
                                 mServiceConfig.getSearchAppFunctionInternalPageSize())
                         .build();
@@ -500,6 +516,18 @@ final class AppFunctionMetadataReader {
 
         private final Object mLock = new Object();
 
+        private final Object mPackageMetadataLock = new Object();
+
+        // Only cache the current package since the search results are sorted by
+        // package name, so only one package can show up again in the next page.
+        @GuardedBy("mPackageMetadataLock")
+        @Nullable
+        private String mCurrentPackageName;
+
+        @GuardedBy("mPackageMetadataLock")
+        @Nullable
+        private CompletableFuture<AppFunctionPackageMetadata> mCurrentPackageMetadataFuture;
+
         @GuardedBy("mLock")
         private Boolean mIsClosed = false;
 
@@ -517,7 +545,7 @@ final class AppFunctionMetadataReader {
         @PermissionManuallyEnforced
         @Override
         public void getNextPage(IAppFunctionSearchResultCallback callback) {
-            getNextValidPage()
+            getNextPageInternal()
                     .whenComplete(
                             (metadataList, exception) -> {
                                 if (exception != null) {
@@ -540,12 +568,11 @@ final class AppFunctionMetadataReader {
          * Gets the next page and block the caller thread.
          *
          * @return The list of {@link AppFunctionMetadata} from next page. Empty list indicates that
-         *     there is no next page. However, {@code null} means all the documents from the current
-         *     page are invalid, but there is still next page to query.
+         *     there is no next page.
          */
         @NonNull
         @WorkerThread
-        private CompletableFuture<List<AppFunctionMetadata>> getNextValidPage() {
+        private CompletableFuture<List<AppFunctionMetadata>> getNextPageInternal() {
             synchronized (mLock) {
                 if (mIsClosed) {
                     return AndroidFuture.failedFuture(
@@ -561,82 +588,112 @@ final class AppFunctionMetadataReader {
                 Binder.restoreCallingIdentity(token);
             }
 
-            return nextPageFuture
-                    .thenComposeAsync(this::searchWithPackageMetadata, mExecutor)
-                    .thenCompose(this::processSearchResult);
-        }
-
-        // TODO(b/473468720): Optimize top-level search
-        @NonNull
-        private CompletableFuture<Pair<List<SearchResult>, Map<String, AppFunctionPackageMetadata>>>
-                searchWithPackageMetadata(@NonNull List<SearchResult> results) {
-            Objects.requireNonNull(results);
-
-            ArrayMap<String, CompletableFuture<AppFunctionPackageMetadata>> futuresMap =
-                    new ArrayMap<>();
-            for (SearchResult result : results) {
-                String packageName =
-                        result.getGenericDocument()
-                                .getPropertyString(
-                                        AppFunctionRuntimeMetadata.PROPERTY_PACKAGE_NAME);
-                if (packageName == null || futuresMap.containsKey(packageName)) {
-                    continue;
-                }
-                futuresMap.put(
-                        packageName,
-                        mReader.searchAppFunctionPackageMetadata(mGlobalSession, packageName));
-            }
-
-            CompletableFuture<Void> allFutures =
-                    CompletableFuture.allOf(futuresMap.values().toArray(new CompletableFuture[0]));
-            return allFutures.thenApply(
-                    v -> {
-                        ArrayMap<String, AppFunctionPackageMetadata> packageMetadataMap =
-                                new ArrayMap<>();
-                        for (int i = 0; i < futuresMap.size(); i++) {
-                            packageMetadataMap.put(
-                                    futuresMap.keyAt(i), futuresMap.valueAt(i).join());
-                        }
-                        return new Pair<>(results, packageMetadataMap);
-                    });
+            return nextPageFuture.thenComposeAsync(this::processSearchResult, mExecutor);
         }
 
         @NonNull
         private CompletableFuture<List<AppFunctionMetadata>> processSearchResult(
-                @NonNull
-                        Pair<List<SearchResult>, Map<String, AppFunctionPackageMetadata>>
-                                searchResult) {
-            Objects.requireNonNull(searchResult);
+                @NonNull List<SearchResult> searchResults) {
+            Objects.requireNonNull(searchResults);
 
-            List<SearchResult> page = searchResult.first;
-            Map<String, AppFunctionPackageMetadata> packageMetadataMap = searchResult.second;
-
-            if (page.isEmpty()) {
+            if (searchResults.isEmpty()) {
                 // No more next page
                 return AndroidFuture.completedFuture(Collections.emptyList());
             }
-            List<AppFunctionMetadata> metadataList = new ArrayList<>(page.size());
-            for (SearchResult result : page) {
+
+            ArrayMap<String, CompletableFuture<AppFunctionPackageMetadata>> packageMetadataFutures =
+                    getPackageMetadataFutures(searchResults);
+            CompletableFuture<AppFunctionPackageMetadata>[] futuresArray =
+                    packageMetadataFutures.values().toArray(new CompletableFuture[0]);
+            return CompletableFuture.allOf(futuresArray)
+                    .thenCompose(
+                            v ->
+                                    mergeFunctionAndPackageMetadata(
+                                            searchResults, packageMetadataFutures));
+        }
+
+        private ArrayMap<String, CompletableFuture<AppFunctionPackageMetadata>>
+                getPackageMetadataFutures(@NonNull List<SearchResult> searchResults) {
+            Objects.requireNonNull(searchResults);
+
+            // Use LinkedHashSet to keep the order of the package names since this is used to
+            // determining if the cache needs to be updated.
+            LinkedHashSet<String> uniquePackageNames = new LinkedHashSet<>();
+            for (SearchResult result : searchResults) {
+                String pkg =
+                        result.getGenericDocument()
+                                .getPropertyString(
+                                        AppFunctionRuntimeMetadata.PROPERTY_PACKAGE_NAME);
+                if (pkg != null) {
+                    uniquePackageNames.add(pkg);
+                }
+            }
+            ArrayMap<String, CompletableFuture<AppFunctionPackageMetadata>> packageMetadataFutures =
+                    new ArrayMap<>();
+            for (String packageName : uniquePackageNames) {
+                synchronized (mPackageMetadataLock) {
+                    if (packageName.equals(mCurrentPackageName)) {
+                        if (!packageMetadataFutures.containsKey(packageName)) {
+                            packageMetadataFutures.put(packageName, mCurrentPackageMetadataFuture);
+                        }
+                    } else {
+                        // TODO(b/473468720): Do single search for all packages.
+                        CompletableFuture<AppFunctionPackageMetadata> future =
+                                mReader.searchAppFunctionPackageMetadata(
+                                                mGlobalSession, packageName)
+                                        .exceptionally(
+                                                e -> {
+                                                    Slog.w(
+                                                            TAG,
+                                                            "Failed to search package metadata",
+                                                            e);
+                                                    return AppFunctionPackageMetadata.create(
+                                                            packageName, List.of());
+                                                });
+                        packageMetadataFutures.put(packageName, future);
+
+                        // Since the search results are sorted by package name, we can update the
+                        // cache as the previous package name would not be found again in
+                        // current or any following pages.
+                        mCurrentPackageName = packageName;
+                        mCurrentPackageMetadataFuture = future;
+                    }
+                }
+            }
+            return packageMetadataFutures;
+        }
+
+        private CompletableFuture<List<AppFunctionMetadata>> mergeFunctionAndPackageMetadata(
+                @NonNull List<SearchResult> searchResults,
+                @NonNull
+                        ArrayMap<String, CompletableFuture<AppFunctionPackageMetadata>>
+                                packageMetadataFutures) {
+            Objects.requireNonNull(searchResults);
+            Objects.requireNonNull(packageMetadataFutures);
+
+            List<AppFunctionMetadata> metadataList = new ArrayList<>(searchResults.size());
+            for (SearchResult result : searchResults) {
                 String pkg =
                         result.getGenericDocument()
                                 .getPropertyString(
                                         AppFunctionRuntimeMetadata.PROPERTY_PACKAGE_NAME);
                 if (pkg == null) continue;
                 AppFunctionPackageMetadata packageMetadata;
-                if (packageMetadataMap.containsKey(pkg)) {
-                    packageMetadata = Objects.requireNonNull(packageMetadataMap.get(pkg));
+                if (packageMetadataFutures.containsKey(pkg)) {
+                    packageMetadata = packageMetadataFutures.get(pkg).join();
                 } else {
-                    packageMetadata =
-                            AppFunctionPackageMetadata.create(pkg, Collections.emptyList());
+                    packageMetadata = AppFunctionPackageMetadata.create(pkg, List.of());
                 }
-
                 AppFunctionMetadata meta =
                         mReader.buildAppFunctionMetadata(result, packageMetadata);
                 if (meta != null) metadataList.add(meta);
             }
 
             if (metadataList.isEmpty()) {
-                return getNextValidPage();
+                // If all the search results are not valid, we need to call
+                // getNextPageInternal again to avoid giving false signal that
+                // there is no more next page.
+                return getNextPageInternal();
             } else {
                 return AndroidFuture.completedFuture(metadataList);
             }
