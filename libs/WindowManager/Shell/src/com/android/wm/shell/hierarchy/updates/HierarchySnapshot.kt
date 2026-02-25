@@ -81,12 +81,19 @@ class HierarchySnapshot {
     }
 
     /**
+     * Returns whether the given container specifically has changed.
+     */
+    fun hasChanges(container: Container): Boolean {
+        return !getChanges(container).isEmpty
+    }
+
+    /**
      * Returns whether the given container, or any of its ancestors have changed.
      */
     fun hasChangesIncludingAncestors(container: Container): Boolean {
         var c: Container? = container
         while (c != null) {
-            if (!getChanges(c).isEmpty) {
+            if (hasChanges(c)) {
                 return true
             }
             c = c.parent

@@ -26,7 +26,6 @@ import android.view.WindowManager
 import android.view.WindowlessWindowManager
 import android.window.WindowContainerToken
 import androidx.core.graphics.toRect
-import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
 import com.android.wm.shell.hierarchy.utils.HierarchyUtils
 
 typealias RootViewSupplier = (Context, ViewOverlayContainer) -> View
@@ -57,7 +56,7 @@ class ViewOverlayContainer(
         val parent = this.parent!!
 
         val display = HierarchyUtils.getAncestorDisplay(this)!!
-        val displayContext = display.props<DisplayContainerProperties>().getDisplayContext(context)
+        val displayContext = display.displayProps().getDisplayContext(context)
         rootView =
             rootViewSupplier(displayContext.createConfigurationContext(parent.props.config), this)
 

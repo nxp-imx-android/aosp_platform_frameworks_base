@@ -94,7 +94,7 @@ class HierarchyUtils {
             forEachContainer(
                 root,
                 {},
-                { it.props is DisplayContainerProperties && it.props.displayId == displayId },
+                { it.isDisplay() && it.displayProps().displayId == displayId },
                 displays
             )
             return displays.firstOrNull()
@@ -106,7 +106,7 @@ class HierarchyUtils {
         fun getAncestorDisplay(container: Container): Container? {
             var ancestor: Container? = container
             while (ancestor != null) {
-                if (ancestor.props is DisplayContainerProperties) {
+                if (ancestor.isDisplay()) {
                     return ancestor
                 }
                 ancestor = ancestor.parent
@@ -123,12 +123,11 @@ class HierarchyUtils {
                 root,
                 {},
                 { c ->
-                    if (c.props !is DisplayAreaContainerProperties) {
+                    if (!c.isDisplayArea()) {
                         return@forEachContainer false
                     }
                     val display = getAncestorDisplay(c)!!
-                    val displayProps = display.props<DisplayContainerProperties>()
-                    return@forEachContainer displayProps.displayId == displayId
+                    return@forEachContainer display.displayProps().displayId == displayId
                 },
                 displayAreas
             )
@@ -143,7 +142,7 @@ class HierarchyUtils {
             forEachContainer(
                 root,
                 {},
-                { it.props is TaskContainerProperties && it.props.taskId == taskId },
+                { it.isTask() && it.taskProps().taskId == taskId },
                 tasks
             )
             return tasks.firstOrNull()
@@ -244,7 +243,7 @@ class HierarchyUtils {
         ): List<Container> {
             // Look through which containers were removed
             val removedContainers = preUpdateContainers - postUpdateContainers.toSet()
-            return removedContainers.filter { it.props is DisplayContainerProperties }
+            return removedContainers.filter { it.isDisplay() }
         }
 
         /**
