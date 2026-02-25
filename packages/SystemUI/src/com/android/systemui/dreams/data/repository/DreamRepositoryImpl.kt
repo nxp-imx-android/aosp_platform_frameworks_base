@@ -43,11 +43,14 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 
 @SysUISingleton
@@ -65,6 +68,9 @@ constructor(
         userRepository.selectedUser.map { it.userInfo.userHandle }.distinctUntilChanged()
 
     private val dreamManager: Flow<DreamManager> = userHandle.map(userScopedDreamManager::forUser)
+
+    private val _dreamSwitcherDialogShowing = MutableStateFlow(false)
+    override val dreamSwitcherDialogShowing = _dreamSwitcherDialogShowing.asStateFlow()
 
     override val dreamState: Flow<DreamPlaylistModel> =
         dreamManager
@@ -88,6 +94,10 @@ constructor(
                 userScopedDreamManager.forUser(user).setActiveDreamComponent(componentName)
             }
         }
+
+    override fun setSwitcherDialogShowing(showing: Boolean) {
+        _dreamSwitcherDialogShowing.update { showing }
+    }
 
     private fun listenForDreamChanges(manager: DreamManager): Flow<DreamPlaylistModel> =
         tracedConflatedCallbackFlow("$TAG#listenForDreamChanges") {

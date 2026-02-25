@@ -30,8 +30,8 @@ import com.android.systemui.ambient.touch.TouchHandler
 import com.android.systemui.dreams.DreamOverlayContainerView
 import com.android.systemui.dreams.data.repository.dreamRepository
 import com.android.systemui.dreams.data.repository.fake
-import com.android.systemui.dreams.domain.interactor.DreamInteractor
 import com.android.systemui.dreams.domain.interactor.dreamInteractor
+import com.android.systemui.dreams.domain.model.DreamSwitcherDialogRequestModel
 import com.android.systemui.dreams.shared.model.DreamItemModel
 import com.android.systemui.dreams.shared.model.DreamPlaylistModel
 import com.android.systemui.haptics.fake
@@ -141,7 +141,7 @@ class LongPressTouchHandlerTest : SysuiTestCase() {
 
             // THEN the switcher is shown
             assertThat(switcherRequest)
-                .isInstanceOf(DreamInteractor.SwitcherRequest.Show::class.java)
+                .isInstanceOf(DreamSwitcherDialogRequestModel.Show::class.java)
         }
 
     @Test
@@ -184,7 +184,7 @@ class LongPressTouchHandlerTest : SysuiTestCase() {
 
             // THEN nothing happens
             assertThat(switcherRequest)
-                .isNotInstanceOf(DreamInteractor.SwitcherRequest.Show::class.java)
+                .isNotInstanceOf(DreamSwitcherDialogRequestModel.Show::class.java)
             assertThat(vibratorHelper.fake.totalVibrations).isEqualTo(0)
         }
 

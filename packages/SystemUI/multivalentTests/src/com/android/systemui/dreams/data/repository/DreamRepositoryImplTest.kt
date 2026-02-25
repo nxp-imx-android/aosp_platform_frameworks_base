@@ -228,6 +228,21 @@ class DreamRepositoryImplTest : SysuiTestCase() {
             job.cancel()
         }
 
+    @Test
+    fun dreamSwitcherDialogShowing_defaultsToFalse() = kosmos.runTest {
+        val showing by collectLastValue(underTest.dreamSwitcherDialogShowing)
+        assertThat(showing).isFalse()
+    }
+
+    @Test
+    fun setSwitcherDialogShowing_updatesDreamSwitcherDialogShowing() = kosmos.runTest {
+        val showing by collectLastValue(underTest.dreamSwitcherDialogShowing)
+        underTest.setSwitcherDialogShowing(true)
+        assertThat(showing).isTrue()
+        underTest.setSwitcherDialogShowing(false)
+        assertThat(showing).isFalse()
+    }
+
     private fun createDreamPlaylist(vararg names: String, activeIndex: Int = 0): DreamPlaylist {
         return DreamPlaylist(
             names.map { DreamItem.Builder(ComponentName("com.android.systemui", it)).build() },
