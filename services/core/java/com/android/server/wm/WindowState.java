@@ -1161,8 +1161,23 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         getPendingTransaction().setTrustedOverlay(mSurfaceControl, isWindowTrustedOverlay());
         getPendingTransaction().setSecure(mSurfaceControl, isSecureLocked());
         // All apps should be considered as occluding when computing TrustedPresentation Thresholds.
-        final boolean canOccludePresentation = !mSession.mCanAddInternalSystemWindow;
-        getPendingTransaction().setCanOccludePresentation(mSurfaceControl, canOccludePresentation);
+        getPendingTransaction().setCanOccludePresentation(mSurfaceControl,
+                canOccludePresentation());
+    }
+
+
+    // Indicate whether this window will be considered occluding when computing occlusion
+    // for other windows. See {@link WindowState#isWindowTrustedOverlay()}
+    private boolean canOccludePresentation() {
+        if (mSession.mCanAddInternalSystemWindow) {
+            return false;
+        }
+
+        if (mAttrs.type == WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
