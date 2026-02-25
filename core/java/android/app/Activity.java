@@ -7333,14 +7333,22 @@ public class Activity extends ContextThemeWrapper
      *     <li>The launched activity is running in a package that is signed with the same key
      *     used to sign the platform (typically only system packages such as Settings will
      *     meet this requirement).
+     *     <li>Starting in {@link Build.VERSION_CODES#CINNAMON_BUN}, the activity was launched
+     *     directly with {@link Activity#startActivityForResult(Intent, int)}.
      * </ul>.
      * These are the same requirements for {@link #getLaunchedFromPackage()}; if any of these are
      * met, then these methods can be used to obtain the uid and package name of the launching
      * app. If none are met, then {@link Process#INVALID_UID} is returned.
      *
-     * <p>Note, even if the above conditions are not met, the launching app's identity may
-     * still be available from {@link #getCallingPackage()} if this activity was started with
-     * {@code Activity#startActivityForResult} to allow validation of the result's recipient.
+     * <p>Note, if an activity is launched via {@link #startActivityForResult(Intent, int)} but the
+     * launch is intercepted and forwarded by an intermediate app using {@link
+     * Intent#FLAG_ACTIVITY_FORWARD_RESULT}, the identity of the intermediate app will not be
+     * implicitly shared. In this forwarding scenario, the intermediate app must explicitly
+     * opt-in using {@link ActivityOptions#setShareIdentityEnabled(boolean)}.
+     *
+     * <p>Prior to {@link android.os.Build.VERSION_CODES#CINNAMON_BUN}, the launching app's identity
+     * was not implicitly shared for any result-based launches and could only be retrieved via
+     * {@link #getCallingPackage()}
      *
      * @return the uid of the launching app or {@link Process#INVALID_UID} if the current
      * activity cannot access the identity of the launching app
@@ -7365,14 +7373,22 @@ public class Activity extends ContextThemeWrapper
      *     <li>The launched activity is running in a package that is signed with the same key
      *     used to sign the platform (typically only system packages such as Settings will
      *     meet this requirement).
+     *     <li>Starting in {@link Build.VERSION_CODES#CINNAMON_BUN}, the activity was launched
+     *     directly with {@link Activity#startActivityForResult(Intent, int)}.
      * </ul>.
      * These are the same requirements for {@link #getLaunchedFromUid()}; if any of these are
      * met, then these methods can be used to obtain the uid and package name of the launching
      * app. If none are met, then {@code null} is returned.
      *
-     * <p>Note, even if the above conditions are not met, the launching app's identity may
-     * still be available from {@link #getCallingPackage()} if this activity was started with
-     * {@code Activity#startActivityForResult} to allow validation of the result's recipient.
+     * <p>Note, if an activity is launched via {@link #startActivityForResult(Intent, int)} but the
+     * launch is intercepted and forwarded by an intermediate app using {@link
+     * Intent#FLAG_ACTIVITY_FORWARD_RESULT}, the identity of the intermediate app will not be
+     * implicitly shared. In this forwarding scenario, the intermediate app must explicitly
+     * opt-in using {@link ActivityOptions#setShareIdentityEnabled(boolean)}.
+     *
+     * <p>Prior to {@link android.os.Build.VERSION_CODES#CINNAMON_BUN}, the launching app's identity
+     * was not implicitly shared for any result-based launches and could only be retrieved via
+     * {@link #getCallingPackage()}
      *
      * @return the package name of the launching app or null if the current activity
      * cannot access the identity of the launching app
