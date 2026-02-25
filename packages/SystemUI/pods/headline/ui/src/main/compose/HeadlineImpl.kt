@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +58,8 @@ import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.modifiers.thenIf
+import com.android.systemui.common.ui.compose.Icon
+import com.android.systemui.common.ui.compose.load
 import com.android.systemui.headline.ui.viewmodel.HeadlineItem
 import com.android.systemui.headline.ui.viewmodel.HeadlineItemContent
 import com.android.systemui.headline.ui.viewmodel.HeadlineViewModel
@@ -287,23 +288,24 @@ private fun ContentScope.HeadlineItemContents(
     ) {
         contents.forEachIndexed { i, content ->
             when (content) {
-                is HeadlineItemContent.Text -> {
-                    // Ensure that there is a minimum spacing between a Text and its siblings.
-                    val textModifier =
-                        when {
-                            isReversed && i < contents.lastIndex -> Modifier.padding(end = 4.dp)
-                            !isReversed && i > 0 -> Modifier.padding(start = 4.dp)
-                            else -> Modifier
-                        }
-
-                    Text(
-                        modifier = textModifier,
-                        text = content.text,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                is HeadlineItemContent.TextItem -> {
+                    content.text.load()?.let {
+                        // Ensure that there is a minimum spacing between a Text and its siblings.
+                        val textModifier =
+                            when {
+                                isReversed && i < contents.lastIndex -> Modifier.padding(end = 4.dp)
+                                !isReversed && i > 0 -> Modifier.padding(start = 4.dp)
+                                else -> Modifier
+                            }
+                        Text(
+                            modifier = textModifier,
+                            text = it,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
-                is HeadlineItemContent.Icon -> Icon(content.icon, content.contentDescription)
+                is HeadlineItemContent.IconItem -> Icon(content.icon)
             }
         }
     }
