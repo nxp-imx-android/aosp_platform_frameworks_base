@@ -41,6 +41,7 @@ import android.util.Slog;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.EventLogTags;
 import com.android.server.backup.BackupAgentTimeoutParameters;
+import com.android.server.backup.BackupManagerConstants;
 import com.android.server.backup.BackupRestoreTask;
 import com.android.server.backup.Flags;
 import com.android.server.backup.FullBackupJob;
@@ -429,28 +430,35 @@ public class PerformFullTransportBackupTask implements BackupRestoreTask, Runnab
                                         preflightResult));
                         backupPackageStatus = (int) preflightResult;
                     } else {
-                        int nRead = 0;
-                        do {
-                            nRead = in.read(buffer);
-                            if (DEBUG) {
-                                Slog.v(TAG, "in.read(buffer) from app: " + nRead);
-                            }
-                            if (nRead > 0) {
-                                out.write(buffer, 0, nRead);
-                                synchronized (mCancelLock) {
-                                    if (!mCancelled) {
-                                        backupPackageStatus = transport.sendBackupData(nRead);
-                                    }
-                                }
-                                totalRead += nRead;
-                                if (mBackupObserver != null && preflightResult > 0) {
-                                    BackupObserverUtils
-                                            .sendBackupOnUpdate(mBackupObserver, packageName,
-                                                    new BackupProgress(preflightResult, totalRead));
-                                }
-                            }
-                        } while (nRead > 0
-                                && backupPackageStatus == BackupTransport.TRANSPORT_OK);
+                        int fullBackupTransportReadSize = mUserBackupManagerService.getConstants()
+                                .getFullBackupTransportReadSize();
+                        // If the pipe buffer size is larger than 64KB, we will use the
+                        // multi-threaded path to do the backup. We do this check because we are
+                        // only interested in using the multi-threaded path for larger pipes, as it
+                        // allows for better performance for larger pipes. So for smaller pipes, we
+                        // will use the single-threaded path.
+                        boolean shouldUseMultiThreadedPath = fullBackupTransportReadSize
+                                > BackupManagerConstants.DEFAULT_FULL_BACKUP_TRANSPORT_READ_SIZE;
+                        SendBackupDataResult result;
+                        if (shouldUseMultiThreadedPath) {
+                            MultiThreadedTransportDataSender dataSender =
+                                    new MultiThreadedTransportDataSender(
+                                        in, out, transport, mBackupObserver, packageName,
+                                        preflightResult, mCancelLock, () -> mCancelled,
+                                        fullBackupTransportReadSize);
+                            result = dataSender.call();
+                        } else {
+                            result =
+                                    pipeDataToTransportSingleThreadedBlocking(
+                                            in,
+                                            out,
+                                            buffer,
+                                            transport,
+                                            preflightResult,
+                                            packageName);
+                        }
+                        backupPackageStatus = result.getBackupPackageStatus();
+                        totalRead = result.getTotalRead();
                         // Despite preflight succeeded, package still can hit quota on flight.
                         if (backupPackageStatus == BackupTransport.TRANSPORT_QUOTA_EXCEEDED) {
                             Slog.w(TAG, "Package hit quota limit in-flight " + packageName
@@ -651,6 +659,40 @@ public class PerformFullTransportBackupTask implements BackupRestoreTask, Runnab
             Slog.i(TAG, "Full data backup pass finished.");
             mUserBackupManagerService.getWakeLock().release();
         }
+    }
+
+    private SendBackupDataResult pipeDataToTransportSingleThreadedBlocking(
+            FileInputStream in,
+            FileOutputStream out,
+            byte[] buffer,
+            BackupTransportClient transport,
+            long preflightResult,
+            String packageName) throws Exception {
+        long totalRead = 0;
+        int backupPackageStatus = BackupTransport.TRANSPORT_OK;
+        int nRead = 0;
+        do {
+            nRead = in.read(buffer);
+            if (DEBUG) {
+                Slog.v(TAG, "in.read(buffer) from app: " + nRead);
+            }
+            if (nRead > 0) {
+                out.write(buffer, 0, nRead);
+                synchronized (mCancelLock) {
+                    if (!mCancelled) {
+                        backupPackageStatus = transport.sendBackupData(nRead);
+                    }
+                }
+                totalRead += nRead;
+                if (mBackupObserver != null && preflightResult > 0) {
+                    BackupObserverUtils
+                            .sendBackupOnUpdate(mBackupObserver, packageName,
+                                new BackupProgress(preflightResult, totalRead));
+                }
+            }
+        } while (nRead > 0
+                && backupPackageStatus == BackupTransport.TRANSPORT_OK);
+        return new SendBackupDataResult(backupPackageStatus, totalRead);
     }
 
     void cleanUpPipes(ParcelFileDescriptor[] pipes) {
