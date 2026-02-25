@@ -65,10 +65,7 @@ public:
             std::mutex& profilerLock) override;
     bool swapBuffers(const renderthread::Frame& frame, IRenderPipeline::DrawResult& drawResult,
                      const SkRect& screenDirty, FrameInfo* currentFrameInfo,
-                     bool* requireSwap) override {
-        *requireSwap = true;
-        return true;
-    }
+                     bool* requireSwap) override;
     DeferredLayerUpdater* createTextureLayer() override { return nullptr; }
     bool setSurface(ANativeWindow* surface, renderthread::SwapBehavior swapBehavior) override;
 
