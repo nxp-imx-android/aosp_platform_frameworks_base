@@ -25,6 +25,7 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animateFloatAsState
@@ -318,65 +319,72 @@ constructor(
                         }
                     }
 
-                    AnimatedVisibility(
-                        visible =
-                            visibilityTransition.targetState &&
-                                viewModel.detailsPopup != RecordDetailsPopupType.Invisible,
-                        enter = fadeIn(MaterialTheme.motionScheme.fastEffectsSpec()),
-                        exit = fadeOut(MaterialTheme.motionScheme.fastEffectsSpec()),
-                    ) {
-                        TransientSurface(
-                            transient = viewModel.isTransient,
-                            shape = RoundedCornerShape(28.dp),
-                            modifier =
-                                Modifier.fillBoundsInWindowIf(
+                    val detailsSurfaceVisible =
+                        visibilityTransition.targetState &&
+                            viewModel.detailsPopup != RecordDetailsPopupType.Invisible
+                    val detailsSurfaceAlpha by
+                        animateFloatAsState(
+                            targetValue = if (detailsSurfaceVisible) 1f else 0f,
+                            animationSpec = MaterialTheme.motionScheme.fastEffectsSpec(),
+                        )
+                    TransientSurface(
+                        transient = viewModel.isTransient,
+                        shape = RoundedCornerShape(28.dp),
+                        modifier =
+                            Modifier.fillBoundsInWindowIf(
                                     region = settingsBounds,
                                     condition = viewTreeObserver != null,
-                                ),
-                        ) {
-                            AnimatedContent(
-                                targetState = viewModel.detailsPopup,
-                                contentAlignment = Alignment.Center,
-                                transitionSpec = { fadeIn() togetherWith fadeOut() },
-                                modifier = Modifier.widthIn(max = 352.dp),
-                            ) { currentPopup ->
-                                val contentModifier = Modifier.fillMaxWidth()
-                                when (currentPopup) {
-                                    RecordDetailsPopupType.Settings -> {
-                                        RecordDetailsSettings(
-                                            parametersViewModel =
-                                                viewModel.recordDetailsParametersViewModel,
-                                            targetViewModel =
-                                                viewModel.recordDetailsTargetViewModel,
-                                            drawableLoaderViewModel = viewModel,
-                                            onAppSelectorClicked = { viewModel.showAppSelector() },
-                                            modifier = contentModifier,
-                                        )
-                                    }
+                                )
+                                .graphicsLayer { alpha = detailsSurfaceAlpha },
+                    ) {
+                        val motionScheme = MaterialTheme.motionScheme
+                        AnimatedContent(
+                            targetState = viewModel.detailsPopup,
+                            contentAlignment = Alignment.Center,
+                            transitionSpec = {
+                                fadeIn(motionScheme.defaultEffectsSpec()) togetherWith
+                                    fadeOut(motionScheme.defaultEffectsSpec()) using
+                                    SizeTransform(
+                                        sizeAnimationSpec = { _, _ ->
+                                            motionScheme.defaultSpatialSpec()
+                                        }
+                                    )
+                            },
+                            modifier = Modifier.widthIn(max = 352.dp),
+                        ) { detailsPopup ->
+                            val contentModifier = Modifier.fillMaxWidth()
+                            when (detailsPopup) {
+                                RecordDetailsPopupType.Settings -> {
+                                    RecordDetailsSettings(
+                                        parametersViewModel =
+                                            viewModel.recordDetailsParametersViewModel,
+                                        targetViewModel = viewModel.recordDetailsTargetViewModel,
+                                        drawableLoaderViewModel = viewModel,
+                                        onAppSelectorClicked = { viewModel.showAppSelector() },
+                                        modifier = contentModifier,
+                                    )
+                                }
 
-                                    RecordDetailsPopupType.AppSelector -> {
-                                        RecordDetailsAppSelector(
-                                            viewModel = viewModel.recordDetailsAppSelectorViewModel,
-                                            onBackPressed = { viewModel.showSettings() },
-                                            onTaskSelected = {
-                                                viewModel.recordDetailsTargetViewModel.selectTask(
-                                                    it
-                                                )
-                                                viewModel.showSettings()
-                                            },
-                                            modifier = contentModifier,
-                                        )
-                                    }
+                                RecordDetailsPopupType.AppSelector -> {
+                                    RecordDetailsAppSelector(
+                                        viewModel = viewModel.recordDetailsAppSelectorViewModel,
+                                        onBackPressed = { viewModel.showSettings() },
+                                        onTaskSelected = {
+                                            viewModel.recordDetailsTargetViewModel.selectTask(it)
+                                            viewModel.showSettings()
+                                        },
+                                        modifier = contentModifier,
+                                    )
+                                }
 
-                                    RecordDetailsPopupType.ColorSelector ->
-                                        RecordDetailsColorPicker(
-                                            viewModel = viewModel.recordDetailsColorPickerViewModel,
-                                            modifier = contentModifier,
-                                        )
+                                RecordDetailsPopupType.ColorSelector ->
+                                    RecordDetailsColorPicker(
+                                        viewModel = viewModel.recordDetailsColorPickerViewModel,
+                                        modifier = contentModifier,
+                                    )
 
-                                    RecordDetailsPopupType.Invisible -> {
-                                        /* do nothing */
-                                    }
+                                RecordDetailsPopupType.Invisible -> {
+                                    /* do nothing */
                                 }
                             }
                         }
