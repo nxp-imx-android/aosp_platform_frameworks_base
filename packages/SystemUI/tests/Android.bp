@@ -97,6 +97,7 @@ android_library {
 
     libs: [
         // go/keep-sorted start
+        "PlatformMotionTestingCompose",
         "SystemUI-application",
         "SystemUICustomizationTestUtils",
         "android.test.mock.stubs.system",
