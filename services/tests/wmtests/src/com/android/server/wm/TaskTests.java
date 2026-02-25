@@ -1842,11 +1842,7 @@ public class TaskTests extends WindowTestsBase {
 
         final Task preservedRootTask = leafTask.getPreservedRootTaskIfEnabled();
 
-        if (com.android.window.flags.Flags.enablePreserveLeafTaskIfRelaunch()) {
-            assertEquals(rootTask, preservedRootTask);
-        } else {
-            assertNull(preservedRootTask);
-        }
+        assertEquals(rootTask, preservedRootTask);
     }
 
     @Test
