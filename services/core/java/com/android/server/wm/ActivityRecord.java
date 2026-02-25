@@ -3691,10 +3691,6 @@ final class ActivityRecord extends WindowToken {
                     getTaskFragment().startPausing(false /* userLeaving */, false /* uiSleeping */,
                             null /* resuming */, "finish");
                 }
-
-                if (endTask && !Flags.clearLockTaskWhenTaskEnd()) {
-                    mAtmService.getLockTaskController().clearLockedTask(task);
-                }
             } else if (!isState(PAUSING)) {
                 if (wasVisibleRequested) {
                     // Prepare and execute close transition.
@@ -4069,12 +4065,10 @@ final class ActivityRecord extends WindowToken {
         }
         finishing = true;
 
-        if (Flags.clearLockTaskWhenTaskEnd()) {
-            // Clear the lock task if needed when the task ends.
-            if (task != null && task.getTopNonFinishingActivity() == null
-                    && !task.isClearingToReuseTask()) {
-                mAtmService.getLockTaskController().clearLockedTask(task);
-            }
+        // Clear the lock task if needed when the task ends.
+        if (task != null && task.getTopNonFinishingActivity() == null
+                && !task.isClearingToReuseTask()) {
+            mAtmService.getLockTaskController().clearLockedTask(task);
         }
 
         // Transfer the launch cookie to the next running activity above this in the same task.
