@@ -58,6 +58,8 @@ public class DataSyncProcessor {
     @GuardedBy("mAssociationsWithTransport")
     private final Set<Integer> mAssociationsWithTransport = new HashSet<>();
 
+    private final Object mRemoteMetadataLock = new Object();
+
     public DataSyncProcessor(
             AssociationStore associationStore,
             LocalMetadataStore localMetadataStore,
@@ -143,17 +145,19 @@ public class DataSyncProcessor {
     @VisibleForTesting
     public void setRemoteMetadata(int associationId,
             @NonNull PersistableBundle metadata) {
-        Slog.i(TAG, "Setting remote metadata for association id=[" + associationId
-                + "] value=[" + metadata + "]...");
+        synchronized (mRemoteMetadataLock) {
+            Slog.i(TAG, "Setting remote metadata for association id=[" + associationId
+                    + "] value=[" + metadata + "]...");
 
-        AssociationInfo association =
-                mAssociationStore.getAssociationWithCallerChecks(associationId);
+            AssociationInfo association =
+                    mAssociationStore.getAssociationWithCallerChecks(associationId);
 
-        metadata.putLong(AssociationInfo.METADATA_TIMESTAMP, System.currentTimeMillis());
-        AssociationInfo updated = (new AssociationInfo.Builder(association))
-                .setMetadata(metadata)
-                .build();
-        mAssociationStore.updateAssociation(updated);
+            metadata.putLong(AssociationInfo.METADATA_TIMESTAMP, System.currentTimeMillis());
+            AssociationInfo updated = (new AssociationInfo.Builder(association))
+                    .setMetadata(metadata)
+                    .build();
+            mAssociationStore.updateAssociation(updated);
+        }
     }
 
 
@@ -212,12 +216,14 @@ public class DataSyncProcessor {
             // Update the metadata sent time after receiving ACK.
             for (int associationId : associationIds) {
                 results.get(associationId).thenRunAsync(() -> {
-                    AssociationInfo association =
-                            mAssociationStore.getAssociationWithCallerChecks(associationId);
-                    AssociationInfo updated = new AssociationInfo.Builder(association)
-                        .setTimeMetadataSent(System.currentTimeMillis())
-                        .build();
-                    mAssociationStore.updateAssociation(updated);
+                    synchronized (mRemoteMetadataLock) {
+                        AssociationInfo association =
+                                mAssociationStore.getAssociationWithCallerChecks(associationId);
+                        AssociationInfo updated = new AssociationInfo.Builder(association)
+                                .setTimeMetadataSent(System.currentTimeMillis())
+                                .build();
+                        mAssociationStore.updateAssociation(updated);
+                    }
                 });
             }
 
