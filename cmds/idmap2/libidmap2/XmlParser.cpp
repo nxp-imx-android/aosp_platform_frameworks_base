@@ -83,7 +83,7 @@ XmlParser::Event XmlParser::Node::event() const {
 }
 
 std::string XmlParser::Node::name() const {
-  size_t len;
+  size_t len = 0;
   const auto name16 = parser_.getElementName(&len);
   return util::Utf16ToUtf8({name16, len});
 }
