@@ -10117,40 +10117,26 @@ public class DevicePolicyManager {
             new IpcDataCache<>(sDpmCaches.child("hasDeviceOwner"),
                     (query) -> getService().hasDeviceOwner());
 
-    private IpcDataCache<String, Boolean> mIsDeviceManagedCache =
-            new IpcDataCache<>(sDpmCaches.child("isDeviceManaged"),
-                    (packageName) -> getService().isDeviceManaged(packageName));
-
     /**
-     * Returns whether the device is managed.
+     * Called by the system to find out whether the device is managed by a Device Owner.
      *
-     * <p><b>Note:</b> For applications targeting
-     * {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} and above, the definition of "managed"
-     * is extended. In addition to fully managed devices,
-     * this method will also return {@code true} for organization-owned devices with managed
-     * profiles as well as future device management modes where the entire device is under
-     * management.
-     * Apps targeting older SDK version will only return {@code true} if a device owner is present.
-     *
-     * @return whether the device is under management.
-     * @throws SecurityException if the caller is not the device or the profile owner,
-     *         does not hold MANAGE_USERS or MANAGE_PROFILE_AND_DEVICE_OWNERS permissions
-     *         and is not the system.
+     * @return whether the device is managed by a Device Owner.
+     * @throws SecurityException if the caller is not the device owner, does not hold
+     *         MANAGE_USERS or MANAGE_PROFILE_AND_DEVICE_OWNERS permissions and is not the system.
      *
      * @hide
      */
     @SystemApi
     @SuppressLint("RequiresPermission")
     public boolean isDeviceManaged() {
+        // TODO(b/390162247): Add API level check to avoid breaking existing apps targeting old API.
         if (android.app.admin.flags.Flags.multiUserManagementDeviceProvisioning()
                 && mService != null) {
-            if (android.app.admin.flags.Flags.managedDeviceDefinitionExtended()) {
-                return mIsDeviceManagedCache.query(mContext.getPackageName());
-            }
             try {
-                return mService.isDeviceManaged(mContext.getPackageName());
+                // TODO(b/390162247): Consider adding a cache just like we do for hasDeviceOwner.
+                return mService.isDeviceManaged();
             } catch (RemoteException re) {
-                re.rethrowFromSystemServer();
+                throw re.rethrowFromSystemServer();
             }
         }
         return mHasDeviceOwnerCache.query(null);
