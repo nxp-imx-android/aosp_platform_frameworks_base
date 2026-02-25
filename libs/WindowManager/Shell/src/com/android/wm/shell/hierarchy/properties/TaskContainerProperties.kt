@@ -19,6 +19,9 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.window.TransitionInfo
 import com.android.wm.shell.common.ComponentUtils
 import com.android.wm.shell.dagger.hierarchy.WmSyncedProperty
+import com.android.wm.shell.hierarchy.updates.HierarchyChangeFlags
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_PIP_PARAMS
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_TASK_DESCRIPTION
 
 /**
  * Properties for a container that is associated with a task in the WindowManager hierarchy.
@@ -30,6 +33,18 @@ class TaskContainerProperties(
     val taskId: Int
         get() = taskInfo.taskId
 
+    /**
+     * There are a some properties that are currently still only updated via
+     * TaskOrganizer.onTaskInfoChanged(). We should still update them on the container properties
+     * when that happens, and also diff them below.
+     */
+    fun updateFromTaskInfoChanged(info: RunningTaskInfo) {
+        // Update the task description for window decors/task backgrounds
+        taskInfo.taskDescription = info.taskDescription
+        // Update the PIP params
+        taskInfo.pictureInPictureParams = info.pictureInPictureParams
+    }
+
     /** @see ContainerProperties.updateFromWindowChange */
     override fun updateFromWindowChange(change: TransitionInfo.Change) {
         super.updateFromWindowChange(change)
@@ -38,6 +53,25 @@ class TaskContainerProperties(
         }
         taskInfo = change.taskInfo!!
         config.windowConfiguration.windowingMode = change.taskInfo!!.windowingMode
+    }
+
+    /** @see ContainerProperties.diff */
+    override fun diff(
+        other: ContainerProperties,
+        chgs: HierarchyChangeFlags
+    ) {
+        super.diff(other, chgs)
+        val otherTask = other as TaskContainerProperties
+        chgs.compareAndSet(
+            taskInfo.taskDescription,
+            otherTask.taskInfo.taskDescription,
+            CHANGED_TASK_DESCRIPTION
+        )
+        chgs.compareAndSet(
+            taskInfo.pictureInPictureParams,
+            otherTask.taskInfo.pictureInPictureParams,
+            CHANGED_PIP_PARAMS
+        )
     }
 
     /** @see ContainerProperties.copy */

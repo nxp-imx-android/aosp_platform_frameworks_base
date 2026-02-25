@@ -15,6 +15,7 @@
  */
 package com.android.wm.shell.hierarchy.updates
 
+import android.app.ActivityManager
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.view.WindowManager
@@ -69,6 +70,7 @@ class HierarchyUpdater(
         shellTaskOrganizer.setContainerHierarchyCreateRootTaskListener(
             ContainerHierarchyRootTaskHook()
         )
+        shellTaskOrganizer.addTaskInfoChangedListener(ContainerHierarchyTaskInfoListener())
         if (!com.android.window.flags.Flags.transitMixpatcherBase()) {
             // The planner will update the hierarchy in lieu of the observer with mixpatcher
             transitions.registerObserver(ContainerHierarchyTransitionObserver())
@@ -233,6 +235,21 @@ class HierarchyUpdater(
                 Mode.UpdateContext(reason = "Remove root task: ${container.name}"),
                 snapshot
             )
+        }
+    }
+
+    fun handleTaskInfoChanged(taskInfo: ActivityManager.RunningTaskInfo) {
+        val container = hierarchy.getContainer(taskInfo.token)
+        if (container == null || container.props !is TaskContainerProperties) {
+            return
+        }
+
+        val snapshot = HierarchySnapshot(hierarchy.toContainerList())
+        val taskProps = container.props<TaskContainerProperties>()
+        taskProps.updateFromTaskInfoChanged(taskInfo)
+
+        if (!snapshot.getChanges(container).isEmpty) {
+            notifyModes(Mode.UpdateContext("${container.name} info change"), snapshot)
         }
     }
 
@@ -444,6 +461,15 @@ class HierarchyUpdater(
 
         override fun onRootTaskRemoved(token: WindowContainerToken) {
             handleRemoveRootTask(token)
+        }
+    }
+
+    /**
+     * Hooks into ShellTaskOrganizer to listen for task info changes.
+     */
+    inner class ContainerHierarchyTaskInfoListener : ShellTaskOrganizer.TaskInfoChangedListener {
+        override fun onTaskInfoChanged(taskInfo: ActivityManager.RunningTaskInfo?) {
+            handleTaskInfoChanged(taskInfo!!)
         }
     }
 
