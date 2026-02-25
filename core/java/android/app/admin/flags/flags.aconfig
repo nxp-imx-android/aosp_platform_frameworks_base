@@ -633,3 +633,13 @@ flag {
   description: "Redirect set/getMaximumTimeToLock to the generic set/getPolicy APIs."
   bug: "444381053"
 }
+
+flag {
+  name: "check_personal_suspension_for_all_profiles"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+  namespace: "enterprise"
+  description: "When ACTION_DATE_CHANGED or ACTION_TIME_CHANGED is received, iterates through all managed profiles on the device to determine if personal apps should be suspended, instead of relying on the main user setting."
+  bug: "470176722"
+}
