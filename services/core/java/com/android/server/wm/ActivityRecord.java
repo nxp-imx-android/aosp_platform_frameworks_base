@@ -902,9 +902,16 @@ final class ActivityRecord extends WindowToken {
             Slog.w(TAG, "Activity pause timeout for " + ActivityRecord.this);
             synchronized (mAtmService.mGlobalLock) {
                 if (!hasProcess()) {
+                    Slog.w(TAG, "Pause timeout: " + ActivityRecord.this
+                            + " no longer has a process, aborting.");
                     return;
                 }
-                activityPaused(true);
+                if (!isAttached()) {
+                    Slog.w(TAG, "Pause timeout: " + ActivityRecord.this
+                            + " is no longer attached, aborting.");
+                    return;
+                }
+                activityPaused(true /* timeout */);
             }
         }
     };
