@@ -52,6 +52,7 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.usb.IUsbManagerInternal;
 import android.hardware.usb.UsbManager;
 import android.os.Build;
+import android.os.Looper;
 import android.os.PowerManager;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -416,7 +417,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         if (mLockPatternUtils == null) {
             mLockPatternUtils = new LockPatternUtils(mContext);
             if (mStrongAuthTracker == null) {
-                mStrongAuthTracker = new StrongAuthTracker(mContext);
+                mStrongAuthTracker = new StrongAuthTracker(mContext, Looper.getMainLooper());
             }
             mLockPatternUtils.registerStrongAuthTracker(mStrongAuthTracker);
         }
@@ -920,8 +921,8 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
 
     @VisibleForTesting
     protected class StrongAuthTracker extends LockPatternUtils.StrongAuthTracker {
-        StrongAuthTracker(Context context) {
-            super(context);
+        StrongAuthTracker(Context context, Looper looper) {
+            super(context, looper);
         }
 
         private boolean containsFlag(int haystack, int needle) {

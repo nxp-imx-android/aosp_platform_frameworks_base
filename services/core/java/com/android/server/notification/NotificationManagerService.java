@@ -2849,6 +2849,9 @@ public class NotificationManagerService extends SystemService {
 
     public NotificationManagerService(Context context) {
         super(context);
+        if (com.android.server.flags.Flags.parallelizeOnbootphase()) {
+            setBootPhaseSerial(SystemService.PHASE_SYSTEM_SERVICES_READY);
+        }
         Notification.processAllowlistToken = ALLOWLIST_TOKEN;
 
     }
