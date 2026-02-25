@@ -34,7 +34,8 @@ interface Mode {
     //
 
     /**
-     * Hook to create any static containers for the given display (if necessary).
+     * A hook into new displays being added, to create any static containers for this mode (if
+     * necessary).
      *
      * This is always called globally for all modes before a mode is associated with any descendant
      * of this new display in the hierarchy.
@@ -44,67 +45,69 @@ interface Mode {
     fun prepareForDisplay(updateContext: UpdateContext, display: Container) {}
 
     /**
-     * Cleans up any static containers added in {#prepareForDisplay()}.
+     * A hook into displays being removed, to clean up any static containers previously added in
+     * `prepareForDisplay()`.
      *
-     * This is always called after all descendants of this display in the hierarchy have been
-     * disassociated from any given mode.
+     * This is only called AFTER `containersRemoved()` has been called on the modes for every
+     * container in the display.
      */
     fun cleanupForDisplay(updateContext: UpdateContext, display: Container) {}
 
     /**
-     * Associates this mode with the given container.
+     * A hook into global state changing in the hierarchy (ie. changes in the root container or
+     * the display container for the given `modeContainer`).
      *
-     * If {@param isDirectlyAssigned} is 'true', then all of the container's descendants also be
-     * associated with this mode (unless it has its own mode), and will be called with
-     * isDirectlyAssigned=false.
+     * For example, a mode can use the snapshot to update when global focus changes in the root
+     * container properties:
+     * ```kotlin
+     * if (snapshot.getChanges(hierarchy.root)[CHANGED_FOCUS]) {
+     *     val focusedTask = hierarchy.root.rootProps().focusState.globallyFocusedTaskId
+     *     ...
+     * }
+     * ```
      *
-     * Modes should ONLY manipulate the descendants of the provided container, not siblings or
-     * ancestors, or their lifecycles may not be correctly reported when updating.
-     *
-     * The container which has a directly assigned mode will receive 'attachToContainer()' before
-     * any of its descendants.
+     * This is always called after `containersRemoved()` and before `containersChanged()` for the
+     * given mode container, and only after the mode container has first been reported to the mode
+     * via `containersChanged()`.
      */
-    fun attachToContainer(
+    fun globalStateChanged(
         updateContext: UpdateContext,
-        container: Container,
-        isDirectlyAssigned: Boolean
-    ) {}
-
-    /**
-     * This method is called in the following scenarios:
-     *  - if a container that is directly assigned to this mode has changed (container=directly
-     *    associated container)
-     *  - if an ancestor of a container that is directly assigned to this mode has changed
-     *    (container=directly associated container)
-     *  - if a descendant of a container that is directly assigned to this mode has changed
-     *    (container=changed descendant container)
-     *
-     * This ensures that the mode is notified of the changes in the ancestor chain, as well as the
-     * subtree, so it can coordinate updates for global changes (ie. display) as well as
-     * per-attached-container behavior (ie. per-attached-container overlays).
-     *
-     * The provided container is always the directly associated container or a descendant.
-     *
-     * This will only be called AFTER attachToContainer() and BEFORE detachFromContainer().
-     */
-    fun containerChanged(
-        updateContext: UpdateContext,
-        container: Container,
+        modeContainer: Container,
         snapshot: HierarchySnapshot,
     ) {}
 
     /**
-     * Disassociates this mode from the given container.
+     * A hook into any changes in the hierarchy for containers associated with this mode under the
+     * given `modeContainer`, including newly added containers and changed containers.
      *
-     * Modes should ONLY manipulate the descendants of the provided container, not siblings or
-     * ancestors, or their lifecycles may not be correctly reported when updating.
+     * Modes can use the snapshot to get more details about the changes to each container, including
+     * the prior state of properties for those containers.
      *
-     * Descendants of the directly assigned container will receive 'detachFromContainer()' before
-     * the directly assigned container.
+     * NOTE:
+     * - There is no guarantee of ordering of calls between different modes
+     * - This will be called once for each disjoint mode container that has changed containers,
+     *   modes are expected to use the given container to resolve how to handle the changes.
      */
-    fun detachFromContainer(
+    fun containersChanged(
         updateContext: UpdateContext,
-        container: Container
+        modeContainer: Container,
+        addedContainers: List<Container>,
+        changedContainers: List<Container>,
+        snapshot: HierarchySnapshot,
+    ) {}
+
+    /**
+     * A hook into containers being removed from this mode, to allow for any cleanup of
+     * mode-specific state for those containers.
+     *
+     * This is always called before `globalStateChanged()` and `containersChanged()` to ensure a
+     * clear ordering of calls between the last & new mode managing a container.
+     */
+    fun containersRemoved(
+        updateContext: UpdateContext,
+        modeContainer: Container,
+        removedContainers: List<Container>,
+        snapshot: HierarchySnapshot,
     ) {}
 
     //

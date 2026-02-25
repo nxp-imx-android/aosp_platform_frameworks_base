@@ -92,14 +92,14 @@ class HierarchyTransitionPlanner(
             .filter {
                 val token = it.container
                 token != null && preUpdateContainersByToken.containsKey(token) &&
-                        getMode(preUpdateContainersByToken.getValue(token)) != null
+                        snapshot.snapshots[preUpdateContainersByToken.getValue(token)]?.mode != null
             }
             .map { preUpdateContainersByToken.getValue(it.container!!) }
-            .groupBy { getMode(it)!! }
+            .groupBy { snapshot.snapshots[it]!!.mode!! }
         for ((mode, containersWithChanges) in detachChanges) {
             val detachResults = mode.prepareForAnimation(containersWithChanges)
             ProtoLog.v(
-                WM_SHELL_MODES, "\t\tNotifying %s to detach containers %s, handled=%b",
+                WM_SHELL_MODES, "\tNotifying %s to detach containers %s, handled=%b",
                 mode.getId(), containersWithChanges.map { it.name }, detachResults != null
             )
             if (detachResults != null) {
@@ -128,14 +128,14 @@ class HierarchyTransitionPlanner(
             .filter {
                 val token = it.container
                 token != null && removedContainersByToken.containsKey(token) &&
-                        getMode(removedContainersByToken.getValue(token)) != null
+                        snapshot.snapshots[removedContainersByToken.getValue(token)]?.mode != null
             }
             .map { removedContainersByToken.getValue(it.container!!) }
-            .groupBy { getMode(it)!! }
+            .groupBy { snapshot.snapshots[it]!!.mode!! }
         for ((mode, removedContainers) in animateRemoved) {
             val animation = mode.createAnimation(animationContext, removedContainers, snapshot)
             ProtoLog.v(
-                WM_SHELL_MODES, "\t\tNotifying %s to animate containers %s, handled=%b",
+                WM_SHELL_MODES, "\tNotifying %s to animate containers %s, handled=%b",
                 mode.getId(), removedContainers.map { it.name }, animation != null
             )
             if (animation != null) {
@@ -159,7 +159,7 @@ class HierarchyTransitionPlanner(
         for ((mode, containers) in animateRemaining) {
             val animation = mode.createAnimation(animationContext, containers, snapshot)
             ProtoLog.v(
-                WM_SHELL_MODES, "\t\tNotifying %s to animate containers %s, handled=%b",
+                WM_SHELL_MODES, "\tNotifying %s to animate containers %s, handled=%b",
                 mode.getId(), containers.map { it.name }, animation != null
             )
             if (animation != null) {

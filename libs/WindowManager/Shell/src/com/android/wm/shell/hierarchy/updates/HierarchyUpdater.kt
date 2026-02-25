@@ -90,30 +90,34 @@ class HierarchyUpdater(
         ProtoLog.v(WM_SHELL_MODES, "Hierarchy updated requested: %s", updateContext.reason)
         updaterTestHook?.onHierarchyUpdated()
 
-        val postUpdateContainers = hierarchy.toContainerList()
-        val preUpdateDisplays =
-            snapshot.preUpdateContainers.filter { it.props is DisplayContainerProperties }
-        val postUpdateDisplays =
-            postUpdateContainers.filter { it.props is DisplayContainerProperties }
-
         // Iterate the pre-existing containers from bottom-up to notify old modes that their
         // descendants have been removed
-        for (container in snapshot.preUpdateContainers.asReversed()) {
-            val oldMode = snapshot.snapshots[container]?.mode
-            val mode = HierarchyUtils.getMode(container)
-            if (oldMode != null && oldMode != mode) {
-                ProtoLog.v(
-                    WM_SHELL_MODES,
-                    "\tDetaching container: %s to %s",
-                    container.name,
-                    oldMode.getId()
-                )
-                oldMode.detachFromContainer(updateContext, container)
-            }
+        val postUpdateContainers = hierarchy.toContainerList()
+        val removedContainers =
+            snapshot.preUpdateContainers.asReversed() - postUpdateContainers.toSet()
+        val removedContainersByMode = removedContainers
+            // Ignore containers that aren't in a mode (should generally not happen unless there
+            // is no root)
+            .filter { snapshot.snapshots[it]!!.mode != null }
+            .groupBy { snapshot.snapshots[it]!!.modeContainer }
+        for ((oldModeContainer, removed) in removedContainersByMode) {
+            val oldMode = oldModeContainer!!.mode!!
+            ProtoLog.v(
+                WM_SHELL_MODES,
+                "\tRemoving: %s from %s (%s)",
+                removed,
+                oldModeContainer,
+                oldMode.getId()
+            )
+            oldMode.containersRemoved(updateContext, oldModeContainer, removed, snapshot)
         }
 
         // After pre-existing containers' modes have been notified, notify the modes globally for
         // displays have been removed
+        val preUpdateDisplays =
+            snapshot.preUpdateContainers.filter { it.props is DisplayContainerProperties }
+        val postUpdateDisplays =
+            postUpdateContainers.filter { it.props is DisplayContainerProperties }
         val removedDisplays = preUpdateDisplays - postUpdateDisplays
         for (display in removedDisplays) {
             val modes = formFactorModes.getAvailableModesForDisplay(
@@ -136,48 +140,41 @@ class HierarchyUpdater(
             }
         }
 
-        // Iterate the current containers from top-down to notify new modes that they have new
-        // descendants. We have to do this iteratively as modes can manipulate the hierarchy (only
-        // descendants of notified containers) as they are notified.
-        val postUpdateContainersList = mutableListOf(hierarchy.root)
-        while (postUpdateContainersList.isNotEmpty()) {
-            val container = postUpdateContainersList.removeFirst()
-            val oldMode = snapshot.snapshots[container]?.mode
-            val mode = HierarchyUtils.getMode(container)
-            if (mode != null) {
-                if (mode != oldMode) {
-                    // This container has not been associated with the mode yet (either directly
-                    // or indirectly)
+        // Update each mode with containers that have changed either along its ancestor path or
+        // in the set of containers it manages
+        val postUpdateContainersByMode = postUpdateContainers
+            // Ignore containers that aren't in a mode (should generally not happen unless there
+            // is no root)
+            .filter { HierarchyUtils.getMode(it) != null }
+            .groupBy { HierarchyUtils.getModeContainer(it) }
+        for ((modeContainer, containers) in postUpdateContainersByMode) {
+            val mode = modeContainer!!.mode!!
+            // Notify changed ancestors first to this mode, but only do so if the mode has already
+            // been notified of the root
+            if (snapshot.snapshots.containsKey(modeContainer)) {
+                val ancestors = snapshot.getChangedAncestors(modeContainer)
+                if (!ancestors.isEmpty()) {
                     ProtoLog.v(
                         WM_SHELL_MODES,
-                        "\tAttaching container: %s to %s",
-                        container.name, mode.getId()
+                        "\tGlobal state changed: %s for %s",
+                        modeContainer, mode.getId()
                     )
-                    mode.attachToContainer(updateContext, container, container.mode == mode)
-                } else if (container.mode == mode) {
-                    // This container is directly associated with the mode
-                    if (snapshot.hasChangesIncludingAncestors(container)) {
-                        ProtoLog.v(
-                            WM_SHELL_MODES,
-                            "\tContainer or ancestor has changed: %s in %s",
-                            container.name, mode.getId()
-                        )
-                        mode.containerChanged(updateContext, container, snapshot)
-                    }
-                } else {
-                    // This container is indirectly associated wit the mode
-                    if (snapshot.hasChanges(container)) {
-                        // The container has still changed, so notify that mode
-                        ProtoLog.v(
-                            WM_SHELL_MODES,
-                            "\tDescendant container has changed: %s in %s",
-                            container.name, mode.getId()
-                        )
-                        mode.containerChanged(updateContext, container, snapshot)
-                    }
+                    mode.globalStateChanged(updateContext, modeContainer, snapshot)
                 }
             }
-            postUpdateContainersList.addAll(container.children)
+
+            // Notify added or changed containers in this mode
+            val added = containers.filter { !snapshot.snapshots.containsKey(it) }
+            val changed = containers.filter { snapshot.hasChanges(it) }
+            if (!added.isEmpty() || !changed.isEmpty()) {
+                if (!added.isEmpty()) {
+                    ProtoLog.v(WM_SHELL_MODES, "\tAdding: %s to %s", added, mode.getId())
+                }
+                if (!changed.isEmpty()) {
+                    ProtoLog.v(WM_SHELL_MODES, "\tChanged: %s in %s", changed, mode.getId())
+                }
+                mode.containersChanged(updateContext, modeContainer, added, changed, snapshot)
+            }
         }
         updaterTestHook?.onModesNotified()
 

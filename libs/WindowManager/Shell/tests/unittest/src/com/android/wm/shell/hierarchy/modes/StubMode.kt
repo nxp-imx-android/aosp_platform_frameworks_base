@@ -32,9 +32,10 @@ import org.mockito.kotlin.mock
 open class StubMode(
     private val name: String=""
 ) : Mode {
-    val attachedRoots = mutableListOf<Container>()
-    val attachedContainers = mutableListOf<Container>()
-    val updates = mutableListOf<Pair<Container, HierarchyChangeFlags>>()
+    val addedContainers = mutableListOf<Container>()
+    val removedContainers = mutableListOf<Container>()
+    val changedContainers = mutableListOf<Container>()
+    val ancestorsChangedContainers = mutableListOf<Container>()
     val displayChanges = mutableListOf<DisplayContainerProperties>()
 
     // The containers to compare againest those provided in the next prepareForAnimation() call
@@ -50,28 +51,32 @@ open class StubMode(
         return "TestMode_$name"
     }
 
-    override fun attachToContainer(
+    override fun globalStateChanged(
         updateContext: Mode.UpdateContext,
-        container: Container,
-        isDirectlyAssigned: Boolean
-    ) {
-        if (isDirectlyAssigned) {
-            attachedRoots.add(container)
-        }
-        attachedContainers.add(container)
-    }
-
-    override fun detachFromContainer(updateContext: Mode.UpdateContext, container: Container) {
-        attachedRoots.remove(container)
-        attachedContainers.remove(container)
-    }
-
-    override fun containerChanged(
-        updateContext: Mode.UpdateContext,
-        container: Container,
+        modeContainer: Container,
         snapshot: HierarchySnapshot
     ) {
-        updates.add(container to snapshot.getChanges(container))
+        ancestorsChangedContainers.add(modeContainer)
+    }
+
+    override fun containersChanged(
+        updateContext: Mode.UpdateContext,
+        modeContainer: Container,
+        addedContainers: List<Container>,
+        changedContainers: List<Container>,
+        snapshot: HierarchySnapshot
+    ) {
+        this.addedContainers.addAll(addedContainers)
+        this.changedContainers.addAll(changedContainers)
+    }
+
+    override fun containersRemoved(
+        updateContext: Mode.UpdateContext,
+        modeContainer: Container,
+        removedContainers: List<Container>,
+        snapshot: HierarchySnapshot
+    ) {
+        this.removedContainers.addAll(removedContainers)
     }
 
     override fun requestUpdateForDisplayChange(
