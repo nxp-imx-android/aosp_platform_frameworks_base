@@ -270,6 +270,7 @@ filegroup {
 java_defaults {
     name: "framework-minus-apex-defaults",
     defaults: [
+        "android-api-contributor-defaults",
         "framework-aidl-export-defaults",
         "latest_android_hardware_soundtrigger3_java_static",
         "framework-minus-apex-aconfig-libraries",
