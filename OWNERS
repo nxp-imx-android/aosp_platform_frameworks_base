@@ -30,7 +30,7 @@ per-file */TEST_MAPPING = *
 per-file */res*/values*/*.xml = byi@google.com, delphij@google.com
 
 per-file **/AconfigFlags.bp=file:platform/build/release:main:/OWNERS
-per-file **.bp,**.mk=file:platform/build/soong:main:/OWNERS
+per-file **.bp,**.mk=file:platform/build/soong:main:/OWNERS_lastresort
 per-file TestProtoLibraries.bp = file:platform/platform_testing:/libraries/health/OWNERS
 per-file TestProtoLibraries.bp = file:platform/tools/tradefederation:/OWNERS
 
