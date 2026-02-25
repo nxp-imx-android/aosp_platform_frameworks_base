@@ -85,6 +85,7 @@ public:
 #ifdef __ANDROID__
     virtual void setSurfaceControl(const sp<SurfaceControl>&) {}
     virtual void setBLASTBufferQueue(const sp<BLASTBufferQueue>&) {}
+    virtual void setCornerRadiiCallback(std::function<void(const gui::CornerRadii&)>) {}
     virtual bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>,
                                      bool) {
         return false;

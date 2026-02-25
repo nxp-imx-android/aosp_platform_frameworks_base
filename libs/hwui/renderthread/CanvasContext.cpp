@@ -290,6 +290,11 @@ void CanvasContext::setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) {
 }
 
 #ifdef __ANDROID__
+void CanvasContext::setCornerRadiiCallback(
+        std::function<void(const gui::CornerRadii&)> cornerRadiiCallback) {
+    mRenderPipeline->setCornerRadiiCallback(std::move(cornerRadiiCallback));
+}
+
 bool CanvasContext::syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> t,
                                         bool acquireSingleBuffer) {
     return mRenderPipeline->syncNextTransaction(t, acquireSingleBuffer);

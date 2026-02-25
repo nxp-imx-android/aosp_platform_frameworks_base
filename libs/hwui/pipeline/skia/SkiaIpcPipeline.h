@@ -96,6 +96,8 @@ public:
     SurfaceComposerClient::Transaction* gatherPendingTransactions(uint64_t frameNumber) override;
     bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> callback,
                              bool acquireSingleBuffer) override;
+    void setCornerRadiiCallback(
+        std::function<void(const gui::CornerRadii&)> cornerRadiiCallback) override;
 
     ANativeWindow* getSurface() override { return nullptr; }
     uint64_t getFrameNumber() override;

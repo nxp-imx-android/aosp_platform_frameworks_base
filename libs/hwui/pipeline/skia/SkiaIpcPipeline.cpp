@@ -248,6 +248,11 @@ SurfaceComposerClient::Transaction* SkiaIpcPipeline::gatherPendingTransactions(
     return t;
 }
 
+void SkiaIpcPipeline::setCornerRadiiCallback(
+        std::function<void(const gui::CornerRadii&)> cornerRadiiCallback) {
+    // Stub implementation
+}
+
 bool SkiaIpcPipeline::syncNextTransaction(
         std::function<void(SurfaceComposerClient::Transaction*)> callback,
         bool acquireSingleBuffer) {

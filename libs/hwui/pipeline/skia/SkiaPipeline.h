@@ -73,6 +73,13 @@ public:
 #ifdef __ANDROID__
     virtual void setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) { mBLASTBufferQueue = bbq; }
 
+    void setCornerRadiiCallback(
+            std::function<void(const gui::CornerRadii&)> cornerRadiiCallback) override {
+        if (mBLASTBufferQueue != nullptr) {
+            mBLASTBufferQueue->setCornerRadiiCallback(std::move(cornerRadiiCallback));
+        }
+    }
+
     bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> callback,
                              bool acquireSingleBuffer = true) override {
         if (mBLASTBufferQueue != nullptr) {
