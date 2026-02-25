@@ -86,7 +86,9 @@ fun ContentScope.SingleShadeNestedScrollLayout(
     jankMonitor: InteractionJankMonitor,
     statusBarHeader: @Composable () -> Unit,
     mediaAndQqsHeader: @Composable () -> Unit,
-    scrollableScrim: @Composable (onContentHeightChanged: (Int) -> Unit) -> Unit,
+    scrollableScrim:
+        @Composable
+        (onContentHeightChanged: (Int) -> Unit, isScrimAtRest: () -> Boolean) -> Unit,
     cutoutInsetsProvider: () -> WindowInsets?,
 ) {
     val coroutineScope = shadeSession.sessionCoroutineScope(key = "SingleShadeNestedScrollLayout")
@@ -223,7 +225,10 @@ fun ContentScope.SingleShadeNestedScrollLayout(
                                 }
                             )
                     ) {
-                        scrollableScrim { contentHeight.intValue = it }
+                        scrollableScrim(
+                            { contentHeight.intValue = it },
+                            { scrimOffset.value >= 0f && contentScrollState.value == 0 },
+                        )
                     }
                 },
             ),

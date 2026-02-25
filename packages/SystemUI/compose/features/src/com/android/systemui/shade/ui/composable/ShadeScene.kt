@@ -415,7 +415,7 @@ private fun ContentScope.SingleShade(
                     mediaInRow = mediaInRow,
                 )
             },
-            scrollableScrim = { onContentHeightChanged ->
+            scrollableScrim = { onContentHeightChanged, isScrimAtRest ->
                 NestedScrollingNotificationPanel(
                     tag = "$tag.Single",
                     shadeSession = shadeSession,
@@ -435,6 +435,7 @@ private fun ContentScope.SingleShade(
                         viewModel::onEmptySpaceClicked.takeIf { viewModel.isEmptySpaceClickable },
                     modifier = Modifier.padding(horizontal = shadeHorizontalPadding),
                     onStackHeightChanged = onContentHeightChanged,
+                    allowSwipeToExpandChildren = isScrimAtRest,
                 )
             },
             cutoutInsetsProvider = {
