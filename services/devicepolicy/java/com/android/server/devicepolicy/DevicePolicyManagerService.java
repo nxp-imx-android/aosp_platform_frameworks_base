@@ -104,6 +104,7 @@ import static android.app.admin.DevicePolicyManager.DELEGATION_NETWORK_LOGGING;
 import static android.app.admin.DevicePolicyManager.DELEGATION_PACKAGE_ACCESS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_PERMISSION_GRANT;
 import static android.app.admin.DevicePolicyManager.DELEGATION_SECURITY_LOGGING;
+import static android.app.admin.DevicePolicyManager.DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_DEFAULT;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_FINANCED;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER;
@@ -131,6 +132,8 @@ import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATI
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_QUICK_SETTINGS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
+import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.NON_ORG_OWNED_PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
 import static android.app.admin.DevicePolicyManager.OPERATION_SAFETY_REASON_NONE;
@@ -187,6 +190,7 @@ import static android.app.admin.DevicePolicyManager.STATUS_USER_HAS_PROFILE;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_HAS_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_NOT_RUNNING;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_SETUP_COMPLETED;
+import static android.app.admin.DevicePolicyManager.UNAFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.WIPE_EUICC;
 import static android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE;
 import static android.app.admin.DevicePolicyManager.WIPE_RESET_PROTECTION_DATA;
@@ -929,19 +933,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     @ChangeId
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     static final long ENABLE_COEXISTENCE_CHANGE = 260560985L;
-
-    /**
-     * Extends {@link #isDeviceManaged()} to include COPE and MUM devices.
-     *
-     * <p>For apps targeting {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} and above,
-     * this change includes COPE and MUM as managed states. Apps targeting older SDKs
-     * will only consider DO as managed.
-     *
-     * @hide
-     */
-    @ChangeId
-    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.CINNAMON_BUN)
-    public static final long EXPAND_DEVICE_MANAGED_SCOPE = 451607072L;
 
     final Context mContext;
     final Injector mInjector;
@@ -9063,9 +9054,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
             mDeviceAdmins.getOwners().setDeviceOwner(admin, userId);
             mDeviceAdmins.getOwners().writeDeviceOwner();
-            if (Flags.managedDeviceDefinitionExtended()) {
-                invalidateBinderCaches();
-            }
 
             //TODO(b/180371154): when provisionFullyManagedDevice is used in tests, remove this
             // hard-coded default value setting.
@@ -9165,50 +9153,21 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         return mDeviceAdmins.hasDeviceOwner();
     }
 
-    /**
-     * This API is cached: invalidate with invalidateBinderCaches().
-     */
     @Override
-    public boolean isDeviceManaged(String callerPackage) {
-        final CallerIdentity caller = Flags.managedDeviceDefinitionExtended()
-                ? getCallerIdentity(callerPackage)
-                : getCallerIdentity();
-        boolean isDeviceManagedScopeExpanded = false;
-
-        if (Flags.managedDeviceDefinitionExtended()) {
-            isDeviceManagedScopeExpanded =  mInjector.isChangeEnabled(
-                    EXPAND_DEVICE_MANAGED_SCOPE,
-                    caller.getPackageName(),
-                    caller.getUserId()
-            );
-        }
-
+    public boolean isDeviceManaged() {
+        final CallerIdentity caller = getCallerIdentity();
         Preconditions.checkCallAuthorization(
                 mDeviceAdmins.isDefaultDeviceOwner(caller)
-                || mDeviceAdmins.isProfileOwner(caller)
                 || canManageUsers(caller)
                 || mDeviceAdmins.isFinancedDeviceOwner(caller)
                 || hasCallingOrSelfPermission(MANAGE_PROFILE_AND_DEVICE_OWNERS));
-
-        return isDeviceManagedUnchecked(isDeviceManagedScopeExpanded);
+        return isDeviceManagedUnchecked();
     }
 
     private boolean isDeviceManagedUnchecked() {
-        // By default, treat DO, COPE and MUM devices as all managed.
-        return isDeviceManagedUnchecked(true);
-    }
-
-    private boolean isDeviceManagedUnchecked(boolean isDeviceManagedScopeExpanded) {
-        boolean isDeviceManaged = mDeviceAdmins.hasDeviceOwner();
-
-        if (isDeviceManagedScopeExpanded) {
-            isDeviceManaged = isDeviceManaged || isOrganizationOwnedDeviceWithManagedProfile();
-            if (Flags.multiUserManagementDeviceProvisioning()) {
-                isDeviceManaged = isDeviceManaged || mStateCache.isDeviceManaged();
-            }
-        }
-
-        return isDeviceManaged;
+        return Flags.multiUserManagementDeviceProvisioning()
+                ? mStateCache.isDeviceManaged() || mDeviceAdmins.hasDeviceOwner()
+                : mDeviceAdmins.hasDeviceOwner();
     }
 
     @Override
@@ -9225,9 +9184,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         synchronized (getLockObject()) {
             mDeviceAdmins.getOwners().setDeviceManaged(false);
             mDeviceAdmins.getOwners().writeDeviceOwner();
-            if (Flags.managedDeviceDefinitionExtended()) {
-                invalidateBinderCaches();
-            }
             forceRemoveActiveAdminUnchecked(adminReceiver, UserHandle.USER_SYSTEM);
         }
     }
@@ -17542,9 +17498,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         // data, no need to do it manually.
         mDeviceAdmins.getOwners().setProfileOwnerOfOrganizationOwnedDevice(userId,
                 isProfileOwnerOnOrganizationOwnedDevice);
-        if (Flags.managedDeviceDefinitionExtended()) {
-            invalidateBinderCaches();
-        }
     }
 
     private boolean isBootToUser0Enabled() {
@@ -21828,9 +21781,6 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
             mDeviceAdmins.getOwners().setDeviceManaged(true);
             mDeviceAdmins.getOwners().writeDeviceOwner();
-            if (Flags.managedDeviceDefinitionExtended()) {
-                invalidateBinderCaches();
-            }
 
             onProvisionMultiuserManagedDeviceCompleted(provisioningParams);
         } catch (Exception e) {
