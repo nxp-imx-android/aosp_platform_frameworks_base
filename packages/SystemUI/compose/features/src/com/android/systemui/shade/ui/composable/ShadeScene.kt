@@ -289,7 +289,7 @@ private fun ContentScope.SingleShade(
         layoutState.isTransitioningBetween(Scenes.Gone, Scenes.Shade) ||
             layoutState.isTransitioningBetween(Scenes.Lockscreen, Scenes.Shade)
     val mediaInRow = viewModel.showMediaInRow
-    val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
+    val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings_single)
 
     val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
     val navBarHeight = { systemBarsPadding.calculateBottomPadding() }
@@ -505,7 +505,7 @@ private fun ContentScope.SplitShade(
             viewModel.qsContainerViewModelFactory.create(supportsBrightnessMirroring = true)
         }
 
-    val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
+    val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings_split)
     val navBarBottomHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     val brightnessMirrorShowing = qsContainerViewModel.brightnessSliderViewModel.showMirror

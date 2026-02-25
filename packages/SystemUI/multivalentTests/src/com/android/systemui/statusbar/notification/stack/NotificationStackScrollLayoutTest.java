@@ -2352,7 +2352,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         Configuration configuration = new Configuration();
         configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
         mTestableResources.overrideConfiguration(configuration);
-        final int mMinimumPaddings = px(R.dimen.notification_side_paddings);
+        final int mMinimumPaddings = px(R.dimen.notification_side_paddings_single);
 
         // WHEN: useLargeSidePaddings is true
         mStackScroller.setUseLargeSidePaddings(true);
@@ -2374,7 +2374,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         Configuration configuration = new Configuration();
         configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
         mTestableResources.overrideConfiguration(configuration);
-        final int mMinimumPaddings = px(R.dimen.notification_side_paddings);
+        final int mMinimumPaddings = px(R.dimen.notification_side_paddings_single);
 
         // WHEN: split shade is disabled
         mStackScroller.setSplitShade(false);
