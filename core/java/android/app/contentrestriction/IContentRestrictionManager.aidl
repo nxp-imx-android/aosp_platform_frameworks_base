@@ -18,6 +18,8 @@ package android.app.contentrestriction;
 
 import android.app.contentrestriction.ClassifiableContent;
 import android.app.contentrestriction.IContentRestrictionCallback;
+import android.content.Intent;
+import android.content.LocusId;
 
 /**
  * Internal IPC interface to the content restriction service.
@@ -29,4 +31,5 @@ interface IContentRestrictionManager {
     boolean isContentRestrictionEnabledForUser(int userId);
     boolean isDevicePolicyBypassingEnabledForUser(int userId);
     void setDevicePolicyBypassingEnabledForUser(int userId, boolean enabled);
+    Intent createContentRestrictedIntent(in LocusId locusId);
 }
