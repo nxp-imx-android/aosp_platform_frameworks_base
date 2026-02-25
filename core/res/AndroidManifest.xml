@@ -1882,6 +1882,16 @@
         android:protectionLevel="system|signature|role"
         android:permissionFlags="allowedInPrivateComputeCore" />
 
+    <!-- Required to be able to call
+         {@link android.hardware.camera2.CameraManager#warmUp} on a camera device
+           <p>Protection level: signature
+           @hide -->
+    <permission android:name="android.permission.WARM_UP_CAMERA"
+        android:label="@string/permlab_warmUpCamera"
+        android:description="@string/permdesc_warmUpCamera"
+        android:protectionLevel="signature"
+        android:featureFlag="com.android.internal.camera.flags.camera_warm_up" />
+
     <!-- @SystemApi Allows receiving the camera service notifications when a camera is opened
             (by a certain application package) or closed.
         @hide -->

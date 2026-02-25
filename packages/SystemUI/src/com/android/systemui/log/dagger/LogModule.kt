@@ -659,5 +659,13 @@ abstract class LogModule {
         fun providesMultiDisplayStatusBarLog(factory: LogBufferFactory): LogBuffer {
             return factory.create(name = "MultiDisplayStatusBarLog", maxSize = 50)
         }
+
+        /** Provides a [LogBuffer] for Camera related events. */
+        @Provides
+        @SysUISingleton
+        @CameraLog
+        fun providesCameraLog(factory: LogBufferFactory): LogBuffer {
+            return factory.create(name = "CameraLog", maxSize = 50)
+        }
     }
 }
