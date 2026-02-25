@@ -1134,6 +1134,7 @@ base::expected<size_t, NullOrIOError> ResStringPool::indexOfString(const char16_
             // most often this happens because we want to get IDs for style
             // span tags; since those always appear at the end of the string
             // block, start searching at the back.
+            int i = mHeader->stringCount-1;
             String8 str8(str, strLen);
             const size_t str8Len = str8.size();
             std::optional<AutoMutex> cacheLock;
@@ -1143,9 +1144,10 @@ base::expected<size_t, NullOrIOError> ResStringPool::indexOfString(const char16_
                   it != mIndexLookupCache->first.end()) {
                 return it->second;
               }
+              // We know that we've handled all these strings, no need to check them again.
+              i -= (int)mIndexLookupCache->first.size();
             }
-
-            for (int i=mHeader->stringCount-1; i>=0; i--) {
+            for (; i>=0; i--) {
                 const base::expected<StringPiece, NullOrIOError> s = string8At(i);
                 if (UNLIKELY(IsIOError(s))) {
                     return base::unexpected(s.error());
@@ -1202,10 +1204,8 @@ base::expected<size_t, NullOrIOError> ResStringPool::indexOfString(const char16_
                 }
             }
         } else {
-            // It is unusual to get the ID from an unsorted string block...
-            // most often this happens because we want to get IDs for style
-            // span tags; since those always appear at the end of the string
-            // block, start searching at the back.
+            // Unsorted.
+            int i = mHeader->stringCount-1;
             std::optional<AutoMutex> cacheLock;
             if (mIndexLookupCache) {
               cacheLock.emplace(mCachesLock);
@@ -1213,8 +1213,9 @@ base::expected<size_t, NullOrIOError> ResStringPool::indexOfString(const char16_
                   it != mIndexLookupCache->second.end()) {
                 return it->second;
               }
+              i -= (int)mIndexLookupCache->second.size();
             }
-            for (int i=mHeader->stringCount-1; i>=0; i--) {
+            for (; i>=0; i--) {
                 const base::expected<StringPiece16, NullOrIOError> s = stringAt(i);
                 if (UNLIKELY(IsIOError(s))) {
                     return base::unexpected(s.error());
