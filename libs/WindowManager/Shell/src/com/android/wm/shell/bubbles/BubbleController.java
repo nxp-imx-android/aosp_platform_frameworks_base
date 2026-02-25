@@ -3223,12 +3223,16 @@ public class BubbleController implements ConfigurationChangeListener,
                 return IME_ANIMATION_DEFAULT;
             }
 
-            int height = hiddenTop - shownTop;
+            // the ime height from the bottom of the screen
+            int imeHeight = hiddenTop - shownTop;
+            // the ime height in BubblePositioner excludes the screen bottom inset. to compare the
+            // previous height in BubblePositioner with the new height we have to add back the
+            // bottom inset.
             int previousImeHeight =
                     mBubblePositioner.getImeHeight() + mBubblePositioner.getInsets().bottom;
-            boolean heightChanged = height != previousImeHeight;
+            boolean heightChanged = imeHeight != previousImeHeight;
             if (showing) {
-                mBubblePositioner.setImeVisible(true, hiddenTop - shownTop);
+                mBubblePositioner.setImeVisible(true, imeHeight);
             } else {
                 mBubblePositioner.setImeVisible(false, 0);
             }
