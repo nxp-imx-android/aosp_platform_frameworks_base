@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.largescreen.domain.interactor
 
+import android.graphics.Rect
 import android.net.Uri
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.screencapture.record.largescreen.data.repository.LargeScreenCaptureParametersRepository
@@ -50,11 +51,19 @@ constructor(private val largeScreenSettingsRepository: LargeScreenCaptureParamet
         return largeScreenSettingsRepository.getSelectedCaptureRegion()
     }
 
+    suspend fun getSelectedCaptureRegionBox(): Rect? {
+        return largeScreenSettingsRepository.getSelectedCaptureRegionBox()
+    }
+
     suspend fun setSelectedCaptureType(type: ScreenCaptureType) {
         largeScreenSettingsRepository.updateSelectedCaptureTypeString(type)
     }
 
     suspend fun setSelectedCaptureRegion(region: ScreenCaptureRegion) {
         largeScreenSettingsRepository.updateSelectedCaptureRegionString(region)
+    }
+
+    suspend fun setSelectedCaptureRegionBox(regionBox: Rect?) {
+        largeScreenSettingsRepository.updateSelectedCaptureRegionBoxString(regionBox)
     }
 }
