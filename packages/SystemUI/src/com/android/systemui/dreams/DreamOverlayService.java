@@ -19,7 +19,6 @@ package com.android.systemui.dreams;
 import static android.service.dreams.Flags.dreamWakeRedirect;
 import static android.service.dreams.Flags.dreamsV2;
 
-import static com.android.systemui.Flags.dreamBiometricPromptFixes;
 import static com.android.systemui.Flags.glanceableHubAllowKeyguardWhenDreaming;
 import static com.android.systemui.ambient.touch.TouchSurfaceKt.SURFACE_DREAM;
 import static com.android.systemui.ambient.touch.scrim.dagger.ScrimModule.BOUNCER_SCRIM_CONTROLLER;
@@ -488,10 +487,8 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             mFlows.add(collectFlow(getLifecycle(), wakeGestureMonitor.getWakeUpDetected(),
                     mPickupConsumer));
         }
-        if (dreamBiometricPromptFixes()) {
-            mFlows.add(collectFlow(getLifecycle(), promptCredentialInteractor.isShowing(),
-                    mBiometricPromptShowingConsumer));
-        }
+        mFlows.add(collectFlow(getLifecycle(), promptCredentialInteractor.isShowing(),
+                mBiometricPromptShowingConsumer));
     }
 
     @NonNull
