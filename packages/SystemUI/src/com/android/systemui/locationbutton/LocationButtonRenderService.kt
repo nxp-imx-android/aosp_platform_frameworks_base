@@ -89,7 +89,7 @@ constructor(
         client: ILocationButtonClient,
     ) {
         executor.execute {
-            nextSessionId = nextSessionId++
+            nextSessionId++
             val locationButtonSession =
                 LocationButtonSession(
                     this,
