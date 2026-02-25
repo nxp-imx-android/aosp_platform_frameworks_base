@@ -1181,6 +1181,26 @@ public class TelephonyRegistryManager {
         }
     }
 
+    /**
+     * Notify external listeners that satellite purchase mode changed.
+     *
+     * @param subId subscription ID.
+     * @param isEnabled {@code true} If satellite purchase mode is started,
+     *                         {@code false} if purchase mode ends.
+     * @param purchaseModeState State of the purchase mode. Network setup, teardown and Purchase
+     *                          Mode active or inactive. Inactive by default.
+     * @hide
+     */
+    public void notifySatellitePurchaseModeChanged(int subId, boolean isEnabled,
+            @TelephonyManager.SatellitePurchaseModeState int purchaseModeState) {
+        try {
+            sRegistry.notifySatellitePurchaseModeChanged(subId, isEnabled, purchaseModeState);
+        } catch (RemoteException ex) {
+            // system server crash
+            throw ex.rethrowFromSystemServer();
+        }
+    }
+
    /**
      * Notify external listeners that the radio security algorithms have changed.
      * @param slotIndex for the phone object that got updated
@@ -1431,6 +1451,10 @@ public class TelephonyRegistryManager {
             eventList.add(TelephonyCallback.EVENT_CARRIER_ROAMING_NTN_ELIGIBLE_STATE_CHANGED);
             eventList.add(TelephonyCallback.EVENT_CARRIER_ROAMING_NTN_AVAILABLE_SERVICES_CHANGED);
             eventList.add(TelephonyCallback.EVENT_CARRIER_ROAMING_NTN_SIGNAL_STRENGTH_CHANGED);
+        }
+
+        if (telephonyCallback instanceof TelephonyCallback.SatellitePurchaseModeListener) {
+            eventList.add(TelephonyCallback.EVENT_SATELLITE_PURCHASE_MODE_CHANGED);
         }
 
         if (telephonyCallback instanceof TelephonyCallback.CellularIdentifierDisclosedListener) {

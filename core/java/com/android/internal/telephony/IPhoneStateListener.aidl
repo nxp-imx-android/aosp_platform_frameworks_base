@@ -95,4 +95,6 @@ oneway interface IPhoneStateListener {
     void onDomainSelectionEmergencyModeEntered(int type, int slotIndex, int subscriptionId);
     void onDomainSelectionEmergencyModeExited(int type, int slotIndex, int subscriptionId);
     void onNetworkSecurityEvents(in List<NetworkSecurityEvent> events);
+    void onSatellitePurchaseModeChanged(in int subId, in boolean inProgress,
+            in int purchaseModeState);
 }

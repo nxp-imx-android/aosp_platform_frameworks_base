@@ -1738,6 +1738,11 @@ public class PhoneStateListener {
                 List<NetworkSecurityEvent> events) {
             // not supported on the deprecated interface - Use TelephonyCallback instead
         }
+
+        public final void onSatellitePurchaseModeChanged(int subId, boolean isEnabled,
+                @TelephonyManager.SatellitePurchaseModeState int purchaseModeState) {
+            // not supported on the deprecated interface - Use TelephonyCallback instead
+        }
     }
 
     private void log(String s) {

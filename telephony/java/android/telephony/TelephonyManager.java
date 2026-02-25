@@ -19688,6 +19688,49 @@ public class TelephonyManager {
     public static final int DOMAIN_SELECTION_EMERGENCY_TYPE_SMS = 2;
 
     /**
+     * Defines the states of satellite purchase mode
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = {"SATELLITE_PURCHASE_MODE_STATE_"}, value = {
+            SATELLITE_PURCHASE_MODE_STATE_INACTIVE,
+            SATELLITE_PURCHASE_MODE_STATE_NETWORK_SETUP,
+            SATELLITE_PURCHASE_MODE_STATE_ACTIVE,
+            SATELLITE_PURCHASE_MODE_STATE_NETWORK_TEARDOWN})
+    public @interface SatellitePurchaseModeState {}
+
+    /**
+     * Purchase Mode is not active
+     * This is the default state of Satellite Purchase Mode
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL_26Q4)
+    public static final int SATELLITE_PURCHASE_MODE_STATE_INACTIVE = 1;
+
+    /**
+     * State for setting up restricted satellite network for purchase
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL_26Q4)
+    public static final int SATELLITE_PURCHASE_MODE_STATE_NETWORK_SETUP = 2;
+
+    /**
+     * Purchase Mode is now active
+     * Restricted satellite network is available for purchase
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL_26Q4)
+    public static final int SATELLITE_PURCHASE_MODE_STATE_ACTIVE = 3;
+
+    /**
+     * State for tearing down restricted satellite network for purchase
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL_26Q4)
+    public static final int SATELLITE_PURCHASE_MODE_STATE_NETWORK_TEARDOWN = 4;
+
+
+    /**
      * The enrollment status of the SIM in the automatic PIN management feature.
      * @hide
      */

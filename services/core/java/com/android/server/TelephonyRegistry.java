@@ -18,6 +18,7 @@ package com.android.server;
 
 import static android.telephony.SubscriptionManager.INVALID_SIM_SLOT_INDEX;
 import static android.telephony.TelephonyManager.ACTION_MULTI_SIM_CONFIG_CHANGED;
+import static android.telephony.TelephonyManager.SATELLITE_PURCHASE_MODE_STATE_INACTIVE;
 import static android.telephony.TelephonyRegistryManager.SIM_ACTIVATION_TYPE_DATA;
 import static android.telephony.TelephonyRegistryManager.SIM_ACTIVATION_TYPE_VOICE;
 
@@ -65,11 +66,11 @@ import android.telephony.CellSignalStrengthNr;
 import android.telephony.CellSignalStrengthTdscdma;
 import android.telephony.CellSignalStrengthWcdma;
 import android.telephony.CellularIdentifierDisclosure;
-import android.telephony.NetworkSecurityEvent;
 import android.telephony.DisconnectCause;
 import android.telephony.LinkCapacityEstimate;
 import android.telephony.LocationAccessPolicy;
 import android.telephony.NetworkRegistrationInfo;
+import android.telephony.NetworkSecurityEvent;
 import android.telephony.PhoneCapability;
 import android.telephony.PhoneStateListener;
 import android.telephony.PhysicalChannelConfig;
@@ -441,6 +442,8 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
 
     private boolean[] mCarrierRoamingNtnMode = null;
     private boolean[] mCarrierRoamingNtnEligible = null;
+    private boolean[] mIsPurchaseModeActive = null;
+    private int[] mSatellitePurchaseModeState = null;
 
     private List<IntArray> mCarrierRoamingNtnAvailableServices;
     private NtnSignalStrength[] mCarrierRoamingNtnSignalStrength;
@@ -764,6 +767,8 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
             mSCBMDuration = copyOf(mSCBMDuration, mNumPhones);
             mCarrierRoamingNtnMode = copyOf(mCarrierRoamingNtnMode, mNumPhones);
             mCarrierRoamingNtnEligible = copyOf(mCarrierRoamingNtnEligible, mNumPhones);
+            mIsPurchaseModeActive = copyOf(mIsPurchaseModeActive, mNumPhones);
+            mSatellitePurchaseModeState = copyOf(mSatellitePurchaseModeState, mNumPhones);
             if (mCarrierRoamingNtnSignalStrength != null) {
                 mCarrierRoamingNtnSignalStrength = copyOf(
                         mCarrierRoamingNtnSignalStrength, mNumPhones);
@@ -835,6 +840,8 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                 mSCBMDuration[i] = 0;
                 mCarrierRoamingNtnMode[i] = false;
                 mCarrierRoamingNtnEligible[i] = false;
+                mIsPurchaseModeActive[i] = false;
+                mSatellitePurchaseModeState[i] = SATELLITE_PURCHASE_MODE_STATE_INACTIVE;
                 mCarrierRoamingNtnAvailableServices.add(i, new IntArray());
                 mCarrierRoamingNtnSignalStrength[i] = new NtnSignalStrength(
                         NtnSignalStrength.NTN_SIGNAL_STRENGTH_NONE);
@@ -916,6 +923,8 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         mSCBMDuration = new long[numPhones];
         mCarrierRoamingNtnMode = new boolean[numPhones];
         mCarrierRoamingNtnEligible = new boolean[numPhones];
+        mIsPurchaseModeActive = new boolean[numPhones];
+        mSatellitePurchaseModeState = new int[numPhones];
         mCarrierRoamingNtnAvailableServices = new ArrayList<>();
         mCarrierRoamingNtnSignalStrength = new NtnSignalStrength[numPhones];
         mNetworkSecurityEvents = new ArrayList<>();
@@ -968,6 +977,8 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
             mSCBMDuration[i] = 0;
             mCarrierRoamingNtnMode[i] = false;
             mCarrierRoamingNtnEligible[i] = false;
+            mIsPurchaseModeActive[i] = false;
+            mSatellitePurchaseModeState[i] = SATELLITE_PURCHASE_MODE_STATE_INACTIVE;
             mCarrierRoamingNtnAvailableServices.add(i, new IntArray());
             mCarrierRoamingNtnSignalStrength[i] = new NtnSignalStrength(
                     NtnSignalStrength.NTN_SIGNAL_STRENGTH_NONE);
@@ -1659,6 +1670,16 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                                     + mNetworkSecurityEvents.get(r.phoneId));
                         }
                         r.callback.onNetworkSecurityEvents(mNetworkSecurityEvents.get(r.phoneId));
+                    } catch (RemoteException ex) {
+                        remove(r.binder);
+                    }
+                }
+                if (events.contains(TelephonyCallback.EVENT_SATELLITE_PURCHASE_MODE_CHANGED)) {
+                    try {
+                        r.callback.onSatellitePurchaseModeChanged(
+                                r.subId,
+                                mIsPurchaseModeActive[r.phoneId],
+                                mSatellitePurchaseModeState[r.phoneId]);
                     } catch (RemoteException ex) {
                         remove(r.binder);
                     }
@@ -3969,6 +3990,46 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
     }
 
     /**
+     * Notify external listeners that satellite purchase mode changed.
+     *
+     * @param subId subscription ID.
+     * @param isEnabled {@code true} If satellite purchase is in progress,
+     *                         {@code false} otherwise.
+     * @param purchaseModeState State of the purchase mode. Network setup, teardown and Purchase
+     *                          Mode active or inactive. Inactive by default.
+     */
+    public void notifySatellitePurchaseModeChanged(int subId, boolean isEnabled,
+            @TelephonyManager.SatellitePurchaseModeState int purchaseModeState) {
+        if (VDBG) {
+            log("notifySatellitePurchaseModeChanged: subId=" + subId
+                    + " isEnabled=" + isEnabled
+                    + " satellitePurchaseModeState=" + purchaseModeState);
+        }
+
+        synchronized (mRecords) {
+            int phoneId = getPhoneIdFromSubId(subId);
+            if (!validatePhoneId(phoneId)) {
+                return;
+            }
+            mIsPurchaseModeActive[phoneId] = isEnabled;
+            mSatellitePurchaseModeState[phoneId] = purchaseModeState;
+            for (Record r : mRecords) {
+                if (r.matchTelephonyCallbackEvent(
+                        TelephonyCallback.EVENT_SATELLITE_PURCHASE_MODE_CHANGED)
+                        && idMatch(r, subId, phoneId)) {
+                    try {
+                        r.callback.onSatellitePurchaseModeChanged(subId, isEnabled,
+                                purchaseModeState);
+                    } catch (RemoteException ex) {
+                        mRemoveList.add(r.binder);
+                    }
+                }
+            }
+            handleRemoveListLocked();
+        }
+    }
+
+    /**
      * Notify that the radio security algorithms have changed.
      *
      * @param phoneId the phone id.
@@ -4225,6 +4286,8 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
                 pw.println("mSCBMDuration=" + mSCBMDuration[i]);
                 pw.println("mCarrierRoamingNtnMode=" + mCarrierRoamingNtnMode[i]);
                 pw.println("mCarrierRoamingNtnEligible=" + mCarrierRoamingNtnEligible[i]);
+                pw.println("mIsPurchaseModeActive=" + mIsPurchaseModeActive[i]);
+                pw.println("mSatellitePurchaseModeState=" + mSatellitePurchaseModeState[i]);
                 pw.println("mCarrierRoamingNtnSignalStrength="
                         + mCarrierRoamingNtnSignalStrength[i]);
                 pw.println("mDomainSelectionCallEmergencyMode="

@@ -782,6 +782,16 @@ public class TelephonyCallback {
     public static final int EVENT_DOMAIN_SELECTION_EMERGENCY_MODE_CHANGED = 49;
 
     /**
+     * Event for listening to satellite purchase mode changes.
+     *
+     * @see SatellitePurchaseModeListener
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL_26Q4)
+    public static final int EVENT_SATELLITE_PURCHASE_MODE_CHANGED = 50;
+
+    /**
      * @hide
      */
     @IntDef(prefix = {"EVENT_"}, value = {
@@ -833,7 +843,8 @@ public class TelephonyCallback {
             EVENT_SECURITY_ALGORITHMS_CHANGED,
             EVENT_CELLULAR_IDENTIFIER_DISCLOSED_CHANGED,
             EVENT_NETWORK_SECURITY_EVENTS,
-            EVENT_DOMAIN_SELECTION_EMERGENCY_MODE_CHANGED
+            EVENT_DOMAIN_SELECTION_EMERGENCY_MODE_CHANGED,
+            EVENT_SATELLITE_PURCHASE_MODE_CHANGED
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface TelephonyEvent {
@@ -2045,6 +2056,26 @@ public class TelephonyCallback {
     }
 
     /**
+     * Interface for satellite purchase mode listener.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SATELLITE_UPSELL_26Q4)
+    public interface SatellitePurchaseModeListener {
+        /**
+         * Callback invoked when satellite purchase mode changed.
+         *
+         * @param subId subscription ID.
+         * @param isEnabled {@code true} If satellite purchase mode is in progress,
+         *                         {@code false} otherwise.
+         * @param purchaseModeState State of the purchase mode. Network setup, teardown and Purchase
+         *                          Mode active or inactive. Inactive by default.
+         */
+        void onSatellitePurchaseModeChanged(int subId, boolean isEnabled,
+                @TelephonyManager.SatellitePurchaseModeState int purchaseModeState);
+    }
+
+    /**
      * The callback methods need to be called on the handler thread where
      * this object was created.  If the binder did that for us it'd be nice.
      * <p>
@@ -2559,6 +2590,19 @@ public class TelephonyCallback {
             Binder.withCleanCallingIdentity(() -> mExecutor.execute(
                     () -> listener.onDomainSelectionEmergencyModeExited(
                             type, slotIndex, subscriptionId)));
+        }
+
+        public void onSatellitePurchaseModeChanged(int subId, boolean isEnabled,
+                @TelephonyManager.SatellitePurchaseModeState int purchaseModeState) {
+            if (!Flags.satelliteUpsell26q4()) return;
+
+            SatellitePurchaseModeListener listener =
+                    (SatellitePurchaseModeListener) mTelephonyCallbackWeakRef.get();
+            if (listener == null) return;
+
+            Binder.withCleanCallingIdentity(() -> mExecutor.execute(
+                    () -> listener.onSatellitePurchaseModeChanged(
+                            subId, isEnabled, purchaseModeState)));
         }
     }
 }
