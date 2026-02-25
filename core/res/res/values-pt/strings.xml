@@ -2047,8 +2047,8 @@
     <string name="package_updated_device_owner" msgid="7770195449213776218">"Atualizado pelo administrador.\nAcesse as configurações para conferir as permissões concedidas"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Excluído pelo seu administrador"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
-    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"A economia de bateria ativa o tema escuro e limita ou desativa atividades em segundo plano, alguns efeitos visuais, recursos específicos e certas conexões de rede."</string>
-    <string name="battery_saver_description" msgid="2820475140307374570">"A economia de bateria ativa o tema escuro e limita ou desativa atividades em segundo plano, alguns efeitos visuais, recursos específicos e certas conexões de rede."</string>
+    <string name="battery_saver_description_with_learn_more" msgid="8969945879044849461">"A economia de bateria ativa o tema escuro e limita ou desativa atividades em segundo plano, alguns efeitos visuais, recursos específicos e algumas conexões de rede."</string>
+    <string name="battery_saver_description" msgid="2820475140307374570">"A economia de bateria ativa o tema escuro e limita ou desativa atividades em segundo plano, alguns efeitos visuais, recursos específicos e algumas conexões de rede."</string>
     <string name="data_saver_description" msgid="4995164271550590517">"Para ajudar a reduzir o uso de dados, a economia de dados impede que alguns apps enviem ou recebam dados em segundo plano. Um app que você esteja usando em determinado momento pode acessar dados, mas com menos frequência. Isso pode fazer com que imagens não apareçam até você tocar nelas."</string>
     <string name="data_saver_enable_title" msgid="7080620065745260137">"Ativar a economia de dados?"</string>
     <string name="data_saver_enable_button" msgid="4399405762586419726">"Ativar"</string>
@@ -2339,7 +2339,7 @@
     <string name="dynamic_mode_notification_title_v2" msgid="5072385242078021152">"Economia de bateria ativada"</string>
     <string name="dynamic_mode_notification_summary_v2" msgid="2142444344663147938">"A economia de bateria está ativada para prolongar a duração da carga"</string>
     <string name="battery_saver_notification_channel_name" msgid="3918243458067916913">"Economia de bateria"</string>
-    <string name="battery_saver_off_notification_title" msgid="7637255960468032515">"\"Economia de bateria\" desativada"</string>
+    <string name="battery_saver_off_notification_title" msgid="7637255960468032515">"Economia de bateria desativada"</string>
     <string name="battery_saver_charged_notification_summary" product="default" msgid="5544457317418624367">"Não há carga suficiente no smartphone. Os recursos não estão mais restritos."</string>
     <string name="battery_saver_charged_notification_summary" product="tablet" msgid="4426317048139996888">"Não há carga suficiente no tablet. Os recursos não estão mais restritos."</string>
     <string name="battery_saver_charged_notification_summary" product="device" msgid="1031562417867646649">"Não há carga suficiente no dispositivo. Os recursos não estão mais restritos."</string>
@@ -2593,7 +2593,7 @@
     <string name="concurrent_display_notification_thermal_title" msgid="5921609404644739229">"O dispositivo está muito quente"</string>
     <string name="concurrent_display_notification_thermal_content" msgid="2075484836527609319">"A tela dupla está indisponível porque o smartphone está ficando muito quente"</string>
     <string name="concurrent_display_notification_power_save_title" msgid="1794569070730736281">"O recurso Dual Screen está indisponível"</string>
-    <string name="concurrent_display_notification_power_save_content" msgid="2198116070583851493">"O recurso Dual Screen está indisponível porque a Economia de bateria está ativada. É possível desativar essa opção nas configurações."</string>
+    <string name="concurrent_display_notification_power_save_content" msgid="2198116070583851493">"O recurso Dual Screen está indisponível porque a economia de bateria está ativada. É possível desativar essa opção nas configurações."</string>
     <string name="device_state_notification_settings_button" msgid="691937505741872749">"Ir para Configurações"</string>
     <string name="device_state_notification_turn_off_button" msgid="6327161707661689232">"Desligar"</string>
     <string name="keyboard_layout_notification_selected_title" msgid="1202560174252421219">"Dispositivo <xliff:g id="DEVICE_NAME">%s</xliff:g> configurado"</string>
@@ -2706,6 +2706,5 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Atualização do seu familiar responsável"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"O app <xliff:g id="APP_NAME">%1$s</xliff:g> foi removido temporariamente"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"O app <xliff:g id="APP_NAME">%1$s</xliff:g> já está disponível"</string>
-    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
-    <skip />
+    <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Transmitir para outros"</string>
 </resources>

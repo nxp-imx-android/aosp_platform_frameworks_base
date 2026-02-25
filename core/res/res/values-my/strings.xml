@@ -2149,7 +2149,7 @@
     <string name="app_lock_add_screen_lock_title" msgid="6905612843620128689">"ဦးစွာ စခရင်လော့ခ် ထည့်ပါ"</string>
     <string name="enable_app_lock_success_toast_message" msgid="3339622779190529987">"<xliff:g id="APP_NAME">%1$s</xliff:g> ကို လော့ခ်ချထားသည်"</string>
     <string name="enable_app_lock_failure_toast_message" msgid="1055838896510445566">"<xliff:g id="APP_NAME">%1$s</xliff:g> ကို လော့ခ်ချ၍မရလိုက်ပါ"</string>
-    <string name="disable_app_lock_success_toast_message" msgid="360172251656799346">"အက်ပ်လော့ခ် ကို ဖယ်ရှားလိုက်သည်"</string>
+    <string name="disable_app_lock_success_toast_message" msgid="360172251656799346">"အက်ပ်လော့ခ်ကို ဖယ်ရှားလိုက်သည်"</string>
     <string name="enable_app_lock_biometric_prompt_subtitle" msgid="8215241065630017088">"အက်ပ်လော့ခ်ကို <xliff:g id="APP_NAME">%1$s</xliff:g> တွင် ထည့်ပါမည်"</string>
     <string name="disable_app_lock_biometric_prompt_subtitle" msgid="3963064765974508170">"အက်ပ်လော့ခ်ကို <xliff:g id="APP_NAME">%1$s</xliff:g> မှ ဖယ်ရှားပါမည်"</string>
     <string name="locked_app_biometric_prompt_description" msgid="5892653396104581919">"ဤအက်ပ်ကို အက်ပ်လော့ခ်ချခြင်းဖြင့် ကာကွယ်ထားသည်"</string>
