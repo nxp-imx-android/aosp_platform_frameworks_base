@@ -640,19 +640,9 @@ final class InputMethodBindingController {
                         return;
                     }
                     if (Flags.warmWorkProfileIme() && mCurIme != null) {
-                        // An IME is already bound.
-                        if (mCurIme.asBinder() != service) {
-                            // A different IME instance is bound, clear it and continue with the
-                            // new connection. If this is a different IME, the Intent won't match.
-                            Slog.w(TAG, "New IME instance: " + service + " received while an older"
-                                    + " one: " + mCurIme.asBinder() + " is still connected."
-                                    + " Clearing the old one and initializing the new one");
-                            clearIme();
-                        } else {
-                            // The same IME instance remained bound while the binding was inactive,
-                            // and it is now active again, so the instance can be re-used.
-                            return;
-                        }
+                        // IME was bound, binding became inactive and now active again without
+                        // unbinding so the IME can be re-used.
+                        return;
                     }
                     // If IME is unbound before this callback, the intent becomes null.
                     if (mCurImeIntent != null && name.equals(mCurImeIntent.getComponent())) {
@@ -1317,17 +1307,6 @@ final class InputMethodBindingController {
     @VisibleForTesting
     void setLatchForTesting(@NonNull CountDownLatch latch) {
         mLatchForTesting = latch;
-    }
-
-    /**
-     * Sets the interface used to make calls on the bound IME, for testing purposes only.
-     *
-     * @param ime the interface to set.
-     */
-    @VisibleForTesting
-    @GuardedBy("ImfLock.class")
-    void setCurImeForTesting(@NonNull IInputMethodInvoker ime) {
-        mCurIme = ime;
     }
 
     /**
