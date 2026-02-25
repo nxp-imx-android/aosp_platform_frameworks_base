@@ -7049,7 +7049,7 @@ public class Intent implements Parcelable, Cloneable {
      * the device.
      *
      * <p>Type: String, the same as returned by {@link java.util.TimeZone#getID()} to identify time
-     * zones.
+     * zones. This extra will be {@code null} if the user disables the home time zone feature.
      */
     @FlaggedApi(FLAG_ENABLE_HOME_TIME_ZONE_API)
     public static final String EXTRA_HOME_TIME_ZONE_ID = "android.intent.extra.HOME_TIME_ZONE_ID";
