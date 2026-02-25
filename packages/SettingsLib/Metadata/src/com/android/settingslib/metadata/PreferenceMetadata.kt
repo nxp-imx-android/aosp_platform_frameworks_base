@@ -207,6 +207,18 @@ open class PreferenceCategory(
 /** Tag representing a preference that is ui only */
 const val UI_ONLY_PREFERENCE = "ui_only_preference"
 
+/** Tag representing a preference that is considered `hero` and must be gettable*/
+const val HERO = "hero"
+
+/** Tag representing a preference that is considered `hero` and must be gettable and settable*/
+const val HERO_SET = "hero_set"
+
+/** Tag representing a preference that is considered `must pass` and must be gettable*/
+const val MUSTPASS = "mustpass"
+
+/** Tag representing a preference that is considered `must pass` and must be gettable and settable*/
+const val MUSTPASS_SET = "mustpass_set"
+
 /** Returns a string describing the preconditions for accessing the preference. */
 fun PreferenceMetadata.accessPreconditionsAsString(context: Context): String? {
     val preconditions =
