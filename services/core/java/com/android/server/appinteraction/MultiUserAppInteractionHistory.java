@@ -18,16 +18,20 @@ package com.android.server.appinteraction;
 
 import android.annotation.NonNull;
 import android.content.Context;
+import android.os.Build;
 import android.os.Environment;
 import android.os.UserHandle;
 import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.infra.AndroidFuture;
+import com.android.internal.os.BackgroundThread;
 import com.android.server.SystemService;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -37,6 +41,8 @@ import java.util.function.Function;
 /** Manages {@link AppInteractionHistory} in a multi-user environment. */
 public class MultiUserAppInteractionHistory {
     private static final String TAG = "MultiUserAppInteraction";
+
+    private final boolean DEBUG = Build.TYPE.equals("eng");
 
     private static MultiUserAppInteractionHistory sInstance = null;
 
@@ -53,12 +59,17 @@ public class MultiUserAppInteractionHistory {
 
     private final ScheduledExecutorService mScheduledExecutorService;
 
-    private final Function<UserHandle, AppInteractionHistory> mUserHistoryFactory;
+    private final Function<UserHandle, AndroidFuture<AppInteractionHistory>> mUserHistoryFactory;
+
+    @GuardedBy("mLock")
+    private SparseArray<AndroidFuture<AppInteractionHistory>> mUserHistoryCreationFutures =
+            new SparseArray<>();
 
     public MultiUserAppInteractionHistory(
             @NonNull ServiceConfig serviceConfig,
             @NonNull ScheduledExecutorService scheduledExecutorService,
-            @NonNull Function<UserHandle, AppInteractionHistory> userHistoryFactory) {
+            @NonNull
+                    Function<UserHandle, AndroidFuture<AppInteractionHistory>> userHistoryFactory) {
         mServiceConfig = Objects.requireNonNull(serviceConfig);
         mScheduledExecutorService = Objects.requireNonNull(scheduledExecutorService);
         mUserHistoryFactory = Objects.requireNonNull(userHistoryFactory);
@@ -71,11 +82,37 @@ public class MultiUserAppInteractionHistory {
      */
     public void onUserUnlocked(@NonNull SystemService.TargetUser user) {
         synchronized (mLock) {
-            if (!mUserHistoryMap.contains(user.getUserIdentifier())) {
-                mUserHistoryMap.put(
-                        user.getUserIdentifier(), mUserHistoryFactory.apply(user.getUserHandle()));
+            if (mUserHistoryCreationFutures.contains(user.getUserIdentifier())) {
+                if (DEBUG) {
+                    Slog.d(
+                            TAG,
+                            "History for user " + user.getUserIdentifier() + " is still creating.");
+                }
+                return;
             }
-            schedulePeriodicInteractionCleanUpJob(user.getUserIdentifier());
+
+            AndroidFuture<AppInteractionHistory> future =
+                    mUserHistoryFactory.apply(user.getUserHandle());
+            mUserHistoryCreationFutures.put(user.getUserIdentifier(), future);
+            future.whenComplete(
+                    (appInteractionHistory, throwable) -> {
+                        synchronized (mLock) {
+                            mUserHistoryCreationFutures.remove(user.getUserIdentifier());
+                            if (throwable != null) {
+                                Slog.e(
+                                        TAG,
+                                        "Fail to create AppInteractionHistory for user "
+                                                + user.getUserIdentifier(),
+                                        throwable);
+                                return;
+                            }
+                            if (!mUserHistoryMap.contains(user.getUserIdentifier())) {
+                                mUserHistoryMap.put(
+                                        user.getUserIdentifier(), appInteractionHistory);
+                            }
+                            schedulePeriodicInteractionCleanUpJob(user.getUserIdentifier());
+                        }
+                    });
         }
     }
 
@@ -86,6 +123,13 @@ public class MultiUserAppInteractionHistory {
      */
     public void onUserStopping(@NonNull SystemService.TargetUser user) {
         synchronized (mLock) {
+            // Cancel the creation future if it is still running.
+            final AndroidFuture<AppInteractionHistory> creationFuture =
+                    mUserHistoryCreationFutures.removeReturnOld(user.getUserIdentifier());
+            if (creationFuture != null) {
+                creationFuture.cancel(/* mayInterruptIfRunning= */ true);
+            }
+
             final AppInteractionHistory removed =
                     mUserHistoryMap.removeReturnOld(user.getUserIdentifier());
             if (removed != null) {
@@ -154,6 +198,9 @@ public class MultiUserAppInteractionHistory {
     @NonNull
     public AppInteractionHistory asUser(int userId) throws IllegalStateException {
         synchronized (mLock) {
+            if (mUserHistoryCreationFutures.contains(userId)) {
+                throw new IllegalStateException("User " + userId + " is still unlocking");
+            }
             final AppInteractionHistory cache = mUserHistoryMap.get(userId);
             if (cache == null) {
                 throw new IllegalStateException("User " + userId + " is not unlocked yet");
@@ -171,28 +218,47 @@ public class MultiUserAppInteractionHistory {
                             new ServiceConfigImpl(),
                             Executors.newSingleThreadScheduledExecutor(
                                     new NamedThreadFactory("AppInteractionScheduledExecutors")),
-                            /* userAccessHistoryFactory */ new Function<>() {
-                                @Override
-                                @NonNull
-                                public AppInteractionHistory apply(@NonNull UserHandle userHandle) {
-                                    Objects.requireNonNull(userHandle);
-                                    File appInteractionDir =
-                                            new File(
-                                                    Environment.getDataSystemCeDirectory(
-                                                            userHandle.getIdentifier()),
-                                                    APP_INTERACTION_DIR);
-                                    appInteractionDir.mkdirs();
-                                    File dbFile =
-                                            new File(
-                                                    appInteractionDir,
-                                                    AppInteractionSQLiteHistory.DB_NAME);
-                                    return new AppInteractionSQLiteHistory(
-                                            context.createContextAsUser(
-                                                    userHandle, /* flags= */ 0),
-                                            /* dbFileName= */ dbFile.getAbsolutePath());
-                                }
-                            });
+                            new UserHistoryFactory(context, BackgroundThread.getExecutor()));
         }
         return sInstance;
+    }
+
+    private static final class UserHistoryFactory
+            implements Function<UserHandle, AndroidFuture<AppInteractionHistory>> {
+        private final Context mContext;
+        private final Executor mBackgroundExecutor;
+
+        UserHistoryFactory(@NonNull Context context, @NonNull Executor backgroundExecutor) {
+            mContext = Objects.requireNonNull(context);
+            mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
+        }
+
+        @Override
+        public AndroidFuture<AppInteractionHistory> apply(@NonNull UserHandle userHandle) {
+            Objects.requireNonNull(userHandle);
+
+            AndroidFuture<AppInteractionHistory> future = new AndroidFuture<>();
+            mBackgroundExecutor.execute(
+                    () -> {
+                        try {
+                            int userId = userHandle.getIdentifier();
+                            File ceDir = Environment.getDataSystemCeDirectory(userId);
+                            File appInteractionDir = new File(ceDir, APP_INTERACTION_DIR);
+                            appInteractionDir.mkdirs();
+                            File dbFile =
+                                    new File(
+                                            appInteractionDir,
+                                            AppInteractionSQLiteHistory.DB_NAME);
+                            Context userContext =
+                                    mContext.createContextAsUser(userHandle, /* flags= */ 0);
+                            String dbPath = dbFile.getAbsolutePath();
+                            future.complete(
+                                    new AppInteractionSQLiteHistory(userContext, dbPath));
+                        } catch (Exception e) {
+                            future.completeExceptionally(e);
+                        }
+                    });
+            return future;
+        }
     }
 }

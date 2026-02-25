@@ -18,6 +18,7 @@ package com.android.server.appinteraction
 
 import android.content.pm.UserInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.internal.infra.AndroidFuture
 import com.android.server.SystemService.TargetUser
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
@@ -49,7 +50,7 @@ class MultiUserAppInteractionHistoryTest {
             MultiUserAppInteractionHistory(serviceConfig, scheduledExecutorService) { userHandle ->
                 val interactionHistory = mock<AppInteractionHistory>()
                 interactionHistoryMap[userHandle.identifier] = interactionHistory
-                interactionHistory
+                AndroidFuture<AppInteractionHistory>.completedFuture(interactionHistory)
             }
     }
 
@@ -138,5 +139,37 @@ class MultiUserAppInteractionHistoryTest {
         val targetUser = TargetUser(UserInfo(10, "testUser", 0))
 
         multiUserInteractionHistory.onUserStopping(targetUser)
+    }
+
+    @Test
+    fun userStopping_whenHistoryCreationIsPending() {
+        val pendingFuture = AndroidFuture<AppInteractionHistory>()
+        multiUserInteractionHistory =
+            MultiUserAppInteractionHistory(serviceConfig, scheduledExecutorService) {
+                pendingFuture
+            }
+        val targetUser = TargetUser(UserInfo(10, "testUser", 0))
+
+        multiUserInteractionHistory.onUserUnlocked(targetUser)
+        multiUserInteractionHistory.onUserStopping(targetUser)
+
+        assertThat(pendingFuture.isCancelled).isTrue()
+        val history = mock<AppInteractionHistory>()
+        pendingFuture.complete(history)
+        assertFailsWith<IllegalStateException> { multiUserInteractionHistory.asUser(10) }
+    }
+
+    @Test
+    fun asUser_shouldFailWhenHistoryCreationIsPending() {
+        val pendingFuture = AndroidFuture<AppInteractionHistory>()
+        multiUserInteractionHistory =
+            MultiUserAppInteractionHistory(serviceConfig, scheduledExecutorService) {
+                pendingFuture
+            }
+        val targetUser = TargetUser(UserInfo(10, "testUser", 0))
+
+        multiUserInteractionHistory.onUserUnlocked(targetUser)
+
+        assertFailsWith<IllegalStateException> { multiUserInteractionHistory.asUser(10) }
     }
 }
