@@ -314,19 +314,14 @@ private fun CardCarouselContent(
 
     Box(
         modifier =
-            modifier
-                .graphicsLayer {
-                    shape = roundedCornerShape
-                    clip = true
-                }
-                .pointerInput(behavior) {
-                    if (behavior.isCarouselScrollFalseTouch != null) {
-                        awaitEachGesture {
-                            awaitFirstDown(false, PointerEventPass.Initial)
-                            isFalseTouchDetected = behavior.isCarouselScrollFalseTouch.invoke()
-                        }
+            modifier.pointerInput(behavior) {
+                if (behavior.isCarouselScrollFalseTouch != null) {
+                    awaitEachGesture {
+                        awaitFirstDown(false, PointerEventPass.Initial)
+                        isFalseTouchDetected = behavior.isCarouselScrollFalseTouch.invoke()
                     }
                 }
+            }
     ) {
         @Composable
         fun PagerContent() {
