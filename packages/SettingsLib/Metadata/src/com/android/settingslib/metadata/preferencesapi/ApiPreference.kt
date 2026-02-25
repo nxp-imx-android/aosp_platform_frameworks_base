@@ -32,6 +32,7 @@ import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.ValidatedKeyParameters
+import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageAlreadyDefined
 import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget
 import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPreconditions
@@ -125,11 +126,64 @@ class ValuePreconditionsConfig<V : Any> private constructor(
         resolveString(context, descriptionRes, description)
 }
 
+/** Configuration of the [ApiPreference] set operation's warning. */
+sealed interface WarningConfig<V : Any> {
+    @get:StringRes
+    val warningRes: Int?
+    val warning: String?
+
+    /** Get the warning message as a string using the provided context. */
+    fun getWarning(context: Context): String = resolveString(context, warningRes, warning)
+}
+
+/** A [WarningConfig] that triggers based on [PreconditionsConfig]. */
+class PreconditionsWarningConfig<V : Any> private constructor(
+    val preconditions: PreconditionsConfig,
+    @StringRes override val warningRes: Int?,
+    override val warning: String?,
+) : WarningConfig<V> {
+    init {
+        require(warningRes != null || warning != null)
+    }
+
+    constructor(
+        preconditions: PreconditionsConfig,
+        @StringRes warning: Int,
+    ) : this(preconditions, warningRes = warning, warning = null)
+
+    constructor(
+        preconditions: PreconditionsConfig,
+        warning: String,
+    ) : this(preconditions, warningRes = null, warning = warning)
+}
+
+/** A [WarningConfig] that triggers based on [ValuePreconditionsConfig]. */
+class ValuePreconditionsWarningConfig<V : Any> private constructor(
+    val valuePreconditions: ValuePreconditionsConfig<V>,
+    @StringRes override val warningRes: Int?,
+    override val warning: String?,
+) : WarningConfig<V> {
+    init {
+        require(warningRes != null || warning != null)
+    }
+
+    constructor(
+        valuePreconditions: ValuePreconditionsConfig<V>,
+        @StringRes warning: Int,
+    ) : this(valuePreconditions, warningRes = warning, warning = null)
+
+    constructor(
+        valuePreconditions: ValuePreconditionsConfig<V>,
+        warning: String,
+    ) : this(valuePreconditions, warningRes = null, warning = warning)
+}
+
 /** Configuration of the [ApiPreference] set. */
 class SetConfig<V : Any>(
     val permissions: Permissions? = null,
     val preconditions: PreconditionsConfig? = null,
     val valuePreconditions: ValuePreconditionsConfig<V>? = null,
+    val warning: WarningConfig<V>? = null,
     val execute: (suspend ApiOperationContext.(V) -> Unit)
 )
 
@@ -324,6 +378,150 @@ abstract class ApiPreference<V : Any>(
     abstract val type: ApiType<V>
 }
 
+/**
+ * Warning configuration builder for an [ApiPreference] set operation.
+ *
+ * ```
+ * warning {
+ *     preconditions("Foo description") { ... }
+ *     warn("Bar warning")
+ * }
+ * ```
+ *
+ * or
+ *
+ * ```
+ * warning {
+ *     valuePreconditions("Foo description") { value -> ... }
+ *     warn("Bar warning")
+ * }
+ * ```
+ */
+@ApiPreferenceDsl
+class WarningConfigBuilder<V : Any> {
+    private var preconditionsConfig: PreconditionsConfig? = null
+    private var valuePreconditionsConfig: ValuePreconditionsConfig<V>? = null
+    private var warning: String? = null
+    private var warningRes: Int? = null
+
+    /**
+     * Defines a precondition check that will trigger the warning in case of [Allowed], with a
+     * string resource description.
+     */
+    fun preconditions(
+        @StringRes description: Int,
+        lambda: suspend ApiOperationContext.() -> ApiPreconditions
+    ) {
+        setPreconditions(PreconditionsConfig(description, lambda))
+    }
+
+    /**
+     * Defines a precondition check that will trigger the warning in case of [Allowed], with a
+     * string description.
+     */
+    fun preconditions(
+        description: String,
+        lambda: suspend ApiOperationContext.() -> ApiPreconditions
+    ) {
+        setPreconditions(PreconditionsConfig(description, lambda))
+    }
+
+    private fun setPreconditions(config: PreconditionsConfig) {
+        if (preconditionsConfig != null || valuePreconditionsConfig != null) {
+            error(getExceptionMessageAlreadyDefined("preconditions or valuePreconditions"))
+        }
+
+        if (warning != null || warningRes != null) {
+            error(getExceptionMessageWrongOrder("preconditions"))
+        }
+
+        preconditionsConfig = config
+    }
+
+    /**
+     * Defines a precondition check that will trigger the warning in case of [Allowed], with a
+     * string resource description.
+     */
+    fun valuePreconditions(
+        @StringRes description: Int,
+        lambda: suspend ApiOperationContext.(V) -> ApiPreconditions
+    ) {
+        setValuePreconditions(ValuePreconditionsConfig(description, lambda))
+    }
+
+    /**
+     * Defines a precondition check that will trigger the warning in case of [Allowed], with a
+     * string description.
+     */
+    fun valuePreconditions(
+        description: String,
+        lambda: suspend ApiOperationContext.(V) -> ApiPreconditions
+    ) {
+        setValuePreconditions(ValuePreconditionsConfig(description, lambda))
+    }
+
+    private fun setValuePreconditions(config: ValuePreconditionsConfig<V>) {
+        if (preconditionsConfig != null || valuePreconditionsConfig != null) {
+            error(getExceptionMessageAlreadyDefined("preconditions or valuePreconditions"))
+        }
+
+        if (warning != null || warningRes != null) {
+            error(getExceptionMessageWrongOrder("valuePreconditions"))
+        }
+
+        valuePreconditionsConfig = config
+    }
+
+    /**
+     * Sets the warning message as a string resource to display when preconditions or value
+     * preconditions are [Allowed].
+     */
+    fun warn(@StringRes message: Int) {
+        if (warning != null || warningRes != null) {
+            error(getExceptionMessageMultipleDefines("warn"))
+        }
+        warningRes = message
+    }
+
+    /**
+     * Sets the warning message as a string to display when preconditions or value preconditions
+     * are [Allowed].
+     */
+    fun warn(message: String) {
+        if (warning != null || warningRes != null) {
+            error(getExceptionMessageMultipleDefines("warn"))
+        }
+        warning = message
+    }
+
+    internal fun build(): WarningConfig<V> {
+        if (warning == null && warningRes == null) {
+            error("warning 'warn' block is required")
+        }
+
+        return when {
+            preconditionsConfig != null ->
+                if (warning != null) {
+                    PreconditionsWarningConfig(preconditionsConfig!!, warning!!)
+                }
+                else {
+                    PreconditionsWarningConfig(preconditionsConfig!!, warningRes!!)
+                }
+            valuePreconditionsConfig != null ->
+                if (warning != null) {
+                    ValuePreconditionsWarningConfig(valuePreconditionsConfig!!, warning!!)
+                }
+                else {
+                    ValuePreconditionsWarningConfig(valuePreconditionsConfig!!, warningRes!!)
+                }
+            else ->
+                error(
+                    "Exactly one of warning 'preconditions' or 'valuePreconditions' block is required"
+                )
+        }
+    }
+}
+
 @DslMarker
 internal annotation class ApiPreferenceDsl
 
@@ -444,6 +642,7 @@ class SetConfigBuilder<V : Any> {
     private var permissionsConfig: Permissions? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var valuePreconditionsConfig: ValuePreconditionsConfig<V>? = null
+    private var warningConfig: WarningConfig<V>? = null
     private var executeBlock: (suspend ApiOperationContext.(V) -> Unit)? = null
 
     /** Sets permissions for the set. */
@@ -452,7 +651,7 @@ class SetConfigBuilder<V : Any> {
             error(getExceptionMessageMultipleDefines("permissions"))
         }
 
-        if (preconditionsConfig != null || valuePreconditionsConfig != null || executeBlock != null) {
+        if (preconditionsConfig != null || valuePreconditionsConfig != null || warningConfig != null || executeBlock != null) {
             error(getExceptionMessageWrongOrder("permissions"))
         }
 
@@ -500,7 +699,7 @@ class SetConfigBuilder<V : Any> {
             error(getExceptionMessageMultipleDefines("preconditions"))
         }
 
-        if (valuePreconditionsConfig != null || executeBlock != null) {
+        if (valuePreconditionsConfig != null || warningConfig != null || executeBlock != null) {
             error(getExceptionMessageWrongOrder("preconditions"))
         }
 
@@ -534,11 +733,29 @@ class SetConfigBuilder<V : Any> {
             error(getExceptionMessageMultipleDefines("valuePreconditions"))
         }
 
-        if (executeBlock != null) {
+        if (warningConfig != null || executeBlock != null) {
             error(getExceptionMessageWrongOrder("valuePreconditions"))
         }
 
         valuePreconditionsConfig = config
+    }
+
+    /**
+     * Defines a warning to be triggered before setting the value if certain preconditions or value
+     * preconditions are [Allowed].
+     */
+    fun warning(lambda: WarningConfigBuilder<V>.() -> Unit) {
+        if (warningConfig != null) {
+            error(getExceptionMessageMultipleDefines("warning"))
+        }
+
+        if (executeBlock != null) {
+            error(getExceptionMessageWrongOrder("warning"))
+        }
+
+        val builder = WarningConfigBuilder<V>()
+        builder.lambda()
+        warningConfig = builder.build()
     }
 
     /** Declare the execute block of the set. */
@@ -555,6 +772,7 @@ class SetConfigBuilder<V : Any> {
             permissions = permissionsConfig,
             preconditions = preconditionsConfig,
             valuePreconditions = valuePreconditionsConfig,
+            warning = warningConfig,
             execute = executeBlock ?: error("Set 'execute' block is required")
         )
     }

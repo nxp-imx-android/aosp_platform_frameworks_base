@@ -30,6 +30,9 @@ internal object Utils {
     private const val EXCEPTION_MESSAGE_MULTIPLE_DEFINES =
         "%s block should be defined only once per screen"
 
+    private const val EXCEPTION_MESSAGE_ALREADY_DEFINED =
+        "%s block has already been defined"
+
     const val EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED =
         "no parameter has been defined for this screen"
 
@@ -41,6 +44,9 @@ internal object Utils {
 
     fun getExceptionMessageMultipleDefines(item: String) =
         String.format(EXCEPTION_MESSAGE_MULTIPLE_DEFINES, item)
+
+    fun getExceptionMessageAlreadyDefined(item: String) =
+        String.format(EXCEPTION_MESSAGE_ALREADY_DEFINED, item)
 
     fun getExceptionMessageMultipleParametersDefined(size: Int) =
         String.format(EXCEPTION_MESSAGE_MULTIPLE_PARAMETERS_DEFINED, size)

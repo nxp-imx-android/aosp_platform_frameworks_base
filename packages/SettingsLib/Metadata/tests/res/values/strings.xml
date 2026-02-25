@@ -31,6 +31,11 @@
     <string name="value_preconditions_description1" translatable="false">Value Preconditions Description 1</string>
     <string name="value_preconditions_description2" translatable="false">Value Preconditions Description 2</string>
 
+    <string name="warning_preconditions_description1" translatable="false">Warning Preconditions Description 1</string>
+    <string name="warning_preconditions_description2" translatable="false">Warning Preconditions Description 2</string>
+    <string name="warning_message1" translatable="false">Warning Message 1</string>
+    <string name="warning_message2" translatable="false">Warning Message 2</string>
+
     <string name="parameter_purpose1" translatable="false">Parameter purpose 1</string>
     <string name="parameter_purpose2" translatable="false">Parameter purpose 2</string>
     <string name="parameter_type_description" translatable="false">Parameter generated type</string>
