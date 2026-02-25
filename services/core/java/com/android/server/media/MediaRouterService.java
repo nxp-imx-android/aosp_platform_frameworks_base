@@ -149,13 +149,9 @@ public final class MediaRouterService extends IMediaRouterService.Stub
 
     @RequiresPermission(Manifest.permission.OBSERVE_GRANT_REVOKE_PERMISSIONS)
     public MediaRouterService(Context context) {
-        if (Flags.enableMr2ServiceNonMainBgThread()) {
-            HandlerThread handlerThread = new HandlerThread(WORKER_THREAD_NAME);
-            handlerThread.start();
-            mLooper = handlerThread.getLooper();
-        } else {
-            mLooper = Looper.myLooper();
-        }
+        HandlerThread handlerThread = new HandlerThread(WORKER_THREAD_NAME);
+        handlerThread.start();
+        mLooper = handlerThread.getLooper();
         mHandler = new Handler(mLooper);
         mService2 = new MediaRouter2ServiceImpl(context, mLooper);
         mContext = context;
