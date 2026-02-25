@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,11 +34,8 @@ import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.TestElements
 import com.android.compose.animation.scene.TestScenes
-import com.android.compose.animation.scene.element
 import com.android.compose.animation.scene.isElement
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
-import com.android.compose.modifiers.size
-import com.android.compose.test.subjects.assertThat
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -51,9 +47,7 @@ import platform.test.motion.RecordedMotion
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.MotionControlScope
-import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRuleV2
-import platform.test.motion.compose.feature
-import platform.test.motion.compose.on
+import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.golden.DataPointTypes
 import platform.test.motion.golden.asDataPoint
@@ -68,8 +62,7 @@ class RemoteControlledTransitionTest {
         createGoldenPathManager("frameworks/base/packages/SystemUI/compose/scene/tests/goldens")
 
     private val testScope = TestScope()
-    @get:Rule
-    val motionRule = createFixedConfigurationComposeMotionTestRuleV2(goldenPaths, testScope)
+    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRule(goldenPaths, testScope)
     private val composeRule = motionRule.toolkit.composeContentTestRule
 
     @Test

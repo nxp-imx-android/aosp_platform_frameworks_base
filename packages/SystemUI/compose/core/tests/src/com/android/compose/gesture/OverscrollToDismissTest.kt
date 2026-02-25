@@ -52,7 +52,7 @@ import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.asDataPoint
-import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRuleV2
+import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
@@ -65,8 +65,7 @@ class OverscrollToDismissTest {
     private val goldenPathManager =
         createGoldenPathManager("frameworks/base/packages/SystemUI/compose/core/tests/goldens")
 
-    @get:Rule
-    val motionTestRule = createFixedConfigurationComposeMotionTestRuleV2(goldenPathManager)
+    @get:Rule val motionTestRule = createFixedConfigurationComposeMotionTestRule(goldenPathManager)
 
     @Test
     fun detachGesture_onFirstPage_swipeRightDismisses() =
