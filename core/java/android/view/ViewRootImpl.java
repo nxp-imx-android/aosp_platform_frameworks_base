@@ -568,7 +568,7 @@ public final class ViewRootImpl implements ViewParent,
      * target SDK versions.
      */
     private static boolean sCompatibilityDone = false;
-    private static int sCalledFromWrongThreadCount = 0;
+    private static boolean sCalledFromWrongThreadLogged = false;
 
     /**
      * Always assign focus if a focusable View is available.
@@ -12028,11 +12028,11 @@ public final class ViewRootImpl implements ViewParent,
         if (mEnforceThreadChecksCompat) {
             throwCalledFromWrongThreadException();
         } else {
-            // Log the issue, but not too many times per process.
-            // Note that this counter is not atomic, so it's possible we log more than the requisite
-            // times per process lifetime. That's fine because the precise number of logs isn't
-            // important so long as we eventually stop logging.
-            if (++sCalledFromWrongThreadCount <= 10) {
+            // Log the issue, but at most once per process, since WTF logs are expensive.
+            // Note that this is potentially racy, but considered benign.
+            // If two or more threads race to log, it's not much of a concern.
+            if (!sCalledFromWrongThreadLogged) {
+                sCalledFromWrongThreadLogged = true;
                 final CalledFromWrongThreadException e = newCalledFromWrongThreadException();
                 Log.wtf(
                         TAG,
