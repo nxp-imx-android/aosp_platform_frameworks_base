@@ -59,4 +59,5 @@ flag {
     namespace: "location"
     description: "Enable home time zone detection and API."
     bug: "462709479"
+    is_exported: true
 }
