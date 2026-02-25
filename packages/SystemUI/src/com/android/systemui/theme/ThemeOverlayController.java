@@ -691,30 +691,24 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         mColorScheme = isNightMode() ? mDarkColorScheme : mLightColorScheme;
 
         mAccentOverlay = newFabricatedOverlay("accent");
-        assignColorsToOverlay(mAccentOverlay, DynamicColors.getAllAccentPalette(), false);
+        assignColorsToOverlay(mAccentOverlay, DynamicColors.getAllAccentPalette());
 
         mNeutralOverlay = newFabricatedOverlay("neutral");
-        assignColorsToOverlay(mNeutralOverlay, DynamicColors.getAllNeutralPalette(), false);
+        assignColorsToOverlay(mNeutralOverlay, DynamicColors.getAllNeutralPalette());
 
         mDynamicOverlay = newFabricatedOverlay("dynamic");
         // Themed Colors
-        assignColorsToOverlay(mDynamicOverlay, DynamicColors.getAllDynamicColorsMapped(), false);
+        assignColorsToOverlay(mDynamicOverlay, DynamicColors.getAllDynamicColorsMapped());
         // Fixed Colors
-        assignColorsToOverlay(mDynamicOverlay, DynamicColors.getFixedColorsMapped(), true);
+        assignColorsToOverlay(mDynamicOverlay, DynamicColors.getFixedColorsMapped());
         // Custom Colors
-        assignColorsToOverlay(mDynamicOverlay, DynamicColors.getCustomColorsMapped(), false);
+        assignColorsToOverlay(mDynamicOverlay, DynamicColors.getCustomColorsMapped());
     }
 
     private void assignColorsToOverlay(FabricatedOverlay overlay,
-            List<Pair<String, DynamicColor>> colors, Boolean isFixed) {
+            List<Pair<String, DynamicColor>> colors) {
         colors.forEach(p -> {
             String prefix = "android:color/system_" + p.first;
-
-            if (isFixed) {
-                overlay.setResourceValue(prefix, TYPE_INT_COLOR_ARGB8,
-                        p.second.getArgb(mLightColorScheme.getMaterialScheme()), null);
-                return;
-            }
 
             overlay.setResourceValue(prefix + "_light", TYPE_INT_COLOR_ARGB8,
                     p.second.getArgb(mLightColorScheme.getMaterialScheme()), null);
