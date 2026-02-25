@@ -71,6 +71,7 @@ import android.platform.test.annotations.Presubmit;
 import android.view.Display;
 import android.view.DisplayInfo;
 
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.wm.utils.StubOrganizer;
 
 import org.junit.Before;
@@ -100,12 +101,13 @@ public class WindowProcessControllerTests extends WindowTestsBase {
     @Before
     public void setUp() {
         mMockListener = mock(WindowProcessListener.class);
+        final ProcessRecordInternal owner = mock(ProcessRecordInternal.class);
 
         ApplicationInfo info = mock(ApplicationInfo.class);
         info.packageName = "test.package.name";
         doReturn(true).when(info).isChangeEnabled(INSETS_DECOUPLED_CONFIGURATION_ENFORCED);
         mWpc = new WindowProcessController(
-                mAtm, info, null, 0, -1, null, mMockListener);
+                mAtm, info, null, 0, -1, owner, mMockListener);
         mWpc.setThread(mock(IApplicationThread.class));
         mStubOrganizer = new StubOrganizer();
         mWm.mAtmService.mTaskOrganizerController.registerTaskOrganizer(mStubOrganizer);
@@ -236,9 +238,10 @@ public class WindowProcessControllerTests extends WindowTestsBase {
         final ComponentName systemUiServiceComponent = mAtm.getSysUiServiceComponentLocked();
         ApplicationInfo applicationInfo = mock(ApplicationInfo.class);
         applicationInfo.packageName = systemUiServiceComponent.getPackageName();
+        final ProcessRecordInternal owner = mock(ProcessRecordInternal.class);
 
         WindowProcessController wpc = new WindowProcessController(
-                mAtm, applicationInfo, null, 0, -1, null, mMockListener);
+                mAtm, applicationInfo, null, 0, -1, owner, mMockListener);
         wpc.setThread(mock(IApplicationThread.class));
 
         final ActivityRecord activity = createActivityRecord(wpc);

@@ -25,18 +25,17 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+import static android.service.dreams.Flags.FLAG_DREAMS_QUERY_APPLICATION_INFO;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
 import static com.android.server.wm.ActivityInterceptorCallback.MAINLINE_FIRST_ORDERED_ID;
 import static com.android.server.wm.ActivityInterceptorCallback.SYSTEM_FIRST_ORDERED_ID;
-import static android.service.dreams.Flags.FLAG_DREAMS_QUERY_APPLICATION_INFO;
-
 import static com.android.server.wm.ActivityInterceptorCallback.SYSTEM_LAST_ORDERED_ID;
 import static com.android.server.wm.ActivityRecord.State.PAUSED;
 import static com.android.server.wm.ActivityRecord.State.PAUSING;
@@ -74,8 +73,8 @@ import android.app.ApplicationExitInfo;
 import android.app.HandoffActivityData;
 import android.app.HandoffActivityParams;
 import android.app.HandoffFailureCode;
-import android.app.IApplicationThread;
 import android.app.IAppTask;
+import android.app.IApplicationThread;
 import android.app.IHandoffTaskDataReceiver;
 import android.app.PictureInPictureParams;
 import android.app.PictureInPictureUiState;
@@ -107,6 +106,7 @@ import android.view.WindowManager;
 import androidx.test.filters.MediumTest;
 
 import com.android.server.LocalServices;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.wm.utils.StubOrganizer;
 
 import org.junit.Before;
@@ -1750,10 +1750,11 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
     private WindowProcessController createWindowProcessController(String packageName,
             int userId) {
         WindowProcessListener mMockListener = Mockito.mock(WindowProcessListener.class);
+        ProcessRecordInternal owner = mock(ProcessRecordInternal.class);
         ApplicationInfo info = mock(ApplicationInfo.class);
         info.packageName = packageName;
         WindowProcessController wpc = new WindowProcessController(
-                mAtm, info, packageName, 0, userId, null, mMockListener);
+                mAtm, info, packageName, 0, userId, owner, mMockListener);
         mAtm.mInternal.preBindApplication(wpc, info);
         mAtm.mInternal.onProcessAdded(wpc);
         wpc.setThread(mock(IApplicationThread.class));
@@ -2236,7 +2237,8 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
         final int userId = UserHandle.getUserId(uid);
 
         final WindowProcessController wpc = new WindowProcessController(mAtm, appInfo,
-                packageName, uid, userId, null /* owner */, mock(WindowProcessListener.class));
+                packageName, uid, userId, mock(ProcessRecordInternal.class) /* owner */,
+                mock(WindowProcessListener.class));
         wpc.setPid(pid);
         wpc.setThread(mock(IApplicationThread.class));
 
