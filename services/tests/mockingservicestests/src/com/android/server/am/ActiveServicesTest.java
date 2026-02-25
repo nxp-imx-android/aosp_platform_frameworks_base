@@ -622,6 +622,104 @@ public final class ActiveServicesTest {
     }
 
     @Test
+    public void testBringUpServiceLocked_startedService() throws Exception {
+        prepareTestRescheduleServiceRestarts();
+        setupBringUpServiceLocked();
+
+        final ServiceRecord r = createServiceRecord();
+        when(r.isStartRequested()).thenReturn(true);
+
+        mActiveServices.bringUpServiceLocked(
+                r, r.serviceInfo.flags, false, false, false, false, false, 0);
+
+        final ArgumentCaptor<HostingRecord> hostingRecord =
+                ArgumentCaptor.forClass(HostingRecord.class);
+        verify(mService)
+                .startProcessLocked(
+                        anyString(),
+                        any(),
+                        anyBoolean(),
+                        anyInt(),
+                        hostingRecord.capture(),
+                        anyInt(),
+                        anyBoolean(),
+                        anyBoolean());
+        assertThat(hostingRecord.getValue().getType())
+                .isEqualTo(HostingRecord.HOSTING_TYPE_STARTED_SERVICE);
+    }
+
+    @Test
+    public void testBringUpServiceLocked_boundService() throws Exception {
+        prepareTestRescheduleServiceRestarts();
+        setupBringUpServiceLocked();
+
+        final ServiceRecord r = createServiceRecord();
+        when(r.isStartRequested()).thenReturn(false);
+
+        mActiveServices.bringUpServiceLocked(
+                r, r.serviceInfo.flags, false, false, false, false, false, 0);
+
+        final ArgumentCaptor<HostingRecord> hostingRecord =
+                ArgumentCaptor.forClass(HostingRecord.class);
+        verify(mService)
+                .startProcessLocked(
+                        anyString(),
+                        any(),
+                        anyBoolean(),
+                        anyInt(),
+                        hostingRecord.capture(),
+                        anyInt(),
+                        anyBoolean(),
+                        anyBoolean());
+        assertThat(hostingRecord.getValue().getType())
+                .isEqualTo(HostingRecord.HOSTING_TYPE_BOUND_SERVICE);
+    }
+
+    private void setupBringUpServiceLocked() {
+        mService.mPackageManagerInt = mock(PackageManagerInternal.class);
+        mService.mUsageStatsService = mock(UsageStatsManagerInternal.class);
+        setFieldValue(
+                ActivityManagerService.class,
+                mService,
+                "mUserController",
+                mock(UserController.class));
+        setFieldValue(
+                ActivityManagerService.class, mService, "mProcessList", mock(ProcessList.class));
+        setFieldValue(ActiveServices.class, mActiveServices, "mPendingServices", new ArrayList<>());
+
+        when(mService.mUserController.hasStartedUserState(anyInt())).thenReturn(true);
+        when(mService.mProcessList.getAppStartInfoTracker())
+                .thenReturn(mock(AppStartInfoTracker.class));
+        when(mService.startProcessLocked(
+                        anyString(),
+                        any(),
+                        anyBoolean(),
+                        anyInt(),
+                        any(),
+                        anyInt(),
+                        anyBoolean(),
+                        anyBoolean()))
+                .thenReturn(mock(ProcessRecord.class));
+        when(mService.getProcessRecordLocked(anyString(), anyInt())).thenReturn(null);
+
+        try {
+            doCallRealMethod()
+                    .when(mActiveServices)
+                    .bringUpServiceLocked(
+                            any(),
+                            anyInt(),
+                            anyBoolean(),
+                            anyBoolean(),
+                            anyBoolean(),
+                            anyBoolean(),
+                            anyBoolean(),
+                            anyInt());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT)
     public void attachApplicationLocked_pcc() throws Exception {
         prepareTestRescheduleServiceRestarts();
@@ -1071,12 +1169,24 @@ public final class ActiveServicesTest {
         setFieldValue(ServiceRecord.class, r, "packageName", PACKAGE_NAME_1);
         r.appInfo = new ApplicationInfo();
         r.appInfo.uid = TEST_UID;
+        r.appInfo.packageName = PACKAGE_NAME_1;
+        r.appInfo.seInfo = "";
         setFieldValue(ServiceRecord.class, r, "userId", TEST_USERID);
         ProcessRecord processRecord = mock(ProcessRecord.class);
         when(processRecord.getPid()).thenReturn(TEST_PID);
         when(r.getHostProcess()).thenReturn(processRecord);
         ComponentName componentName = new ComponentName(PACKAGE_NAME_1, SERVICE_NAME);
         when(r.getComponentName()).thenReturn(componentName);
+        setFieldValue(ServiceRecordInternal.class, r, "instanceName", componentName);
+        setFieldValue(ServiceRecord.class, r, "processName", PROCESS_NAME_1);
+        setFieldValue(ServiceRecord.class, r, "intent", new Intent.FilterComparison(new Intent()));
+        setFieldValue(ServiceRecord.class, r, "mRecentCallingPackage", PACKAGE_NAME_1);
+
+        ServiceInfo si = new ServiceInfo();
+        si.applicationInfo = r.appInfo;
+        si.processName = PROCESS_NAME_1;
+        setFieldValue(ServiceRecord.class, r, "serviceInfo", si);
+
         return r;
     }
 
@@ -1221,12 +1331,6 @@ public final class ActiveServicesTest {
 
         // Create a normal ServiceRecord
         ServiceRecord r = createServiceRecord();
-        // createServiceRecord() creates a mock ServiceRecord but doesn't set serviceInfo.
-        // We need to set it up properly for getUid() to work.
-        ServiceInfo si = new ServiceInfo();
-        si.applicationInfo = new ApplicationInfo();
-        si.applicationInfo.uid = TEST_UID;
-        setFieldValue(ServiceRecord.class, r, "serviceInfo", si);
 
         // Verify that getUid() returns the App UID (TEST_UID = 10123)
         assertThat(r.serviceInfo.getUid()).isEqualTo(TEST_UID);

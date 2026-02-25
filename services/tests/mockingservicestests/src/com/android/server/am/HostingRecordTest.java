@@ -42,6 +42,7 @@ public final class HostingRecordTest {
     @Test
     public void testUsesNativeAppZygote() {
         HostingRecord nativeServiceRecord = HostingRecord.byAppZygote(
+                HostingRecord.HOSTING_TYPE_BOUND_SERVICE,
                 COMPONENT_NAME, PACKAGE_NAME, UID, PROCESS_NAME,
                 /*isNativeService=*/ true,
                 /*callerUid=*/ Process.INVALID_UID, /*callerProcessName=*/ null);
@@ -49,6 +50,7 @@ public final class HostingRecordTest {
         assertThat(nativeServiceRecord.usesNativeAppZygote()).isTrue();
 
         HostingRecord managedAppZygoteRecord = HostingRecord.byAppZygote(
+                HostingRecord.HOSTING_TYPE_BOUND_SERVICE,
                 COMPONENT_NAME, PACKAGE_NAME, UID, PROCESS_NAME,
                 /*isNativeService=*/ false,
                 /*callerUid=*/ Process.INVALID_UID, /*callerProcessName=*/ null);
@@ -58,7 +60,8 @@ public final class HostingRecordTest {
 
     @Test
     public void testCallerInfo() {
-        HostingRecord record = new HostingRecord(HostingRecord.HOSTING_TYPE_SERVICE, COMPONENT_NAME,
+        HostingRecord record = new HostingRecord(HostingRecord.HOSTING_TYPE_STARTED_SERVICE,
+                COMPONENT_NAME,
                 /* isTopApp */ false, /* isPcc */ false, CALLER_UID, CALLER_PROCESS_NAME);
 
         assertThat(record.getCallerUid()).isEqualTo(CALLER_UID);
@@ -67,7 +70,9 @@ public final class HostingRecordTest {
 
     @Test
     public void testCallerInfo_byWebviewZygote() {
-        HostingRecord record = HostingRecord.byWebviewZygote(COMPONENT_NAME,
+        HostingRecord record = HostingRecord.byWebviewZygote(
+                HostingRecord.HOSTING_TYPE_BOUND_SERVICE,
+                COMPONENT_NAME,
                 DEFINING_PACKAGE_NAME, DEFINING_UID, DEFINING_PROCESS_NAME,
                 CALLER_UID, CALLER_PROCESS_NAME);
         assertThat(record.getCallerUid()).isEqualTo(CALLER_UID);
@@ -76,7 +81,9 @@ public final class HostingRecordTest {
 
     @Test
     public void testCallerInfo_byAppZygote() {
-        HostingRecord record = HostingRecord.byAppZygote(COMPONENT_NAME,
+        HostingRecord record = HostingRecord.byAppZygote(
+                HostingRecord.HOSTING_TYPE_BOUND_SERVICE,
+                COMPONENT_NAME,
                 DEFINING_PACKAGE_NAME, DEFINING_UID, DEFINING_PROCESS_NAME,
                 false, CALLER_UID, CALLER_PROCESS_NAME);
         assertThat(record.getCallerUid()).isEqualTo(CALLER_UID);
