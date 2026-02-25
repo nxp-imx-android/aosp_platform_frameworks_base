@@ -24,7 +24,6 @@ import static android.content.res.Configuration.SCREEN_WIDTH_DP_UNDEFINED;
 import static android.content.res.Configuration.SMALLEST_SCREEN_WIDTH_DP_UNDEFINED;
 import static android.view.RemoteAnimationTarget.MODE_OPENING;
 
-import static com.android.window.flags.Flags.enableDesktopFirstLaunchAdjacentBugfix;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.CONTROLLED_ACTIVITY_TYPES;
@@ -506,15 +505,9 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
     }
 
     void reparentTopTask(WindowContainerTransaction wct) {
-        if (enableDesktopFirstLaunchAdjacentBugfix()) {
-            wct.reparentTasks(null /* currentParent */, mRootTaskInfo.token,
-                    CONTROLLED_WINDOWING_MODES, CONTROLLED_ACTIVITY_TYPES,
-                    true /* onTop */, true /* reparentTopOnly */, true /* clearWindowingMode */);
-        } else {
-            wct.reparentTasks(null /* currentParent */, mRootTaskInfo.token,
-                    CONTROLLED_WINDOWING_MODES, CONTROLLED_ACTIVITY_TYPES,
-                    true /* onTop */, true /* reparentTopOnly */);
-        }
+        wct.reparentTasks(null /* currentParent */, mRootTaskInfo.token,
+                CONTROLLED_WINDOWING_MODES, CONTROLLED_ACTIVITY_TYPES,
+                true /* onTop */, true /* reparentTopOnly */, true /* clearWindowingMode */);
     }
 
     void resetBounds(WindowContainerTransaction wct) {
