@@ -42,6 +42,7 @@ import android.view.Display;
 import android.view.Gravity;
 
 import com.android.internal.policy.DesktopModeCompatUtils;
+import com.android.internal.policy.DesktopModeLaunchBoundsUtils;
 import com.android.window.flags.Flags;
 
 import java.util.function.Consumer;
@@ -56,13 +57,6 @@ public final class DesktopModeBoundsCalculator {
             .getInt("persist.wm.debug.desktop_mode_initial_bounds_scale", 72) / 100f;
     public static final int DESKTOP_MODE_LANDSCAPE_APP_PADDING = SystemProperties
             .getInt("persist.wm.debug.desktop_mode_landscape_app_padding", 25);
-
-    /**
-     * Proportion of window height top offset with respect to bottom offset, used for central task
-     * positioning. Should be kept in sync with constant in
-     * {@link com.android.wm.shell.desktopmode.DesktopTaskPosition}
-     */
-    public static final float WINDOW_HEIGHT_PROPORTION = 0.375f;
 
     /**
      * Updates launch bounds for an activity with respect to its activity options, window layout,
@@ -151,14 +145,14 @@ public final class DesktopModeBoundsCalculator {
         final Rect screenBounds = displayContent.getBounds();
         final Size idealSize = calculateIdealSize(screenBounds, DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
         if (activity == null) {
-            return centerInScreen(idealSize, screenBounds);
+            return DesktopModeLaunchBoundsUtils.centerInScreen(idealSize, screenBounds);
         }
         if (activity.mAppCompatController.getAspectRatioOverrides()
                 .hasFullscreenOverride()) {
             // If the activity has a fullscreen override applied, it should be treated as
             // resizeable and match the device orientation. Thus the ideal size can be
             // applied.
-            return centerInScreen(idealSize, screenBounds);
+            return DesktopModeLaunchBoundsUtils.centerInScreen(idealSize, screenBounds);
         }
         final DesktopAppCompatAspectRatioPolicy desktopAppCompatAspectRatioPolicy =
                 activity.mAppCompatController.getDesktopAspectRatioPolicy();
@@ -232,7 +226,7 @@ public final class DesktopModeBoundsCalculator {
         if (shouldRespectOptionPosition) {
             return respectShellCascading(initialSize, stableBounds, options.getLaunchBounds());
         }
-        return centerInScreen(initialSize, screenBounds);
+        return DesktopModeLaunchBoundsUtils.centerInScreen(initialSize, screenBounds);
     }
 
     /**
@@ -337,21 +331,6 @@ public final class DesktopModeBoundsCalculator {
     }
 
     /**
-     * Adjusts bounds to be positioned in the middle of the screen.
-     */
-    @NonNull
-    static Rect centerInScreen(@NonNull Size desiredSize,
-            @NonNull Rect screenBounds) {
-        final int heightOffset = (int)
-                ((screenBounds.height() - desiredSize.getHeight()) * WINDOW_HEIGHT_PROPORTION);
-        final int widthOffset = (screenBounds.width() - desiredSize.getWidth()) / 2;
-        final Rect resultBounds = new Rect(0, 0,
-                desiredSize.getWidth(), desiredSize.getHeight());
-        resultBounds.offset(screenBounds.left + widthOffset, screenBounds.top + heightOffset);
-        return resultBounds;
-    }
-
-    /**
      * Calculates final initial bounds based on the task's desired size and the cascading anchor
      * point extracted from the option bounds. Cascading behaviour should be kept in sync with
      * logic in {@link com.android.wm.shell.desktopmode.DesktopTaskPosition}.
@@ -399,6 +378,6 @@ public final class DesktopModeBoundsCalculator {
                     optionBounds.bottom);
         }
         // Bounds not cascaded to any corner, default to center position.
-        return centerInScreen(desiredSize, stableBounds);
+        return DesktopModeLaunchBoundsUtils.centerInScreen(desiredSize, stableBounds);
     }
 }
