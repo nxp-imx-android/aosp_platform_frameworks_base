@@ -14,6 +14,7 @@ package android {
     field public static final String ACCESS_CHECKIN_PROPERTIES = "android.permission.ACCESS_CHECKIN_PROPERTIES";
     field public static final String ACCESS_COARSE_LOCATION = "android.permission.ACCESS_COARSE_LOCATION";
     field public static final String ACCESS_FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION";
+    field @FlaggedApi("com.android.hardware.input.hid_api") public static final String ACCESS_HID = "android.permission.ACCESS_HID";
     field @FlaggedApi("android.multiuser.enable_permission_to_access_hidden_profiles") public static final String ACCESS_HIDDEN_PROFILES = "android.permission.ACCESS_HIDDEN_PROFILES";
     field @FlaggedApi("android.provider.launcher_data_access") public static final String ACCESS_LAUNCHER_DATA = "android.permission.ACCESS_LAUNCHER_DATA";
     field @FlaggedApi("android.permission.flags.access_local_network_permission_enabled") public static final String ACCESS_LOCAL_NETWORK = "android.permission.ACCESS_LOCAL_NETWORK";
@@ -21873,6 +21874,14 @@ package android.hardware.display {
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setFlags(int);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setRequestedRefreshRate(@FloatRange(from=0.0f) float);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setSurface(@Nullable android.view.Surface);
+  }
+
+}
+
+package android.hardware.hid {
+
+  @FlaggedApi("com.android.hardware.input.hid_api") public final class HidManager {
+    method public boolean canEnumerateDevices();
   }
 
 }

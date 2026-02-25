@@ -1818,9 +1818,16 @@ public class AppOpsManager {
     public static final int OP_WRITE_RESTRICTED_MESSAGES =
             AppOpEnums.APP_OP_WRITE_RESTRICTED_MESSAGES;
 
+    /**
+     * Access to HID API.
+     *
+     * @hide
+     */
+    public static final int OP_ACCESS_HID = AppOpEnums.APP_OP_ACCESS_HID;
+
     /** @hide */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    public static final int _NUM_OP = 178;
+    public static final int _NUM_OP = 179;
 
     /**
      * All app ops represented as strings.
@@ -2002,6 +2009,7 @@ public class AppOpsManager {
             OPSTR_READ_SCREEN_CONTEXT,
             OPSTR_READ_RESTRICTED_MESSAGES,
             OPSTR_WRITE_RESTRICTED_MESSAGES,
+            OPSTR_ACCESS_HID,
     })
     public @interface AppOpString {}
 
@@ -2905,6 +2913,12 @@ public class AppOpsManager {
     public static final String OPSTR_WRITE_RESTRICTED_MESSAGES =
             "android:write_restricted_messages";
 
+    /**
+     * Access to raw HID device nodes.
+     * @hide
+     */
+    public static final String OPSTR_ACCESS_HID = "android:access_hid";
+
     /** {@link #sAppOpsToNote} not initialized yet for this op */
     private static final byte SHOULD_COLLECT_NOTE_OP_NOT_INITIALIZED = 0;
     /** Should not collect noting of this app-op in {@link #sAppOpsToNote} */
@@ -3039,6 +3053,7 @@ public class AppOpsManager {
             OP_POST_PROMOTED_NOTIFICATIONS,
             com.android.media.projection.flags.Flags.recordingOverlay()
                     ? OP_SYSTEM_APPLICATION_OVERLAY : OP_NONE,
+            com.android.hardware.input.Flags.hidApi() ? OP_ACCESS_HID : OP_NONE,
     };
 
     @SuppressWarnings("FlaggedApi")
@@ -3669,6 +3684,11 @@ public class AppOpsManager {
         new AppOpInfo.Builder(OP_WRITE_RESTRICTED_MESSAGES, OPSTR_WRITE_RESTRICTED_MESSAGES,
                 "WRITE_RESTRICTED_MESSAGES", AppOpsManager.MODE_ERRORED)
                 .setDefaultMode(AppOpsManager.MODE_IGNORED).build(),
+        new AppOpInfo.Builder(OP_ACCESS_HID, OPSTR_ACCESS_HID,
+                "ACCESS_HID", AppOpInfo.PCC_MODE_INHERIT)
+                .setPermission(
+                    com.android.hardware.input.Flags.hidApi()
+                            ? Manifest.permission.ACCESS_HID : null).build()
     };
 
     // The number of longs needed to form a full bitmask of app ops

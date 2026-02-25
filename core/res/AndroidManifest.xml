@@ -3330,6 +3330,15 @@
         android:protectionLevel="signature|privileged"
         android:permissionFlags="allowedInPrivateComputeCore" />
 
+    <!-- Required by apps wanting to query for and/or access Human Interface Device (HID)
+        nodes using {@link android.hardware.input.HidManager}.
+        <p>Protection level: internal|appop
+        @FlaggedApi(com.android.hardware.input.Flags.FLAG_HID_API) -->
+    <permission
+        android:name="android.permission.ACCESS_HID"
+        android:protectionLevel="internal|appop"
+        android:featureFlag="com.android.hardware.input.hid_api" />
+
     <!-- =========================================== -->
     <!-- Permissions associated with camera and image capture -->
     <!-- =========================================== -->
