@@ -59,6 +59,7 @@ import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.R;
@@ -1346,7 +1347,7 @@ public class LockPatternView extends View {
             }
             final int virtualViewId = VIRTUAL_BASE_VIEW_ID + mFocusedCellIndex;
             mExploreByTouchHelper.sendEventForVirtualView(virtualViewId,
-                    AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
+                    AccessibilityEvent.TYPE_VIEW_FOCUSED);
         } else {
             if (DEBUG_A11Y) Log.v(TAG, "Lost   dir " + direction);
             mFocusVisible = false;
@@ -1374,7 +1375,7 @@ public class LockPatternView extends View {
                 invalidate();
                 final int virtualViewId = VIRTUAL_BASE_VIEW_ID + mFocusedCellIndex;
                 mExploreByTouchHelper.sendEventForVirtualView(virtualViewId,
-                        AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
+                        AccessibilityEvent.TYPE_VIEW_FOCUSED);
                 return true;
             }
 
@@ -1403,15 +1404,12 @@ public class LockPatternView extends View {
 
             if (isCellIndexInRange(next)) {
                 if (DEBUG_A11Y) Log.v(TAG, "TabArrow index " + next);
-                final int oldIndex = mFocusedCellIndex;
                 mFocusedCellIndex = next;
                 mFocusVisible = true;
                 invalidate();
                 final int virtualViewId = VIRTUAL_BASE_VIEW_ID + mFocusedCellIndex;
                 mExploreByTouchHelper.sendEventForVirtualView(virtualViewId,
-                        AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
-                mExploreByTouchHelper.sendEventForVirtualView(VIRTUAL_BASE_VIEW_ID + oldIndex,
-                        AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+                        AccessibilityEvent.TYPE_VIEW_FOCUSED);
                 return true;
             } else {
                 if (DEBUG_A11Y) {
@@ -1430,13 +1428,10 @@ public class LockPatternView extends View {
             }
             if (DEBUG_A11Y) Log.v(TAG, "Num index" + index + " visible " + mFocusVisible);
             if (handleActionKeyboard(index)) {
-                final int oldIndex = mFocusedCellIndex;
                 mFocusedCellIndex = index;
                 final int virtualViewId = VIRTUAL_BASE_VIEW_ID + mFocusedCellIndex;
                 mExploreByTouchHelper.sendEventForVirtualView(virtualViewId,
-                        AccessibilityEvent.TYPE_VIEW_HOVER_ENTER);
-                mExploreByTouchHelper.sendEventForVirtualView(VIRTUAL_BASE_VIEW_ID + oldIndex,
-                        AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
+                        AccessibilityEvent.TYPE_VIEW_FOCUSED);
                 return true;
             }
         } else if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
@@ -2193,7 +2188,7 @@ public class LockPatternView extends View {
     }
 
     /**
-     * The parecelable for saving and restoring a lock pattern view.
+     * The parcelable for saving and restoring a lock pattern view.
      */
     private static class SavedState extends BaseSavedState {
 
@@ -2372,7 +2367,8 @@ public class LockPatternView extends View {
         }
 
         @Override
-        public void onPopulateAccessibilityEvent(View host, AccessibilityEvent event) {
+        public void onPopulateAccessibilityEvent(@NonNull View host,
+                @NonNull AccessibilityEvent event) {
             super.onPopulateAccessibilityEvent(host, event);
             if (!mPatternInProgress && !mClickInputSupported) {
                 CharSequence contentDescription = getContext().getText(
