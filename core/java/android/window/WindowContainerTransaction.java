@@ -339,12 +339,18 @@ public final class WindowContainerTransaction implements Parcelable {
     public WindowContainerTransaction setDisallowOverrideBoundsForChildren(
             @NonNull WindowContainerToken rootTaskContainer,
             boolean disallowOverrideBoundsForChildren) {
-        final HierarchyOp hierarchyOp = new HierarchyOp.Builder(
-                HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN)
-                .setContainer(rootTaskContainer.asBinder())
-                .setDisallowOverrideBoundsForChildren(disallowOverrideBoundsForChildren)
-                .build();
-        mHierarchyOps.add(hierarchyOp);
+        if (Flags.idempotentWctResolution()) {
+            final Change chg = getOrCreateChange(rootTaskContainer.asBinder());
+            chg.mDisallowOverrideBoundsForChildren = disallowOverrideBoundsForChildren;
+            chg.mChangeMask |= Change.CHANGE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN;
+        } else {
+            final HierarchyOp hierarchyOp = new HierarchyOp.Builder(
+                    HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN)
+                    .setContainer(rootTaskContainer.asBinder())
+                    .setDisallowOverrideBoundsForChildren(disallowOverrideBoundsForChildren)
+                    .build();
+            mHierarchyOps.add(hierarchyOp);
+        }
         return this;
     }
 
@@ -367,13 +373,20 @@ public final class WindowContainerTransaction implements Parcelable {
     public WindowContainerTransaction setDisallowOverrideWindowingModeForChildren(
             @NonNull WindowContainerToken rootTaskContainer,
             boolean disallowOverrideWindowingModeForChildren) {
-        final HierarchyOp hierarchyOp = new HierarchyOp.Builder(
-                HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN)
-                .setContainer(rootTaskContainer.asBinder())
-                .setDisallowOverrideWindowingModeForChildren(
-                        disallowOverrideWindowingModeForChildren)
-                .build();
-        mHierarchyOps.add(hierarchyOp);
+        if (Flags.idempotentWctResolution()) {
+            final Change chg = getOrCreateChange(rootTaskContainer.asBinder());
+            chg.mDisallowOverrideWindowingModeForChildren =
+                    disallowOverrideWindowingModeForChildren;
+            chg.mChangeMask |= Change.CHANGE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN;
+        } else {
+            final HierarchyOp hierarchyOp = new HierarchyOp.Builder(
+                    HierarchyOp.HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN)
+                    .setContainer(rootTaskContainer.asBinder())
+                    .setDisallowOverrideWindowingModeForChildren(
+                            disallowOverrideWindowingModeForChildren)
+                    .build();
+            mHierarchyOps.add(hierarchyOp);
+        }
         return this;
     }
 
@@ -1848,6 +1861,8 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int CHANGE_INTERCEPT_BACK_PRESSED = 1 << 14;
         public static final int CHANGE_HANDLE_PACKAGE_UPDATE = 1 << 15;
         public static final int CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE = 1 << 16;
+        public static final int CHANGE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN = 1 << 17;
+        public static final int CHANGE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN = 1 << 18;
 
 
         @IntDef(flag = true, prefix = { "CHANGE_" }, value = {
@@ -1867,7 +1882,9 @@ public final class WindowContainerTransaction implements Parcelable {
                 CHANGE_IS_TASK_MOVE_ALLOWED,
                 CHANGE_INTERCEPT_BACK_PRESSED,
                 CHANGE_HANDLE_PACKAGE_UPDATE,
-                CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE
+                CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE,
+                CHANGE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN,
+                CHANGE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ChangeMask {}
@@ -1884,6 +1901,8 @@ public final class WindowContainerTransaction implements Parcelable {
         private boolean mIsTaskMoveAllowed = false;
         private boolean mInterceptBackPressed = false;
         private boolean mHandlePackageUpdate = false;
+        private boolean mDisallowOverrideBoundsForChildren = false;
+        private boolean mDisallowOverrideWindowingModeForChildren = false;
 
         private @ChangeMask int mChangeMask = 0;
         private @ActivityInfo.Config int mConfigSetMask = 0;
@@ -1917,6 +1936,8 @@ public final class WindowContainerTransaction implements Parcelable {
             mIsTaskMoveAllowed = in.readBoolean();
             mInterceptBackPressed = in.readBoolean();
             mHandlePackageUpdate = in.readBoolean();
+            mDisallowOverrideBoundsForChildren = in.readBoolean();
+            mDisallowOverrideWindowingModeForChildren = in.readBoolean();
             mChangeMask = in.readInt();
             mConfigSetMask = in.readInt();
             mWindowSetMask = in.readInt();
@@ -1965,6 +1986,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 mDragResizing = other.mDragResizing;
             }
             if ((other.mChangeMask & CHANGE_FORCE_EXCLUDED_FROM_RECENTS) != 0) {
+                mFocusable = other.mForceExcludedFromRecents;
                 mForceExcludedFromRecents = other.mForceExcludedFromRecents;
             }
             if ((other.mChangeMask & CHANGE_LAUNCH_NEXT_TO_BUBBLE) != 0) {
@@ -1984,6 +2006,13 @@ public final class WindowContainerTransaction implements Parcelable {
             }
             if ((other.mChangeMask & CHANGE_HANDLE_PACKAGE_UPDATE) != 0) {
                 mHandlePackageUpdate = other.mHandlePackageUpdate;
+            }
+            if ((other.mChangeMask & CHANGE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN) != 0) {
+                mDisallowOverrideBoundsForChildren = other.mDisallowOverrideBoundsForChildren;
+            }
+            if ((other.mChangeMask & CHANGE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN) != 0) {
+                mDisallowOverrideWindowingModeForChildren =
+                        other.mDisallowOverrideWindowingModeForChildren;
             }
             mChangeMask |= other.mChangeMask;
             if (other.mActivityWindowingMode >= WINDOWING_MODE_UNDEFINED) {
@@ -2102,6 +2131,24 @@ public final class WindowContainerTransaction implements Parcelable {
         /** Gets the handle package update state. */
         public boolean getHandlePackageUpdate() {
             return mHandlePackageUpdate;
+        }
+
+        /** Gets whether to disallow child tasks to have override bounds. */
+        public boolean getDisallowOverrideBoundsForChildren() {
+            if ((mChangeMask & CHANGE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN) == 0) {
+                throw new RuntimeException("DisallowOverrideBoundsForChildren not set. "
+                        + "Check CHANGE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN first");
+            }
+            return mDisallowOverrideBoundsForChildren;
+        }
+
+        /** Gets whether to disallow child tasks to have override windowing mode. */
+        public boolean getDisallowOverrideWindowingModeForChildren() {
+            if ((mChangeMask & CHANGE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN) == 0) {
+                throw new RuntimeException("DisallowOverrideWindowingModeForChildren not set. "
+                        + "Check CHANGE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN first");
+            }
+            return mDisallowOverrideWindowingModeForChildren;
         }
 
         /** Gets whether the config should be sent to the client at the end of the transition. */
@@ -2228,6 +2275,14 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((mChangeMask & CHANGE_HANDLE_PACKAGE_UPDATE) != 0) {
                 sb.append("handlePackageUpdate:" + mHandlePackageUpdate + ",");
             }
+            if ((mChangeMask & CHANGE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN) != 0) {
+                sb.append("disallowOverrideBoundsForChildren:")
+                        .append(mDisallowOverrideBoundsForChildren).append(",");
+            }
+            if ((mChangeMask & CHANGE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN) != 0) {
+                sb.append("disallowOverrideWindowingModeForChildren:")
+                        .append(mDisallowOverrideWindowingModeForChildren).append(",");
+            }
             if ((mChangeMask & CHANGE_FULLSCREEN_REQUEST_ALLOW_MODE) != 0) {
                 sb.append("fullscreenRequestAllowMode:")
                         .append(DebugUtils.valueToString(FullscreenRequestHandler.class,
@@ -2268,6 +2323,8 @@ public final class WindowContainerTransaction implements Parcelable {
             dest.writeBoolean(mIsTaskMoveAllowed);
             dest.writeBoolean(mInterceptBackPressed);
             dest.writeBoolean(mHandlePackageUpdate);
+            dest.writeBoolean(mDisallowOverrideBoundsForChildren);
+            dest.writeBoolean(mDisallowOverrideWindowingModeForChildren);
             dest.writeInt(mChangeMask);
             dest.writeInt(mConfigSetMask);
             dest.writeInt(mWindowSetMask);
@@ -2338,10 +2395,12 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int HIERARCHY_OP_TYPE_APP_COMPAT_REACHABILITY = 24;
         public static final int HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS = 25;
         public static final int HIERARCHY_OP_TYPE_SET_SYSTEM_BAR_VISIBILITY_OVERRIDE = 26;
+        // TODO - b/487350507: remove it along with the flag removal.
         public static final int HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN = 27;
         public static final int HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE = 28;
         public static final int HIERARCHY_OP_TYPE_CONTINUE_PACKAGE_UPDATE = 29;
         public static final int HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME = 30;
+        // TODO - b/487350507: remove it along with the flag removal.
         public static final int HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN =
                 31;
         public static final int HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH = 32;

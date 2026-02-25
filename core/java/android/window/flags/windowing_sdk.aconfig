@@ -221,3 +221,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "idempotent_wct_resolution"
+    description: "Decouples requested policy from resolved configuration to ensure WCT operations are order-independent."
+    bug: "487350507"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
