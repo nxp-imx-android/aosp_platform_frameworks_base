@@ -152,6 +152,8 @@ public class LocalDisplayAdapterTest {
     private DisplayDeviceConfig mMockDisplayDeviceConfig;
     @Mock
     private BacklightAdapter mMockBacklightAdapter;
+    @Mock
+    private ModeRequestManager mModeRequestManager;
 
     @Mock
     private LocalDisplayAdapter.SurfaceControlProxy mSurfaceControlProxy;
@@ -181,7 +183,8 @@ public class LocalDisplayAdapterTest {
         mInjector = new Injector();
         when(mSurfaceControlProxy.getBootDisplayModeSupport()).thenReturn(true);
         mAdapter = new LocalDisplayAdapter(mMockedSyncRoot, mMockedContext, mHandler,
-                mListener, mFlags, mMockedDisplayNotificationManager, mInjector, false);
+                mListener, mFlags, mMockedDisplayNotificationManager, mInjector, false,
+                mModeRequestManager);
         spyOn(mAdapter);
         doReturn(mMockedContext).when(mAdapter).getOverlayContext();
 

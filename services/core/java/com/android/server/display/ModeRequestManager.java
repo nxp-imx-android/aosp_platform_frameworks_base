@@ -30,8 +30,11 @@ import android.view.DisplayInfo;
 import com.android.graphics.surfaceflinger.flags.Flags;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.display.mode.DisplayModeDirector;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Manages the state of display mode change requests as they propagate through the system.
@@ -61,6 +64,10 @@ public class ModeRequestManager {
 
     @GuardedBy("mLock")
     private SparseArray<DisplayInfo> mCachedDisplayInfos = new SparseArray<>();
+
+    @GuardedBy("mLock")
+    private final Map<DisplayDevice, DisplayModeDirector.DesiredDisplayModeSpecs> mSpecs =
+            new HashMap<>();
 
     private final HandlerWrapper mHandlerWrapper;
     private static final long MODE_REQUEST_TIMEOUT_MS = 5000;
@@ -231,6 +238,28 @@ public class ModeRequestManager {
     }
 
     /**
+     * Updates the status of a display mode request after the overlay is ready (since it does not
+     * use specs to update modes)
+     * @param userPreferredModeId The user preferred mode id that the overlay is setting
+     */
+    public void overlayReady(int userPreferredModeId) {
+        if (isDisabled()) {
+            return;
+        }
+        // since we can guarantee that modes are unique for a display, if we can find a mode id in
+        // the modes in progress, we can say that display has an update in progress
+        for (int i = 0; i < mModes.size(); i++) {
+            Display.Mode mode = mModes.valueAt(i);
+            if ((mode != null) && (mode.getModeId() == userPreferredModeId)) {
+                synchronized (mLock) {
+                    updateStatus(mModes.keyAt(i), RequestStatus.WAITING_FOR_MODE_SPECS);
+                }
+            }
+
+        }
+    }
+
+    /**
      * Updates the status of a display mode request after the mode specs are set. This is the final
      * state.
      * @param displayId The displayId of the request
@@ -311,6 +340,47 @@ public class ModeRequestManager {
         }
         synchronized (mLock) {
             return mStates.indexOfKey(displayId) >= 0;
+        }
+    }
+
+    /**
+     * Returns true if there is a request with one of the modes from the list in progress.
+     * Same behavior as isRequestInProgress since we can guarantee that modes are unique for
+     * different displays.
+     * @param modes The modes to check for
+     */
+    boolean isAnyModeInProgress(SparseArray<LocalDisplayAdapter.DisplayModeRecord> modes) {
+        if (isDisabled()) {
+            return false;
+        }
+        synchronized (mLock) {
+            for (int i = 0; i < modes.size(); i++) {
+                LocalDisplayAdapter.DisplayModeRecord mode = modes.valueAt(i);
+                if (mModes.indexOfValue(mode.mMode) >= 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    void setSpecs(int displayId, DisplayDevice device,
+                  DisplayModeDirector.DesiredDisplayModeSpecs specs) {
+        if (isDisabled()) {
+            return;
+        }
+        synchronized (mLock) {
+            updateStatus(displayId, RequestStatus.MODE_SPECS_SET);
+            mSpecs.put(device, specs);
+        }
+    }
+
+    Map<DisplayDevice, DisplayModeDirector.DesiredDisplayModeSpecs> getSpecs() {
+        if (isDisabled()) {
+            return null;
+        }
+        synchronized (mLock) {
+            return Map.copyOf(mSpecs);
         }
     }
 

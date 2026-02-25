@@ -340,7 +340,7 @@ public class DisplayManagerServiceTest {
                         Handler handler, DisplayAdapter.Listener displayAdapterListener,
                         DisplayManagerFlags flags,
                         DisplayNotificationManager displayNotificationManager,
-                        boolean stableEdidsFlag) {
+                        boolean stableEdidsFlag, ModeRequestManager modeRequestManager) {
                     return new LocalDisplayAdapter(syncRoot, context, handler,
                             displayAdapterListener, flags,
                             mMockedDisplayNotificationManager,
@@ -350,7 +350,7 @@ public class DisplayManagerServiceTest {
                                         getSurfaceControlProxy() {
                                     return mSurfaceControlProxy;
                                 }
-                            }, stableEdidsFlag);
+                            }, stableEdidsFlag, modeRequestManager);
                 }
 
                 @Override
@@ -397,7 +397,8 @@ public class DisplayManagerServiceTest {
         LocalDisplayAdapter getLocalDisplayAdapter(SyncRoot syncRoot, Context context,
                 Handler handler, DisplayAdapter.Listener displayAdapterListener,
                 DisplayManagerFlags flags,
-                DisplayNotificationManager displayNotificationManager, boolean stableEdidsFlag) {
+                DisplayNotificationManager displayNotificationManager, boolean stableEdidsFlag,
+                                                   ModeRequestManager modeRequestManager) {
             return new LocalDisplayAdapter(
                     syncRoot,
                     context,
@@ -410,7 +411,7 @@ public class DisplayManagerServiceTest {
                         public LocalDisplayAdapter.SurfaceControlProxy getSurfaceControlProxy() {
                             return mSurfaceControlProxy;
                         }
-                    }, false);
+                    }, false, modeRequestManager);
         }
 
         @Override

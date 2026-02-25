@@ -2551,7 +2551,7 @@ public final class DisplayManagerService extends SystemService {
             // main display adapter
             registerDisplayAdapterLocked(mInjector.getLocalDisplayAdapter(mSyncRoot, mContext,
                     mHandler, mDisplayDeviceRepo, mFlags,
-                    mDisplayNotificationManager, mStableEdidsFlag));
+                    mDisplayNotificationManager, mStableEdidsFlag, mModeRequestManager));
 
             // Standalone VR devices rely on a virtual display as their primary display for
             // 2D UI. We register virtual display adapter along side the main display adapter
@@ -2577,7 +2577,8 @@ public final class DisplayManagerService extends SystemService {
 
     private void registerOverlayDisplayAdapterLocked() {
         registerDisplayAdapterLocked(new OverlayDisplayAdapter(
-                mSyncRoot, mContext, mHandler, mDisplayDeviceRepo, mUiHandler, mFlags));
+                mSyncRoot, mContext, mHandler, mDisplayDeviceRepo, mUiHandler, mFlags,
+                mModeRequestManager));
     }
 
     private void registerWifiDisplayAdapterLocked() {
@@ -3508,18 +3509,20 @@ public final class DisplayManagerService extends SystemService {
 
         // Configure each display device.
         mLogicalDisplayMapper.forEachLocked((LogicalDisplay display) -> {
-            boolean isInBatch =
-                    mModeRequestManager.isRequestInProgress(display.getDisplayIdLocked());
             final DisplayDevice device = display.getPrimaryDisplayDeviceLocked();
             final SurfaceControl.Transaction displayTransaction =
                     displayTransactions.get(display.getDisplayIdLocked(), t);
             if (device != null) {
-                configureDisplayLocked(displayTransaction, device, isInBatch);
+                configureDisplayLocked(displayTransaction, device);
+                mModeRequestManager.setSpecs(display.getDisplayIdLocked(), device,
+                        display.getDesiredDisplayModeSpecsLocked());
             }
         });
 
         if (mModeRequestManager.allDisplaysReachedStatus(RequestStatus.MODE_SPECS_SET)) {
-            mDisplayAdapters.forEach(DisplayAdapter::applyBatchDisplayModeUpdatesLocked);
+            mDisplayAdapters.forEach(adapter -> {
+                adapter.applyBatchDisplayModeUpdatesLocked(mModeRequestManager.getSpecs());
+            });
             mModeRequestManager.clearRequests();
         }
 
@@ -3850,8 +3853,7 @@ public final class DisplayManagerService extends SystemService {
         return Optional.empty();
     }
 
-    private void configureDisplayLocked(SurfaceControl.Transaction t, DisplayDevice device,
-                                        boolean isInBatch) {
+    private void configureDisplayLocked(SurfaceControl.Transaction t, DisplayDevice device) {
         final DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
 
         // Find the logical display that the display device is showing.
@@ -3866,7 +3868,7 @@ public final class DisplayManagerService extends SystemService {
             return;
         }
         display.configureDisplayLocked(t, device, info.state == Display.STATE_OFF,
-                mHandlerExecutor, isInBatch);
+                mHandlerExecutor);
         final Optional<Integer> viewportType = getViewportType(info);
         if (viewportType.isPresent()) {
             populateViewportLocked(viewportType.get(), display.getDisplayIdLocked(), device, info);
@@ -4389,9 +4391,11 @@ public final class DisplayManagerService extends SystemService {
         LocalDisplayAdapter getLocalDisplayAdapter(SyncRoot syncRoot, Context context,
                 Handler handler, DisplayAdapter.Listener displayAdapterListener,
                 DisplayManagerFlags flags,
-                DisplayNotificationManager displayNotificationManager, boolean stableEdidsFlag) {
+                DisplayNotificationManager displayNotificationManager, boolean stableEdidsFlag,
+                                                   ModeRequestManager modeRequestManager) {
+
             return new LocalDisplayAdapter(syncRoot, context, handler, displayAdapterListener,
-                    flags, displayNotificationManager, stableEdidsFlag);
+                    flags, displayNotificationManager, stableEdidsFlag, modeRequestManager);
         }
 
         long getDefaultDisplayDelayTimeout() {
