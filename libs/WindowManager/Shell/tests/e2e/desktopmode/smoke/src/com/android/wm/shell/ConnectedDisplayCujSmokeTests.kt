@@ -350,8 +350,12 @@ class ConnectedDisplayCujSmokeTests {
         context.startActivity(clockApp.openAppIntent, createActivityOptions(externalDisplayId))
         verifyActivityState(clockApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
-        // Fullscreen via app header.
-        openAppHeaderMenuForTheApp(clockApp)
+        // Fullscreen via layout menu.
+        if (Flags.enableConsolidatedWindowOptions()) {
+            openMaximizeMenu(clockApp)
+        } else {
+            openAppHeaderMenuForTheApp(clockApp)
+        }
         waitForSysUiObjectForTheApp(clockApp, FULLSCREEN_BUTTON_RES_ID).click()
         verifyActivityState(clockApp, WINDOWING_MODE_FULLSCREEN, externalDisplayId, visible = true)
 
@@ -360,8 +364,12 @@ class ConnectedDisplayCujSmokeTests {
         waitForSysUiObjectForTheApp(clockApp, DESKTOP_BUTTON_RES_ID).click()
         verifyActivityState(clockApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
-        // Enter split screen via app header.
-        openAppHeaderMenuForTheApp(browserApp)
+        // Enter split screen via layout menu.
+        if (Flags.enableConsolidatedWindowOptions()) {
+            openMaximizeMenu(clockApp)
+        } else {
+            openAppHeaderMenuForTheApp(clockApp)
+        }
         waitForSysUiObjectForTheApp(clockApp, SPLIT_SCREEN_BUTTON_RES_ID).click()
         launchAppFromTaskbar(externalDisplayId, browserApp)
         wmHelper
@@ -670,6 +678,9 @@ class ConnectedDisplayCujSmokeTests {
     fun openAppHeaderMenuForTheApp(componentMatcher: IComponentNameMatcher) =
         waitForSysUiObjectForTheApp(componentMatcher, OPEN_MENU_BUTTON_RES_ID).click()
 
+    fun openMaximizeMenu(componentMatcher: IComponentNameMatcher) =
+        waitForSysUiObjectForTheApp(componentMatcher, MAXIMIZE_WINDOW_RES_ID).longClick()
+
     fun openAppHandleMenuForFullscreenApp(displayId: Int) {
         val selector = By.res(SYSTEMUI_PACKAGE, STATUS_BAR_CONTAINER_RES_ID).displayId(displayId)
         DeviceHelpers.waitForObj(selector, timeout = UIAUTOMATOR_TIMEOUT).click()
@@ -814,6 +825,7 @@ class ConnectedDisplayCujSmokeTests {
         const val DISPLAY_TEXT = "Display"
         const val SETTINGS_PACKAGE = "com.android.settings"
         const val SCROLL_RETRY_MAX = 5
+        const val MAXIMIZE_WINDOW_RES_ID = "maximize_window"
 
         // Following timeouts are adjusted for each platform by [platformAdjust()].
         val FLICKER_LIB_RETRY_INTERVAL_MS = Duration.ofMillis(500).platformAdjust().toMillis()
