@@ -293,6 +293,10 @@ object SceneWindowRootViewBinder {
         snapBouncer: (isShowing: Boolean) -> Unit,
     ): View {
         return ComposeView(context).apply {
+            setSnapshotBinding {
+                accessibilityPaneTitle = viewModel.accessibilityTitle?.let(context::getString)
+            }
+
             setContent {
                 SceneContainerContainer(
                     windowInsets = windowInsets,
