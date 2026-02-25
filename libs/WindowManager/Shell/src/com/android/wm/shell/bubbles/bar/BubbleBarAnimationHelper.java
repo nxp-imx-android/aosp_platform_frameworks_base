@@ -47,6 +47,7 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.app.animation.Interpolators;
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.animation.SizeChangeAnimation;
 import com.android.wm.shell.bubbles.Bubble;
@@ -58,6 +59,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.shared.magnetictarget.MagnetizedObject.MagneticTarget;
+import com.android.wm.shell.taskview.TaskView;
 
 /**
  * Helper class to animate a {@link BubbleBarExpandedView} on a bubble.
@@ -688,7 +690,8 @@ public class BubbleBarAnimationHelper {
         }
 
         bbev.setTaskViewAlpha(1f);
-        SurfaceControl tvSf = ((Bubble) mExpandedBubble).getTaskView().getSurfaceControl();
+        TaskView taskView = ((Bubble) mExpandedBubble).getTaskView();
+        SurfaceControl tvSf = taskView.getSurfaceControl();
 
         final boolean isOverflow = mExpandedBubble.getKey().equals(BubbleOverflow.KEY);
         final Rect restBounds = new Rect();
@@ -710,6 +713,13 @@ public class BubbleBarAnimationHelper {
             snapshot.release();
             bbev.setSurfaceZOrderedOnTop(false);
             bbev.setAnimating(false);
+            if (Flags.bbevSquareCornersFix()) {
+                try (SurfaceControl.Transaction t = new SurfaceControl.Transaction()) {
+                    t.setWindowCrop(tvSf, taskView.getWidth(), taskView.getHeight());
+                    t.setCornerRadius(tvSf, bbev.getCornerRadius());
+                    t.apply();
+                }
+            }
             if (endRunnable != null) {
                 endRunnable.run();
             }
