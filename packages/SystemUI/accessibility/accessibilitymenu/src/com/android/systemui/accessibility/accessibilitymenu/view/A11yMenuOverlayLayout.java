@@ -412,8 +412,7 @@ public class A11yMenuOverlayLayout {
                         || event.getKeyCode() == KeyEvent.KEYCODE_ESCAPE;
 
                 if (keyCodeMatches && event.getAction() == KeyEvent.ACTION_UP) {
-                    hideMenu();
-                    return true;
+                    return hideMenu();
                 }
             }
             return super.dispatchKeyEvent(event);
