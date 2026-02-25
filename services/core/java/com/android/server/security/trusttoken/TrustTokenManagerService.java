@@ -77,8 +77,7 @@ public class TrustTokenManagerService extends SystemService {
     private final Object mMasterKeyInit = new Object();
     private final AtomicReference<TrustAnchor> mTrustAnchor = new AtomicReference<>();
     private final Stub mBinder;
-    private final boolean mHasProvider;
-    private final StatsManager mStatsManager;
+    private boolean mHasProvider = false;
     private boolean mAuthorityFallback = false;
     private int mNumRootKey = 0;
 
@@ -87,7 +86,7 @@ public class TrustTokenManagerService extends SystemService {
      *
      * @param context The {@link Context} of the service.
      */
-    TrustTokenManagerService(Context context) {
+    public TrustTokenManagerService(Context context) {
         this(
                 context,
                 /* masterKey= */ null,
@@ -111,8 +110,6 @@ public class TrustTokenManagerService extends SystemService {
         mBinder = new Stub(context);
         mRefreshScheduler = new TrustTokenRefreshService.Scheduler(context);
         mCleanUpScheduler = new TrustTokenCleanUpService.Scheduler(context);
-        mHasProvider = TrustTokenProvider.getServiceProvider(context) != null;
-        mStatsManager = mContext.getSystemService(StatsManager.class);
 
         try {
             updateTrustAnchor();
@@ -129,15 +126,23 @@ public class TrustTokenManagerService extends SystemService {
         Slog.i(TAG, "Starting TrustTokenManagerService");
         publishBinderService(Context.TRUST_TOKEN_SERVICE, mBinder);
         publishLocalService(TrustTokenManagerInternal.class, mInternal);
-        if (mHasProvider) {
-            mRefreshScheduler.scheduleRegularRefresh();
-            mCleanUpScheduler.scheduleRegularCleanUp();
+    }
+
+    @Override
+    public void onBootPhase(@BootPhase int phase) {
+        if (phase == PHASE_SYSTEM_SERVICES_READY) {
+            mHasProvider = TrustTokenProvider.getServiceProvider(getContext()) != null;
+            if (mHasProvider) {
+                mRefreshScheduler.scheduleRegularRefresh();
+                mCleanUpScheduler.scheduleRegularCleanUp();
+            }
+            var statsManager = mContext.getSystemService(StatsManager.class);
+            statsManager.setPullAtomCallback(
+                    MetricsLogger.TrustTokenState.ATOM_TAG,
+                    new PullAtomMetadata.Builder().setCoolDownMillis(60000).build(),
+                    ConcurrentUtils.DIRECT_EXECUTOR,
+                    new PullTrustTokenState());
         }
-        mStatsManager.setPullAtomCallback(
-                MetricsLogger.TrustTokenState.ATOM_TAG,
-                new PullAtomMetadata.Builder().setCoolDownMillis(60000).build(),
-                ConcurrentUtils.DIRECT_EXECUTOR,
-                new PullTrustTokenState());
     }
 
     private void updateTrustAnchor() throws TrustConfigurationUnavailableException {
