@@ -138,28 +138,20 @@ public class MultiThreadedTransportDataSender implements Callable<SendBackupData
         // A new thread that reads from BackupAgent's pipe is created. We close the pipe
         // after the thread is done since otherwise it won't be ever closed.
         new Thread(
-                        new FullBackupDataCopier(
-                                mInputStream,
+                        createAppDataToInternalBufferCopier(
                                 appDataToInternalBufferOutputStream,
                                 shouldStopDataCopierThreads,
-                                appToInternalBufferIoSuccessful,
-                                BackupManagerConstants.DEFAULT_FULL_BACKUP_TRANSPORT_READ_SIZE,
-                                true /* closeOutput */,
-                                "PFTBT.inbound"),
+                                appToInternalBufferIoSuccessful),
                         "backup-agent-reader")
                 .start();
 
         // A new thread that writes to the transport's pipe is created. We don't close the
         // pipe here to match the behavior of the single-threaded implementation.
         new Thread(
-                        new FullBackupDataCopier(
+                        createInternalBufferToTransportCopier(
                                 internalBufferToTransportInputStream,
-                                mOutputStream,
                                 shouldStopDataCopierThreads,
-                                internalBufferToTransportIoSuccessful,
-                                mBufferSize,
-                                false /* closeOutput */,
-                                "PFTBT.outbound"),
+                                internalBufferToTransportIoSuccessful),
                         "transport-writer")
                 .start();
 
@@ -269,5 +261,31 @@ public class MultiThreadedTransportDataSender implements Callable<SendBackupData
         return new SendBackupDataResult(backupPackageStatus, totalRead);
     }
 
+    Runnable createAppDataToInternalBufferCopier(
+            PipedOutputStream appDataToInternalBufferOutputStream,
+            AtomicBoolean shouldStopCopierThreads,
+            AtomicBoolean appDataToInternalBufferIoSuccessful) {
+        return new FullBackupDataCopier(
+                mInputStream,
+                appDataToInternalBufferOutputStream,
+                shouldStopCopierThreads,
+                appDataToInternalBufferIoSuccessful,
+                BackupManagerConstants.DEFAULT_FULL_BACKUP_TRANSPORT_READ_SIZE,
+                /* closeOutput= */ true,
+                "PFTBT.appDataToInternalBuffer");
+    }
 
+    Runnable createInternalBufferToTransportCopier(
+            PipedInputStream internalBufferToTransportInputStream,
+            AtomicBoolean shouldStopCopierThreads,
+            AtomicBoolean internalBufferToTransportIoSuccessful) {
+        return new FullBackupDataCopier(
+                internalBufferToTransportInputStream,
+                mOutputStream,
+                shouldStopCopierThreads,
+                internalBufferToTransportIoSuccessful,
+                mBufferSize,
+                /* closeOutput= */ false,
+                "PFTBT.internalBufferToTransport");
+    }
 }
