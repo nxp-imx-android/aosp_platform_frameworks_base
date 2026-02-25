@@ -537,6 +537,7 @@ android.util.Base64
 android.util.Base64DataException
 android.util.Base64InputStream
 android.util.Base64OutputStream
+android.util.BucketPriorityQueue
 android.util.CloseGuard
 android.util.ContainerHelpers
 android.util.CopyOnWriteSparseArray

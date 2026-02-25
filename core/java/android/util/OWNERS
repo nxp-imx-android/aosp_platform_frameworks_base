@@ -9,3 +9,5 @@ per-file PackageUtils.java = file:/core/java/android/content/pm/OWNERS
 per-file NtpTrustedTime.java = file:/services/core/java/com/android/server/timezonedetector/OWNERS
 per-file TimeUtils.java = file:/services/core/java/com/android/server/timezonedetector/OWNERS
 per-file TrustedTime.java = file:/services/core/java/com/android/server/timezonedetector/OWNERS
+
+per-file BucketPriorityQueue.java = file:/services/core/java/com/android/server/am/psc/OWNERS
