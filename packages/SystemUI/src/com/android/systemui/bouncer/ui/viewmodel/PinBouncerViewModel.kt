@@ -94,6 +94,16 @@ constructor(
     /** The length of the PIN for which we should show a hint. */
     val hintedPinLength: StateFlow<Int?> = _hintedPinLength.asStateFlow()
 
+    // If `true`, some element of PinBouncer currently has keyboard focus.
+    private val _isFocused = MutableStateFlow<Boolean>(false)
+
+    // The initial value is true if input is enabled, so PinBouncer requests keyboard focus when it
+    // appears.
+    private val _isFocusRequested = MutableStateFlow(isInputEnabled.value)
+
+    /** Whether the PinBouncer UI should request keyboard focus. */
+    val isFocusRequested = _isFocusRequested.asStateFlow()
+
     /** Appearance of the backspace button. */
     val backspaceButtonAppearance: ActionButtonAppearance by
         combine(
@@ -159,6 +169,14 @@ constructor(
                 interactor.isPinEnhancedPrivacyEnabled
                     .map { !it }
                     .collect { _isDigitButtonAnimationEnabled.value = it }
+            }
+            launch {
+                // This re-requests focus when input becomes re-enabled, or if focus gets lost, e.g.
+                // due to b/453871684.
+                combine(isInputEnabled, _isFocused) { hasInput, isFocused ->
+                        hasInput && !isFocused && !wasSuccessfullyAuthenticated
+                    }
+                    .collect { _isFocusRequested.value = it }
             }
             awaitCancellation()
         }
@@ -290,6 +308,15 @@ constructor(
         super.onDown()
 
         bouncerHapticPlayer.playNumpadKeyFeedback()
+    }
+
+    /**
+     * Invoked when keyboard focus state of PinBouncer changes.
+     *
+     * @param isFocused `true` means that that any element of PinBouncer has keyboard focus.
+     */
+    fun onFocusChanged(isFocused: Boolean) {
+        _isFocused.value = isFocused
     }
 
     @AssistedFactory

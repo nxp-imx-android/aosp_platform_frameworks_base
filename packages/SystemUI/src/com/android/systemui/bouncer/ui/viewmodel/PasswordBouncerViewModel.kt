@@ -123,90 +123,80 @@ constructor(
     val selectedUserId: StateFlow<Int> = _selectedUserId.asStateFlow()
 
     private val requests = Channel<Request>(Channel.BUFFERED)
-    private var wasSuccessfullyAuthenticated = false
 
     override suspend fun onActivated(): Nothing {
-        try {
-            coroutineScope {
-                launch { super.onActivated() }
-                launch {
-                    requests.receiveAsFlow().collect { request ->
-                        when (request) {
-                            is OnImeSwitcherButtonClicked -> {
-                                inputMethodInteractor.showInputMethodPicker(
-                                    showAuxiliarySubtypes = false,
-                                    entryPoint = InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
-                                    displayId = request.displayId,
-                                )
-                            }
-                            is OnImeDismissed -> {
-                                interactor.onImeHiddenByUser()
-                            }
+        coroutineScope {
+            launch { super.onActivated() }
+            launch {
+                requests.receiveAsFlow().collect { request ->
+                    when (request) {
+                        is OnImeSwitcherButtonClicked -> {
+                            inputMethodInteractor.showInputMethodPicker(
+                                showAuxiliarySubtypes = false,
+                                entryPoint = InputMethodManager.IM_PICKER_ENTRY_POINT_DEFAULT,
+                                displayId = request.displayId,
+                            )
+                        }
+                        is OnImeDismissed -> {
+                            interactor.onImeHiddenByUser()
                         }
                     }
                 }
-                launch {
-                    combine(isInputEnabled, isTextFieldFocused) { hasInput, hasFocus ->
-                            hasInput && !hasFocus && !wasSuccessfullyAuthenticated
-                        }
-                        .collect { _isTextFieldFocusRequested.value = it }
-                }
-                launch {
-                    selectedUserInteractor.selectedUser.collect { _selectedUserId.value = it }
-                }
-                launch {
-                    // Re-fetch the currently-enabled IMEs whenever the selected user changes, and
-                    // whenever
-                    // the UI subscribes to the `isImeSwitcherButtonVisible` flow.
-                    combine(
-                            // InputMethodManagerService sometimes takes
-                            // some time to update its internal state when the
-                            // selected user changes.
-                            // As a workaround, delay fetching the IME info.
-                            selectedUserInteractor.selectedUser.onEach {
-                                delay(DELAY_TO_FETCH_IMES)
-                            },
-                            _isImeSwitcherButtonVisible.onSubscriberAdded(),
-                        ) { selectedUserId, _ ->
-                            inputMethodInteractor.hasMultipleEnabledImesOrSubtypes(selectedUserId)
-                        }
-                        .collect { _isImeSwitcherButtonVisible.value = it }
-                }
-                launch {
-                    snapshotFlow { textFieldState.text.toString() }
-                        .collect {
-                            _readyToTryAuthenticate.value = determineIsReadyToAuthenticate()
-                            if (it.isNotEmpty()) {
-                                onIntentionalUserInput()
-                            }
-                        }
-                }
-                launch {
-                    // Hide the password 5s after the password has been revealed or the text in the
-                    // password input field has changed.
-                    val textChangeEvents = snapshotFlow { textFieldState.text }.map { Unit }
-                    val revealEvents = _isPasswordRevealed.filter { it == true }.map { Unit }
-                    val hidePasswordTrigger =
-                        merge(textChangeEvents, revealEvents).debounce(HIDE_PASSWORD_DELAY)
-
-                    hidePasswordTrigger.collect { _isPasswordRevealed.value = false }
-                }
-
-                // It is possible to reveal the password through a button. Make sure to clear it
-                // after inactivity.
-                launch {
-                    val textChangeEvents = snapshotFlow { textFieldState.text }.map { Unit }
-                    textChangeEvents.debounce(CLEAR_PASSWORD_IF_REVEALABLE_DELAY).collect {
-                        if (isMoreIndicatorsAndButtonsEnabled) {
-                            textFieldState.clearText()
-                        }
-                    }
-                }
-                awaitCancellation()
             }
-        } finally {
-            // reset whenever the view model is "deactivated"
-            wasSuccessfullyAuthenticated = false
+            launch {
+                combine(isInputEnabled, isTextFieldFocused) { hasInput, hasFocus ->
+                        hasInput && !hasFocus && !wasSuccessfullyAuthenticated
+                    }
+                    .collect { _isTextFieldFocusRequested.value = it }
+            }
+            launch { selectedUserInteractor.selectedUser.collect { _selectedUserId.value = it } }
+            launch {
+                // Re-fetch the currently-enabled IMEs whenever the selected user changes, and
+                // whenever
+                // the UI subscribes to the `isImeSwitcherButtonVisible` flow.
+                combine(
+                        // InputMethodManagerService sometimes takes
+                        // some time to update its internal state when the
+                        // selected user changes.
+                        // As a workaround, delay fetching the IME info.
+                        selectedUserInteractor.selectedUser.onEach { delay(DELAY_TO_FETCH_IMES) },
+                        _isImeSwitcherButtonVisible.onSubscriberAdded(),
+                    ) { selectedUserId, _ ->
+                        inputMethodInteractor.hasMultipleEnabledImesOrSubtypes(selectedUserId)
+                    }
+                    .collect { _isImeSwitcherButtonVisible.value = it }
+            }
+            launch {
+                snapshotFlow { textFieldState.text.toString() }
+                    .collect {
+                        _readyToTryAuthenticate.value = determineIsReadyToAuthenticate()
+                        if (it.isNotEmpty()) {
+                            onIntentionalUserInput()
+                        }
+                    }
+            }
+            launch {
+                // Hide the password 5s after the password has been revealed or the text in the
+                // password input field has changed.
+                val textChangeEvents = snapshotFlow { textFieldState.text }.map { Unit }
+                val revealEvents = _isPasswordRevealed.filter { it == true }.map { Unit }
+                val hidePasswordTrigger =
+                    merge(textChangeEvents, revealEvents).debounce(HIDE_PASSWORD_DELAY)
+
+                hidePasswordTrigger.collect { _isPasswordRevealed.value = false }
+            }
+
+            // It is possible to reveal the password through a button. Make sure to clear it
+            // after inactivity.
+            launch {
+                val textChangeEvents = snapshotFlow { textFieldState.text }.map { Unit }
+                textChangeEvents.debounce(CLEAR_PASSWORD_IF_REVEALABLE_DELAY).collect {
+                    if (isMoreIndicatorsAndButtonsEnabled) {
+                        textFieldState.clearText()
+                    }
+                }
+            }
+            awaitCancellation()
         }
     }
 
@@ -217,10 +207,6 @@ constructor(
 
     override fun getInput(): List<Any> {
         return textFieldState.text.toList()
-    }
-
-    override fun onSuccessfulAuthentication() {
-        wasSuccessfullyAuthenticated = true
     }
 
     /** Notifies that the user clicked the button to change the input method. */
