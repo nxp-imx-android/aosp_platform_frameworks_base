@@ -2182,14 +2182,22 @@
     <dimen name="volume_dialog_button_size">48dp</dimen>
     <dimen name="volume_dialog_slider_width">52dp</dimen>
     <dimen name="volume_dialog_slider_height">254dp</dimen>
+
+    <dimen name="volume_dialog_horizontal_height">56dp</dimen>
+    <dimen name="volume_dialog_horizontal_background_corner_radius">28dp</dimen>
+    <dimen name="volume_dialog_horizontal_background_margin_negative">-4dp</dimen>
+    <dimen name="volume_dialog_horizontal_background_top_margin">-12dp</dimen>
+    <dimen name="volume_dialog_horizontal_slider_container_height">32dp</dimen>
+    <dimen name="volume_dialog_horizontal_slider_width">296dp</dimen>
+    <dimen name="volume_dialog_horizontal_slider_width_with_captions">252dp</dimen>
     <!--
         A primary goal of this margin is to vertically constraint slider height in the landscape
         orientation when the vertical space is limited
     -->
     <dimen name="volume_dialog_slider_vertical_margin">124dp</dimen>
     <dimen name="volume_dialog_slider_vertical_margin_with_captions_toggle">130dp</dimen>
-    <dimen name="volume_dialog_slider_horizontal_margin">82dp</dimen>
-    <dimen name="volume_dialog_slider_horizontal_margin_with_captions_toggle">130dp</dimen>
+    <dimen name="volume_dialog_slider_horizontal_margin">81dp</dimen>
+    <dimen name="volume_dialog_slider_horizontal_margin_with_captions_toggle">124dp</dimen>
     <dimen name="volume_dialog_half_opened_offset">-128dp</dimen>
     <dimen name="volume_dialog_slider_max_deviation">56dp</dimen>
     <dimen name="volume_dialog_floating_slider_background_corner_radius">20dp</dimen>

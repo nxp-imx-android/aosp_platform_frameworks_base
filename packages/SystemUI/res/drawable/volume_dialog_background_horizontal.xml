@@ -16,6 +16,6 @@
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <corners android:radius="@dimen/volume_dialog_background_corner_radius"/>
+    <corners android:radius="@dimen/volume_dialog_horizontal_background_corner_radius"/>
     <solid android:color="@color/shade_panel_fallback" />
 </shape>
