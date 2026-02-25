@@ -18,6 +18,7 @@ package com.android.systemui.bundle.phone;
 
 import com.android.systemui.brightness.BrightnessModule;
 import com.android.systemui.graphics.ImageLoaderModule;
+import com.android.systemui.headline.ui.HeadlineModule;
 import com.android.systemui.notifications.intelligence.rules.NotificationRulesModule;
 import com.android.systemui.notifications.intelligence.rules.ui.NotificationRulesUiModule;
 import com.android.systemui.retail.impl.RetailModeModule;
@@ -35,6 +36,7 @@ import dagger.Module;
         AirplaneModeDataLayerModule.class,
         AirplaneModeSharedModule.class,
         BrightnessModule.class,
+        HeadlineModule.class,
         ImageLoaderModule.class,
         NotificationRulesModule.class,
         NotificationRulesUiModule.class,

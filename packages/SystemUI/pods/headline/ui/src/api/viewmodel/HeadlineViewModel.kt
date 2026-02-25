@@ -21,14 +21,14 @@ import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
 
 /** ViewModel for the Headline. */
-interface HeadlineViewModel {
+public interface HeadlineViewModel {
     /**
      * The STL state containing the current scene (item) and ongoing transitions.
      *
      * The current scene should be either the special [GoneScene] or the result of calling
      * [HeadlineItemKey.toSceneKey] on one of the [items].
      */
-    val state: HoistedSceneTransitionLayoutState
+    public val state: HoistedSceneTransitionLayoutState
 
     /**
      * The different items in the Headline
@@ -38,27 +38,28 @@ interface HeadlineViewModel {
      * removing an item from this list, one must first wait for any animation involving that item
      * before actually removing it from the list.
      */
-    val items: List<HeadlineItem>
+    public val items: List<HeadlineItem>
 
     /**
      * Called when an item is clicked, whether it was shown as the current item/scene/pill or shown
      * as a dot indicator.
      */
-    fun onItemClicked(item: HeadlineItem)
+    public fun onItemClicked(item: HeadlineItem)
 
-    companion object {
+    public companion object {
         /**
          * A special scene that indicates that Headline should be collapsed and should not show any
          * item.
          */
-        val GoneScene = HeadlineItemKey.None.toSceneKey(debugName = "HeadlineViewModel.GoneScene")
+        public val GoneScene: SceneKey =
+            HeadlineItemKey.None.toSceneKey(debugName = "HeadlineViewModel.GoneScene")
     }
 }
 
 /** A single item in the Headline. */
-interface HeadlineItem {
+public interface HeadlineItem {
     /** The unique key for this item. */
-    val key: HeadlineItemKey
+    public val key: HeadlineItemKey
 
     /**
      * The contents shown to the left (in LTR) or right (in RTL) of the Headline.
@@ -72,7 +73,7 @@ interface HeadlineItem {
      * - listOf(Icon(...), Text(...))
      * - listOf(Icon(...), Icon(...)*)
      */
-    val startContents: List<HeadlineItemContent>
+    public val startContents: List<HeadlineItemContent>
 
     /**
      * The contents shown to the right (in LTR) or left (in RTL) of the Headline.
@@ -85,24 +86,25 @@ interface HeadlineItem {
      * - listOf(Text(...), Icon(...))
      * - listOf(Icon(...), Icon(...)*)
      */
-    val endContents: List<HeadlineItemContent>
+    public val endContents: List<HeadlineItemContent>
 }
 
-sealed interface HeadlineItemContent {
+public sealed interface HeadlineItemContent {
     // TODO(b/449675581): Extract com/android/systemui/common/shared/model/Text.kt into its own
     // library and use that instead.
-    data class Text(val text: String) : HeadlineItemContent
+    public data class Text(val text: String) : HeadlineItemContent
 
     // TODO(b/449675581): Extract com/android/systemui/common/shared/model/Icon.kt into its own
     // library and use that instead.
-    data class Icon(val icon: ImageVector, val contentDescription: String?) : HeadlineItemContent
+    public data class Icon(val icon: ImageVector, val contentDescription: String?) :
+        HeadlineItemContent
 }
 
 /** A key associated to a [HeadlineItem]. */
 @JvmInline
-value class HeadlineItemKey(val key: Any) {
+public value class HeadlineItemKey(public val key: Any) {
     /** Convert this [HeadlineItemKey] into the associated [SceneKey]. */
-    fun toSceneKey(): SceneKey = toSceneKey(key.toString())
+    public fun toSceneKey(): SceneKey = toSceneKey(key.toString())
 
     internal fun toSceneKey(debugName: String): SceneKey {
         return SceneKey(debugName, identity = this)
@@ -112,12 +114,12 @@ value class HeadlineItemKey(val key: Any) {
         return "HeadlineItemKey(key=$key)"
     }
 
-    companion object {
+    public companion object {
         /**
          * A special key that can be used to indicate that there is no item selected and the
          * Headline should be collapsed.
          */
-        val None =
+        public val None: HeadlineItemKey =
             HeadlineItemKey(
                 object : Any() {
                     override fun toString(): String {
@@ -129,7 +131,7 @@ value class HeadlineItemKey(val key: Any) {
 }
 
 /** Convert this [SceneKey] into the associated [HeadlineItemKey]. */
-fun SceneKey.toHeadlineItemKey(): HeadlineItemKey {
+public fun SceneKey.toHeadlineItemKey(): HeadlineItemKey {
     return (identity as? HeadlineItemKey)
         ?: error("$this was not created using HeadlineItemKey.toScene()")
 }
