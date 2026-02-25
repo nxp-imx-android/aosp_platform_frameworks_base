@@ -83,6 +83,10 @@ import java.util.function.Consumer;
  *         overlay.</li>
  * </ul>
  *
+ * <p>Note: an activity that can be shown when locked doesn't require App Lock authentication, so
+ * in that case the overlay won't be applied, and in the case of the task-level strategy, the
+ * activity-level strategy will be used.
+ *
  * <p>As a security fallback, if an overlay cannot be successfully launched or positioned, this
  * controller will either remove the associated task or finish the specific activity to prevent
  * unauthorized access.
@@ -176,8 +180,7 @@ final class AppLockOverlayController {
      *         under a translucent activity). The listener will then apply an overlay.</li>
      * </ul>
      *
-     * <p>The method skips locking entirely if the package already has at least one visible task,
-     * under the assumption that a visible app is considered unlocked for the current session.
+     * <p>
      *
      * @param packageName the name of the package whose tasks and activities are to be locked.
      * @param userId      the user ID for which the package should be locked.
@@ -210,13 +213,16 @@ final class AppLockOverlayController {
                         + " or non-finishing activity", task);
                 return;
             }
-            if (packageName.equals(task.realActivity.getPackageName())) {
-                // The entire task belongs to the locked package, so apply a task-level overlay.
+            if (packageName.equals(task.realActivity.getPackageName())
+                    && !topNonFinishingActivity.canShowWhenLocked()) {
+                // Apply task-level overlay only if the task belongs to the locked package, and
+                // the  top activity cannot be shown when locked, i.e. App Lock allows activities
+                // that can be shown when locked to bypass authentication.
                 addLockedByAppLockTaskOverlay(task, packageName, userId);
             } else {
-                // This is a shared task. Register all locked activities in the task. This sets up a
-                // listener that adds an overlay if the activity becomes visible without being
-                // resumed (e.g., under a translucent activity), a case not covered by the check in
+                // Register all locked activities in the task. This sets up a listener that adds an
+                // overlay if the activity becomes visible without being resumed (e.g., under a
+                // translucent activity), a case not covered by the check in
                 // TaskFragment#resumeTopActivity.
                 task.forAllActivities(activity -> {
                     if (!activity.finishing && packageName.equals(activity.packageName)
@@ -525,12 +531,7 @@ final class AppLockOverlayController {
                             + " becoming visible %s, checking if it's orphaned", activity);
                     finishActivityOverlayIfOrphan(activity);
                 } else {
-                    // TODO(b/462423789): Remove hasOtherVisibleTask check once AppLockLocalService
-                    //  listens to task visibility changes.
-                    final String packageName = activity.packageName;
-                    final int userId = activity.mUserId;
-                    if (mWmService.isPackageLockedByAppLockLocked(packageName, userId)
-                            && !hasVisibleNonLockedTaskForPackage(packageName, userId)) {
+                    if (isActivityLockedByAppLock(activity)) {
                         ProtoLog.d(WM_DEBUG_APP_LOCK, "onActivityVisibleRequestedChanged: Locked"
                                         + " activity %s is becoming visible, so applying overlay",
                                 activity);
@@ -546,6 +547,37 @@ final class AppLockOverlayController {
         };
         activity.registerWindowContainerListener(listener);
         mActivityListeners.put(activity, listener);
+    }
+
+    /**
+     * Returns {@code true} if the given activity is currently in a locked state by App Lock.
+     *
+     * <p>This method checks if the activity's package is currently locked and verifies that there
+     * are no other visible, unlocked tasks for the same package (which would indicate an active,
+     * unlocked session). If an activity can be shown when locked, by definition, it cannot be
+     * locked by App Lock.
+     *
+     * @param activity the activity to check for the App Lock locked state
+     * @return {@code true} if the activity is locked
+     */
+    @GuardedBy("mWmService.mGlobalLock")
+    boolean isActivityLockedByAppLock(@NonNull ActivityRecord activity) {
+        Objects.requireNonNull(activity);
+
+        if (activity.finishing || activity.canShowWhenLocked()) {
+            ProtoLog.d(WM_DEBUG_APP_LOCK,
+                    "isActivityLockedByAppLock: activity.finishing: %b, activity"
+                            + ".canShowWhenLocked(): %b, activity: %s, returning false",
+                    activity.finishing, activity.canShowWhenLocked(), activity);
+            return false;
+        }
+        // TODO(b/462423789): Remove hasVisibleTask check once AppLockLocalService listens to task
+        //  visibility changes.
+        final String packageName = activity.packageName;
+        final int userId = activity.mUserId;
+        return packageName != null
+                && mWmService.isPackageLockedByAppLockLocked(packageName, userId)
+                && !hasVisibleNonLockedTaskForPackage(packageName, userId);
     }
 
     /**
