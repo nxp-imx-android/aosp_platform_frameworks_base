@@ -1540,8 +1540,9 @@ constructor(
             finishedCallback: IRemoteTransitionFinishedCallback?,
         ) {
             // If the helper fails, this method was called _before_ the helper setup happened. In
-            // that case, invoke the callback directly.
-            if (token == null || !transitionHelper.cleanUpAnimation(token, transaction)) {
+            // that case, invoke the callback directly, unless the transition was already cancelled.
+            val cleanedUp = token != null && transitionHelper.cleanUpAnimation(token, transaction)
+            if (!cleanedUp && !cancelled) {
                 finishedCallback?.invoke(info, transaction)
             }
 
