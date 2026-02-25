@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.row.icon
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.notifications.content.icon.appIconProvider
 
 val Kosmos.notificationRowIconViewInflaterFactory: NotificationRowIconViewInflaterFactory by
     Kosmos.Fixture {

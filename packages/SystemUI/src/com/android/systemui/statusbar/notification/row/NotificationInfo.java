@@ -73,11 +73,10 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.systemui.Dependency;
+import com.android.systemui.notifications.content.icon.AppIconProvider;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
-import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
-import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
 import java.lang.annotation.Retention;

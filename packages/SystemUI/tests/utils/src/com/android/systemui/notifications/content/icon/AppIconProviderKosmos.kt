@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.notification.row.icon
+package com.android.systemui.notifications.content.icon
 
 import android.app.fakeUserType
 import android.content.Context
@@ -28,6 +28,7 @@ import androidx.core.graphics.drawable.toDrawable
 import com.android.launcher3.util.UserIconInfo
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.statusbar.notification.row.icon.AppIconProviderImpl
 import com.android.systemui.util.time.fakeSystemClock
 import com.android.users.UserType
 import org.mockito.kotlin.any

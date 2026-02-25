@@ -22,7 +22,6 @@ import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import android.app.INotificationManager;
 import android.app.Notification;
@@ -30,7 +29,6 @@ import android.app.NotificationChannel;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.UserHandle;
-import android.platform.test.annotations.EnableFlags;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.telecom.TelecomManager;
@@ -45,6 +43,7 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.testing.UiEventLoggerFake;
 import com.android.systemui.Dependency;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.notifications.content.icon.AppIconProvider;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
@@ -57,7 +56,6 @@ import com.android.systemui.statusbar.notification.collection.provider.HighPrior
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
-import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
 import org.junit.Before;

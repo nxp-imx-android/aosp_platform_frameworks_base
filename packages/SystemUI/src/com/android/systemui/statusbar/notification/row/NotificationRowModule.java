@@ -17,7 +17,7 @@
 package com.android.systemui.statusbar.notification.row;
 
 import com.android.systemui.dagger.SysUISingleton;
-import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
+import com.android.systemui.notifications.content.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProviderImpl;
 import com.android.systemui.statusbar.notification.row.icon.BridgedIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.BridgedIconProviderImpl;

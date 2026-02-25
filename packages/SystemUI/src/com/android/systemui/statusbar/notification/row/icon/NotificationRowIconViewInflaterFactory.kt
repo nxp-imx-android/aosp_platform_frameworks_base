@@ -26,6 +26,7 @@ import com.android.internal.widget.NotificationRowIconView.ICON_TYPE_LAUNCHER_IC
 import com.android.internal.widget.NotificationRowIconView.ICON_TYPE_SMALL_ICON
 import com.android.internal.widget.NotificationRowIconView.IconType
 import com.android.internal.widget.NotificationRowIconView.NotificationIconProvider
+import com.android.systemui.notifications.content.icon.AppIconProvider
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.NotifRemoteViewsFactory
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder
