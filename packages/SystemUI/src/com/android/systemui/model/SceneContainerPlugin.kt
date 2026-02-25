@@ -74,6 +74,13 @@ constructor(
     private val shadeModeInteractor: Lazy<ShadeModeInteractor>,
 ) : SceneContainerPlugin {
 
+    private val flagsHandledBySceneContainerForAllDisplays =
+        setOf(
+            SYSUI_STATE_BOUNCER_SHOWING,
+            SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING,
+            SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED,
+        )
+
     private val shadeDisplayId: StateFlow<Int> by lazy {
         shadeDisplaysRepository.get().pendingDisplayId
     }
@@ -85,12 +92,13 @@ constructor(
 
         val evaluator = EvaluatorByFlag[flag] ?: return null
 
-        if (shadeDisplayId.value != displayId) {
-            // The shade is in another display. All flags related to the shade container will map to
-            // false on other displays now.
-            //
-            // Note that this assumes there is only one SceneContainer and it is only on the shade
-            // window display. If there will be more, this will need to be revisited
+        if (
+            shadeDisplayId.value != displayId &&
+                !flagsHandledBySceneContainerForAllDisplays.contains(flag)
+        ) {
+            // The shade is in another display. All flags related to the shade will map to false on
+            // other displays. Flags that are not shade-specific (keyguard, bouncer, etc.) will be
+            // respected.
             return false
         }
         val transitionState = sceneInteractor.get().transitionStateFlow.value

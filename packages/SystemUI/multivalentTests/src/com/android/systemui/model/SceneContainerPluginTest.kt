@@ -25,6 +25,7 @@ import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_AWAKE
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_NOTIFICATION_PANEL_VISIBLE
+import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
@@ -42,7 +43,7 @@ class SceneContainerPluginTest : SysuiTestCase() {
     private val underTest: SceneContainerPlugin = kosmos.sceneContainerPluginImpl
 
     @Test
-    fun flagValueOverride_differentDisplayId_alwaysFalse() {
+    fun flagValueOverride_differentDisplayId_falseIfShadeRelated() {
         sceneDataSource.changeScene(Scenes.Shade)
 
         shadeDisplayRepository.setDisplayId(1)
@@ -54,6 +55,21 @@ class SceneContainerPluginTest : SysuiTestCase() {
                 )
             )
             .isFalse()
+    }
+
+    @Test
+    fun flagValueOverride_differentDisplayId_notFalseIfKeyguardRelated() {
+        sceneDataSource.changeScene(Scenes.Lockscreen)
+
+        shadeDisplayRepository.setDisplayId(1)
+
+        assertThat(
+                underTest.flagValueOverride(
+                    flag = SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING,
+                    displayId = 2,
+                )
+            )
+            .isTrue()
     }
 
     @Test
