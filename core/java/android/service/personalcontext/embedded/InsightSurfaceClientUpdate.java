@@ -254,9 +254,9 @@ public final class InsightSurfaceClientUpdate implements Parcelable {
         }
 
         /**
-         * Set the theme resource name for this update.
-         * @see InsightSurfaceClient.Builder#setThemeResourceId(String)
-         * @param themeResourceId the name of the theme resource, or {@code null} to clear it
+         * Set the theme resource id for this update.
+         * @see InsightSurfaceClient.Builder#setThemeResourceId(int)
+         * @param themeResourceId the id of the theme resource, or {@code null} to clear it
          */
         @NonNull
         public Builder setThemeResourceId(@StyleRes int themeResourceId) {
