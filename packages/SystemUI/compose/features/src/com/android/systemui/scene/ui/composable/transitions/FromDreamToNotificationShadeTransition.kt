@@ -27,6 +27,7 @@ fun TransitionBuilder.dreamToNotificationsShadeTransition(
 ) {
     toNotificationsShadeTransition(
         durationScale = durationScale,
+        enableSharedElements = false,
         shadeExpansionMotion = shadeExpansionMotion,
         revealHaptics = revealHaptics,
     )
