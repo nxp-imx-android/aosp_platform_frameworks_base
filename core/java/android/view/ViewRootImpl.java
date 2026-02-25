@@ -2139,6 +2139,8 @@ public final class ViewRootImpl implements ViewParent,
       if (mAttachInfo.mThreadedRenderer == null) { return; }
       mAttachInfo.mThreadedRenderer.setSurfaceControl(sc, bq);
       mAttachInfo.mThreadedRenderer.setCornerRadiiCallback(mHardwareRendererCornerRadiiCallback);
+      mAttachInfo.mThreadedRenderer.setWaitForBufferReleaseCallback(
+              mChoreographer::onWaitForBufferRelease);
   }
 
     @UnsupportedAppUsage
@@ -3056,12 +3058,12 @@ public final class ViewRootImpl implements ViewParent,
         // queuing buffers on multiple apply tokens causing out of order buffer submissions. We
         // fix this by setting the same apply token on all BBQs created by this VRI.
         mBlastBufferQueue.setApplyToken(mBbqApplyToken);
-        mBlastBufferQueue.update(mSurfaceControl,  mSurfaceSize.x, mSurfaceSize.y,
+        mBlastBufferQueue.update(mSurfaceControl, mSurfaceSize.x, mSurfaceSize.y,
                 mWindowAttributes.format);
         mBlastBufferQueue.setTransactionHangCallback(sTransactionHangCallback);
-        mBlastBufferQueue.setWaitForBufferReleaseCallback(mChoreographer::onWaitForBufferRelease);
 
         Surface blastSurface;
+
         blastSurface = mBlastBufferQueue.createSurfaceWithHandle();
         // Only call transferFrom if the surface has changed to prevent inc the generation ID and
         // causing EGL resources to be recreated.

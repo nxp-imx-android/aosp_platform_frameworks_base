@@ -86,6 +86,7 @@ public:
     virtual void setSurfaceControl(const sp<SurfaceControl>&) {}
     virtual void setBLASTBufferQueue(const sp<BLASTBufferQueue>&) {}
     virtual void setCornerRadiiCallback(std::function<void(const gui::CornerRadii&)>) {}
+    virtual void setWaitForBufferReleaseCallback(std::function<void(int64_t)>) {}
     virtual bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>,
                                      bool) {
         return false;

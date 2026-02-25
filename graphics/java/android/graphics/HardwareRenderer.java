@@ -435,6 +435,23 @@ public class HardwareRenderer {
     }
 
     /**
+     * @hide
+     */
+    public interface WaitForBufferReleaseCallback {
+        /**
+         * @hide
+         */
+        void onWaitForBufferRelease(long durationNanos);
+    }
+
+    /**
+     * @hide
+     */
+    public void setWaitForBufferReleaseCallback(@Nullable WaitForBufferReleaseCallback callback) {
+        nSetWaitForBufferReleaseCallback(mNativeProxy, callback);
+    }
+
+    /**
      * Sets the SurfaceControl to be used internally inside render thread
      * @hide
      * @param surfaceControl The surface control to pass to render thread in hwui.
@@ -1796,6 +1813,8 @@ public class HardwareRenderer {
     private static native void nSetBLASTBufferQueue(long nativeProxy, long nativeBbq);
     private static native void nSetCornerRadiiCallback(long nativeProxy,
             CornerRadiiCallback callback);
+    private static native void nSetWaitForBufferReleaseCallback(long nativeProxy,
+            WaitForBufferReleaseCallback callback);
 
     private static native boolean nPause(long nativeProxy);
 

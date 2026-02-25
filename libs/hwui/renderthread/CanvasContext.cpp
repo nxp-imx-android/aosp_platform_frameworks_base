@@ -295,6 +295,10 @@ void CanvasContext::setCornerRadiiCallback(
     mRenderPipeline->setCornerRadiiCallback(std::move(cornerRadiiCallback));
 }
 
+void CanvasContext::setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback) {
+    mRenderPipeline->setWaitForBufferReleaseCallback(std::move(callback));
+}
+
 bool CanvasContext::syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> t,
                                         bool acquireSingleBuffer) {
     return mRenderPipeline->syncNextTransaction(t, acquireSingleBuffer);

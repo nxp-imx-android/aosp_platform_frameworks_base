@@ -98,6 +98,7 @@ public:
                              bool acquireSingleBuffer) override;
     void setCornerRadiiCallback(
         std::function<void(const gui::CornerRadii&)> cornerRadiiCallback) override;
+    void setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback) override;
 
     ANativeWindow* getSurface() override { return nullptr; }
     uint64_t getFrameNumber() override;

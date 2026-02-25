@@ -147,6 +147,10 @@ void RenderProxy::setCornerRadiiCallback(
     mContext->setCornerRadiiCallback(std::move(cornerRadiiCallback));
 }
 
+void RenderProxy::setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback) {
+    mContext->setWaitForBufferReleaseCallback(std::move(callback));
+}
+
 void RenderProxy::mergeWithNextTransaction(SurfaceComposerClient::Transaction* t,
                                            uint64_t frameNumber) {
     mContext->mergeWithNextTransaction(t, frameNumber);

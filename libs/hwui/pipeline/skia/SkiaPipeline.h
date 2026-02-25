@@ -80,6 +80,12 @@ public:
         }
     }
 
+    void setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback) override {
+        if (mBLASTBufferQueue != nullptr) {
+            mBLASTBufferQueue->setWaitForBufferReleaseCallback(std::move(callback));
+        }
+    }
+
     bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> callback,
                              bool acquireSingleBuffer = true) override {
         if (mBLASTBufferQueue != nullptr) {

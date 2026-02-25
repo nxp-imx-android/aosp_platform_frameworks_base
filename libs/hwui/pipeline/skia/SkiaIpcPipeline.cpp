@@ -253,6 +253,10 @@ void SkiaIpcPipeline::setCornerRadiiCallback(
     // Stub implementation
 }
 
+void SkiaIpcPipeline::setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback) {
+    // Stub implementation
+}
+
 bool SkiaIpcPipeline::syncNextTransaction(
         std::function<void(SurfaceComposerClient::Transaction*)> callback,
         bool acquireSingleBuffer) {

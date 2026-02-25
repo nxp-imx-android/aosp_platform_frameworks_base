@@ -146,6 +146,7 @@ public:
 
 #ifdef __ANDROID__
     void setCornerRadiiCallback(std::function<void(const gui::CornerRadii&)> cornerRadiiCallback);
+    void setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback);
     bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>, bool);
     void mergeWithNextTransaction(SurfaceComposerClient::Transaction*, uint64_t);
     void applyPendingTransactions(uint64_t);
