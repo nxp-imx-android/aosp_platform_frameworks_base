@@ -20,8 +20,10 @@
 #include <include/core/SkImage.h>
 #include <include/core/SkSurface.h>
 #include <system/window.h>
+#include <utils/Timers.h>
 
 #include <cstddef>
+#include <optional>
 
 #include "DeviceInfo.h"
 #include "LightingInfo.h"
@@ -40,9 +42,22 @@ SkiaIpcPipeline::SkiaIpcPipeline(renderthread::RenderThread& thread)
     mIPCRecordingCanvas = std::make_shared<IPCRecordingCanvas>(mOoprClient->getIPCResourceCache());
     mApplyToken = sp<BBinder>::make();
     mOoprClient->enableOutOfProcessRendering();
+
+    mCallbackHandler = std::make_shared<CallbackHandler>();
+    mCallbackHandler->pipeline = this;
+
+    std::lock_guard<std::mutex> lg(mLock);
+    for (size_t i = 0; i < kFrameEventsSize; i++) {
+        mFrameEvents[i].valid = false;
+        mFrameEvents[i].frameNumber = 0;
+    }
 }
 
 SkiaIpcPipeline::~SkiaIpcPipeline() {
+    {
+        std::lock_guard<std::mutex> lg(mCallbackHandler->lock);
+        mCallbackHandler->pipeline = nullptr;
+    }
     std::function<void(SurfaceComposerClient::Transaction*)> syncCallback;
     SurfaceComposerClient::Transaction* syncTransaction = nullptr;
     SurfaceComposerClient::Transaction t;
@@ -52,12 +67,11 @@ SkiaIpcPipeline::~SkiaIpcPipeline() {
         syncCallback = mTransactionReadyCallback;
         syncTransaction = mSyncTransaction;
         hasPending = mergePendingTransactions(&t, std::numeric_limits<uint64_t>::max());
-
     }
     if (syncTransaction) {
         syncTransaction->merge(std::move(t));
         syncCallback(syncTransaction);
-    } else if (hasPending){
+    } else if (hasPending) {
         t.setApplyToken(mApplyToken).apply(false, true);
     }
 }
@@ -169,9 +183,56 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
     return {true, IRenderPipeline::DrawResult::kUnknownTime, android::base::unique_fd{}};
 }
 
+static std::optional<SurfaceControlStats> findMatchingStat(
+        const std::vector<SurfaceControlStats>& stats, const sp<SurfaceControl>& sc) {
+    for (auto stat : stats) {
+        if (SurfaceControl::isSameSurface(sc, stat.surfaceControl)) {
+            return stat;
+        }
+    }
+    return std::nullopt;
+}
+
+FrameEvents* SkiaIpcPipeline::getFrameEvents(uint64_t frameNumber) {
+    for (size_t i = 0; i < kFrameEventsSize; i++) {
+        if (mFrameEvents[i].valid && mFrameEvents[i].frameNumber == frameNumber) {
+            return &mFrameEvents[i];
+        }
+    }
+    return nullptr;
+}
+
+void SkiaIpcPipeline::transactionCallback(nsecs_t /*latchTime*/, const sp<Fence>& /*presentFence*/,
+                                          const std::vector<SurfaceControlStats>& stats) {
+    std::lock_guard<std::mutex> lg(mLock);
+    if (!mSurfaceControlsWithPendingCallback.empty()) {
+        sp<SurfaceControl> pendingSC = mSurfaceControlsWithPendingCallback.front();
+        mSurfaceControlsWithPendingCallback.pop();
+
+        std::optional<SurfaceControlStats> statOptional = findMatchingStat(stats, pendingSC);
+        if (statOptional) {
+            auto& stat = *statOptional;
+            if (stat.latchTime > 0) {
+                std::shared_ptr<FenceTime> gpuCompositionDoneFenceTime =
+                        std::make_shared<FenceTime>(stat.frameEventStats.gpuCompositionDoneFence);
+                std::shared_ptr<FenceTime> presentFenceTime =
+                        std::make_shared<FenceTime>(stat.presentFence);
+
+                FrameEvents* events = getFrameEvents(stat.frameEventStats.frameNumber);
+                if (events) {
+                    events->latchTime = stat.latchTime;
+                    events->firstRefreshStartTime = stat.frameEventStats.refreshStartTime;
+                    events->gpuCompositionDoneFence = gpuCompositionDoneFenceTime;
+                    events->displayPresentFence = presentFenceTime;
+                }
+            }
+        }
+    }
+}
+
 bool SkiaIpcPipeline::swapBuffers(const Frame& frame, IRenderPipeline::DrawResult& drawResult,
-                                     const SkRect& screenDirty, FrameInfo* currentFrameInfo,
-                                     bool* requireSwap) {
+                                  const SkRect& screenDirty, FrameInfo* currentFrameInfo,
+                                  bool* requireSwap) {
     currentFrameInfo->markSwapBuffers();
     *requireSwap = drawResult.success;
     if (!drawResult.success) {
@@ -184,6 +245,13 @@ bool SkiaIpcPipeline::swapBuffers(const Frame& frame, IRenderPipeline::DrawResul
     std::function<void(SurfaceComposerClient::Transaction*)> syncCallback;
     SurfaceComposerClient::Transaction* syncTransaction = nullptr;
 
+    auto callbackThunk = [handler = mCallbackHandler](
+                                 void* /*context*/, nsecs_t latchTime,
+                                 const sp<Fence>& presentFence,
+                                 const std::vector<SurfaceControlStats>& stats) {
+        handler->onTransactionCompleted(latchTime, presentFence, stats);
+    };
+
     {
         std::lock_guard<std::mutex> lg(mLock);
         mergePendingTransactions(&pendingTransactions, getFrameNumber());
@@ -192,15 +260,35 @@ bool SkiaIpcPipeline::swapBuffers(const Frame& frame, IRenderPipeline::DrawResul
 
         mSyncTransaction = nullptr;
         mTransactionReadyCallback = nullptr;
+
+        mFrameEventIndex = (mFrameEventIndex + 1) % kFrameEventsSize;
+        FrameEvents* events = &mFrameEvents[mFrameEventIndex];
+        events->frameNumber = getFrameNumber();
+        events->postedTime = systemTime();
+        events->requestedPresentTime = 0;
+        events->valid = true;
+
+        events->latchTime = FrameEvents::TIMESTAMP_PENDING;
+        events->firstRefreshStartTime = FrameEvents::TIMESTAMP_PENDING;
+        events->lastRefreshStartTime = FrameEvents::TIMESTAMP_PENDING;
+        events->dequeueReadyTime = FrameEvents::TIMESTAMP_PENDING;
+        events->acquireFence = FenceTime::NO_FENCE;
+        events->gpuCompositionDoneFence = FenceTime::NO_FENCE;
+        events->displayPresentFence = FenceTime::NO_FENCE;
+        events->releaseFence = FenceTime::NO_FENCE;
+
+        mSurfaceControlsWithPendingCallback.push(mSurfaceControl);
     }
 
     if (syncTransaction != nullptr) {
         syncTransaction->setRenderCommandBufferFrameId(mSurfaceControl, getFrameNumber());
+        syncTransaction->addTransactionCompletedCallback(callbackThunk, nullptr);
         syncTransaction->merge(std::move(pendingTransactions));
         syncCallback(syncTransaction);
     } else {
         SurfaceComposerClient::Transaction transaction;
         transaction.setRenderCommandBufferFrameId(mSurfaceControl, getFrameNumber());
+        transaction.addTransactionCompletedCallback(callbackThunk, nullptr);
         transaction.merge(std::move(pendingTransactions));
         transaction.setApplyToken(mApplyToken);
         transaction.apply(false, true);
@@ -308,6 +396,38 @@ bool SkiaIpcPipeline::mergePendingTransactions(SurfaceComposerClient::Transactio
 
 uint64_t SkiaIpcPipeline::getFrameNumber() {
     return mIPCRecordingCanvas->getRenderCommandBufferProducer()->getFrameNumber();
+}
+
+int SkiaIpcPipeline::getFrameTimestamps(uint64_t frameNumber, nsecs_t* outRequestedPresentTime,
+                                        nsecs_t* outAcquireTime, nsecs_t* outLatchTime,
+                                        nsecs_t* outFirstRefreshStartTime,
+                                        nsecs_t* outLastRefreshStartTime,
+                                        nsecs_t* outGpuCompositionDoneTime,
+                                        nsecs_t* outDisplayPresentTime,
+                                        nsecs_t* outDequeueReadyTime, nsecs_t* outReleaseTime) {
+    std::lock_guard<std::mutex> lg(mLock);
+    FrameEvents* events = getFrameEvents(frameNumber);
+    if (!events) {
+        return -1;
+    }
+    auto getTimestamp = [](const std::shared_ptr<FenceTime>& fence) {
+        nsecs_t signalTime = fence->getSignalTime();
+        if (signalTime == Fence::SIGNAL_TIME_PENDING) {
+            return FrameEvents::TIMESTAMP_PENDING;
+        }
+        return signalTime;
+    };
+    if (outRequestedPresentTime) *outRequestedPresentTime = events->requestedPresentTime;
+    if (outAcquireTime) *outAcquireTime = getTimestamp(events->acquireFence);
+    if (outLatchTime) *outLatchTime = events->latchTime;
+    if (outFirstRefreshStartTime) *outFirstRefreshStartTime = events->firstRefreshStartTime;
+    if (outLastRefreshStartTime) *outLastRefreshStartTime = events->lastRefreshStartTime;
+    if (outGpuCompositionDoneTime)
+        *outGpuCompositionDoneTime = getTimestamp(events->gpuCompositionDoneFence);
+    if (outDisplayPresentTime) *outDisplayPresentTime = getTimestamp(events->displayPresentFence);
+    if (outDequeueReadyTime) *outDequeueReadyTime = events->dequeueReadyTime;
+    if (outReleaseTime) *outReleaseTime = getTimestamp(events->releaseFence);
+    return 0;
 }
 
 void SkiaIpcPipeline::updateRenderTargetSize(uint64_t width, uint64_t height) {

@@ -917,7 +917,7 @@ void CanvasContext::reportMetricsWithPresentTime() {
             return;
         }
     }  // release lock
-    if (mNativeSurface == nullptr) {
+    if (!mRenderPipeline->hasRenderTarget()) {
         return;
     }
     ATRACE_CALL();
@@ -938,12 +938,11 @@ void CanvasContext::reportMetricsWithPresentTime() {
     }  // release lock
 
     nsecs_t presentTime = 0;
-    native_window_get_frame_timestamps(
-            mNativeSurface->getNativeWindow(), frameNumber, nullptr /*outRequestedPresentTime*/,
-            nullptr /*outAcquireTime*/, nullptr /*outLatchTime*/,
-            nullptr /*outFirstRefreshStartTime*/, nullptr /*outLastRefreshStartTime*/,
-            nullptr /*outGpuCompositionDoneTime*/, &presentTime, nullptr /*outDequeueReadyTime*/,
-            nullptr /*outReleaseTime*/);
+    mRenderPipeline->getFrameTimestamps(
+            frameNumber, nullptr /*outRequestedPresentTime*/, nullptr /*outAcquireTime*/,
+            nullptr /*outLatchTime*/, nullptr /*outFirstRefreshStartTime*/,
+            nullptr /*outLastRefreshStartTime*/, nullptr /*outGpuCompositionDoneTime*/,
+            &presentTime, nullptr /*outDequeueReadyTime*/, nullptr /*outReleaseTime*/);
 
     forthBehind->set(FrameInfoIndex::DisplayPresentTime) = presentTime;
     {  // acquire lock

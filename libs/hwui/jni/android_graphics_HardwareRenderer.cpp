@@ -295,9 +295,8 @@ static void android_view_ThreadedRenderer_setCornerRadiiCallback(JNIEnv* env, jo
 #endif
 }
 
-static void android_view_ThreadedRenderer_setWaitForBufferReleaseCallback(JNIEnv* env, jobject clazz,
-                                                                          jlong proxyPtr,
-                                                                          jobject callback) {
+static void android_view_ThreadedRenderer_setWaitForBufferReleaseCallback(
+        JNIEnv* env, jobject clazz, jlong proxyPtr, jobject callback) {
 #ifdef __ANDROID__
     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
     if (!callback) {
@@ -305,7 +304,9 @@ static void android_view_ThreadedRenderer_setWaitForBufferReleaseCallback(JNIEnv
     } else {
         JavaVM* vm = nullptr;
         LOG_ALWAYS_FATAL_IF(env->GetJavaVM(&vm) != JNI_OK, "Unable to get Java VM");
-        auto globalCallbackRef = std::make_shared<JGlobalRefHolder>(vm, env->NewGlobalRef(callback));
+        auto globalCallbackRef =
+                std::make_shared<JGlobalRefHolder>(vm, env->NewGlobalRef(callback));
+
         proxy->setWaitForBufferReleaseCallback([globalCallbackRef](int64_t durationNanos) {
             JNIEnv* env = getenv(globalCallbackRef->vm());
             env->CallVoidMethod(globalCallbackRef->object(),

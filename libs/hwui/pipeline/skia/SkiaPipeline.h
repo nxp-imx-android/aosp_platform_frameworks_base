@@ -126,6 +126,11 @@ public:
 #endif
 
     uint64_t getFrameNumber() override;
+    int getFrameTimestamps(uint64_t frameNumber, nsecs_t* outRequestedPresentTime,
+                           nsecs_t* outAcquireTime, nsecs_t* outLatchTime,
+                           nsecs_t* outFirstRefreshStartTime, nsecs_t* outLastRefreshStartTime,
+                           nsecs_t* outGpuCompositionDoneTime, nsecs_t* outDisplayPresentTime,
+                           nsecs_t* outDequeueReadyTime, nsecs_t* outReleaseTime) override;
     void setFrameTimelineInfo(const ANativeWindowFrameTimelineInfo& info) override;
     int64_t getLastDequeueDuration() override;
 

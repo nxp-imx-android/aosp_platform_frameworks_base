@@ -586,6 +586,23 @@ uint64_t SkiaPipeline::getFrameNumber() {
     return ANativeWindow_getNextFrameId(anw);
 }
 
+int SkiaPipeline::getFrameTimestamps(uint64_t frameNumber, nsecs_t* outRequestedPresentTime,
+                                     nsecs_t* outAcquireTime, nsecs_t* outLatchTime,
+                                     nsecs_t* outFirstRefreshStartTime,
+                                     nsecs_t* outLastRefreshStartTime,
+                                     nsecs_t* outGpuCompositionDoneTime,
+                                     nsecs_t* outDisplayPresentTime, nsecs_t* outDequeueReadyTime,
+                                     nsecs_t* outReleaseTime) {
+    ANativeWindow* anw = getSurface();
+    if (!anw) {
+        return -1;
+    }
+    return native_window_get_frame_timestamps(
+            anw, frameNumber, outRequestedPresentTime, outAcquireTime, outLatchTime,
+            outFirstRefreshStartTime, outLastRefreshStartTime, outGpuCompositionDoneTime,
+            outDisplayPresentTime, outDequeueReadyTime, outReleaseTime);
+}
+
 void SkiaPipeline::setFrameTimelineInfo(const struct ANativeWindowFrameTimelineInfo& info) {
     ANativeWindow* anw = getSurface();
     if (anw) {
