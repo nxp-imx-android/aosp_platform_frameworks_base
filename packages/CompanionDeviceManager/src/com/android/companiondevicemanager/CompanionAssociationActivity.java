@@ -173,6 +173,17 @@ public class CompanionAssociationActivity extends FragmentActivity implements
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        final Intent intent = getIntent();
+        mRequest = intent.getParcelableExtra(EXTRA_ASSOCIATION_REQUEST, AssociationRequest.class);
+        mAppCallback = IAssociationRequestCallback.Stub.asInterface(
+                intent.getExtras().getBinder(EXTRA_APPLICATION_CALLBACK));
+        mCdmServiceReceiver = intent.getParcelableExtra(EXTRA_RESULT_RECEIVER,
+                ResultReceiver.class);
+
+        requireNonNull(mRequest);
+        requireNonNull(mAppCallback);
+        requireNonNull(mCdmServiceReceiver);
+
         boolean forceCancelDialog = getIntent().getBooleanExtra(EXTRA_FORCE_CANCEL_CONFIRMATION,
                 false);
         // Must handle the force cancel request in onNewIntent.
@@ -188,17 +199,6 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     @Override
     protected void onStart() {
         super.onStart();
-
-        final Intent intent = getIntent();
-        mRequest = intent.getParcelableExtra(EXTRA_ASSOCIATION_REQUEST, AssociationRequest.class);
-        mAppCallback = IAssociationRequestCallback.Stub.asInterface(
-                intent.getExtras().getBinder(EXTRA_APPLICATION_CALLBACK));
-        mCdmServiceReceiver = intent.getParcelableExtra(EXTRA_RESULT_RECEIVER,
-                ResultReceiver.class);
-
-        requireNonNull(mRequest);
-        requireNonNull(mAppCallback);
-        requireNonNull(mCdmServiceReceiver);
 
         // Start discovery services if needed.
         if (!mRequest.isSelfManaged()) {
