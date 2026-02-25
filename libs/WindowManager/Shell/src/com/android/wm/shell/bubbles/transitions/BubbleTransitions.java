@@ -235,8 +235,11 @@ public class BubbleTransitions {
         if (BubbleFlagHelper.enableRootTaskForBubble()) {
             final TransitionHandler transitionHandler = mEnterTransitions.get(transition);
             if (transitionHandler != null) {
-                wct.merge(transitionHandler.handleRequest(transition, request),
-                        true /* transfer */);
+                final Transitions.RequestResult result =
+                        transitionHandler.handleRequestOnly(transition, request);
+                if (result != null) {
+                    wct.merge(result.mWct, true /* transfer */);
+                }
             }
         }
     }
