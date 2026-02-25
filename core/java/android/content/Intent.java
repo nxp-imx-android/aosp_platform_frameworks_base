@@ -21,6 +21,7 @@ import static android.content.flags.Flags.FLAG_STOP_VOICE_COMMAND;
 import static android.os.Flags.FLAG_ALLOW_PRIVATE_PROFILE;
 import static android.security.Flags.FLAG_PREVENT_INTENT_REDIRECT;
 import static android.security.Flags.preventIntentRedirect;
+import static android.timezone.flags.Flags.FLAG_ENABLE_HOME_TIME_ZONE_API;
 import static android.timezone.flags.Flags.FLAG_ENABLE_TIME_ZONE_OFFSET_CHANGE_BROADCAST;
 
 import static com.android.internal.util.FrameworkStatsLog.IMPLICIT_URI_GRANT_EVENT_REPORTED;
@@ -2739,6 +2740,22 @@ public class Intent implements Parcelable, Cloneable {
     @BroadcastBehavior(includeBackground = true, protectedBroadcast = true)
     public static final String ACTION_TIMEZONE_OFFSET_CHANGED =
             "android.intent.action.TIMEZONE_OFFSET_CHANGED";
+
+    /**
+     * Broadcast Action: The user's home timezone has changed. The intent will have the
+     * following extra values:</p>
+     *
+     * <ul>
+     *   <li>{@link #EXTRA_HOME_TIME_ZONE_ID} - The time zone ID string value of the new time zone.
+     * </ul>
+     *
+     * <p class="note">This is a protected intent that can only be sent by the system.
+     */
+    @FlaggedApi(FLAG_ENABLE_HOME_TIME_ZONE_API)
+    @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
+    @BroadcastBehavior(includeBackground = true, protectedBroadcast = true)
+    public static final String ACTION_HOME_TIME_ZONE_CHANGED =
+            "android.intent.action.HOME_TIME_ZONE_CHANGED";
 
     /**
      * Alarm Changed Action: This is broadcast when the AlarmClock
@@ -7026,6 +7043,16 @@ public class Intent implements Parcelable, Cloneable {
     @FlaggedApi(FLAG_ENABLE_TIME_ZONE_OFFSET_CHANGE_BROADCAST)
     public static final String EXTRA_OLD_TIMEZONE_OFFSET =
             "android.intent.extra.OLD_TIMEZONE_OFFSET";
+
+    /**
+     * Extra sent with {@link #ACTION_HOME_TIME_ZONE_CHANGED} specifying the new home time zone of
+     * the device.
+     *
+     * <p>Type: String, the same as returned by {@link java.util.TimeZone#getID()} to identify time
+     * zones.
+     */
+    @FlaggedApi(FLAG_ENABLE_HOME_TIME_ZONE_API)
+    public static final String EXTRA_HOME_TIME_ZONE_ID = "android.intent.extra.HOME_TIME_ZONE_ID";
 
     /**
      * Optional int extra for {@link #ACTION_TIME_CHANGED} that indicates the

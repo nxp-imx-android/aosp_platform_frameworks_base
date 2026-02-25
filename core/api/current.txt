@@ -12384,6 +12384,7 @@ package android.content {
     field public static final String ACTION_GTALK_SERVICE_CONNECTED = "android.intent.action.GTALK_CONNECTED";
     field public static final String ACTION_GTALK_SERVICE_DISCONNECTED = "android.intent.action.GTALK_DISCONNECTED";
     field public static final String ACTION_HEADSET_PLUG = "android.intent.action.HEADSET_PLUG";
+    field @FlaggedApi("android.timezone.flags.enable_home_time_zone_api") public static final String ACTION_HOME_TIME_ZONE_CHANGED = "android.intent.action.HOME_TIME_ZONE_CHANGED";
     field public static final String ACTION_INPUT_METHOD_CHANGED = "android.intent.action.INPUT_METHOD_CHANGED";
     field public static final String ACTION_INSERT = "android.intent.action.INSERT";
     field public static final String ACTION_INSERT_OR_EDIT = "android.intent.action.INSERT_OR_EDIT";
@@ -12587,6 +12588,7 @@ package android.content {
     field public static final String EXTRA_END_TIME = "android.intent.extra.END_TIME";
     field public static final String EXTRA_EXCLUDE_COMPONENTS = "android.intent.extra.EXCLUDE_COMPONENTS";
     field public static final String EXTRA_FROM_STORAGE = "android.intent.extra.FROM_STORAGE";
+    field @FlaggedApi("android.timezone.flags.enable_home_time_zone_api") public static final String EXTRA_HOME_TIME_ZONE_ID = "android.intent.extra.HOME_TIME_ZONE_ID";
     field public static final String EXTRA_HTML_TEXT = "android.intent.extra.HTML_TEXT";
     field public static final String EXTRA_INDEX = "android.intent.extra.INDEX";
     field public static final String EXTRA_INITIAL_INTENTS = "android.intent.extra.INITIAL_INTENTS";
