@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.freeform;
 
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
+
 import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION;
 
 import android.app.ActivityManager;
@@ -23,23 +25,16 @@ import android.os.IBinder;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.DesktopExperienceFlags;
-import android.window.DesktopModeFlags;
 import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
-import com.android.wm.shell.desktopmode.DesktopBackNavTransitionObserver;
-import com.android.wm.shell.desktopmode.DesktopImeHandler;
-import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.DesktopInOrderTransitionObserver;
-import com.android.wm.shell.desktopmode.DesktopModeLoggerTransitionObserver;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
-import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellInit;
-import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 
@@ -57,16 +52,10 @@ import java.util.Optional;
  */
 public class FreeformTaskTransitionObserver implements Transitions.TransitionObserver {
     private final Transitions mTransitions;
-    private final Optional<DesktopImmersiveController> mDesktopImmersiveController;
     private final WindowDecorViewModel mWindowDecorViewModel;
     private final Optional<TaskChangeListener> mTaskChangeListener;
-    private final FocusTransitionObserver mFocusTransitionObserver;
     private final DesksOrganizer mDesksOrganizer;
-    private final Optional<DesksTransitionObserver> mDesksTransitionObserver;
-    private final Optional<DesktopImeHandler> mDesktopImeHandler;
-    private final Optional<DesktopBackNavTransitionObserver> mDesktopBackNavTransitionObserver;
     private final Optional<DesktopInOrderTransitionObserver> mDesktopInOrderTransitionObserver;
-    private final DesktopModeLoggerTransitionObserver mDesktopModeLoggerTransitionObserver;
 
     private final Map<IBinder, List<ActivityManager.RunningTaskInfo>> mTransitionToTaskInfo =
             new HashMap<>();
@@ -77,28 +66,16 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
     public FreeformTaskTransitionObserver(
             ShellInit shellInit,
             Transitions transitions,
-            Optional<DesktopImmersiveController> desktopImmersiveController,
             WindowDecorViewModel windowDecorViewModel,
             Optional<TaskChangeListener> taskChangeListener,
-            FocusTransitionObserver focusTransitionObserver,
             DesksOrganizer desksOrganizer,
-            Optional<DesksTransitionObserver> desksTransitionObserver,
             DesktopState desktopState,
-            Optional<DesktopImeHandler> desktopImeHandler,
-            Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver,
-            Optional<DesktopInOrderTransitionObserver> desktopInOrderTransitionObserver,
-            DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver) {
+            Optional<DesktopInOrderTransitionObserver> desktopInOrderTransitionObserver) {
         mTransitions = transitions;
-        mDesktopImmersiveController = desktopImmersiveController;
         mWindowDecorViewModel = windowDecorViewModel;
         mTaskChangeListener = taskChangeListener;
-        mFocusTransitionObserver = focusTransitionObserver;
         mDesksOrganizer = desksOrganizer;
-        mDesksTransitionObserver = desksTransitionObserver;
-        mDesktopImeHandler = desktopImeHandler;
-        mDesktopBackNavTransitionObserver = desktopBackNavTransitionObserver;
         mDesktopInOrderTransitionObserver = desktopInOrderTransitionObserver;
-        mDesktopModeLoggerTransitionObserver = desktopModeLoggerTransitionObserver;
         if (FreeformComponents.requiresFreeformComponents(desktopState)) {
             shellInit.addInitCallback(this::onInit, this);
         }
@@ -185,6 +162,14 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         if (taskInfo == null || taskInfo.taskId == -1) {
             return true;
         }
+
+        // Skip non standard activities so that window decorations are not added to recents and
+        // and launcher tasks
+        if (DesktopExperienceFlags.ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS.isTrue()
+                && taskInfo.getActivityType() != ACTIVITY_TYPE_STANDARD) {
+            return true;
+        }
+
         // Filter out non-leaf tasks. Freeform/fullscreen don't nest tasks, but split-screen
         // does, so this prevents adding duplicate captions in that scenario.
         if (change.getParent() != null
