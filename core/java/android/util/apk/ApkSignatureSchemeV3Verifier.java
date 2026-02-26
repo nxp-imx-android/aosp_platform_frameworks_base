@@ -199,6 +199,7 @@ public class ApkSignatureSchemeV3Verifier {
     private final boolean mVerifyIntegrity;
     private OptionalInt mOptionalRotationMinSdkVersion = OptionalInt.empty();
     private OptionalInt mOptionalHybridMinSdkVersion = OptionalInt.empty();
+    private OptionalInt mOptionalHybridMaxSdkVersion = OptionalInt.empty();
     private int mSignerMinSdkVersion;
     private int mBlockId;
 
@@ -355,21 +356,27 @@ public class ApkSignatureSchemeV3Verifier {
             } else if (android.security.Flags.apkPqcHybridSigning()
                     && mBlockId == APK_SIGNATURE_SCHEME_V32_BLOCK_ID) {
                 // Stripping protection is also available for the v3.2 hybrid block; save the hybrid
-                // block's minSdkVersion to ensure it matches what's written in the v3.0/v3.1 blocks
+                // block's min and max SDK version to ensure it matches what's written in the
+                // v3.0/v3.1 blocks.
                 if (mOptionalHybridMinSdkVersion.isPresent()) {
                     // The hybrid block should contain exactly two signers targeting the same SDK
                     // range.
                     int firstSignerMinSdkVersion = mOptionalHybridMinSdkVersion.getAsInt();
-                    if (firstSignerMinSdkVersion != minSdkVersion) {
+                    int firstSignerMaxSdkVersion = mOptionalHybridMaxSdkVersion.getAsInt();
+                    if (firstSignerMinSdkVersion != minSdkVersion
+                            || firstSignerMaxSdkVersion != maxSdkVersion) {
                         logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
                                 maxSdkVersion, 0,
                                 VerificationResult.VERIFICATION_V32_SDK_RANGE_MISMATCH);
                         throw new SecurityException(
-                                "Hybrid signer minimum SDK versions do not match; signer1: "
-                                        + firstSignerMinSdkVersion + ", signer2: " + minSdkVersion);
+                                "Hybrid signer SDK versions do not match; signer1: "
+                                        + firstSignerMinSdkVersion + " / "
+                                        + firstSignerMaxSdkVersion + ", signer2: " + minSdkVersion
+                                        + " / " + maxSdkVersion);
                     }
                 } else {
                     mOptionalHybridMinSdkVersion = OptionalInt.of(minSdkVersion);
+                    mOptionalHybridMaxSdkVersion = OptionalInt.of(maxSdkVersion);
                 }
             }
             // this signature isn't meant to be used with this platform, skip it.
@@ -606,6 +613,7 @@ public class ApkSignatureSchemeV3Verifier {
     private static final int ROTATION_MIN_SDK_VERSION_ATTR_ID = 0x559f8b02;
     private static final int SIGNER_TARGETS_DEV_RELEASE_ATTR_ID = 0xc2a6b3ba;
     private static final int HYBRID_MIN_SDK_VERSION_ATTR_ID = 0xbf940529;
+    private static final int HYBRID_MAX_SDK_VERSION_ATTR_ID = 0x9f06b79c;
 
     private VerifiedSigner verifyAdditionalAttributes(ByteBuffer attrs, List<X509Certificate> certs,
             CertificateFactory certFactory, Map<Integer, byte[]> contentDigests, int minSdkVersion,
@@ -613,7 +621,8 @@ public class ApkSignatureSchemeV3Verifier {
         X509Certificate[] certChain = certs.toArray(new X509Certificate[certs.size()]);
         ApkSigningBlockUtils.VerifiedProofOfRotation por = null;
         boolean isDevTarget = false;
-
+        OptionalInt optionalAttrHybridMinSdkVersion = OptionalInt.empty();
+        OptionalInt optionalAttrHybridMaxSdkVersion = OptionalInt.empty();
         while (attrs.hasRemaining()) {
             ByteBuffer attr = getLengthPrefixedSlice(attrs);
             if (attr.remaining() < 4) {
@@ -704,41 +713,29 @@ public class ApkSignatureSchemeV3Verifier {
                 case HYBRID_MIN_SDK_VERSION_ATTR_ID:
                     if (android.security.Flags.apkPqcHybridSigning()) {
                         if (attr.remaining() < 4) {
-                            if (android.security.Flags.apkPqcHybridSigning()) {
-                                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
-                                        maxSdkVersion, algorithmId,
-                                        VerificationResult.VERIFICATION_MALFORMED_ATTRIBUTES);
-                            }
+                            logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                    maxSdkVersion, algorithmId,
+                                    VerificationResult.VERIFICATION_MALFORMED_ATTRIBUTES);
                             throw new IOException(
                                     "Remining buffer too short to contain the hybrid minSdkVersion "
                                             + "value. Remaining: "
                                             + attr.remaining());
                         }
-                        int attrHybridMinSdkVersion = attr.getInt();
-                        if (!mOptionalHybridMinSdkVersion.isPresent()) {
-                            if (android.security.Flags.apkPqcHybridSigning()) {
-                                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
-                                        maxSdkVersion, algorithmId,
-                                        VerificationResult.VERIFICATION_V32_BLOCK_STRIPPED);
-                            }
-                            throw new SecurityException(
-                                    "Expected a v3.2 signing block targeting SDK version "
-                                            + attrHybridMinSdkVersion
-                                            + ", but a v3.2 block was not found");
+                        optionalAttrHybridMinSdkVersion = OptionalInt.of(attr.getInt());
+                    }
+                    break;
+                case HYBRID_MAX_SDK_VERSION_ATTR_ID:
+                    if (android.security.Flags.apkPqcHybridSigning()) {
+                        if (attr.remaining() < 4) {
+                            logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
+                                    maxSdkVersion, algorithmId,
+                                    VerificationResult.VERIFICATION_MALFORMED_ATTRIBUTES);
+                            throw new IOException(
+                                    "Remining buffer too short to contain the hybrid maxSdkVersion "
+                                            + "value. Remaining: "
+                                            + attr.remaining());
                         }
-                        int hybridMinSdkVersion = mOptionalHybridMinSdkVersion.getAsInt();
-                        if (hybridMinSdkVersion != attrHybridMinSdkVersion) {
-                            if (android.security.Flags.apkPqcHybridSigning()) {
-                                logSignatureVerificationSignerFailure(mBlockId, minSdkVersion,
-                                        maxSdkVersion, algorithmId,
-                                        VerificationResult.VERIFICATION_V32_SDK_ATTR_MISMATCH);
-                            }
-                            throw new SecurityException(
-                                    "Expected a v3.2 signing block targeting SDK version "
-                                            + attrHybridMinSdkVersion
-                                            + ", but the v3.2 block was targeting "
-                                            + hybridMinSdkVersion);
-                        }
+                        optionalAttrHybridMaxSdkVersion = OptionalInt.of(attr.getInt());
                     }
                     break;
                 case SIGNER_TARGETS_DEV_RELEASE_ATTR_ID:
@@ -771,6 +768,55 @@ public class ApkSignatureSchemeV3Verifier {
                 default:
                     // not the droid we're looking for, move along, move along.
                     break;
+            }
+        }
+        // The V3.2 block contains stripping protection attributes for the min and max SDK versions
+        // targeted by the hybrid block since it is expected that a package will transition back to
+        // a single signer.
+        if (optionalAttrHybridMinSdkVersion.isPresent()
+                || optionalAttrHybridMaxSdkVersion.isPresent()) {
+            int attrHybridMinSdkVersion = optionalAttrHybridMinSdkVersion.orElse(0);
+            int attrHybridMaxSdkVersion = optionalAttrHybridMaxSdkVersion.orElse(Integer.MAX_VALUE);
+            if (!optionalAttrHybridMinSdkVersion.isPresent()) {
+                logSignatureVerificationSignerFailure(mBlockId, attrHybridMinSdkVersion,
+                        attrHybridMaxSdkVersion, algorithmId,
+                        VerificationResult.VERIFICATION_V32_MAX_ATTR_WITHOUT_MIN_ATTR);
+                throw new SecurityException("Signature block " + Integer.toHexString(mBlockId)
+                        + " contains a hybrid max SDK version stripping protection attribute "
+                        + "without a min SDK version attribute");
+            }
+            if (!mOptionalHybridMinSdkVersion.isPresent()) {
+                logSignatureVerificationSignerFailure(mBlockId, attrHybridMinSdkVersion,
+                        attrHybridMaxSdkVersion, algorithmId,
+                        VerificationResult.VERIFICATION_V32_BLOCK_STRIPPED);
+                throw new SecurityException(
+                        "Expected a v3.2 signing block targeting SDK version "
+                                + attrHybridMinSdkVersion + " to " + attrHybridMaxSdkVersion
+                                + ", but a v3.2 block was not found");
+            }
+            int hybridMinSdkVersion = mOptionalHybridMinSdkVersion.getAsInt();
+            if (hybridMinSdkVersion != attrHybridMinSdkVersion) {
+                logSignatureVerificationSignerFailure(mBlockId, attrHybridMinSdkVersion,
+                        attrHybridMaxSdkVersion, algorithmId,
+                        VerificationResult.VERIFICATION_V32_SDK_ATTR_MISMATCH);
+                throw new SecurityException(
+                        "Expected a v3.2 signing block targeting min SDK version "
+                                + attrHybridMinSdkVersion
+                                + ", but the v3.2 block was targeting "
+                                + hybridMinSdkVersion);
+            }
+            if (optionalAttrHybridMaxSdkVersion.isPresent()) {
+                int hybridMaxSdkVersion = mOptionalHybridMaxSdkVersion.getAsInt();
+                if (hybridMaxSdkVersion != attrHybridMaxSdkVersion) {
+                    logSignatureVerificationSignerFailure(mBlockId, attrHybridMinSdkVersion,
+                            attrHybridMaxSdkVersion, algorithmId,
+                            VerificationResult.VERIFICATION_V32_SDK_ATTR_MISMATCH);
+                    throw new SecurityException(
+                            "Expected a v3.2 signing block targeting max SDK version "
+                                    + attrHybridMaxSdkVersion
+                                    + ", but the v3.2 block was targeting "
+                                    + hybridMaxSdkVersion);
+                }
             }
         }
         return new VerifiedSigner(certChain, por, contentDigests, minSdkVersion, maxSdkVersion,
