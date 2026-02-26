@@ -1235,4 +1235,10 @@
 
     <!-- Whether to disable notification shelf on keyguard. -->
     <bool name="config_disableNotificationShelfOnKeyguard">false</bool>
+
+    <!--
+    Indicates whether the standalone power menu background should be translucent,
+    revealing the blur underneath, or fully opaque.
+    -->
+    <bool name="config_translucentStandalonePowerMenu">true</bool>
 </resources>
