@@ -6639,11 +6639,12 @@ public class NotificationManagerService extends SystemService {
             enforceUserOriginOnlyFromSystem(fromUser, "setZenMode");
             UserHandle zenUser = getCallingZenUser();
 
+            @ZenModeConfig.ConfigOrigin int origin = computeZenOrigin(fromUser);
             final int callingUid = Binder.getCallingUid();
             final long identity = Binder.clearCallingIdentity();
             try {
-                mZenModeHelper.setManualZenMode(zenUser, mode, conditionId,
-                        computeZenOrigin(fromUser), reason, /* caller= */ null, callingUid);
+                mZenModeHelper.setManualZenMode(zenUser, mode, conditionId, origin, reason,
+                        /* caller= */ null, callingUid);
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }
@@ -6909,9 +6910,10 @@ public class NotificationManagerService extends SystemService {
                 return;
             }
 
+            @ZenModeConfig.ConfigOrigin int origin = computeZenOrigin(fromUser);
             final long identity = Binder.clearCallingIdentity();
             try {
-                mZenModeHelper.setManualZenMode(zenUser, zen, null, computeZenOrigin(fromUser),
+                mZenModeHelper.setManualZenMode(zenUser, zen, null, origin,
                         /* reason= */ "setInterruptionFilter", /* caller= */ pkg,
                         callingUid);
             } finally {
