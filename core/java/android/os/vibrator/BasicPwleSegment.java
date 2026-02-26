@@ -48,22 +48,19 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
     private final float mStartSharpness;
     private final float mEndSharpness;
     private final long mDuration;
-    private final boolean mIsFirstSegment;
 
     BasicPwleSegment(@NonNull Parcel in) {
-        this(in.readFloat(), in.readFloat(), in.readFloat(), in.readFloat(), in.readLong(),
-             in.readBoolean());
+        this(in.readFloat(), in.readFloat(), in.readFloat(), in.readFloat(), in.readLong());
     }
 
     /** @hide */
     public BasicPwleSegment(float startIntensity, float endIntensity, float startSharpness,
-            float endSharpness, long duration, boolean isFirstSegment) {
+            float endSharpness, long duration) {
         mStartIntensity = startIntensity;
         mEndIntensity = endIntensity;
         mStartSharpness = startSharpness;
         mEndSharpness = endSharpness;
         mDuration = duration;
-        mIsFirstSegment = isFirstSegment;
     }
 
     public float getStartIntensity() {
@@ -97,8 +94,7 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
                 && Float.compare(mEndIntensity, other.mEndIntensity) == 0
                 && Float.compare(mStartSharpness, other.mStartSharpness) == 0
                 && Float.compare(mEndSharpness, other.mEndSharpness) == 0
-                && mDuration == other.mDuration
-                && mIsFirstSegment == other.mIsFirstSegment;
+                && mDuration == other.mDuration;
     }
 
     /** @hide */
@@ -111,11 +107,6 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
     @Override
     public boolean isHapticFeedbackCandidate() {
         return true;
-    }
-
-    /** @hide */
-    public boolean isFirstSegmentOfEnvelope() {
-        return mIsFirstSegment;
     }
 
     /** @hide */
@@ -147,8 +138,7 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
         }
         return new BasicPwleSegment(newStartIntensity, newEndIntensity, mStartSharpness,
                 mEndSharpness,
-                mDuration,
-                mIsFirstSegment);
+                mDuration);
     }
 
     /** @hide */
@@ -163,8 +153,7 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
         }
         return new BasicPwleSegment(newStartIntensity, newEndIntensity, mStartSharpness,
                 mEndSharpness,
-                mDuration,
-                mIsFirstSegment);
+                mDuration);
     }
 
     /** @hide */
@@ -177,7 +166,7 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
     @Override
     public int hashCode() {
         return Objects.hash(mStartIntensity, mEndIntensity, mStartSharpness, mEndSharpness,
-                mDuration, mIsFirstSegment);
+                mDuration);
     }
 
     @Override
@@ -187,16 +176,14 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
                 + ", startSharpness=" + mStartSharpness
                 + ", endSharpness=" + mEndSharpness
                 + ", duration=" + mDuration
-                + ", isFirstSegment=" + mIsFirstSegment
                 + "}";
     }
 
     /** @hide */
     @Override
     public String toDebugString() {
-        return String.format(Locale.US, "BasicPwle=%dms(%sintensity=%.2f @ %.2f to %.2f @ %.2f)",
+        return String.format(Locale.US, "Pwle=%dms(intensity=%.2f @ %.2f to %.2f @ %.2f)",
                 mDuration,
-                mIsFirstSegment ? "first, " : "",
                 mStartIntensity,
                 mStartSharpness,
                 mEndIntensity,
@@ -216,7 +203,6 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
         dest.writeFloat(mStartSharpness);
         dest.writeFloat(mEndSharpness);
         dest.writeLong(mDuration);
-        dest.writeBoolean(mIsFirstSegment);
     }
 
     @NonNull

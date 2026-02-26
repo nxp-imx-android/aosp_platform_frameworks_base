@@ -205,9 +205,9 @@ public class DeviceAdapterTest {
     public void testPwleSegment_withoutPwleV2Capability_returnsNull() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
                 new PrimitiveSegment(PRIMITIVE_SPIN, 0.5f, 100),
-                new PwleSegment(1, 0.2f, 30, 60, 20, true),
-                new PwleSegment(0.8f, 0.2f, 60, 100, 100, false),
-                new PwleSegment(0.65f, 0.65f, 100, 50, 50, false)),
+                new PwleSegment(1, 0.2f, 30, 60, 20),
+                new PwleSegment(0.8f, 0.2f, 60, 100, 100),
+                new PwleSegment(0.65f, 0.65f, 100, 50, 50)),
                 /* repeatIndex= */ 1);
 
         VibrationEffect.Composed adaptedEffect =
@@ -219,15 +219,15 @@ public class DeviceAdapterTest {
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testPwleSegment_withPwleV2Capability_returnsAdaptedSegments() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new PwleSegment(1, 0.2f, 30, 60, 20, true),
-                new PwleSegment(0.8f, 0.2f, 60, 100, 100, false),
-                new PwleSegment(0.65f, 0.65f, 100, 50, 50, false)),
+                new PwleSegment(1, 0.2f, 30, 60, 20),
+                new PwleSegment(0.8f, 0.2f, 60, 100, 100),
+                new PwleSegment(0.65f, 0.65f, 100, 50, 50)),
                 /* repeatIndex= */ 1);
 
         VibrationEffect.Composed expected = new VibrationEffect.Composed(Arrays.asList(
-                new PwleSegment(1, 0.2f, 30, 60, 20, true),
-                new PwleSegment(0.8f, 0.2f, 60, 100, 100, false),
-                new PwleSegment(0.65f, 0.65f, 100, 50, 50, false)),
+                new PwleSegment(1, 0.2f, 30, 60, 20),
+                new PwleSegment(0.8f, 0.2f, 60, 100, 100),
+                new PwleSegment(0.65f, 0.65f, 100, 50, 50)),
                 /* repeatIndex= */ 1);
 
         assertThat(mAdapter.adaptToVibrator(PWLE_V2_VIBRATOR_ID, effect)).isEqualTo(expected);
@@ -238,9 +238,9 @@ public class DeviceAdapterTest {
     public void testPwleSegment_withFrequenciesBelowSupportedRange_returnsNull() {
         float frequencyBelowSupportedRange = PWLE_V2_MIN_FREQUENCY - 1f;
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new PwleSegment(0, 0.2f, 30, 60, 20, true),
-                new PwleSegment(0.8f, 0.2f, 60, frequencyBelowSupportedRange, 100, false),
-                new PwleSegment(0.65f, 0.65f, frequencyBelowSupportedRange, 50, 50, false)),
+                new PwleSegment(0, 0.2f, 30, 60, 20),
+                new PwleSegment(0.8f, 0.2f, 60, frequencyBelowSupportedRange, 100),
+                new PwleSegment(0.65f, 0.65f, frequencyBelowSupportedRange, 50, 50)),
                 /* repeatIndex= */ 1);
 
         assertThat(mAdapter.adaptToVibrator(PWLE_V2_VIBRATOR_ID, effect)).isNull();
@@ -251,9 +251,9 @@ public class DeviceAdapterTest {
     public void testPwleSegment_withFrequenciesAboveSupportedRange_returnsNull() {
         float frequencyAboveSupportedRange = PWLE_V2_MAX_FREQUENCY + 1f;
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new PwleSegment(0, 0.2f, 30, frequencyAboveSupportedRange, 20, true),
-                new PwleSegment(0.8f, 0.2f, frequencyAboveSupportedRange, 100, 100, false),
-                new PwleSegment(0.65f, 0.65f, 100, 50, 50, false)),
+                new PwleSegment(0, 0.2f, 30, frequencyAboveSupportedRange, 20),
+                new PwleSegment(0.8f, 0.2f, frequencyAboveSupportedRange, 100, 100),
+                new PwleSegment(0.65f, 0.65f, 100, 50, 50)),
                 /* repeatIndex= */ 1);
 
         assertThat(mAdapter.adaptToVibrator(PWLE_V2_VIBRATOR_ID, effect)).isNull();
@@ -263,9 +263,9 @@ public class DeviceAdapterTest {
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testPwleSegment_withEmptyProfile_returnsNull() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new PwleSegment(1, 0.2f, 30, 60, 20, true),
-                new PwleSegment(0.8f, 0.2f, 60, 100, 100, false),
-                new PwleSegment(0.65f, 0.65f, 100, 50, 50, false)),
+                new PwleSegment(1, 0.2f, 30, 60, 20),
+                new PwleSegment(0.8f, 0.2f, 60, 100, 100),
+                new PwleSegment(0.65f, 0.65f, 100, 50, 50)),
                 /* repeatIndex= */ 1);
 
         assertThat(mAdapter.adaptToVibrator(PWLE_V2_EMPTY_PROFILE_VIBRATOR_ID, effect)).isNull();
@@ -276,9 +276,9 @@ public class DeviceAdapterTest {
     public void testBasicPwleSegment_withoutPwleV2Capability_returnsNull() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
                 new PrimitiveSegment(PRIMITIVE_SPIN, 0.5f, 100),
-                new BasicPwleSegment(0.2f, 0.8f, 0.2f, 0.4f, 20, true),
-                new BasicPwleSegment(0.8f, 0.2f, 0.4f, 0.5f, 100, false),
-                new BasicPwleSegment(0.2f, 0.0f, 0.5f, 0.5f, 50, false)),
+                new BasicPwleSegment(0.2f, 0.8f, 0.2f, 0.4f, 20),
+                new BasicPwleSegment(0.8f, 0.2f, 0.4f, 0.5f, 100),
+                new BasicPwleSegment(0.2f, 0.65f, 0.5f, 0.5f, 50)),
                 /* repeatIndex= */ 1);
 
         VibrationEffect.Composed adaptedEffect =
@@ -290,15 +290,15 @@ public class DeviceAdapterTest {
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testBasicPwleSegment_withPwleV2Capability_returnsAdaptedSegments() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new BasicPwleSegment(0.0f, 0.5f, 0.0f, 0.5f, 20, true),
-                new BasicPwleSegment(0.5f, 1.0f, 0.5f, 1.0f, 100, false),
-                new BasicPwleSegment(1.0f, 0.0f, 1.0f, 0.5f, 100, false)),
+                new BasicPwleSegment(0.0f, 0.5f, 0.0f, 0.5f, 20),
+                new BasicPwleSegment(0.5f, 1.0f, 0.5f, 1.0f, 100),
+                new BasicPwleSegment(1.0f, 0.0f, 1.0f, 0.5f, 100)),
                 /* repeatIndex= */ 1);
 
         VibrationEffect.Composed expected = new VibrationEffect.Composed(Arrays.asList(
-                new PwleSegment(0.0f, 0.16522837f, 63.52442f, 281.7622f, 20, true),
-                new PwleSegment(0.16522837f, 1.0f, 281.7622f, 500f, 100, false),
-                new PwleSegment(1.0f, 0.0f, 500, 281.7622f, 100, false)),
+                new PwleSegment(0.0f, 0.16522837f, 63.52442f, 281.7622f, 20),
+                new PwleSegment(0.16522837f, 1.0f, 281.7622f, 500f, 100),
+                new PwleSegment(1.0f, 0.0f, 500, 281.7622f, 100)),
                 /* repeatIndex= */ 1);
 
         assertThat(mAdapter.adaptToVibrator(PWLE_V2_BASIC_VIBRATOR_ID, effect)).isEqualTo(expected);
@@ -308,9 +308,9 @@ public class DeviceAdapterTest {
     @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void testBasicPwleSegment_withEmptyProfile_returnsNull() {
         VibrationEffect.Composed effect = new VibrationEffect.Composed(Arrays.asList(
-                new BasicPwleSegment(0.0f, 0.5f, 0.0f, 0.5f, 20, true),
-                new BasicPwleSegment(0.5f, 1.0f, 0.5f, 1.0f, 100, false),
-                new BasicPwleSegment(1.0f, 0.0f, 1.0f, 0.5f, 100, false)),
+                new BasicPwleSegment(0.0f, 0.5f, 0.0f, 0.5f, 20),
+                new BasicPwleSegment(0.5f, 1.0f, 0.5f, 1.0f, 100),
+                new BasicPwleSegment(1.0f, 0.0f, 1.0f, 0.5f, 100)),
                 /* repeatIndex= */ 1);
 
         assertThat(mAdapter.adaptToVibrator(PWLE_V2_EMPTY_PROFILE_VIBRATOR_ID, effect)).isNull();

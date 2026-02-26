@@ -38,17 +38,14 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.hardware.vibrator.IVibrator;
 import android.net.Uri;
-import android.os.vibrator.BasicPwleSegment;
 import android.os.vibrator.Flags;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
-import android.os.vibrator.PwleSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
-import android.platform.test.flag.junit.SetFlagsRule;
 
 import com.android.internal.R;
 
@@ -66,8 +63,6 @@ import java.util.List;
 public class VibrationEffectTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private static final float TOLERANCE = 1e-2f;
     private static final String RINGTONE_URI_1 = "content://test/system/ringtone_1";
@@ -1484,32 +1479,6 @@ public class VibrationEffectTest {
     public void testIsHapticFeedbackCandidate_vendorEffects_notCandidates() {
         assertFalse(VibrationEffect.createVendorEffect(createNonEmptyBundle())
                 .isHapticFeedbackCandidate());
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
-    public void testFirstSegmentFlag() {
-        VibrationEffect.Composed waveformEnvelope =
-                (VibrationEffect.Composed) new VibrationEffect.WaveformEnvelopeBuilder()
-                        .addControlPoint(1.0f, 150f, 100)
-                        .addControlPoint(0.5f, 100f, 100)
-                        .build();
-
-        assertTrue(
-                ((PwleSegment) waveformEnvelope.getSegments().get(0)).isFirstSegmentOfEnvelope());
-        assertFalse(
-                ((PwleSegment) waveformEnvelope.getSegments().get(1)).isFirstSegmentOfEnvelope());
-
-        VibrationEffect.Composed basicEnvelope =
-                (VibrationEffect.Composed) new VibrationEffect.BasicEnvelopeBuilder()
-                        .addControlPoint(1.0f, 1.0f, 100)
-                        .addControlPoint(0.0f, 0.5f, 100)
-                        .build();
-
-        assertTrue(
-                ((BasicPwleSegment) basicEnvelope.getSegments().get(0)).isFirstSegmentOfEnvelope());
-        assertFalse(
-                ((BasicPwleSegment) basicEnvelope.getSegments().get(1)).isFirstSegmentOfEnvelope());
     }
 
     @Test
