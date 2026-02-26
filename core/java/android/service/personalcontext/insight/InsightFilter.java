@@ -47,6 +47,7 @@ public final class InsightFilter implements Parcelable {
      * Pre-built {@link InsightFilter} that only allows insights with a RenderToken attached.
      */
     // Use a random UUID as the type name, so that no insights will match it.
+    @NonNull
     public static final InsightFilter REQUIRE_RENDER_TOKEN =
             new Builder().addInsightType(UUID.randomUUID().toString()).build();
 
