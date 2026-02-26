@@ -35,6 +35,7 @@ mod task;
 mod utils;
 
 pub use preload::preload_lib;
+pub use utils::get_or_init_debuggable;
 
 use crate::native_activity_thread::NativeActivityThread;
 use crate::native_application_thread::NativeApplicationThread;
