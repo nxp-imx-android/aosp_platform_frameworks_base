@@ -30,9 +30,11 @@ import android.content.Context;
 import android.os.Binder;
 import android.os.PermissionEnforcer;
 import android.security.trusttoken.ITrustTokenManager;
+import android.security.trusttoken.TrustAnchorUnavailableException;
 import android.security.trusttoken.TrustConfiguration;
 import android.security.trusttoken.TrustToken;
 import android.security.trusttoken.TrustTokenIdentitySet;
+import android.security.trusttoken.TrustTokenUnavailableException;
 import android.security.trusttoken.TrustTokenWithChallenge;
 import android.util.Base64;
 import android.util.Slog;
@@ -116,7 +118,7 @@ public class TrustTokenManagerService extends SystemService {
 
         try {
             updateTrustAnchor();
-        } catch (TrustConfigurationUnavailableException | IllegalArgumentException e) {
+        } catch (TrustAnchorUnavailableException | IllegalArgumentException e) {
             // It's intended to be able to create the service when the TrustAnchor is not available.
             // This can happen on freshly installed system. We need to the service in order to
             // update the trust configuration.
@@ -140,7 +142,7 @@ public class TrustTokenManagerService extends SystemService {
                 new PullTrustTokenState());
     }
 
-    private void updateTrustAnchor() throws TrustConfigurationUnavailableException {
+    private void updateTrustAnchor() throws TrustAnchorUnavailableException {
         TrustConfiguration configuration = mDatabase.getTrustConfiguration();
         // Convert to ByteBuffer so that they are compared by the content.
         List<ByteBuffer> rootKeys = new ArrayList<>(configuration.getRootKeys().size());
@@ -184,10 +186,10 @@ public class TrustTokenManagerService extends SystemService {
     }
 
     @NonNull
-    private TrustAnchor getTrustAnchor() throws TrustConfigurationUnavailableException {
+    private TrustAnchor getTrustAnchor() throws TrustAnchorUnavailableException {
         TrustAnchor anchor = mTrustAnchor.get();
         if (anchor == null) {
-            throw new TrustConfigurationUnavailableException();
+            throw new TrustAnchorUnavailableException();
         }
         return anchor;
     }
@@ -252,7 +254,7 @@ public class TrustTokenManagerService extends SystemService {
             TrustTokenSetWithKey setWithKey;
             try {
                 setWithKey = mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE);
-            } catch (TrustTokenExhaustedException e) {
+            } catch (TrustTokenUnavailableException e) {
                 logger.setOutcome(MetricsLogger.AcquireTokenCalled.OUTCOME_TOKEN_EXHAUSTED).log();
                 if (mHasProvider) {
                     mRefreshScheduler.scheduleUrgentRefresh();
@@ -263,7 +265,7 @@ public class TrustTokenManagerService extends SystemService {
                     new com.google.android.security.trusttoken.TrustToken(
                             getTrustAnchor(), setWithKey.getTokenSet().getTokenSet())) {
                 // No exception means the token is valid.
-            } catch (TrustConfigurationUnavailableException e) {
+            } catch (TrustAnchorUnavailableException e) {
                 logger.setOutcome(MetricsLogger.AcquireTokenCalled.OUTCOME_ANCHOR_UNAVAILABLE)
                         .log();
                 throw e;
@@ -276,7 +278,7 @@ public class TrustTokenManagerService extends SystemService {
                 //
                 // Note that the database doesn't return expired tokens, so this only
                 // happens when something goes wrong.
-                throw new IllegalStateException(
+                throw new TrustTokenUnavailableException(
                         "Cannot acquire valid tokens. Consider the service unavailable.");
             }
             byte[] challengeResponse = getOrInitMasterKey().sign(setWithKey.getKey(), challenge);
@@ -330,7 +332,7 @@ public class TrustTokenManagerService extends SystemService {
                 logger.setOutcome(MetricsLogger.VerifyTokenCalled.OUTCOME_FAILURE_UNKNOWN).log();
                 Slog.e(TAG, "Failed to verify the trust token: " + e.toString());
                 return VERIFICATION_FAILURE_UNKNOWN;
-            } catch (TrustConfigurationUnavailableException e) {
+            } catch (TrustAnchorUnavailableException e) {
                 logger.setOutcome(MetricsLogger.VerifyTokenCalled.OUTCOME_ANCHOR_UNAVAILABLE).log();
                 if (mHasProvider) {
                     mRefreshScheduler.scheduleUrgentRefresh();
@@ -379,7 +381,7 @@ public class TrustTokenManagerService extends SystemService {
                 @Override
                 public void addTrustTokens(
                         @NonNull List<TrustTokenKey> keys, @NonNull List<byte[]> tokens)
-                        throws TrustConfigurationUnavailableException {
+                        throws TrustAnchorUnavailableException {
                     // We only supported trusted device tokens at the moment, so there should be
                     // 1-to-1 mapping between the keys and the tokens
                     if (keys.size() != tokens.size()) {

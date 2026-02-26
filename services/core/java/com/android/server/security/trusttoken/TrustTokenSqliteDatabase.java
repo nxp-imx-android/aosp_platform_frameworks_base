@@ -24,7 +24,9 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.security.trusttoken.TrustAnchorUnavailableException;
 import android.security.trusttoken.TrustConfiguration;
+import android.security.trusttoken.TrustTokenUnavailableException;
 import android.util.Pair;
 import android.util.Slog;
 
@@ -56,7 +58,7 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase implements AutoCloseab
     @Override
     @NonNull
     TrustTokenSetWithKey getTrustTokenSet(@TrustTokenSet.Type int type)
-            throws TrustTokenExhaustedException {
+            throws TrustTokenUnavailableException {
         DatabaseHelper db = getWritableDatabase();
         return db.runInTransaction(
                 () -> {
@@ -66,7 +68,7 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase implements AutoCloseab
                                     Instant.ofEpochMilli(mClock.currentTimeMillis())
                                             .plus(MINIMUM_VALID_DURATION));
                     if (tokenAndRowId == null) {
-                        throw new TrustTokenExhaustedException();
+                        throw new TrustTokenUnavailableException();
                     }
                     db.deleteTrustToken(tokenAndRowId.second);
                     return tokenAndRowId.first;
@@ -86,7 +88,6 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase implements AutoCloseab
                     }
                 });
     }
-
 
     @Override
     int countTrustTokenSets(@TrustTokenSet.Type int type) {
@@ -138,11 +139,11 @@ class TrustTokenSqliteDatabase extends TrustTokenDatabase implements AutoCloseab
 
     @Override
     @NonNull
-    TrustConfiguration getTrustConfiguration() throws TrustConfigurationUnavailableException {
+    TrustConfiguration getTrustConfiguration() throws TrustAnchorUnavailableException {
         DatabaseHelper db = getWritableDatabase();
         TrustConfiguration config = db.getTrustConfiguration();
         if (config == null) {
-            throw new TrustConfigurationUnavailableException();
+            throw new TrustAnchorUnavailableException();
         }
         return config;
     }

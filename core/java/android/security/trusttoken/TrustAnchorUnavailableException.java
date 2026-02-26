@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.server.security.trusttoken;
+package android.security.trusttoken;
 
-public class TrustTokenExhaustedException extends IllegalStateException {
-    TrustTokenExhaustedException() {}
+/** @hide */
+public class TrustAnchorUnavailableException extends IllegalStateException {
+    public TrustAnchorUnavailableException() {}
+
+    public TrustAnchorUnavailableException(String message) {
+        super(message);
+    }
 }

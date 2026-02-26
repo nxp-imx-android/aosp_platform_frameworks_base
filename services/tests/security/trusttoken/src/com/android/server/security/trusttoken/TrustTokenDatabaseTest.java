@@ -23,7 +23,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
+import android.security.trusttoken.TrustAnchorUnavailableException;
 import android.security.trusttoken.TrustConfiguration;
+import android.security.trusttoken.TrustTokenUnavailableException;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -112,7 +114,7 @@ public final class TrustTokenDatabaseTest {
         assertThat(Arrays.asList(result1, result2)).containsExactly(token1, token2);
 
         assertThrows(
-                TrustTokenExhaustedException.class,
+                TrustTokenUnavailableException.class,
                 () -> mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE));
     }
 
@@ -142,7 +144,7 @@ public final class TrustTokenDatabaseTest {
     @Test
     public void getTrustTokenSet_no_token() throws Exception {
         assertThrows(
-                TrustTokenExhaustedException.class,
+                TrustTokenUnavailableException.class,
                 () -> mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE));
     }
 
@@ -174,7 +176,7 @@ public final class TrustTokenDatabaseTest {
         mDatabase.addTrustTokenSets(Arrays.asList(token1, token2));
 
         assertThrows(
-                TrustTokenExhaustedException.class,
+                TrustTokenUnavailableException.class,
                 () -> mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_DEVICE));
     }
 
@@ -188,7 +190,7 @@ public final class TrustTokenDatabaseTest {
 
         // Requesting a different type
         assertThrows(
-                TrustTokenExhaustedException.class,
+                TrustTokenUnavailableException.class,
                 () -> mDatabase.getTrustTokenSet(TrustTokenSet.TYPE_VERIFIED_IDENTITIES));
     }
 
@@ -286,8 +288,7 @@ public final class TrustTokenDatabaseTest {
     @Test
     public void trustConfiguration() throws Exception {
         assertThrows(
-                TrustConfigurationUnavailableException.class,
-                () -> mDatabase.getTrustConfiguration());
+                TrustAnchorUnavailableException.class, () -> mDatabase.getTrustConfiguration());
         var config =
                 new TrustConfiguration.Builder()
                         .addRootKey("some-key".getBytes())
