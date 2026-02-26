@@ -63,15 +63,15 @@ object GraphTestUtils {
      */
     data class PersistentPreferenceConfig(
         val preferenceConfig: PreferenceConfig,
-        val valueType : Class<*> = Boolean::class.java,
+        val valueType: Class<*> = Boolean::class.java,
         val defaultValue: Any? = false,
         val storage: KeyValueStore = createStorage(defaultValue, preferenceConfig.key),
-        val sensitivityLevel: @SensitivityLevel Int = SensitivityLevel.LOW_SENSITIVITY,
+        val sensitivityLevel: @SensitivityLevel Int = SensitivityLevel.MUST_PROVIDE_UNDO,
         val readPermission: String? = Manifest.permission.INTERACT_ACROSS_USERS,
         val readPermit: @ReadWritePermit Int = ReadWritePermit.ALLOW,
         val writePermission: String? = Manifest.permission.INTERACT_ACROSS_PROFILES,
         val writePermit: @ReadWritePermit Int? = ReadWritePermit.ALLOW,
-        val throwsError : Boolean = false,
+        val throwsError: Boolean = false,
     )
 
     /**
@@ -85,11 +85,11 @@ object GraphTestUtils {
      * @property isUiOnly Whether the preference is UI-only
      */
     data class PreferenceConfig(
-        val key : String,
-        val purpose : Int,
-        val isAvailable : Boolean = true,
+        val key: String,
+        val purpose: Int,
+        val isAvailable: Boolean = true,
         val isRestricted: Boolean = false,
-        val isEnabled : Boolean = true,
+        val isEnabled: Boolean = true,
         val isUiOnly: Boolean = false,
     )
 
@@ -114,7 +114,7 @@ object GraphTestUtils {
      *
      * @param preferenceScreens The preference screens to register.
      */
-    fun setRegistryFactories(vararg preferenceScreens : PreferenceScreenMetadata) {
+    fun setRegistryFactories(vararg preferenceScreens: PreferenceScreenMetadata) {
         PreferenceScreenRegistry.preferenceScreenMetadataFactories =
             FixedArrayMap(preferenceScreens.size) { screens ->
                 for (preferenceScreen in preferenceScreens) {
@@ -143,6 +143,7 @@ object GraphTestUtils {
                 +preference
             }
         }
+
         override val key: String
             get() = screenConfig.screenKey
         override val purpose: Int
@@ -178,10 +179,9 @@ object GraphTestUtils {
             preferenceConfig.isRestricted
 
         override fun tags(context: Context): Array<String> =
-            if(preferenceConfig.isUiOnly)
+            if (preferenceConfig.isUiOnly)
                 arrayOf(UI_ONLY_PREFERENCE)
             else arrayOf()
-
     }
 
     /**
@@ -191,9 +191,9 @@ object GraphTestUtils {
      * @param persistentPreferenceConfig The configuration for the persistent preference.
      * @return A [PreferenceMetadata] implementation that also implements [PersistentPreference].
      */
-    fun <T: Any> createPersistentPreference(
+    fun <T : Any> createPersistentPreference(
         persistentPreferenceConfig: PersistentPreferenceConfig
-    ) : PreferenceMetadata = object: PersistentPreference<T>,
+    ): PreferenceMetadata = object : PersistentPreference<T>,
         PreferenceAvailabilityProvider,
         PreferenceRestrictionProvider {
 
@@ -236,17 +236,20 @@ object GraphTestUtils {
             persistentPreferenceConfig.writePermission?.let {
                 Permissions.allOf(it)
             }
+
         override fun isAvailable(context: Context): Boolean =
             persistentPreferenceConfig.preferenceConfig.isAvailable
+
         override fun isRestricted(context: Context): Boolean =
             persistentPreferenceConfig.preferenceConfig.isRestricted
+
         override fun isEnabled(context: Context): Boolean =
             persistentPreferenceConfig.preferenceConfig.isEnabled
+
         override fun tags(context: Context): Array<String> =
-            if(persistentPreferenceConfig.preferenceConfig.isUiOnly)
+            if (persistentPreferenceConfig.preferenceConfig.isUiOnly)
                 arrayOf(UI_ONLY_PREFERENCE)
             else arrayOf()
-
     }
 
     /**
@@ -261,20 +264,21 @@ object GraphTestUtils {
      */
     fun createIntRangePreference(
         key: String,
-        purpose : Int,
+        purpose: Int,
         minValue: Int,
         maxValue: Int,
         defaultValue: Int,
-        storage : KeyValueStore = createStorage(defaultValue, key)
-    ) = object: IntRangeValuePreference {
+        storage: KeyValueStore = createStorage(defaultValue, key)
+    ) = object : IntRangeValuePreference {
         override fun getMinValue(context: Context): Int = minValue
         override fun getMaxValue(context: Context): Int = maxValue
-        override val sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY
+        override val sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO
         override fun getWritePermit(
             context: Context,
             callingPid: Int,
             callingUid: Int
         ): @ReadWritePermit Int = ReadWritePermit.ALLOW
+
         override fun storage(context: Context): KeyValueStore = storage
         override val key: String
             get() = key
@@ -289,15 +293,17 @@ object GraphTestUtils {
      * @param defaultKey The key to use for getting and setting the value in this store.
      * @return A simple [KeyValueStore] implementation.
      */
-    fun createStorage(defaultValue: Any? = null, defaultKey: String) : KeyValueStore {
+    fun createStorage(defaultValue: Any? = null, defaultKey: String): KeyValueStore {
         return object : NoOpKeyedObservable<String>(), KeyValueStore {
             val hashMap = HashMap<String, Any>().also {
-                if(defaultValue != null)
+                if (defaultValue != null)
                     it[defaultKey] = defaultValue
             }
+
             override fun contains(key: String): Boolean {
                 return hashMap[key] != null
             }
+
             @Suppress("UNCHECKED_CAST")
             override fun <T : Any> getValue(
                 key: String,

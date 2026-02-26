@@ -27,14 +27,12 @@ import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel
-import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
 import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.types.AnyInt
 import com.android.settingslib.metadata.preferenceHierarchy
 import com.android.settingslib.metadata.preferencesapi.category.Category
 import com.google.common.truth.Truth.assertThat
-import com.android.settingslib.graph.PreferenceGetterFlags
 import kotlinx.coroutines.CoroutineScope
 import org.junit.After
 import org.junit.Test
@@ -73,7 +71,7 @@ class PreferenceGraphBuilderTest {
     fun evalWritePermit_debuggableAndUnknownSensitivity_settingEnabled_returnsWritePermit_onUserdebug() {
         ShadowBuild.setType("userdebug")
         Settings.Global.putInt(context.contentResolver, SETTING_KEY, 1)
-        val preference = TestPreference(SensitivityLevel.UNKNOWN_SENSITIVITY)
+        val preference = TestPreference(SensitivityLevel.DO_NOT_EXPOSE)
 
         val result = preference.evalWritePermit(context, 0, 0)
 
@@ -85,7 +83,7 @@ class PreferenceGraphBuilderTest {
     fun evalWritePermit_debuggableAndUnknownSensitivity_settingDisabled_returnsDisallow_onUserdebug() {
         ShadowBuild.setType("userdebug")
         Settings.Global.putInt(context.contentResolver, SETTING_KEY, 0)
-        val preference = TestPreference(SensitivityLevel.UNKNOWN_SENSITIVITY)
+        val preference = TestPreference(SensitivityLevel.DO_NOT_EXPOSE)
 
         val result = preference.evalWritePermit(context, 0, 0)
 
@@ -97,7 +95,7 @@ class PreferenceGraphBuilderTest {
     fun evalWritePermit_notDebuggableAndUnknownSensitivity_settingEnabled_returnsDisallow() {
         ShadowBuild.setType("user")
         Settings.Global.putInt(context.contentResolver, SETTING_KEY, 1)
-        val preference = TestPreference(SensitivityLevel.UNKNOWN_SENSITIVITY)
+        val preference = TestPreference(SensitivityLevel.DO_NOT_EXPOSE)
 
         val result = preference.evalWritePermit(context, 0, 0)
 
@@ -109,7 +107,7 @@ class PreferenceGraphBuilderTest {
     fun evalWritePermit_highSensitivity_settingEnabled_returnsDisallow() {
         ShadowBuild.setType("userdebug")
         Settings.Global.putInt(context.contentResolver, SETTING_KEY, 1)
-        val preference = TestPreference(SensitivityLevel.HIGH_SENSITIVITY)
+        val preference = TestPreference(SensitivityLevel.DEEP_LINK_ONLY)
 
         val result = preference.evalWritePermit(context, 0, 0)
 

@@ -54,11 +54,13 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+
 @RunWith(AndroidJUnit4::class)
 @RequiresFlagsEnabled(FLAG_SETTINGS_CATALYST)
 class PreferenceServiceRequestTransformerTest {
 
-    @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
+    @get:Rule
+    val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
     private val context: Context = ApplicationProvider.getApplicationContext()
 
@@ -140,7 +142,6 @@ class PreferenceServiceRequestTransformerTest {
                                 addAllPreferences(
                                     listOf(
                                         preferenceOrGroupProto {
-
                                         },
                                         preferenceOrGroupProto {
                                             preference = preferenceProto {
@@ -150,7 +151,6 @@ class PreferenceServiceRequestTransformerTest {
                                             }
                                         },
                                         preferenceOrGroupProto {
-
                                         }
                                     )
 
@@ -165,7 +165,6 @@ class PreferenceServiceRequestTransformerTest {
                             }
                         },
                         preferenceOrGroupProto {
-
                         },
                     )
                 )
@@ -233,7 +232,7 @@ class PreferenceServiceRequestTransformerTest {
                                         step = 2
                                     }
                                 }
-                                sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY
+                                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO
                                 readPermissions = Permissions.allOf("read_permission").toProto()
                                 writePermissions = Permissions.anyOf("write_permission").toProto()
                                 val intent = Intent(context, FragmentActivity::class.java)
@@ -275,7 +274,7 @@ class PreferenceServiceRequestTransformerTest {
         val getResultProto = preferenceProto {
             key = "preference_key"
             persistent = true
-            sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY
+            sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO
             readWritePermit = ReadWritePermit.make(
                 readPermit = ReadWritePermit.ALLOW,
                 writePermit = ReadWritePermit.ALLOW
@@ -293,7 +292,7 @@ class PreferenceServiceRequestTransformerTest {
                 emptyMap(),
                 mapOf(
                     PreferenceCoordinate(fRequest.screenKey, fRequest.preferenceKey) to
-                        getResultProto
+                            getResultProto
                 ),
             )
         val fResult = transformCatalystGetValueResponse(context, fRequest, cResult)
@@ -308,16 +307,16 @@ class PreferenceServiceRequestTransformerTest {
             SensitivityLevel.NO_SENSITIVITY, SettingsPreferenceMetadata.NO_SENSITIVITY
         )
         verifySensitivityLevelMapping(
-            SensitivityLevel.LOW_SENSITIVITY, SettingsPreferenceMetadata.EXPECT_POST_CONFIRMATION
+            SensitivityLevel.MUST_PROVIDE_UNDO, SettingsPreferenceMetadata.EXPECT_POST_CONFIRMATION
         )
         verifySensitivityLevelMapping(
-            SensitivityLevel.MEDIUM_SENSITIVITY, SettingsPreferenceMetadata.DEEPLINK_ONLY
+            SensitivityLevel.REQUIRES_CONFIRMATION, SettingsPreferenceMetadata.DEEPLINK_ONLY
         )
         verifySensitivityLevelMapping(
-            SensitivityLevel.HIGH_SENSITIVITY, SettingsPreferenceMetadata.DEEPLINK_ONLY
+            SensitivityLevel.DEEP_LINK_ONLY, SettingsPreferenceMetadata.DEEPLINK_ONLY
         )
         verifySensitivityLevelMapping(
-            SensitivityLevel.UNKNOWN_SENSITIVITY, SettingsPreferenceMetadata.NO_DIRECT_ACCESS
+            SensitivityLevel.DO_NOT_EXPOSE, SettingsPreferenceMetadata.NO_DIRECT_ACCESS
         )
     }
 
@@ -325,12 +324,13 @@ class PreferenceServiceRequestTransformerTest {
         val request = GetValueRequest.Builder("screen", "key").build()
         val response = PreferenceGetterResponse(
             emptyMap(),
-            mapOf(PreferenceCoordinate(
-                request.screenKey, request.preferenceKey
-            ) to preferenceProto {
-                key = "key"
-                sensitivityLevel = level
-            }),
+            mapOf(
+                PreferenceCoordinate(
+                    request.screenKey, request.preferenceKey
+                ) to preferenceProto {
+                    key = "key"
+                    sensitivityLevel = level
+                }),
         )
         val metadata = transformCatalystGetValueResponse(context, request, response)?.metadata!!
         assertThat(metadata.writeSensitivity).isEqualTo(expected)
@@ -341,10 +341,11 @@ class PreferenceServiceRequestTransformerTest {
         val fRequest = GetValueRequest.Builder("screen", "key").build()
         val cResult = PreferenceGetterResponse(
             emptyMap(),
-            mapOf(PreferenceCoordinate(
-                fRequest.screenKey,
-                fRequest.preferenceKey
-            ) to preferenceProto { key = "key" }),
+            mapOf(
+                PreferenceCoordinate(
+                    fRequest.screenKey,
+                    fRequest.preferenceKey
+                ) to preferenceProto { key = "key" }),
         )
         val fResult = transformCatalystGetValueResponse(context, fRequest, cResult)!!
         assertThat(fResult.resultCode).isEqualTo(GetValueResult.RESULT_UNSUPPORTED)
