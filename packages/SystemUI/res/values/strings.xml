@@ -4889,29 +4889,29 @@
     <!-- Label for the camera toggle [CHAR LIMIT=NONE] -->
     <string name="av_camera_label">Camera</string>
     <!-- Title for background blur drill in page [CHAR LIMIT=20] -->
-    <string name="av_camera_blur_drill_in_title">Background Blur</string>
+    <string name="av_camera_blur_drill_in_title">Background blur</string>
     <!-- Title for background blur off [CHAR LIMIT=NONE] -->
     <string name="av_camera_blur_off">Off</string>
     <!-- Title for background blur light [CHAR LIMIT=NONE] -->
-    <string name="av_camera_blur_light">Light</string>
+    <string name="av_camera_blur_light">Light blur</string>
     <!-- Title for background blur full [CHAR LIMIT=NONE] -->
-    <string name="av_camera_blur_full">Full</string>
+    <string name="av_camera_blur_full">Heavy blur</string>
     <!-- Title for portrait relight button [CHAR LIMIT=NONE] -->
     <string name="av_camera_improve_lighting">Improve lighting</string>
     <!-- Title for portrait retouch button [CHAR LIMIT=NONE] -->
     <string name="av_camera_face_retouch">Portrait touch-up</string>
     <!-- Title for camera framing button [CHAR LIMIT=NONE] -->
-    <string name="av_camera_framing">Camera Framing</string>
+    <string name="av_camera_framing">Camera framing</string>
     <!-- Title for studio mic button [CHAR LIMIT=NONE] -->
-    <string name="av_studio_mic">Studio Mic</string>
+    <string name="av_studio_mic">Studio mic</string>
     <!-- Title for studio look button [CHAR LIMIT=NONE] -->
-    <string name="av_studio_look">Studio Look</string>
+    <string name="av_studio_look">Studio look</string>
     <!-- Subtitle for studio look button showing number of active effects [CHAR LIMIT=NONE] -->
     <string name="av_studio_look_effects">%d effects</string>
     <!-- Title for blur button [CHAR LIMIT=NONE] -->
     <string name="av_blur">Blur</string>
     <!-- Title for live captions button [CHAR LIMIT=NONE] -->
-    <string name="av_live_captions">Live Captions</string>
+    <string name="av_live_captions">Live captions</string>
     <!-- Content description for return action -->
     <string name="av_drill_in_return_to_main">Back</string>
 
