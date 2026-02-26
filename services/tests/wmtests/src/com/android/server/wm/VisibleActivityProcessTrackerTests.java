@@ -25,15 +25,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.app.IApplicationThread;
-import android.app.WindowConfiguration;
 import android.content.pm.ApplicationInfo;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.window.flags.Flags;
+import com.android.server.am.psc.ProcessRecordInternal;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -113,11 +110,12 @@ public class VisibleActivityProcessTrackerTests extends WindowTestsBase {
 
     WindowProcessController createWindowProcessController() {
         WindowProcessListener mMockListener = mock(WindowProcessListener.class);
+        ProcessRecordInternal owner = mock(ProcessRecordInternal.class);
         ApplicationInfo info = mock(ApplicationInfo.class);
         info.packageName = "test.package.name";
         doReturn(true).when(info).isChangeEnabled(INSETS_DECOUPLED_CONFIGURATION_ENFORCED);
         WindowProcessController mWpc = new WindowProcessController(
-                mAtm, info, null, 0, -1, null, mMockListener);
+                mAtm, info, null, 0, -1, owner, mMockListener);
         mWpc.setThread(mock(IApplicationThread.class));
         return mWpc;
     }

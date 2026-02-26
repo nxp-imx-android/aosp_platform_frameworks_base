@@ -33,6 +33,8 @@ import android.os.FabricatedOverlayInternal;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Slog;
 import android.util.SparseArray;
 
@@ -47,6 +49,7 @@ import com.google.ux.material.libmonet.dynamiccolor.DynamicScheme.Platform;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -60,6 +63,7 @@ import java.util.Optional;
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 public class ThemeManagerImpl implements ThemeManagerInternal {
     private static final String TAG = "ThemeManagerInternal";
+    private static final String KEY_COLOR_PALETTE_VERSION = "global_color_palette_version";
 
     private final Context mContext;
     private final ThemeStateManager mStateManager;
@@ -67,6 +71,7 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
     private final ThemeOverlayHelper mOverlayHelper;
     private final ThemeEnvironment mEnvironment;
     private final ThemeWallpaperManager mWallpaperManager;
+    private final SystemPropertiesReader mPropertyReader;
 
     private ThemeUserLifecycle mUserLifecycle;
 
@@ -82,13 +87,15 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
 
     ThemeManagerImpl(Context context, ThemeSettingsManager themeSettingsManager,
             ThemeStateManager stateManager, ThemeOverlayHelper overlayHelper,
-            ThemeEnvironment environment, ThemeWallpaperManager wallpaperManager) {
+            ThemeEnvironment environment, ThemeWallpaperManager wallpaperManager,
+            SystemPropertiesReader propertyReader) {
         mContext = context;
         mStateManager = stateManager;
         mThemeSettingsManager = themeSettingsManager;
         mOverlayHelper = overlayHelper;
         mEnvironment = environment;
         mWallpaperManager = wallpaperManager;
+        mPropertyReader = propertyReader;
     }
 
     /**
@@ -152,7 +159,7 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
         ColorScheme newLightScheme = new ColorScheme(newSeed, false, newStyle, newContrast,
                 specVersion, platform);
 
-        if (mEnvironment.platform == Platform.WATCH) {
+        if (mEnvironment.getConfig().platform() == Platform.WATCH) {
             newLightScheme = newDarkScheme;
         }
 
@@ -169,7 +176,8 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
 
         ThemeState state = mStateManager.getState(userId).getCurrentState();
         return new ThemeInfo(Color.valueOf(state.seedColor()), state.style(), state.contrast(),
-                mEnvironment.specVersion.name(), mEnvironment.platform.name());
+                mEnvironment.getConfig().specVersion().name(),
+                mEnvironment.getConfig().platform().name());
     }
 
     /**
@@ -337,7 +345,8 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
         mThemeSettingsManager.initializeDefaults();
 
         // 2. Cleanup legacy overlays
-        mOverlayHelper.cleanupLegacyOverlays(Arrays.asList(mEnvironment.legacyOverlays));
+        mOverlayHelper.cleanupLegacyOverlays(
+                Arrays.asList(mEnvironment.getConfig().legacyOverlays()));
 
         // 3. Mark environment as ready (Transitions isBooting from true -> false)
         if (mUserLifecycle != null) mEnvironment.setBootingComplete(mUserLifecycle);
@@ -346,7 +355,8 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
         mUserLifecycle.loadCurrentUser();
 
         // 5. Force color evaluation for everyone (handles OTAs and initial boot).
-        mStateManager.evaluateAllUsers(mEnvironment.isPaletteOutdated, /*isSynchronous*/ true);
+        mStateManager.evaluateAllUsers(hasPaletteOutdated(),
+                /*isSynchronous*/ true);
 
         // 6. Log completion (listeners registered in onBootPhase)
         Slog.i(TAG, "Theming system initialization complete.");
@@ -520,5 +530,25 @@ public class ThemeManagerImpl implements ThemeManagerInternal {
                     : userSettings.systemPalette().toArgb();
         }
         return seedColor;
+    }
+
+    private boolean hasPaletteOutdated() {
+        String storedVersion = Settings.Global.getString(mContext.getContentResolver(),
+                KEY_COLOR_PALETTE_VERSION);
+        String currentVersion = mPropertyReader.get("ro.build.date.utc", null);
+
+        if (TextUtils.isEmpty(currentVersion)) {
+            Slog.i(TAG, "Palette version missing. Refreshing overlays");
+            return true;
+        }
+
+        if (storedVersion != null && Objects.equals(storedVersion, currentVersion)) {
+            return false;
+        }
+
+        Slog.i(TAG, "Palette version bumped from " + storedVersion + " to " + currentVersion);
+        Settings.Global.putString(mContext.getContentResolver(), KEY_COLOR_PALETTE_VERSION,
+                currentVersion);
+        return true;
     }
 }

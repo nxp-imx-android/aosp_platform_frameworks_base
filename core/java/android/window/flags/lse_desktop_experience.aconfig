@@ -372,16 +372,6 @@ flag {
 }
 
 flag {
-    name: "enable_desktop_first_launch_adjacent_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fix a task launch with FLAG_ACTIVITY_LAUNCH_ADJACENT on desktop-first displays."
-    bug: "440254150"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_desktop_first_multiple_launch_root_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes an issue where multiple launch roots are detected for desktop-first tasks."
@@ -396,16 +386,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables desktop-first policy in DesktopModeLaunchParamsModifier."
     bug: "427828063"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "enable_desktop_first_sys_user_hsum_bugfix"
-    namespace: "lse_desktop_experience"
-    description: "Fix the bug around desktop-first policy for system user in HSUM."
-    bug: "430154044"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1239,6 +1219,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables the home to be shown behind the desktop."
     bug: "375644149"
+}
+
+flag {
+    name: "show_when_locked_desktop_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes an issue where show-when-locked activities are not correctly handled on external displays in desktop mode."
+    bug: "443008976"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

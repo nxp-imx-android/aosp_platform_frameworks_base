@@ -241,10 +241,8 @@ final class AppLockController {
 
     /**
      * Returns {@code true} if the given activity is currently in a locked state by App Lock.
-     *
-     * <p>This method checks if the activity's package is currently locked and verifies that
-     * there are no other visible, unlocked tasks for the same package (which would indicate
-     * an active, unlocked session).
+     * Refer to {@link AppLockOverlayController#isActivityLockedByAppLock(ActivityRecord)}
+     * for documentation.
      *
      * @param activity the activity to check for the App Lock locked state
      * @return {@code true} if the activity is locked
@@ -253,17 +251,7 @@ final class AppLockController {
     boolean isActivityLockedByAppLockLocked(@NonNull ActivityRecord activity) {
         Objects.requireNonNull(activity);
 
-        if (activity.finishing) {
-            return false;
-        }
-        // TODO(b/462423789): Remove hasVisibleTask check once AppLockLocalService listens to task
-        //  visibility changes.
-        final String packageName = activity.packageName;
-        final int userId = activity.mUserId;
-        return packageName != null
-                && isPackageLockedByAppLockLocked(packageName, userId)
-                && !mAppLockOverlayController.hasVisibleNonLockedTaskForPackage(packageName,
-                userId);
+        return mAppLockOverlayController.isActivityLockedByAppLock(activity);
     }
 
     /**

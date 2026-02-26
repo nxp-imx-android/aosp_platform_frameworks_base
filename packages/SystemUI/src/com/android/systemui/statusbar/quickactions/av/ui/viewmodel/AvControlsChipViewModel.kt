@@ -43,8 +43,8 @@ constructor(
     private val popupViewModelFactory: AvControlsPopupViewModel.Factory,
 ) : StatusBarPopupChipViewModel, ExclusiveActivatable() {
     companion object {
-        val CAMERA_DRAWABLE: Int = R.drawable.gs_videocam_filled
-        val MICROPHONE_DRAWABLE: Int = R.drawable.gs_mic_filled
+        val CAMERA_DRAWABLE: Int = R.drawable.av_controls_chip_camera
+        val MICROPHONE_DRAWABLE: Int = R.drawable.av_controls_chip_mic
     }
 
     private val hydrator: Hydrator = Hydrator("AvControlsChipViewModel.hydrator")

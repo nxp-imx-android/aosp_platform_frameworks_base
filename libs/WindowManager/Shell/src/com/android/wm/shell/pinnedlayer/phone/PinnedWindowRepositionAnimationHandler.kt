@@ -16,18 +16,14 @@
 
 package com.android.wm.shell.pinnedlayer.phone
 
-import android.animation.RectEvaluator
-import android.animation.ValueAnimator
 import android.app.TaskInfo
 import android.graphics.Rect
 import android.os.IBinder
-import android.view.Choreographer
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
-import androidx.core.animation.addListener
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.OnTaskRepositionAnimationListener
 
@@ -42,10 +38,9 @@ import com.android.wm.shell.windowdecor.OnTaskRepositionAnimationListener
  */
 class PinnedWindowRepositionAnimationHandler(
     private val transitions: Transitions,
-    private val transactionFactory: () -> SurfaceControl.Transaction,
+    private val windowRepositionAnimator: PinnedWindowRepositionAnimator,
 ) : Transitions.TransitionHandler {
 
-    private val rectEvaluator = RectEvaluator(Rect())
     private var startBounds: Rect? = null
     private var onAnimationStartCallback: (SurfaceControl.Transaction) -> Unit = {}
     private var onAnimationCanceled: (SurfaceControl.Transaction) -> Unit = {}
@@ -115,39 +110,21 @@ class PinnedWindowRepositionAnimationHandler(
 
         finishTransaction.setPosition(leash, endBounds.left.toFloat(), endBounds.top.toFloat())
 
-        val tx = transactionFactory()
-        val animator =
-            ValueAnimator.ofObject(rectEvaluator, startBounds, endBounds)
-                .setDuration(RESIZE_DURATION_MS)
-                .apply {
-                    addListener(
-                        onStart = {
-                            onAnimationStartCallback(startTransaction)
-                            startTransaction
-                                .setPosition(
-                                    leash,
-                                    startBounds.left.toFloat(),
-                                    startBounds.top.toFloat(),
-                                )
-                                .show(leash)
-                                .apply()
-                            onTaskRepositionAnimationListener?.onAnimationStart(taskId)
-                        },
-                        onEnd = {
-                            onTaskRepositionAnimationListener?.onAnimationEnd(taskId)
-                            this@PinnedWindowRepositionAnimationHandler.startBounds = null
-                            finishCallback.onTransitionFinished(null)
-                        },
-                    )
-                    addUpdateListener { anim ->
-                        val rect = anim.animatedValue as Rect
-                        tx.setPosition(leash, rect.left.toFloat(), rect.top.toFloat())
-                            .setFrameTimeline(Choreographer.getInstance().getVsyncId())
-                            .apply()
-                    }
-                }
-
-        animator.start()
+        windowRepositionAnimator.start(
+            leash,
+            startBounds,
+            endBounds,
+            startTransaction,
+            onStart = { tx ->
+                onAnimationStartCallback(tx)
+                onTaskRepositionAnimationListener?.onAnimationStart(taskId)
+            },
+            onEnd = {
+                onTaskRepositionAnimationListener?.onAnimationEnd(taskId)
+                this@PinnedWindowRepositionAnimationHandler.startBounds = null
+                finishCallback.onTransitionFinished(null)
+            },
+        )
         return true
     }
 
@@ -157,9 +134,5 @@ class PinnedWindowRepositionAnimationHandler(
         finishTransaction: SurfaceControl.Transaction?,
     ) {
         finishTransaction?.run { onAnimationCanceled(this) }
-    }
-
-    private companion object {
-        private const val RESIZE_DURATION_MS = 300L
     }
 }

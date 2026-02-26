@@ -106,7 +106,7 @@ fun ContentScope.QuickSettingsContent(
         media =
             @Composable {
                 if (isAlwaysComposedContentVisible()) {
-                    Element(key = Media.Elements.mediaCarousel, modifier = Modifier) {
+                    Element(key = Media.Elements.MediaCarousel, modifier = Modifier) {
                         Media(
                             viewModelFactory = viewModel.mediaViewModelFactory,
                             presentationStyle = MediaPresentationStyle.Default,

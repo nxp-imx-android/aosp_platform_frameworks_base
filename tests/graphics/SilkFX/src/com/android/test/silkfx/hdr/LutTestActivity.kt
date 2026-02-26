@@ -369,12 +369,13 @@ class LutTestActivity : AppCompatActivity() {
     }
 
     private fun createAndRenderHardwareBuffer(holder: SurfaceHolder, bitmap: Bitmap, luts: DisplayLuts?, applyAgtm: Boolean) {
-        val imageWidth = bitmap.width
-        val imageHeight = bitmap.height
+
+        val surfaceWidth = holder.surfaceFrame.width()
+        val surfaceHeight = holder.surfaceFrame.height()
 
         val buffer = HardwareBuffer.create(
-            imageWidth,
-            imageHeight,
+            surfaceWidth,
+            surfaceHeight,
             HardwareBuffer.RGBA_1010102,
             1, // layers
             HardwareBuffer.USAGE_GPU_COLOR_OUTPUT or HardwareBuffer.USAGE_GPU_SAMPLED_IMAGE
@@ -394,12 +395,9 @@ class LutTestActivity : AppCompatActivity() {
 
         val canvas = renderNode.beginRecording()
 
-        // calculate the scale to match the screen
-        val surfaceWidth = holder.surfaceFrame.width()
-        val surfaceHeight = holder.surfaceFrame.height()
-
-        val scaleX = surfaceWidth.toFloat() / imageWidth.toFloat()
-        val scaleY = surfaceHeight.toFloat() / imageHeight.toFloat()
+        // Scale from a large bitmap down to the surface destination
+        val scaleX = surfaceWidth.toFloat() / bitmap.width.toFloat()
+        val scaleY = surfaceHeight.toFloat() / bitmap.height.toFloat()
         val scale = minOf(scaleX, scaleY)
 
         val matrix = Matrix().apply{ postScale(scale, scale) }

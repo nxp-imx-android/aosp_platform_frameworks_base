@@ -91,6 +91,7 @@ import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.am.psc.AsyncBatchSession;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessStateController;
 import com.android.server.display.DisplayControl;
 import com.android.server.display.color.ColorDisplayService;
@@ -557,11 +558,12 @@ public class SystemServicesTestRule implements TestRule {
 
     static WindowProcessController addProcess(ActivityTaskManagerService atmService,
             ApplicationInfo info, String procName, int pid) {
+        final ProcessRecordInternal mockOwner = mock(ProcessRecordInternal.class);
         final WindowProcessListener mockListener = mock(WindowProcessListener.class,
                 withSettings().stubOnly());
         final int uid = info.uid;
         final WindowProcessController proc = new WindowProcessController(atmService,
-                info, procName, uid, UserHandle.getUserId(uid), mockListener, mockListener);
+                info, procName, uid, UserHandle.getUserId(uid), mockOwner, mockListener);
         proc.setThread(mock(IApplicationThread.class, withSettings().stubOnly()));
         atmService.mProcessNames.put(procName, uid, proc);
         if (pid > 0) {

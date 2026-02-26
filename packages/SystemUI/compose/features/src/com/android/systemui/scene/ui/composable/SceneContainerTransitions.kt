@@ -493,6 +493,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cujTag = TAG_EXPAND,
             ) {
                 toNotificationsShadeTransition(
+                    enableSharedElements = true,
                     shadeExpansionMotion = shadeExpansionMotion,
                     revealHaptics = revealHaptics,
                 )
@@ -506,6 +507,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 reversed {
                     toNotificationsShadeTransition(
                         shadeExpansionMotion = shadeExpansionMotion,
+                        enableSharedElements = false,
                         revealHaptics = revealHaptics,
                     )
                 }
@@ -518,6 +520,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 toNotificationsShadeTransition(
                     shadeExpansionMotion = shadeExpansionMotion,
+                    enableSharedElements = false,
                     revealHaptics = revealHaptics,
                 )
             }
@@ -555,6 +558,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 toNotificationsShadeTransition(
                     durationScale = 0.9,
+                    enableSharedElements = false,
                     shadeExpansionMotion = shadeExpansionMotion,
                     revealHaptics = revealHaptics,
                 )
@@ -579,6 +583,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 cujTag = TAG_EXPAND,
             ) {
                 lockscreenToNotificationsShadeTransition(
+                    useSharedElementTransitions = true,
                     shadeExpansionMotion = shadeExpansionMotion,
                     revealHaptics = revealHaptics,
                 )
@@ -592,6 +597,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 lockscreenToNotificationsShadeTransition(
                     durationScale = 0.9,
+                    useSharedElementTransitions = true,
                     shadeExpansionMotion = shadeExpansionMotion,
                     revealHaptics = revealHaptics,
                 )
@@ -628,6 +634,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 reversed {
                     lockscreenToNotificationsShadeTransition(
+                        useSharedElementTransitions = false,
                         shadeExpansionMotion = shadeExpansionMotion,
                         revealHaptics = revealHaptics,
                     )
@@ -643,6 +650,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 reversed {
                     lockscreenToNotificationsShadeTransition(
                         durationScale = 0.9,
+                        useSharedElementTransitions = false,
                         shadeExpansionMotion = shadeExpansionMotion,
                         revealHaptics = revealHaptics,
                     )

@@ -28,12 +28,14 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.eq
@@ -58,13 +60,15 @@ class FluidTaskResizerTest : ShellTestCase() {
     private val mockWindowDecoration = mock<WindowDecorationWrapper>()
     private val mockDesktopRepository = mock<DesktopRepository>()
     private val mockDragEventListener = mock<DragPositioningCallbackUtility.DragEventListener>()
-
+    private val mockDisplayLayout = mock<DisplayLayout>()
     private lateinit var taskResizer: FluidTaskResizer
     private lateinit var dragSession: DragSession
 
     @Before
     fun setUp() {
         whenever(mockTaskToken.asBinder()).thenReturn(mockTaskBinder)
+        whenever(mockDisplayController.getDisplayLayout(anyInt())).thenReturn(mockDisplayLayout)
+        whenever(mockDisplayLayout.densityDpi()).thenReturn(400)
         whenever(mockWindowDecoration.taskInfo)
             .thenReturn(
                 ActivityManager.RunningTaskInfo().apply {

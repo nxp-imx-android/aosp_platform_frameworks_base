@@ -15,7 +15,9 @@
  */
 package com.android.wm.shell.hierarchy.updates
 
+import android.app.ActivityManager
 import android.os.IBinder
+import android.view.InsetsState
 import android.view.SurfaceControl
 import android.view.WindowManager
 import android.window.DisplayAreaOrganizer
@@ -26,6 +28,7 @@ import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.Flags
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.Container
@@ -52,6 +55,7 @@ import com.android.wm.shell.transition.Transitions
 class HierarchyUpdater(
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val transitions: Transitions,
+    private val displayInsetsController: DisplayInsetsController,
     private val hierarchy: ContainerHierarchy,
     private val formFactorModes: FormFactorModes,
     shellInit: ShellInit,
@@ -69,6 +73,8 @@ class HierarchyUpdater(
         shellTaskOrganizer.setContainerHierarchyCreateRootTaskListener(
             ContainerHierarchyRootTaskHook()
         )
+        shellTaskOrganizer.addTaskInfoChangedListener(ContainerHierarchyTaskInfoListener())
+        displayInsetsController.addGlobalInsetsChangedListener(DisplayContainerInsetsUpdater())
         if (!com.android.window.flags.Flags.transitMixpatcherBase()) {
             // The planner will update the hierarchy in lieu of the observer with mixpatcher
             transitions.registerObserver(ContainerHierarchyTransitionObserver())
@@ -176,8 +182,12 @@ class HierarchyUpdater(
         }
         updaterTestHook?.onModesNotified()
 
-        // Dump the hierarchy
-        HierarchyDebugUtils.dumpHierarchy(hierarchy, snapshot)
+        // Dump the container requested, or the full hierarchy
+        if (updateContext.dumpOnlyContainer != null) {
+            HierarchyDebugUtils.dumpContainer(updateContext.dumpOnlyContainer!!, snapshot)
+        } else {
+            HierarchyDebugUtils.dumpHierarchy(hierarchy, snapshot)
+        }
     }
 
     fun handleCreateRootTask(
@@ -236,6 +246,26 @@ class HierarchyUpdater(
         }
     }
 
+    fun handleTaskInfoChanged(taskInfo: ActivityManager.RunningTaskInfo) {
+        val container = hierarchy.getContainer(taskInfo.token)
+        if (container == null || container.props !is TaskContainerProperties) {
+            return
+        }
+
+        val snapshot = HierarchySnapshot(hierarchy.toContainerList())
+        val taskProps = container.props<TaskContainerProperties>()
+        taskProps.updateFromTaskInfoChanged(taskInfo)
+
+        if (!snapshot.getChanges(container).isEmpty) {
+            notifyModes(
+                Mode.UpdateContext(
+                    reason = "${container.name} info change",
+                    dumpOnlyContainer = container
+                ), snapshot
+            )
+        }
+    }
+
     fun handleTransition(
         transition: IBinder,
         info: TransitionInfo,
@@ -287,6 +317,19 @@ class HierarchyUpdater(
             }
         }
         return snapshot
+    }
+
+    fun handleDisplayInsetsChanged(displayId: Int, insetsState: InsetsState) {
+        val display = hierarchy.getDisplay(displayId)
+        if (display == null) {
+            return
+        }
+
+        val snapshot = HierarchySnapshot(hierarchy.toContainerList())
+        val displayProps = display.props<DisplayContainerProperties>()
+        if (displayProps.updateInsetsState(insetsState)) {
+            notifyModes(Mode.UpdateContext(reason = "${display.name} insets changed"), snapshot)
+        }
     }
 
     /**
@@ -436,7 +479,7 @@ class HierarchyUpdater(
     /**
      * Hooks into ShellTaskOrganizer to listen for changes to root tasks.
      */
-    inner class ContainerHierarchyRootTaskHook
+    private inner class ContainerHierarchyRootTaskHook
         : ShellTaskOrganizer.ContainerHierarchyRootTaskListener {
         override fun onRootTaskCreated(appearedInfo: TaskAppearedInfo, name: String) {
             handleCreateRootTask(appearedInfo, name)
@@ -448,9 +491,18 @@ class HierarchyUpdater(
     }
 
     /**
+     * Hooks into ShellTaskOrganizer to listen for task info changes.
+     */
+    private inner class ContainerHierarchyTaskInfoListener : ShellTaskOrganizer.TaskInfoChangedListener {
+        override fun onTaskInfoChanged(taskInfo: ActivityManager.RunningTaskInfo?) {
+            handleTaskInfoChanged(taskInfo!!)
+        }
+    }
+
+    /**
      * Hooks into transitions to listen for, and update from, incoming transitions.
      */
-    inner class ContainerHierarchyTransitionObserver : Transitions.TransitionObserver {
+    private inner class ContainerHierarchyTransitionObserver : Transitions.TransitionObserver {
         override fun onTransitionReady(
             transition: IBinder,
             info: TransitionInfo,
@@ -458,6 +510,16 @@ class HierarchyUpdater(
             finishTransaction: SurfaceControl.Transaction
         ) {
             handleTransition(transition, info, startTransaction)
+        }
+    }
+
+    /**
+     * Hooks into display insets updates from WM.
+     */
+    private inner class DisplayContainerInsetsUpdater : DisplayInsetsController.OnInsetsChangedListener {
+        /** @see DisplayInsetsController.OnInsetsChangedListener.insetsChanged */
+        override fun insetsChanged(displayId: Int, insetsState: InsetsState?) {
+            handleDisplayInsetsChanged(displayId, insetsState!!)
         }
     }
 

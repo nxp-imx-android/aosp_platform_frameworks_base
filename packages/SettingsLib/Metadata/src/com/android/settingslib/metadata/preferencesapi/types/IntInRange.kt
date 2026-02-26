@@ -22,6 +22,8 @@ import com.android.settingslib.metadata.R
 /** Any int in the given range, along the given step. */
 class IntInRange(val min: Int?, val max: Int?, val step: Int = 1): ApiType<Int> {
 
+    override fun getType(): Class<Int> = Int::class.java
+
     init {
         require(min != null || max != null)
     }
@@ -35,4 +37,6 @@ class IntInRange(val min: Int?, val max: Int?, val step: Int = 1): ApiType<Int> 
             else -> error("There needs to be at least a minimum bound or a maximum bound in an IntInRange")
         }
     }
+
+    override fun getKey(): String = "IntInRange:${min}:${max}:${step}"
 }

@@ -18,7 +18,9 @@ package com.android.server.companion.virtual;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SuppressLint;
 import android.companion.virtual.ViewConfigurationParams;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.om.FabricatedOverlay;
@@ -26,9 +28,12 @@ import android.content.om.OverlayConstraint;
 import android.content.om.OverlayIdentifier;
 import android.content.om.OverlayManager;
 import android.content.om.OverlayManagerTransaction;
+import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.provider.Settings;
+import android.util.ArraySet;
 import android.util.Slog;
 import android.util.TypedValue;
 
@@ -36,6 +41,8 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Controls the application of {@link ViewConfigurationParams} for a virtual device.
@@ -59,29 +66,29 @@ public class ViewConfigurationController {
     private static final String SCROLL_FRICTION_RESOURCE_NAME = "dimen/config_scrollFriction";
 
     private final OverlayManager mOverlayManager;
+    private final UserManager mUserManager;
     private final SettingsWriter mSettingsWriter;
     private final Object mLock = new Object();
+    private final AtomicBoolean mIsClosed = new AtomicBoolean(false);
 
     @GuardedBy("mLock")
     @Nullable
     private OverlayIdentifier mOverlayIdentifier = null;
 
     ViewConfigurationController(@NonNull Context context) {
-        this(context, (key, value, deviceId) -> {
-            int callingUserId = Binder.getCallingUserHandle().getIdentifier();
-            Binder.withCleanCallingIdentity(() -> {
-                Context deviceContext = context
-                        .createContextAsUser(UserHandle.of(callingUserId), 0 /* flags */)
-                        .createDeviceContext(deviceId);
-                ContentResolver contentResolver = deviceContext.getContentResolver();
-                Settings.Secure.putInt(contentResolver, key, value);
-            });
+        this(context, (key, value, deviceId, userId) -> {
+            Context deviceContext = context
+                    .createContextAsUser(UserHandle.of(userId), 0 /* flags */)
+                    .createDeviceContext(deviceId);
+            ContentResolver contentResolver = deviceContext.getContentResolver();
+            Settings.Secure.putInt(contentResolver, key, value);
         });
     }
 
     @VisibleForTesting
     ViewConfigurationController(@NonNull Context context, @NonNull SettingsWriter settingsWriter) {
         mOverlayManager = context.getSystemService(OverlayManager.class);
+        mUserManager = context.getSystemService(UserManager.class);
         mSettingsWriter = settingsWriter;
     }
 
@@ -90,7 +97,7 @@ public class ViewConfigurationController {
      */
     public void applyViewConfigurationParams(int deviceId,
             @Nullable ViewConfigurationParams viewConfigurationParams) {
-        if (viewConfigurationParams == null) {
+        if (viewConfigurationParams == null || mIsClosed.get()) {
             return;
         }
 
@@ -99,9 +106,44 @@ public class ViewConfigurationController {
     }
 
     /**
+     * Applies given {@link ViewConfigurationParams} for the given {@code deviceId} and
+     * {@code userId}.
+     */
+    public void applyViewConfigurationParamsForUser(int userId, int deviceId,
+            @Nullable ViewConfigurationParams viewConfigurationParams) {
+        if (!Flags.multiUserViewConfiguration() || viewConfigurationParams == null
+                || mIsClosed.get()) {
+            return;
+        }
+
+        OverlayIdentifier overlayIdentifier;
+        synchronized (mLock) {
+            overlayIdentifier = mOverlayIdentifier;
+        }
+
+        Binder.withCleanCallingIdentity(() -> {
+            if (overlayIdentifier != null) {
+                OverlayManagerTransaction.Builder transactionBuilder =
+                        new OverlayManagerTransaction.Builder();
+                transactionBuilder.setEnabled(overlayIdentifier, true /* enable */, userId,
+                        List.of(new OverlayConstraint(OverlayConstraint.TYPE_DEVICE_ID,
+                                deviceId)));
+                mOverlayManager.commit(transactionBuilder.build());
+            }
+
+            applySettingsForUser(deviceId, userId, viewConfigurationParams);
+        });
+    }
+
+    /**
      * Clears the applied {@link ViewConfigurationParams}.
      */
     public void close() {
+        if (mIsClosed.get()) {
+            return;
+        }
+        mIsClosed.set(true);
+
         OverlayManagerTransaction transaction;
         synchronized (mLock) {
             if (mOverlayIdentifier == null) {
@@ -109,7 +151,7 @@ public class ViewConfigurationController {
             }
 
             transaction = new OverlayManagerTransaction.Builder().unregisterFabricatedOverlay(
-                            mOverlayIdentifier).build();
+                    mOverlayIdentifier).build();
         }
 
         Binder.withCleanCallingIdentity(() -> mOverlayManager.commit(transaction));
@@ -144,13 +186,15 @@ public class ViewConfigurationController {
 
         int callingUserId = Binder.getCallingUserHandle().getIdentifier();
         Binder.withCleanCallingIdentity(() -> {
-            mOverlayManager.commit(
+            OverlayManagerTransaction.Builder transactionBuilder =
                     new OverlayManagerTransaction.Builder()
-                            .registerFabricatedOverlay(overlay)
-                            .setEnabled(overlayIdentifier, true /* enable */, callingUserId,
-                                    List.of(new OverlayConstraint(OverlayConstraint.TYPE_DEVICE_ID,
-                                            deviceId)))
-                            .build());
+                            .registerFabricatedOverlay(overlay);
+            for (int userId : getApplicableUserIds(mUserManager, callingUserId)) {
+                transactionBuilder.setEnabled(overlayIdentifier, true /* enable */, userId,
+                        List.of(new OverlayConstraint(OverlayConstraint.TYPE_DEVICE_ID,
+                                deviceId)));
+            }
+            mOverlayManager.commit(transactionBuilder.build());
             synchronized (mLock) {
                 mOverlayIdentifier = overlayIdentifier;
             }
@@ -159,23 +203,40 @@ public class ViewConfigurationController {
 
     private void applySettings(int deviceId,
             @NonNull ViewConfigurationParams viewConfigurationParams) {
+        int callingUserId = Binder.getCallingUserHandle().getIdentifier();
+        Binder.withCleanCallingIdentity(() -> {
+            for (int userId : getApplicableUserIds(mUserManager, callingUserId)) {
+                applySettingsForUser(deviceId, userId, viewConfigurationParams);
+            }
+        });
+    }
+
+    private void applySettingsForUser(int deviceId, int userId,
+            @NonNull ViewConfigurationParams viewConfigurationParams) {
         int longPressTimeout =
                 (int) viewConfigurationParams.getLongPressTimeoutDuration().toMillis();
         int multiPressTimeout =
                 (int) viewConfigurationParams.getMultiPressTimeoutDuration().toMillis();
-        boolean isLongPressTimeoutInvalid = isInvalid(longPressTimeout);
-        boolean isMultiPressTimeoutInvalid = isInvalid(multiPressTimeout);
-        if (isLongPressTimeoutInvalid && isMultiPressTimeoutInvalid) {
-            return;
+        if (!isInvalid(longPressTimeout)) {
+            mSettingsWriter.writeSettings(Settings.Secure.LONG_PRESS_TIMEOUT,
+                    longPressTimeout, deviceId, userId);
         }
+        if (!isInvalid(multiPressTimeout)) {
+            mSettingsWriter.writeSettings(Settings.Secure.MULTI_PRESS_TIMEOUT,
+                    multiPressTimeout, deviceId, userId);
+        }
+    }
 
-        if (!isLongPressTimeoutInvalid) {
-            mSettingsWriter.writeSettings(Settings.Secure.LONG_PRESS_TIMEOUT, longPressTimeout,
-                    deviceId);
-        }
-        if (!isMultiPressTimeoutInvalid) {
-            mSettingsWriter.writeSettings(Settings.Secure.MULTI_PRESS_TIMEOUT, multiPressTimeout,
-                    deviceId);
+    @SuppressLint("AndroidFrameworkRequiresPermission")
+    private static Set<Integer> getApplicableUserIds(UserManager userManager, int callingUserId) {
+        if (Flags.multiUserViewConfiguration()) {
+            Set<Integer> userIds = new ArraySet<>();
+            for (UserInfo user : userManager.getAliveUsers()) {
+                userIds.add(user.id);
+            }
+            return userIds;
+        } else {
+            return Set.of(callingUserId);
         }
     }
 
@@ -227,6 +288,6 @@ public class ViewConfigurationController {
 
     @VisibleForTesting
     interface SettingsWriter {
-        void writeSettings(@NonNull String key, int value, int deviceId);
+        void writeSettings(@NonNull String key, int value, int deviceId, int userId);
     }
 }

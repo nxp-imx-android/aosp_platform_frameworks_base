@@ -30,6 +30,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.UserInfo;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
@@ -39,10 +40,12 @@ import android.graphics.drawable.LayerDrawable;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.UserHandle;
+import android.os.UserManager;
 import android.provider.Settings;
 import android.telephony.AccessNetworkConstants;
 import android.telephony.NetworkRegistrationInfo;
@@ -97,11 +100,15 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.LocationController;
 import com.android.systemui.toast.SystemUIToast;
 import com.android.systemui.toast.ToastFactory;
+import com.android.systemui.user.data.repository.UserRepository;
 import com.android.systemui.util.CarrierConfigTracker;
+import com.android.systemui.util.kotlin.JavaAdapterKt;
 import com.android.systemui.util.settings.GlobalSettings;
 import com.android.wifitrackerlib.HotspotNetworkEntry;
 import com.android.wifitrackerlib.MergedCarrierEntry;
 import com.android.wifitrackerlib.WifiEntry;
+
+import kotlinx.coroutines.CoroutineScope;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -211,6 +218,8 @@ public class InternetDetailsContentController implements AccessPointController.A
     private WifiStateWorker mWifiStateWorker;
     private boolean mHasActiveSubIdOnDds;
     private boolean mIsMobileDataEnabled = false;
+    private UserRepository mUserRepository;
+    private boolean mHasMultipleFullUsers = false;
 
     @VisibleForTesting
     Map<Integer, ServiceState> mSubIdServiceState = new HashMap<>();
@@ -297,7 +306,8 @@ public class InternetDetailsContentController implements AccessPointController.A
             LocationController locationController,
             DialogTransitionAnimator dialogTransitionAnimator, WifiStateWorker wifiStateWorker,
             FeatureFlags featureFlags,
-            ShadeDialogContextInteractor shadeDialogContextInteractor
+            ShadeDialogContextInteractor shadeDialogContextInteractor,
+            UserRepository userRepository
         ) {
         if (DEBUG) {
             Log.d(TAG, "Init InternetDetailsContentController");
@@ -334,9 +344,11 @@ public class InternetDetailsContentController implements AccessPointController.A
         mWifiStateWorker = wifiStateWorker;
         mFeatureFlags = featureFlags;
         mShadeDialogContextInteractor = shadeDialogContextInteractor;
+        mUserRepository = userRepository;
     }
 
-    void onStart(@NonNull InternetDialogCallback callback, boolean canConfigWifi) {
+    void onStart(@NonNull InternetDialogCallback callback,
+            boolean canConfigWifi, @NonNull CoroutineScope coroutineScope) {
         if (DEBUG) {
             Log.d(TAG, "onStart");
         }
@@ -371,6 +383,15 @@ public class InternetDetailsContentController implements AccessPointController.A
                 Log.w(TAG, "Unable to register callback for modem state changes : " + e);
             }
         }
+
+        JavaAdapterKt.collectFlow(
+                coroutineScope,
+                mUserRepository.getHasMultipleFullUsers(),
+                hasMultipleFullUsers -> {
+                    mHasMultipleFullUsers = hasMultipleFullUsers;
+                    scanWifiAccessPoints();
+                }
+        );
     }
 
     void onStop() {
@@ -1609,6 +1630,30 @@ public class InternetDetailsContentController implements AccessPointController.A
         }, SHORT_DURATION_TIMEOUT);
     }
 
+    /** @return  true if the current user is at the login screen. */
+    @VisibleForTesting
+    boolean isHeadlessSystemUser() {
+        int userId = mUserRepository.getSelectedUserInfo().id;
+        return UserManager.isHeadlessSystemUserMode()
+                && userId == UserHandle.USER_SYSTEM;
+    }
+
+    /** @return  true if the current user is a guest. */
+    @VisibleForTesting
+    boolean isGuestUser() {
+        UserInfo userInfo = mUserRepository.getSelectedUserInfo();
+        return userInfo != null && userInfo.isGuest();
+    }
+
+    private boolean isNetworkOwner(@NonNull WifiConfiguration config) {
+        int currentUserId = mUserRepository.getSelectedUserInfo().id;
+        int creatorUserId = config.getCreatorUserId();
+
+        // Network is "owned" if it's a single-user device OR if the creator
+        // matches the current user
+        return !mHasMultipleFullUsers || (currentUserId == creatorUserId);
+    }
+
     Intent getConfiguratorQrCodeGeneratorIntentOrNull(WifiEntry wifiEntry) {
         if (!mFeatureFlags.isEnabled(Flags.SHARE_WIFI_QS_BUTTON) || wifiEntry == null
                 || mWifiManager == null || !wifiEntry.canShare()) {
@@ -1616,6 +1661,10 @@ public class InternetDetailsContentController implements AccessPointController.A
         }
         var wifiConfiguration = wifiEntry.getWifiConfiguration();
         if (wifiConfiguration == null) {
+            return null;
+        }
+        if (isGuestUser() || isHeadlessSystemUser()
+                || !isNetworkOwner(wifiConfiguration)) {
             return null;
         }
         Intent intent = new Intent();

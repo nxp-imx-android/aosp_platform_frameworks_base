@@ -18,8 +18,6 @@ package com.android.wm.shell.bubbles.bar;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
-
 import static java.lang.Math.max;
 
 import android.annotation.CallbackExecutor;
@@ -45,7 +43,6 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
-import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.bubbles.BubbleExpandedViewManager;
@@ -60,6 +57,7 @@ import com.android.wm.shell.bubbles.util.DefaultBubblePolicyHelper;
 import com.android.wm.shell.dagger.HasWMComponent;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.ContextUtils;
+import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.taskview.TaskView;
 
 import java.io.PrintWriter;
@@ -438,9 +436,14 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     boolean animateExpansionWhenTaskViewVisible(
             @NonNull Runnable animateExpansion, @Nullable Runnable endRunnable) {
         if ((mBubbleTaskView != null && mBubbleTaskView.isVisible()) || mIsOverflow) {
+            BubbleLog.d(
+                    "BubbleBarExpandedView.animateExpansionWhenTaskViewVisible() key=%s animate",
+                    getBubbleKey());
             animateExpansion.run();
             return false;
         } else {
+            BubbleLog.d("BubbleBarExpandedView.animateExpansionWhenTaskViewVisible() key=%s wait",
+                    getBubbleKey());
             mAnimateExpansion = animateExpansion;
             mAnimateExpansionEndRunnable = endRunnable;
             return true;
@@ -453,6 +456,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
      */
     void cancelPendingAnimation() {
         if (mAnimateExpansion != null) {
+            BubbleLog.d("BubbleBarExpandedView.cancelPendingAnimation() key=%s", getBubbleKey());
             mAnimateExpansion = null;
             // The end runnable must be executed here, because it is not invoked for non-running
             // animators.
@@ -463,8 +467,9 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     }
 
     private void onTaskViewVisible() {
-        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "BBEV.onTaskViewVisible()");
         if (mAnimateExpansion != null) {
+            BubbleLog.d("BubbleBarExpandedView.onTaskViewVisible() key=%s animate expansion",
+                    getBubbleKey());
             mAnimateExpansion.run();
             mAnimateExpansion = null;
             // No need to execute the end runnable if the animation is played. It will be run in the
@@ -619,6 +624,10 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     @Nullable
     BubbleTaskView getBubbleTaskView() {
         return mBubbleTaskView;
+    }
+
+    private String getBubbleKey() {
+        return mBubble != null ? mBubble.getKey() : "null";
     }
 
     /**

@@ -1313,10 +1313,11 @@ class DesktopRepository(
         if (!Flags.enableRememberedBounds()) {
             return
         }
-        rememberedBoundsRatioByPackageName.remove(packageName)
-        // The display ID doesn't matter actually because only [rememberedBoundsRatioByPackageName]
-        // needs to be updated.
-        updatePersistentRepository(DEFAULT_DISPLAY)
+        rememberedBoundsRatioByPackageName.remove(packageName)?.let {
+            // The display ID doesn't matter actually because only
+            // [rememberedBoundsRatioByPackageName] needs to be updated.
+            updatePersistentRepository(DEFAULT_DISPLAY)
+        }
     }
 
     /** Clears the remembered bounds ratio for all package. */

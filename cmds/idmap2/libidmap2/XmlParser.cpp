@@ -16,9 +16,9 @@
 
 #include "idmap2/XmlParser.h"
 
-#include <memory>
-#include <string>
 #include <utility>
+
+#include "androidfw/Util.h"
 
 namespace android::idmap2 {
 
@@ -84,8 +84,8 @@ XmlParser::Event XmlParser::Node::event() const {
 
 std::string XmlParser::Node::name() const {
   size_t len;
-  const String16 key16(parser_.getElementName(&len));
-  return String8(key16).c_str();
+  const auto name16 = parser_.getElementName(&len);
+  return util::Utf16ToUtf8({name16, len});
 }
 
 template <typename Func>

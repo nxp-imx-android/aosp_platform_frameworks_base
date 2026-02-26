@@ -42,6 +42,10 @@ class FakeScreenRecordCameraRepository : ScreenRecordCameraRepository {
     private val _cameraSubjectBounds = MutableStateFlow<Region?>(null)
     override val cameraSubjectBounds: StateFlow<Region?> = _cameraSubjectBounds.asStateFlow()
 
+    private val _isBackgroundColorAvailable = MutableStateFlow(false)
+    override val isBackgroundColorAvailable: StateFlow<Boolean> =
+        _isBackgroundColorAvailable.asStateFlow()
+
     private val _taps: Channel<Unit> = Channel()
     val taps: Flow<Unit> = _taps.consumeAsFlow()
 
@@ -90,5 +94,9 @@ class FakeScreenRecordCameraRepository : ScreenRecordCameraRepository {
 
     fun setCameraSubjectBounds(bounds: Region) {
         _cameraSubjectBounds.value = bounds
+    }
+
+    fun setIsBackgroundColorAvailable(isAvailable: Boolean) {
+        _isBackgroundColorAvailable.value = isAvailable
     }
 }

@@ -63,7 +63,6 @@ public final class OverlayInfo implements CriticalOverlayInfo, Parcelable {
             STATE_OVERLAY_IS_BEING_REPLACED,
             STATE_SYSTEM_UPDATE_UNINSTALL,
     })
-    /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     public @interface State {}
 

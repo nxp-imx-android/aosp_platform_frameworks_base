@@ -74,6 +74,11 @@ open class DefaultClockFaceLayout(val view: View) : ClockFaceLayout {
                 // elements. To prevent this from causing our TextLayouts from becoming multi-line,
                 // we enable single line enforcement on the text view.
                 view.setSingleLine()
+                // Override the default View.TEXT_DIRECTION_FIRST_STRONG, since this TextView only
+                // contains numbers and special characters, which are directionally weak. This means
+                // the Unicode Bidirectional Algorithm would fall back to the locale default
+                // direction, yet the time should always have LTR directionality.
+                view.textDirection = View.TEXT_DIRECTION_LTR
             }
 
             ClockView(

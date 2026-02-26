@@ -289,8 +289,8 @@ public final class EmergencyNumber implements Parcelable, Comparable<EmergencyNu
         mEmergencyCallRouting = source.readInt();
     }
 
-    @Override
     /** @hide */
+    @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mNumber);
         dest.writeString(mCountryIso);
@@ -493,8 +493,8 @@ public final class EmergencyNumber implements Parcelable, Comparable<EmergencyNu
         return mEmergencyCallRouting;
     }
 
-    @Override
     /** @hide */
+    @Override
     public int describeContents() {
         return 0;
     }

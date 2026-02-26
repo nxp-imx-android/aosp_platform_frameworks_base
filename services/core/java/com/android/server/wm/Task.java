@@ -6610,9 +6610,6 @@ class Task extends TaskFragment {
      */
     @Nullable
     Task getPreservedRootTaskIfEnabled() {
-        if (!com.android.window.flags.Flags.enablePreserveLeafTaskIfRelaunch()) {
-            return null;
-        }
         final Task rootTask = getCreatedByOrganizerTask();
         if (rootTask != null && rootTask.mPreserveLeafTaskIfRelaunch) {
             return rootTask;

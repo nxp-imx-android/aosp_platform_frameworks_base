@@ -25,6 +25,10 @@ import com.android.settingslib.metadata.R
  */
 class WifiSsid : ApiType<String> {
 
+    override fun getType(): Class<String> = String::class.java
+
     override fun getDescription(context: Context): String =
         context.getString(R.string.wifi_ssid_type_description)
+
+    override fun getKey(): String = "WifiSsid"
 }

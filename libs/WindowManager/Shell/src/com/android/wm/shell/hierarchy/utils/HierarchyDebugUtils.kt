@@ -26,10 +26,13 @@ import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_BOUNDS
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_CHILDREN
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_FOCUS
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_INSETS
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_MODE
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_PARENT
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_PIP_PARAMS
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_ROOT_EXAMPLE_SHELL_PROPERTY
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_ROTATION
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_TASK_DESCRIPTION
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_VISIBILITY
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_WINDOWING_MODE
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_MODES
@@ -98,10 +101,10 @@ class HierarchyDebugUtils {
             val modeStr = if (container.mode != null)
                 " ${startModeColorTag}${container.mode!!.getId()}${endModeColorTag}" else ""
             val changeFlagStr = if (!changeFlags.isEmpty) " changes=${flagsToStr(changeFlags)}"
-            else ""
+                else ""
             val branch = if (root == container) ""
-                    else if (isLastChildInParent) "\u2514\u2500\u2500"
-                    else "\u251C\u2500\u2500"
+                else if (isLastChildInParent) "\u2514\u2500\u2500"
+                else "\u251C\u2500\u2500"
             output += "${rawPrefix}${branch}${startColorTag}${container.name}${endColorTag}" +
                     "${modeStr}${changeFlagStr}\n"
 
@@ -207,8 +210,16 @@ class HierarchyDebugUtils {
                         CHANGED_WINDOWING_MODE -> "winMode"
                         CHANGED_VISIBILITY -> "visibility"
 
+                        // Root
                         CHANGED_ROOT_EXAMPLE_SHELL_PROPERTY -> "example_prop"
                         CHANGED_FOCUS -> "focus"
+
+                        // Display
+                        CHANGED_INSETS -> "insets"
+
+                        // Task
+                        CHANGED_TASK_DESCRIPTION -> "task desc"
+                        CHANGED_PIP_PARAMS -> "pip params"
                         else -> it.toString()
                     }
                 }

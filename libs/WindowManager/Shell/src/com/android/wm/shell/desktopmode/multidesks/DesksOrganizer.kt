@@ -98,6 +98,9 @@ interface DesksOrganizer {
     /** Whether the desk is activate according to the given change at the end of a transition. */
     fun isDeskActiveAtEnd(change: TransitionInfo.Change, deskId: Int): Boolean
 
+    /** Whether the task is in the given desk. */
+    fun isTaskInDesk(taskId: Int, deskId: Int): Boolean
+
     /** Allows for other classes to respond to task changes this organizer receives. */
     fun addOnDesktopTaskInfoChangedListener(listener: (ActivityManager.RunningTaskInfo) -> Unit)
 

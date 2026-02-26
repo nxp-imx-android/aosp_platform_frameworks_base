@@ -42,6 +42,11 @@ cc_aconfig_library {
     name: "hwui_flags_cc_lib",
     host_supported: true,
     aconfig_declarations: "hwui_flags",
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 cc_defaults {
@@ -124,6 +129,7 @@ cc_defaults {
 
     whole_static_libs: [
         "hwui_flags_cc_lib",
+        "libsurfaceflingerflags",
     ],
 
     target: {
@@ -160,9 +166,6 @@ cc_defaults {
                 "libtonemap",
                 "libgui_aidl",
                 "libipcrenderbuffer_static",
-            ],
-            whole_static_libs: [
-                "libsurfaceflingerflags",
             ],
         },
         host: {

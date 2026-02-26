@@ -61,7 +61,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -179,6 +178,7 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaPlayPauseActionViewM
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSecondaryActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSettingsButtonViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
+import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.verticalSquish
 import com.android.systemui.res.R
 import kotlin.math.abs
@@ -314,19 +314,14 @@ private fun CardCarouselContent(
 
     Box(
         modifier =
-            modifier
-                .graphicsLayer {
-                    shape = roundedCornerShape
-                    clip = true
-                }
-                .pointerInput(behavior) {
-                    if (behavior.isCarouselScrollFalseTouch != null) {
-                        awaitEachGesture {
-                            awaitFirstDown(false, PointerEventPass.Initial)
-                            isFalseTouchDetected = behavior.isCarouselScrollFalseTouch.invoke()
-                        }
+            modifier.pointerInput(behavior) {
+                if (behavior.isCarouselScrollFalseTouch != null) {
+                    awaitEachGesture {
+                        awaitFirstDown(false, PointerEventPass.Initial)
+                        isFalseTouchDetected = behavior.isCarouselScrollFalseTouch.invoke()
                     }
                 }
+            }
     ) {
         @Composable
         fun PagerContent() {
@@ -1920,7 +1915,7 @@ object Media {
         val NextButton = ElementKey("next")
         val SeekBarSlider = ElementKey("seek_bar_slider")
         val OutputSwitcherButton = ElementKey("output_switcher")
-        val mediaCarousel = ElementKey("media_carousel")
+        val MediaCarousel = LockscreenElementKeys.MediaCarousel // Shared element with lock screen
 
         fun additionalActionButton(index: Int): ElementKey {
             val name = "additional_action_$index"

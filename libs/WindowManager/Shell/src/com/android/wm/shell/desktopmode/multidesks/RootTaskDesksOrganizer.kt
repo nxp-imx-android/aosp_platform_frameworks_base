@@ -508,6 +508,16 @@ class RootTaskDesksOrganizer(
             change.taskInfo?.isVisibleRequested == true &&
             change.mode == TRANSIT_TO_FRONT
 
+    override fun isTaskInDesk(taskId: Int, deskId: Int): Boolean {
+        val deskRoot =
+            checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
+        val minimizationRoot =
+            checkNotNull(deskMinimizationRootsByDeskId[deskId]) {
+                "Minimization root not found for desk: $deskId"
+            }
+        return taskId in deskRoot.children || taskId in minimizationRoot.children
+    }
+
     override fun addOnDesktopTaskInfoChangedListener(listener: (RunningTaskInfo) -> Unit) {
         if (listener in onTaskInfoChangedListeners) return
         onTaskInfoChangedListeners += listener

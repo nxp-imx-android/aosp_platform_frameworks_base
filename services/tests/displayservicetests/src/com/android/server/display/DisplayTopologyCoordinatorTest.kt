@@ -89,6 +89,7 @@ class DisplayTopologyCoordinatorTest {
             }
         }
         whenever(mockIsExtendedDisplayAllowed()).thenReturn(true)
+        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(true)
         whenever(mockTopology.copy()).thenReturn(mockTopologyCopy)
         whenever(mockTopologyCopy.graph).thenReturn(mockTopologyGraph)
         coordinator = DisplayTopologyCoordinator(injector, mockIsExtendedDisplayAllowed,
@@ -256,7 +257,6 @@ class DisplayTopologyCoordinatorTest {
 
     @Test
     fun addNonDefaultDisplay_defaultDisplayInTopologySwitchDisabled() {
-        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled).thenReturn(true)
         whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(false)
 
         // Add default display and a non-default display into the topology
@@ -281,32 +281,7 @@ class DisplayTopologyCoordinatorTest {
 
     @Test
     fun addNonDefaultDisplay_defaultDisplayInTopologySwitchEnabled() {
-        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled).thenReturn(true)
         whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(true)
-
-        // Add default display and a non-default display into the topology
-        whenever(mockTopology.hasMultipleDisplays()).thenReturn(true)
-        displayInfos[0].displayId = Display.DEFAULT_DISPLAY
-        displayInfos[0].type = Display.TYPE_INTERNAL
-        coordinator.onDisplayAdded(displayInfos[0])
-        displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
-        displayInfos[1].type = Display.TYPE_EXTERNAL
-        coordinator.onDisplayAdded(displayInfos[1])
-
-        verify(mockTopology, never()).removeDisplay(anyInt())
-        verify(mockTopologyChangedCallback, times(2)).invoke(
-            android.util.Pair(
-                mockTopologyCopy,
-                mockTopologyGraph
-            )
-        )
-        verify(mockTopologyStore, times(2)).restoreTopology(mockTopology)
-    }
-
-    @Test
-    fun addNonDefaultDisplay_flagDisabled() {
-        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled).thenReturn(false)
-        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(false)
 
         // Add default display and a non-default display into the topology
         whenever(mockTopology.hasMultipleDisplays()).thenReturn(true)
@@ -553,7 +528,6 @@ class DisplayTopologyCoordinatorTest {
 
     @Test
     fun removeNonDefaultDisplay_defaultDisplayInTopologySwitchDisabled() {
-        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled).thenReturn(true)
         whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(false)
 
         // Set up the default display
@@ -580,33 +554,7 @@ class DisplayTopologyCoordinatorTest {
 
     @Test
     fun removeNonDefaultDisplay_defaultDisplayInTopologySwitchEnabled() {
-        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled).thenReturn(true)
         whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(true)
-
-        // Set up the default display
-        displayInfos[0].displayId = Display.DEFAULT_DISPLAY
-        displayInfos[0].type = Display.TYPE_INTERNAL
-
-        // Remove a non-default display from the topology
-        displayInfos[1].displayId = Display.DEFAULT_DISPLAY + 1
-        displayInfos[1].type = Display.TYPE_EXTERNAL
-        whenever(mockTopology.removeDisplay(displayInfos[1].displayId)).thenReturn(true)
-        coordinator.onDisplayRemoved(displayInfos[1].displayId)
-
-        verify(mockTopology, never()).addDisplay(anyInt(), anyInt(), anyInt(), anyInt())
-        verify(mockTopologyChangedCallback).invoke(
-            android.util.Pair(
-                mockTopologyCopy,
-                mockTopologyGraph
-            )
-        )
-        verify(mockTopologyStore).restoreTopology(mockTopology)
-    }
-
-    @Test
-    fun removeNonDefaultDisplay_flagDisabled() {
-        whenever(mockFlags.isDefaultDisplayInTopologySwitchEnabled).thenReturn(false)
-        whenever(mockShouldIncludeDefaultDisplayInTopology()).thenReturn(false)
 
         // Set up the default display
         displayInfos[0].displayId = Display.DEFAULT_DISPLAY

@@ -20,6 +20,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.server.wm.WindowContainer.POSITION_BOTTOM;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -172,6 +173,63 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
     }
 
     @Test
+    public void lockActivitiesTasksForAppLock_withInvisibleTask_registersLockedActivities() {
+        // GIVEN an invisible task where the top activity can show when locked
+        final Task lockedTask = createLockedTask(/* isVisible= */ false);
+        final int zOrderActivityTwoTop = 3;
+        final int zOrderActivityOneMiddle = 2;
+        final int zOrderActivityTwoBottom = 1;
+        // 5 activities in the same task. Top one can showWhenLocked. 1, 3, 5 all belong to a locked
+        // package and 2, 4 belong to an unlocked package
+        final ActivityRecord topLockedActivityCanShowWhenLocked = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1) // This activity's package is locked
+                .setTask(lockedTask)
+                .build();
+        topLockedActivityCanShowWhenLocked.setShowWhenLocked(true);
+        final ActivityRecord middleLockedActivity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1) // This activity's package is locked
+                .setTask(lockedTask)
+                .build();
+        final ActivityRecord bottomLockedActivity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1) // This activity's package is locked
+                .setTask(lockedTask)
+                .build();
+        final ActivityRecord topLockedActivity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_2) // This activity's package is unlocked
+                .setTask(lockedTask)
+                .build();
+        final ActivityRecord topUnlockedActivity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_2) // This activity's package is unlocked
+                .setTask(lockedTask)
+                .build();
+
+        // Position activities from top to bottom
+        lockedTask.positionChildAt(POSITION_TOP, topLockedActivityCanShowWhenLocked, false);
+        lockedTask.positionChildAt(zOrderActivityTwoTop, topUnlockedActivity, false);
+        lockedTask.positionChildAt(zOrderActivityOneMiddle, middleLockedActivity, false);
+        lockedTask.positionChildAt(zOrderActivityTwoBottom, topLockedActivity, false);
+        lockedTask.positionChildAt(POSITION_BOTTOM, bottomLockedActivity, false);
+
+        // Ensure the task is NOT visible so the controller proceeds to check activities
+        lockedTask.setVisibleRequested(false);
+        clearInvocations(mAppLockOverlayController);
+
+        // WHEN we try to lock tasks for the locked package
+        mAppLockOverlayController.lockActivitiesTasksForAppLock(TEST_PACKAGE_1, TEST_USER_ID_1);
+
+        // THEN no overlay is added (because top activity is showWhenLocked)
+        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
+        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlay(any(), any(),
+                anyInt());
+        // AND registers all activities belonging to the locked package
+        verify(mAppLockOverlayController).registerActivity(eq(topLockedActivityCanShowWhenLocked));
+        verify(mAppLockOverlayController).registerActivity(eq(bottomLockedActivity));
+        verify(mAppLockOverlayController).registerActivity(eq(middleLockedActivity));
+        verify(mAppLockOverlayController, never()).registerActivity(eq(topLockedActivity));
+        verify(mAppLockOverlayController, never()).registerActivity(eq(topUnlockedActivity));
+    }
+
+    @Test
     public void lockActivitiesTasksForAppLock_withVisibleMixedTask_registersActivities() {
         // GIVEN a visible task with multiple locked activities from the same package
         final TestMixedStateTask mixedStateTask = createMixedStateTask(/* isVisible= */ true);
@@ -185,8 +243,16 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
                 .setComponent(TEST_COMPONENT_2) // This activity's package is not locked
                 .setTask(mixedStateTask.mTask)
                 .build();
+        final ActivityRecord middleCanShowWhenLockedActivity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1) // This activity's package is locked
+                .setTask(mixedStateTask.mTask)
+                .build();
+        middleCanShowWhenLockedActivity.setShowWhenLocked(true);
+        mixedStateTask.mTask.positionChildAt(POSITION_TOP, middleCanShowWhenLockedActivity,
+                /* includingParents= */ false);
         mixedStateTask.mTask.positionChildAt(POSITION_TOP, topUnlockedActivity,
                 /* includingParents= */ false);
+
         // Ensure the task is visible.
         mixedStateTask.mTask.setVisibleRequested(true);
         clearInvocations(mAppLockOverlayController);
@@ -201,6 +267,7 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
         // AND registers all activities belonging to the locked package
         verify(mAppLockOverlayController).registerActivity(eq(topLockedActivity));
         verify(mAppLockOverlayController).registerActivity(eq(mixedStateTask.mLockedActivity));
+        verify(mAppLockOverlayController).registerActivity(middleCanShowWhenLockedActivity);
         verify(mAppLockOverlayController, never()).registerActivity(
                 eq(mixedStateTask.mUnlockedActivity));
     }
@@ -220,6 +287,26 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
                 anyInt());
         verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
         verify(mAppLockOverlayController, never()).registerActivity(any());
+    }
+
+    @Test
+    public void lockActivitiesTasksForAppLock_withMixedTask_canShowWhenLocked_registersActivity() {
+        // GIVEN an invisible task with a mix of locked and unlocked activities
+        final TestMixedStateTask mixedStateTask = createMixedStateTask(/* isVisible= */ false);
+        final ActivityRecord lockedActivity = mixedStateTask.mLockedActivity;
+        lockedActivity.setShowWhenLocked(true);
+
+        // WHEN we try to lock tasks for the locked package
+        mAppLockOverlayController.lockActivitiesTasksForAppLock(TEST_PACKAGE_1, TEST_USER_ID_1);
+
+        // THEN no overlay is added and registers an activity because we may want to add an
+        // overlay, just not for the showWhenLocked=true activity
+        verify(mAppLockOverlayController, never()).addLockedByAppLockTaskOverlay(any(), any(),
+                anyInt());
+        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
+        verify(mAppLockOverlayController).registerActivity(eq(mixedStateTask.mLockedActivity));
+        verify(mAppLockOverlayController, never()).registerActivity(
+                eq(mixedStateTask.mUnlockedActivity));
     }
 
     @Test
@@ -750,6 +837,7 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
         final TestMixedStateTask mixedStateTask = createMixedStateTask(/* isVisible= */ false);
         final ActivityRecord targetActivity = mixedStateTask.mLockedActivity;
         targetActivity.setVisibleRequested(false);
+
         mAppLockOverlayController.registerActivity(targetActivity);
         doNothing().when(mAppLockOverlayController).addLockedByAppLockActivityOverlay(any());
         clearInvocations(mAppLockOverlayController);
@@ -760,6 +848,25 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
 
         // THEN an overlay is added for it
         verify(mAppLockOverlayController).addLockedByAppLockActivityOverlay(eq(targetActivity));
+    }
+
+    @Test
+    public void onTargetActivityBecomesVisible_canShowWhenLocked_doesNotAddOverlay() {
+        // GIVEN a registered locked activity that is not visible and can show when locked
+        final TestMixedStateTask mixedStateTask = createMixedStateTask(/* isVisible= */ false);
+        final ActivityRecord targetActivity = mixedStateTask.mLockedActivity;
+        targetActivity.setVisibleRequested(false);
+        targetActivity.setShowWhenLocked(true);
+
+        mAppLockOverlayController.registerActivity(targetActivity);
+        clearInvocations(mAppLockOverlayController);
+
+        // WHEN the target activity becomes visible
+        targetActivity.setVisibleRequested(true);
+        waitHandlerIdle(mAtm.mH);
+
+        // THEN an overlay is NOT added
+        verify(mAppLockOverlayController, never()).addLockedByAppLockActivityOverlay(any());
     }
 
     @Test
@@ -797,6 +904,67 @@ public class AppLockOverlayControllerTests extends WindowTestsBase {
         verify(targetActivity).unregisterWindowContainerListener(
                 any(WindowContainerListener.class));
         verify(overlay).unregisterWindowContainerListener(any(WindowContainerListener.class));
+    }
+
+    @Test
+    public void isActivityLockedByAppLock_packageLocked_hasVisibleTask_returnsFalse() {
+        final ActivityRecord targetActivity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1) // This activity's package is locked
+                .setVisible(true)
+                .setTask(createLockedTask(/* isVisible= */ true))
+                .build();
+        targetActivity.setVisibleRequested(true);
+
+        assertThat(mAppLockOverlayController.isActivityLockedByAppLock(targetActivity)).isFalse();
+    }
+
+    @Test
+    public void isActivityLockedByAppLock_activityFinishing_returnsFalse() {
+        final ActivityRecord targetActivity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1) // This activity's package is locked
+                .setVisible(false)
+                .setTask(createLockedTask(/* isVisible= */ false))
+                .build();
+        targetActivity.finishing = true;
+
+        assertThat(mAppLockOverlayController.isActivityLockedByAppLock(targetActivity)).isFalse();
+    }
+
+    @Test
+    public void isActivityLockedByAppLock_packageNotLocked_returnsFalse() {
+        final ActivityRecord activity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1)
+                .setVisible(false)
+                .setTask(createLockedTask(/* isVisible= */ false))
+                .build();
+
+        doReturn(false).when(mWm).isPackageLockedByAppLockLocked(activity.packageName,
+                activity.mUserId);
+
+        assertThat(mAppLockOverlayController.isActivityLockedByAppLock(activity)).isFalse();
+    }
+
+    @Test
+    public void isActivityLockedByAppLock_packageLocked_canShowWhenLocked_returnsFalse() {
+        final ActivityRecord targetActivity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1) // This activity's package is locked
+                .setVisible(false)
+                .setTask(createLockedTask(/* isVisible= */ false))
+                .build();
+        targetActivity.setShowWhenLocked(true);
+
+        assertThat(mAppLockOverlayController.isActivityLockedByAppLock(targetActivity)).isFalse();
+    }
+
+    @Test
+    public void isActivityLockedByAppLock_packageLocked_noVisibleTask_returnsTrue() {
+        final ActivityRecord targetActivity = new ActivityBuilder(mAtm)
+                .setComponent(TEST_COMPONENT_1) // This activity's package is locked
+                .setVisible(false)
+                .setTask(createLockedTask(/* isVisible= */ false))
+                .build();
+
+        assertThat(mAppLockOverlayController.isActivityLockedByAppLock(targetActivity)).isTrue();
     }
 
     @Test

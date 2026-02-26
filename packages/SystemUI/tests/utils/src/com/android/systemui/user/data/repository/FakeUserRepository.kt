@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 
 @SysUISingleton
@@ -181,6 +182,14 @@ class FakeUserRepository @Inject constructor(private val userIconProvider: UserI
 
         selectedUser.value = SelectedUserModel(userInfo, selectionStatus)
         yield()
+    }
+
+    @JvmOverloads
+    fun setSelectedUserInfoBlocking(
+        userInfo: UserInfo,
+        selectionStatus: SelectionStatus = SelectionStatus.SELECTION_COMPLETE,
+    ) {
+        runBlocking { setSelectedUserInfo(userInfo, selectionStatus) }
     }
 
     /** Resets the current user to the default of [DEFAULT_SELECTED_USER_INFO]. */

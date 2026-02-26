@@ -16,6 +16,7 @@
 
 package com.android.systemui.appfunctions.trampoline
 
+import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.app.appfunctions.AppFunctionException
 import android.app.appfunctions.AppFunctionManager
@@ -70,12 +71,18 @@ constructor(private val context: Context, @Main private val callbackExecutor: Ex
 
                     val resultExtras = result.extras
                     try {
+                        // Needed to allow launching the pending intent if the donor does not
+                        // have any associated UI.
+                        val activityOptions = ActivityOptions.makeBasic()
+                        activityOptions.pendingIntentBackgroundActivityStartMode =
+                            ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
+                        // TODO: b/485536914 - Don't use Platform variant of AppFunction APIs.
                         val maybePendingIntent =
                             resultExtras.getParcelable(
-                                ExecuteAppFunctionResponse.PROPERTY_RETURN_VALUE,
+                                KEY_PREFIX + ExecuteAppFunctionResponse.PROPERTY_RETURN_VALUE,
                                 PendingIntent::class.java,
                             )
-                        maybePendingIntent?.send()
+                        maybePendingIntent?.send(activityOptions.toBundle())
                     } catch (e: Exception) {
                         Slog.e(
                             TAG,
@@ -95,5 +102,6 @@ constructor(private val context: Context, @Main private val callbackExecutor: Ex
 
     companion object {
         private const val TAG = "AppFunctionExecutorProxy"
+        private const val KEY_PREFIX = "property/"
     }
 }

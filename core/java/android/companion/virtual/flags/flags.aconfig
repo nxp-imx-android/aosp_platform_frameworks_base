@@ -19,14 +19,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_and_insets"
-    namespace: "virtual_devices"
-    description: "Allow for status bar and insets on virtual devices"
-    bug: "350007866"
-    is_exported: true
-}
-
-flag {
     namespace: "virtual_devices"
     name: "camera_timestamp_from_surface"
     description: "Pass the surface timestamp to the capture result"
@@ -218,4 +210,14 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
   bug: "470486743"
+}
+
+flag {
+    name: "multi_user_view_configuration"
+    namespace: "virtual_devices"
+    description: "Apply custom ViewConfiguration for virtual devices across users."
+    bug: "435495374"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

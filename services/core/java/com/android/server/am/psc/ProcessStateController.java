@@ -1365,8 +1365,7 @@ public class ProcessStateController {
          */
         public void setTopProcessAsync(@Nullable WindowProcessController wpc, boolean clearPrev,
                 boolean cancelExpandedShade) {
-            final ProcessRecordInternal top = wpc != null
-                    ? (ProcessRecordInternal) wpc.mOwner : null;
+            final ProcessRecordInternal top = wpc != null ? wpc.mOwner : null;
             getBatchSession().stage(() -> {
                 mPsc.setTopProcess(top);
                 if (clearPrev) {
@@ -1389,8 +1388,7 @@ public class ProcessStateController {
          * Set which process is considered the Previous process, if any.
          */
         public void setPreviousProcessAsync(@Nullable WindowProcessController wpc) {
-            final ProcessRecordInternal prev = wpc != null
-                    ? (ProcessRecordInternal) wpc.mOwner : null;
+            final ProcessRecordInternal prev = wpc != null ? wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setPreviousProcess(prev));
         }
 
@@ -1399,8 +1397,7 @@ public class ProcessStateController {
          * Set which process is considered the Home process, if any.
          */
         public void setHomeProcessAsync(@Nullable WindowProcessController wpc) {
-            final ProcessRecordInternal home = wpc != null
-                    ? (ProcessRecordInternal) wpc.mOwner : null;
+            final ProcessRecordInternal home = wpc != null ? wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setHomeProcess(home));
         }
 
@@ -1409,8 +1406,7 @@ public class ProcessStateController {
          * Set which process is considered the Heavy Weight process, if any.
          */
         public void setHeavyWeightProcessAsync(@Nullable WindowProcessController wpc) {
-            final ProcessRecordInternal heavy = wpc != null
-                    ? (ProcessRecordInternal) wpc.mOwner : null;
+            final ProcessRecordInternal heavy = wpc != null ? wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setHeavyWeightProcess(heavy));
         }
 
@@ -1418,8 +1414,7 @@ public class ProcessStateController {
          * Set which process is showing UI while the screen is off, if any.
          */
         public void setVisibleDozeUiProcessAsync(@Nullable WindowProcessController wpc) {
-            final ProcessRecordInternal dozeUi = wpc != null
-                    ? (ProcessRecordInternal) wpc.mOwner : null;
+            final ProcessRecordInternal dozeUi = wpc != null ? wpc.mOwner : null;
             getBatchSession().stage(() -> mPsc.setVisibleDozeUiProcess(dozeUi));
         }
 
@@ -1427,7 +1422,7 @@ public class ProcessStateController {
          * Note whether the process has an activity or not.
          */
         public void setHasActivityAsync(@NonNull WindowProcessController wpc, boolean hasActivity) {
-            final ProcessRecordInternal activity = (ProcessRecordInternal) wpc.mOwner;
+            final ProcessRecordInternal activity = wpc.mOwner;
             getBatchSession().stage(() -> mPsc.setHasActivity(activity, hasActivity));
         }
 
@@ -1436,7 +1431,7 @@ public class ProcessStateController {
          */
         public void setActivityStateAsync(@NonNull WindowProcessController wpc, int flags,
                 long perceptibleStopTimeMs) {
-            final ProcessRecordInternal activity = (ProcessRecordInternal) wpc.mOwner;
+            final ProcessRecordInternal activity = wpc.mOwner;
             getBatchSession().stage(() -> {
                 mPsc.setActivityStateFlags(activity, flags);
                 mPsc.setPerceptibleTaskStoppedTimeMillis(activity, perceptibleStopTimeMs);
@@ -1448,7 +1443,7 @@ public class ProcessStateController {
          */
         public void setHasRecentTasksAsync(@NonNull WindowProcessController wpc,
                 boolean hasRecentTasks) {
-            final ProcessRecordInternal proc = (ProcessRecordInternal) wpc.mOwner;
+            final ProcessRecordInternal proc = wpc.mOwner;
             getBatchSession().stage(() -> mPsc.setHasRecentTasks(proc, hasRecentTasks));
         }
 

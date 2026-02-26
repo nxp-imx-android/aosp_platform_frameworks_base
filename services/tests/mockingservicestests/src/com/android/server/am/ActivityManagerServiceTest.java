@@ -2406,6 +2406,7 @@ public class ActivityManagerServiceTest {
                 processName, appUid);
 
         HostingRecord managedHostingRecord = HostingRecord.byAppZygote(
+                HostingRecord.HOSTING_TYPE_BOUND_SERVICE,
                 new ComponentName(packageName, "ManagedService"),
                 packageName, appUid, processName, false /* isNativeService */,
                 Process.INVALID_UID /* callerUid */, null /* callerProcessName */);
@@ -2413,6 +2414,7 @@ public class ActivityManagerServiceTest {
         managedApp.setHostingRecord(managedHostingRecord);
 
         HostingRecord nativeHostingRecord = HostingRecord.byAppZygote(
+                HostingRecord.HOSTING_TYPE_BOUND_SERVICE,
                 new ComponentName(packageName, "NativeService"),
                 packageName, appUid, processName, true /* isNativeService */,
                 Process.INVALID_UID /* callerUid */, null /* callerProcessName */);

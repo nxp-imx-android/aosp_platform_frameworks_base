@@ -103,6 +103,25 @@ class SensorActivityViewModelTest : SysuiTestCase() {
                 )
         }
 
+    @Test
+    fun activeAppsIconDrawable_isNull_whenMultipleAppsHaveIcons() =
+        kosmos.runTest {
+            // GIVEN a sensor access list with two apps that have icons
+            val icon1 = ShapeDrawable()
+            val icon2 = ShapeDrawable()
+            val accessList =
+                listOf(
+                    SensorAccess("com.example.app", "Example App", Sensor.CAMERA, icon1),
+                    SensorAccess("com.example.app2", "Example App 2", Sensor.MICROPHONE, icon2)
+                )
+
+            // WHEN the interactor model is updated
+            interactor.model.value = AvControlsChipModel(sensorAccessList = accessList)
+
+            // THEN the activeAppsIconDrawable is null
+            assertThat(underTest.activeAppsIconDrawable).isNull()
+        }
+
     private class FakeInteractor : AvControlsChipInteractor {
         override val model = MutableStateFlow(AvControlsChipModel())
         override val isShowingAvChip = MutableStateFlow(false)

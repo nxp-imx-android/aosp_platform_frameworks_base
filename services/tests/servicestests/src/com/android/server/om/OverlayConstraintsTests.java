@@ -322,8 +322,7 @@ public class OverlayConstraintsTests {
     }
 
     @Test
-    @RequiresFlagsEnabled(
-            {Flags.FLAG_RRO_CONSTRAINTS, Flags.FLAG_OVERLAY_CONSTRAINT_AWARE_ASSET_PATH_CHANGES})
+    @RequiresFlagsEnabled(Flags.FLAG_RRO_CONSTRAINTS)
     public void enableOverlayWithConstraints_withTypeDisplayId_restartsActivityOnlyOnTargetDisplay()
             throws Exception {
         final Display display =
@@ -351,8 +350,7 @@ public class OverlayConstraintsTests {
     }
 
     @Test
-    @RequiresFlagsEnabled(
-            {Flags.FLAG_RRO_CONSTRAINTS, Flags.FLAG_OVERLAY_CONSTRAINT_AWARE_ASSET_PATH_CHANGES})
+    @RequiresFlagsEnabled(Flags.FLAG_RRO_CONSTRAINTS)
     public void enableOverlayWithConstraints_withTypeDeviceId_restartsActivityOnlyOnTargetDevice()
             throws Exception {
         final VirtualDeviceManager.VirtualDevice device =
@@ -382,8 +380,7 @@ public class OverlayConstraintsTests {
     }
 
     @Test
-    @RequiresFlagsEnabled(
-            {Flags.FLAG_RRO_CONSTRAINTS, Flags.FLAG_OVERLAY_CONSTRAINT_AWARE_ASSET_PATH_CHANGES})
+    @RequiresFlagsEnabled(Flags.FLAG_RRO_CONSTRAINTS)
     public void enableOverlayWithoutConstraints_restartsActivitiesOnAllDisplays() throws Exception {
         final VirtualDeviceManager.VirtualDevice device =
                 mVirtualDeviceRule.createManagedVirtualDevice();

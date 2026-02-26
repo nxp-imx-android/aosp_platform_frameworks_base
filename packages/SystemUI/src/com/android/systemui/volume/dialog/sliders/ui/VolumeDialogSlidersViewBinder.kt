@@ -27,11 +27,9 @@ import androidx.compose.ui.util.fastForEachIndexed
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.internal.graphics.drawable.BackgroundBlurDrawable
-import com.android.systemui.Flags.blurOnMoreSurfaces
 import com.android.systemui.res.R
 import com.android.systemui.util.children
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
-import com.android.systemui.volume.dialog.domain.interactor.ExpandedAudioTileDetailsFeatureInteractor
 import com.android.systemui.volume.dialog.sliders.dagger.VolumeDialogSliderComponent
 import com.android.systemui.volume.dialog.sliders.ui.viewmodel.VolumeDialogSlidersViewModel
 import com.android.systemui.volume.dialog.ui.binder.ViewBinder
@@ -47,13 +45,10 @@ class VolumeDialogSlidersViewBinder
 constructor(
     private val viewModel: VolumeDialogSlidersViewModel,
     private val dialogViewModel: VolumeDialogViewModel,
-    private val expandedAudioTileDetailsFeatureInteractor: ExpandedAudioTileDetailsFeatureInteractor,
     private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
 ) : ViewBinder {
 
     override fun CoroutineScope.bind(view: View) {
-        // Use horizontal volume dialog if the audio tile details view is enabled
-        val isVolumeDialogVertical = !expandedAudioTileDetailsFeatureInteractor.isEnabled()
 
         val floatingSlidersContainer: ViewGroup =
             view.requireViewById(R.id.volume_dialog_floating_sliders_container)
@@ -77,7 +72,7 @@ constructor(
 
                 val floatingSliderViewBinders = uiModel.floatingSliderComponent
                 val floatingSliderViewLayoutId =
-                    if (isVolumeDialogVertical) {
+                    if (viewModel.isVolumeDialogVertical) {
                         R.layout.volume_dialog_slider_floating
                     } else {
                         R.layout.volume_dialog_slider_floating_horizontal
@@ -88,7 +83,7 @@ constructor(
                 )
                 floatingSliderViewBinders.fastForEachIndexed { index, sliderComponent ->
                     val sliderContainer = floatingSlidersContainer.getChildAt(index)
-                    if (blurOnMoreSurfaces()) {
+                    if (viewModel.showBlur) {
                         sliderContainer.updateBackground()
                     }
                     bindSlider(sliderComponent, sliderContainer, arrayOf(sliderContainer))
@@ -96,7 +91,7 @@ constructor(
             }
             .launchInTraced("VDSVB#sliders", this)
 
-        if (blurOnMoreSurfaces()) {
+        if (viewModel.showBlur) {
             launchTraced("VDSVB#isBlurCurrentlySupported") {
                 windowRootViewBlurInteractor.isBlurCurrentlySupported.collect { supported ->
                     for (child in floatingSlidersContainer.children) {
@@ -113,9 +108,10 @@ constructor(
         }
         val surfaceEffect = background as GradientDrawable
         val blurDrawable = viewRootImpl.createBackgroundBlurDrawable()
-        val dialogCornerRadius: Int = context.resources.getDimensionPixelSize(
-            R.dimen.volume_dialog_floating_slider_background_corner_radius
-        )
+        val dialogCornerRadius: Int =
+            context.resources.getDimensionPixelSize(
+                R.dimen.volume_dialog_floating_slider_background_corner_radius
+            )
         blurDrawable.setCornerRadius(dialogCornerRadius.toFloat())
         blurDrawable.setBlurRadius(0)
         background = LayerDrawable(arrayOf<Drawable>(blurDrawable, surfaceEffect))

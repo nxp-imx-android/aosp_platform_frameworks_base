@@ -19,5 +19,12 @@ package com.android.settingslib.metadata.preferencesapi.types
 import android.content.Context
 
 interface ApiType<V> {
+    fun getType(): Class<V>
     fun getDescription(context: Context): String
+
+    /**
+     * Returns a globally unique key which refers to this type. It must be stable through multiple
+     * executions as long as we don't update the app.
+     */
+    fun getKey(): String
 }

@@ -72,13 +72,18 @@ interface Mode {
 
     /**
      * This method is called in the following scenarios:
-     *  - if a container that is directly assigned to this mode has changed
+     *  - if a container that is directly assigned to this mode has changed (container=directly
+     *    associated container)
      *  - if an ancestor of a container that is directly assigned to this mode has changed
+     *    (container=directly associated container)
      *  - if a descendant of a container that is directly assigned to this mode has changed
+     *    (container=changed descendant container)
      *
      * This ensures that the mode is notified of the changes in the ancestor chain, as well as the
      * subtree, so it can coordinate updates for global changes (ie. display) as well as
      * per-attached-container behavior (ie. per-attached-container overlays).
+     *
+     * The provided container is always the directly associated container or a descendant.
      *
      * This will only be called AFTER attachToContainer() and BEFORE detachFromContainer().
      */
@@ -225,6 +230,8 @@ interface Mode {
         // with the update, if there isn't then these will be null, and the logic doing the update
         // must apply and surface updates itself.
         val preTransitionTx: SurfaceControl.Transaction? = null,
+        // The specific container to dump (otherwise the full hierarchy will be dumped)
+        var dumpOnlyContainer: Container? = null,
     )
 
     /**

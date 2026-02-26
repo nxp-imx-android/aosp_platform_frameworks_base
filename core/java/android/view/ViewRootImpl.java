@@ -7542,7 +7542,7 @@ public final class ViewRootImpl implements ViewParent,
                     break;
                 }
                 case MSG_TOUCH_BOOST_TIMEOUT:
-                    /**
+                    /*
                      * Lower the frame rate after the boosting period (FRAME_RATE_TOUCH_BOOST_TIME).
                      */
                     mIsFrameRateBoosting = false;
@@ -8679,7 +8679,7 @@ public final class ViewRootImpl implements ViewParent,
                 }
                 setPreferredFrameRateCategory(mLastPreferredFrameRateCategory);
             }
-            /**
+            /*
              * We want to lower the refresh rate when MotionEvent.ACTION_UP,
              * MotionEvent.ACTION_CANCEL is detected.
              * Not using ACTION_MOVE to avoid checking and sending messages too frequently.

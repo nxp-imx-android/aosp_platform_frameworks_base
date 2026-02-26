@@ -648,11 +648,7 @@ import java.util.stream.Collectors;
         @Override
         public void onReceive(Context context, Intent intent) {
             int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
-            if (Flags.enableMr2ServiceNonMainBgThread()) {
-                mHandler.post(() -> handleBluetoothAdapterStateChange(state));
-            } else {
-                handleBluetoothAdapterStateChange(state);
-            }
+            mHandler.post(() -> handleBluetoothAdapterStateChange(state));
         }
     }
 
@@ -664,16 +660,11 @@ import java.util.stream.Collectors;
                 case BluetoothHearingAid.ACTION_CONNECTION_STATE_CHANGED:
                 case BluetoothLeAudio.ACTION_LE_AUDIO_CONNECTION_STATE_CHANGED:
                 case BluetoothDevice.ACTION_ALIAS_CHANGED:
-                    if (Flags.enableMr2ServiceNonMainBgThread()) {
-                        mHandler.post(
-                                () -> {
-                                    updateBluetoothRoutes();
-                                    notifyBluetoothRoutesUpdated();
-                                });
-                    } else {
-                        updateBluetoothRoutes();
-                        notifyBluetoothRoutesUpdated();
-                    }
+                    mHandler.post(
+                            () -> {
+                                updateBluetoothRoutes();
+                                notifyBluetoothRoutesUpdated();
+                            });
             }
         }
     }

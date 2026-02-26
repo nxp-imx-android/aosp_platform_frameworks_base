@@ -65,6 +65,11 @@ constructor(
             it?.outputStreamSize
         }
 
+    val areTapsSupported: Boolean by
+        screenRecordCameraInteractor.isOnTapSupported.hydratedStateOf(
+            "ScreenCaptureCameraViewModel#areTapsSupported"
+        )
+
     override suspend fun onActivated() {
         super.onActivated()
         coroutineScope {

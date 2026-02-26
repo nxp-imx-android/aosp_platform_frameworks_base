@@ -144,12 +144,12 @@ public class AccessibilityShortcutController {
     @VisibleForTesting
     public Ringtone mCurrentRingtone;
 
+    /** Denotes the user shortcut type. */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({
             DialogStatus.NOT_SHOWN,
             DialogStatus.SHOWN,
     })
-    /** Denotes the user shortcut type. */
     public @interface DialogStatus {
         int NOT_SHOWN = 0;
         int SHOWN  = 1;

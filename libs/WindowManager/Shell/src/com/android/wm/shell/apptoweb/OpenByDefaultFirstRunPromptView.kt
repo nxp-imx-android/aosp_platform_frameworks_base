@@ -101,16 +101,16 @@ constructor(
     // Set up a11y focus so that focus loops through elements within the dialog, instead of going to
     // elements behind the dialog.
     private fun setupA11yTraversal() {
-        dialogTitle.accessibilityTraversalBefore = R.id.ask_me_later_button
-        dialogTitle.accessibilityTraversalAfter = R.id.open_in_browser_button
+        dialogTitle.accessibilityTraversalAfter = R.id.ask_me_later_button
+        dialogTitle.accessibilityTraversalBefore = R.id.open_in_browser_button
 
-        openInBrowserButton.accessibilityTraversalBefore = R.id.title
-        openInBrowserButton.accessibilityTraversalAfter = R.id.open_in_app_button
+        openInBrowserButton.accessibilityTraversalAfter = R.id.title
+        openInBrowserButton.accessibilityTraversalBefore = R.id.open_in_app_button
 
-        openInAppButton.accessibilityTraversalBefore = R.id.open_in_browser_button
-        openInAppButton.accessibilityTraversalAfter = R.id.ask_me_later_button
+        openInAppButton.accessibilityTraversalAfter = R.id.open_in_browser_button
+        openInAppButton.accessibilityTraversalBefore = R.id.ask_me_later_button
 
-        askMeLaterButton.accessibilityTraversalBefore = R.id.open_in_app_button
-        askMeLaterButton.accessibilityTraversalAfter = R.id.title
+        askMeLaterButton.accessibilityTraversalAfter = R.id.open_in_app_button
+        askMeLaterButton.accessibilityTraversalBefore = R.id.title
     }
 }

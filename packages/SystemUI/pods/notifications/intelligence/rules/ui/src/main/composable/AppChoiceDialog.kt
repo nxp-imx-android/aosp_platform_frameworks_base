@@ -68,7 +68,7 @@ fun AppChoiceDialog(viewModel: NotificationRuleEditViewModel) {
                 query = currentQuery,
                 onQueryChange = { newQuery: String -> currentQuery = newQuery },
                 onSearch = {},
-                placeholder = { Text(text = "Search") },
+                placeholder = { Text(text = "Search [TK]") },
                 expanded = isExpanded,
                 onExpandedChange = { isExpanded = it },
             )

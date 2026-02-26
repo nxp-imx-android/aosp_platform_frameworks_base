@@ -114,6 +114,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
     @Mock private lateinit var desktopTasksController: DesktopTasksController
     @Mock private lateinit var desktopRepository: DesktopRepository
     @Mock private lateinit var shellTaskOrganizer: ShellTaskOrganizer
+    private val windowRepositionAnimator = mock<PinnedWindowRepositionAnimator>()
 
     private lateinit var desktopState: FakeDesktopState
     private lateinit var shellDesktopState: FakeShellDesktopState
@@ -138,6 +139,7 @@ class PinnedLayerHandlerTests : ShellTestCase() {
                 presentationController,
                 windowDragTransitionHandler,
                 pinnedWindowRepositionAnimationHandler,
+                windowRepositionAnimator,
                 transactionPool,
                 multiDisplayDragMoveIndicatorController,
             )

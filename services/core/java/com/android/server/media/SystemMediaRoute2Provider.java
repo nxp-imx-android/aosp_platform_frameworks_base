@@ -703,11 +703,7 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
                 return;
             }
 
-            if (Flags.enableMr2ServiceNonMainBgThread()) {
-                mHandler.post(SystemMediaRoute2Provider.this::updateVolume);
-            } else {
-                updateVolume();
-            }
+            mHandler.post(SystemMediaRoute2Provider.this::updateVolume);
         }
     }
 }

@@ -21,8 +21,11 @@ import android.graphics.Rect
 import android.os.IBinder
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.InsetsSource
+import android.view.InsetsState
 import android.view.Surface
 import android.view.SurfaceControl
+import android.view.WindowInsets.Type.navigationBars
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_TO_BACK
@@ -40,6 +43,7 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.Flags.FLAG_ENABLE_SHELL_MODES
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.containers.Container
@@ -80,30 +84,32 @@ class HierarchyUpdaterTest : ShellTestCase() {
 
     private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
     private val transitions = mock<Transitions>()
+    private val displayInsetsController = mock<DisplayInsetsController>()
     private val formFactorModes = mock<FormFactorModes>()
     private val shellInit = mock<ShellInit>()
     private val hierarchy = ContainerHierarchy().apply {
         // Create a hierarchy with two nested containers
-        root.mode = StubMode()
+        root.mode = StubMode("RootMode")
         val info1 = ActivityManager.RunningTaskInfo().apply {
             taskId = 1
         }
         val child1 =
             Container(WindowContainerToken.createProxy("test"), TaskContainerProperties(info1))
         child1.parent = root
-        child1.mode = spy(StubMode())
+        child1.mode = spy(StubMode("Child1Mode"))
         val info2 = ActivityManager.RunningTaskInfo().apply {
             taskId = 2
         }
         val child2 =
             Container(WindowContainerToken.createProxy("test"), TaskContainerProperties(info2))
         child2.parent = child1
-        child2.mode = spy(StubMode())
+        child2.mode = spy(StubMode("Child2Mode"))
     }
     private val updater =
         HierarchyUpdater(
             shellTaskOrganizer,
             transitions,
+            displayInsetsController,
             hierarchy,
             formFactorModes,
             shellInit
@@ -589,5 +595,59 @@ class HierarchyUpdaterTest : ShellTestCase() {
         assertThat((hierarchy.root.mode as StubMode).displayChanges).isNotEmpty()
         assertThat((child1.mode as StubMode).displayChanges).isNotEmpty()
         assertThat((child2.mode as StubMode).displayChanges).isEmpty()
+    }
+
+    @Test
+    fun testUpdateFromTaskInfoChange() {
+        val child1 = hierarchy.root.children[0]
+
+        // Trigger a task info change
+        val taskInfo = ActivityManager.RunningTaskInfo().apply {
+            token = child1.token
+            taskDescription = ActivityManager.TaskDescription().apply {
+                label = "test"
+            }
+        }
+        updater.handleTaskInfoChanged(taskInfo)
+
+        // Verify that child1 mode is updated
+        assertThat((child1.mode as StubMode).updates).isNotEmpty()
+    }
+
+    @Test
+    fun testUpdateFromInsetsChange() {
+        // Create a display container
+        val display =
+            Container(
+                WindowContainerToken.createProxy("test"),
+                DisplayContainerProperties(DEFAULT_DISPLAY)
+            )
+        display.parent = hierarchy.root
+        display.leash = mock<SurfaceControl>()
+
+        // Move the child to the display
+        val child1 = hierarchy.root.children[0]
+        val child2 = child1.children[0]
+        child1.parent = display
+
+        // Create new insets
+        val newInsets = InsetsState().apply {
+            val id = InsetsSource.createId(null, 1, navigationBars())
+            val source = InsetsSource(id, navigationBars()).apply {
+                isVisible = true
+            }
+            this.addSource(source)
+        }
+
+        // Trigger the update
+        updater.handleDisplayInsetsChanged(DEFAULT_DISPLAY, newInsets)
+
+        // Verify that the display container props have the latest insets
+        assertThat(display.props<DisplayContainerProperties>().insetsState.insetsState).isEqualTo(
+            newInsets
+        )
+        // Verify that the children modes are updated when the display changes
+        verify(child1.mode!!).containerChanged(any(), eq(child1), any())
+        verify(child2.mode!!).containerChanged(any(), eq(child2), any())
     }
 }

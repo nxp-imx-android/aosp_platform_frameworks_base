@@ -304,6 +304,16 @@ public class VirtualDeviceManagerService extends SystemService {
         mComputerControlSessionProcessor.initialize();
     }
 
+    @Override
+    public void onUserStarting(@NonNull TargetUser user) {
+        super.onUserStarting(user);
+        ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
+        for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
+            VirtualDeviceImpl virtualDevice = virtualDevicesSnapshot.get(i);
+            virtualDevice.onUserStarting(user.getUserIdentifier());
+        }
+    }
+
     // Called when the global lockdown state changes, i.e. lockdown is considered active if any user
     // is in lockdown mode, and inactive if no users are in lockdown mode.
     void onLockdownChanged(boolean lockdownActive) {

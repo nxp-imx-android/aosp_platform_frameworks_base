@@ -52,3 +52,11 @@ flag {
     bug: "285020111"
     is_exported: true
 }
+
+flag {
+    name: "status_bar_and_insets"
+    namespace: "virtual_devices"
+    description: "Allow for status bar and insets on virtual devices"
+    bug: "350007866"
+    is_exported: true
+}

@@ -40,6 +40,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.view.Display;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
@@ -54,6 +55,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.UiContext;
 
+import com.android.systemui.Flags;
 import com.android.systemui.accessibility.accessibilitymenu.AccessibilityMenuService;
 import com.android.systemui.accessibility.accessibilitymenu.R;
 import com.android.systemui.accessibility.accessibilitymenu.activity.A11yMenuSettingsActivity.A11yMenuPreferenceFragment;
@@ -401,6 +403,20 @@ public class A11yMenuOverlayLayout {
     private class A11yMenuFrameLayout extends FrameLayout {
         A11yMenuFrameLayout(@UiContext @NonNull Context context) {
             super(context);
+        }
+
+        @Override
+        public boolean dispatchKeyEvent(KeyEvent event) {
+            if (Flags.accessibilityMenuInputsForHiding()) {
+                boolean keyCodeMatches = event.getKeyCode() == KeyEvent.KEYCODE_BACK
+                        || event.getKeyCode() == KeyEvent.KEYCODE_ESCAPE;
+
+                if (keyCodeMatches && event.getAction() == KeyEvent.ACTION_UP) {
+                    hideMenu();
+                    return true;
+                }
+            }
+            return super.dispatchKeyEvent(event);
         }
 
         @Override

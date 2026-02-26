@@ -94,6 +94,7 @@ class PinnedLayerControllerTest : ShellTestCase() {
     @Mock
     private lateinit var multiDisplayDragMoveIndicatorController:
         MultiDisplayDragMoveIndicatorController
+    private val windowRepositionAnimator = mock<PinnedWindowRepositionAnimator>()
 
     private lateinit var defaultDisplayToken: WindowContainerToken
     private lateinit var desktopState: FakeDesktopState
@@ -116,7 +117,7 @@ class PinnedLayerControllerTest : ShellTestCase() {
         presentationController =
             PinnedLayerPresentationController(context, displayController, desktopState)
         pinnedWindowRepositionAnimationHandler =
-            PinnedWindowRepositionAnimationHandler(transitions, { repositionTransaction })
+            PinnedWindowRepositionAnimationHandler(transitions, windowRepositionAnimator)
         pinnedLayerController =
             PinnedLayerController(
                 shellInit,
@@ -127,6 +128,7 @@ class PinnedLayerControllerTest : ShellTestCase() {
                 presentationController,
                 windowDragTransitionHandler,
                 pinnedWindowRepositionAnimationHandler,
+                windowRepositionAnimator,
                 transactionPool,
                 multiDisplayDragMoveIndicatorController,
             )
@@ -143,6 +145,27 @@ class PinnedLayerControllerTest : ShellTestCase() {
 
         assertFalse(result)
         verifyNoInteractions(transitions, transactionPool)
+    }
+
+    @Test
+    fun dragEnded_snapsBackToStartBounds_animatesWithoutTransition() {
+        val task = setupTask()
+        pinTask(task)
+
+        val dragStartBounds = Rect(DEFAULT_TASK_BOUNDS)
+        val dragEndBounds = Rect(dragStartBounds)
+        // Move the window a bit.
+        dragEndBounds.offset(-10, -10)
+
+        val result = pinnedLayerController.onDragEnded(leash, task, dragStartBounds, dragEndBounds)
+
+        // Snapshotting surfaces should be cleared by the controller itself.
+        assertTrue(result)
+        // No Transition is started.
+        verify(transitions, never()).startTransition(any(), any(), anyOrNull())
+        // Manually animate the leash snap to start.
+        verify(windowRepositionAnimator)
+            .start(any(), any(), any(), anyOrNull(), anyOrNull(), any(), any())
     }
 
     @Test

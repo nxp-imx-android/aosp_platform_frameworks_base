@@ -28,10 +28,10 @@
     <View
         android:id="@+id/volume_dialog_background"
         android:layout_width="0dp"
-        android:layout_height="@dimen/volume_dialog_width"
-        android:layout_marginStart="@dimen/volume_dialog_background_top_margin"
-        android:layout_marginEnd="@dimen/volume_dialog_background_margin_negative"
-        android:background="@drawable/volume_dialog_background"
+        android:layout_height="@dimen/volume_dialog_horizontal_height"
+        android:layout_marginStart="@dimen/volume_dialog_horizontal_background_top_margin"
+        android:layout_marginEnd="@dimen/volume_dialog_horizontal_background_margin_negative"
+        android:background="@drawable/volume_dialog_background_horizontal"
         app:layout_constraintStart_toStartOf="@+id/volume_dialog_main_slider_container"
         app:layout_constraintEnd_toEndOf="@+id/volume_dialog_bottom_section_container"
         app:layout_constraintBottom_toBottomOf="@+id/volume_dialog_main_slider_container"
@@ -57,14 +57,14 @@
         android:id="@+id/volume_dialog_main_slider_container"
         layout="@layout/volume_dialog_slider_horizontal"
         android:layout_width="0dp"
-        android:layout_height="@dimen/volume_dialog_slider_width"
+        android:layout_height="@dimen/volume_dialog_horizontal_slider_container_height"
         android:layout_marginStart="@dimen/volume_dialog_slider_horizontal_margin"
         android:layout_marginEnd="@dimen/volume_dialog_slider_horizontal_margin"
         android:layout_marginTop="@dimen/volume_dialog_horizontal_window_margin"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_max="@dimen/volume_dialog_slider_height"
+        app:layout_constraintWidth_max="@dimen/volume_dialog_horizontal_slider_width"
         app:layout_constraintHorizontal_bias="1" />
 
     <LinearLayout
@@ -82,7 +82,7 @@
         app:layout_constraintHeight_default="wrap"
         app:layout_constraintHorizontal_bias="0">
 
-        <include layout="@layout/volume_dialog_bottom_section" />
+        <include layout="@layout/volume_dialog_bottom_section_horizontal" />
     </LinearLayout>
 
     <LinearLayout

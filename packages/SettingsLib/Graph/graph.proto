@@ -16,6 +16,10 @@ message PreferenceGraphProto {
   // Activities appear in the graph.
   // Key: activity class. Value: preference key of associated PreferenceScreen.
   map<string, string> activity_screens = 3;
+
+  // Value descriptors for the preference types.
+  // Key: key of the preference type. Value: possible values of the type.
+  map<string, PreferenceValueDescriptorProto> value_descriptors = 4;
 }
 
 // Proto of PreferenceScreen.
@@ -141,6 +145,11 @@ message PreferenceProto {
   optional bool writable = 24;
 }
 
+message PossibleValueProto {
+  optional PreferenceValueProto value = 1;
+  optional string description = 2;
+}
+
 // Proto of permissions
 message PermissionsProto {
   repeated PermissionProto all_of = 1;
@@ -178,20 +187,26 @@ message PreferenceValueProto {
 message PreferenceValueDescriptorProto {
   oneof type {
     bool boolean_type = 1;
+    // This actually means "integer". If all of the min, max, and step are
+    // unset, this is just an integer.
     RangeValueProto range_value = 2;
     bool float_type = 3;
     bool long_type = 4;
     bool string_type = 5;
   }
+
+  repeated PossibleValueProto possible_values = 6;
+  optional string value_descriptor_key = 7;
+  optional string description = 8;
 }
 
-// Proto of preference value that is between a range.
+// Proto of preference value that is an int
 message RangeValueProto {
-  // The lower bound (inclusive) of the range.
+  // The lower bound (inclusive) of the range. unset means no lower bound.
   optional int32 min = 1;
-  // The upper bound (inclusive) of the range.
+  // The upper bound (inclusive) of the range. unset means no upper bound.
   optional int32 max = 2;
-  // The increment step within the range. 0 means unset, which implies step size is 1.
+  // The increment step within the range. 0 or unset means step size is 1.
   optional int32 step = 3;
 }
 

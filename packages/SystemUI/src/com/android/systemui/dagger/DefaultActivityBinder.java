@@ -19,6 +19,7 @@ package com.android.systemui.dagger;
 import android.app.Activity;
 
 import com.android.systemui.ForegroundServicesDialog;
+import com.android.systemui.appfunctions.trampoline.AppFunctionExecutorProxy;
 import com.android.systemui.communal.widgets.EditWidgetsActivity;
 import com.android.systemui.dreams.ui.activity.DreamSetupActivity;
 import com.android.systemui.keyguard.WorkLockActivity;
@@ -163,4 +164,12 @@ public abstract class DefaultActivityBinder {
     @ClassKey(SwitchToManagedProfileForCallActivity.class)
     public abstract Activity bindSwitchToManagedProfileForCallActivity(
             SwitchToManagedProfileForCallActivity activity);
+
+    /** Inject into AppFunctionExecutorProxy */
+    @Binds
+    @IntoMap
+    @ClassKey(AppFunctionExecutorProxy.class)
+    public abstract Activity bindAppFunctionExecutorProxy(
+            AppFunctionExecutorProxy activity
+    );
 }

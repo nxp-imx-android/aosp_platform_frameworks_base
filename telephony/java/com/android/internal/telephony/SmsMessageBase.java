@@ -466,7 +466,7 @@ public abstract class SmsMessageBase {
     }
 
     private static boolean isRegionalIndicatorSymbol(int codePoint) {
-        /** Based on http://unicode.org/Public/emoji/3.0/emoji-sequences.txt */
+        /* Based on http://unicode.org/Public/emoji/3.0/emoji-sequences.txt */
         return 0x1F1E6 <= codePoint && codePoint <= 0x1F1FF;
     }
 

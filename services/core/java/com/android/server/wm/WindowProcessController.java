@@ -162,7 +162,8 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     final int mUserId;
     // The owner of this window process controller object. Mainly for identification when we
     // communicate back to the activity manager side.
-    public final Object mOwner;
+    @NonNull
+    public final ProcessRecordInternal mOwner;
     // List of packages running in the process
     @GuardedBy("itself")
     private final ArrayList<String> mPkgList = new ArrayList<>(1);
@@ -388,8 +389,8 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     private boolean mAppRestartLogged;
 
     public WindowProcessController(@NonNull ActivityTaskManagerService atm,
-            @NonNull ApplicationInfo info, String name, int uid, int userId, Object owner,
-            @NonNull WindowProcessListener listener) {
+            @NonNull ApplicationInfo info, String name, int uid, int userId,
+            @NonNull ProcessRecordInternal owner, @NonNull WindowProcessListener listener) {
         mInfo = info;
         mName = name;
         mUid = uid;
@@ -2369,7 +2370,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
 
     @Override
     public String toString() {
-        return mOwner != null ? mOwner.toString() : null;
+        return mOwner.toString();
     }
 
     public void dump(PrintWriter pw, String prefix) {

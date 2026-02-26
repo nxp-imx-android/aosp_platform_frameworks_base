@@ -4983,29 +4983,7 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
-    public void testIncludeDefaultDisplayInTopologySwitch_flagDisabled() {
-        when(mMockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(false);
-        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
-                0);
-
-        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
-        setFieldValue(mDisplayManager, "mDisplayTopologyCoordinator",
-                mMockDisplayTopologyCoordinator);
-        mDisplayManager.systemReady(/* safeMode= */ false);
-        assertThat(mDisplayManager.shouldIncludeDefaultDisplayInTopology()).isTrue();
-        verify(mMockDisplayTopologyCoordinator, never()).onDisplayRemoved(anyInt());
-
-        Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
-                1);
-        final ContentObserver observer = mDisplayManager.getSettingsObserver();
-        observer.onChange(false, Settings.Secure.getUriFor(INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY));
-        assertThat(mDisplayManager.shouldIncludeDefaultDisplayInTopology()).isTrue();
-        verify(mMockDisplayTopologyCoordinator, never()).onDisplayAdded(any());
-    }
-
-    @Test
     public void testIncludeDefaultDisplayInTopologySwitch_internalDisplayCanHostDesktops() {
-        when(mMockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true);
         Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
                 0);
 
@@ -5030,7 +5008,6 @@ public class DisplayManagerServiceTest {
 
     @Test
     public void testIncludeDefaultDisplayInTopologySwitch_addDefaultDisplayWhenEnableSwitch() {
-        when(mMockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true);
         Settings.Secure.putInt(mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY, 0);
         Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
                 0);
@@ -5058,7 +5035,6 @@ public class DisplayManagerServiceTest {
 
     @Test
     public void testIncludeDefaultDisplayInTopologySwitch_removeDefaultDisplayWhenDisableSwitch() {
-        when(mMockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true);
         Settings.Secure.putInt(mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY, 0);
         Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
                 1);
@@ -5083,7 +5059,6 @@ public class DisplayManagerServiceTest {
 
     @Test
     public void testIncludeDefaultDisplayInTopologySwitch_systemReadyUpdatesTopology() {
-        when(mMockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true);
         Settings.Secure.putInt(mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY, 0);
         Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
                 0);
@@ -5106,7 +5081,6 @@ public class DisplayManagerServiceTest {
     @Test
     public void testIncludeDefaultDisplayInTopologySwitch_mirrorBuiltInDisplay() {
         when(mMockFlags.isDisplayContentModeManagementEnabled()).thenReturn(true);
-        when(mMockFlags.isDefaultDisplayInTopologySwitchEnabled()).thenReturn(true);
         Settings.Secure.putInt(mContext.getContentResolver(), MIRROR_BUILT_IN_DISPLAY, 1);
         Settings.Secure.putInt(mContext.getContentResolver(), INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY,
                 0);

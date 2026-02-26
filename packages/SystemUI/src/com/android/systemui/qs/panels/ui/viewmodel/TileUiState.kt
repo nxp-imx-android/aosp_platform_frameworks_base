@@ -134,7 +134,7 @@ fun QSTile.State.toUiState(resources: Resources): TileUiState {
         handlesMainClick = state != Tile.STATE_UNAVAILABLE,
         accessibilityUiState =
             AccessibilityUiState(
-                contentDescription?.toString() ?: "",
+                contentDescription?.toString() ?: label?.toString() ?: "",
                 stateDescription.toString(),
                 accessibilityRole,
                 toggleableState,

@@ -40,6 +40,11 @@ cc_aconfig_library {
         "//apex_available:platform",
         "com.android.webapp",
     ],
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
 
 cc_defaults {

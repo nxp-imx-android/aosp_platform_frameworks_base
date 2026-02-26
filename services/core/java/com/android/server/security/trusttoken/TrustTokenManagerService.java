@@ -73,7 +73,8 @@ public class TrustTokenManagerService extends SystemService {
     private final Clock mClock;
     private final TrustTokenRefreshService.Scheduler mRefreshScheduler;
     private final TrustTokenCleanUpService.Scheduler mCleanUpScheduler;
-    private final TrustTokenMasterKey mMasterKey;
+    private final AtomicReference<TrustTokenMasterKey> mMasterKey = new AtomicReference<>();
+    private final Object mMasterKeyInit = new Object();
     private final AtomicReference<TrustAnchor> mTrustAnchor = new AtomicReference<>();
     private final Stub mBinder;
     private final boolean mHasProvider;
@@ -85,17 +86,14 @@ public class TrustTokenManagerService extends SystemService {
      * Creates a new instance of {@link TrustTokenManagerService}.
      *
      * @param context The {@link Context} of the service.
-     * @return A new instance of {@link TrustTokenManagerService}.
      */
-    public static TrustTokenManagerService create(Context context) {
-        var masterKey = TrustTokenMasterKey.fromKeyStore(MASTER_KEY_PREFIX);
-        if (masterKey == null) {
-            masterKey = TrustTokenMasterKey.generateMasterKey(MASTER_KEY_PREFIX);
-        }
-        var database =
+    TrustTokenManagerService(Context context) {
+        this(
+                context,
+                /* masterKey= */ null,
                 TrustTokenSqliteDatabase.create(
-                        context, context.getDatabasePath(DATABASE_NAME), Clock.SYSTEM_CLOCK);
-        return new TrustTokenManagerService(context, masterKey, database, Clock.SYSTEM_CLOCK);
+                        context, context.getDatabasePath(DATABASE_NAME), Clock.SYSTEM_CLOCK),
+                Clock.SYSTEM_CLOCK);
     }
 
     TrustTokenManagerService(
@@ -105,7 +103,9 @@ public class TrustTokenManagerService extends SystemService {
             Clock clock) {
         super(context);
         mDatabase = database;
-        mMasterKey = masterKey;
+        if (masterKey != null) {
+            mMasterKey.set(masterKey);
+        }
         mClock = clock;
         mContext = context;
         mBinder = new Stub(context);
@@ -192,6 +192,27 @@ public class TrustTokenManagerService extends SystemService {
         return anchor;
     }
 
+    @NonNull
+    private TrustTokenMasterKey getOrInitMasterKey() {
+        TrustTokenMasterKey key = mMasterKey.get();
+        if (key != null) {
+            return key;
+        }
+        synchronized (mMasterKeyInit) {
+            if (key != null) {
+                return key;
+            }
+            key = TrustTokenMasterKey.fromKeyStore(MASTER_KEY_PREFIX);
+            if (key != null) {
+                mMasterKey.set(key);
+                return key;
+            }
+            key = TrustTokenMasterKey.generateMasterKey(MASTER_KEY_PREFIX);
+            mMasterKey.set(key);
+            return key;
+        }
+    }
+
     private boolean isOnDeviceKeyUpToDate(TrustConfiguration configuration) {
         int keyTimestamp =
                 mContext.getResources()
@@ -258,7 +279,7 @@ public class TrustTokenManagerService extends SystemService {
                 throw new IllegalStateException(
                         "Cannot acquire valid tokens. Consider the service unavailable.");
             }
-            byte[] challengeResponse = mMasterKey.sign(setWithKey.getKey(), challenge);
+            byte[] challengeResponse = getOrInitMasterKey().sign(setWithKey.getKey(), challenge);
             logger.setOutcome(MetricsLogger.AcquireTokenCalled.OUTCOME_SUCCESS).log();
             return new TrustTokenWithChallenge(
                     setWithKey.getTokenSet().asVerifiedDeviceToken(), challengeResponse);
@@ -345,14 +366,14 @@ public class TrustTokenManagerService extends SystemService {
                 public List<TrustTokenKey> generateKeys(int num) {
                     var keys = new ArrayList<TrustTokenKey>(num);
                     for (int i = 0; i < num; ++i) {
-                        keys.add(mMasterKey.generatePerTokenKey());
+                        keys.add(getOrInitMasterKey().generatePerTokenKey());
                     }
                     return keys;
                 }
 
                 @Override
                 public TrustTokenBatchAttestation attestKeys(List<TrustTokenKey> keys) {
-                    return mMasterKey.attest(keys);
+                    return getOrInitMasterKey().attest(keys);
                 }
 
                 @Override

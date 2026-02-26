@@ -16,6 +16,8 @@
 
 package android.app.admin.metadata;
 
+import android.annotation.NonNull;
+import android.annotation.TestApi;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,13 +30,17 @@ import java.util.List;
 public abstract class ResolutionMechanismMetadata<T> {
 
     public static final class MostRestrictive<T> extends ResolutionMechanismMetadata<T> {
-
         private final List<T> mMostToLeastRestrictive;
 
-        public MostRestrictive(List<T> mostToLeastRestrictive) {
+        public MostRestrictive(@NonNull List<T> mostToLeastRestrictive) {
             mMostToLeastRestrictive = new ArrayList<>(mostToLeastRestrictive);
         }
 
+        public MostRestrictive() {
+            mMostToLeastRestrictive = new ArrayList<>();
+        }
+
+        @NonNull
         public List<T> getMostToLeastRestrictiveValues() {
             return mMostToLeastRestrictive;
         }

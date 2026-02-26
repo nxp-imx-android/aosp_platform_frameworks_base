@@ -348,7 +348,7 @@ public class InternetDialogDelegateLegacy implements
 
         mLifecycleRegistry.setCurrentState(Lifecycle.State.RESUMED);
 
-        mInternetDetailsContentController.onStart(this, mCanConfigWifi);
+        mInternetDetailsContentController.onStart(this, mCanConfigWifi, mCoroutineScope);
         if (!mCanConfigWifi) {
             hideWifiViews();
         }

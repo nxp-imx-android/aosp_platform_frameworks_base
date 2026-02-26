@@ -27,6 +27,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ShortcutManager
 import android.graphics.Color
 import android.os.Binder
+import android.os.PowerManager
 import android.os.UserManager
 import android.os.fakeExecutorHandler
 import android.platform.test.flag.junit.FlagsParameterization
@@ -52,7 +53,9 @@ import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin.MenuItem
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.domain.interactor.PowerInteractorFactory.create
+import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.data.repository.Idle
 import com.android.systemui.scene.data.repository.WindowRootViewVisibilityRepository
 import com.android.systemui.scene.data.repository.setSceneTransition
@@ -75,6 +78,7 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor
+import com.android.systemui.statusbar.notification.row.NotificationGuts.GutsContent
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
@@ -83,6 +87,7 @@ import com.android.systemui.statusbar.notification.stack.NotificationListContain
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.kotlin.javaAdapter
+import com.android.systemui.util.mockito.mock
 import com.android.systemui.wmshell.BubblesManager
 import java.util.Optional
 import kotlin.test.assertNotNull
@@ -162,6 +167,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
     @Mock private lateinit var headsUpManager: HeadsUpManager
     @Mock private lateinit var activityStarter: ActivityStarter
     @Mock private lateinit var userManager: UserManager
+    @Mock private lateinit var powerInteractor: PowerInteractor
 
     private lateinit var windowRootViewVisibilityInteractor: WindowRootViewVisibilityInteractor
 
@@ -226,6 +232,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 headsUpManager,
                 activityStarter,
                 kosmos.activityManagerWrapper,
+                powerInteractor,
             )
         gutsManager.setUpWithPresenter(
             presenter,
@@ -715,6 +722,24 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
         assertFalse(gutsManager.openGutsInternal(row, 0, 0, menuItem))
         executor.runAllReady()
         verify(guts, never()).openControls(anyInt(), anyInt(), anyBoolean(), any<Runnable>())
+    }
+
+    @Test
+    fun showGuts_wakesDevice() {
+        val gutsContent: GutsContent = mock()
+        val guts = spy(NotificationGuts(mContext))
+        val realRow = createTestNotificationRow()
+        val menuItem = createTestMenuItem(realRow)
+
+        val row = spy(realRow)
+        whenever(row.windowToken).thenReturn(Binder())
+        whenever(row.guts).thenReturn(guts)
+        whenever(guts.gutsContent).thenReturn(gutsContent)
+        whenever(gutsContent.needsFalsingProtection()).thenReturn(true)
+
+        assertTrue(gutsManager.openGuts(row, 0, 0, menuItem))
+        verify(powerInteractor)
+            .wakeUpIfDozing(eq("NOTIFICATION_GUTS"), eq(PowerManager.WAKE_REASON_GESTURE))
     }
 
     private fun createTestNotificationRow(

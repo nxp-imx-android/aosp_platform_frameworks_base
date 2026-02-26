@@ -124,6 +124,7 @@ import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.wm.ActivityAssistInfo;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 import com.android.testing.wm.util.StubTransaction;
@@ -146,6 +147,9 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * Run test: atest ComputerControlSessionImplTest
+ */
 @Presubmit
 @RunWith(JUnitParamsRunner.class)
 public class ComputerControlSessionImplTest {
@@ -156,6 +160,8 @@ public class ComputerControlSessionImplTest {
     private static final int DISPLAY_HEIGHT = 1000;
     private static final int DISPLAY_DPI = 480;
     private static final int LONG_PRESS_STEP_COUNT = 5;
+    private static final int ALLOWED_TASK_ID = 123;
+    private static final int DISALLOWED_TASK_ID = 999;
     private static final String TARGET_PACKAGE_1 = "com.android.foo";
     private static final String TARGET_PACKAGE_2 = "com.android.bar";
     private static final List<String> TARGET_PACKAGE_NAMES =
@@ -1383,6 +1389,7 @@ public class ComputerControlSessionImplTest {
     @Test
     public void requestScreenshot_enablesHardwareRendererOutput() throws RemoteException {
         createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
         when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
                 any())).thenReturn(true);
 
@@ -1396,6 +1403,7 @@ public class ComputerControlSessionImplTest {
     @Test
     public void requestScreenshot_inBlockedState_returnsTrue() throws Exception {
         createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
 
         when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(
                 anyInt(), anyLong(), any(), any())).thenReturn(true);
@@ -1411,6 +1419,8 @@ public class ComputerControlSessionImplTest {
     @Test
     public void requestScreenshot_alreadyWaiting_returnsFalse() throws RemoteException {
         createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
+
         when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
                 any())).thenReturn(true);
 
@@ -1425,6 +1435,8 @@ public class ComputerControlSessionImplTest {
     @Test
     public void requestScreenshot_callbackDisablesHardwareRendererOutput() throws RemoteException {
         createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
+
         when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
                 any())).thenReturn(true);
 
@@ -1449,6 +1461,7 @@ public class ComputerControlSessionImplTest {
     public void requestScreenshot_withInteractiveMirror_doesNotDisableHardwareRendererOutput()
             throws Exception {
         createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
         when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
                 any())).thenReturn(true);
         setupMockMirror();
@@ -1494,6 +1507,7 @@ public class ComputerControlSessionImplTest {
     public void closeInteractiveMirror_pendingScreenshot_doesNotDisableHardwareRendererOutput()
             throws Exception {
         createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
         when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(anyInt(), anyLong(), any(),
                 any())).thenReturn(true);
         setupMockMirror();
@@ -1599,6 +1613,112 @@ public class ComputerControlSessionImplTest {
 
         verify(mVirtualDevice, never()).wakeUp();
         verify(mVirtualDevice, never()).goToSleep();
+    }
+
+    @Test
+    public void requestScreenshot_noActivitiesOnDisplay_returnsFalse() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        doReturn(List.of()).when(mActivityTaskManagerInternal)
+                .getTopVisibleActivities(VIRTUAL_DISPLAY_ID);
+
+        boolean result = mSession.requestScreenshot();
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    public void requestScreenshot_afterDisplayEmpty_trustIsRevoked() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
+
+        mActivityListenerArgumentCaptor.getValue().onDisplayEmpty(VIRTUAL_DISPLAY_ID);
+
+        doReturn(List.of(mockActivityAssistInfo(ALLOWED_TASK_ID)))
+                .when(mActivityTaskManagerInternal).getTopVisibleActivities(VIRTUAL_DISPLAY_ID);
+
+        boolean result = mSession.requestScreenshot();
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    public void requestScreenshot_allowedAfterApplicationLaunch() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(
+                eq(VIRTUAL_DISPLAY_ID), anyLong(), any(), any()))
+                .thenReturn(true);
+
+        boolean result = mSession.requestScreenshot();
+        assertThat(result).isTrue();
+        verify(mWindowManagerInternal).requestHardwareRendererOutputEnabled(
+                eq(VIRTUAL_DISPLAY_ID), anyLong(), any(), any());
+    }
+
+    @Test
+    public void getTopTaskId_picksFirstActivityFromList() throws Exception {
+        createComputerControlSession(mDefaultParams);
+
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
+        // Set-up multi-activity scenario where the
+        // Authorized task is on top of the Unauthorized task.
+        ActivityAssistInfo allowedTopActivity = mockActivityAssistInfo(ALLOWED_TASK_ID);
+        ActivityAssistInfo disallowedBottomActivity = mockActivityAssistInfo(DISALLOWED_TASK_ID);
+        doReturn(List.of(allowedTopActivity, disallowedBottomActivity))
+                .when(mActivityTaskManagerInternal).getTopVisibleActivities(VIRTUAL_DISPLAY_ID);
+
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(
+                anyInt(), anyLong(), any(), any())).thenReturn(true);
+
+        boolean result = mSession.requestScreenshot();
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    public void requestScreenshot_multipleTasksOfSameAllowedPackage_allAllowed() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
+
+        int secondTaskId = 456;
+        ActivityAssistInfo secondTask = mockActivityAssistInfo(secondTaskId);
+        doReturn(List.of(secondTask))
+                .when(mActivityTaskManagerInternal).getTopVisibleActivities(VIRTUAL_DISPLAY_ID);
+
+        // Trigger the listener for the new Task ID. We pass TEST_COMPONENT,
+        // which belongs to allowed package, TARGET_PACKAGE_1.
+        mActivityListenerArgumentCaptor.getValue().onTopActivityChanged(
+                VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
+
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(
+                anyInt(), anyLong(), any(), any())).thenReturn(true);
+
+        boolean result = mSession.requestScreenshot();
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    public void requestScreenshot_blockedWhenTaskNotAllowed() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        startAppAndAdoptTask(ALLOWED_TASK_ID);
+
+        ActivityAssistInfo allowedActivity = mockActivityAssistInfo(ALLOWED_TASK_ID);
+        ActivityAssistInfo disallowedActivity = mockActivityAssistInfo(DISALLOWED_TASK_ID);
+        // Set-up multi-activity scenario where the
+        // Unauthorized task is on top of the Authorized task.
+        doReturn(List.of(disallowedActivity, allowedActivity))
+                .when(mActivityTaskManagerInternal).getTopVisibleActivities(VIRTUAL_DISPLAY_ID);
+
+        ComponentName blockedComponent = new ComponentName("com.enemy.app", ".Main");
+        mActivityListenerArgumentCaptor.getValue().onTopActivityChanged(
+                VIRTUAL_DISPLAY_ID, blockedComponent, USER_ID);
+
+        when(mWindowManagerInternal.requestHardwareRendererOutputEnabled(
+                eq(VIRTUAL_DISPLAY_ID), anyLong(), any(), any()))
+                .thenReturn(true);
+
+        boolean result = mSession.requestScreenshot();
+        assertThat(result).isFalse();
+        verify(mWindowManagerInternal, never()).requestHardwareRendererOutputEnabled(
+                anyInt(), anyLong(), any(), any());
     }
 
     @Test
@@ -1756,6 +1876,27 @@ public class ComputerControlSessionImplTest {
         verify(mRemoteComputerControlInputConnection, after(KEY_EVENT_DELAY_MS * 2).never())
                 .performEditorAction(any(), anyInt());
         verify(mRemoteComputerControlInputConnection, never()).sendKeyEvent(any(), any());
+    }
+
+    private ActivityAssistInfo mockActivityAssistInfo(int taskId) {
+        ActivityAssistInfo info = Mockito.mock(ActivityAssistInfo.class);
+        doReturn(taskId).when(info).getTaskId();
+        return info;
+    }
+
+    private void startAppAndAdoptTask(int taskId) throws RemoteException {
+        when(mOwnerPackageManager.queryIntentActivities(any(Intent.class),
+                any(PackageManager.ResolveInfoFlags.class)))
+                .thenReturn(List.of(new ResolveInfo()));
+
+        doReturn(List.of(mockActivityAssistInfo(taskId)))
+                .when(mActivityTaskManagerInternal).getTopVisibleActivities(VIRTUAL_DISPLAY_ID);
+        mSession.launchApplication(TARGET_PACKAGE_1, TARGET_CLASS);
+
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+        mActivityListenerArgumentCaptor.getValue().onTopActivityChanged(
+                VIRTUAL_DISPLAY_ID, TEST_COMPONENT, USER_ID);
     }
 
     @SuppressLint("MissingPermission")
