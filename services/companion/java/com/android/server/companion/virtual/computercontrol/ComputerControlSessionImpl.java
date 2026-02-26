@@ -599,6 +599,21 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mIsTestSession;
     }
 
+    void monitor() {
+        synchronized (mAllowlistedPackages) { /* no-op */ }
+        synchronized (mAllowedTaskIds) { /* no-op */ }
+        synchronized (mNotificationLock) { /* no-op */ }
+        synchronized (mPreviewIntentLock) { /* no-op */ }
+        synchronized (mWindowDrawLock) { /* no-op */ }
+        synchronized (mInteractiveMirrors) {
+            for (int i = 0; i < mInteractiveMirrors.size(); i++) {
+                mInteractiveMirrors.get(i).monitor();
+            }
+        }
+        mLifecycle.monitor();
+        mStatsController.monitor();
+    }
+
     @Override
     public void initialize(IComputerControlLifecycleCallback callback, Surface clientSurface) {
         if (mClientSurface != null) {

@@ -133,6 +133,12 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         }
     }
 
+    void monitor() {
+        mAutomatableAppAllowlist.monitor();
+        mSessionOwnerAllowlist.monitor();
+        mAutomatableAppDenylist.monitor();
+    }
+
     @Override
     public void onPropertiesChanged(@NonNull DeviceConfig.Properties properties) {
         final Set<String> keySet = properties.getKeyset();
@@ -465,6 +471,10 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         @Nullable
         private SignedPackages mSignedPackages = null;
 
+        void monitor() {
+            synchronized (mLock) { /* no-op */ }
+        }
+
         boolean anyMatch(@NonNull String packageName,
                 @NonNull SigningDetails signingDetails) {
             return anyMatch(packageName, signingDetails, false);
@@ -502,6 +512,12 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
         DeviceConfigRemoteList(@NonNull File file, @NonNull String deviceConfigKey) {
             mStorage = new ValueStorage(file);
             mDeviceConfigKey = deviceConfigKey;
+        }
+
+        @Override
+        void monitor() {
+            super.monitor();
+            mStorage.monitor();
         }
 
         private void update() {
@@ -566,6 +582,10 @@ final class ComputerControlAllowlistController implements DeviceConfig.OnPropert
          */
         ValueStorage(@NonNull File file) {
             mAtomicFile = new AtomicFile(file);
+        }
+
+        void monitor() {
+            synchronized (mLock) { /* no-op */ }
         }
 
         /**

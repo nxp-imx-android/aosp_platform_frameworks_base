@@ -103,6 +103,10 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
         }
     }
 
+    void monitor() {
+        synchronized (this) { /* no-op */ }
+    }
+
     /** Return the mirror leash that can be safely sent to the client app. */
     SurfaceControl getMirrorLeash() {
         return mMirrorLeash;
