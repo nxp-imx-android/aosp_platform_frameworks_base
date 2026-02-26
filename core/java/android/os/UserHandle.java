@@ -458,9 +458,6 @@ public final class UserHandle implements Parcelable {
     public static int getCacheAppGid(@UserIdInt int userId, @AppIdInt int appId) {
         if (appId >= AID_APP_START && appId <= AID_APP_END) {
             return getUid(userId, (appId - AID_APP_START) + AID_CACHE_GID_START);
-        } else if (appId >= Process.FIRST_PCC_UID && appId <= Process.LAST_PCC_UID) {
-            return getUid(userId, (appId - Process.FIRST_PCC_UID)
-                    + Process.FIRST_PCC_CACHE_GID);
         } else {
             return -1;
         }

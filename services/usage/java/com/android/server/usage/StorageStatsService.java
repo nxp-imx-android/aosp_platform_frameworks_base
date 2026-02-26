@@ -16,7 +16,6 @@
 
 package com.android.server.usage;
 
-import static android.app.privatecompute.flags.Flags.enablePccFrameworkSupport;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import static com.android.internal.util.ArrayUtils.defeatNullable;
@@ -79,11 +78,13 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.Preconditions;
+import com.android.server.art.ArtManagerLocal;
+import com.android.server.art.model.ArtManagedFileStats;
+import com.android.server.pm.PackageManagerLocal.FilteredSnapshot;
 import com.android.server.IoThread;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
-import com.android.server.art.model.ArtManagedFileStats;
 import com.android.server.pm.Installer;
 import com.android.server.pm.Installer.InstallerException;
 import com.android.server.storage.CacheQuotaStrategy;
@@ -445,14 +446,8 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
 
             final PackageStats stats = new PackageStats(TAG);
             try {
-                // Don't allow an app to see its own PCC quota usage unless it has the stats
-                // permission
-                // pccId = -1 is passed when the app does not have pcc components
-                // pccId = 0 is passed when the app does not have stats permission
-                int pccId = (enablePccFrameworkSupport() && callerHasStatsPermission)
-                        ? (appInfo.pccUid != -1 ? UserHandle.getAppId(appInfo.pccUid) : -1) : 0;
                 mInstaller.getAppSize(volumeUuid, packageNames, userId, 0,
-                        appId, pccId, ceDataInodes, codePaths, stats);
+                        appId, ceDataInodes, codePaths, stats);
             } catch (InstallerException e) {
                 throw new ParcelableException(new IOException(e.getMessage()));
             }
@@ -495,9 +490,6 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
         final String[] packageNames = defeatNullable(mPackage.getPackagesForUid(uid));
         final long[] ceDataInodes = new long[packageNames.length];
         String[] codePaths = new String[0];
-        // TODO: b/482926883 - Use a method to find pccId, given appId instead of making the
-        //  assumption that all packages have the same pccId.
-        int anyPccId = -1;
 
         final PackageStats stats = new PackageStats(TAG);
         for (int i = 0; i < packageNames.length; i++) {
@@ -509,15 +501,11 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
                 } else {
                     if (appInfo.getCodePath() != null) {
                         codePaths = ArrayUtils.appendElement(String.class, codePaths,
-                                appInfo.getCodePath());
+                            appInfo.getCodePath());
                     }
                     if (Flags.getAppBytesByDataTypeApi()) {
                         computeAppStatsByDataTypes(
-                                stats, appInfo.sourceDir, packageNames[i]);
-                    }
-                    // Assuming pccUid value remains same across packages
-                    if (anyPccId == -1 && appInfo.pccUid != -1) {
-                        anyPccId = UserHandle.getAppId(appInfo.pccUid);
+                            stats, appInfo.sourceDir, packageNames[i]);
                     }
                 }
             } catch (NameNotFoundException e) {
@@ -526,16 +514,13 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
         }
 
         try {
-            // Don't allow an app to see its own PCC quota usage unless it has the stats permission
-            int pccId = (enablePccFrameworkSupport() && callerHasStatsPermission)
-                    ? anyPccId : 0;
             mInstaller.getAppSize(volumeUuid, packageNames, userId, getDefaultFlags(),
-                    appId, pccId, ceDataInodes, codePaths, stats);
+                    appId, ceDataInodes, codePaths, stats);
 
             if (SystemProperties.getBoolean(PROP_VERIFY_STORAGE, false)) {
                 final PackageStats manualStats = new PackageStats(TAG);
                 mInstaller.getAppSize(volumeUuid, packageNames, userId, 0,
-                        appId, pccId, ceDataInodes, codePaths, manualStats);
+                        appId, ceDataInodes, codePaths, manualStats);
                 checkEquals("UID " + uid, manualStats, stats);
             }
         } catch (InstallerException e) {
@@ -563,21 +548,14 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
         // Always require permission to see user-level stats
         enforceStatsPermission(Binder.getCallingUid(), callingPackage);
 
-        final List<Pair<Integer, Integer>> appAndPccIds = getAppAndPccIds(userId);
-        final int[] appIds = new int[appAndPccIds.size()];
-        final int[] pccIds = new int[appAndPccIds.size()];
-        for (int i = 0; i < appAndPccIds.size(); i++) {
-            appIds[i] = appAndPccIds.get(i).first;
-            pccIds[i] = appAndPccIds.get(i).second;
-        }
-
+        final int[] appIds = getAppIds(userId);
         final PackageStats stats = new PackageStats(TAG);
         try {
-            mInstaller.getUserSize(volumeUuid, userId, getDefaultFlags(), appIds, pccIds, stats);
+            mInstaller.getUserSize(volumeUuid, userId, getDefaultFlags(), appIds, stats);
 
             if (SystemProperties.getBoolean(PROP_VERIFY_STORAGE, false)) {
                 final PackageStats manualStats = new PackageStats(TAG);
-                mInstaller.getUserSize(volumeUuid, userId, 0, appIds, pccIds, manualStats);
+                mInstaller.getUserSize(volumeUuid, userId, 0, appIds, manualStats);
                 checkEquals("User " + userId, manualStats, stats);
             }
         } catch (InstallerException e) {
@@ -637,19 +615,6 @@ public class StorageStatsService extends IStorageStatsManager.Stub {
             }
         }
         return appIds;
-    }
-
-    private List<Pair<Integer, Integer>> getAppAndPccIds(int userId) {
-        List<Pair<Integer, Integer>> appAndPccIds = new ArrayList<>();
-        for (ApplicationInfo app : mPackage.getInstalledApplicationsAsUser(
-                PackageManager.MATCH_UNINSTALLED_PACKAGES, userId)) {
-            final int appId = UserHandle.getAppId(app.uid);
-            final int pccId = app.pccUid != -1 ? UserHandle.getAppId(app.pccUid) : -1;
-            if (!ArrayUtils.contains(appAndPccIds, Pair.create(appId, pccId))) {
-                appAndPccIds.add(Pair.create(appId, pccId));
-            }
-        }
-        return appAndPccIds;
     }
 
     private static int getDefaultFlags() {

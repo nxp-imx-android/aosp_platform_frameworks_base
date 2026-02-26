@@ -83,17 +83,6 @@ public class UserHandleTest {
         EXPECT_EQ(ERR_GID, multiuser_get_cache_gid(10, 1000));
         EXPECT_EQ(1020000, multiuser_get_cache_gid(10, 10000));
         EXPECT_EQ(ERR_GID, multiuser_get_cache_gid(10, 50000));
-
-        // PCC UIDs
-        EXPECT_EQ(60000, multiuser_get_cache_gid(0, 30000));
-        EXPECT_EQ(1060000, multiuser_get_cache_gid(10, 30000));
-        EXPECT_EQ(69999, multiuser_get_cache_gid(0, 39999));
-        EXPECT_EQ(1069999, multiuser_get_cache_gid(10, 39999));
-    }
-
-    @Test
-    public void testPccCache() throws Exception {
-        assertEquals(60000, UserHandle.getCacheAppGid(0, 30000));
     }
 
     @Test
