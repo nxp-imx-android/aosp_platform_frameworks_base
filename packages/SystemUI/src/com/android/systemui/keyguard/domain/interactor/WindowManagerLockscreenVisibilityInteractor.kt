@@ -115,10 +115,8 @@ constructor(
             }
             .distinctUntilChanged()
 
-    private val isDeviceEnteredDirectly by lazy {
-        deviceEntryInteractor.get().isDeviceEnteredDirectly
-    }
-    private val isDeviceNotEnteredDirectly by lazy { isDeviceEnteredDirectly.map { !it } }
+    private val isDeviceEntered by lazy { deviceEntryInteractor.get().isDeviceEntered }
+    private val isDeviceNotEntered by lazy { isDeviceEntered.map { !it } }
 
     /**
      * Surface visibility, which is either determined by the default visibility when not
@@ -132,7 +130,7 @@ constructor(
                         state.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Gone) ||
                             state.isTransitioning(from = Scenes.Communal, to = Scenes.Gone) ||
                             state.isTransitioning(from = Scenes.Shade, to = Scenes.Gone) ->
-                            isDeviceEnteredDirectly
+                            isDeviceEntered
                         state.isTransitioning(from = Overlays.Bouncer, to = Scenes.Gone) ->
                             (state as Transition).progress.map { progress ->
                                 progress >
@@ -275,7 +273,7 @@ constructor(
                                         // If showing a shade scene, report that the keyguard is
                                         // visible if the device hasn't been entered yet.
                                         it.currentScene in shadeScenes ->
-                                            isDeviceNotEnteredDirectly.map {
+                                            isDeviceNotEntered.map {
                                                 it to "Idle in shade and deviceNotEntered=$it"
                                             }
                                         // If idle on any other scene, report that the keyguard is
@@ -325,7 +323,7 @@ constructor(
                                         //   both while locked and unlocked, the lockscreen
                                         //   visibility should simply not change.
                                         else ->
-                                            isDeviceNotEnteredDirectly.map {
+                                            isDeviceNotEntered.map {
                                                 it to "ChangeScene default, deviceNotEntered=$it"
                                             }
                                     }
