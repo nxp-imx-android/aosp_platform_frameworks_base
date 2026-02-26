@@ -20,7 +20,9 @@ import android.annotation.SuppressLint
 import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.android.internal.logging.InstanceId
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.media.remedia.data.model.MediaDataModel
@@ -48,7 +50,7 @@ constructor(
         backgroundDispatcher,
         fakeUserSettings,
     ) {
-    override var currentMedia: List<MediaDataModel> = emptyList()
+    override var currentMedia: SnapshotStateList<MediaDataModel> = mutableStateListOf()
     override val keysNeedRemoval = mutableListOf(InstanceId.fakeInstanceId(1))
     override var currentCarouselIndex by mutableIntStateOf(FIRST_INDEX_OF_CAROUSEL)
     override var shouldScrollToFirst = false
@@ -90,7 +92,8 @@ constructor(
     override fun clearCurrentUserMedia() = Unit
 
     fun setFakeCurrentMedia(mediaList: List<MediaDataModel>) {
-        currentMedia = mediaList
+        currentMedia.clear()
+        currentMedia.addAll(mediaList)
     }
 
     private companion object {

@@ -72,46 +72,9 @@ val Kosmos.fakeActiveMedia by
             notificationActionsCompressed = listOf(0),
             playbackStateActions =
                 MediaButton(
-                    playOrPause =
-                        MediaAction(
-                            icon =
-                                AppCompatResources.getDrawable(
-                                    this.applicationContext,
-                                    R.drawable.ic_media_play_button,
-                                ),
-                            action = null,
-                            contentDescription = "Play",
-                            background =
-                                AppCompatResources.getDrawable(
-                                    this.applicationContext,
-                                    R.drawable.ic_media_play_button_container,
-                                ),
-                            rebindId = 1,
-                        ),
-                    nextOrCustom =
-                        MediaAction(
-                            icon =
-                                AppCompatResources.getDrawable(
-                                    this.applicationContext,
-                                    R.drawable.ic_media_next,
-                                ),
-                            action = null,
-                            contentDescription = "Next",
-                            background = null,
-                            rebindId = 2,
-                        ),
-                    prevOrCustom =
-                        MediaAction(
-                            icon =
-                                AppCompatResources.getDrawable(
-                                    this.applicationContext,
-                                    R.drawable.ic_media_prev,
-                                ),
-                            action = null,
-                            contentDescription = "Prev",
-                            background = null,
-                            rebindId = 3,
-                        ),
+                    playOrPause = mediaPauseActionButton,
+                    nextOrCustom = mediaNextActionButton,
+                    prevOrCustom = mediaPrevActionButton,
                 ),
             outputDevice = null,
             clickIntent = null,
@@ -147,46 +110,9 @@ val Kosmos.fakePausedMediaWithCustomActions by
             notificationActionsCompressed = listOf(0),
             playbackStateActions =
                 MediaButton(
-                    playOrPause =
-                        MediaAction(
-                            icon =
-                                AppCompatResources.getDrawable(
-                                    this.applicationContext,
-                                    R.drawable.ic_media_play_button,
-                                ),
-                            action = null,
-                            contentDescription = "Play",
-                            background =
-                                AppCompatResources.getDrawable(
-                                    this.applicationContext,
-                                    R.drawable.ic_media_play_button_container,
-                                ),
-                            rebindId = 1,
-                        ),
-                    nextOrCustom =
-                        MediaAction(
-                            icon =
-                                AppCompatResources.getDrawable(
-                                    this.applicationContext,
-                                    R.drawable.ic_media_next,
-                                ),
-                            action = null,
-                            contentDescription = "Next",
-                            background = null,
-                            rebindId = 2,
-                        ),
-                    prevOrCustom =
-                        MediaAction(
-                            icon =
-                                AppCompatResources.getDrawable(
-                                    this.applicationContext,
-                                    R.drawable.ic_media_prev,
-                                ),
-                            action = null,
-                            contentDescription = "Prev",
-                            background = null,
-                            rebindId = 3,
-                        ),
+                    playOrPause = mediaPlayActionButton,
+                    nextOrCustom = mediaNextActionButton,
+                    prevOrCustom = mediaPrevActionButton,
                     custom0 =
                         MediaAction(
                             icon =
@@ -229,6 +155,61 @@ val Kosmos.fakePausedMediaWithCustomActions by
             needsImmediateRemoval = false,
         )
     }
+
+val Kosmos.mediaPlayActionButton: MediaAction
+    get() =
+        MediaAction(
+            icon =
+                AppCompatResources.getDrawable(
+                    this.applicationContext,
+                    R.drawable.ic_media_play_button,
+                ),
+            action = null,
+            contentDescription = "Play",
+            background =
+                AppCompatResources.getDrawable(
+                    this.applicationContext,
+                    R.drawable.ic_media_play_button_container,
+                ),
+            rebindId = 1,
+        )
+val Kosmos.mediaPauseActionButton: MediaAction
+    get() =
+        MediaAction(
+            icon =
+                AppCompatResources.getDrawable(
+                    this.applicationContext,
+                    R.drawable.ic_media_pause_button,
+                ),
+            action = null,
+            contentDescription = "Pause",
+            background =
+                AppCompatResources.getDrawable(
+                    this.applicationContext,
+                    R.drawable.ic_media_pause_button_container,
+                ),
+            rebindId = 1,
+        )
+val Kosmos.mediaNextActionButton: MediaAction
+    get() =
+        MediaAction(
+            icon =
+                AppCompatResources.getDrawable(this.applicationContext, R.drawable.ic_media_next),
+            action = null,
+            contentDescription = "Next",
+            background = null,
+            rebindId = 2,
+        )
+val Kosmos.mediaPrevActionButton: MediaAction
+    get() =
+        MediaAction(
+            icon =
+                AppCompatResources.getDrawable(this.applicationContext, R.drawable.ic_media_prev),
+            action = null,
+            contentDescription = "Prev",
+            background = null,
+            rebindId = 3,
+        )
 
 fun Kosmos.setFakeCurrentMedia(mediaList: List<MediaDataModel>) {
     fakeMediaRepository.setFakeCurrentMedia(mediaList)
