@@ -68,9 +68,9 @@ public class BasicToPwleSegmentAdapterTest {
     public void testBasicPwleSegments_withFeatureFlagDisabled_returnsOriginalSegments() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 //  startIntensity, endIntensity, startSharpness, endSharpness, duration
-                new BasicPwleSegment(0.2f, 0.8f, 0.2f, 0.4f, 20, true),
-                new BasicPwleSegment(0.8f, 0.2f, 0.4f, 0.5f, 100, false),
-                new BasicPwleSegment(0.2f, 0.65f, 0.5f, 0.5f, 50, false)));
+                new BasicPwleSegment(0.2f, 0.8f, 0.2f, 0.4f, 20),
+                new BasicPwleSegment(0.8f, 0.2f, 0.4f, 0.5f, 100),
+                new BasicPwleSegment(0.2f, 0.65f, 0.5f, 0.5f, 50)));
         List<VibrationEffectSegment> originalSegments = new ArrayList<>(segments);
 
         VibratorInfo vibratorInfo = createVibratorInfo(
@@ -89,9 +89,9 @@ public class BasicToPwleSegmentAdapterTest {
     public void testBasicPwleSegments_noPwleCapability_returnsOriginalSegments() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 //  startIntensity, endIntensity, startSharpness, endSharpness, duration
-                new BasicPwleSegment(0.2f, 0.8f, 0.2f, 0.4f, 20, true),
-                new BasicPwleSegment(0.8f, 0.2f, 0.4f, 0.5f, 100, false),
-                new BasicPwleSegment(0.2f, 0.65f, 0.5f, 0.5f, 50, false)));
+                new BasicPwleSegment(0.2f, 0.8f, 0.2f, 0.4f, 20),
+                new BasicPwleSegment(0.8f, 0.2f, 0.4f, 0.5f, 100),
+                new BasicPwleSegment(0.2f, 0.65f, 0.5f, 0.5f, 50)));
         List<VibrationEffectSegment> originalSegments = new ArrayList<>(segments);
 
         VibratorInfo vibratorInfo = createVibratorInfo(TEST_FREQUENCY_PROFILE);
@@ -109,9 +109,9 @@ public class BasicToPwleSegmentAdapterTest {
     public void testBasicPwleSegments_invalidFrequencyProfile_returnsOriginalSegments() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 //  startIntensity, endIntensity, startSharpness, endSharpness, duration
-                new BasicPwleSegment(0.2f, 0.8f, 0.2f, 0.4f, 20, true),
-                new BasicPwleSegment(0.8f, 0.2f, 0.4f, 0.5f, 100, false),
-                new BasicPwleSegment(0.2f, 0.65f, 0.5f, 0.5f, 50, false)));
+                new BasicPwleSegment(0.2f, 0.8f, 0.2f, 0.4f, 20),
+                new BasicPwleSegment(0.8f, 0.2f, 0.4f, 0.5f, 100),
+                new BasicPwleSegment(0.2f, 0.65f, 0.5f, 0.5f, 50)));
         List<VibrationEffectSegment> originalSegments = new ArrayList<>(segments);
         VibratorInfo vibratorInfo = createVibratorInfo(
                 EMPTY_FREQUENCY_PROFILE, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
@@ -130,47 +130,21 @@ public class BasicToPwleSegmentAdapterTest {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 new StepSegment(/* amplitude= */ 1, /* duration= */ 100),
                 //  startIntensity, endIntensity, startSharpness, endSharpness, duration
-                new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100, true),
-                new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100, false),
-                new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100, false)));
+                new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100),
+                new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100),
+                new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100)));
         List<VibrationEffectSegment> expectedSegments = Arrays.asList(
                 new StepSegment(/* amplitude= */ 1, /* duration= */ 100),
                 //  startAmplitude, endAmplitude, startFrequencyHz, endFrequencyHz, duration
-                new PwleSegment(0.0f, 1.0f, 30.0f, 300.0f, 100, true),
-                new PwleSegment(0.0f, 1.0f, 30.0f, 300.0f, 100, false),
-                new PwleSegment(0.0f, 1.0f, 30.0f, 300.0f, 100, false));
+                new PwleSegment(0.0f, 1.0f, 30.0f, 300.0f, 100),
+                new PwleSegment(0.0f, 1.0f, 30.0f, 300.0f, 100),
+                new PwleSegment(0.0f, 1.0f, 30.0f, 300.0f, 100));
         VibratorInfo vibratorInfo = createVibratorInfo(
                 TEST_FREQUENCY_PROFILE, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
 
         assertThat(mAdapter.adaptToVibrator(vibratorInfo, segments, /*repeatIndex= */ 1))
                 .isEqualTo(1);
 
-        assertThat(segments).isEqualTo(expectedSegments);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
-    public void testAdaptSegments_firstSegmentFlagIsPropagated() {
-        List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
-                // This is the first segment, so its adapted version should have the flag.
-                new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100, /* isFirstSegment= */ true),
-                // This is not the first segment.
-                new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100, /* isFirstSegment= */ false),
-                // Add a non-basic segment to ensure it's ignored.
-                new StepSegment(1f, 20)));
-
-        List<VibrationEffectSegment> expectedSegments = Arrays.asList(
-                // Corresponds to the first BasicPwleSegment.
-                new PwleSegment(0.0f, 1.0f, 30.0f, 300.0f, 100, /* isFirstSegment= */ true),
-                // Corresponds to the second BasicPwleSegment.
-                new PwleSegment(0.0f, 1.0f, 30.0f, 300.0f, 100, /* isFirstSegment= */ false),
-                // The StepSegment should remain unchanged.
-                new StepSegment(1f, 20));
-
-        VibratorInfo vibratorInfo =
-                createVibratorInfo(TEST_FREQUENCY_PROFILE, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
-
-        mAdapter.adaptToVibrator(vibratorInfo, segments, -1);
         assertThat(segments).isEqualTo(expectedSegments);
     }
 
