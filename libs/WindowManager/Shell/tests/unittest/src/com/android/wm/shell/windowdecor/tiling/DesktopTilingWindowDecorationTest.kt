@@ -33,6 +33,7 @@ import android.window.WindowContainerTransaction
 import androidx.test.annotation.UiThreadTest
 import androidx.test.filters.SmallTest
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -551,6 +552,9 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         whenever(windowDecoration.taskInfo).thenReturn(task1)
         task1.minWidth = 0
         task1.minHeight = 0
+        task1.defaultMinSize = 0
+        whenever(resources.getDimensionPixelSize(R.dimen.desktop_mode_minimum_window_width))
+            .thenReturn(0)
         initTiledTaskHelperMock(task1)
         whenever(windowDecoration.decorWindowContext).thenReturn(context)
         whenever(resources.getBoolean(any())).thenReturn(true)
@@ -710,6 +714,9 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         whenever(windowDecoration.taskInfo).thenReturn(task1)
         task1.minWidth = 0
         task1.minHeight = 0
+        task1.defaultMinSize = 0
+        whenever(resources.getDimensionPixelSize(R.dimen.desktop_mode_minimum_window_width))
+            .thenReturn(0)
         initTiledTaskHelperMock(task1)
         whenever(windowDecoration.decorWindowContext).thenReturn(context)
         whenever(resources.getBoolean(any())).thenReturn(true)
