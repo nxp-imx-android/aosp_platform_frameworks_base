@@ -37,6 +37,8 @@
 namespace android {
 
 namespace uirenderer {
+class OoprClient;
+
 namespace skiapipeline {
 
 class SkiaIpcPipeline : public SkiaPipeline {
@@ -125,6 +127,7 @@ private:
 
     uint64_t mWidth = 0;
     uint64_t mHeight = 0;
+    OoprClient* mOoprClient;
 };
 
 } /* namespace skiapipeline */

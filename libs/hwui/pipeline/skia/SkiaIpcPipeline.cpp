@@ -35,11 +35,11 @@ namespace android {
 namespace uirenderer {
 namespace skiapipeline {
 
-SkiaIpcPipeline::SkiaIpcPipeline(renderthread::RenderThread& thread) : SkiaPipeline(thread) {
-    auto& cache = oopr::getIPCResourceCache();
-    mIPCRecordingCanvas = std::make_shared<IPCRecordingCanvas>(cache);
+SkiaIpcPipeline::SkiaIpcPipeline(renderthread::RenderThread& thread)
+        : SkiaPipeline(thread), mOoprClient(OoprClient::getInstance()) {
+    mIPCRecordingCanvas = std::make_shared<IPCRecordingCanvas>(mOoprClient->getIPCResourceCache());
     mApplyToken = sp<BBinder>::make();
-    oopr::enableOutOfProcessRendering();
+    mOoprClient->enableOutOfProcessRendering();
 }
 
 SkiaIpcPipeline::~SkiaIpcPipeline() {
@@ -65,7 +65,8 @@ SkiaIpcPipeline::~SkiaIpcPipeline() {
 void SkiaIpcPipeline::setSurfaceControl(const sp<SurfaceControl>& surfaceControl) {
     if (surfaceControl != nullptr && surfaceControl->isValid()) {
         SurfaceComposerClient::Transaction()
-                .setRenderResourceToken(surfaceControl, oopr::getDefaultRenderResourceToken())
+                .setRenderResourceToken(surfaceControl,
+                                        mOoprClient->getDefaultRenderResourceToken())
                 .setRenderCommandBuffer(surfaceControl,
                                         mIPCRecordingCanvas->getRenderCommandBufferProducer())
                 .apply();
@@ -89,7 +90,7 @@ void SkiaIpcPipeline::renderLayersImpl(const LayerUpdateQueue& layers, bool opaq
 
         IPCRecordingCanvas* layerCanvas = mIPCRecordingCanvas.get();
 
-        layerCanvas->beginRenderTarget(layerNode->getOoprResources()->buffer->getId());
+        layerCanvas->beginRenderTarget(layerNode->getOoprResources()->getBuffer()->getId());
 
         {
             SkAutoCanvasRestore saver(layerCanvas, true);
@@ -102,7 +103,7 @@ void SkiaIpcPipeline::renderLayersImpl(const LayerUpdateQueue& layers, bool opaq
         layerCanvas->endRenderTarget();
 
         sk_sp<SkImage> layerImage = layerSurface->makeImageSnapshot();
-        oopr::registerSnapshot(layerNode->getOoprResources().get(), layerImage);
+        layerNode->getOoprResources()->registerSnapshot(layerImage);
 
         layerNode->getSkiaLayer()->hasRenderedSinceRepaint = false;
     }
@@ -118,8 +119,8 @@ bool SkiaIpcPipeline::createOrUpdateLayer(RenderNode* node,
         return false;
     }
 
-    auto result = oopr::createLayerSurface(node->getWidth(), node->getHeight(),
-                                           mRenderThread.getGrContext());
+    auto result = mOoprClient->createLayerSurface(node->getWidth(), node->getHeight(),
+                                                  mRenderThread.getGrContext());
     if (!result.surface) {
         return false;
     }
@@ -155,9 +156,6 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
         return result;
     }
 
-    // Register any pending bitmaps (e.g. created during this frame)
-    oopr::registerPendingBitmaps();
-
     // This should be the size plummed down from ViewRoot instead.
     mIPCRecordingCanvas->storeSize(mWidth, mHeight);
     // draw all layers up front
@@ -179,6 +177,8 @@ bool SkiaIpcPipeline::swapBuffers(const Frame& frame, IRenderPipeline::DrawResul
     if (!drawResult.success) {
         return false;
     }
+    // Register any pending bitmaps (e.g. created during this frame)
+    mOoprClient->registerPendingBitmaps();
 
     SurfaceComposerClient::Transaction pendingTransactions;
     std::function<void(SurfaceComposerClient::Transaction*)> syncCallback;

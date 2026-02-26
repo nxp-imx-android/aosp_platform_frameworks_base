@@ -297,7 +297,7 @@ private:
     // METHODS & FIELDS ONLY USED BY THE SKIA RENDERER
 public:
 #ifdef __ANDROID__
-    std::unique_ptr<oopr::NodeResources>& getOoprResources() { return mOoprResources; }
+    std::unique_ptr<OoprNode>& getOoprResources() { return mOoprResources; }
 #endif
     /**
      * Detach and transfer ownership of an already allocated displayList for use
@@ -393,7 +393,7 @@ private:
     std::unique_ptr<skiapipeline::SkiaDisplayList> mAvailableDisplayList;
 
 #ifdef __ANDROID__
-    std::unique_ptr<oopr::NodeResources> mOoprResources;
+    std::unique_ptr<OoprNode> mOoprResources;
 #endif
 
     /**

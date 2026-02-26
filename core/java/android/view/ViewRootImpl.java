@@ -398,13 +398,6 @@ public final class ViewRootImpl implements ViewParent,
      */
     private static final boolean MT_RENDERER_AVAILABLE = true;
 
-
-    /**
-     * Allow enabling IPC rendering on a per-package basis for debugging.
-     * Use a comma-separated list of packages.
-     */
-    private static final String IPC_RENDERING_PACKAGES =
-            SystemProperties.get("viewroot.ipc_rendering_packages", "");
     private boolean mIpcRenderingEnabled = false;
     private boolean mPerfHintSessionDisabled = false;
 
@@ -14594,7 +14587,8 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private boolean useIpcRendering() {
-        if (IPC_RENDERING_PACKAGES.contains(mBasePackageName)) {
+        if (SystemProperties.get("viewroot.ipc_rendering_packages", "")
+                        .contains(mBasePackageName)) {
             return true;
         }
         return false;
