@@ -17,7 +17,6 @@ package com.android.systemui.media.dialog
 
 import android.content.Context
 import android.graphics.drawable.Icon
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.text.BidiFormatter
 import android.view.View.GONE
@@ -28,7 +27,6 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.RecyclerView
-import com.android.media.flags.Flags
 import com.android.settingslib.media.InputMediaDevice
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTED
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING
@@ -689,7 +687,6 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     fun multipleSelectedDevices_listCollapsed_verifySessionControl() {
         mMediaSwitchingController.stub { on { isVolumeControlEnabledForSession() } doReturn true }
         initializeGroupSessionCollapsed()
