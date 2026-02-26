@@ -1363,7 +1363,7 @@ class TransitionController {
     void removeDisplayChangesFromQueue() {
         for (int i = mQueuedTransitions.size() - 1; i >= 0; i--) {
             final Transition t = mQueuedTransitions.get(i).mTransition;
-            if (t != null && t.getDisconnectReparentDisplays().isEmpty()
+            if (t != null && !t.hasDisconnectReparentChanges()
                     && (t.getFlags() & WindowManager.TRANSIT_FLAG_DISPLAY_LEVEL_TRANSITION) != 0) {
                 mQueuedTransitions.remove(i);
             }

@@ -290,7 +290,8 @@ class DeferredDisplayUpdater {
                     if (willStopHostingTasks) {
                         final int reparentDisplay = chooseDisplayToReparentTo();
                         displayChange.setDisconnectReparentDisplay(reparentDisplay);
-                        transition.addDisconnectReparentDisplay(reparentDisplay);
+                        transition.addDisconnectReparentDisplay(mDisplayContent.getDisplayId(),
+                                reparentDisplay);
                     }
 
                     final List<TransitionRequestInfo.DisplayChange> displayChanges =
