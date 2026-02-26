@@ -137,6 +137,16 @@ flag {
   bug: "466466234"
 }
 
+flag {
+  name: "enable_automation_notification_ui"
+  namespace: "notifications"
+  description: "Whether automation visual treatment is enabled for notifications."
+  bug: "483447802"
+  metadata {
+    purpose: PURPOSE_FEATURE
+  }
+}
+
 # Start: exported flags that cannot be removed
 
 flag {
