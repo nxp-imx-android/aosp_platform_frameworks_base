@@ -439,12 +439,6 @@ public abstract class ProcessRecordInternal {
     private @OomAdjust int mSetAdj = INVALID_ADJ;
 
     /**
-     * The last adjustment that was verified as actually being set.
-     */
-    @GuardedBy("mServiceLock")
-    private @OomAdjust int mVerifiedAdj = INVALID_ADJ;
-
-    /**
      * The previously set raw OOM adjustment for this process.
      * This is only meaningful for a restarted process.
      */
@@ -973,16 +967,6 @@ public abstract class ProcessRecordInternal {
             }
         }
         return mSetAdj;
-    }
-
-    @GuardedBy("mServiceLock")
-    public void setVerifiedAdj(@OomAdjust int verifiedAdj) {
-        mVerifiedAdj = verifiedAdj;
-    }
-
-    @GuardedBy("mServiceLock")
-    public @OomAdjust int getVerifiedAdj() {
-        return mVerifiedAdj;
     }
 
     @GuardedBy("mServiceLock")
@@ -1599,7 +1583,7 @@ public abstract class ProcessRecordInternal {
         mHasShownUi = false;
         mForcingToImportant = null;
         mPrevSetRawAdj = mSetRawAdj;
-        mCurRawAdj = mSetRawAdj = mCurAdj = mSetAdj = mVerifiedAdj = INVALID_ADJ;
+        mCurRawAdj = mSetRawAdj = mCurAdj = mSetAdj = INVALID_ADJ;
         mCurCapability = mSetCapability = PROCESS_CAPABILITY_NONE;
         mCurSchedGroup = mSetSchedGroup = SCHED_GROUP_BACKGROUND;
         mCurProcState = mCurRawProcState = mSetProcState = PROCESS_STATE_NONEXISTENT;

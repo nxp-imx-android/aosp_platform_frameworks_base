@@ -20138,8 +20138,10 @@ public class ActivityManagerService extends IActivityManager.Stub
         @Override
         @GuardedBy({"ActivityManagerService.this", "ActivityManagerService.this.mProcLock"})
         public void onOomAdjustChanged(@OomAdjust int oldAdj, @OomAdjust int newAdj,
-                ProcessRecordInternal app) {
-            mCachedAppOptimizer.onOomAdjustChanged(oldAdj, newAdj, (ProcessRecord) app);
+                ProcessRecordInternal appInternal) {
+            final ProcessRecord app = (ProcessRecord) appInternal;
+            mCachedAppOptimizer.onOomAdjustChanged(oldAdj, newAdj, app);
+            app.setVerifiedAdj(INVALID_ADJ);
         }
 
         @Override
