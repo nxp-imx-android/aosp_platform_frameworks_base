@@ -1841,7 +1841,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mContext, mMockDisplayController, mMockTaskResourceLoader,
                 mMockSplitScreenController, mMockDesktopUserRepositories, mMockShellTaskOrganizer,
                 taskInfo, mMockSurfaceControl, handler, mMainExecutor,
-                mMockMainCoroutineDispatcher, mMockMainCoroutineScope, mMockBgCoroutineScope,
+                mMockMainCoroutineDispatcher, mMockMainCoroutineScope,
                 mBgExecutor, mTransitions,
                 mMockChoreographer, mMockSyncQueue, mMockAppHeaderViewHolderFactory,
                 mMockAppHandleViewHolderFactory, mMockRootTaskDisplayAreaOrganizer,

@@ -163,7 +163,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final @ShellMainThread ShellExecutor mMainExecutor;
     private final @ShellMainThread MainCoroutineDispatcher mMainDispatcher;
     private final @ShellMainThread CoroutineScope mMainScope;
-    private final @ShellBackgroundThread CoroutineScope mBgScope;
     private final Transitions mTransitions;
     private final Choreographer mChoreographer;
     private final SyncTransactionQueue mSyncQueue;
@@ -257,7 +256,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
             @ShellMainThread CoroutineScope mainScope,
-            @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             Transitions transitions,
             Choreographer choreographer,
@@ -280,7 +278,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             FocusTransitionObserver focusTransitionObserver) {
         this (context, userContext, displayController, taskResourceLoader, splitScreenController,
                 desktopUserRepositories, taskOrganizer, taskInfo, taskSurface, handler,
-                mainExecutor, mainDispatcher, mainScope, bgScope, bgExecutor, transitions,
+                mainExecutor, mainDispatcher, mainScope, bgExecutor, transitions,
                 choreographer, syncQueue, appHeaderViewHolderFactory, appHandleViewHolderFactory,
                 rootTaskDisplayAreaOrganizer, genericLinksParser, assistContentRequester,
                 SurfaceControl.Builder::new, SurfaceControl.Transaction::new,
@@ -310,7 +308,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
             @ShellMainThread CoroutineScope mainScope,
-            @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             Transitions transitions,
             Choreographer choreographer,
@@ -349,7 +346,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mMainExecutor = mainExecutor;
         mMainDispatcher = mainDispatcher;
         mMainScope = mainScope;
-        mBgScope = bgScope;
         mTransitions = transitions;
         mChoreographer = choreographer;
         mSyncQueue = syncQueue;
