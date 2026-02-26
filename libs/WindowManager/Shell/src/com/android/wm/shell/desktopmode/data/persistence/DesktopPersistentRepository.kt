@@ -131,6 +131,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                         val updatedDesktop =
                             Desktop.getDefaultInstance()
                                 .toBuilder()
+                                .setDesktopId(desk.deskId)
                                 .updateTaskStates(
                                     desk.visibleTasks,
                                     desk.minimizedTasks,
