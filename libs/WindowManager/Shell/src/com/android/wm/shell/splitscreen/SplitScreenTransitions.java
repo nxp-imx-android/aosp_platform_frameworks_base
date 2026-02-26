@@ -17,11 +17,12 @@
 package com.android.wm.shell.splitscreen;
 
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
+import static android.view.WindowManager.TRANSIT_TO_BACK;
 
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TRANSITIONS;
-import static com.android.wm.shell.shared.TransitionUtil.isClosingMode;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_IN;
 import static com.android.wm.shell.shared.animation.Interpolators.ALPHA_OUT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.FADE_DURATION;
@@ -46,7 +47,6 @@ import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.common.split.SplitDecorManager;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
@@ -88,9 +88,6 @@ class SplitScreenTransitions {
     private SurfaceControl.Transaction mFinishTransaction;
     private SplitScreen.SplitInvocationListener mSplitInvocationListener;
     private Executor mSplitInvocationListenerExecutor;
-
-    private SplitTransitionAnimations mSplitTransitionAnimations =
-            new SplitTransitionAnimations();
 
     SplitScreenTransitions(@NonNull TransactionPool pool, @NonNull Transitions transitions,
             @NonNull Runnable onFinishCallback, StageCoordinator stageCoordinator) {
@@ -144,7 +141,6 @@ class SplitScreenTransitions {
             @NonNull WindowContainerToken sideRoot, @NonNull WindowContainerToken topRoot) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "playInternalAnimation: transition=%d",
                 info.getDebugId());
-
         // Play some place-holder fade animations
         final boolean isEnter = isPendingEnter(transition);
         for (int i = info.getChanges().size() - 1; i >= 0; --i) {
@@ -204,8 +200,9 @@ class SplitScreenTransitions {
             if (isEnter && mPendingEnter.mResizeAnim) {
                 // We will run animation in next transition so skip anim here
                 continue;
-            } else if (isPendingDismiss(transition)) {
-                startDismissAnimation(change, t);
+            } else if (isPendingDismiss(transition)
+                    && mPendingDismiss.mReason == EXIT_REASON_DRAG_DIVIDER) {
+                // TODO(b/280020345): need to refine animation for this but just skip anim now.
                 continue;
             }
 
@@ -213,7 +210,7 @@ class SplitScreenTransitions {
             // (surface become black in middle of animation), we only do fade-out
             // and show opening surface directly.
             boolean isOpening = TransitionUtil.isOpeningType(info.getType());
-            if (!isOpening && isClosingMode(mode)) {
+            if (!isOpening && (mode == TRANSIT_CLOSE || mode == TRANSIT_TO_BACK)) {
                 // fade out
                 startFadeAnimation(leash, false /* show */);
             } else if (mode == TRANSIT_CHANGE && change.getSnapshot() != null) {
@@ -598,36 +595,10 @@ class SplitScreenTransitions {
         mTransitions.getAnimExecutor().execute(va::start);
     }
 
-    private void startDismissAnimation(@NonNull TransitionInfo.Change change,
-            @NonNull SurfaceControl.Transaction t) {
-        Animator animator = mSplitTransitionAnimations.buildDismissAnimation(change, t,
-                mStageCoordinator, (finishedAnimator) -> {
-                    mTransitions.getMainExecutor().execute(() -> {
-                        mAnimations.remove(finishedAnimator);
-                        onFinish(null /* wct */);
-                    });
-                });
-
-        if (animator != null) {
-            mAnimations.add(animator);
-            mTransitions.getAnimExecutor().execute(animator::start);
-        }
-    }
-
     public void registerSplitAnimListener(@NonNull SplitScreen.SplitInvocationListener listener,
             @NonNull Executor executor) {
         mSplitInvocationListener = listener;
         mSplitInvocationListenerExecutor = executor;
-    }
-
-    @VisibleForTesting
-    SplitTransitionAnimations getSplitTransitionAnimations() {
-        return mSplitTransitionAnimations;
-    }
-
-    @VisibleForTesting
-    void setSplitTransitionAnimations(SplitTransitionAnimations splitTransitionAnimations) {
-        mSplitTransitionAnimations = splitTransitionAnimations;
     }
 
     /** Calls when the transition got consumed. */
