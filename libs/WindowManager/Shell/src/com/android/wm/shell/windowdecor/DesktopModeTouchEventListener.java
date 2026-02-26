@@ -241,73 +241,51 @@ public class DesktopModeTouchEventListener
         }
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(ViewGroup v, MotionEvent e) {
-        final String viewName = getResourceName(v);
-        final WindowDecorationWrapper decoration = mWindowDecorationFinder.apply(mTaskId);
-        if (decoration == null) {
-            debugLogD("onInterceptMotionEvent(%s) but decoration is null, ignoring", viewName);
-            return false;
-        }
-        final ActivityManager.RunningTaskInfo taskInfo = decoration.getTaskInfo();
-        final boolean isAppHeader = isAppHeader(taskInfo);
-        final boolean intercepted =
-                isAppHeader
-                        ? mHeaderDragDetector.onInterceptTouchEvent(v, e)
-                        : mHandleDragDetector.onInterceptTouchEvent(v, e);
-        if (intercepted) {
-            mInputPilferer.pilferPointers(v);
-        }
-        return intercepted;
-    }
-
-    @Override
-    public boolean onTouch(View v, MotionEvent e) {
+    /**
+     * Updates internal states on touch events, and uses the return value to guide the caller on
+     * whether they should pipe the event into any drag detectors.
+     *
+     * @param v the view that received the event
+     * @param e the event
+     * @param tag the tag used for Protolog
+     * @return the {@link WindowDecorationWrapper} of the affected task if the event should be piped
+     *         into drag detectors; or {@code null} if the event shouldn't be handled by us.
+     */
+    private WindowDecorationWrapper updateStateOnTouchEvent(View v, MotionEvent e, String tag) {
         mInputMethod = getInputMethod(e);
         final String viewName = getResourceName(v);
-        debugLogD("onTouch(%s) action=%s", viewName, MotionEvent.actionToString(e.getAction()));
+        debugLogD("%s(%s) action=%s", tag, viewName, MotionEvent.actionToString(e.getAction()));
         final int id = v.getId();
         final WindowDecorationWrapper decoration = mWindowDecorationFinder.apply(mTaskId);
         if (decoration == null) {
-            debugLogD("onTouch(%s) but decoration is null, ignoring", viewName);
-            return false;
+            debugLogD("%s(%s) but decoration is null, ignoring", tag, viewName);
+            return null;
         }
-        final ActivityManager.RunningTaskInfo taskInfo = decoration.getTaskInfo();
         final boolean touchscreenSource =
                 (e.getSource() & SOURCE_TOUCHSCREEN) == SOURCE_TOUCHSCREEN;
         // Disable long click during events from a non-touchscreen source
         mLongClickDisabled = !touchscreenSource && e.getActionMasked() != ACTION_UP
                 && e.getActionMasked() != ACTION_CANCEL;
-        debugLogD("onTouch(%s) isTouchscreen=%b longClickDisabled=%b",
-                viewName, touchscreenSource, mLongClickDisabled);
+        debugLogD("%s(%s) isTouchscreen=%b longClickDisabled=%b",
+                tag, viewName, touchscreenSource, mLongClickDisabled);
 
         if (id != R.id.caption_handle && id != R.id.desktop_mode_caption
                 && id != R.id.open_menu_button && id != R.id.close_window
                 && id != R.id.maximize_window && id != R.id.minimize_window) {
-            debugLogD("onTouch(%s) unsupported view, ignoring", viewName);
-            return false;
+            debugLogD("%s(%s) unsupported view, ignoring", tag, viewName);
+            return null;
         }
         if (e.isSynthesizedTouchpadGesture()) {
             // Touchpad finger gestures are ignored.
-            debugLogD("onTouch(%s) but is touchpad gesture, ignoring", viewName);
-            return false;
+            debugLogD("%s(%s) but is touchpad gesture, ignoring", tag, viewName);
+            return null;
         }
 
-        final boolean isAppHeader = isAppHeader(taskInfo);
         final int actionMasked = e.getActionMasked();
         final boolean isDown = actionMasked == MotionEvent.ACTION_DOWN;
         final boolean isUpOrCancel = actionMasked == MotionEvent.ACTION_CANCEL
                 || actionMasked == MotionEvent.ACTION_UP;
         if (isDown) {
-            // Only move to front on down to prevent 2+ tasks from fighting
-            // (and thus flickering) for front status when drag-moving them simultaneously with
-            // two pointers.
-            // TODO(b/356962065): during a drag-move, this shouldn't be a WCT - just move the
-            //  task surface to the top of other tasks and reorder once the user releases the
-            //  gesture together with the bounds' WCT. This is probably still valid for other
-            //  gestures like simple clicks.
-            moveTaskToFront(taskInfo);
-
             final int rawX = (int) e.getRawX();
             final int rawY = (int) e.getRawY();
             final boolean downInCustomizableCaptionRegion =
@@ -316,7 +294,7 @@ public class DesktopModeTouchEventListener
                     .getExclusionRegion(e.getDisplayId());
             final boolean downInExclusionRegion = exclusionRegion.contains(rawX, rawY);
             final boolean isTransparentCaption =
-                    TaskInfoKt.isTransparentCaptionBarAppearance(taskInfo);
+                    TaskInfoKt.isTransparentCaptionBarAppearance(decoration.getTaskInfo());
             // MotionEvent's coordinates are relative to view, we want location in window
             // to offset position relative to caption as a whole.
             int[] viewLocation = new int[2];
@@ -333,16 +311,72 @@ public class DesktopModeTouchEventListener
                     && downInExclusionRegion && isTransparentCaption;
 
             debugLogD(
-                    "onTouch(%s) handling DOWN(%d, %d) - mIsCustomHeaderGesture=%b, "
+                    "%s(%s) handling DOWN(%d, %d) - mIsCustomHeaderGesture=%b, "
                             + "downInCustomizableCaptionRegion=%b, downInExclusionRegion=%b, "
-                            + "isTransparentCaption=%b",
-                    viewName, rawX, rawY, mIsCustomHeaderGesture, downInCustomizableCaptionRegion,
-                    downInExclusionRegion, isTransparentCaption);
+                            + "isTransparentCaption=%b, mIsResizeGesture=%b",
+                    tag, getResourceName(v), rawX, rawY, mIsCustomHeaderGesture,
+                    downInCustomizableCaptionRegion, downInExclusionRegion, isTransparentCaption,
+                    mIsResizeGesture);
         }
+        if (isUpOrCancel) {
+            // Gesture is finished, reset state.
+            mIsCustomHeaderGesture = false;
+            mIsResizeGesture = false;
+        }
+        return decoration;
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(ViewGroup v, MotionEvent e) {
+        final WindowDecorationWrapper decoration =
+                updateStateOnTouchEvent(v, e, "onInterceptTouchEvent");
+        if (decoration == null) {
+            return false;
+        }
+        final String viewName = getResourceName(v);
         if (mIsCustomHeaderGesture || mIsResizeGesture) {
-            // The event will be handled by the custom window below or pilfered by resize
+            // The event will be handled by the custom window below or intercepted by resize
             // handler.
-            debugLogD("onTouch(%s) but mIsCustomHeaderGesture=%b mIsResizeGesture=%b, ignoring",
+            debugLogD("onInterceptTouchEvent(%s) but mIsCustomHeaderGesture=%b "
+                            + "mIsResizeGesture=%b, ignoring",
+                    viewName, mIsCustomHeaderGesture, mIsResizeGesture);
+            return false;
+        }
+        final boolean intercepted =
+                isAppHeader(decoration.getTaskInfo())
+                        ? mHeaderDragDetector.onInterceptTouchEvent(v, e)
+                        : mHandleDragDetector.onInterceptTouchEvent(v, e);
+        if (intercepted) {
+            mInputPilferer.pilferPointers(v);
+        }
+        return intercepted;
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent e) {
+        final WindowDecorationWrapper decoration = updateStateOnTouchEvent(v, e, "onTouch");
+        if (decoration == null) {
+            return false;
+        }
+        final boolean isDown = e.getActionMasked() == MotionEvent.ACTION_DOWN;
+        final ActivityManager.RunningTaskInfo taskInfo = decoration.getTaskInfo();
+        if (isDown) {
+            // Only move to front on down to prevent 2+ tasks from fighting
+            // (and thus flickering) for front status when drag-moving them simultaneously with
+            // two pointers.
+            // TODO(b/356962065): during a drag-move, this shouldn't be a WCT - just move the
+            //  task surface to the top of other tasks and reorder once the user releases the
+            //  gesture together with the bounds' WCT. This is probably still valid for other
+            //  gestures like simple clicks.
+            moveTaskToFront(taskInfo);
+
+        }
+        final String viewName = getResourceName(v);
+        if (mIsCustomHeaderGesture || mIsResizeGesture) {
+            // The event will be handled by the custom window below or intercepted by resize
+            // handler.
+            debugLogD("onInterceptTouchEvent(%s) but mIsCustomHeaderGesture=%b "
+                            + "mIsResizeGesture=%b, ignoring",
                     viewName, mIsCustomHeaderGesture, mIsResizeGesture);
             return false;
         }
@@ -350,12 +384,7 @@ public class DesktopModeTouchEventListener
             // Pilfer once (on down) so that windows below receive cancellations for this gesture.
             mInputPilferer.pilferPointers(v);
         }
-        if (isUpOrCancel) {
-            // Gesture is finished, reset state.
-            mIsCustomHeaderGesture = false;
-            mIsResizeGesture = false;
-        }
-        if (isAppHeader) {
+        if (isAppHeader(taskInfo)) {
             return mHeaderDragDetector.onMotionEvent(v, e);
         } else {
             return mHandleDragDetector.onMotionEvent(v, e);
