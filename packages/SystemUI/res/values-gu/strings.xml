@@ -1574,7 +1574,6 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"\'ઝડપી સેટિંગ\'માં ટાઇલ ઉમેરો"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"નાનું ફૉર્મેટ"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"મોટું ફૉર્મેટ"</string>
-    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"સૅટલાઇટ"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"વપરાશકર્તા પસંદ કરો"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# ઍપ ઍક્ટિવ છે}one{# ઍપ ઍક્ટિવ છે}other{# ઍપ ઍક્ટિવ છે}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"નવી માહિતી"</string>

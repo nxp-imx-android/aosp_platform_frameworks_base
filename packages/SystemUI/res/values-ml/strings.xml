@@ -1574,7 +1574,6 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"ദ്രുത ക്രമീകരണത്തിൽ ടൈൽ ചേർക്കൂ"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"ചെറിയ ഫോർമാറ്റ്"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"വലിയ ഫോർമാറ്റ്"</string>
-    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"സാറ്റലൈറ്റ്"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"ഉപയോക്താവിനെ തിരഞ്ഞെടുക്കൂ"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# ആപ്പ് സജീവമാണ്}other{# ആപ്പുകൾ സജീവമാണ്}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"പുതിയ വിവരങ്ങൾ"</string>

@@ -1576,7 +1576,6 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"ඉක්මන් සැකසීම් වෙත ටයිල් එක් කරන්න"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"කුඩා ආකෘතිය"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"විශාල ආකෘතිය"</string>
-    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"චන්ද්‍රි"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"පරිශීලක තෝරන්න"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# යෙදුමක් සක්‍රියයි}one{යෙදුම් #ක් සක්‍රියයි}other{යෙදුම් #ක් සක්‍රියයි}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"නව තොරතුරු"</string>

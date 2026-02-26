@@ -1576,7 +1576,6 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Hızlı Ayarlar\'a kutu ekleyin"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Küçük biçim"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Geniş format"</string>
-    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"UYD"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Kullanıcı seçin"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# uygulama etkin}other{# uygulama etkin}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Yeni bilgi"</string>
