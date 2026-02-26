@@ -112,9 +112,11 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.desktopmode.CaptionState;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
+import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.data.DesktopRepository;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
@@ -274,6 +276,10 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private LockTaskChangeListener mLockTaskChangeListener;
     @Mock
     private FocusTransitionObserver mFocusTransitionObserver;
+    @Mock
+    private PinnedLayerController mPinnedLayerController;
+    @Mock
+    private DesktopTasksController mDesktopTasksController;
     private final TestHandler mTestHandler = new TestHandler(Looper.getMainLooper());
     @Captor
     private ArgumentCaptor<Function1<Boolean, Unit>> mOnMaxMenuHoverChangeListener;
@@ -336,7 +342,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                         any(), any(), any(), any()))
                 .thenReturn(mMockAppHeaderViewHolder);
         when(mMockAppHandleViewHolderFactory
-                .create(any(), any(), any(), any(), any(), any(), any()))
+                .create(any(), any(), any(), any(), any(), any(),
+                        any(), any(), any(), any(), any()))
                 .thenReturn(mMockAppHandleViewHolder);
         when(mMockDesktopUserRepositories.getCurrent()).thenReturn(mDesktopRepository);
         when(mMockDesktopUserRepositories.getProfile(anyInt())).thenReturn(mDesktopRepository);
@@ -1852,7 +1859,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 mMockMultiInstanceHelper, mMockCaptionHandleRepository, mDesktopModeEventLogger,
                 mDesktopModeUiEventLogger, mDesktopModeCompatPolicy, mDesktopState,
                 mDesktopConfig, mMockWindowDecorationActions, mLockTaskChangeListener,
-                mFocusTransitionObserver);
+                mFocusTransitionObserver, mPinnedLayerController, mDesktopTasksController);
         windowDecor.setCaptionListeners(mMockTouchEventListener,
                 mMockTouchEventListener, mMockTouchEventListener);
         windowDecor.setExclusionRegionListener(mMockExclusionRegionListener);

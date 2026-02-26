@@ -1857,7 +1857,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mFocusTransitionObserver,
                     mRecentsTransitionStateListener,
                     mLockTaskChangeListener,
-                    mPinnedLayerController);
+                    mPinnedLayerController,
+                    mDesktopTasksController);
             windowDecoration =
                     mWindowDecoratioWrapperFactory.fromDefaultDecoration(defaultWindowDecoration);
         } else {
@@ -1895,7 +1896,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             mDesktopConfig,
                             mWindowDecorationActions,
                             mLockTaskChangeListener,
-                            mFocusTransitionObserver);
+                            mFocusTransitionObserver,
+                            mPinnedLayerController,
+                            mDesktopTasksController);
             windowDecoration = mWindowDecoratioWrapperFactory
                     .fromDesktopDecoration(desktopModeWindowDecoration);
         }

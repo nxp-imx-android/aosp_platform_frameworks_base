@@ -155,6 +155,7 @@ class AppHeaderViewHolder(
     private lateinit var a11yTextMaximize: String
     private lateinit var a11yTextRestore: String
     private lateinit var currentTaskInfo: RunningTaskInfo
+    private var isTaskInFullImmersiveState: Boolean = false
 
     init {
         if (Flags.interceptTouchEventForAppHeaderDragMove()) {
@@ -172,11 +173,17 @@ class AppHeaderViewHolder(
             windowDecorationActions.onClose(currentTaskInfo)
         }
         maximizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
-            windowDecorationActions.onMaximizeOrRestore(
-                currentTaskInfo.taskId,
-                AmbiguousSource.HEADER_BUTTON,
-                InputMethod.MOUSE,
-            )
+            if (isTaskInFullImmersiveState) {
+                // Task is in immersive and should exit.
+                windowDecorationActions.onImmersiveOrRestore(currentTaskInfo)
+            } else {
+                // Just toggle between maximize/restore states.
+                windowDecorationActions.onMaximizeOrRestore(
+                    currentTaskInfo.taskId,
+                    AmbiguousSource.HEADER_BUTTON,
+                    InputMethod.MOUSE,
+                )
+            }
         }
         minimizeWindowButton.throttleFirstClicks(CLICK_DELAY) { v ->
             windowDecorationActions.onMinimize(currentTaskInfo)
@@ -495,6 +502,7 @@ class AppHeaderViewHolder(
     ) {
         logDisplayCompatRestartButtonEventReported(taskInfo)
         currentTaskInfo = taskInfo
+        isTaskInFullImmersiveState = inFullImmersiveState
         bindDataWithThemedHeaders(
             taskInfo,
             isTaskMaximized,
