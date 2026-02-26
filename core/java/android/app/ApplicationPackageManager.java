@@ -68,6 +68,7 @@ import android.content.pm.IntentFilterVerificationInfo;
 import android.content.pm.KeySet;
 import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageInfoList;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
@@ -1294,7 +1295,7 @@ public class ApplicationPackageManager extends PackageManager {
     @SuppressWarnings("unchecked")
     public List<PackageInfo> getInstalledPackagesAsUser(PackageInfoFlags flags, int userId) {
         try {
-            ParceledListSlice<PackageInfo> parceledList =
+            PackageInfoList parceledList =
                     mPM.getInstalledPackages(updateFlagsForPackage(flags.getValue(), userId),
                             userId);
             if (parceledList == null) {
