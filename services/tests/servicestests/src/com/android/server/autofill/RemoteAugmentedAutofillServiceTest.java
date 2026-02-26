@@ -63,7 +63,6 @@ import com.android.internal.infra.ServiceConnector;
 import com.android.internal.infra.ServiceConnector.Job;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.util.test.LocalServiceKeeperRule;
-import com.android.server.autofill.RemoteAugmentedAutofillService.InlineSuggestionsResponseData;
 import com.android.server.autofill.RemoteAugmentedAutofillService.RemoteAugmentedAutofillServiceCallbacks;
 import com.android.server.autofill.ui.InlineFillUi;
 import com.android.server.personalcontext.PersonalContextManagerInternal;
@@ -80,7 +79,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -131,7 +130,7 @@ public class RemoteAugmentedAutofillServiceTest {
     private AutoCloseable mMockitoSession;
     private RemoteInlineSuggestionRenderService mRemoteInlineSuggestionRenderService;
     private RemoteAugmentedAutofillService mService;
-    private ExecutorService mTestExecutorService;
+    private Executor mTestExecutor;
 
     /**
      * Captured futures from {@link
@@ -143,16 +142,16 @@ public class RemoteAugmentedAutofillServiceTest {
     @Before
     public void setUp() throws Exception {
         mMockitoSession = MockitoAnnotations.openMocks(this);
-        mTestExecutorService = Executors.newSingleThreadExecutor();
+        mTestExecutor = Executors.newSingleThreadExecutor();
 
         // Immediately run any jobs posted to the service connector.
-        ArgumentCaptor<
-                        Job<
-                                IAugmentedAutofillService,
-                                CompletableFuture<InlineSuggestionsResponseData>>>
-                jobCaptor = ArgumentCaptor.forClass(Job.class);
-        when(mServiceConnector.postAsync(jobCaptor.capture()))
-                .thenAnswer(invocation -> jobCaptor.getValue().run(mAugmentedService));
+        when(mServiceConnector.run(any()))
+                .thenAnswer(
+                        invocation -> {
+                            final Job job = (Job) invocation.getArguments()[0];
+                            job.run(mAugmentedService);
+                            return null;
+                        });
 
         mLocalServiceKeeperRule.overrideLocalService(
                 PersonalContextManagerInternal.class, mContextManagerInternal);
@@ -172,8 +171,8 @@ public class RemoteAugmentedAutofillServiceTest {
                 new RemoteAugmentedAutofillService(
                         new RemoteAugmentedAutofillService.Injector() {
                             @Override
-                            public ExecutorService getExecutorService() {
-                                return mTestExecutorService;
+                            public Executor getExecutor() {
+                                return mTestExecutor;
                             }
 
                             @Override
@@ -394,8 +393,7 @@ public class RemoteAugmentedAutofillServiceTest {
 
     @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     @Test
-    public void onRequestAutofillLocked_cancelledAutofillResponse_noResult()
-            throws Exception {
+    public void onRequestAutofillLocked_cancelledAutofillResponse_noResult() throws Exception {
         final int sessionId = 1234;
         AutofillId focusedId = new AutofillId(3);
         final InlineSuggestionsRequest inlineSuggestionsRequest =
@@ -432,8 +430,7 @@ public class RemoteAugmentedAutofillServiceTest {
 
     @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     @Test
-    public void onRequestAutofillLocked_noInlineSuggestionsRequest_noResult()
-            throws Exception {
+    public void onRequestAutofillLocked_noInlineSuggestionsRequest_noResult() throws Exception {
         final int sessionId = 1234;
         AutofillId focusedId = new AutofillId(3);
         final InlineSuggestionsRequest inlineSuggestionsRequest =
