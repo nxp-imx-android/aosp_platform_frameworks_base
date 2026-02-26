@@ -41,9 +41,7 @@ class MultiPartWindowAnimation extends WindowAnimation {
     MultiPartWindowAnimation(@NonNull WindowAnimation main,
             @NonNull List<Animator> siblings,
             @Nullable Consumer<WindowAnimation> finishCallback) {
-        super(main.mChange, main.mCornerRadius);
-        setAnimator(main.getAnimator());
-        setTransformation(main.mTransformation);
+        super(main.mChange, main.mCornerRadius, main.getAnimation(), main.getAnimator());
 
         if (main.getAnimator() != null) {
             mAnimators.add(main.getAnimator());
