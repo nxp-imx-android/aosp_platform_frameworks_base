@@ -1580,7 +1580,6 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"ሰቅን ወደ ፈጣን ቅንብሮች ያክሉ"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"ትንሽ ቅርጸት"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"ትልቅ ቅርጸት"</string>
-    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"ሳት"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"ተጠቃሚን ይምረጡ"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# መተግበሪያ ገቢር ሆኗል}one{# መተግበሪያ ገቢር ሆኗል}other{# መተግበሪያዎች ገቢር ሆነዋል}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"አዲስ መረጃ"</string>

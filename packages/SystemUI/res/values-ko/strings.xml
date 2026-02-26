@@ -1576,7 +1576,6 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"빠른 설정에 타일 추가"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"소형 형식"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"대형 형식"</string>
-    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"SAT"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"사용자 선택"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{활성 상태인 앱 #개}other{활성 상태인 앱 #개}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"새로운 정보"</string>

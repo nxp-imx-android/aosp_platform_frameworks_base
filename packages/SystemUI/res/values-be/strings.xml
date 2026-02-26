@@ -1580,7 +1580,6 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Дадаванне пліткі"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Малы фармат"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Вялікі фармат"</string>
-    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"СПАД"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Выбар карыстальніка"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# праграма актыўная}one{# праграма актыўныя}few{# праграмы актыўныя}many{# праграм актыўныя}other{# праграмы актыўныя}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Новая інфармацыя"</string>

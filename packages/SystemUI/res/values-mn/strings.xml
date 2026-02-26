@@ -1580,7 +1580,6 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Шуурхай тохиргоонд хавтан нэм"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Жижиг формат"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Том формат"</string>
-    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"ХИЙМЭЛ ДАГУУЛ"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Хэрэглэгч сонгох"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# апп идэвхтэй байна}other{# апп идэвхтэй байна}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Шинэ мэдээлэл"</string>

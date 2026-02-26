@@ -1576,7 +1576,6 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"在快速設定新增設定方塊"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"小尺寸"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"大尺寸"</string>
-    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"SAT"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"選取使用者"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# 個應用程式正在運作}other{# 個應用程式正在運作}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"新資訊"</string>

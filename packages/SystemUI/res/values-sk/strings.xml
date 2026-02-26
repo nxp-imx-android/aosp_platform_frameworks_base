@@ -1580,7 +1580,6 @@
     <string name="qs_tile_request_dialog_title" msgid="5654666862347548966">"Pridanie karty do rýchlych nastavení"</string>
     <string name="qs_tile_request_dialog_small_format_content_description" msgid="5429197059724172135">"Malý formát"</string>
     <string name="qs_tile_request_dialog_large_format_content_description" msgid="67983044110405787">"Veľký formát"</string>
-    <string name="qs_tile_satellite_label" msgid="2839625529776739941">"SAT"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"Vyberte používateľa"</string>
     <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# aplikácia je aktívna}few{# aplikácie sú aktívne}many{# apps are active}other{# aplikácií je aktívnych}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"Nové informácie"</string>
