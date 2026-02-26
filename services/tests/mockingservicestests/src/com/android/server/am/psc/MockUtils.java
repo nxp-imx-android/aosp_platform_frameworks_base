@@ -16,6 +16,8 @@
 
 package com.android.server.am.psc;
 
+import static com.android.server.am.psc.Constants.SchedGroup;
+
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -273,5 +275,40 @@ public final class MockUtils {
     public static void verifySetAdjType(ProcessRecordInternal proc, VerificationMode mode,
             String adjType) {
         verify(proc, mode).setAdjType(adjType);
+    }
+
+    /** Sets the current scheduling group for the given process record. */
+    public static void setCurrentSchedulingGroup(ProcessRecordInternal proc,
+            @SchedGroup int curSchedGroup) {
+        proc.setCurrentSchedulingGroup(curSchedGroup);
+    }
+
+    /** Verifies the current scheduling group was set for the given process record. */
+    public static void verifySetCurrentSchedulingGroup(ProcessRecordInternal proc,
+            VerificationMode mode, @SchedGroup int curSchedGroup) {
+        verify(proc, mode).setCurrentSchedulingGroup(curSchedGroup);
+    }
+
+    /** Sets the last set scheduling group for the given process record. */
+    public static void setSetSchedGroup(ProcessRecordInternal proc, @SchedGroup int setSchedGroup) {
+        proc.setSetSchedGroup(setSchedGroup);
+    }
+
+    /** Verifies the last set scheduling group was set for the given process record. */
+    public static void verifySetSetSchedGroup(ProcessRecordInternal proc, VerificationMode mode,
+            @SchedGroup int setSchedGroup) {
+        verify(proc, mode).setSetSchedGroup(setSchedGroup);
+    }
+
+    /** Sets if the given process has any foreground activities. */
+    public static void setHasForegroundActivities(ProcessRecordInternal proc,
+            boolean hasForegroundActivities) {
+        proc.setHasForegroundActivities(hasForegroundActivities);
+    }
+
+    /** Verifies the hasForegroundActivities state was set for the given process record. */
+    public static void verifySetHasForegroundActivities(ProcessRecordInternal proc,
+            VerificationMode mode, boolean hasForegroundActivities) {
+        verify(proc, mode).setHasForegroundActivities(hasForegroundActivities);
     }
 }

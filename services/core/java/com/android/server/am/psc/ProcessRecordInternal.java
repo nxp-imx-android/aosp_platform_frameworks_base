@@ -1060,7 +1060,7 @@ public abstract class ProcessRecordInternal {
 
     /** Sets the current scheduling group for this process, and notifies the observer. */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setCurrentSchedulingGroup(@SchedGroup int curSchedGroup) {
+    void setCurrentSchedulingGroup(@SchedGroup int curSchedGroup) {
         mCurSchedGroup = curSchedGroup;
         mObserver.onCurrentSchedulingGroupChanged(mCurSchedGroup);
     }
@@ -1071,7 +1071,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setSetSchedGroup(@SchedGroup int setSchedGroup) {
+    void setSetSchedGroup(@SchedGroup int setSchedGroup) {
         mSetSchedGroup = setSchedGroup;
     }
 
@@ -1223,7 +1223,7 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
-    public void setHasForegroundActivities(boolean hasForegroundActivities) {
+    void setHasForegroundActivities(boolean hasForegroundActivities) {
         mHasForegroundActivities = hasForegroundActivities;
     }
 

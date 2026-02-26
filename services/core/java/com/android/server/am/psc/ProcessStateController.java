@@ -754,6 +754,33 @@ public class ProcessStateController {
     }
 
     /**
+     * Sets the current scheduling group for the given process.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setCurrentSchedulingGroup(@NonNull ProcessRecordInternal proc,
+            @SchedGroup int curSchedGroup) {
+        proc.setCurrentSchedulingGroup(curSchedGroup);
+    }
+
+    /**
+     * Sets the last set scheduling group for the given process.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setSetSchedGroup(@NonNull ProcessRecordInternal proc,
+            @SchedGroup int setSchedGroup) {
+        proc.setSetSchedGroup(setSchedGroup);
+    }
+
+    /**
+     * Sets if the given process has any foreground activities.
+     */
+    @GuardedBy({"mLock", "mProcLock"})
+    public void setHasForegroundActivities(@NonNull ProcessRecordInternal proc,
+            boolean hasForegroundActivities) {
+        proc.setHasForegroundActivities(hasForegroundActivities);
+    }
+
+    /**
      * Initialize a process that is being attached.
      */
     @GuardedBy({"mLock", "mProcLock"})
