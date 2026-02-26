@@ -358,13 +358,6 @@ flag {
 }
 
 flag {
-    name: "dump_apk_in_apex_manager"
-    namespace: "modularization"
-    description: "Flag guard dump apk in apex manager feature"
-    bug: "385754762"
-}
-
-flag {
     name: "app_lock_shortcut_removal"
     namespace: "security"
     description: "Flag for the removal of shortcuts when app lock is enabled."
