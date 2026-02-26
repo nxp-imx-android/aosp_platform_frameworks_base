@@ -159,6 +159,12 @@ interface AccessibilityShortcutsRepository {
     val hsuExcludedTargets: List<String>
 
     /**
+     * The list of accessibility targets that are excluded from showing up in the accessibility
+     * shortcut chooser dialog when the current user is on the Lock screen.
+     */
+    val keyguardExcludedTargets: List<String>
+
+    /**
      * Setting specifying the accessibility service or feature to be toggled via the accessibility
      * button in the navigation bar. This is either a flattened [ComponentName] or the class name of
      * a system class implementing a supported accessibility feature.
@@ -432,6 +438,10 @@ constructor(
 
     override val hsuExcludedTargets: List<String> by lazy {
         resources.getStringArray(RI.array.hsu_accessibility_targets_blocklist).toList()
+    }
+
+    override val keyguardExcludedTargets: List<String> by lazy {
+        resources.getStringArray(RI.array.keyguard_accessibility_targets_blocklist).toList()
     }
 
     override val accessibilityButtonTargetComponent =
