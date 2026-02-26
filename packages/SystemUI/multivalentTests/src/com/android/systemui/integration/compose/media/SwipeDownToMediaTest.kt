@@ -122,7 +122,7 @@ class SwipeDownToMediaTest : SysuiTestCase() {
             composeTestRule.waitForIdle()
 
             // Perform a realistic swipe from the top-center edge of the screen.
-            composeTestRule.swipeDownToOpenShade()
+            composeTestRule.swipeDownFromTopCenter()
             runCurrent()
 
             // Verify that the QQS panel exists.
@@ -155,7 +155,7 @@ class SwipeDownToMediaTest : SysuiTestCase() {
             composeTestRule.waitForIdle()
 
             // Perform a realistic swipe from the top-center edge of the screen.
-            composeTestRule.swipeDownToOpenShade()
+            composeTestRule.swipeDownFromTopCenter()
             runCurrent()
 
             // Verify that the split shade qs exists.
