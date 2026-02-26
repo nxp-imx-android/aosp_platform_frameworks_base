@@ -975,7 +975,10 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
             throws DeviceIdAttestationException, IllegalArgumentException,
             InvalidAlgorithmParameterException {
         List<KeyParameter> params = new ArrayList<>();
-        if (mKeySizeBits != NO_KEY_SIZE) {
+        // Ignore the key size since it has no meaning for ML-DSA and we don't
+        // want it to appear as a key authorization, even if the caller set a
+        // non-sentinel value.
+        if (mKeymasterAlgorithm != KeyProperties.KM_ALGORITHM_ML_DSA) {
             params.add(
                     KeyStore2ParameterUtils.makeInt(KeymasterDefs.KM_TAG_KEY_SIZE, mKeySizeBits));
         }
@@ -1173,12 +1176,7 @@ public abstract class AndroidKeyStoreKeyPairGeneratorSpi extends KeyPairGenerato
                 break;
             // TODO(b/462036047): Use KeymasterDefs constant when KeyMint V5 is frozen.
             case KeyProperties.KM_ALGORITHM_ML_DSA:
-                // Key size is not needed for ML-DSA, so the provided key size should be the
-                // sentinel value.
-                if (keySize != NO_KEY_SIZE) {
-                    throw new InvalidAlgorithmParameterException(
-                            "ML-DSA key size unexpectedly specified (as " + keySize + ")");
-                }
+                // Key size is not needed for ML-DSA, so the provided key size is ignored.
                 break;
             default:
                 throw new ProviderException("Unsupported algorithm: " + keymasterAlgorithm);
