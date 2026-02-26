@@ -24,10 +24,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -35,9 +39,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.window.core.layout.WindowSizeClass
 import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.ContentScope
@@ -285,7 +291,16 @@ constructor(
                     }
                 }
 
-            val widePadding = dimensionResource(R.dimen.upper_region_wide_horizontal_padding)
+            var widePadding = dimensionResource(R.dimen.upper_region_wide_horizontal_padding)
+            if (viewModel.shadeMode == ShadeMode.Dual) {
+                widePadding =
+                    max(
+                        widePadding,
+                        WindowInsets.safeContent
+                            .asPaddingValues()
+                            .calculateStartPadding(LocalLayoutDirection.current),
+                    )
+            }
 
             NestedScenes(
                 sceneKey =
