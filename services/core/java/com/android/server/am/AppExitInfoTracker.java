@@ -978,7 +978,7 @@ public final class AppExitInfoTracker {
         FrameworkStatsLog.write(FrameworkStatsLog.APP_PROCESS_DIED,
                 info.getPackageUid(), info.getProcessName(), info.getReason(),
                 info.getSubReason(), info.getImportance(), (int) info.getPss(),
-                (int) info.getRss(), info.hasForegroundServices());
+                (int) info.getRss(), info.hasForegroundServices(), info.getStatus());
     }
 
     @GuardedBy("mLock")
