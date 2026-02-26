@@ -39,6 +39,8 @@ class FakeBubbleExpandedViewManager(
 
     override fun removeBubble(key: String, reason: Int) {}
 
+    override fun removeBubble(key: String, taskId: Int, reason: Int) {}
+
     override fun dismissBubble(bubble: Bubble, reason: Int) {}
 
     override fun setNoteBubbleTaskId(key: String, taskId: Int) {}

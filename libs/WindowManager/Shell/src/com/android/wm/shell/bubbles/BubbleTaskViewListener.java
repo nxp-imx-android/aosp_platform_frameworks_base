@@ -40,6 +40,7 @@ import android.window.WindowContainerTransaction;
 
 import androidx.annotation.Nullable;
 
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.bubbles.logging.BubbleLog;
 import com.android.wm.shell.taskview.TaskView;
@@ -243,10 +244,16 @@ public class BubbleTaskViewListener implements TaskView.Listener {
 
     @Override
     public void onTaskRemovalStarted(int taskId) {
-        BubbleLog.d("BubbleTaskViewListener.onTaskRemovalStarted() taskId=%d bubble=%s",
-                taskId, getBubbleKey());
+        BubbleLog.d(
+                "BubbleTaskViewListener.onTaskRemovalStarted() taskId=%d bubble=%s bubbleTaskId=%s",
+                taskId, getBubbleKey(), (mBubble != null ? mBubble.getTaskId() : "null"));
         if (mBubble != null) {
-            mExpandedViewManager.removeBubble(mBubble.getKey(), Bubbles.DISMISS_TASK_FINISHED);
+            if (Flags.fixVerifyBubbleTaskIdOnRemoval()) {
+                mExpandedViewManager.removeBubble(mBubble.getKey(), taskId,
+                        Bubbles.DISMISS_TASK_FINISHED);
+            } else {
+                mExpandedViewManager.removeBubble(mBubble.getKey(), Bubbles.DISMISS_TASK_FINISHED);
+            }
         }
         if (mTaskView != null) {
             final TaskViewTaskController tvc = mTaskView.getController();

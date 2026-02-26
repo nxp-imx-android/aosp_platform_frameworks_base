@@ -33,6 +33,8 @@ interface BubbleExpandedViewManager {
 
     fun removeBubble(key: String, reason: Int)
 
+    fun removeBubble(key: String, taskId: Int, reason: Int)
+
     fun dismissBubble(bubble: Bubble, reason: Int)
 
     fun setNoteBubbleTaskId(key: String, taskId: Int)
@@ -80,6 +82,10 @@ interface BubbleExpandedViewManager {
 
                 override fun removeBubble(key: String, reason: Int) {
                     controller.removeBubble(key, reason)
+                }
+
+                override fun removeBubble(key: String, taskId: Int, reason: Int) {
+                    controller.removeBubble(key, taskId, reason)
                 }
 
                 override fun dismissBubble(bubble: Bubble, reason: Int) {
