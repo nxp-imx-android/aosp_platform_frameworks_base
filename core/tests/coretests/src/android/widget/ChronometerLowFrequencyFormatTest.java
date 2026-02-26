@@ -89,6 +89,22 @@ public class ChronometerLowFrequencyFormatTest {
     }
 
     @Test
+    public void testFormatAdaptiveVariants() {
+        assertThat(ChronometerLowFrequencyFormat.formatVariants(Duration.ofSeconds(15), true))
+                .containsExactly("~ 1m");
+        assertThat(ChronometerLowFrequencyFormat.formatVariants(Duration.ofSeconds(90), true))
+                .containsExactly("1m");
+        assertThat(ChronometerLowFrequencyFormat.formatVariants(Duration.ofHours(2), true))
+                .containsExactly("2h");
+        assertThat(ChronometerLowFrequencyFormat.formatVariants(
+                Duration.ofHours(2).plusMinutes(30), true))
+                .containsExactly("2h 30m", "2h").inOrder();
+        assertThat(ChronometerLowFrequencyFormat.formatVariants(
+                Duration.ofDays(3).plusHours(4), true))
+                .containsExactly("3d 4h", "3d").inOrder();
+    }
+
+    @Test
     public void testFormat_negativeInput() {
         assertThrows(
                 IllegalArgumentException.class,

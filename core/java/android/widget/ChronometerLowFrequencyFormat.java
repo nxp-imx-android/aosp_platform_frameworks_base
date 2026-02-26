@@ -27,6 +27,7 @@ import com.android.internal.R;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -74,10 +75,29 @@ public final class ChronometerLowFrequencyFormat {
     }
 
     /**
+     * Variant of {@link #format(Duration, boolean)} that will produce several variants
+     * for the text representation of the duration in different levels of precision, as long as the
+     * chosen formatting supports it.
+     *
+     * <p>For example, a duration of 100 minutes in adaptive format will produce "1h 40m" and "1h".
+     */
+    @NonNull
+    public static List<String> formatVariants(@NonNull Duration duration, boolean isAdaptive) {
+        if (duration.isNegative()) {
+            throw new IllegalArgumentException(
+                    "duration must be non-negative; got: " + duration);
+        }
+        return isAdaptive
+                ? formatAdaptiveLowFrequencyVariants(duration)
+                : List.of(formatChronometerLowFrequency(duration));
+    }
+
+    /**
      * Returns formatted duration between 0 and -1 minutes.
      */
     @NonNull
     public static String formatAdaptiveNegativeLessThanOneMinute() {
+        initFormatStrings();
         final MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
                 MeasureFormat.FormatWidth.NARROW);
         final Measure minute = new Measure(1, MeasureUnit.MINUTE);
@@ -123,11 +143,42 @@ public final class ChronometerLowFrequencyFormat {
             return String.format(sAdaptiveLowFreqLessThanAMinute, formatter.formatMeasures(minute));
         }
 
+        List<Measure> partsList = toDurationParts(duration);
+        final MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
+                MeasureFormat.FormatWidth.NARROW);
+
+        return formatter.formatMeasures(partsList.toArray(new Measure[0]));
+    }
+
+    /**
+     * Variant of {@link #formatAdaptiveLowFrequency(Duration)} that will produce several
+     * variants for the text representation of the duration in different levels of precision.
+     *
+     * <p>For example, a duration of 100 minutes will produce "1h 40m" and "1h".
+     */
+    @NonNull
+    private static List<String> formatAdaptiveLowFrequencyVariants(@NonNull Duration duration) {
+        if (duration.compareTo(Duration.ofMinutes(1)) < 0) {
+            return List.of(formatAdaptiveLowFrequency(duration));
+        }
+
+        ArrayList<String> variants = new ArrayList<>();
+        List<Measure> partsList = toDurationParts(duration);
+        MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
+                MeasureFormat.FormatWidth.NARROW);
+
+        for (int lastPartIndex = partsList.size(); lastPartIndex > 0; lastPartIndex--) {
+            variants.add(formatter.formatMeasures(
+                    partsList.subList(0, lastPartIndex).toArray(new Measure[0])));
+        }
+
+        return variants;
+    }
+
+    private static List<Measure> toDurationParts(@NonNull Duration duration) {
         final Measure days = new Measure(duration.toDaysPart(), MeasureUnit.DAY);
         final Measure hours = new Measure(duration.toHoursPart(), MeasureUnit.HOUR);
         final Measure minutes = new Measure(duration.toMinutesPart(), MeasureUnit.MINUTE);
-        final MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
-                MeasureFormat.FormatWidth.NARROW);
 
         final ArrayList<Measure> partsList = new ArrayList<>();
         if (days.getNumber().intValue() != 0) {
@@ -144,7 +195,7 @@ public final class ChronometerLowFrequencyFormat {
             partsList.add(minutes);
         }
 
-        return formatter.formatMeasures(partsList.toArray(new Measure[0]));
+        return partsList;
     }
 
     private ChronometerLowFrequencyFormat() {}

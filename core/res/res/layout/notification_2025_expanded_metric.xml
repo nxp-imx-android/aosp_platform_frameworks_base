@@ -37,13 +37,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <com.android.internal.widget.NotificationMetricTextView
+            <com.android.internal.widget.NotificationMetricAdaptiveTextView
                 android:id="@+id/metric_value_0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/NotificationExpandedMetricValue"
                 />
-            <Chronometer
+            <com.android.internal.widget.NotificationMetricAdaptiveChronometer
                 android:id="@+id/metric_chronometer_0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -70,13 +70,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <com.android.internal.widget.NotificationMetricTextView
+            <com.android.internal.widget.NotificationMetricAdaptiveTextView
                 android:id="@+id/metric_value_1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@style/NotificationExpandedMetricValue"
                 />
-            <Chronometer
+            <com.android.internal.widget.NotificationMetricAdaptiveChronometer
                 android:id="@+id/metric_chronometer_1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -110,7 +110,7 @@
                 android:maxLines="1"
                 style="@style/NotificationExpandedMetricValue"
                 />
-            <Chronometer
+            <com.android.internal.widget.NotificationMetricAdaptiveChronometer
                 android:id="@+id/metric_chronometer_2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
