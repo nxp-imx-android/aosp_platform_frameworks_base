@@ -92,7 +92,9 @@ public final class ComputerControlSession implements AutoCloseable {
             android.companion.virtual.computercontrol.ComputerControlSession.ERROR_DEVICE_LOCKED;
 
     /**
-     * Error code indicating that the user did not approve the creation of a new session.
+     * Error code indicating that the caller does not have permission to create a session, which is
+     * possible if the user did not approve the creation of a new session, or if the caller is not
+     * in foreground.
      */
     public static final int ERROR_PERMISSION_DENIED =
             android.companion.virtual.computercontrol.ComputerControlSession

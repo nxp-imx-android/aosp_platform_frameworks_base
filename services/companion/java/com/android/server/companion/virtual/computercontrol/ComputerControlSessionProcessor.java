@@ -64,9 +64,11 @@ import android.util.Slog;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 import com.android.server.Watchdog;
+import com.android.server.appop.AppOpsManagerLocal;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 
 import java.io.FileDescriptor;
@@ -79,13 +81,15 @@ import java.util.Objects;
  * <p>This class enforces session creation policies, such as limiting the number of concurrent
  * sessions and preventing creation when the device is locked.
  */
-public final class ComputerControlSessionProcessor implements Watchdog.Monitor{
+public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
 
     private static final String TAG = ComputerControlSessionProcessor.class.getSimpleName();
 
     // TODO(b/419548594): Make this configurable.
     @VisibleForTesting
     static final int MAXIMUM_CONCURRENT_SESSIONS = 1;
+    @VisibleForTesting
+    static final int MIN_EXTENSION_VERSION_FOR_ANDROID_17 = 5;
 
     @Nullable
     private final String mReferenceDisplayAddress;
@@ -93,6 +97,7 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor{
     private final Context mContext;
     private final KeyguardManager mKeyguardManager;
     private final AppOpsManager mAppOpsManager;
+    private final AppOpsManagerLocal mAppOpsManagerLocal;
     private final PackageManager mPackageManager;
     private final UserManager mUserManager;
     private final DevicePolicyManager mDevicePolicyManager;
@@ -134,6 +139,7 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor{
         mPendingIntentFactory = pendingIntentFactory;
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
+        mAppOpsManagerLocal = LocalManagerRegistry.getManager(AppOpsManagerLocal.class);
         mPackageManager = context.getPackageManager();
         mUserManager = context.getSystemService(UserManager.class);
         mDevicePolicyManager = context.getSystemService(DevicePolicyManager.class);
@@ -405,6 +411,12 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor{
         if (mSessions.size() >= MAXIMUM_CONCURRENT_SESSIONS) {
             dispatchSessionCreationFailed(callback, attributionSource, params,
                     ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
+            return false;
+        }
+        if (params.getTargetExtensionVersion() >= MIN_EXTENSION_VERSION_FOR_ANDROID_17
+                && !mAppOpsManagerLocal.isUidInForeground(attributionSource.getUid())) {
+            dispatchSessionCreationFailed(callback, attributionSource, params,
+                    ComputerControlSession.ERROR_PERMISSION_DENIED);
             return false;
         }
         return true;
