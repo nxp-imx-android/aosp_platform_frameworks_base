@@ -17,8 +17,14 @@
 package com.android.settingslib.metadata.preferencesapi.types
 
 import android.content.Context
+import com.android.settingslib.metadata.KeyParametersSchema
+import com.android.settingslib.metadata.ValidatedKeyParameters
 
 interface ApiType<V> {
+
+    fun getParametersSchema(): KeyParametersSchema? = null
+    fun getParameters(): ValidatedKeyParameters? = null
+
     fun getType(): Class<V>
     fun getDescription(context: Context): String
 
