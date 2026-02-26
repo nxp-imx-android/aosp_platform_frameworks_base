@@ -1352,7 +1352,7 @@ public abstract class WallpaperService extends Service {
                         mInputEventReceiver = new WallpaperInputEventReceiver(
                                 inputChannel, Looper.myLooper());
                         if (WindowManager.useClientSurface()) {
-                            mSurfaceControl = initializeSurface(true /* useClientSurface */);
+                            initializeSurface(true /* useClientSurface */);
                         }
                     }
 
@@ -1607,17 +1607,22 @@ public abstract class WallpaperService extends Service {
             }
         }
 
-        private SurfaceControl initializeSurface(boolean useClientSurface) {
-            final SurfaceControl.Builder builder = new SurfaceControl.Builder()
+        private void initializeSurface(boolean useClientSurface) {
+            if (useClientSurface) {
+                mSurfaceControl = new SurfaceControl.Builder()
+                        .setName(TAG + "-" + mLayout.packageName)
+                        .setHidden(false)
+                        .setContainerLayer()
+                        .setNotAddToRoot()
+                        .setCallsite("Wallpaper#initializeSurface")
+                        .build();
+            }
+            mTransformSurfaceControl = new SurfaceControl.Builder()
                     .setName("Wallpaper Transform wrapper")
                     .setHidden(false)
-                    .setCallsite("Wallpaper#initializeSurface");
-            if (useClientSurface) {
-                builder.setNotAddToRoot();
-            } else {
-                builder.setParent(mSurfaceControl);
-            }
-            mTransformSurfaceControl = builder.build();
+                    .setParent(mSurfaceControl)
+                    .setCallsite("Wallpaper#initializeSurface")
+                    .build();
             mBbqSurfaceControl = new SurfaceControl.Builder()
                     .setName("Wallpaper BBQ wrapper")
                     .setHidden(false)
@@ -1636,7 +1641,6 @@ public abstract class WallpaperService extends Service {
                     frameRateCompat).apply();
             // TODO: b/406967924 - remove after creating public APIs
             sendTransformSurfaceControl();
-            return mTransformSurfaceControl;
         }
 
         private void sendTransformSurfaceControl() {
