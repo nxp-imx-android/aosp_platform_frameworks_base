@@ -1203,7 +1203,7 @@
     <!-- Indicates whether the tapping to open qs panel is supported -->
     <bool name="config_statusBarTapToExpandShade">false</bool>
 
-    <!-- Enable 2 finger swipe down systemUi shade (qs/notification). -->
+    <!-- Enable 2 finger swipe down Dual Shade. -->
     <bool name="config_enableTwoFingerSwipeDownShade">true</bool>
 
     <!--
