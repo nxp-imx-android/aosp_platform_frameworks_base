@@ -674,10 +674,6 @@ public final class AppFunctionManager {
      *       AppFunctionObserver#onAppFunctionMetadataChanged}.
      * </ol>
      *
-     * <strong>Note:</strong> If app functions or packages are reported to have changed but are not
-     * returned from {@link #searchAppFunctions} or {@link #getAppFunctionStates}, it means that
-     * they have been removed.
-     *
      * @param executor the executor to run the {@link AppFunctionObserver} callbacks.
      * @param appFunctionObserver the observer to receive updates to registered app functions.
      * @return An {@link AppFunctionObservation} used to cancel this observation.
