@@ -3312,8 +3312,11 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "handleRequest: transition=%d display rotation",
                         request.getDebugId());
                 // Check if the display is rotating.
-                final TransitionRequestInfo.DisplayChange displayChange =
-                        request.getDisplayChange();
+                // TODO: b/448471638 - support multiple display changes
+                TransitionRequestInfo.DisplayChange displayChange = null;
+                if (request.getDisplayChanges() != null && !request.getDisplayChanges().isEmpty()) {
+                    displayChange = request.getDisplayChanges().getFirst();
+                }
                 if (request.getType() == TRANSIT_CHANGE && displayChange != null
                         && displayChange.getStartRotation() != displayChange.getEndRotation()) {
                     mSplitLayout.setFreezeDividerWindow(true);

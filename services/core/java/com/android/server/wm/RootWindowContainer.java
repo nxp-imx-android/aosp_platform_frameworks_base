@@ -2833,9 +2833,11 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     TransitionRequestInfo.DisplayChange displayChange =
                             new TransitionRequestInfo.DisplayChange(displayId);
                     displayChange.setDisconnectReparentDisplay(disconnectReparentDisplay);
-
+                    final List<TransitionRequestInfo.DisplayChange> displayChanges =
+                            new ArrayList<>();
+                    displayChanges.add(displayChange);
                     mTransitionController.requestStartTransition(transition, null /* startTask */,
-                            null /* remoteTransition */, displayChange);
+                            null /* remoteTransition */, displayChanges);
                     mTransitionController.mStateValidators.add(() -> {
                         // Ensure the display content is removed even if the transition does not
                         // successfully finish.

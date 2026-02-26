@@ -1318,19 +1318,24 @@ public class Transitions implements RemoteCallable<Transitions>,
                 ProtoLog.v(WM_SHELL_TRANSITIONS, "Transition (#%d): request handled by %s",
                         request.getDebugId(), active.mHandler.getClass().getSimpleName());
             }
-            if (request.getDisplayChange() != null) {
-                TransitionRequestInfo.DisplayChange change = request.getDisplayChange();
-                if (change.getStartRotation() != change.getEndRotation()
-                        || (change.getStartAbsBounds() != null
-                        && !change.getStartAbsBounds().equals(change.getEndAbsBounds()))) {
-                    // Is a display change, so dispatch to all displayChange listeners
-                    if (wct == null) {
-                        wct = new WindowContainerTransaction();
+            if (request.getDisplayChanges() != null) {
+                final List<TransitionRequestInfo.DisplayChange> changes = request
+                        .getDisplayChanges();
+
+                for (int i = 0; i < changes.size(); i++) {
+                    TransitionRequestInfo.DisplayChange change = changes.get(i);
+                    if (change.getStartRotation() != change.getEndRotation()
+                            || (change.getStartAbsBounds() != null
+                            && !change.getStartAbsBounds().equals(change.getEndAbsBounds()))) {
+                        // Is a display change, so dispatch to all displayChange listeners
+                        if (wct == null) {
+                            wct = new WindowContainerTransaction();
+                        }
+                        mDisplayController.onDisplayChangeRequested(wct, change.getDisplayId(),
+                                change.getStartAbsBounds(), change.getEndAbsBounds(),
+                                change.getStartRotation(), change.getEndRotation(),
+                                change.getEndInsetsState());
                     }
-                    mDisplayController.onDisplayChangeRequested(wct, change.getDisplayId(),
-                            change.getStartAbsBounds(), change.getEndAbsBounds(),
-                            change.getStartRotation(), change.getEndRotation(),
-                            change.getEndInsetsState());
                 }
             }
         }

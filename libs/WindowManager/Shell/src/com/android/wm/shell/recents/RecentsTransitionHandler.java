@@ -1064,8 +1064,11 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
          * Updates this controller when a new transition is requested mid-recents transition.
          */
         void handleMidTransitionRequest(TransitionRequestInfo request) {
-            if (request.getType() == TRANSIT_CHANGE && request.getDisplayChange() != null) {
-                final TransitionRequestInfo.DisplayChange dispChange = request.getDisplayChange();
+            // TODO: b/448471638 - support multiple display changes
+            if (request.getType() == TRANSIT_CHANGE && request.getDisplayChanges() != null
+                            && !request.getDisplayChanges().isEmpty()) {
+                final TransitionRequestInfo.DisplayChange dispChange = request.getDisplayChanges()
+                        .getFirst();
                 if (dispChange.getStartRotation() != dispChange.getEndRotation()) {
                     ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                             "[%d] RecentsController.prepareForMerge: "
