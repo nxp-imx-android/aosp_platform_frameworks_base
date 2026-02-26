@@ -371,3 +371,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "fix_swipe_up_notification_shade_with_bubble_bar"
+    namespace: "multitasking"
+    description: "Fixes an issue where swiping from the bottom of the notification shade while bubbles were expanded below wouldn't work"
+    bug: "483561405"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
