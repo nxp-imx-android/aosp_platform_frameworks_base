@@ -566,22 +566,20 @@ public final class LoadedApk {
      * Obtain parameters passed to {@code android_create_namespace} directly from the specified
      * ApplicationInfo. This is useful when loading native libraries without an associated
      * ClassLoader.
-     *
-     * @param aInfo The dataDir member contains the permitted library directory.
      */
-    public static LinkerNamespaceParams createLinkerNamespaceParams(ApplicationInfo aInfo) {
+    public LinkerNamespaceParams createLinkerNamespaceParams() {
         List<String> outZipPaths = new ArrayList();
         List<String> outLibPaths = new ArrayList();
-        boolean isBundledApp = aInfo.isBundledApp();
+        boolean isBundledApp = mApplicationInfo.isBundledApp();
 
-        makePaths(null, isBundledApp, aInfo, outZipPaths, outLibPaths);
+        makePaths(null, isBundledApp, mApplicationInfo, outZipPaths, outLibPaths);
 
         final String zip = (outZipPaths.size() == 1) ? outZipPaths.get(0) :
                 TextUtils.join(File.pathSeparator, outZipPaths);
 
         List<String> nativeSharedLibraries = new ArrayList<>();
-        if (aInfo.sharedLibraryInfos != null) {
-            for (SharedLibraryInfo info : aInfo.sharedLibraryInfos) {
+        if (mApplicationInfo.sharedLibraryInfos != null) {
+            for (SharedLibraryInfo info : mApplicationInfo.sharedLibraryInfos) {
                 if (info.isNative()) {
                     nativeSharedLibraries.add(info.getName());
                 }
@@ -591,8 +589,10 @@ public final class LoadedApk {
         return new LinkerNamespaceParams(
                 zip,
                 String.join(":", outLibPaths),
-                aInfo.dataDir,
-                aInfo.targetSdkVersion,
+                // Including an inaccessible dir in permittedLibsDir would cause SELinux denials
+                // when the linker namespace attempts to reference the path.
+                canAccessDataDir() ? mDataDir : "",
+                mApplicationInfo.targetSdkVersion,
                 isBundledApp,
                 String.join(":", nativeSharedLibraries));
     }

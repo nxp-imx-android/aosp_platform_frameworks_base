@@ -172,7 +172,15 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
         if (funcNameProperty != null) funcName = funcNameProperty.getString();
 
         ServiceRecord r = (ServiceRecord) token;
-        LoadedApk.LinkerNamespaceParams params = LoadedApk.createLinkerNamespaceParams(r.appInfo);
+        LoadedApk loadedApk = new LoadedApk(
+                /*activityThread*/ null,
+                r.appInfo,
+                /*compatInfo*/ null,
+                /*classLoader*/ null,
+                /*securityViolation*/ false,
+                /*includeCode*/ true,
+                /*registerPackage*/ false);
+        LoadedApk.LinkerNamespaceParams params = loadedApk.createLinkerNamespaceParams();
 
         Slog.i(
                 TAG,
