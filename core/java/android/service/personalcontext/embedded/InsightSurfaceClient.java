@@ -544,19 +544,12 @@ public class InsightSurfaceClient implements AutoCloseable {
         }
 
         /**
-         * Set the name of a custom {@link android.R.styleable#PersonalContextTheme} to be passed to
-         * a connected visualizer. A visualizer can use this name to look up the theme resource in
-         * the client's resources, which can then be used when creating an embedded surface for the
-         * client. The custom theme should be declared in the client app's xml resources as follows:
-         * <p/>
-         * <pre>
-         * &lt;style name="CustomTheme" parent="android:PersonalContextTheme">
-         *     ...
-         * &lt;style/>
-         * </pre>
-         * <p/>
-         * See {@link InsightSurfaceClientInfo#getThemeResourceId()} for
-         * more information.
+         * Set the id of a custom style to be passed to a connected visualizer. A visualizer
+         * will use this id to look up the theme resource in the client's resources. Attributes
+         * defined in {@link android.R.styleable#PersonalContextTheme} will be read when
+         * creating an embedded surface for the client. The custom theme should be declared in
+         * the client app's xml resources. See
+         * {@link InsightSurfaceClientInfo#getThemeResourceId()} for more information.
          */
         @NonNull
         public Builder setThemeResourceId(@StyleRes int themeResourceId) {
