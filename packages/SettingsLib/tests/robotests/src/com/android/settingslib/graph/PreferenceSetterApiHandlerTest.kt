@@ -31,7 +31,6 @@ import com.android.settingslib.testutils.GraphTestUtils.PreferenceConfig
 import com.android.settingslib.testutils.GraphTestUtils.setRegistryFactories
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel
-import com.android.settingslib.robotests.R
 import com.android.settingslib.testutils.GraphTestUtils.PreferenceScreenConfig
 import com.android.settingslib.testutils.GraphTestUtils.createIntRangePreference
 import com.android.settingslib.testutils.GraphTestUtils.createPersistentPreference
@@ -47,6 +46,7 @@ import org.junit.runner.RunWith
 import org.mockito.kotlin.spy
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.shadows.ShadowBuild
+import com.android.settingslib.robotests.R
 
 @RunWith(RobolectricTestRunner::class)
 @EnableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
@@ -56,7 +56,7 @@ class PreferenceSetterApiHandlerTest {
     private val context = application as Context
     private val dummyId = 0
 
-    private fun <T: Any> getPreferenceValue(preference: PreferenceMetadata): T? {
+    private fun <T : Any> getPreferenceValue(preference: PreferenceMetadata): T? {
         val persistentPreference = (preference as PersistentPreference<*>)
         @Suppress("UNCHECKED_CAST")
         return persistentPreference.storage(context).getValue(
@@ -72,19 +72,23 @@ class PreferenceSetterApiHandlerTest {
 
     private fun invokeWithRequest(screenKey: String, preferenceKey: String, value: Any): Int =
         runBlocking {
-            val valueProto = when (value){
+            val valueProto = when (value) {
                 is Boolean -> preferenceValueProto {
                     booleanValue = value
                 }
+
                 is Int -> preferenceValueProto {
                     intValue = value
                 }
+
                 is String -> preferenceValueProto {
                     stringValue = value
                 }
+
                 is Float -> preferenceValueProto {
                     floatValue = value
                 }
+
                 else -> error("Not supported by setter")
             }
             return@runBlocking preferenceSetterApiHandler.invoke(
@@ -113,8 +117,7 @@ class PreferenceSetterApiHandlerTest {
     }
 
     @Test
-    fun invoke_onInexistentScreen_returnUnsupported()
-    {
+    fun invoke_onInexistentScreen_returnUnsupported() {
         setRegistryFactories(
             createScreen(
                 PreferenceScreenConfig(
@@ -214,7 +217,7 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onRestrictedPreference_returnsRestricted() {
         val restrictedPreference = createPersistentPreference<Boolean>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (
+                preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
                     isRestricted = true
@@ -241,7 +244,7 @@ class PreferenceSetterApiHandlerTest {
     fun invoke_onUnavailablePreference_returnsUnavailable() {
         val unavailablePreference = createPersistentPreference<Boolean>(
             PersistentPreferenceConfig(
-                preferenceConfig = PreferenceConfig (
+                preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
                     isAvailable = false
@@ -300,7 +303,7 @@ class PreferenceSetterApiHandlerTest {
                 ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
-                sensitivityLevel = SensitivityLevel.HIGH_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.DEEP_LINK_ONLY,
             )
         )
         setRegistryFactories(
@@ -330,7 +333,7 @@ class PreferenceSetterApiHandlerTest {
                 ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
-                sensitivityLevel = SensitivityLevel.UNKNOWN_SENSITIVITY
+                sensitivityLevel = SensitivityLevel.DO_NOT_EXPOSE
             )
         )
         setRegistryFactories(
@@ -360,7 +363,7 @@ class PreferenceSetterApiHandlerTest {
                 ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
-                sensitivityLevel = SensitivityLevel.UNKNOWN_SENSITIVITY
+                sensitivityLevel = SensitivityLevel.DO_NOT_EXPOSE
             )
         )
         setRegistryFactories(
@@ -400,7 +403,7 @@ class PreferenceSetterApiHandlerTest {
                 )
             )
         )
-        makePermissionPass(application,INTERACT_ACROSS_PROFILES, false)
+        makePermissionPass(application, INTERACT_ACROSS_PROFILES, false)
         assertThat(
             invokeWithRequest("screen_key", "preference_key", true)
         ).isEqualTo(PreferenceSetterResult.REQUIRE_APP_PERMISSION)
@@ -430,7 +433,7 @@ class PreferenceSetterApiHandlerTest {
                 )
             )
         )
-        makePermissionPass(application,INTERACT_ACROSS_PROFILES, true)
+        makePermissionPass(application, INTERACT_ACROSS_PROFILES, true)
         assertThat(
             invokeWithRequest("screen_key", "preference_key", true)
         ).isEqualTo(PreferenceSetterResult.REQUIRE_USER_AGREEMENT)
@@ -505,7 +508,7 @@ class PreferenceSetterApiHandlerTest {
                     purpose = R.string.preference_purpose,
                 ),
                 valueType = Boolean::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = false
@@ -536,7 +539,7 @@ class PreferenceSetterApiHandlerTest {
                     purpose = R.string.preference_purpose,
                 ),
                 valueType = Boolean::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = true
@@ -567,7 +570,7 @@ class PreferenceSetterApiHandlerTest {
                     purpose = R.string.preference_purpose,
                 ),
                 valueType = Int::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.MEDIUM_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = 4
@@ -598,7 +601,7 @@ class PreferenceSetterApiHandlerTest {
                     purpose = R.string.preference_purpose,
                 ),
                 valueType = Int::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.MEDIUM_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = 4
@@ -620,7 +623,7 @@ class PreferenceSetterApiHandlerTest {
         assertThat(getPreferenceValue<Int>(intPreference)).isEqualTo(4)
     }
 
-    //TODO (b/479126443) Enforce float values in request can only be performed on float preferences
+    // TODO (b/479126443) Enforce float values in request can only be performed on float preferences
     @Test
     fun invoke_onStringPreferenceWithFloatValueType_succeeds() {
         val stringPreference = createPersistentPreference<String>(
@@ -630,7 +633,7 @@ class PreferenceSetterApiHandlerTest {
                     purpose = R.string.preference_purpose,
                 ),
                 valueType = String::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.MEDIUM_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = "hello"
@@ -733,7 +736,7 @@ class PreferenceSetterApiHandlerTest {
                     purpose = R.string.preference_purpose,
                 ),
                 valueType = Float::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.MEDIUM_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = 4.5f
@@ -764,7 +767,7 @@ class PreferenceSetterApiHandlerTest {
                     purpose = R.string.preference_purpose,
                 ),
                 valueType = String::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = "hello"
@@ -795,7 +798,7 @@ class PreferenceSetterApiHandlerTest {
                     purpose = R.string.preference_purpose,
                 ),
                 valueType = String::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.REQUIRE_USER_AGREEMENT,
                 defaultValue = "hello"
@@ -818,7 +821,7 @@ class PreferenceSetterApiHandlerTest {
         assertThat(getPreferenceValue<String>(stringPreference)).isEqualTo("hello")
     }
 
-    //TODO (b/479126443) Enforce int values in request can only be performed on int preferences
+    // TODO (b/479126443) Enforce int values in request can only be performed on int preferences
     @Test
     fun invoke_onStringPreferenceWithIntValueType_succeeds() {
         val stringPreference = createPersistentPreference<String>(
@@ -828,7 +831,7 @@ class PreferenceSetterApiHandlerTest {
                     purpose = R.string.preference_purpose,
                 ),
                 valueType = String::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = "hello"
@@ -860,7 +863,7 @@ class PreferenceSetterApiHandlerTest {
                     purpose = R.string.preference_purpose,
                 ),
                 valueType = String::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.REQUIRE_USER_AGREEMENT,
                 defaultValue = "hello",
@@ -882,5 +885,4 @@ class PreferenceSetterApiHandlerTest {
         ).isEqualTo(PreferenceSetterResult.INTERNAL_ERROR)
         assertThat(getPreferenceValue<String>(stringPreference)).isEqualTo("hello")
     }
-
 }
