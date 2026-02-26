@@ -23,7 +23,6 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dreams.data.repository.dreamRepository
 import com.android.systemui.dreams.data.repository.fake
-import com.android.systemui.dreams.domain.interactor.DreamInteractor.SwitcherRequest
 import com.android.systemui.dreams.shared.model.DreamItemModel
 import com.android.systemui.dreams.shared.model.DreamPlaylistModel
 import com.android.systemui.kosmos.Kosmos
@@ -48,22 +47,6 @@ class DreamInteractorTest : SysuiTestCase() {
     fun setUp() {
         kosmos.fakeUserRepository.setUserInfos(USERS)
     }
-
-    @Test
-    fun testShowSwitcherDialog() =
-        kosmos.runTest {
-            val request by collectLastValue(underTest.switcherRequests)
-            underTest.showSwitcherDialog()
-            assertThat(request).isInstanceOf(SwitcherRequest.Show::class.java)
-        }
-
-    @Test
-    fun testDismissSwitcherDialog() =
-        kosmos.runTest {
-            val request by collectLastValue(underTest.switcherRequests)
-            underTest.dismissSwitcherDialog()
-            assertThat(request).isInstanceOf(SwitcherRequest.Dismiss::class.java)
-        }
 
     @Test
     fun testDreamPlaylistIsExposed() =
@@ -120,6 +103,29 @@ class DreamInteractorTest : SysuiTestCase() {
 
             // Assert: The active dream shouldn't change for the current user (USER_1)
             assertThat(dreamState?.activeDream).isEqualTo(dreamItem1)
+        }
+
+    @Test
+    fun testCanSwitchDreams() =
+        kosmos.runTest {
+            val canSwitchDreams by collectLastValue(underTest.canSwitchDreams)
+            val component1 = ComponentName("test", "component1")
+            val component2 = ComponentName("test", "component2")
+            val dreamItem1 = DreamItemModel(component1)
+            val dreamItem2 = DreamItemModel(component2)
+
+            fakeUserRepository.setSelectedUserInfo(USER_1)
+            dreamRepository.fake.setDreamState(
+                USER_1.userHandle,
+                DreamPlaylistModel(dreams = listOf(dreamItem1), activeIndex = 0),
+            )
+            assertThat(canSwitchDreams).isFalse()
+
+            dreamRepository.fake.setDreamState(
+                USER_1.userHandle,
+                DreamPlaylistModel(dreams = listOf(dreamItem1, dreamItem2), activeIndex = 0),
+            )
+            assertThat(canSwitchDreams).isTrue()
         }
 
     /** Helper function to set up a common dream playlist state for USER_1. */

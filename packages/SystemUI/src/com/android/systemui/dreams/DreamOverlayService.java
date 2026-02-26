@@ -17,6 +17,7 @@
 package com.android.systemui.dreams;
 
 import static android.service.dreams.Flags.dreamWakeRedirect;
+import static android.service.dreams.Flags.dreamsSwitcher;
 import static android.service.dreams.Flags.dreamsV2;
 
 import static com.android.systemui.Flags.glanceableHubAllowKeyguardWhenDreaming;
@@ -72,6 +73,8 @@ import com.android.systemui.dreams.complication.dagger.DreamComplicationComponen
 import com.android.systemui.dreams.dagger.DreamModule;
 import com.android.systemui.dreams.dagger.DreamOverlayComponent;
 import com.android.systemui.dreams.touch.DismissTouchHandler;
+import com.android.systemui.dreams.ui.binder.DreamOverlayContainerViewBinder;
+import com.android.systemui.dreams.ui.viewmodel.DreamOverlayContainerViewModel;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.navigationbar.gestural.domain.GestureInteractor;
 import com.android.systemui.navigationbar.gestural.domain.TaskMatcher;
@@ -117,6 +120,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
     // The Executor ensures actions and ui updates happen on the same thread.
     private final DelayableExecutor mExecutor;
     private final PowerInteractor mPowerInteractor;
+    private final DreamOverlayContainerViewModel.Factory mDreamOverlayContainerViewModelFactory;
     // A controller for the dream overlay container view (which contains both the status bar and the
     // content area).
     private DreamOverlayContainerViewController mDreamOverlayContainerViewController;
@@ -266,6 +270,11 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
     private final Consumer<Boolean> mBiometricPromptShowingConsumer =
             showing -> dreamScopedExecute(() -> updateBiometricPromptShowingLocked(showing),
             "update biometric prompt showing");
+    private final Consumer<Boolean> mDreamSwitcherDialogShowingConsumer =
+            showing -> dreamScopedExecute(() -> updateDreamSwitcherDialogShowingLocked(showing),
+                    "update dream switcher dialog showing");
+
+    private boolean mDreamSwitcherDialogShowing;
 
     /**
      * {@link ResetHandler} protects resetting {@link DreamOverlayService} by making sure reset
@@ -440,7 +449,8 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             GestureInteractor gestureInteractor,
             WakeGestureMonitor wakeGestureMonitor,
             PowerInteractor powerInteractor,
-            @Named(DREAM_OVERLAY_WINDOW_TITLE) String windowTitle) {
+            @Named(DREAM_OVERLAY_WINDOW_TITLE) String windowTitle,
+            DreamOverlayContainerViewModel.Factory dreamOverlayContainerViewModelFactory) {
         super(executor);
         mContext = context;
         mExecutor = executor;
@@ -466,6 +476,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         mLifecycleOwner = lifecycleOwner;
         mLifecycleRegistry = lifecycleOwner.getRegistry();
         mPowerInteractor = powerInteractor;
+        mDreamOverlayContainerViewModelFactory = dreamOverlayContainerViewModelFactory;
 
         setLifecycleStateLocked(Lifecycle.State.CREATED);
 
@@ -484,11 +495,17 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         }
 
         if (dreamsV2()) {
-            mFlows.add(collectFlow(getLifecycle(), wakeGestureMonitor.getWakeUpDetected(),
-                    mPickupConsumer));
+            mFlows.add(
+                    collectFlow(
+                            getLifecycle(),
+                            wakeGestureMonitor.getWakeUpDetected(),
+                            mPickupConsumer));
         }
-        mFlows.add(collectFlow(getLifecycle(), promptCredentialInteractor.isShowing(),
-                mBiometricPromptShowingConsumer));
+        mFlows.add(
+                collectFlow(
+                        getLifecycle(),
+                        promptCredentialInteractor.isShowing(),
+                        mBiometricPromptShowingConsumer));
     }
 
     @NonNull
@@ -546,9 +563,12 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
                 mDreamComplicationComponentFactory.create(
                         complicationComponent.getVisibilityController(), mTouchInsetManager);
 
+        final DreamOverlayContainerViewModel viewModel =
+                mDreamOverlayContainerViewModelFactory.create();
+
         final DreamOverlayComponent dreamOverlayComponent = mDreamOverlayComponentFactory.create(
                 mLifecycleOwner, complicationComponent.getComplicationHostViewController(),
-                mTouchInsetManager);
+                mTouchInsetManager, viewModel);
 
         final ArrayList<TouchHandler> touchHandlers = new ArrayList<>(
                 List.of(dreamComplicationComponent.getHideComplicationTouchHandler()));
@@ -565,6 +585,10 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
                             "exiting dream from dismiss touch on preview");
                 }
             }));
+        }
+
+        if (dreamsSwitcher()) {
+            touchHandlers.add(dreamOverlayComponent.getLongPressTouchHandler());
         }
 
         final AmbientTouchComponent ambientTouchComponent = mAmbientTouchComponentFactory.create(
@@ -586,6 +610,13 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
         mDreamOverlayContainerViewController =
                 dreamOverlayComponent.getDreamOverlayContainerViewController();
+
+        if (dreamsSwitcher()) {
+            DreamOverlayContainerViewBinder.INSTANCE.bind(
+                    mDreamOverlayContainerViewController.getContainerView(),
+                    viewModel,
+                    mDreamSwitcherDialogShowingConsumer);
+        }
 
         // Touch monitor are also used with SceneContainer. See individual touch handlers for
         // handling of SceneContainer.
@@ -668,7 +699,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
     private void updateGestureBlockingLocked() {
         final boolean shouldBlock = getLifecycleStateLocked() == Lifecycle.State.RESUMED
                 && !mShadeExpanded && !mBouncerShowing && !isDreamInPreviewMode()
-                && !mBiometricPromptShowing;
+                && !mBiometricPromptShowing && !mDreamSwitcherDialogShowing;
 
         if (shouldBlock) {
             mGestureInteractor.addGestureBlockedMatcher(DREAM_TYPE_MATCHER,
@@ -699,7 +730,8 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
                         || mCommunalVisible
                         || mBouncerShowing
                         || mBiometricPromptShowing
-                        || mEnded;
+                        || mEnded
+                        || mDreamSwitcherDialogShowing;
 
         setLifecycleStateLocked(
                 shouldPause ? Lifecycle.State.STARTED : Lifecycle.State.RESUMED);
@@ -829,6 +861,16 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
         mBiometricPromptShowing = biometricPromptShowing;
 
+        updateLifecycleStateLocked();
+        updateGestureBlockingLocked();
+    }
+
+    private void updateDreamSwitcherDialogShowingLocked(boolean dialogShowing) {
+        if (mDreamSwitcherDialogShowing == dialogShowing) {
+            return;
+        }
+
+        mDreamSwitcherDialogShowing = dialogShowing;
         updateLifecycleStateLocked();
         updateGestureBlockingLocked();
     }

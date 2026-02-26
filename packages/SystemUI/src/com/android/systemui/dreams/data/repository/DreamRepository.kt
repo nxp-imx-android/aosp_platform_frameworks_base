@@ -20,6 +20,7 @@ import android.content.ComponentName
 import android.os.UserHandle
 import com.android.systemui.dreams.shared.model.DreamPlaylistModel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 /** Repository for retrieving and modifying the state of the dream system. */
 interface DreamRepository {
@@ -27,6 +28,9 @@ interface DreamRepository {
      * A flow of the current dream configuration, including the active dream and available options.
      */
     val dreamState: Flow<DreamPlaylistModel>
+
+    /** Whether the dream switcher dialog is currently showing. */
+    val dreamSwitcherDialogShowing: StateFlow<Boolean>
 
     /**
      * Sets the active dream to the component identified by [componentName].
@@ -40,4 +44,7 @@ interface DreamRepository {
      * @return true if the dream was successfully set, false otherwise.
      */
     suspend fun setActiveDream(componentName: ComponentName, user: UserHandle): Boolean
+
+    /** Updates whether the dream dialog is showing. */
+    fun setSwitcherDialogShowing(showing: Boolean)
 }

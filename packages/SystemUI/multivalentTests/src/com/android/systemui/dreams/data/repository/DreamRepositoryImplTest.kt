@@ -18,6 +18,10 @@ package com.android.systemui.dreams.data.repository
 
 import android.app.DreamManager
 import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.content.pm.UserInfo
 import android.os.RemoteException
 import android.os.UserHandle
@@ -26,6 +30,8 @@ import android.service.dreams.DreamPlaylist
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.dreams.shared.model.DreamAppModel
+import com.android.systemui.dreams.shared.model.DreamItemModel
 import com.android.systemui.dreams.shared.model.DreamPlaylistModel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -35,6 +41,7 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.table.logcatTableLogBuffer
+import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.data.repository.userRepository
@@ -67,8 +74,24 @@ class DreamRepositoryImplTest : SysuiTestCase() {
             }
         }
 
+    private val Kosmos.packageManager by
+        Kosmos.Fixture {
+            mock<PackageManager> {
+                on { getApplicationLabel(any()) } doReturn TEST_APP_NAME
+                on { getLaunchIntentForPackage(any()) } doReturn TEST_LAUNCH_INTENT
+                on { getApplicationInfo(any<String>(), any<Int>()) } doReturn ApplicationInfo()
+            }
+        }
+
     private val Kosmos.userScopedDreamManager by
         Kosmos.Fixture { FakeUserScopedService(defaultImplementation = dreamManager) }
+
+    private val Kosmos.userContextProvider by
+        Kosmos.Fixture {
+            val pm = packageManager
+            val mockContext = mock<Context> { on { packageManager } doReturn pm }
+            mock<UserContextProvider> { on { userContext } doReturn mockContext }
+        }
 
     private val Kosmos.underTest by
         Kosmos.Fixture {
@@ -77,6 +100,7 @@ class DreamRepositoryImplTest : SysuiTestCase() {
                 bgScope = applicationCoroutineScope,
                 tableLogBuffer = logcatTableLogBuffer(this, "DreamRepositoryLog"),
                 userScopedDreamManager = userScopedDreamManager,
+                userContextProvider = userContextProvider,
                 userRepository = userRepository,
             )
         }
@@ -88,7 +112,7 @@ class DreamRepositoryImplTest : SysuiTestCase() {
             whenever(dreamManager.dreamPlaylist).thenReturn(playlist)
 
             val dreamState by collectLastValue(underTest.dreamState)
-            assertThat(dreamState).isEqualTo(DreamPlaylistModel.from(playlist))
+            assertThat(dreamState).isEqualTo(createExpectedPlaylistModel(playlist))
         }
 
     @Test
@@ -102,7 +126,7 @@ class DreamRepositoryImplTest : SysuiTestCase() {
             val playlist = createDreamPlaylist("Dream1", "Dream2")
             listenerCaptor.lastValue.onPlaylistChanged(playlist)
 
-            assertThat(dreamState).isEqualTo(DreamPlaylistModel.from(playlist))
+            assertThat(dreamState).isEqualTo(createExpectedPlaylistModel(playlist))
         }
 
     @Test
@@ -160,7 +184,7 @@ class DreamRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun setActiveDream_remoteException_returnsFalse() =
+    fun setActiveDream_returnsFalseOnRemoteException() =
         kosmos.runTest {
             whenever(dreamManager.setActiveDreamComponent(any()))
                 .thenThrow(RuntimeException(RemoteException("Fail")))
@@ -204,10 +228,51 @@ class DreamRepositoryImplTest : SysuiTestCase() {
             job.cancel()
         }
 
+    @Test
+    fun dreamSwitcherDialogShowing_defaultsToFalse() =
+        kosmos.runTest {
+            val showing by collectLastValue(underTest.dreamSwitcherDialogShowing)
+            assertThat(showing).isFalse()
+        }
+
+    @Test
+    fun setSwitcherDialogShowing_updatesDreamSwitcherDialogShowing() =
+        kosmos.runTest {
+            val showing by collectLastValue(underTest.dreamSwitcherDialogShowing)
+            underTest.setSwitcherDialogShowing(true)
+            assertThat(showing).isTrue()
+            underTest.setSwitcherDialogShowing(false)
+            assertThat(showing).isFalse()
+        }
+
     private fun createDreamPlaylist(vararg names: String, activeIndex: Int = 0): DreamPlaylist {
         return DreamPlaylist(
             names.map { DreamItem.Builder(ComponentName("com.android.systemui", it)).build() },
             activeIndex,
         )
+    }
+
+    private fun createExpectedPlaylistModel(playlist: DreamPlaylist): DreamPlaylistModel {
+        val appInfo = DreamAppModel(TEST_APP_NAME, TEST_LAUNCH_INTENT)
+        return DreamPlaylistModel(
+            playlist.dreams.map {
+                DreamItemModel(
+                    componentName = it.componentName,
+                    title = it.title,
+                    description = it.description,
+                    icon = it.icon,
+                    previewImage = it.previewImage,
+                    settingsActivity = it.settingsActivity,
+                    appInfo = appInfo,
+                )
+            },
+            playlist.activeIndex,
+        )
+    }
+
+    private companion object {
+        const val TEST_APP_NAME = "Test App"
+        val TEST_LAUNCH_INTENT =
+            Intent().setComponent(ComponentName("com.android.systemui", "TestActivity"))
     }
 }
