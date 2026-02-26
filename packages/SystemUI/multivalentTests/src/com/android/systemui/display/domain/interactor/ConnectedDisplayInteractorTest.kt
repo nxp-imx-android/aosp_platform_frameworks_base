@@ -29,20 +29,22 @@ import com.android.systemui.coroutines.FlowValue
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.display.data.repository.DeviceStateRepository
 import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState.CONCURRENT_DISPLAY
-import com.android.systemui.display.data.repository.FakeDeviceStateRepository
-import com.android.systemui.display.data.repository.FakeDisplayRepository
 import com.android.systemui.display.data.repository.createPendingDisplay
 import com.android.systemui.display.data.repository.display
+import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.display.data.repository.fakeDeviceStateRepository
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor.PendingDisplay
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor.State
-import com.android.systemui.keyguard.data.repository.FakeKeyguardRepository
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
+import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -55,20 +57,15 @@ import org.mockito.Mockito.anyInt
 @SmallTest
 class ConnectedDisplayInteractorTest : SysuiTestCase() {
 
-    private val virtualDeviceManager = mock<VirtualDeviceManager>()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
+    private val virtualDeviceManager = kosmos.virtualDeviceManager
 
-    private val fakeDisplayRepository = FakeDisplayRepository()
-    private val fakeKeyguardRepository = FakeKeyguardRepository()
-    private val fakeDeviceStateRepository = FakeDeviceStateRepository()
+    private val fakeDisplayRepository = kosmos.displayRepository
+    private val fakeKeyguardRepository = kosmos.fakeKeyguardRepository
+    private val fakeDeviceStateRepository = kosmos.fakeDeviceStateRepository
     private val connectedDisplayStateProvider: ConnectedDisplayInteractor =
-        ConnectedDisplayInteractorImpl(
-            virtualDeviceManager,
-            fakeKeyguardRepository,
-            fakeDisplayRepository,
-            fakeDeviceStateRepository,
-            UnconfinedTestDispatcher(),
-        )
-    private val testScope = TestScope(UnconfinedTestDispatcher())
+        kosmos.connectedDisplayInteractor
+    private val testScope = kosmos.testScope
 
     @Before
     fun setup() {

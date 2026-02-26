@@ -539,6 +539,20 @@ class DisplayRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun defaultDisplayType_changes() =
+        testScope.runTest {
+            val defaultDisplayType by latestDefaultDisplayTypeFlowValue()
+
+            whenever(defaultDisplay.type).thenReturn(Display.TYPE_INTERNAL)
+            displayListener.value.onDisplayChanged(DEFAULT_DISPLAY)
+            assertThat(defaultDisplayType).isEqualTo(Display.TYPE_INTERNAL)
+
+            whenever(defaultDisplay.type).thenReturn(Display.TYPE_EXTERNAL)
+            displayListener.value.onDisplayChanged(DEFAULT_DISPLAY)
+            assertThat(defaultDisplayType).isEqualTo(Display.TYPE_EXTERNAL)
+        }
+
+    @Test
     fun displayFlow_startsWithDefaultDisplayBeforeAnyEvent() =
         testScope.runTest {
             setDisplays(DEFAULT_DISPLAY)
@@ -955,6 +969,13 @@ class DisplayRepositoryTest : SysuiTestCase() {
     // Wrapper to capture the displayListener.
     private fun TestScope.latestDefaultDisplayOffFlowValue(): FlowValue<Boolean?> {
         val flowValue = collectLastValue(displayRepository.defaultDisplayOff)
+        captureAddedRemovedListener()
+        return flowValue
+    }
+
+    // Wrapper to capture the displayListener.
+    private fun TestScope.latestDefaultDisplayTypeFlowValue(): FlowValue<Int?> {
+        val flowValue = collectLastValue(displayRepository.defaultDisplayType)
         captureAddedRemovedListener()
         return flowValue
     }

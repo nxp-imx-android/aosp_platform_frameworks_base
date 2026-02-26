@@ -29,12 +29,16 @@ import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 /** Provides information about an external connected display. */
 interface ConnectedDisplayInteractor {
@@ -46,7 +50,7 @@ interface ConnectedDisplayInteractor {
      * - [State.CONNECTED_SECURE] when is at least one display with both [TYPE_EXTERNAL] AND
      *   [Display.FLAG_SECURE] set
      */
-    val connectedDisplayState: Flow<State>
+    val connectedDisplayState: StateFlow<State>
 
     /**
      * Indicates that there is a new connected display (either an external display or a virtual
@@ -114,11 +118,13 @@ constructor(
     displayRepository: DisplayRepository,
     deviceStateRepository: DeviceStateRepository,
     @Background backgroundCoroutineDispatcher: CoroutineDispatcher,
+    @Background bgCoroutineScope: CoroutineScope,
 ) : ConnectedDisplayInteractor {
 
-    override val connectedDisplayState: Flow<State> =
-        displayRepository.displays
-            .map { displays ->
+    override val connectedDisplayState: StateFlow<State> =
+        // We're combining as the displays set doesn't get updated if the default display type
+        // changes.
+        combine(displayRepository.displays, displayRepository.defaultDisplayType) { displays, _ ->
                 val externalDisplays = displays.filter { isExternalDisplay(it) }
 
                 val secureExternalDisplays = externalDisplays.filter { isSecureDisplay(it) }
@@ -134,8 +140,11 @@ constructor(
                     State.CONNECTED
                 }
             }
-            .flowOn(backgroundCoroutineDispatcher)
-            .distinctUntilChanged()
+            .stateIn(
+                scope = bgCoroutineScope,
+                started = SharingStarted.Eagerly,
+                initialValue = State.DISCONNECTED,
+            )
 
     override val connectedDisplayAddition: Flow<Unit> =
         displayRepository.displayAdditionEvent
