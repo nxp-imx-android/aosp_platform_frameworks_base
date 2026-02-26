@@ -1051,10 +1051,90 @@ class MobileIconViewModelTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NewSatelliteIcon.FLAG_NAME)
-    fun nonTerrestrial_contentDescription_isNull() =
+    fun nonTerrestrial_contentDescription_fromSatelliteLevel() =
         testScope.runTest {
             repository.isNonTerrestrial.value = true
             val contentDescription by collectLastValue(underTest.contentDescription)
+
+            repository.satelliteLevel.value = 0
+            assertThat(
+                    (contentDescription as MobileContentDescription.SatelliteContentDescription)
+                        .resId
+                )
+                .isEqualTo(R.string.accessibility_status_bar_satellite_no_connection)
+
+            repository.satelliteLevel.value = 2
+            assertThat(
+                    (contentDescription as MobileContentDescription.SatelliteContentDescription)
+                        .resId
+                )
+                .isEqualTo(R.string.accessibility_status_bar_satellite_poor_connection)
+
+            repository.satelliteLevel.value = 4
+            assertThat(
+                    (contentDescription as MobileContentDescription.SatelliteContentDescription)
+                        .resId
+                )
+                .isEqualTo(R.string.accessibility_status_bar_satellite_good_connection)
+        }
+
+    @Test
+    @EnableFlags(NewSatelliteIcon.FLAG_NAME)
+    fun nonTerrestrial_contentDescription_fromSatelliteLevel_inflated() =
+        testScope.runTest {
+            repository.isNonTerrestrial.value = true
+            repository.inflateSignalStrength.value = true
+            repository.numberOfLevels.value = 6
+
+            val contentDescription by collectLastValue(underTest.contentDescription)
+
+            // Inflated level 0 -> shown level 1 -> reported level 0 (No connection)
+            repository.satelliteLevel.value = 0
+            assertThat(
+                    (contentDescription as MobileContentDescription.SatelliteContentDescription)
+                        .resId
+                )
+                .isEqualTo(R.string.accessibility_status_bar_satellite_no_connection)
+
+            // Inflated level 2 -> shown level 3 -> reported level 2 (Poor connection)
+            repository.satelliteLevel.value = 2
+            assertThat(
+                    (contentDescription as MobileContentDescription.SatelliteContentDescription)
+                        .resId
+                )
+                .isEqualTo(R.string.accessibility_status_bar_satellite_poor_connection)
+
+            // Inflated level 4 -> shown level 5 -> reported level 4 (Good connection)
+            repository.satelliteLevel.value = 4
+            assertThat(
+                    (contentDescription as MobileContentDescription.SatelliteContentDescription)
+                        .resId
+                )
+                .isEqualTo(R.string.accessibility_status_bar_satellite_good_connection)
+
+            // Inflated level 5 -> shown level 6 -> reported level 5 (No connection - fallback)
+            repository.satelliteLevel.value = 5
+            assertThat(
+                    (contentDescription as MobileContentDescription.SatelliteContentDescription)
+                        .resId
+                )
+                .isEqualTo(R.string.accessibility_status_bar_satellite_no_connection)
+        }
+
+    @Test
+    @DisableFlags(NewSatelliteIcon.FLAG_NAME)
+    fun nonTerrestrial_contentDescription_fromSatelliteLevel_flagOff() =
+        testScope.runTest {
+            repository.isNonTerrestrial.value = true
+            val contentDescription by collectLastValue(underTest.contentDescription)
+
+            repository.satelliteLevel.value = 0
+            assertThat(contentDescription).isNull()
+
+            repository.satelliteLevel.value = 2
+            assertThat(contentDescription).isNull()
+
+            repository.satelliteLevel.value = 4
             assertThat(contentDescription).isNull()
         }
 
