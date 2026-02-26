@@ -16,7 +16,6 @@
 
 package com.android.systemui.mediaprojection.permission
 
-import android.app.AlertDialog
 import android.hardware.display.DisplayManager
 import android.hardware.display.displayManager
 import android.media.projection.MediaProjectionConfig
@@ -38,8 +37,8 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.phone.AlertDialogWithDelegate
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.statusbar.phone.systemUIDialogDotFactory
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertEquals
@@ -60,9 +59,12 @@ class SystemCastPermissionDialogDelegateTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private val displayManager = kosmos.displayManager
 
+    private val systemUIDialogDotFactory
+        get() = kosmos.systemUIDialogDotFactory
+
     @get:Rule val checkFlagRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
 
-    private lateinit var dialog: AlertDialog
+    private lateinit var dialog: SystemUIDialog
 
     private val appName = "Test App"
 
@@ -244,9 +246,10 @@ class SystemCastPermissionDialogDelegateTest : SysuiTestCase() {
                 overrideDisableSingleAppOption,
                 hostUid = 12345,
                 mediaProjectionMetricsLogger = mock<MediaProjectionMetricsLogger>(),
+                systemUIDialogFactory = systemUIDialogDotFactory,
             )
 
-        dialog = AlertDialogWithDelegate(context, R.style.Theme_SystemUI_Dialog, delegate)
+        dialog = systemUIDialogDotFactory.create(delegate, context)
         SystemUIDialog.applyFlags(dialog)
         SystemUIDialog.setDialogSize(dialog)
 

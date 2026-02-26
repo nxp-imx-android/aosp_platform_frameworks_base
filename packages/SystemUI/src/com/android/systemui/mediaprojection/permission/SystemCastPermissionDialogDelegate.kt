@@ -15,7 +15,6 @@
  */
 package com.android.systemui.mediaprojection.permission
 
-import android.app.AlertDialog
 import android.content.Context
 import android.hardware.display.DisplayManager
 import android.media.projection.MediaProjectionConfig
@@ -26,21 +25,23 @@ import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.permission.MediaProjectionPermissionUtils.getConnectedDisplays
 import com.android.systemui.mediaprojection.permission.MediaProjectionPermissionUtils.getSingleAppDisabledText
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.phone.SystemUIDialog
 import java.util.function.Consumer
 
 /** Dialog to select screen recording options for casting the screen to a different device. */
 class SystemCastPermissionDialogDelegate(
     context: Context,
     mediaProjectionConfig: MediaProjectionConfig?,
-    private val onStartRecordingClicked:
-        Consumer<BaseMediaProjectionPermissionDialogDelegate<AlertDialog>>,
+    private val onStartRecordingClicked: Consumer<BaseMediaProjectionPermissionDialogDelegate>,
     private val onCancelClicked: Runnable,
     appName: String,
     forceShowPartialScreenshare: Boolean,
     hostUid: Int,
     mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
+    systemUIDialogFactory: SystemUIDialog.Factory,
 ) :
-    BaseMediaProjectionPermissionDialogDelegate<AlertDialog>(
+    BaseMediaProjectionPermissionDialogDelegate(
+        context,
         createOptionList(
             context,
             appName,
@@ -51,8 +52,9 @@ class SystemCastPermissionDialogDelegate(
         hostUid,
         mediaProjectionMetricsLogger,
         dialogIconDrawable = R.drawable.ic_cast_connected,
+        systemUIDialogFactory = systemUIDialogFactory,
     ) {
-    override fun onCreate(dialog: AlertDialog, savedInstanceState: Bundle?) {
+    override fun onCreate(dialog: SystemUIDialog, savedInstanceState: Bundle?) {
         super.onCreate(dialog, savedInstanceState)
         // TODO(b/270018943): Handle the case of System sharing (not recording nor casting)
         setDialogTitle(R.string.media_projection_entry_cast_permission_dialog_title)
