@@ -39,6 +39,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.graphics.Rect;
@@ -217,6 +218,8 @@ final class AutofillManagerServiceImpl
 
     private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
 
+    private final PackageManagerInternal mPmInternal;
+
     AutofillManagerServiceImpl(AutofillManagerService master, Object lock,
             LocalLog uiLatencyHistory, LocalLog wtfHistory, int userId, AutoFillUI ui,
             AutofillCompatState autofillCompatState,
@@ -236,6 +239,7 @@ final class AutofillManagerServiceImpl
         mDisabledInfoCache = disableCache;
         updateLocked(disabled);
         mActivityTaskManagerInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
+        mPmInternal = LocalServices.getService(PackageManagerInternal.class);
     }
 
     boolean sendActivityAssistDataToContentCapture(@NonNull IBinder activityToken,
@@ -750,7 +754,8 @@ final class AutofillManagerServiceImpl
         } catch (NameNotFoundException e) {
             throw new SecurityException("Could not verify UID for " + componentName);
         }
-        if (callingUid != packageUid && !LocalServices.getService(ActivityManagerInternal.class)
+        if (!mPmInternal.isSameApp(packageName, callingUid, UserHandle.getUserId(callingUid))
+                && !LocalServices.getService(ActivityManagerInternal.class)
                 .hasRunningActivity(callingUid, packageName)) {
             final String[] packages = pm.getPackagesForUid(callingUid);
             final String callingPackage = packages != null ? packages[0] : "uid-" + callingUid;
@@ -1478,10 +1483,12 @@ final class AutofillManagerServiceImpl
 
     @GuardedBy("mLock")
     private boolean isCalledByServiceLocked(@NonNull String methodName, int callingUid) {
-        final int serviceUid = getServiceUidLocked();
-        if (serviceUid != callingUid) {
+        final String servicePackageName = getServicePackageName();
+        if (servicePackageName == null
+                || !mPmInternal.isSameApp(servicePackageName, callingUid,
+                        UserHandle.getUserId(callingUid))) {
             Slog.w(TAG, methodName + "() called by UID " + callingUid
-                    + ", but service UID is " + serviceUid);
+                    + ", which does not belong to service package " + servicePackageName);
             return false;
         }
         return true;
@@ -1822,7 +1829,8 @@ final class AutofillManagerServiceImpl
 
     boolean isAugmentedAutofillServiceForUserLocked(int callingUid) {
         return mRemoteAugmentedAutofillServiceInfo != null
-                && mRemoteAugmentedAutofillServiceInfo.applicationInfo.uid == callingUid;
+                && mPmInternal.isSameApp(mRemoteAugmentedAutofillServiceInfo.packageName,
+                        callingUid, UserHandle.getUserId(callingUid));
     }
 
     /**
@@ -1877,9 +1885,11 @@ final class AutofillManagerServiceImpl
             return false;
         }
 
-        if (getAugmentedAutofillServiceUidLocked() != callingUid) {
+        if (!mPmInternal.isSameApp(service.getComponentName().getPackageName(), callingUid,
+                UserHandle.getUserId(callingUid))) {
             Slog.w(TAG, methodName + "() called by UID " + callingUid
-                    + ", but service UID is " + getAugmentedAutofillServiceUidLocked()
+                    + " which does not belong to augmented autofill service package "
+                    + service.getComponentName().getPackageName()
                     + " for user " + getUserId());
             return false;
         }
@@ -2239,7 +2249,8 @@ final class AutofillManagerServiceImpl
 
     boolean isRemoteClassificationServiceForUserLocked(int callingUid) {
         return mRemoteFieldClassificationServiceInfo != null
-                && mRemoteFieldClassificationServiceInfo.applicationInfo.uid == callingUid;
+                && mPmInternal.isSameApp(mRemoteFieldClassificationServiceInfo.packageName,
+                        callingUid, UserHandle.getUserId(callingUid));
     }
 
     @Override
