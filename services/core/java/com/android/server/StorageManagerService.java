@@ -981,7 +981,7 @@ class StorageManagerService extends IStorageManager.Stub
         configureTranscoding();
 
         // Guard the new feature call with the aflag
-        if (Flags.enableFilesystemConfiguration()) {
+        if (Flags.enableFilesystemConfigurationV2()) {
             Slog.i(TAG, "Filesystem configuration feature is enabled");
             configureFilesystem();
         } else {
