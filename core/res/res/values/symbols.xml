@@ -1919,6 +1919,7 @@
   <java-symbol type="bool" name="config_allowRotationResolver" />
   <java-symbol type="bool" name="config_dockedStackDividerFreeSnapMode" />
   <java-symbol type="bool" name="config_enableAppLaunchBlur" />
+  <java-symbol type="bool" name="config_enableBlurExpansion" />
   <java-symbol type="dimen" name="docked_stack_divider_thickness" />
   <java-symbol type="dimen" name="docked_stack_divider_insets" />
   <java-symbol type="dimen" name="docked_stack_minimize_thickness" />
