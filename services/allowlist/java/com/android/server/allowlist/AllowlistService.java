@@ -182,7 +182,8 @@ public final class AllowlistService extends SystemService {
 
         IAllowlistProviderService testProviderService = mTestProviderService;
         for (AllowlistRequest request : requestsToRemove) {
-            if (testProviderService != null) {
+            if (testProviderService != null
+                    && request.getAllowlistId() == AllowlistManager.ALLOWLIST_ID_TEST) {
                 try {
                     testProviderService.removeRequestForAllowlistChange(request);
                 } catch (RemoteException e) {
