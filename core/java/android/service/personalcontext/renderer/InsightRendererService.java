@@ -43,30 +43,30 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 
 /**
- * The base insight renderer service, which is a service responsible for rendering
- * {@link PublishedContextInsight}s to the user as suggestions or other actionable items. This is an
+ * The base insight renderer service, which is a service responsible for rendering {@link
+ * PublishedContextInsight}s to the user as suggestions or other actionable items. This is an
  * abstract class intended to be subclassed by concrete renderer services. Subclasses need to
- * implement {@link #onConnected()} (which should return a {@link RendererFilter} indicating what
- * types of hints and insights the renderer will accept), and {@link #onRender} (which the
- * personal context engine will call with a list of {@link PublishedContextInsight}s to be
- * rendered).
+ * implement {@link #onInitializeFilter()} (which should return an {@link InsightFilter} indicating
+ * what types of insights the renderer will accept), and {@link #onRender} (which the personal
+ * context engine will call with a list of {@link PublishedContextInsight}s to be rendered).
  *
  * <p>You must declare the service in the AndroidManifest of the app hosting the service with the
- * {@link android.Manifest.permission#BIND_INSIGHT_RENDERER_SERVICE} permission,
- * and include an intent filter with the necessary action indicating that it is an
- * {@link InsightRendererService} ({@link #SERVICE_INTERFACE}).
+ * {@link android.Manifest.permission#BIND_CONTEXT_COMPONENT_SERVICE} permission, and include an
+ * intent filter with the necessary action indicating that it is an {@link InsightRendererService}
+ * ({@link #SERVICE_INTERFACE}).
  *
- * <p>You can indicate support for insights resulting from
- * {@link android.service.personalcontext.hint.NotificationHint}} by adding a meta-data tag named
+ * <p>You can indicate support for insights resulting from {@link
+ * android.service.personalcontext.hint.NotificationHint}} by adding a meta-data tag named
  * "android.service.personalcontext.renderer.receive_notification_insights" set to "true". The
- * service package must be granted the {@link android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS}
- * permission as well.</p>
+ * service package must be granted the {@link
+ * android.Manifest.permission#RECEIVE_SENSITIVE_NOTIFICATIONS} permission as well.
  *
  * <p>For example:
+ *
  * <pre>
  *     &lt;service android:name=".ExampleInsightRendererService"
  *             android:exported="true"
- *             android:permission="android.permission.BIND_INSIGHT_RENDERER_SERVICE"&gt;
+ *             android:permission="android.permission.BIND_CONTEXT_COMPONENT_SERVICE"&gt;
  *         &lt;intent-filter&gt;
  *             &lt;action
  *             android:name="android.service.personalcontext.renderer.InsightRendererService"
@@ -89,7 +89,7 @@ public abstract class InsightRendererService extends Service {
      * The {@link Intent} that must be declared as handled by the service.
      *
      * <p>To be supported, the service must also require the
-     * {@link android.Manifest.permission#BIND_INSIGHT_RENDERER_SERVICE} permission.
+     * {@link android.Manifest.permission#BIND_CONTEXT_COMPONENT_SERVICE} permission.
      */
     @SdkConstant(SdkConstant.SdkConstantType.SERVICE_ACTION)
     public static final String SERVICE_INTERFACE =

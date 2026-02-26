@@ -1310,7 +1310,7 @@
             android:name="com.android.systemui.personalcontext.AutofillRendererService"
             android:singleUser="true"
             android:exported="true"
-            android:permission="android.permission.BIND_INSIGHT_RENDERER_SERVICE">
+            android:permission="android.permission.BIND_CONTEXT_COMPONENT_SERVICE">
             <intent-filter>
                 <action android:name="android.service.personalcontext.renderer.InsightRendererService" />
             </intent-filter>
