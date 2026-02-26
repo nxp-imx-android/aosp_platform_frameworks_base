@@ -54,11 +54,12 @@ import kotlinx.coroutines.launch
 @Composable
 fun CurrentRulesScreen(
     viewModel: NotificationRulesScreenViewModel,
-    dismissRulesScreen: () -> Unit,
+    onDismissCurrentRulesScreen: () -> Unit,
+    onNavigateToEditScreen: (DraftRuleModel) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
-    BackHandler(enabled = true, onBack = dismissRulesScreen)
+    BackHandler(enabled = true, onBack = onDismissCurrentRulesScreen)
 
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp, alignment = Alignment.Top),
@@ -69,7 +70,7 @@ fun CurrentRulesScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Button(onClick = dismissRulesScreen, modifier = Modifier) {
+                Button(onClick = onDismissCurrentRulesScreen, modifier = Modifier) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back [TK]",
@@ -86,14 +87,16 @@ fun CurrentRulesScreen(
         }
 
         viewModel.rules.forEach { rule ->
-            item(rule.toString()) { CurrentRule(rule = rule, screenViewModel = viewModel) }
+            item(rule.toString()) {
+                CurrentRule(rule = rule, onNavigateToEditScreen = onNavigateToEditScreen)
+            }
         }
 
         item("Create new rule") {
             Button(
                 onClick = {
                     scope.launch {
-                        viewModel.launchEditRuleScreen(
+                        onNavigateToEditScreen(
                             DraftRuleModel(
                                 action = ActionModel.Highlight,
                                 contacts = null,
@@ -110,7 +113,7 @@ fun CurrentRulesScreen(
 }
 
 @Composable
-private fun CurrentRule(rule: RuleModel, screenViewModel: NotificationRulesScreenViewModel) {
+private fun CurrentRule(rule: RuleModel, onNavigateToEditScreen: (DraftRuleModel) -> Unit) {
     var isExpanded by remember { mutableStateOf(false) }
 
     Column(
@@ -142,9 +145,7 @@ private fun CurrentRule(rule: RuleModel, screenViewModel: NotificationRulesScree
         }
 
         if (isExpanded) {
-            Button(onClick = { screenViewModel.launchEditRuleScreen(rule.toDraft()) }) {
-                Text("Edit [TK]")
-            }
+            Button(onClick = { onNavigateToEditScreen(rule.toDraft()) }) { Text("Edit [TK]") }
         }
     }
 }

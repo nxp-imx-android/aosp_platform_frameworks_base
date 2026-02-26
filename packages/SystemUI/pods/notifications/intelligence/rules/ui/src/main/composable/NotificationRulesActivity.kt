@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
 import javax.inject.Inject
 
@@ -42,9 +43,9 @@ public class NotificationRulesActivity
 @Inject
 constructor(
     private val viewModelFactory: NotificationRulesScreenViewModel.Factory,
+    private val editViewModelFactory: NotificationRuleEditViewModel.Factory,
     private val notificationRulesScreen: NotificationRulesScreen,
-) :
-    ComponentActivity() {
+) : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -60,6 +61,7 @@ constructor(
             PlatformTheme {
                 notificationRulesScreen.Content(
                     viewModelFactory = viewModelFactory,
+                    editViewModelFactory = editViewModelFactory,
                     dismissRulesScreen = { finish() },
                     modifier =
                         Modifier.background(MaterialTheme.colorScheme.background)

@@ -16,9 +16,13 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 import javax.inject.Inject
@@ -27,28 +31,48 @@ class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScree
     @Composable
     override fun Content(
         viewModelFactory: NotificationRulesScreenViewModel.Factory,
+        editViewModelFactory: NotificationRuleEditViewModel.Factory,
         dismissRulesScreen: () -> Unit,
         modifier: Modifier,
     ) {
+        // TODO: b/486844997 - When the new platform drop for androidx.compose.animation is in, this
+        // can be replaced by the navigation3 library, which will also support back gestures.
+        val backStack = remember {
+            mutableStateListOf<RulesScreenViewState>(RulesScreenViewState.CurrentRules)
+        }
         val screenViewModel =
-            rememberViewModel("NotificationRulesScreen") { viewModelFactory.create() }
+            rememberViewModel("NotificationRulesScreen") { viewModelFactory.create(backStack) }
 
-        when (val viewState = screenViewModel.viewState) {
-            is RulesScreenViewState.CurrentRules -> {
-                CurrentRulesScreen(
-                    viewModel = screenViewModel,
-                    dismissRulesScreen = dismissRulesScreen,
-                    modifier = modifier,
-                )
-            }
-            is RulesScreenViewState.RuleEdit -> {
-                NotificationRuleEdit(
-                    viewModel = viewState.editViewModel,
-                    dismissEditScreen = {
-                        screenViewModel.viewState = RulesScreenViewState.CurrentRules
-                    },
-                    modifier = modifier,
-                )
+        Box(modifier = modifier) {
+            when (val viewState = screenViewModel.currentScreen) {
+                is RulesScreenViewState.CurrentRules -> {
+                    CurrentRulesScreen(
+                        viewModel = screenViewModel,
+                        onDismissCurrentRulesScreen = dismissRulesScreen,
+                        onNavigateToEditScreen = { draftRule ->
+                            val newState =
+                                RulesScreenViewState.EditRule(
+                                    editViewModelFactory.create(draftRule)
+                                )
+                            backStack.add(newState)
+                        },
+                    )
+                }
+
+                is RulesScreenViewState.EditRule -> {
+                    NotificationRuleEdit(
+                        viewModel = viewState.viewModel,
+                        onDismissRuleEditScreen = { backStack.removeLast() },
+                        onEnterEditField = { backStack.add(it) },
+                        onExitEditField = { backStack.removeLast() },
+                    )
+                }
+
+                is RulesScreenViewState.EditField.Action -> {
+                    ActionChoiceScreen(viewState, onDismissRequest = { backStack.removeLast() })
+                }
+                is RulesScreenViewState.EditField.Contacts -> { ContactChoiceScreen(viewState) }
+                is RulesScreenViewState.EditField.Apps -> { AppChoiceScreen(viewState) }
             }
         }
     }

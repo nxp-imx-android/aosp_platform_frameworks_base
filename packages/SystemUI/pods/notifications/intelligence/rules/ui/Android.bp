@@ -39,17 +39,19 @@ java_library {
         "//vendor:__subpackages__",
     ],
     static_libs: [
-        "com.android.systemui.lifecycle_api",
-        "com.android.systemui.notifications.intelligence.rules_api",
-        "com.android.systemui.notifications.intelligence.rules.ui_api",
+        // go/keep-sorted start
         "PlatformComposeCore",
+        "SystemUIPluginLib",
+        "androidx.activity_activity-compose",
         "androidx.compose.foundation_foundation",
         "androidx.compose.foundation_foundation-layout",
         "androidx.compose.material3_material3",
         "androidx.compose.material_material-icons-core",
         "androidx.compose.runtime_runtime",
-        "androidx.activity_activity-compose",
-        "SystemUIPluginLib",
+        "com.android.systemui.lifecycle_api",
+        "com.android.systemui.notifications.intelligence.rules.ui_api",
+        "com.android.systemui.notifications.intelligence.rules_api",
+        // go/keep-sorted end
     ],
 }
 

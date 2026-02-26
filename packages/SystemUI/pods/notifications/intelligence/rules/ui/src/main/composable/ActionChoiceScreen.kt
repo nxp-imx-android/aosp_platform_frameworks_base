@@ -21,20 +21,20 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 
-/**
- * Renders a dropdown menu to choose one rule action.
- *
- * @param onActionSelected invoked when the user selects an action in the menu.
- */
+/** Renders a fullscreen page to choose one rule action. */
 @Composable
-fun ActionChoiceDialog(onDismissRequest: () -> Unit, onActionSelected: (ActionModel) -> Unit) {
+fun ActionChoiceScreen(
+    viewState: RulesScreenViewState.EditField.Action,
+    onDismissRequest: () -> Unit,
+) {
     DropdownMenu(expanded = true, onDismissRequest = onDismissRequest) {
         for (action in ActionModel.entries) {
             DropdownMenuItem(
                 text = { Text(text = "${action.name} [TK]") },
                 onClick = {
-                    onActionSelected.invoke(action)
+                    viewState.onActionSaved(action)
                     onDismissRequest.invoke()
                 },
             )

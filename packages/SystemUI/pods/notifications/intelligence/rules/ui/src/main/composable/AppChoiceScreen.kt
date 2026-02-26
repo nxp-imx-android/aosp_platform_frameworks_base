@@ -27,9 +27,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,12 +44,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 
-/** Renders a menu to select 1 or more apps matching a search string. */
+/** Renders a fullscreen page to select 1 or more apps matching a search string. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppChoiceDialog(viewModel: NotificationRuleEditViewModel) {
+fun AppChoiceScreen(viewState: RulesScreenViewState.EditField.Apps) {
+    val viewModel = viewState.viewModel
     // All apps on the device. Null while the apps are being fetched.
     val allApps by
         produceState<List<AppModel>?>(initialValue = null, key1 = viewModel) {
@@ -62,7 +63,7 @@ fun AppChoiceDialog(viewModel: NotificationRuleEditViewModel) {
     val currentSearchResults =
         remember(allApps, currentQuery) { getSearchResults(allApps, currentQuery) }
 
-    SearchBar(
+    DockedSearchBar(
         inputField = {
             SearchBarDefaults.InputField(
                 query = currentQuery,

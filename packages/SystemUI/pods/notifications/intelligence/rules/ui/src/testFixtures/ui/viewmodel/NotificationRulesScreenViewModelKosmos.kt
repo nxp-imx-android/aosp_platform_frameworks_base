@@ -19,19 +19,16 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.notificationRulesInteractor
 
-val Kosmos.notificationRulesScreenViewModel by
-    Kosmos.Fixture {
-        NotificationRulesScreenViewModelImpl(
-            notificationRulesInteractor,
-            notificationRuleEditViewModelFactory,
-        )
-    }
-
 val Kosmos.notificationRulesScreenViewModelFactory by
     Kosmos.Fixture {
         object : NotificationRulesScreenViewModel.Factory {
-            override fun create(): NotificationRulesScreenViewModel {
-                return notificationRulesScreenViewModel
+            override fun create(
+                backStack: List<RulesScreenViewState>
+            ): NotificationRulesScreenViewModel {
+                return NotificationRulesScreenViewModelImpl(
+                    backStack = backStack,
+                    notificationRulesInteractor,
+                )
             }
         }
     }

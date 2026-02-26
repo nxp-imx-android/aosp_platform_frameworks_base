@@ -26,11 +26,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
+import androidx.compose.material3.DockedSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,24 +47,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 import kotlinx.coroutines.launch
 
-/** Renders a menu to select 1 or more contacts matching a search string. */
+/** Renders a fullscreen page to select 1 or more contacts matching a search string. */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ContactChoiceDialog(
-    initialSearchQuery: String,
-    initialSelection: List<ContactModel>,
-    onContactsSaved: (List<ContactModel>) -> Unit,
-    viewModel: NotificationRuleEditViewModel,
-) {
+fun ContactChoiceScreen(viewState: RulesScreenViewState.EditField.Contacts) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val viewModel = viewState.viewModel
 
-    val currentSelectedContacts = remember { mutableStateSetOf(*initialSelection.toTypedArray()) }
+    val currentSelectedContacts = remember {
+        val initialSelection =
+            when (val contacts = viewModel.rule.contacts) {
+                is RuleValue.Specified -> contacts.value.contacts
+                is RuleValue.Ambiguous -> emptyList()
+                null -> emptyList()
+            }
+        mutableStateSetOf(*initialSelection.toTypedArray())
+    }
     var currentSearchResults by remember { mutableStateOf(emptyList<ContactModel>()) }
-    var currentQuery by remember { mutableStateOf(initialSearchQuery) }
+    var currentQuery by remember {
+        val initialQuery =
+            when (val contacts = viewModel.rule.contacts) {
+                is RuleValue.Specified -> ""
+                is RuleValue.Ambiguous -> contacts.placeholderText
+                null -> ""
+            }
+        mutableStateOf(initialQuery)
+    }
     var expanded by rememberSaveable { mutableStateOf(true) }
 
     val onQueryChange: (String) -> Unit = { query: String ->
@@ -85,7 +99,7 @@ fun ContactChoiceDialog(
             }
         }
 
-    SearchBar(
+    DockedSearchBar(
         inputField = {
             SearchBarDefaults.InputField(
                 query = currentQuery,
@@ -136,7 +150,7 @@ fun ContactChoiceDialog(
             }
 
             item(key = "Save") {
-                Button(onClick = { onContactsSaved(currentSelectedContacts.toList()) }) {
+                Button(onClick = { viewState.onContactsSaved(currentSelectedContacts.toList()) }) {
                     Text("Save [TK]")
                 }
             }
