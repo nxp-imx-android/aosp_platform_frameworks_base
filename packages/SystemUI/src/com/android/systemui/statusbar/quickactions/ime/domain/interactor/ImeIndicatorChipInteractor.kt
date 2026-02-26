@@ -63,19 +63,30 @@ constructor(
     private val isFeatureEnabled: Boolean
         get() = Flags.statusBarImeChip()
 
-    private val isUserUnlockedAndSetUp: Flow<Boolean> =
+    // The IME chip can be shown when:
+    // 1. the user is logged in and the device is unlocked, to allow the user to switch between
+    // their enabled IME subtypes, or
+    // 2. the device is not provisioned or the user is not set up, to allow a new user to switch
+    // between default IME subtypes while completing the setup process.
+    // The chip is not shown on the lock screen or login screen since it isn't needed in these
+    // cases.
+    //
+    // TODO(b/485341693): Long term, it would be better to have a mechanism to switch between IME
+    // subtypes in OOBE that doesn't rely on the status bar. When this has been implemented, we can
+    // go back to showing the IME chip only when the user is logged in and device is unlocked.
+    private val isUnlockedOrInSetup: Flow<Boolean> =
         combine(
             userSetupInteractor.isUserSetUp,
             userLogoutInteractor.isLogoutEnabled,
             deviceProvisioningInteractor.isDeviceProvisioned,
             deviceEntryInteractor.isDeviceEntered,
         ) { isUserSetUp, isLoggedIn, isDeviceProvisioned, isDeviceEntered ->
-            isUserSetUp && isLoggedIn && isDeviceProvisioned && isDeviceEntered
+            (isLoggedIn && isDeviceEntered) || !isDeviceProvisioned || !isUserSetUp
         }
 
     /** The current state of the IME indicator chip. */
     val chipModel: StateFlow<ImeIndicatorChipModel> =
-        isUserUnlockedAndSetUp
+        isUnlockedOrInSetup
             .map { it && isFeatureEnabled }
             .flatMapLatest { preconditionsMet ->
                 if (preconditionsMet) {

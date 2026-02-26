@@ -114,24 +114,24 @@ class ImeIndicatorChipInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
-    fun chip_notVisible_whenUserNotSetup() =
+    fun chip_isVisible_whenUserNotSetup() =
         kosmos.runTest {
             backgroundScope.launch { underTest.chipModel.collect {} }
             fakeUserSetupRepository.setUserSetUp(false)
             testScope.runCurrent()
 
-            assertThat(underTest.chipModel.value.isVisible).isFalse()
+            assertThat(underTest.chipModel.value.isVisible).isTrue()
         }
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
-    fun chip_notVisible_whenDeviceNotProvisioned() =
+    fun chip_isVisible_whenDeviceNotProvisioned() =
         kosmos.runTest {
             backgroundScope.launch { underTest.chipModel.collect {} }
             fakeDeviceProvisioningRepository.setDeviceProvisioned(false)
             testScope.runCurrent()
 
-            assertThat(underTest.chipModel.value.isVisible).isFalse()
+            assertThat(underTest.chipModel.value.isVisible).isTrue()
         }
 
     @Test
