@@ -22,7 +22,9 @@ import static android.view.DragEvent.ACTION_DRAG_STARTED;
 
 import static com.android.wm.shell.draganddrop.DragTestUtils.createAppClipData;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -32,7 +34,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.kotlin.MatchersKt.eq;
 
+import android.app.ActivityManager;
 import android.content.ClipData;
 import android.content.Context;
 import android.os.RemoteException;
@@ -42,6 +46,8 @@ import android.view.DragEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.window.WindowContainerToken;
+import android.window.WindowContainerTransaction;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -64,8 +70,11 @@ import com.android.wm.shell.transition.Transitions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.List;
 
 /**
  * Tests for the drag and drop controller.
@@ -214,5 +223,28 @@ public class DragAndDropControllerTest extends ShellTestCase {
         mController.onInit();
 
         verify(mController, never()).addListener(mDragToBubbleController);
+    }
+
+    @Test
+    public void testOnCrossWindowDrop_reordersWithIncludingParents() {
+        ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
+        taskInfo.token = mock(WindowContainerToken.class);
+
+        mController.onCrossWindowDrop(taskInfo);
+
+        ArgumentCaptor<WindowContainerTransaction> wctCaptor =
+                ArgumentCaptor.forClass(WindowContainerTransaction.class);
+        // Verify that a transition is started with the expected transaction
+        verify(mTransitions)
+                .startTransition(eq(WindowManager.TRANSIT_TO_FRONT), wctCaptor.capture(), any());
+
+        // Verify the transaction contains the reorder operation with includingParents=true
+        WindowContainerTransaction wct = wctCaptor.getValue();
+        List<WindowContainerTransaction.HierarchyOp> ops = wct.getHierarchyOps();
+        assertEquals(1, ops.size());
+        WindowContainerTransaction.HierarchyOp op = ops.get(0);
+        assertEquals(
+                WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER, op.getType());
+        assertTrue("Reorder should include parents", op.includingParents());
     }
 }
