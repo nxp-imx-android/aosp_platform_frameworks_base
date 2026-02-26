@@ -289,3 +289,13 @@ flag {
   description: "Give users the option to decide whether or not to display the IME switcher button in the IME navigation bar"
   bug: "467625078"
 }
+
+flag {
+  name: "fix_jank_tracker_ime_animation_delay"
+  namespace: "input_method"
+  description: "Fix IME inset animation delay because of IME Jank Tracker"
+  bug: "483298748"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
