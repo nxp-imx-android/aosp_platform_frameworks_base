@@ -196,6 +196,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     private long mStartSeq;
 
     /**
+     * Sequence id for identifying LRU update cycles.
+     */
+    @GuardedBy("mService")
+    private int mLruSeq;
+
+    /**
      * Params used in starting this process.
      */
     private volatile HostingRecord mHostingRecord;
@@ -536,7 +542,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         if (mPendingStart) {
             pw.print(prefix); pw.print("pendingStart="); pw.println(mPendingStart);
         }
-        pw.print(prefix); pw.print("startSeq="); pw.println(mStartSeq);
+        pw.print(prefix); pw.print("startSeq="); pw.print(mStartSeq);
+        pw.print(" lruSeq="); pw.println(mLruSeq);
         pw.print(prefix); pw.print("mountMode="); pw.println(
                 DebugUtils.valueToString(Zygote.class, "MOUNT_EXTERNAL_", mMountMode));
         if (isKilled() || isKilledByAm() || getWaitingToKill() != null) {
@@ -871,6 +878,16 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @GuardedBy("mService")
     void setStartSeq(long startSeq) {
         mStartSeq = startSeq;
+    }
+
+    @GuardedBy("mService")
+    int getLruSeq() {
+        return mLruSeq;
+    }
+
+    @GuardedBy("mService")
+    void setLruSeq(int lruSeq) {
+        mLruSeq = lruSeq;
     }
 
     HostingRecord getHostingRecord() {

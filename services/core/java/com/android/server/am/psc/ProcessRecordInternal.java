@@ -629,12 +629,6 @@ public abstract class ProcessRecordInternal {
     private int mCompletedAdjSeq;
 
     /**
-     * Sequence id for identifying LRU update cycles.
-     */
-    @GuardedBy("mServiceLock")
-    private int mLruSeq;
-
-    /**
      * The last time the process was in the TOP state or greater.
      */
     @GuardedBy("mServiceLock")
@@ -1301,16 +1295,6 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy("mServiceLock")
-    public int getLruSeq() {
-        return mLruSeq;
-    }
-
-    @GuardedBy("mServiceLock")
-    public void setLruSeq(int lruSeq) {
-        mLruSeq = lruSeq;
-    }
-
-    @GuardedBy("mServiceLock")
     void setLastTopTime(long lastTopTime) {
         mLastTopTime = lastTopTime;
     }
@@ -1745,8 +1729,7 @@ public abstract class ProcessRecordInternal {
      */
     @GuardedBy({"mServiceLock", "mProcLock"})
     public void dump(PrintWriter pw, String prefix, long nowUptime) {
-        pw.print(prefix); pw.print("adjSeq="); pw.print(mAdjSeq);
-        pw.print(" lruSeq="); pw.println(mLruSeq);
+        pw.print(prefix); pw.print("adjSeq="); pw.println(mAdjSeq);
         pw.print(prefix); pw.print("oom adj: max="); pw.print(mMaxAdj);
         pw.print(" curRaw="); pw.print(mCurRawAdj);
         pw.print(" setRaw="); pw.print(mSetRawAdj);
