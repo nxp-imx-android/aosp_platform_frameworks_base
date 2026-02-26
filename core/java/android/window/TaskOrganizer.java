@@ -308,6 +308,19 @@ public class TaskOrganizer extends WindowOrganizer {
     }
 
     /**
+     * Restarts all the activities in the given task by killing its process if it is visible.
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.MANAGE_ACTIVITY_TASKS)
+    public void restartTaskProcessIfVisible(@NonNull WindowContainerToken task) {
+        try {
+            mTaskOrganizerController.restartTaskProcessIfVisible(task);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Set layers to be excluded when taking a task snapshot.
      *
      * Warning: MUST NOT pass layers that are managed by the Window Manager (e.g., from a Task or

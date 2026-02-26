@@ -73,6 +73,13 @@ interface ITaskOrganizerController {
     void restartTaskTopActivityProcessIfVisible(in WindowContainerToken task);
 
     /**
+     * Restarts all the activities in the given task by killing its process if it is visible.
+     */
+     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
+            + "android.Manifest.permission.MANAGE_ACTIVITY_TASKS)")
+    void restartTaskProcessIfVisible(in WindowContainerToken task);
+
+    /**
      * Set layers to be excluded when taking a task snapshot.
      *
      * Warning: MUST NOT pass layers that are managed by the Window Manager (e.g., from a Task or
