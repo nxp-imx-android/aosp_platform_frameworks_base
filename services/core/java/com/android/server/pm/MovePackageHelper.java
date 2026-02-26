@@ -374,8 +374,7 @@ public final class MovePackageHelper {
 
         try {
             mPm.mInstaller.getAppSize(packageStateInternal.getVolumeUuid(), packageNames, userId,
-                    0, packageStateInternal.getAppId(), packageStateInternal.getPccId(),
-                    ceDataInodes, codePaths, stats);
+                    0, packageStateInternal.getAppId(), ceDataInodes, codePaths, stats);
 
             // For now, ignore code size of packages on system partition
             if (PackageManagerServiceUtils.isSystemApp(packageStateInternal)
