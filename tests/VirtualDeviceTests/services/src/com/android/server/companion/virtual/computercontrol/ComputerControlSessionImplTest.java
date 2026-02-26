@@ -193,8 +193,6 @@ public class ComputerControlSessionImplTest {
     @Mock
     private AppOpsManager mAppOpsManager;
     @Mock
-    private WindowManager mWindowManager;
-    @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
     private UserManagerInternal mUserManagerInternal;
@@ -290,11 +288,6 @@ public class ComputerControlSessionImplTest {
                 .thenReturn(ownerContext);
         when(ownerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
         when(ownerContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
-
-        final Context displayContext = spy(new ContextWrapper(
-                InstrumentationRegistry.getInstrumentation().getTargetContext()));
-        doReturn(displayContext).when(mContext).createDisplayContext(any());
-        doReturn(mWindowManager).when(displayContext).getSystemService(WindowManager.class);
 
         LocalServices.removeAllServicesForTest();
         LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);

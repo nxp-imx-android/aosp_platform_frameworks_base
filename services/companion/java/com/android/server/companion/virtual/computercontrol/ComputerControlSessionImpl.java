@@ -53,7 +53,6 @@ import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ResolveInfoFlags;
 import android.content.pm.ResolveInfo;
-import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.VirtualDisplay;
@@ -76,7 +75,6 @@ import android.view.DisplayInfo;
 import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.SurfaceControl;
-import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
@@ -434,29 +432,6 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAppOpsManager = mOwnerContext.getSystemService(AppOpsManager.class);
         mAppOpsManager.startWatchingMode(AppOpsManager.OP_COMPUTER_CONTROL, mOwnerPackageName,
                 this);
-
-        addVirtualDisplayOverlay(context);
-    }
-
-    /**
-     * Add a transparent 1x1 overlay view to the virtual display as a short-term workaround for
-     * handling screenshot timeouts resulting from not being able to force native activities and
-     * windows to draw a new frame. Adding this view ensures there will be at least one window on
-     * the display that will produce a new frame when a screenshot is taken that will result in SF
-     * composition to produce a VirtualDisplay frame.
-     */
-    // TODO: b/484055252 - Remove after a long-term solution is in place.
-    private void addVirtualDisplayOverlay(Context context) {
-        final var displayContext = context.createDisplayContext(mVirtualDisplay.getDisplay());
-        final var wm = displayContext.getSystemService(WindowManager.class);
-
-        final var lp = new WindowManager.LayoutParams(1, 1,
-                WindowManager.LayoutParams.TYPE_DISPLAY_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                        | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-                PixelFormat.TRANSPARENT);
-        wm.addView(new View(displayContext), lp);
     }
 
     /**
