@@ -311,22 +311,6 @@ class VirtualInputDeviceController {
         mService.setConfigurationOverride(phys, configurationOverride);
     }
 
-    /**
-     * Validates a device name by checking whether a device with the same name already exists.
-     * @param deviceName The name of the device to be validated
-     * @throws DeviceCreationException if {@code deviceName} is not valid.
-     */
-    private void validateDeviceName(String deviceName) throws DeviceCreationException {
-        synchronized (mLock) {
-            for (int i = 0; i < mInputDeviceDescriptors.size(); ++i) {
-                if (mInputDeviceDescriptors.valueAt(i).mName.equals(deviceName)) {
-                    throw new DeviceCreationException(
-                            "Input device name already in use: " + deviceName);
-                }
-            }
-        }
-    }
-
     private static String createPhys(@PhysType String type) {
         return formatSimple("virtual%s:%d", type, sNextPhysId.getAndIncrement());
     }
@@ -774,7 +758,6 @@ class VirtualInputDeviceController {
                     "Virtual input device creation should happen on an auxiliary thread (e.g. "
                             + "binder thread) and not from the handler's thread.");
         }
-        validateDeviceName(deviceName);
 
         final long ptr;
         final BinderDeathRecipient binderDeathRecipient;
