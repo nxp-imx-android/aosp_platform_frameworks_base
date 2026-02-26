@@ -1277,9 +1277,18 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 // (ACTION_DATE_CHANGED), or when manual clock adjustment is made
                 // (ACTION_TIME_CHANGED)
                 updateSystemUpdateFreezePeriodsRecord(/* saveIfChanged */ true);
-                final int userId = getManagedUserId(getMainUserId());
-                if (userId >= 0) {
-                    updatePersonalAppsSuspension(userId);
+                if (Flags.checkPersonalSuspensionForAllProfiles()) {
+                    for (int userId : mUserManagerInternal.getUserIds()) {
+                        if (isManagedProfile(userId)
+                                && mUserManager.isUserRunning(getProfileParentId(userId))) {
+                            updatePersonalAppsSuspension(userId);
+                        }
+                    }
+                } else {
+                    final int userId = getManagedUserId(getMainUserId());
+                    if (userId >= 0) {
+                        updatePersonalAppsSuspension(userId);
+                    }
                 }
             } else if (ACTION_PROFILE_OFF_DEADLINE.equals(action)) {
                 Slogf.i(LOG_TAG, "Profile off deadline alarm was triggered");

@@ -7775,6 +7775,64 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     /**
+     * Tests the case when the user doesn't turn the profile on in time, verifies that the user is
+     * warned with a notification and then the apps get suspended.
+     */
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_CHECK_PERSONAL_SUSPENSION_FOR_ALL_PROFILES)
+    public void testMaximumProfileTimeOff_noMainUserAndTimeChanged() throws Exception {
+        prepareMocksForSetMaximumProfileTimeOff();
+        // Simulate the case when there is no main user.
+        when(getServices().userManager.getMainUser()).thenReturn(null);
+        when(getServices().userManager.isUserRunning(UserHandle.USER_SYSTEM)).thenReturn(true);
+        when(getServices().userManagerInternal.getUserIds())
+                .thenReturn(new int[] {UserHandle.USER_SYSTEM, CALLER_USER_HANDLE});
+        when(mContext.getResources().getStringArray(R.array.config_packagesExemptFromSuspension))
+                .thenReturn(new String[0]);
+
+        mContext.binder.callingUid = DpmMockContext.CALLER_UID;
+        dpm.setManagedProfileMaximumTimeOff(admin1, PROFILE_OFF_TIMEOUT);
+
+        mContext.binder.callingUid = DpmMockContext.SYSTEM_UID;
+        // The profile is running, notification should not be posted.
+        verify(getServices().notificationManager, never())
+                .notify(anyInt(), any(Notification.class));
+        // Apps shouldn't be suspended.
+        verifyNoMoreInteractions(getServices().ipackageManager);
+
+        setUserUnlocked(CALLER_USER_HANDLE, false);
+        sendBroadcastWithUser(dpms, Intent.ACTION_USER_STOPPED, CALLER_USER_HANDLE);
+
+        // Still no notification should be posted at this point.
+        verify(getServices().notificationManager, never())
+                .notify(anyInt(), any(Notification.class));
+        // Apps shouldn't be suspended.
+        verifyNoMoreInteractions(getServices().ipackageManager);
+
+        // Pretend the warning time has passed.
+        dpms.mMockInjector.setSystemCurrentTimeMillis(PROFILE_OFF_WARNING_TIME + 10);
+        sendBroadcastWithUser(dpms, Intent.ACTION_DATE_CHANGED, CALLER_USER_HANDLE);
+
+        // Now the user should see a warning notification.
+        verify(getServices().notificationManager, times(1))
+                .notifyAsUser(any(), anyInt(), any(), any());
+        // Apps shouldn't be suspended yet.
+        verifyNoMoreInteractions(getServices().ipackageManager);
+        clearInvocations(getServices().notificationManager);
+
+        // Pretend the grace period has passed.
+        dpms.mMockInjector.setSystemCurrentTimeMillis(PROFILE_OFF_DEADLINE + 10);
+        sendBroadcastWithUser(dpms, Intent.ACTION_DATE_CHANGED, CALLER_USER_HANDLE);
+
+        // Now the user should see a notification about suspended apps.
+        verify(getServices().notificationManager, times(1))
+                .notifyAsUser(any(), anyInt(), any(), any());
+        // Verify that the apps are suspended.
+        verify(getServices().packageManagerInternal, times(1))
+                .setPackagesSuspendedByAdmin(anyInt(), any(), eq(true));
+    }
+
+    /**
      * Tests the case when the user turns the profile back on long before the deadline (> 1 day).
      */
     @Test
