@@ -24,7 +24,7 @@ interface ContextualSetupDefinition : Dumpable {
     val id: String
 
     /** The component to launch. */
-    val target: SetupTarget
+    val target: SetupTarget?
 
     /**
      * Unified flow: Emits true when the Setup Activity should be launched. The implementation

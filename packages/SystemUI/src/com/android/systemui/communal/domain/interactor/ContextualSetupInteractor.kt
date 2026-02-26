@@ -64,7 +64,11 @@ constructor(
                         combine(repository.setupState(definition.id), definition.isReady) {
                             state,
                             isReady ->
-                            if (state is SetupState.NotStarted && isReady) {
+                            if (
+                                state is SetupState.NotStarted &&
+                                    isReady &&
+                                    definition.target != null
+                            ) {
                                 definition
                             } else {
                                 null

@@ -16,7 +16,6 @@
 
 package com.android.systemui.communal.domain.definition
 
-import android.content.ComponentName
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -25,10 +24,10 @@ import com.android.systemui.communal.contextualSetupRepository
 import com.android.systemui.communal.data.repository.SetupState
 import com.android.systemui.communal.fake
 import com.android.systemui.communal.uprightChargingInteractor
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.testKosmos
-import com.android.systemui.util.kotlin.SimpleFlowDumper
 import com.google.common.truth.Truth.assertThat
 import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,15 +43,20 @@ class UprightChargingSetupDefinitionTest : SysuiTestCase() {
     private val commonPreconditions = kosmos.commonSetupPreconditions.fake
     private val uprightChargingInteractor = kosmos.uprightChargingInteractor.fake
     private val contextualSetupRepo = kosmos.contextualSetupRepository.fake
-    private val underTest =
-        UprightChargingSetupDefinition(
-            commonConditions = commonPreconditions,
-            uprightChargingInteractor = uprightChargingInteractor,
-            contextualSetupRepo = contextualSetupRepo,
-            flowDumper = SimpleFlowDumper(),
-            resources = context.resources,
-            target = SetupTarget.Activity(ComponentName("package", "class")),
-        )
+    private val Kosmos.underTest by
+        Kosmos.Fixture {
+            context.orCreateTestableResources.addOverride(
+                com.android.systemui.res.R.string
+                    .config_communalUprightChargingSetupActivityComponent,
+                "package/class",
+            )
+            UprightChargingSetupDefinition(
+                commonConditions = commonPreconditions,
+                uprightChargingInteractor = uprightChargingInteractor,
+                contextualSetupRepo = contextualSetupRepo,
+                resources = context.resources,
+            )
+        }
 
     private fun setTriggered(triggered: Boolean) {
         uprightChargingInteractor.setTriggered(triggered)
