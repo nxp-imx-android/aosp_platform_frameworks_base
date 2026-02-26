@@ -653,6 +653,27 @@ class DesktopTasksTransitionObserverTest : ShellTestCase() {
         verify(taskRepository, never()).setRememberedBoundsRatio(any(), any())
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun onTransitionReady_openTransition_unresizable_clearsRememberedBounds() {
+        val mockTransition = Mockito.mock(IBinder::class.java)
+        val packageName = "package"
+        val task =
+            createTaskInfo(1, WINDOWING_MODE_FREEFORM).apply {
+                baseActivity = ComponentName(packageName, "component.name")
+                isResizeable = false
+            }
+
+        transitionObserver.onTransitionReady(
+            transition = mockTransition,
+            info = createOpenChangeTransition(task),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(taskRepository).clearRememberedBoundsRatio(packageName)
+    }
+
     private fun createBackNavigationTransition(
         task: RunningTaskInfo?,
         type: Int = TRANSIT_TO_BACK,
