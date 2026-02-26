@@ -171,6 +171,66 @@ class SteppedCascadingTest : ShellTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
     @EnableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
+    fun cascade_maximized_staysAsIs() {
+        val prev = getDefaultBounds()
+        val prevBoundsList = listOf(prev)
+        val dest = Rect(FRAME)
+        val originalDest = Rect(dest)
+
+        cascadeWindowStepped(
+            FRAME,
+            dest,
+            prevBoundsList,
+            isRememberedBounds = false,
+            mContext.resources,
+        )
+
+        assertThat(dest).isEqualTo(originalDest)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    @EnableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
+    fun cascade_leftSnapped_staysAsIs() {
+        val prev = getDefaultBounds()
+        val prevBoundsList = listOf(prev)
+        val dest = Rect(FRAME.left, FRAME.top, FRAME.left + 500, FRAME.bottom)
+        val originalDest = Rect(dest)
+
+        cascadeWindowStepped(
+            FRAME,
+            dest,
+            prevBoundsList,
+            isRememberedBounds = false,
+            mContext.resources,
+        )
+
+        assertThat(dest).isEqualTo(originalDest)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    @EnableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
+    fun cascade_rightSnapped_staysAsIs() {
+        val prev = getDefaultBounds()
+        val prevBoundsList = listOf(prev)
+        val dest = Rect(FRAME.right - 500, FRAME.top, FRAME.right, FRAME.bottom)
+        val originalDest = Rect(dest)
+
+        cascadeWindowStepped(
+            FRAME,
+            dest,
+            prevBoundsList,
+            isRememberedBounds = false,
+            mContext.resources,
+        )
+
+        assertThat(dest).isEqualTo(originalDest)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    @EnableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
     fun cascade_rememberedBounds_collision_cascades() {
         val prev = getDefaultBounds()
         val prevBoundsList = listOf(prev)
