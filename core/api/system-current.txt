@@ -15689,7 +15689,7 @@ package android.service.personalcontext.insight {
     method @NonNull public java.util.Set<java.lang.String> getInsightTypes();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.service.personalcontext.insight.InsightFilter> CREATOR;
-    field public static final android.service.personalcontext.insight.InsightFilter REQUIRE_RENDER_TOKEN;
+    field @NonNull public static final android.service.personalcontext.insight.InsightFilter REQUIRE_RENDER_TOKEN;
   }
 
   public static final class InsightFilter.Builder {

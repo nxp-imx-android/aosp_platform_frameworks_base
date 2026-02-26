@@ -1055,6 +1055,7 @@ public class Surface implements Parcelable {
          * rate is acceptable.
          */
         @FlaggedApi(com.android.graphics.surfaceflinger.flags.Flags.FLAG_ARR_SETFRAMERATE_API)
+        @NonNull
         public static final FrameRateParams IGNORE =
                 new FrameRateParams.Builder().setDesiredRateRange(0f, Float.MAX_VALUE).build();
 

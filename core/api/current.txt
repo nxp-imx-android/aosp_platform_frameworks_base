@@ -54336,7 +54336,7 @@ package android.view {
     method @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") public float getDesiredMaxRate();
     method @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") public float getDesiredMinRate();
     method @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") public float getFixedSourceRate();
-    field @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") public static final android.view.Surface.FrameRateParams IGNORE;
+    field @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") @NonNull public static final android.view.Surface.FrameRateParams IGNORE;
   }
 
   @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") public static final class Surface.FrameRateParams.Builder {
