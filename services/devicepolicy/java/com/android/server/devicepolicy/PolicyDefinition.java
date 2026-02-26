@@ -392,6 +392,16 @@ public final class PolicyDefinition<V> {
                     new IntegerPolicySerializer()
             );
 
+    // TODO(b/482430427): Remove this policy definition and use PolicyDefinitionFactory instead.
+    // TODO(b/482394284): Change String to Package once the Package type is introduced.
+    static final PolicyDefinition<List<String>> CONTENT_RESTRICTION_APPS =
+            new PolicyDefinition<>(
+                    new NoArgsPolicyKey(DevicePolicyIdentifiers.CONTENT_RESTRICTION_APPS_POLICY),
+                    new PackageListUnion(),
+                    POLICY_FLAG_LOCAL_ONLY_POLICY,
+                    PolicyEnforcerCallbacks::setContentRestrictionApps,
+                    new ListOfStringPolicySerializer());
+
     private final PolicyKey mPolicyKey;
     private final ResolutionMechanism<V> mResolutionMechanism;
     private final int mPolicyFlags;

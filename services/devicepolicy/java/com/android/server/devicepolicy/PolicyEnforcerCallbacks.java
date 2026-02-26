@@ -61,10 +61,12 @@ import com.android.internal.infra.AndroidFuture;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.widget.LockPatternUtils;
+import com.android.server.contentrestriction.ContentRestrictionManagerInternal;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.utils.Slogf;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -517,6 +519,25 @@ public final class PolicyEnforcerCallbacks {
             Objects.requireNonNull(context);
             LockPatternUtils lockPatternUtils = new LockPatternUtils(context);
             lockPatternUtils.setDeviceOwnerInfo(info);
+            return AndroidFuture.completedFuture(true);
+        });
+    }
+
+    public static CompletableFuture<Boolean> setContentRestrictionApps(
+            @Nullable List<String> packages, @NonNull Context context, int userId,
+            @NonNull PolicyKey policyKey) {
+        if (!android.app.contentrestriction.flags.Flags.contentRestrictionApi()) {
+            return AndroidFuture.completedFuture(false);
+        }
+        return Binder.withCleanCallingIdentity(() -> {
+            ContentRestrictionManagerInternal crm =
+                    LocalServices.getService(ContentRestrictionManagerInternal.class);
+            if (crm != null) {
+                List<String> pkgList = packages == null
+                        ? Collections.emptyList()
+                        : new ArrayList<>(packages);
+                crm.setContentRestrictionPackages(userId, pkgList, "device_policy");
+            }
             return AndroidFuture.completedFuture(true);
         });
     }
