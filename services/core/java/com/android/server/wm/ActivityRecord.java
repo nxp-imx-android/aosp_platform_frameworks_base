@@ -8411,7 +8411,7 @@ final class ActivityRecord extends WindowToken {
                 ws.updateSurfacePositionNonOrganized();
             }
         }
-        updateReportedConfigurationAndSend();
+        ensureActivityConfiguration();
         return true;
     }
 
