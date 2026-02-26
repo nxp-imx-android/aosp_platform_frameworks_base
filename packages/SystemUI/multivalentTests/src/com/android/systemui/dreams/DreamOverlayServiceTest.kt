@@ -65,6 +65,7 @@ import com.android.systemui.complication.dagger.ComplicationComponent
 import com.android.systemui.dreams.complication.HideComplicationTouchHandler
 import com.android.systemui.dreams.complication.dagger.DreamComplicationComponent
 import com.android.systemui.dreams.dagger.DreamOverlayComponent
+import com.android.systemui.dreams.domain.interactor.dreamInteractor
 import com.android.systemui.dreams.touch.CommunalTouchHandler
 import com.android.systemui.dreams.touch.DismissTouchHandler
 import com.android.systemui.flags.andSceneContainer
@@ -276,6 +277,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
                     wakeGestureMonitor,
                     powerInteractor,
                     WINDOW_NAME,
+                    mock(),
+                    kosmos.dreamInteractor,
                 )
         }
     }
@@ -1639,8 +1642,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         // Capture the DismissTouchHandler, which is added for preview mode
         verify(mAmbientTouchComponentFactory)
             .create(any(), mTouchHandlersCaptor.capture(), any(), any())
-        val dismissTouchHandler = mTouchHandlersCaptor.firstValue
-            .filterIsInstance<DismissTouchHandler>().first()
+        val dismissTouchHandler =
+            mTouchHandlersCaptor.firstValue.filterIsInstance<DismissTouchHandler>().first()
 
         // Simulate the dream ending on its own before any touch interaction
         mService.onEndDream()
@@ -1681,9 +1684,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(
-                    FLAG_GLANCEABLE_HUB_V2,
-                )
+            return FlagsParameterization.allCombinationsOf(FLAG_GLANCEABLE_HUB_V2)
                 .andSceneContainer()
         }
     }
