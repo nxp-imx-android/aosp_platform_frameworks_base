@@ -26,6 +26,7 @@ import com.android.testing.wm.util.MockToken
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.pip.PipBoundsState
+import com.android.wm.shell.common.pip.PipDisplayLayoutState
 import com.android.wm.shell.desktopmode.ShellDesktopState
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -54,6 +55,8 @@ class PipDisplayDisconnectHandlerTest : ShellTestCase() {
     @Mock private lateinit var rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
     @Mock private lateinit var pipDisplayTransferHandler: PipDisplayTransferHandler
     @Mock private lateinit var mockMotionBoundsState: PipBoundsState.MotionBoundsState
+    @Mock private lateinit var pipDisplayLayoutState: PipDisplayLayoutState
+    @Mock private lateinit var pipDisplayReconnectHandler: PipDisplayReconnectHandler
 
     private val reparentDisplayInfo =
         DisplayAreaInfo(MockToken().token(), REPARENT_DISPLAY_ID, /* featureId= */ 0)
@@ -68,9 +71,11 @@ class PipDisplayDisconnectHandlerTest : ShellTestCase() {
                 pipScheduler,
                 pipTransitionState,
                 pipBoundsState,
+                pipDisplayLayoutState,
                 desktopState,
                 rootTaskDisplayAreaOrganizer,
                 pipDisplayTransferHandler,
+                pipDisplayReconnectHandler,
             )
         whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(REPARENT_DISPLAY_ID))
             .thenReturn(reparentDisplayInfo)
@@ -88,6 +93,7 @@ class PipDisplayDisconnectHandlerTest : ShellTestCase() {
     @Test
     fun onDisplayDisconnect_pipTaskOnDifferentDisplay_returnsEmptyWct() {
         createPipTaskInfo(displayId = 99) // Different from DISCONNECTED_DISPLAY_ID
+        whenever(pipDisplayLayoutState.displayId).thenReturn(99)
 
         val wct = handler.onDisplayDisconnect(DISCONNECTED_DISPLAY_ID, REPARENT_DISPLAY_ID)
 
@@ -97,6 +103,7 @@ class PipDisplayDisconnectHandlerTest : ShellTestCase() {
     @Test
     fun onDisplayDisconnect_desktopModeSupported_reparentsAndMovesPip() {
         val pipTask = createPipTaskInfo(displayId = DISCONNECTED_DISPLAY_ID)
+        whenever(pipDisplayLayoutState.displayId).thenReturn(DISCONNECTED_DISPLAY_ID)
         val currentBounds = Rect(0, 0, 100, 100)
 
         whenever(desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)).thenReturn(true)
@@ -118,7 +125,7 @@ class PipDisplayDisconnectHandlerTest : ShellTestCase() {
     @Test
     fun onDisplayDisconnect_noDesktopModeSupport_reparentsAndRemovesPip() {
         val pipTask = createPipTaskInfo(displayId = DISCONNECTED_DISPLAY_ID)
-
+        whenever(pipDisplayLayoutState.displayId).thenReturn(DISCONNECTED_DISPLAY_ID)
         whenever(desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)).thenReturn(false)
 
         val wct = handler.onDisplayDisconnect(DISCONNECTED_DISPLAY_ID, REPARENT_DISPLAY_ID)
