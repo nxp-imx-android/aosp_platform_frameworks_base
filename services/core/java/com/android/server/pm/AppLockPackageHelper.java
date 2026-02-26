@@ -244,14 +244,24 @@ public final class AppLockPackageHelper {
     }
 
     /**
-     * Checks if the package has App Lock enabled.
+     * Checks if the package has App Lock enabled. This can only be called by the system.
      *
      * @param snapshot    Computer snapshot
      * @param packageName Name of the package to set the App Lock enablement state for
      * @param userId      User Id to set the App Lock enablement state for
+     * @param callingUid  The Uid of the caller
      * @return {@code true} if App Lock is enabled for the package and user, {@code false} otherwise
      */
     public boolean isPackageAppLockEnabled(@NonNull Computer snapshot, String packageName,
+            int userId, int callingUid) {
+        if (!UserHandle.isSameApp(callingUid, Process.SYSTEM_UID)
+                && !UserHandle.isSameApp(callingUid, Process.ROOT_UID)) {
+            throw new SecurityException("isPackageAppLockEnabled can only be called by the system");
+        }
+        return isPackageAppLockEnabled(snapshot, packageName, userId);
+    }
+
+    private boolean isPackageAppLockEnabled(@NonNull Computer snapshot, String packageName,
             int userId) {
         PackageStateInternal packageState = snapshot.getPackageStateInternal(packageName);
         return packageState != null && packageState.getUserStateOrDefault(
