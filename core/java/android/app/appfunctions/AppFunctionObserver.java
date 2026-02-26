@@ -54,7 +54,7 @@ public interface AppFunctionObserver {
      *
      * <p><strong>Note:</strong> If packages are reported to have changed but are
      * not returned from {@link AppFunctionManager#searchAppFunctions}, it means that the packages
-     * have been uninstalled or no longer have functions..
+     * have been uninstalled or no longer have functions.
      *
      * @param changedPackageNames The names of the updated packages.
      */
