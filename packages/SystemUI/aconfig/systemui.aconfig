@@ -1945,6 +1945,13 @@ flag {
 }
 
 flag {
+    name: "transition_to_bouncer_while_switching_users"
+    namespace: "systemui"
+    description: "Always dismiss keyguard while switching users and await transition to bouncer"
+    bug: "433921220"
+}
+
+flag {
   name: "upright_charging_dreams_setup"
   namespace: "systemui"
   description: "Trigger a setup component based on the first time the user is upright + charging"

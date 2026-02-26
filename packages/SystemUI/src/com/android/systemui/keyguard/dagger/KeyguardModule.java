@@ -77,6 +77,7 @@ import com.android.systemui.log.SessionTracker;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.process.ProcessWrapper;
 import com.android.systemui.res.R;
+import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAware;
@@ -195,7 +196,8 @@ public interface KeyguardModule {
             Lazy<CommunalSceneInteractor> communalSceneInteractor,
             Lazy<CommunalSettingsInteractor> communalSettingsInteractor,
             WindowManagerOcclusionManager windowManagerOcclusionManager,
-            Optional<UiLatencyStatsManager> uiLatencyStatsManager) {
+            Optional<UiLatencyStatsManager> uiLatencyStatsManager,
+            Lazy<SceneInteractor> sceneInteractor) {
         return new KeyguardViewMediator(
                 context,
                 uiEventLogger,
@@ -249,7 +251,8 @@ public interface KeyguardModule {
                 communalSceneInteractor,
                 communalSettingsInteractor,
                 windowManagerOcclusionManager,
-                uiLatencyStatsManager);
+                uiLatencyStatsManager,
+                sceneInteractor);
     }
 
     /** */
