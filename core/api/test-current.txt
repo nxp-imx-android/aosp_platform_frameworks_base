@@ -1199,6 +1199,7 @@ package android.content.pm {
     field public static final long OVERRIDE_ENABLE_COMPAT_FAKE_FOCUS = 263259275L; // 0xfb1048bL
     field @FlaggedApi("com.android.window.flags.app_compat_properties_api") public static final long OVERRIDE_ENABLE_COMPAT_IGNORE_ORIENTATION_REQUEST_WHEN_LOOP_DETECTED = 273509367L; // 0x104d6bf7L
     field public static final long OVERRIDE_ENABLE_COMPAT_IGNORE_REQUESTED_ORIENTATION = 254631730L; // 0xf2d5f32L
+    field @FlaggedApi("com.android.window.flags.virtual_gamepad_developer_opt_out") public static final long OVERRIDE_ENABLE_VIRTUAL_GAMEPAD = 447093535L; // 0x1aa61b1fL
     field @FlaggedApi("com.android.window.flags.exclude_caption_insets_opt_out_api") public static final long OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS = 388014743L; // 0x1720a297L
     field public static final long OVERRIDE_LANDSCAPE_ORIENTATION_TO_REVERSE_LANDSCAPE = 266124927L; // 0xfdcbe7fL
     field public static final long OVERRIDE_MIN_ASPECT_RATIO = 174042980L; // 0xa5faf64L

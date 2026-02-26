@@ -124,6 +124,14 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "virtual_gamepad_developer_opt_out"
+    is_exported: true
+    description: "Whether the WindowManager.PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE property is public."
+    bug: "458739902"
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "device_engagement_mode"
     description: "Track and report device engagement modes, indicating the device's current interaction capabilities (e.g. audio-only)."
     bug: "423990404"
