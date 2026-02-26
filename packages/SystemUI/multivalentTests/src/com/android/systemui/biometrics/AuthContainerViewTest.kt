@@ -31,6 +31,7 @@ import android.os.IBinder
 import android.os.UserManager
 import android.os.userManager
 import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import android.testing.ViewUtils
@@ -464,6 +465,27 @@ open class AuthContainerViewTest : SysuiTestCase() {
             assertThat(container.hasCredentialPasswordView()).isTrue()
         }
         assertThat(container.hasBiometricPrompt()).isFalse()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LARGE_SCREEN_BP)
+    fun testWearDeviceUsesLegacyCredentialView() {
+        whenever(packageManager.hasSystemFeature(
+            android.content.pm.PackageManager.FEATURE_WATCH)
+        ).thenReturn(true)
+
+        whenever(userManager.getCredentialOwnerProfile(anyInt())).thenReturn(20)
+        whenever(lockPatternUtils.getCredentialTypeForUser(eq(20)))
+            .thenReturn(CREDENTIAL_TYPE_PATTERN)
+
+        // initializeFingerprintContainer handles boilerplate of creating the Config object, but we
+        // override authenticators with DEVICE_CREDENTIAL (non biometric) to end up with
+        // CREDENTIAL_TYPE_PATTERN
+        val container = initializeFingerprintContainer(
+            authenticators = BiometricManager.Authenticators.DEVICE_CREDENTIAL
+        )
+
+        assertThat(container.hasCredentialPatternView()).isTrue()
     }
 
     @Test
