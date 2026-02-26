@@ -43,20 +43,20 @@ class SplitTransitionAnimationTests {
     @Test
     fun testCalculateExitBounds() {
         // Screen: 200x200
-        val leftStage = Rect(0, 0, 90, 200)
-        val rightStage = Rect(110, 0, 200, 200)
-        val topStage = Rect(0, 0, 200, 90)
-        val bottomStage = Rect(0, 110, 200, 200)
+        val leftStage = Rect(0, 0, 100, 200)
+        val rightStage = Rect(100, 0, 200, 200)
+        val topStage = Rect(0, 0, 200, 100)
+        val bottomStage = Rect(0, 100, 200, 200)
         val fullScreen = Rect(0, 0, 200, 200)
 
         data class Scenario(val closing: Rect, val expanding: Rect, val expected: Rect)
 
         val scenarios =
             listOf(
-                Scenario(leftStage, rightStage, Rect(-20, 0, -20, 200)),
-                Scenario(rightStage, leftStage, Rect(220, 0, 220, 200)),
-                Scenario(topStage, bottomStage, Rect(0, -20, 200, -20)),
-                Scenario(bottomStage, topStage, Rect(0, 220, 200, 220)),
+                Scenario(leftStage, rightStage, Rect(0, 0, 0, 200)),
+                Scenario(rightStage, leftStage, Rect(200, 0, 200, 200)),
+                Scenario(topStage, bottomStage, Rect(0, 0, 200, 0)),
+                Scenario(bottomStage, topStage, Rect(0, 200, 200, 200)),
             )
 
         scenarios.forEach { scenario ->

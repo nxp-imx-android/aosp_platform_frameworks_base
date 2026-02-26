@@ -38,9 +38,7 @@ class SplitTransitionAnimations {
     fun buildDismissAnimation(
         change: TransitionInfo.Change,
         t: SurfaceControl.Transaction,
-        topOrLeftBounds: Rect,
-        bottomOrRightBounds: Rect,
-        cornerRadius: Float,
+        stageCoordinator: StageCoordinator,
         onFinish: Consumer<Animator>,
     ): Animator? {
 
@@ -51,13 +49,10 @@ class SplitTransitionAnimations {
         val expanding = change.mode == TRANSIT_CHANGE && change.snapshot != null
         val closing = isClosingMode(change.mode)
 
-        if (!expanding && !closing) {
-            return null
-        }
-
-        t.setCornerRadius(change.leash, cornerRadius)
-
         if (closing) {
+            val topOrLeftBounds = Rect()
+            val bottomOrRightBounds = Rect()
+            stageCoordinator.getStageBounds(topOrLeftBounds, bottomOrRightBounds)
             val otherBounds =
                 if (change.startAbsBounds == topOrLeftBounds) bottomOrRightBounds
                 else topOrLeftBounds
@@ -69,7 +64,7 @@ class SplitTransitionAnimations {
                 calculateExitBounds(change.startAbsBounds, otherBounds, change.endAbsBounds),
                 onFinish,
             )
-        } else {
+        } else if (expanding) {
             return buildSizeChangeAnimation(
                 change,
                 t,
@@ -78,13 +73,14 @@ class SplitTransitionAnimations {
                 onFinish,
             )
         }
+
+        return null
     }
 
     /**
      * Calculates the "exit bounds" for a closing window in a split-screen dismiss animation. These
      * bounds represent the final size and position of the closing window as it animates off-screen,
-     * shrinking towards the edge of the expanding window. In order to account for the divider
-     * width, the end bounds are shifted outside of the main view.
+     * shrinking towards the edge of the expanding window.
      *
      * @param startClosing The starting bounds of the window that is closing.
      * @param startExpanding The starting bounds of the window that is expanding.
@@ -92,24 +88,20 @@ class SplitTransitionAnimations {
      * @return The calculated bounds for the closing window at the end of the animation.
      */
     fun calculateExitBounds(startClosing: Rect, startExpanding: Rect, endExpanding: Rect): Rect {
-        val result = Rect(startClosing)
+        val result: Rect = Rect(startClosing)
 
         // left/right
         if (endExpanding.left < startExpanding.left) {
             result.right = result.left
-            result.offset(startClosing.right - startExpanding.left, 0)
         } else if (endExpanding.right > startExpanding.right) {
             result.left = result.right
-            result.offset(startClosing.left - startExpanding.right, 0)
         }
 
         // up/down
         if (endExpanding.top < startExpanding.top) {
             result.bottom = result.top
-            result.offset(0, startClosing.bottom - startExpanding.top)
         } else if (endExpanding.bottom > startExpanding.bottom) {
             result.top = result.bottom
-            result.offset(0, startClosing.top - startExpanding.bottom)
         }
 
         return result
