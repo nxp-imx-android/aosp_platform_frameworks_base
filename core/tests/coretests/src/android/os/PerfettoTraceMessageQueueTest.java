@@ -124,10 +124,8 @@ public class PerfettoTraceMessageQueueTest {
     public void testMessageQueue() throws Exception {
         // Assert we initialize the correct API version.
         if (mPerfettoV3FlagWhenRunning) {
-            assertThat(PerfettoTrace.MQ_CATEGORY.isRegistered()).isFalse();
             assertThat(PerfettoCategories.MQ_CATEGORY.isRegistered()).isTrue();
         } else {
-            assertThat(PerfettoTrace.MQ_CATEGORY.isRegistered()).isTrue();
             assertThat(PerfettoCategories.MQ_CATEGORY.isRegistered()).isFalse();
         }
 

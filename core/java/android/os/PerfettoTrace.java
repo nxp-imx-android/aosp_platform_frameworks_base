@@ -69,7 +69,6 @@ public final class PerfettoTrace {
      */
     private static final AtomicInteger sFlowEventId = new AtomicInteger();
 
-    public static final PerfettoTrace.Category MQ_CATEGORY = new PerfettoTrace.Category("mq");
     public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace
             .Category PROC_STATE_CATEGORY = getProcStateCategory();
 
@@ -81,7 +80,6 @@ public final class PerfettoTrace {
 
     public static final PerfettoTrace.Category GFX_CATEGORY = new PerfettoTrace.Category("gfx");
 
-    // The same as a previous MQ_CATEGORY, but to be used with a V3 API.
     public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
             GFX_CATEGORY_V3 = getGfxCategoryV3();
 
@@ -142,7 +140,7 @@ public final class PerfettoTrace {
     }
 
     /**
-     * This is temporary wrapper to check if either new or old APIs "mq" category is enabled, should
+     * This is temporary wrapper to check if "mq" category is enabled, should
      * be called only from the MessageQueue.java and Looper.java.
      */
     // Tracing currently completely disabled under Ravenwood, just return false.
@@ -497,7 +495,6 @@ public final class PerfettoTrace {
             CC_CATEGORY_V3.register();
             BIG_LOCKS_V3.register();
         } else {
-            MQ_CATEGORY.register();
             GFX_CATEGORY.register();
             JOB_SCHEDULER_CATEGORY.register();
             CC_CATEGORY.register();
