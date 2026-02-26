@@ -41,6 +41,7 @@ public class PolicyHandlerFactory {
                         /* trueValue= */ PolicyIdentifier.SCREEN_CAPTURE_DISALLOWED,
                         /* falseValue= */ PolicyIdentifier.SCREEN_CAPTURE_ALLOWED));
         handlers.add(new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME));
+        handlers.add(new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME_ZONE));
         handlers.add(new PolicyHandler<String>(PolicyIdentifier.LOCKSCREEN_MESSAGE));
 
         // go/keep-sorted end

@@ -122,6 +122,28 @@ public class PolicyDefinitionFactory {
                             .build();
                 });
         addFactory(
+                PolicyIdentifier.AUTO_TIME_ZONE,
+                builder -> {
+                    return builder
+                            // Override the name so it matches the name previously used to store
+                            // this policy inside DPE. This way no migration is needed.
+                            .setKey(
+                                    new NoArgsPolicyKey(
+                                            DevicePolicyIdentifiers.AUTO_TIMEZONE_POLICY))
+                            // TODO(b/464477084): Add a resolution mechanism for AUTO_TIME_ZONE to
+                            // include most restrictive resolution approach.
+                            .setResolutionMechanism(
+                                    new TopPriority<>(
+                                            List.of(
+                                                    EnforcingAdmin.getRoleAuthorityOf(
+                                                            ROLE_SYSTEM_SUPERVISION),
+                                                    EnforcingAdmin.getRoleAuthorityOf(
+                                                            ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER),
+                                                    EnforcingAdmin.DPC_AUTHORITY)))
+                            .setEnforcerCallback(PolicyEnforcerCallbacks::setAutoTimeZonePolicy)
+                            .build();
+                });
+        addFactory(
                 PolicyIdentifier.LOCKSCREEN_MESSAGE,
                 builder -> {
                     return builder

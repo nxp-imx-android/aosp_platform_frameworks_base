@@ -632,3 +632,11 @@ flag {
   description: "When ACTION_DATE_CHANGED or ACTION_TIME_CHANGED is received, iterates through all managed profiles on the device to determine if personal apps should be suspended, instead of relying on the main user setting."
   bug: "470176722"
 }
+
+flag {
+  name: "policy_streamlining_auto_time_zone"
+  namespace: "enterprise"
+  description: "Redirect set/getAutoTimeZoneEnabled to the generic set/getPolicy APIs."
+  bug: "434919316"
+  is_exported: true
+}

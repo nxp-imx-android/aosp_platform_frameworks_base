@@ -18,7 +18,6 @@ package com.android.server.devicepolicy;
 
 import static com.android.server.devicepolicy.PolicyDefinition.APP_FUNCTIONS;
 import static com.android.server.devicepolicy.PolicyDefinition.AUDIT_LOGGING;
-import static com.android.server.devicepolicy.PolicyDefinition.AUTO_TIME_ZONE;
 import static com.android.server.devicepolicy.PolicyDefinition.COMMON_CRITERIA_MODE;
 import static com.android.server.devicepolicy.PolicyDefinition.CONTENT_PROTECTION;
 import static com.android.server.devicepolicy.PolicyDefinition.CROSS_PROFILE_WIDGET_PROVIDER;
@@ -142,7 +141,6 @@ public class PolicyDefinitionMap {
     private static Map<String, PolicyDefinition<?>> loadPolicyDefinitions() {
         Map<String, PolicyDefinition<?>> policyDefinitions = new HashMap<>();
 
-        policyDefinitions.put(DevicePolicyIdentifiers.AUTO_TIMEZONE_POLICY, AUTO_TIME_ZONE);
         policyDefinitions.put(
                 DevicePolicyIdentifiers.PERMISSION_GRANT_POLICY, GENERIC_PERMISSION_GRANT);
         policyDefinitions.put(DevicePolicyIdentifiers.SECURITY_LOGGING_POLICY, SECURITY_LOGGING);
