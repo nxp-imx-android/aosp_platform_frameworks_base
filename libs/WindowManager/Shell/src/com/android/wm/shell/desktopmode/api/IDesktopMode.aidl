@@ -70,6 +70,11 @@ interface IDesktopMode {
             in DesktopTaskToFrontReason toFrontReason);
 
     /**
+     * Minimize task with the given id.
+     */
+    oneway void minimizeDesktopApp(int taskId);
+
+    /**
     * Move or launch a given task {@code taskId} to fullscreen.
     *
     * <p> Note: In non-desktop by default environment this will mean to exit desktop mode. This API

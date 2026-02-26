@@ -7165,6 +7165,15 @@ class DesktopTasksController(
             }
         }
 
+        override fun minimizeDesktopApp(taskId: Int) {
+            executeRemoteCallWithTaskPermission(controller, "minimizeDesktopApp") { c ->
+                val taskInfo = c.shellTaskOrganizer.getRunningTaskInfo(taskId)
+                if (taskInfo != null) {
+                    c.minimizeTask(taskInfo, MinimizeReason.TASKBAR_ICON_TAP)
+                }
+            }
+        }
+
         override fun moveToFullscreen(
             taskId: Int,
             transitionSource: DesktopModeTransitionSource,

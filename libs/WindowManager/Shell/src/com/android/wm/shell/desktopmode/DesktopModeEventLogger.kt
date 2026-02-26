@@ -664,6 +664,10 @@ class DesktopModeEventLogger {
                 FrameworkStatsLog
                     .DESKTOP_MODE_SESSION_TASK_UPDATE__MINIMIZE_REASON__MINIMIZE_MULTI_ACTIVITY_PIP
             ),
+            TASKBAR_ICON_TAP(
+                FrameworkStatsLog
+                    .DESKTOP_MODE_SESSION_TASK_UPDATE__MINIMIZE_REASON__MINIMIZE_TASKBAR_ICON_TAP
+            ),
         }
 
         // Default value used when the task was not unminimized.
