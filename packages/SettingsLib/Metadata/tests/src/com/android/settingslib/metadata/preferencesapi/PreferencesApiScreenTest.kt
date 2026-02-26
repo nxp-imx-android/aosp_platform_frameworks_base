@@ -32,6 +32,7 @@ import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.Companion.ApiPreconditionsMapper.INVALID_PREFERENCE
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.Companion.ApiPreconditionsMapper.MISSING_PERMISSION
 import com.android.settingslib.metadata.preferencesapi.Utils.EXCEPTION_MESSAGE_NO_PARAMETER_DEFINED
+import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageAlreadyDefined
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleParametersDefined
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
@@ -1439,6 +1440,122 @@ class PreferencesApiScreenTest {
     }
 
     @Test
+    fun createPreferencesApiScreenPreferenceWithSetter_withNoPreconditionsInWarning_fails() {
+        var preferenceValue = false
+        val preferenceKey = "ApiPreference"
+
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
+                    ) {
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            set {
+                                warning {
+                                    warn(R.string.warning_message1)
+                                }
+
+                                execute { value -> preferenceValue = value }
+                            }
+                        }
+                    }
+                }
+            }
+
+        assertThat(exception.message)
+            .isEqualTo("Exactly one of warning 'preconditions' or 'valuePreconditions' block is required")
+    }
+
+    @Test
+    fun createPreferencesApiScreenPreferenceWithSetter_withNoWarnInWarning_fails() {
+        var preferenceValue = false
+        val preferenceKey = "ApiPreference"
+
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
+                    ) {
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            set {
+                                warning {
+                                    preconditions(R.string.warning_preconditions_description1) {
+                                        Custom(R.string.preconditions_custom_message)
+                                    }
+                                }
+
+                                execute { value -> preferenceValue = value }
+                            }
+                        }
+                    }
+                }
+            }
+
+        assertThat(exception.message)
+            .isEqualTo("warning 'warn' block is required")
+    }
+
+    @Test
+    fun createPreferencesApiScreenPreferenceWithSetter_withMultiplePreconditionsInWarning_fails() {
+        var preferenceValue = false
+        val preferenceKey = "ApiPreference"
+
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
+                    ) {
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            set {
+                                warning {
+                                    preconditions(R.string.warning_preconditions_description1) {
+                                        Custom(R.string.preconditions_custom_message)
+                                    }
+                                    valuePreconditions(R.string.warning_preconditions_description1) { value ->
+                                        Allowed
+                                    }
+                                    warn(R.string.warning_message1)
+                                }
+
+                                execute { value -> preferenceValue = value }
+                            }
+                        }
+                    }
+                }
+            }
+
+        assertThat(exception.message)
+            .isEqualTo(getExceptionMessageAlreadyDefined("preconditions or valuePreconditions"))
+    }
+
+    @Test
     fun createPreferencesApiScreenPreferenceWithSetter_wrongOrderExecuteBeforeValuePreconditions_fails() {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
@@ -1480,6 +1597,52 @@ class PreferencesApiScreenTest {
             }
 
         assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("valuePreconditions"))
+    }
+
+    @Test
+    fun createPreferencesApiScreenPreferenceWithSetter_wrongOrderExecuteBeforeWarning_fails() {
+        var preferenceValue = false
+        val preferenceKey = "ApiPreference"
+
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
+                    ) {
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            set {
+                                permissions(Manifest.permission.ACCESS_FINE_LOCATION)
+
+                                preconditions(R.string.preconditions_description1) {
+                                    HardwareUnsupported(
+                                        R.string.preconditions_hardware_unsupported_message
+                                    )
+                                }
+
+                                execute { value -> preferenceValue = value }
+
+                                warning {
+                                    preconditions(R.string.warning_preconditions_description1) {
+                                        Custom(R.string.preconditions_custom_message)
+                                    }
+                                    warn(R.string.warning_message1)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        assertThat(exception.message).isEqualTo(getExceptionMessageWrongOrder("warning"))
     }
 
     @Test
@@ -1597,6 +1760,52 @@ class PreferencesApiScreenTest {
 
         assertThat(exception.message)
             .isEqualTo(getExceptionMessageMultipleDefines("valuePreconditions"))
+    }
+
+    @Test
+    fun createPreferencesApiScreenPreferenceWithSetter_withMultipleWarnings_fails() {
+        var preferenceValue = false
+        val preferenceKey = "ApiPreference"
+
+        val exception =
+            assertThrows(IllegalStateException::class.java) {
+                object :
+                    PreferencesApiScreen(
+                        key = SCREEN_KEY,
+                        topLevelSettingsCategory = Category.SYSTEM,
+                        fragment = PreferenceFragment::class,
+                        purpose = R.string.preference_screen_purpose,
+                    ) {
+                    init {
+                        preference(
+                            key = preferenceKey,
+                            purpose = R.string.preference_purpose1,
+                            type = AnyBoolean,
+                        ) {
+                            set {
+                                warning {
+                                    preconditions(R.string.warning_preconditions_description1) {
+                                        Custom(R.string.preconditions_custom_message)
+                                    }
+                                    warn(R.string.warning_message1)
+                                }
+
+                                warning {
+                                    valuePreconditions(R.string.warning_preconditions_description1) { value ->
+                                        Allowed
+                                    }
+                                    warn(R.string.warning_message1)
+                                }
+
+                                execute { value -> preferenceValue = value }
+                            }
+                        }
+                    }
+                }
+            }
+
+        assertThat(exception.message)
+            .isEqualTo(getExceptionMessageMultipleDefines("warning"))
     }
 
     @Test
