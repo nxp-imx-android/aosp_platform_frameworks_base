@@ -84,6 +84,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
 
         whenever(ambientState.largeScreenShadeInterpolator).thenReturn(largeScreenShadeInterpolator)
         whenever(ambientState.isSmallScreen).thenReturn(true)
+        whenever(ambientState.isPlaceholderFading).thenReturn(false)
 
         shelf.bind(ambientState, hostLayout, roundnessManager)
         shelf.layout(/* left */ 0, /* top */ 0, /* right */ 30, /* bottom */ 5)
@@ -615,6 +616,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
     }
 
     @Test
+    @DisableSceneContainer
     fun updateState_expansionChanging_shelfTransparent() {
         updateState_expansionChanging_shelfAlphaUpdated(
             expansionFraction = 0.25f,
@@ -623,6 +625,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
     }
 
     @Test
+    @DisableSceneContainer
     fun updateState_expansionChangingWhileBouncerInTransit_shelfTransparent() {
         whenever(ambientState.isBouncerInTransit).thenReturn(true)
 
@@ -633,6 +636,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
     }
 
     @Test
+    @DisableSceneContainer
     fun updateState_expansionChanging_shelfAlphaUpdated() {
         updateState_expansionChanging_shelfAlphaUpdated(
             expansionFraction = 0.6f,
@@ -641,6 +645,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
     }
 
     @Test
+    @DisableSceneContainer
     fun updateState_largeScreen_expansionChanging_shelfAlphaUpdated_largeScreenValue() {
         val expansionFraction = 0.6f
         whenever(ambientState.isSmallScreen).thenReturn(false)
@@ -654,6 +659,7 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
     }
 
     @Test
+    @DisableSceneContainer
     fun updateState_expansionChangingWhileBouncerInTransit_shelfAlphaUpdated() {
         whenever(ambientState.isBouncerInTransit).thenReturn(true)
 
@@ -664,12 +670,41 @@ open class NotificationShelfTest(flags: FlagsParameterization) : SysuiTestCase()
     }
 
     @Test
+    @DisableSceneContainer
     fun updateState_largeScreen_expansionChangingWhileBouncerInTransit_bouncerInterpolatorUsed() {
         whenever(ambientState.isBouncerInTransit).thenReturn(true)
 
         updateState_expansionChanging_shelfAlphaUpdated(
             expansionFraction = 0.95f,
             expectedAlpha = aboutToShowBouncerProgress(0.95f),
+        )
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun updateState_placeholderAlpha_shelfAlphaFollowsPlaceholder() {
+        whenever(ambientState.isPlaceholderFading).thenReturn(true)
+        whenever(ambientState.placeholderAlpha).thenReturn(0.321f)
+
+        updateState_expansionChanging_shelfAlphaUpdated(
+            expansionFraction = 0.6f,
+            expectedAlpha = 0.321f,
+        )
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun updateState_largeScreen_placeholderAlpha_shelfAlphaFollowsPlaceholder() {
+        val expansionFraction = 0.6f
+        whenever(ambientState.isSmallScreen).thenReturn(false)
+        whenever(largeScreenShadeInterpolator.getNotificationContentAlpha(expansionFraction))
+            .thenReturn(0.123f)
+        whenever(ambientState.isPlaceholderFading).thenReturn(true)
+        whenever(ambientState.placeholderAlpha).thenReturn(0.321f)
+
+        updateState_expansionChanging_shelfAlphaUpdated(
+            expansionFraction = expansionFraction,
+            expectedAlpha = 0.321f,
         )
     }
 

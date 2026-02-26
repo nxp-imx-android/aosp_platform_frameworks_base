@@ -1271,7 +1271,8 @@ public class NotificationStackScrollLayout
 
     @Override
     public void setPlaceholderAlpha(float alpha) {
-        mController.setMaxAlphaFromPlaceholder(alpha);
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        mAmbientState.setPlaceholderAlpha(alpha);
     }
 
     @Override

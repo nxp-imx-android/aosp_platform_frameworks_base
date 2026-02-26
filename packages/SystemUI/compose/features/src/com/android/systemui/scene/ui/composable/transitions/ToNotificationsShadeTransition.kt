@@ -21,6 +21,7 @@ import com.android.compose.animation.scene.TransitionBuilder
 import com.android.compose.animation.scene.reveal.ContainerRevealHaptics
 import com.android.compose.animation.scene.reveal.verticalContainerReveal
 import com.android.mechanics.behavior.VerticalExpandContainerSpec
+import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.notifications.ui.composable.NotificationsShade
 import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.scene.shared.model.Overlays
@@ -51,7 +52,10 @@ fun TransitionBuilder.toNotificationsShadeTransition(
     verticalContainerReveal(NotificationsShade.Elements.Panel, shadeExpansionMotion, revealHaptics)
 
     fractionRange(end = .5f) { fade(OverlayShade.Elements.Scrim) }
-    fractionRange(start = .5f) { fade(NotificationsShade.Elements.StatusBar) }
+    fractionRange(start = .5f) {
+        fade(NotificationsShade.Elements.StatusBar)
+        fade(Notifications.Elements.StackPlaceholder)
+    }
 }
 
 private val DefaultDuration = 300.milliseconds

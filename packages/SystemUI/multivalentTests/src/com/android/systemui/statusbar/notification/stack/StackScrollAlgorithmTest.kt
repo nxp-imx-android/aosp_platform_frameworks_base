@@ -952,6 +952,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun resetViewStates_expansionChanging_notificationBecomesTransparent() {
         whenever(mStatusBarKeyguardViewManager.isPrimaryBouncerInTransit).thenReturn(false)
         resetViewStates_expansionChanging_notificationAlphaUpdated(
@@ -961,6 +962,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun resetViewStates_expansionChangingWhileBouncerInTransit_viewBecomesTransparent() {
         whenever(mStatusBarKeyguardViewManager.isPrimaryBouncerInTransit).thenReturn(true)
         resetViewStates_expansionChanging_notificationAlphaUpdated(
@@ -970,6 +972,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun resetViewStates_expansionChanging_notificationAlphaUpdated() {
         whenever(mStatusBarKeyguardViewManager.isPrimaryBouncerInTransit).thenReturn(false)
         resetViewStates_expansionChanging_notificationAlphaUpdated(
@@ -979,6 +982,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun resetViewStates_largeScreen_expansionChanging_alphaUpdated_largeScreenValue() {
         val expansionFraction = 0.6f
         val surfaceAlpha = 123f
@@ -994,6 +998,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun expansionChanging_largeScreen_bouncerInTransit_alphaUpdated_bouncerValues() {
         ambientState.isSmallScreen = false
         whenever(mStatusBarKeyguardViewManager.isPrimaryBouncerInTransit).thenReturn(true)
@@ -1057,6 +1062,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
+    @DisableSceneContainer
     fun resetViewStates_shadeCollapsed_emptyShadeViewBecomesTransparent() {
         ambientState.expansionFraction = 0f
         stackScrollAlgorithm.initView(context)
@@ -2068,6 +2074,36 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         assertThat(notificationRow.viewState.alpha)
             .isEqualTo(ambientState.lockscreenStackFadeInProgress)
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_placeholderFading_alphaFollowsPlaceholder() {
+        // Given: STL has set an alpha on the StackPlaceholder, while shade expansion is changing
+        ambientState.placeholderAlpha = 0.5f
+
+        // When resetViewStates is called, notification alpha follows the placeholder
+        resetViewStates_expansionChanging_notificationAlphaUpdated(
+            expansionFraction = 0.25f,
+            expectedAlpha = ambientState.placeholderAlpha,
+        )
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_placeholderFading_hunRemainsFullAlpha() {
+        // Given: STL has set an alpha on the StackPlaceholder, while shade expansion is changing,
+        // and notificationRow is the currently-tracked HUN
+        ambientState.placeholderAlpha = 0.5f
+        whenever(notificationRow.isAboveShelf).thenReturn(true)
+        ambientState.isShadeExpanded = true
+        ambientState.trackedHeadsUpRow = notificationRow
+
+        // When resetViewStates is called, HUN alpha remains fully opaque
+        resetViewStates_expansionChanging_notificationAlphaUpdated(
+            expansionFraction = 0.25f,
+            expectedAlpha = 1.0f, // hun should be fully opaque
+        )
     }
 
     private fun createHunViewMock(

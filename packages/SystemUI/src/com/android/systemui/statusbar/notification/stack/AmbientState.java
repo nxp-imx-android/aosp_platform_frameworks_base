@@ -101,6 +101,7 @@ public class AmbientState implements Dumpable {
     private float mHideAmount;
     private float mPulseHeight = MAX_PULSE_HEIGHT;
     private boolean mApplyHunTranslation;
+    private float mPlaceholderAlpha = 1.0f;
     private boolean mCurrentSceneLockscreen;
 
     /**
@@ -898,12 +899,46 @@ public class AmbientState implements Dumpable {
         return mLargeScreenShadeInterpolator;
     }
 
+    /**
+     * Store the alpha value set by STL for the StackPlaceholder element, which is determined based
+     * on current transition state. We keep track of this value in order to apply it on a row-by-row
+     * basis, as a tracked heads up row {@link #getTrackedHeadsUpRow()} may need to remain visible
+     * while the rest of the placeholder fades.
+     *
+     * @param alpha value as set from STL transition.
+     */
+    public void setPlaceholderAlpha(float alpha) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        mPlaceholderAlpha = alpha;
+    }
+
+    /**
+     * The current alpha for the StackPlaceholder element as specified for STL transitions.
+     * @return current placeholder alpha.
+     */
+    public float getPlaceholderAlpha() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0;
+        return mPlaceholderAlpha;
+    }
+
+    /**
+     * Whether the notifications are currently being faded or hidden via transitions involving the
+     * StackPlaceholder.
+     *
+     * @return whether the current alpha via StackPlaceholder is < 1.0.
+     */
+    public boolean isPlaceholderFading() {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return false;
+        return mPlaceholderAlpha < 1.0f;
+    }
+
     @Override
     public void dump(PrintWriter pw, String[] args) {
         if (SceneContainerFlag.isEnabled()) {
             pw.println("mStackScrollTop=" + mStackScrollTop);
             pw.println("mStackBounds=" + mStackBounds);
             pw.println("mHeadsUpTop=" + mHeadsUpTop);
+            pw.println("mPlaceholderAlpha=" + mPlaceholderAlpha);
         } else {
             // fields which will be removed with SceneContainer
             pw.println("mTopPadding=" + mTopPadding);

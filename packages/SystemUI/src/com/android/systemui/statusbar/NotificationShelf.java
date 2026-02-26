@@ -224,7 +224,10 @@ public class NotificationShelf extends ActivatableNotificationView {
             viewState.setZTranslation(ambientState.getBaseZHeight());
             viewState.clipTopAmount = 0;
 
-            if (ambientState.isExpansionChanging() && !ambientState.isOnKeyguard()) {
+            if (SceneContainerFlag.isEnabled() && ambientState.isPlaceholderFading()) {
+                viewState.setAlpha(ambientState.getPlaceholderAlpha(), "placeholder transition");
+            } else if (!SceneContainerFlag.isEnabled() && ambientState.isExpansionChanging()
+                    && !ambientState.isOnKeyguard()) {
                 float expansion = ambientState.getExpansionFraction();
                 if (ambientState.isBouncerInTransit()) {
                     viewState.setAlpha(aboutToShowBouncerProgress(expansion), "shelf bouncer");
