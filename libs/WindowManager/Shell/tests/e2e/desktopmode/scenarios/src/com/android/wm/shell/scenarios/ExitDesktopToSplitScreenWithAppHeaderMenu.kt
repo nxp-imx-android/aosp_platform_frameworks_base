@@ -56,7 +56,7 @@ abstract class ExitDesktopToSplitScreenWithAppHeaderMenu(
 
     @Test
     open fun exitDesktopToSplitScreen() {
-        testApp.exitDesktopModeToSplitScreenWithAppHeader(wmHelper)
+        testApp.exitDesktopModeToSplitScreenWithDesktopLayoutMenu(wmHelper, device)
         // Open allApps via keyboard shortcut
         keyEventHelper.press(KEYCODE_META_RIGHT)
         tapl.allApps.getAppIcon(calculatorApp.appName).launch(calculatorApp.packageName)

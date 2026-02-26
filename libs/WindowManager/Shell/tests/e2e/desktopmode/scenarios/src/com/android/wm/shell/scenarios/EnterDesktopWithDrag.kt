@@ -33,7 +33,7 @@ constructor(
     @Before
     fun setup() {
         testApp.launchViaIntent(wmHelper)
-        testApp.exitDesktopModeToFullScreenIfNeeded(wmHelper)
+        testApp.exitDesktopModeToFullScreenIfNeeded(wmHelper, device)
     }
 
     @Test

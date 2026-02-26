@@ -73,7 +73,7 @@ abstract class ToggleFullscreenViaFullscreenKey : TestScenarioBase() {
     @Test
     open fun moveSplitScreenToFullscreen() {
         // Enter split screen mode.
-        simpleApp.exitDesktopModeToSplitScreenWithAppHeader(wmHelper)
+        simpleApp.exitDesktopModeToSplitScreenWithDesktopLayoutMenu(wmHelper, device)
         tapl.launchedAppState.taskbar
             .getAppIcon(immersiveAppHelper.appName)
             .launch(immersiveApp.packageName)

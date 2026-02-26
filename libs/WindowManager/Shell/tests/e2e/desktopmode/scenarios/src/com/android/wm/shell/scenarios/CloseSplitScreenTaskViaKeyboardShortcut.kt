@@ -51,7 +51,7 @@ abstract class CloseSplitScreenTaskViaKeyboardShortcut : TestScenarioBase() {
         primaryApp.enterDesktopMode(wmHelper, device)
 
         // Enter split screen
-        primaryApp.exitDesktopModeToSplitScreenWithAppHeader(wmHelper)
+        primaryApp.exitDesktopModeToSplitScreenWithDesktopLayoutMenu(wmHelper, device)
         // Open allApps via keyboard shortcut
         keyEventHelper.press(KEYCODE_META_RIGHT)
         tapl.allApps.getAppIcon(immersiveAppHelper.appName).launch(immersiveAppHelper.packageName)
