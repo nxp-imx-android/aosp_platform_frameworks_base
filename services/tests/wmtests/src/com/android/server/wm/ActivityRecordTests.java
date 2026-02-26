@@ -2610,7 +2610,6 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_CLEAR_LOCK_TASK_WHEN_TASK_END)
     public void testMakeFinishingLocked_clearsLockTask() {
         final ActivityRecord activity = createActivityWithTask();
         final Task task = activity.getTask();
