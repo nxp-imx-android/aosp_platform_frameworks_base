@@ -95,7 +95,13 @@ class DreamOverlayContainerViewModelTest : SysuiTestCase() {
         Kosmos.Fixture { DreamSwitcherDialogDelegate.Factory { dialogDelegate } }
 
     private val Kosmos.underTest: DreamOverlayContainerViewModel by
-        Kosmos.Fixture { DreamOverlayContainerViewModel(dreamInteractor, dialogDelegateFactory) }
+        Kosmos.Fixture {
+            DreamOverlayContainerViewModel(
+                dreamInteractor,
+                dialogDelegateFactory,
+                dreamEdgeSwipeViewModelFactory,
+            )
+        }
 
     @Before
     fun setUp() {

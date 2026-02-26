@@ -68,6 +68,8 @@ import com.android.systemui.dreams.complication.dagger.DreamComplicationComponen
 import com.android.systemui.dreams.dagger.DreamOverlayComponent
 import com.android.systemui.dreams.touch.CommunalTouchHandler
 import com.android.systemui.dreams.touch.DismissTouchHandler
+import com.android.systemui.dreams.touch.DreamSwipeDelegate
+import com.android.systemui.dreams.touch.EdgeSwipeTouchHandler
 import com.android.systemui.dreams.touch.LongPressTouchHandler
 import com.android.systemui.dreams.ui.viewmodel.DreamOverlayContainerViewModel
 import com.android.systemui.flags.andSceneContainer
@@ -104,6 +106,7 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
@@ -131,6 +134,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     private val mDreamOverlayComponentFactory = mock<DreamOverlayComponent.Factory>()
     private val mCommunalTouchHandler = mock<CommunalTouchHandler>()
     private val mLongPressTouchHandler = mock<LongPressTouchHandler>()
+    private val mEdgeSwipeTouchHandler = mock<EdgeSwipeTouchHandler>()
     private val mAmbientTouchComponentFactory = mock<AmbientTouchComponent.Factory>()
     private val mDreamOverlayContainerView = mock<DreamOverlayContainerView>()
     private val mDreamOverlayContainerViewController =
@@ -146,7 +150,10 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     private val mScrimController = mock<ScrimController>()
     private val mSystemDialogsCloser = mock<SystemDialogsCloser>()
     private val mDreamOverlayCallbackController = mock<DreamOverlayCallbackController>()
-    private val mDreamOverlayContainerViewModel = mock<DreamOverlayContainerViewModel>()
+    private val mDreamSwipeDelegate = mock<DreamSwipeDelegate>()
+    private val mDreamOverlayContainerViewModel =
+        mock<DreamOverlayContainerViewModel> { on { swipeDelegate } doReturn mDreamSwipeDelegate }
+
     private val mDreamOverlayContainerViewModelFactory =
         DreamOverlayContainerViewModel.Factory { mDreamOverlayContainerViewModel }
 
@@ -217,10 +224,11 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
             .thenReturn(mHideComplicationTouchHandler)
         whenever(dreamOverlayComponent.communalTouchHandler).thenReturn(mCommunalTouchHandler)
         whenever(dreamOverlayComponent.longPressTouchHandler).thenReturn(mLongPressTouchHandler)
+        whenever(dreamOverlayComponent.edgeSwipeTouchHandler).thenReturn(mEdgeSwipeTouchHandler)
         whenever(dreamComplicationComponentFactory.create(any(), any()))
             .thenReturn(dreamComplicationComponent)
 
-        whenever(dreamOverlayComponentFactory.create(any(), any(), any(), any()))
+        whenever(dreamOverlayComponentFactory.create(any(), any(), any(), any(), any()))
             .thenReturn(dreamOverlayComponent)
 
         val ambientTouchComponent = mock<AmbientTouchComponent>()
@@ -1653,7 +1661,11 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         verify(mAmbientTouchComponentFactory)
             .create(any(), mTouchHandlersCaptor.capture(), any(), any())
         assertThat(mTouchHandlersCaptor.firstValue)
-            .containsExactly(mHideComplicationTouchHandler, mLongPressTouchHandler)
+            .containsExactly(
+                mHideComplicationTouchHandler,
+                mLongPressTouchHandler,
+                mEdgeSwipeTouchHandler,
+            )
     }
 
     @Test
