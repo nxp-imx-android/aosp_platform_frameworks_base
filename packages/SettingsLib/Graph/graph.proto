@@ -147,6 +147,8 @@ message PreferenceProto {
   optional KeyParametersSchemaProto parameters_schema = 25;
   // A map of string to string representing the parameters
   optional KeyParametersProto key_parameters = 26;
+  // Warning of the preference when setting values.
+  optional SetWarningProto set_warning = 27;
 }
 
 message PossibleValueProto {
@@ -272,6 +274,12 @@ message BundleProto {
       BundleProto bundle_value = 7;
     }
   }
+}
+
+// Proto of set warning
+message SetWarningProto {
+  repeated string preconditions = 1;
+  string warning = 2;
 }
 
 // Proto of KeyParameters

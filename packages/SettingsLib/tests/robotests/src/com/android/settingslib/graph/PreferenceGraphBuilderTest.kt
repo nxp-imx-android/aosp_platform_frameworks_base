@@ -494,6 +494,107 @@ class PreferenceGraphBuilderTest {
         assertThat(paramProto.valueDescriptor.hasRangeValue()).isTrue()
     }
 
+    @Test
+    fun toProto_isApiPreference_includesSetWarningWithoutPreconditions() {
+        val screen = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {
+            init {
+                preference(
+                    key = "test_api_preference",
+                    type = AnyInt,
+                    purpose = 0,
+                ) {
+                    get {
+                        execute { 1 }
+                    }
+                    set {
+                        warning {
+                            warn("set_warning_with_preconditions_message")
+                        }
+                        execute {}
+                    }
+                }
+            }
+        }
+        val preference = screen.preferences.first()
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, 0)
+
+        assertThat(proto.setWarning.preconditionsList).isEmpty()
+        assertThat(proto.setWarning.warning).isEqualTo("set_warning_with_preconditions_message")
+    }
+
+    @Test
+    fun toProto_isApiPreference_includesSetWarningWithPreconditions() {
+        val screen = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {
+            init {
+                preference(
+                    key = "test_api_preference",
+                    type = AnyInt,
+                    purpose = 0,
+                ) {
+                    get {
+                        execute { 1 }
+                    }
+                    set {
+                        warning {
+                            preconditions("set_warning_preconditions_desc") { Allowed }
+                            warn("set_warning_with_preconditions_message")
+                        }
+                        execute {}
+                    }
+                }
+            }
+        }
+        val preference = screen.preferences.first()
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, 0)
+
+        assertThat(proto.setWarning.preconditionsList).containsExactly("set_warning_preconditions_desc")
+        assertThat(proto.setWarning.warning).isEqualTo("set_warning_with_preconditions_message")
+    }
+
+    @Test
+    fun toProto_isApiPreference_includesSetWarningWithValuePreconditions() {
+        val screen = object : PreferencesApiScreen(
+            key = "test_api_screen",
+            topLevelSettingsCategory = Category.SYSTEM,
+            fragment = Fragment::class,
+            purpose = 0,
+        ) {
+            init {
+                preference(
+                    key = "test_api_preference",
+                    type = AnyInt,
+                    purpose = 0,
+                ) {
+                    get {
+                        execute { 1 }
+                    }
+                    set {
+                        warning {
+                            valuePreconditions("set_warning_value_preconditions_desc") { _ -> Allowed }
+                            warn("set_warning_with_value_preconditions_message")
+                        }
+                        execute {}
+                    }
+                }
+            }
+        }
+        val preference = screen.preferences.first()
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, 0)
+
+        assertThat(proto.setWarning.preconditionsList).containsExactly("set_warning_value_preconditions_desc")
+        assertThat(proto.setWarning.warning).isEqualTo("set_warning_with_value_preconditions_message")
+    }
+
     companion object {
         private const val SETTING_KEY = "com.android.settings.UNKNOWN_SENSITIVITY_IS_AVAILABLE"
     }
