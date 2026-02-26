@@ -39,17 +39,17 @@ data class DreamPlaylistModel(val dreams: List<DreamItemModel>, private val acti
 
     /**
      * The next dream in the playlist, wrapping around to the beginning if necessary. Returns null
-     * if no dream is active.
+     * if no dream is active, or if there is no next dream.
      */
     val nextDream: DreamItemModel?
-        get() = activeIndex?.let { dreams.getCircular(it + 1) }
+        get() = activeIndex?.let { dreams.getCircular(it + 1) }?.takeIf { it != activeDream }
 
     /**
      * The previous dream in the playlist, wrapping around to the end if necessary. Returns null if
-     * no dream is active.
+     * no dream is active, or if there is no previous dream.
      */
     val previousDream: DreamItemModel?
-        get() = activeIndex?.let { dreams.getCircular(it - 1) }
+        get() = activeIndex?.let { dreams.getCircular(it - 1) }?.takeIf { it != activeDream }
 
     override fun logDiffs(prevVal: DreamPlaylistModel, row: TableRowLogger) {
         if (prevVal.dreams != dreams) {
