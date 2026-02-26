@@ -40,6 +40,7 @@ import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.SystemServiceManager;
 import com.android.server.uilatencystats.listeners.BootStatsListener;
+import com.android.server.uilatencystats.listeners.SignInLatencyEventListener;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -156,6 +157,7 @@ public class UiLatencyStatsService extends SystemService {
         public void registerBootstrapListeners(UiLatencyStatsService service) {
             service.registerUiLatencyEventListener(
                     new BootStatsListener(LocalServices.getService(SystemServiceManager.class)));
+            service.registerUiLatencyEventListener(new SignInLatencyEventListener());
         }
     }
 }

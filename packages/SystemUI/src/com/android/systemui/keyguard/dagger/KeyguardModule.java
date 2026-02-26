@@ -21,6 +21,7 @@ import android.app.trust.TrustManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.PowerManager;
+import android.uilatencystats.UiLatencyStatsManager;
 
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.UiEventLogger;
@@ -106,6 +107,7 @@ import dagger.multibindings.IntoMap;
 
 import kotlinx.coroutines.CoroutineScope;
 
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
 /**
@@ -192,7 +194,8 @@ public interface KeyguardModule {
             KeyguardTransitionBootInteractor transitionBootInteractor,
             Lazy<CommunalSceneInteractor> communalSceneInteractor,
             Lazy<CommunalSettingsInteractor> communalSettingsInteractor,
-            WindowManagerOcclusionManager windowManagerOcclusionManager) {
+            WindowManagerOcclusionManager windowManagerOcclusionManager,
+            Optional<UiLatencyStatsManager> uiLatencyStatsManager) {
         return new KeyguardViewMediator(
                 context,
                 uiEventLogger,
@@ -245,7 +248,8 @@ public interface KeyguardModule {
                 transitionBootInteractor,
                 communalSceneInteractor,
                 communalSettingsInteractor,
-                windowManagerOcclusionManager);
+                windowManagerOcclusionManager,
+                uiLatencyStatsManager);
     }
 
     /** */

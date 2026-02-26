@@ -31,6 +31,7 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
+import android.uilatencystats.UiLatencyStatsManager
 import android.view.IRemoteAnimationFinishedCallback
 import android.view.RemoteAnimationTarget
 import android.view.SurfaceControl
@@ -109,6 +110,7 @@ import com.android.systemui.util.time.systemClock
 import com.android.systemui.wallpapers.data.repository.wallpaperRepository
 import com.android.wm.shell.keyguard.KeyguardTransitions
 import com.google.common.truth.Truth.assertThat
+import java.util.Optional
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -205,6 +207,7 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
                 { communalSceneInteractor },
                 { communalSettingsInteractor },
                 mock<WindowManagerOcclusionManager>(),
+                Optional.of(mock<UiLatencyStatsManager>()),
             )
         }
 

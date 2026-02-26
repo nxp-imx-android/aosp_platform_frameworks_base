@@ -18,6 +18,7 @@ package com.android.keyguard
 
 import android.hardware.input.InputManager
 import android.testing.TestableLooper
+import android.uilatencystats.UiLatencyStatsManager
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -48,6 +49,7 @@ import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.wrapper.LockPatternCheckerWrapper
 import com.google.common.truth.Truth.assertThat
 import java.time.Duration
+import java.util.Optional
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -110,6 +112,7 @@ class KeyguardPinViewControllerTest : SysuiTestCase() {
     @Mock lateinit var mUserActivityNotifier: UserActivityNotifier
     @Mock lateinit var inputManager: InputManager
     @Mock private lateinit var lockPatternChecker: LockPatternCheckerWrapper
+    @Mock private lateinit var mUiLatencyStatsManager: UiLatencyStatsManager
 
     @Captor lateinit var postureCallbackCaptor: ArgumentCaptor<DevicePostureController.Callback>
 
@@ -171,6 +174,7 @@ class KeyguardPinViewControllerTest : SysuiTestCase() {
                 mUserActivityNotifier,
                 inputManager,
                 lockPatternChecker,
+                Optional.of(mUiLatencyStatsManager),
             )
     }
 
