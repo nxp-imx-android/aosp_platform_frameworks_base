@@ -25,6 +25,7 @@ import com.android.systemui.dreams.DreamOverlayContainerViewController;
 import com.android.systemui.dreams.touch.CommunalTouchHandler;
 import com.android.systemui.dreams.touch.LongPressTouchHandler;
 import com.android.systemui.dreams.touch.dagger.CommunalTouchModule;
+import com.android.systemui.dreams.ui.viewmodel.DreamDialogController;
 import com.android.systemui.touch.TouchInsetManager;
 
 import dagger.BindsInstance;
@@ -50,7 +51,8 @@ public interface DreamOverlayComponent {
         DreamOverlayComponent create(
                 @BindsInstance LifecycleOwner lifecycleOwner,
                 @BindsInstance ComplicationHostViewController complicationHostViewController,
-                @BindsInstance TouchInsetManager touchInsetManager);
+                @BindsInstance TouchInsetManager touchInsetManager,
+                @BindsInstance DreamDialogController dialogController);
     }
 
     /** Scope annotation for singleton items within the {@link DreamOverlayComponent}. */

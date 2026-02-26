@@ -15,24 +15,16 @@
  */
 package com.android.systemui.dreams.touch
 
-import android.content.res.Resources
 import android.util.Log
 import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
-import androidx.core.view.ViewCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.coroutineScope
-import androidx.lifecycle.repeatOnLifecycle
 import com.android.systemui.ambient.touch.TouchHandler
 import com.android.systemui.ambient.touch.TouchHandler.TouchSession
-import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dreams.DreamOverlayContainerView
-import com.android.systemui.dreams.domain.interactor.DreamInteractor
-import com.android.systemui.res.R
+import com.android.systemui.dreams.ui.viewmodel.DreamDialogController
 import com.android.systemui.statusbar.VibratorHelper
 import javax.inject.Inject
-import kotlinx.coroutines.launch
 
 /** [TouchHandler] for long press gestures. */
 class LongPressTouchHandler
@@ -40,65 +32,24 @@ class LongPressTouchHandler
 constructor(
     private val vibratorHelper: VibratorHelper,
     private val containerView: DreamOverlayContainerView,
-    private val dreamInteractor: DreamInteractor,
-    lifecycle: Lifecycle,
-    @param:Main private val resources: Resources,
+    private val dialogController: DreamDialogController,
 ) : TouchHandler {
     private companion object {
         const val TAG = "LongPressTouchHandler"
     }
 
-    private var accessibilityActionId: Int? = null
-    private var canSwitchDreams: Boolean = false
-
-    init {
-        lifecycle.coroutineScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                dreamInteractor.canSwitchDreams.collect { canSwitch ->
-                    canSwitchDreams = canSwitch
-                    updateAccessibilityAction(canSwitch)
-                }
-            }
-        }
-    }
-
-    private fun updateAccessibilityAction(canSwitch: Boolean) {
-        accessibilityActionId?.let {
-            ViewCompat.removeAccessibilityAction(containerView, it)
-            accessibilityActionId = null
-        }
-
-        if (canSwitch) {
-            accessibilityActionId =
-                ViewCompat.addAccessibilityAction(
-                    containerView,
-                    resources.getString(R.string.dreams_switcher_accessibility_action),
-                ) { _, _ ->
-                    dreamInteractor.showSwitcherDialog()
-                    true
-                }
-        }
-    }
-
     override fun onSessionStart(session: TouchSession) {
-        if (!canSwitchDreams) {
-            return
-        }
-
         session.registerGestureListener {
-            if (!canSwitchDreams) {
-                Log.d(TAG, "ignoring long press since we cannot switch dreams")
-                return@registerGestureListener
+            if (dialogController.showDialog()) {
+                Log.d(TAG, "long press detected")
+                vibratorHelper.performHapticFeedback(
+                    containerView,
+                    HapticFeedbackConstants.LONG_PRESS,
+                )
+            } else {
+                Log.d(TAG, "long press ignored")
             }
-
-            Log.d(TAG, "long press detected")
-            dreamInteractor.showSwitcherDialog()
-            vibratorHelper.performHapticFeedback(containerView, HapticFeedbackConstants.LONG_PRESS)
         }
-    }
-
-    override fun onDestroy() {
-        updateAccessibilityAction(false)
     }
 }
 

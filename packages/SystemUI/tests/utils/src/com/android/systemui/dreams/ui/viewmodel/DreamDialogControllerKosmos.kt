@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.dreams.domain.model
+package com.android.systemui.dreams.ui.viewmodel
 
-sealed interface DreamSwitcherDialogRequestModel {
-    /** A request to show the switcher dialog. */
-    data object Show : DreamSwitcherDialogRequestModel
+import com.android.systemui.kosmos.Kosmos
 
-    /** A request to dismiss the switcher dialog. */
-    data object Dismiss : DreamSwitcherDialogRequestModel
-}
+val Kosmos.dreamDialogController by
+    Kosmos.Fixture<DreamDialogController> { FakeDreamDialogController() }

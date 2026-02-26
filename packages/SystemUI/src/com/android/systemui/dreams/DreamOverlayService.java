@@ -72,9 +72,9 @@ import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dreams.complication.dagger.DreamComplicationComponent;
 import com.android.systemui.dreams.dagger.DreamModule;
 import com.android.systemui.dreams.dagger.DreamOverlayComponent;
-import com.android.systemui.dreams.domain.interactor.DreamInteractor;
 import com.android.systemui.dreams.touch.DismissTouchHandler;
-import com.android.systemui.dreams.ui.DreamSwitcherDialogController;
+import com.android.systemui.dreams.ui.binder.DreamOverlayContainerViewBinder;
+import com.android.systemui.dreams.ui.viewmodel.DreamOverlayContainerViewModel;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.navigationbar.gestural.domain.GestureInteractor;
 import com.android.systemui.navigationbar.gestural.domain.TaskMatcher;
@@ -102,7 +102,6 @@ import java.util.function.Consumer;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Provider;
 
 /**
  * The {@link DreamOverlayService} is responsible for placing an overlay on top of a dream. The
@@ -121,8 +120,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
     // The Executor ensures actions and ui updates happen on the same thread.
     private final DelayableExecutor mExecutor;
     private final PowerInteractor mPowerInteractor;
-    private final Provider<DreamSwitcherDialogController> mDreamSwitcherDialogProvider;
-    private final DreamInteractor mDreamInteractor;
+    private final DreamOverlayContainerViewModel.Factory mDreamOverlayContainerViewModelFactory;
     // A controller for the dream overlay container view (which contains both the status bar and the
     // content area).
     private DreamOverlayContainerViewController mDreamOverlayContainerViewController;
@@ -276,7 +274,6 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             showing -> dreamScopedExecute(() -> updateDreamSwitcherDialogShowingLocked(showing),
                     "update dream switcher dialog showing");
 
-    private DreamSwitcherDialogController mDreamsSwitcherDialogController;
     private boolean mDreamSwitcherDialogShowing;
 
     /**
@@ -366,10 +363,6 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
                 mTouchMonitor = null;
             }
 
-            if (mDreamsSwitcherDialogController != null) {
-                mDreamsSwitcherDialogController = null;
-            }
-
             mWindow = null;
 
             // Always unregister the any set DreamActivity from being blocked from gestures.
@@ -457,8 +450,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             WakeGestureMonitor wakeGestureMonitor,
             PowerInteractor powerInteractor,
             @Named(DREAM_OVERLAY_WINDOW_TITLE) String windowTitle,
-            Provider<DreamSwitcherDialogController> dreamSwitcherDialogManagerProvider,
-            DreamInteractor dreamInteractor) {
+            DreamOverlayContainerViewModel.Factory dreamOverlayContainerViewModelFactory) {
         super(executor);
         mContext = context;
         mExecutor = executor;
@@ -484,8 +476,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
         mLifecycleOwner = lifecycleOwner;
         mLifecycleRegistry = lifecycleOwner.getRegistry();
         mPowerInteractor = powerInteractor;
-        mDreamSwitcherDialogProvider = dreamSwitcherDialogManagerProvider;
-        mDreamInteractor = dreamInteractor;
+        mDreamOverlayContainerViewModelFactory = dreamOverlayContainerViewModelFactory;
 
         setLifecycleStateLocked(Lifecycle.State.CREATED);
 
@@ -515,13 +506,6 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
                         getLifecycle(),
                         promptCredentialInteractor.isShowing(),
                         mBiometricPromptShowingConsumer));
-        if (dreamsSwitcher()) {
-            mFlows.add(
-                    collectFlow(
-                            getLifecycle(),
-                            mDreamInteractor.getDreamSwitcherDialogShowing(),
-                            mDreamSwitcherDialogShowingConsumer));
-        }
     }
 
     @NonNull
@@ -579,9 +563,12 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
                 mDreamComplicationComponentFactory.create(
                         complicationComponent.getVisibilityController(), mTouchInsetManager);
 
+        final DreamOverlayContainerViewModel viewModel =
+                mDreamOverlayContainerViewModelFactory.create();
+
         final DreamOverlayComponent dreamOverlayComponent = mDreamOverlayComponentFactory.create(
                 mLifecycleOwner, complicationComponent.getComplicationHostViewController(),
-                mTouchInsetManager);
+                mTouchInsetManager, viewModel);
 
         final ArrayList<TouchHandler> touchHandlers = new ArrayList<>(
                 List.of(dreamComplicationComponent.getHideComplicationTouchHandler()));
@@ -602,8 +589,6 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
         if (dreamsSwitcher()) {
             touchHandlers.add(dreamOverlayComponent.getLongPressTouchHandler());
-            mDreamsSwitcherDialogController = mDreamSwitcherDialogProvider.get();
-            mDreamsSwitcherDialogController.init(mLifecycleOwner);
         }
 
         final AmbientTouchComponent ambientTouchComponent = mAmbientTouchComponentFactory.create(
@@ -625,6 +610,13 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
         mDreamOverlayContainerViewController =
                 dreamOverlayComponent.getDreamOverlayContainerViewController();
+
+        if (dreamsSwitcher()) {
+            DreamOverlayContainerViewBinder.INSTANCE.bind(
+                    mDreamOverlayContainerViewController.getContainerView(),
+                    viewModel,
+                    mDreamSwitcherDialogShowingConsumer);
+        }
 
         // Touch monitor are also used with SceneContainer. See individual touch handlers for
         // handling of SceneContainer.

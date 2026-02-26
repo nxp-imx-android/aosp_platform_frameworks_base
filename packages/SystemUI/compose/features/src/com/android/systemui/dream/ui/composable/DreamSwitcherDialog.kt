@@ -69,6 +69,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.dreams.ui.model.DreamItemUiModel
+import com.android.systemui.dreams.ui.viewmodel.DreamDialogController
 import com.android.systemui.dreams.ui.viewmodel.DreamSwitcherDialogViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R
@@ -103,9 +104,14 @@ private object Dimensions {
 }
 
 @Composable
-fun DreamSwitcherDialog(viewModelFactory: DreamSwitcherDialogViewModel.Factory) {
+fun DreamSwitcherDialog(
+    viewModelFactory: DreamSwitcherDialogViewModel.Factory,
+    dialogController: DreamDialogController,
+) {
     val viewModel =
-        rememberViewModel(traceName = "DreamSwitcherDialog") { viewModelFactory.create() }
+        rememberViewModel(traceName = "DreamSwitcherDialog") {
+            viewModelFactory.create(dialogController)
+        }
 
     DreamSelectionDialog(
         dreamInfos = viewModel.dreamItems,

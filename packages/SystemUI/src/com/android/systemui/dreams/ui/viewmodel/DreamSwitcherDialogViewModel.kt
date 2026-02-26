@@ -31,6 +31,7 @@ import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.plugins.ActivityStartOptions
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.settings.UserTracker
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -45,6 +46,7 @@ constructor(
     private val userTracker: UserTracker,
     @param:Background private val bgDispatcher: CoroutineDispatcher,
     private val activityStarter: ActivityStarter,
+    @Assisted private val dialogController: DreamDialogController,
 ) : HydratedActivatable(enableEnqueuedActivations = true) {
 
     private companion object {
@@ -95,30 +97,20 @@ constructor(
         }
         val options = ActivityStartOptions(intent)
         activityStarter.startActivityDismissingKeyguard(options)
-        dreamInteractor.dismissSwitcherDialog()
+        dialogController.dismissDialog()
     }
 
     /** Called when the "Open settings" button is clicked. */
     fun onOpenSettingsClicked() {
         val options = ActivityStartOptions(Intent(Settings.ACTION_DREAM_SETTINGS))
         activityStarter.startActivityDismissingKeyguard(options)
-        dreamInteractor.dismissSwitcherDialog()
-    }
-
-    override suspend fun onActivated() {
-        super.onActivated()
-        dreamInteractor.setSwitcherDialogShowing(true)
-    }
-
-    override suspend fun onDeactivated() {
-        super.onDeactivated()
-        dreamInteractor.setSwitcherDialogShowing(false)
+        dialogController.dismissDialog()
     }
 
     /** Factory for [DreamSwitcherDialogViewModel]. */
     @AssistedFactory
     fun interface Factory {
         /** Creates a new [DreamSwitcherDialogViewModel]. */
-        fun create(): DreamSwitcherDialogViewModel
+        fun create(dialogController: DreamDialogController): DreamSwitcherDialogViewModel
     }
 }

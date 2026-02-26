@@ -24,13 +24,11 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.dreams.data.repository.dreamRepository
 import com.android.systemui.dreams.data.repository.fake
 import com.android.systemui.dreams.domain.interactor.dreamInteractor
-import com.android.systemui.dreams.domain.model.DreamSwitcherDialogRequestModel
 import com.android.systemui.dreams.shared.model.DreamAppModel
 import com.android.systemui.dreams.shared.model.DreamItemModel
 import com.android.systemui.dreams.shared.model.DreamPlaylistModel
 import com.android.systemui.dreams.ui.model.DreamItemUiModel
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
@@ -41,7 +39,6 @@ import com.android.systemui.plugins.activityStarter
 import com.android.systemui.settings.userTracker
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import org.junit.Before
 import org.junit.Test
@@ -50,7 +47,6 @@ import org.mockito.kotlin.KArgumentCaptor
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.verify
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DreamSwitcherDialogViewModelTest : SysuiTestCase() {
@@ -67,6 +63,7 @@ class DreamSwitcherDialogViewModelTest : SysuiTestCase() {
                 userTracker,
                 testDispatcher,
                 activityStarter,
+                dreamDialogController,
             )
         }
 
@@ -74,6 +71,8 @@ class DreamSwitcherDialogViewModelTest : SysuiTestCase() {
     fun setUp() {
         activatableJob = with(kosmos) { underTest.activateIn(testScope) }
         onTeardown { activatableJob.cancel() }
+        // Set the dialog state to showing by default
+        kosmos.dreamDialogController.fake.showDialog()
     }
 
     @Test
@@ -131,29 +130,12 @@ class DreamSwitcherDialogViewModelTest : SysuiTestCase() {
     @Test
     fun onEditDreamClicked_dismissesSwitcher() =
         kosmos.runTest {
-            val request by collectLastValue(dreamInteractor.switcherRequests)
-
             setDreamPlaylist(TEST_DREAM_1, activeIndex = 0)
             assertThat(underTest.dreamItems).hasSize(1)
-            assertThat(request).isNull()
 
             underTest.onEditDreamClicked(underTest.dreamItems[0])
 
-            assertThat(request).isInstanceOf(DreamSwitcherDialogRequestModel.Dismiss::class.java)
-        }
-
-    @Test
-    fun onActivated_showsSwitcher() =
-        kosmos.runTest {
-            // The initial activation is in setUp()
-            assertThat(dreamInteractor.dreamSwitcherDialogShowing.value).isTrue()
-        }
-
-    @Test
-    fun onDeactivated_hidesSwitcher() =
-        kosmos.runTest {
-            activatableJob.cancel()
-            assertThat(dreamInteractor.dreamSwitcherDialogShowing.value).isFalse()
+            assertThat(dreamDialogController.fake.dialogShowing).isFalse()
         }
 
     private fun Kosmos.setDreamPlaylist(

@@ -20,19 +20,23 @@ import android.content.Context
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dream.ui.composable.DreamSwitcherDialog
+import com.android.systemui.dreams.ui.viewmodel.DreamDialogController
 import com.android.systemui.dreams.ui.viewmodel.DreamSwitcherDialogViewModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import com.android.systemui.statusbar.phone.create
-import javax.inject.Inject
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
 class DreamSwitcherDialogDelegate
-@Inject
+@AssistedInject
 constructor(
     private val dialogFactory: SystemUIDialogFactory,
     private val viewModelFactory: DreamSwitcherDialogViewModel.Factory,
     @param:Application private val context: Context,
+    @Assisted private val dialogController: DreamDialogController,
 ) : SystemUIDialog.Delegate {
     override fun createDialog(): SystemUIDialog {
         return dialogFactory.create(
@@ -40,7 +44,12 @@ constructor(
             theme = R.style.Theme_SystemUI_Dialog_SelectDream,
             dismissOnDeviceLock = false,
         ) {
-            PlatformTheme { DreamSwitcherDialog(viewModelFactory) }
+            PlatformTheme { DreamSwitcherDialog(viewModelFactory, dialogController) }
         }
+    }
+
+    @AssistedFactory
+    fun interface Factory {
+        fun create(dialogController: DreamDialogController): DreamSwitcherDialogDelegate
     }
 }

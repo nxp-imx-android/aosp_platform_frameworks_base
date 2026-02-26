@@ -23,7 +23,6 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dreams.data.repository.dreamRepository
 import com.android.systemui.dreams.data.repository.fake
-import com.android.systemui.dreams.domain.model.DreamSwitcherDialogRequestModel
 import com.android.systemui.dreams.shared.model.DreamItemModel
 import com.android.systemui.dreams.shared.model.DreamPlaylistModel
 import com.android.systemui.kosmos.Kosmos
@@ -48,22 +47,6 @@ class DreamInteractorTest : SysuiTestCase() {
     fun setUp() {
         kosmos.fakeUserRepository.setUserInfos(USERS)
     }
-
-    @Test
-    fun testShowSwitcherDialog() =
-        kosmos.runTest {
-            val request by collectLastValue(underTest.switcherRequests)
-            underTest.showSwitcherDialog()
-            assertThat(request).isInstanceOf(DreamSwitcherDialogRequestModel.Show::class.java)
-        }
-
-    @Test
-    fun testDismissSwitcherDialog() =
-        kosmos.runTest {
-            val request by collectLastValue(underTest.switcherRequests)
-            underTest.dismissSwitcherDialog()
-            assertThat(request).isInstanceOf(DreamSwitcherDialogRequestModel.Dismiss::class.java)
-        }
 
     @Test
     fun testDreamPlaylistIsExposed() =
