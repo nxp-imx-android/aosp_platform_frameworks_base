@@ -624,11 +624,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     "Trying to launch " + packageName + " which is not allowlisted");
         }
 
-        if (!mAllowlistedPackages.contains(packageName)) {
-            throw new IllegalArgumentException(
-                    "Trying to launch "
-                            + packageName
-                            + " which is not a target package for the current session");
+        synchronized (mAllowlistedPackages) {
+            if (!mAllowlistedPackages.contains(packageName)) {
+                throw new IllegalArgumentException(
+                        "Trying to launch "
+                                + packageName
+                                + " which is not a target package for the current session");
+            }
         }
 
         // TODO(b/444600407): Remove this once the consent model is per-target app. While the
