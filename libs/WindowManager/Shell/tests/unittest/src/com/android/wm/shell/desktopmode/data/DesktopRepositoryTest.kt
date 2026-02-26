@@ -529,7 +529,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesks1,
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -537,7 +537,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesks2,
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -625,7 +625,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterAdding,
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -633,7 +633,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterRemoval,
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -702,7 +702,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterAdding,
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -710,7 +710,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterRemoval,
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -1196,7 +1196,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[0],
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -1204,7 +1204,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[1],
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -1212,7 +1212,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[2],
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -1340,7 +1340,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[0],
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -1348,7 +1348,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[1],
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -1356,7 +1356,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[2],
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -1365,7 +1365,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksInOrder[3],
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -1505,7 +1505,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterAddingTask,
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -1513,7 +1513,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateRepository(
                         DEFAULT_USER_ID,
                         expectedDesksAfterRemovingTask,
-                        DEFAULT_DESKTOP_ID,
+                        mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                         ArrayMap(),
                         ArrayMap(),
                     )
@@ -2020,7 +2020,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 .addOrUpdateRepository(
                     DEFAULT_USER_ID,
                     expectedDesksAfterRemovingDesk,
-                    DEFAULT_DESKTOP_ID,
+                    mapOf(UNIQUE_DISPLAY_ID to DEFAULT_DESKTOP_ID),
                     ArrayMap(),
                     ArrayMap(),
                 )
@@ -2833,6 +2833,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.addDesk(displayId = SECOND_DISPLAY, deskId = 1, uniqueDisplayId = "unique_id_1")
         clearInvocations(persistentRepository)
 
+        repo.removeDesk(deskId = DEFAULT_DESKTOP_ID)
         repo.removeDesk(deskId = 1)
         bgScope.testScheduler.advanceUntilIdle()
 
@@ -2840,7 +2841,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             .addOrUpdateRepository(
                 userId = eq(DEFAULT_USER_ID),
                 desks = eq(emptyList()),
-                activeDeskId = isNull(),
+                activeDeskIdToUniqueDisplayId = any(),
                 preservedDisplays = any(),
                 rememberedBoundsRatioByPackageName = any(),
             )
@@ -2862,7 +2863,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             .addOrUpdateRepository(
                 userId = eq(DEFAULT_USER_ID),
                 desks = any(),
-                activeDeskId = any(),
+                activeDeskIdToUniqueDisplayId = any(),
                 preservedDisplays = any(),
                 rememberedBoundsRatioByPackageName = eq(ArrayMap()),
             )
@@ -2906,7 +2907,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             .addOrUpdateRepository(
                 userId = eq(DEFAULT_USER_ID),
                 desks = any(),
-                activeDeskId = any(),
+                activeDeskIdToUniqueDisplayId = any(),
                 preservedDisplays = any(),
                 rememberedBoundsRatioByPackageName = eq(ArrayMap()),
             )
