@@ -617,6 +617,16 @@ flag {
 }
 
 flag {
+  name: "use_hardened_frp_active_check"
+  namespace: "enterprise"
+  description: "Use hardened FRP active check during ChooseLockGeneric creation"
+  bug: "481171742"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "policy_streamlining_maximum_time_to_lock"
   namespace: "enterprise"
   description: "Redirect set/getMaximumTimeToLock to the generic set/getPolicy APIs."
