@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.systemui.Flags
+import com.android.systemui.shared.system.BlurUtils.isVolumeAndPowerBlurEnabled
 
 /** Shared common styles that will be used by MediaInputComponent and MediaOutputComponent. */
 data class MediaStreamStyle(
@@ -54,7 +55,7 @@ data class MediaStreamStyle(
                 MediaStreamStyle(
                     paddingStart = 0.dp,
                     backgroundColor =
-                        if (Flags.blurOnMoreSurfaces()) {
+                        if (isVolumeAndPowerBlurEnabled()) {
                             Color.Transparent
                         } else {
                             MaterialTheme.colorScheme.surface
