@@ -34,6 +34,7 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
+import android.view.accessibility.Flags;
 
 import com.android.internal.R;
 import com.android.internal.accessibility.util.AccessibilityUtils;
@@ -410,9 +411,15 @@ public class SystemActionPerformer {
     }
 
     private boolean lockScreen() {
-        mContext.getSystemService(PowerManager.class).goToSleep(SystemClock.uptimeMillis(),
-                PowerManager.GO_TO_SLEEP_REASON_ACCESSIBILITY, 0);
-        mWindowManagerService.lockNow();
+        if (Flags.fixA11yLockScreenJank()) {
+            mWindowManagerService.lockNow();
+            mContext.getSystemService(PowerManager.class).goToSleep(SystemClock.uptimeMillis(),
+                    PowerManager.GO_TO_SLEEP_REASON_ACCESSIBILITY, 0);
+        } else {
+            mContext.getSystemService(PowerManager.class).goToSleep(SystemClock.uptimeMillis(),
+                    PowerManager.GO_TO_SLEEP_REASON_ACCESSIBILITY, 0);
+            mWindowManagerService.lockNow();
+        }
         return true;
     }
 
