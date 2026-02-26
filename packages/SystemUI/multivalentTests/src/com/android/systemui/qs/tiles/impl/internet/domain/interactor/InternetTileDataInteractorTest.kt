@@ -523,7 +523,7 @@ class InternetTileDataInteractorTest : SysuiTestCase() {
             assertThat(latest).isNotNull()
             assertThat(latest?.secondaryTitle).isNotNull()
 
-            val satelliteText = context.getString(R.string.qs_tile_satellite_label)
+            val satelliteText = context.getString(com.android.internal.R.string.satellite_indicator)
             val expectedSecondaryTitle =
                 Html.fromHtml(
                         context.getString(

@@ -101,7 +101,9 @@ constructor(
                             mobileContextProvider.getMobileContextForSub(it.subscriptionId, context)
                         val cd = loadString(networkTypeIconGroup.contentDescription, mobileContext)
                         if (isNonTerrestrial) {
-                            mobileContext.getString(R.string.qs_tile_satellite_label)
+                            mobileContext.getString(
+                                com.android.internal.R.string.satellite_indicator
+                            )
                         } else if (isRoaming) {
                             val roaming = mobileContext.getString(R.string.data_connection_roaming)
                             if (cd != null) {
