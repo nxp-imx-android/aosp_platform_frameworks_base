@@ -111,6 +111,10 @@ final class SessionLifecycle {
                 (config) -> config.mCallerInitiatedBlock = false);
     }
 
+    void monitor() {
+        synchronized (mLifecycle) { /* no-op */ }
+    }
+
     private LifecycleState updateLifecycleState(boolean exitBlockedState,
             Consumer<LifecycleConfig> update) {
         synchronized (mLifecycle) {

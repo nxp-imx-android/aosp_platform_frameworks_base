@@ -599,6 +599,21 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mIsTestSession;
     }
 
+    void monitor() {
+        synchronized (mAllowlistedPackages) { /* no-op */ }
+        synchronized (mAllowedTaskIds) { /* no-op */ }
+        synchronized (mNotificationLock) { /* no-op */ }
+        synchronized (mPreviewIntentLock) { /* no-op */ }
+        synchronized (mWindowDrawLock) { /* no-op */ }
+        synchronized (mInteractiveMirrors) {
+            for (int i = 0; i < mInteractiveMirrors.size(); i++) {
+                mInteractiveMirrors.get(i).monitor();
+            }
+        }
+        mLifecycle.monitor();
+        mStatsController.monitor();
+    }
+
     @Override
     public void initialize(IComputerControlLifecycleCallback callback, Surface clientSurface) {
         if (mClientSurface != null) {
@@ -624,11 +639,13 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     "Trying to launch " + packageName + " which is not allowlisted");
         }
 
-        if (!mAllowlistedPackages.contains(packageName)) {
-            throw new IllegalArgumentException(
-                    "Trying to launch "
-                            + packageName
-                            + " which is not a target package for the current session");
+        synchronized (mAllowlistedPackages) {
+            if (!mAllowlistedPackages.contains(packageName)) {
+                throw new IllegalArgumentException(
+                        "Trying to launch "
+                                + packageName
+                                + " which is not a target package for the current session");
+            }
         }
 
         // TODO(b/444600407): Remove this once the consent model is per-target app. While the
