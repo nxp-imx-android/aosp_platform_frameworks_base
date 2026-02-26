@@ -495,10 +495,15 @@ abstract class AbsAppSnapshotController<TYPE extends WindowContainer<?>,
         if (THEME_SNAPSHOT_MIN_Length < minLength) {
             scale = Math.min(THEME_SNAPSHOT_MIN_Length / minLength, scale);
         }
-        final SnapshotDrawerUtils.SystemBarBackgroundPainter
-                decorPainter = new SnapshotDrawerUtils.SystemBarBackgroundPainter(attrs.flags,
-                attrs.privateFlags, attrs.insetsFlags.appearance, taskDescription,
-                scale, mainWindow.getRequestedVisibleTypes());
+        final SnapshotDrawerUtils.SystemBarBackgroundPainter decorPainter =
+                new SnapshotDrawerUtils.SystemBarBackgroundPainter(
+                        attrs.flags,
+                        attrs.privateFlags,
+                        attrs.renderingHints,
+                        attrs.insetsFlags.appearance,
+                        taskDescription,
+                        scale,
+                        mainWindow.getRequestedVisibleTypes());
         final int width = (int) (taskWidth * scale);
         final int height = (int) (taskHeight * scale);
         final RenderNode node = RenderNode.create("SnapshotController", null);

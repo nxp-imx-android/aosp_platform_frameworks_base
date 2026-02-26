@@ -1372,6 +1372,12 @@ public abstract class Window {
         dispatchWindowAttributesChanged(attrs);
     }
 
+    private void setRenderingHints(int hints, int mask) {
+        final WindowManager.LayoutParams attrs = getAttributes();
+        attrs.renderingHints = (attrs.renderingHints & ~mask) | (hints & mask);
+        dispatchWindowAttributesChanged(attrs);
+    }
+
     private void setPrivateFlags(int flags, int mask) {
         final WindowManager.LayoutParams attrs = getAttributes();
         attrs.privateFlags = (attrs.privateFlags & ~mask) | (flags & mask);
@@ -1725,13 +1731,15 @@ public abstract class Window {
         return mCloseOnTouchOutside && peekDecorView() != null && isOutside;
     }
 
-    /* Sets the Sustained Performance requirement for the calling window.
+    /**
+     * Sets the Sustained Performance requirement for the calling window.
+     *
      * @param enable disables or enables the mode.
      */
     public void setSustainedPerformanceMode(boolean enable) {
-        setPrivateFlags(enable
-                ? WindowManager.LayoutParams.PRIVATE_FLAG_SUSTAINED_PERFORMANCE_MODE : 0,
-                WindowManager.LayoutParams.PRIVATE_FLAG_SUSTAINED_PERFORMANCE_MODE);
+        setRenderingHints(
+                enable ? WindowManager.LayoutParams.RENDERING_HINT_SUSTAINED_PERFORMANCE_MODE : 0,
+                WindowManager.LayoutParams.RENDERING_HINT_SUSTAINED_PERFORMANCE_MODE);
     }
 
     private boolean isOutOfBounds(Context context, MotionEvent event) {

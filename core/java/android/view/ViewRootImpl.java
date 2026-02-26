@@ -2160,12 +2160,15 @@ public final class ViewRootImpl implements ViewParent,
             // sRendererDisabled will be set.  In addition, the system process
             // itself should never do accelerated rendering.  In that case, both
             // sRendererDisabled and sSystemRendererDisabled are set.  When
-            // sSystemRendererDisabled is set, PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED
+            // sSystemRendererDisabled is set, RENDERING_HINT_FORCE_HARDWARE_ACCELERATED
             // can be used by code on the system process to escape that and enable
             // HW accelerated drawing.  (This is basically for the lock screen.)
 
-            final boolean forceHwAccelerated = (attrs.privateFlags &
-                    WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED) != 0;
+            final boolean forceHwAccelerated =
+                    (attrs.renderingHints
+                                    & WindowManager.LayoutParams
+                                            .RENDERING_HINT_FORCE_HARDWARE_ACCELERATED)
+                            != 0;
 
             if (ThreadedRenderer.sRendererEnabled || forceHwAccelerated) {
                 if (mAttachInfo.mThreadedRenderer != null) {
@@ -2293,11 +2296,11 @@ public final class ViewRootImpl implements ViewParent,
         final boolean shouldDisablePerfHint = mIsDisablingViewAnimationsRequested;
 
         if (shouldDisablePerfHint) {
-            mWindowAttributes.privateFlags |=
-                    WindowManager.LayoutParams.PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT;
+            mWindowAttributes.renderingHints |=
+                    WindowManager.LayoutParams.RENDERING_HINT_DISABLE_PERFORMANCE_HINT;
         } else {
-            mWindowAttributes.privateFlags &=
-                    ~WindowManager.LayoutParams.PRIVATE_FLAG_DISABLE_PERFORMANCE_HINT;
+            mWindowAttributes.renderingHints &=
+                    ~WindowManager.LayoutParams.RENDERING_HINT_DISABLE_PERFORMANCE_HINT;
         }
         updatePerformanceHintSession();
     }
