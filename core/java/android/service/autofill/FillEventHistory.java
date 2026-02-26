@@ -45,7 +45,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+
 
 /**
  * Describes what happened after the last
@@ -138,6 +140,23 @@ public final class FillEventHistory implements Parcelable {
     @Override
     public String toString() {
         return mEvents == null ? "no events" : mEvents.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        @SuppressWarnings("unchecked")
+        FillEventHistory that = (FillEventHistory) o;
+        return mSessionId == that.mSessionId && Objects.equals(mEvents, that.mEvents);
+    }
+
+    @Override
+    public int hashCode() {
+        int _hash = 1;
+        _hash = 31 * _hash + mSessionId;
+        _hash = 31 * _hash + (mEvents != null ? mEvents.hashCode() : 0);
+        return _hash;
     }
 
     @Override
@@ -789,6 +808,47 @@ public final class FillEventHistory implements Parcelable {
                     "saveDialogNotShowReason");
             mUiType = uiType;
             mFocusedId = focusedId;
+        }
+
+        @Override
+        public boolean equals(@android.annotation.Nullable Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            @SuppressWarnings("unchecked")
+            Event that = (Event) o;
+            return mEventType == that.mEventType
+                    && Objects.equals(mDatasetId, that.mDatasetId)
+                    && Objects.equals(mSelectedDatasetIds, that.mSelectedDatasetIds)
+                    && Objects.equals(mIgnoredDatasetIds, that.mIgnoredDatasetIds)
+                    && Objects.equals(mChangedFieldIds, that.mChangedFieldIds)
+                    && Objects.equals(mChangedDatasetIds, that.mChangedDatasetIds)
+                    && Objects.equals(mManuallyFilledFieldIds, that.mManuallyFilledFieldIds)
+                    && Objects.equals(mManuallyFilledDatasetIds, that.mManuallyFilledDatasetIds)
+                    && Arrays.equals(mDetectedFieldIds, that.mDetectedFieldIds)
+                    && mSaveDialogNotShowReason == that.mSaveDialogNotShowReason
+                    && mUiType == that.mUiType
+                    && Objects.equals(mFocusedId, that.mFocusedId);
+        }
+
+        @Override
+        public int hashCode() {
+            int _hash = 1;
+            _hash = 31 * _hash + mEventType;
+            _hash = 31 * _hash + (mDatasetId != null ? mDatasetId.hashCode() : 0);
+            _hash = 31 * _hash + (mSelectedDatasetIds != null ? mSelectedDatasetIds.hashCode() : 0);
+            _hash = 31 * _hash + (mIgnoredDatasetIds != null ? mIgnoredDatasetIds.hashCode() : 0);
+            _hash = 31 * _hash + (mChangedFieldIds != null ? mChangedFieldIds.hashCode() : 0);
+            _hash = 31 * _hash + (mChangedDatasetIds != null ? mChangedDatasetIds.hashCode() : 0);
+            _hash = 31 * _hash + (
+                    mManuallyFilledFieldIds != null ? mManuallyFilledFieldIds.hashCode() : 0);
+            _hash = 31 * _hash + (
+                    mManuallyFilledDatasetIds != null ? mManuallyFilledDatasetIds.hashCode() : 0);
+            _hash = 31 * _hash + (
+                    mDetectedFieldIds != null ? java.util.Arrays.hashCode(mDetectedFieldIds) : 0);
+            _hash = 31 * _hash + mSaveDialogNotShowReason;
+            _hash = 31 * _hash + mUiType;
+            _hash = 31 * _hash + (mFocusedId != null ? mFocusedId.hashCode() : 0);
+            return _hash;
         }
 
         @Override
