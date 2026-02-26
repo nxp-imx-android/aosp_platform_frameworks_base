@@ -195,3 +195,14 @@ flag {
     bug: "475552312"
     is_exported: true
 }
+
+flag {
+    name: "gnss_qzss_svid_range_extension"
+    namespace: "location"
+    description: "Extend QZSS SVID range from [183, 206] to [183, 212]"
+    bug: "483079505"
+    is_exported: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
