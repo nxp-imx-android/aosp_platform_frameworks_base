@@ -22,13 +22,14 @@ import android.annotation.NonNull;
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 
 import java.util.List;
 
 /** Operation to measure the length of the text */
-public class TextLength extends Operation {
+public class TextLength extends Operation implements VariableSupport, ComponentData {
     private static final int OP_CODE = Operations.TEXT_LENGTH;
     private static final String CLASS_NAME = "TextLength";
     public int mLengthId;
@@ -108,6 +109,15 @@ public class TextLength extends Operation {
     @Override
     public void apply(@NonNull RemoteContext context) {
         context.loadFloat(mLengthId, context.getText(mTextId).length());
+    }
+
+    @Override
+    public void updateVariables(@NonNull RemoteContext context) {
+    }
+
+    @Override
+    public void registerListening(@NonNull RemoteContext context) {
+        context.listensTo(mTextId, this);
     }
 
     @NonNull
