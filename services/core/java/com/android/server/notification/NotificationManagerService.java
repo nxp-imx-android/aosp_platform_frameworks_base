@@ -576,7 +576,7 @@ public class NotificationManagerService extends SystemService {
     private static final int EVENTLOG_ENQUEUE_STATUS_IGNORED = 2;
     private static final long MIN_PACKAGE_OVERRATE_LOG_INTERVAL = 5000; // milliseconds
 
-    private static final long DELAY_FOR_ASSISTANT_TIME = 200;
+    static final long DELAY_FOR_ASSISTANT_TIME = 200;
 
     private static final long DELAY_FORCE_REGROUP_TIME = 3000;
 
@@ -1083,7 +1083,7 @@ public class NotificationManagerService extends SystemService {
                 setNASMigrationDone(userId);
                 mAssistants.clearDefaults();
             } else {
-                Slog.d(TAG, "Reset NAS setting and migrate to new default");
+                Slog.d(TAG, "Reset NAS setting and migrate to new default for " + userId);
                 resetAssistantUserSet(userId);
                 // migrate to new default and set migration done
                 mAssistants.resetDefaultAssistantsIfNecessary();
@@ -4964,6 +4964,7 @@ public class NotificationManagerService extends SystemService {
         @Override
         public void setAdjustmentTypeSupportedState(INotificationListener token,
                 @Adjustment.Keys String key, boolean supported) {
+            int userId = Binder.getCallingUserHandle().getIdentifier();
             final long identity = Binder.clearCallingIdentity();
             try {
                 synchronized (mNotificationLock) {
@@ -4971,7 +4972,25 @@ public class NotificationManagerService extends SystemService {
                     if (key == null) {
                         return;
                     }
+                    userId = info.userid;
                     mAssistants.setAdjustmentKeySupportedState(info.userid,  key, supported);
+                }
+                if (!supported) {
+                    if (KEY_TYPE.equals(key)) {
+                        // mark any existing channels for all currently allowed types as deleted,
+                        // including all associated profiles for this user
+                        mPreferencesHelper.updateReservedChannels(
+                                getEnabledProfileIdsFiltered(userId, null),
+                                mNotificationRuleManager.getAllowedClassificationTypes(userId),
+                                false);
+                        if (notificationRegroupOnClassification()) {
+                            applyNotificationUpdateForUserProfiles(userId,
+                                    NotificationManagerService.this::unclassifyNotificationLocked);
+                        }
+                    } else if (KEY_SUMMARIZATION.equals(key)) {
+                        applyNotificationUpdateForUserProfiles(userId,
+                                NotificationManagerService.this::unsummarizeNotificationLocked);
+                    }
                 }
             } finally {
                 Binder.restoreCallingIdentity(identity);
@@ -6211,8 +6230,7 @@ public class NotificationManagerService extends SystemService {
                             NotificationRecord r = mNotificationsByKey.get(keys[i]);
                             if (r == null) continue;
                             final int userId = r.getSbn().getUserId();
-                            if (userId != info.userid && userId != USER_ALL &&
-                                    !mUserProfiles.isCurrentProfile(userId)) {
+                            if (!isVisibleToListener(r.getSbn(), r.getNotificationType(), info)) {
                                 continue;
                             }
                             notificationsRapidlyCleared = notificationsRapidlyCleared
@@ -6322,9 +6340,7 @@ public class NotificationManagerService extends SystemService {
                     for (int i = 0; i < n; i++) {
                         NotificationRecord r = mNotificationsByKey.get(keys[i]);
                         if (r == null) continue;
-                        final int userId = r.getSbn().getUserId();
-                        if (userId != info.userid && userId != USER_ALL
-                                && !mUserProfiles.isCurrentProfile(userId)) {
+                        if (!isVisibleToListener(r.getSbn(), r.getNotificationType(), info)) {
                             continue;
                         }
                         seen.add(r);
@@ -8098,7 +8114,6 @@ public class NotificationManagerService extends SystemService {
                 if (granted && assistant.equals(allowedAssistant)) {
                     continue;
                 }
-
                 if (!granted || mAllowedManagedServicePackages.test(assistant.getPackageName(),
                         userId, mAssistants.getRequiredPermission())) {
                     mConditionProviders.setPackageOrComponentEnabled(assistant.flattenToString(),
@@ -13018,6 +13033,9 @@ public class NotificationManagerService extends SystemService {
     }
 
     boolean hasCompanionDevice(ManagedServiceInfo info) {
+        if (info == null) {
+            return false;
+        }
         return hasCompanionDevice(info.component.getPackageName(),
                 info.userid, /* withDeviceProfile= */ null);
     }
@@ -16121,13 +16139,24 @@ public class NotificationManagerService extends SystemService {
         default PostNotificationTracker newTracker(@Nullable WakeLock optionalWakelock) {
             return new PostNotificationTracker(optionalWakelock);
         }
+        default PostNotificationTracker newTracker(@Nullable WakeLock optionalWakelock,
+                String key) {
+            return new PostNotificationTracker(optionalWakelock, key);
+        }
     }
 
     static class PostNotificationTracker {
         @ElapsedRealtimeLong private final long mStartTime;
         @Nullable private final WakeLock mWakeLock;
         private boolean mOngoing;
+        String mKey;
         private final List<Runnable> mCleanupRunnables;
+
+        @VisibleForTesting
+        PostNotificationTracker(@Nullable WakeLock wakeLock, String key) {
+            this(wakeLock);
+            mKey = key;
+        }
 
         @VisibleForTesting
         PostNotificationTracker(@Nullable WakeLock wakeLock) {

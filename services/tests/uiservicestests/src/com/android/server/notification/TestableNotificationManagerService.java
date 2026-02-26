@@ -88,9 +88,6 @@ public class TestableNotificationManagerService extends NotificationManagerServi
     @Nullable
     NotificationAssistantAccessGrantedCallback mNotificationAssistantAccessGrantedCallback;
 
-    @Nullable
-    Boolean mIsVisibleToListenerReturnValue = null;
-
     ComponentPermissionChecker permissionChecker;
     TestableLooper mTestableLooper;
     TestableContext mTestableContext;
@@ -286,19 +283,6 @@ public class TestableNotificationManagerService extends NotificationManagerServi
     // Helper method for testing behavior when turning on/off the review permissions notification.
     protected void setShowReviewPermissionsNotification(boolean setting) {
         mShowReviewPermissionsNotification = setting;
-    }
-
-    protected void setIsVisibleToListenerReturnValue(boolean value) {
-        mIsVisibleToListenerReturnValue = value;
-    }
-
-    @Override
-    boolean isVisibleToListener(StatusBarNotification sbn, int notificationType,
-            ManagedServiceInfo listener) {
-        if (mIsVisibleToListenerReturnValue != null) {
-            return mIsVisibleToListenerReturnValue;
-        }
-        return super.isVisibleToListener(sbn, notificationType, listener);
     }
 
     @Override

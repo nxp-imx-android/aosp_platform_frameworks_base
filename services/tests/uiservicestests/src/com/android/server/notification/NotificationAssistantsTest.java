@@ -282,7 +282,7 @@ public class NotificationAssistantsTest extends UiServiceTestCase {
         when(mUm.getEnabledProfileIds(mZero.id)).thenReturn(
                 new int[] {mZero.id, mZeroProfile.id, mZeroManagedProfile.id});
         when(mUm.getProfiles(mZero.id)).thenReturn(
-                List.of(mZero, mZeroProfile, mZeroManagedProfile, mSecondary));
+                List.of(mZero, mZeroProfile, mZeroManagedProfile));
 
         mNm = spy(new TestableNotificationManagerService(mContext, mTestableLooper));
         mNm.init("<notification-policy></notification-policy>", null);

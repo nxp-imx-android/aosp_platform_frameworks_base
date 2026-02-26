@@ -152,7 +152,7 @@ abstract public class ManagedServices {
     private final UserProfiles mUserProfiles;
     protected final IPackageManager mPm;
     protected final UserManager mUm;
-    protected final UserManagerInternal mUmInternal;
+    protected UserManagerInternal mUmInternal;
     private final Config mConfig;
     private final Handler mHandler = new Handler(Looper.getMainLooper());
 
@@ -2291,7 +2291,7 @@ abstract public class ManagedServices {
             return userId == USER_ALL || userId == this.userid;
         }
 
-        public boolean enabledAndUserMatches(int nid) {
+        public boolean enabledAndUserMatches(@UserIdInt int nid) {
             if (!isEnabledForUser()) {
                 return false;
             }
