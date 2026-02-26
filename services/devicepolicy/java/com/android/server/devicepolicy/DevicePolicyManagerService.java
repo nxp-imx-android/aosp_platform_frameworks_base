@@ -9193,8 +9193,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         synchronized (getLockObject()) {
             mDeviceAdmins.getOwners().setDeviceManaged(false);
             mDeviceAdmins.getOwners().writeDeviceOwner();
-            forceRemoveActiveAdminUnchecked(adminReceiver, UserHandle.USER_SYSTEM);
         }
+        mInjector.binderWithCleanCallingIdentity(() -> {
+            forceRemoveActiveAdminUnchecked(adminReceiver, UserHandle.USER_SYSTEM);
+        });
     }
 
     private boolean isPackage(CallerIdentity caller, String packageName) {
