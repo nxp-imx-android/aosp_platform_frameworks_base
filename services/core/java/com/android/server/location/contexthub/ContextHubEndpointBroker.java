@@ -389,6 +389,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             }
             mEndpointManager.unregisterEndpoint(mEndpointInfo.getIdentifier().getEndpoint());
         }
+        mAppOpsManager.stopWatchingMode(this);
         releaseWakeLockOnExit();
     }
 
