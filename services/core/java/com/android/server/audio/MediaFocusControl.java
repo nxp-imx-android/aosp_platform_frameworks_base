@@ -418,7 +418,7 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
     // AudioFocus
     //==========================================================================================
 
-    private final static Object mAudioFocusLock = new Object();
+    private final Object mAudioFocusLock = new Object();
 
     /**
      * Arbitrary maximum size of audio focus stack to prevent apps OOM'ing this process.
@@ -502,6 +502,29 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
             }
         }
         return true;
+    }
+
+    /**
+     * Discard the entire focus stack and release associated resources.
+     * Used when an audio focus environment is being destroyed.
+     */
+    protected void discardFocusStack() {
+        synchronized (mAudioFocusLock) {
+            while (!mFocusStack.empty()) {
+                FocusRequester fr = mFocusStack.pop();
+                fr.handleFocusLoss(AudioManager.AUDIOFOCUS_LOSS, null, false);
+                fr.release();
+            }
+            for (FocusRequester fr : mMultiAudioFocusList) {
+                fr.handleFocusLoss(AudioManager.AUDIOFOCUS_LOSS, null, false);
+                fr.release();
+            }
+            mMultiAudioFocusList.clear();
+            for (FocusRequester fr : mFocusOwnersForFocusPolicy.values()) {
+                fr.release();
+            }
+            mFocusOwnersForFocusPolicy.clear();
+        }
     }
 
     /**
@@ -1829,17 +1852,19 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
 
     public void updateMultiAudioFocus(boolean enabled) {
         Log.d(TAG, "updateMultiAudioFocus( " + enabled + " )");
-        mMultiAudioFocusEnabled = enabled;
-        if (!mFocusStack.isEmpty()) {
-            final FocusRequester fr = mFocusStack.peek();
-            fr.handleFocusLoss(AudioManager.AUDIOFOCUS_LOSS, null, false);
-        }
-        if (!enabled) {
-            if (!mMultiAudioFocusList.isEmpty()) {
-                for (FocusRequester multifr : mMultiAudioFocusList) {
-                    multifr.handleFocusLoss(AudioManager.AUDIOFOCUS_LOSS, null, false);
+        synchronized (mAudioFocusLock) {
+            mMultiAudioFocusEnabled = enabled;
+            if (!mFocusStack.isEmpty()) {
+                FocusRequester fr = mFocusStack.peek();
+                fr.handleFocusLoss(AudioManager.AUDIOFOCUS_LOSS, null, false);
+            }
+            if (!enabled) {
+                if (!mMultiAudioFocusList.isEmpty()) {
+                    for (FocusRequester multifr : mMultiAudioFocusList) {
+                        multifr.handleFocusLoss(AudioManager.AUDIOFOCUS_LOSS, null, false);
+                    }
+                    mMultiAudioFocusList.clear();
                 }
-                mMultiAudioFocusList.clear();
             }
         }
     }

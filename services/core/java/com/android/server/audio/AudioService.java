@@ -5877,15 +5877,23 @@ public class AudioService extends IAudioService.Stub
     }
 
     private void dumpAdditionalFocusEnvironments(PrintWriter pw) {
+        MediaFocusControl[] focusStacks;
         synchronized (mFocusEnvironmentsLock) {
             if (mFocusEnvironmentsMap.isEmpty()) {
                 pw.println("\nNo additional audio focus environments.");
-            } else {
-                pw.println("\nAdditional audio focus environments:");
-                for (int i = 0; i < mFocusEnvironmentsMap.size(); i++) {
-                    mFocusEnvironmentsMap.valueAt(i).dump(pw);
-                }
+                return;
             }
+
+            int size = mFocusEnvironmentsMap.size();
+            focusStacks = new MediaFocusControl[size];
+            for (int i = 0; i < size; i++) {
+                focusStacks[i] = mFocusEnvironmentsMap.valueAt(i);
+            }
+        }
+
+        pw.println("\nAdditional audio focus environments:");
+        for (MediaFocusControl mfc : focusStacks) {
+            mfc.dump(pw);
         }
     }
 
@@ -13033,16 +13041,17 @@ public class AudioService extends IAudioService.Stub
             Log.d(TAG, "destroyFocusEnvironment with token: " + focusEnvToken);
         }
 
-        focusEnvToken.unlinkToDeath(mFocusEnvironmentDeathRecipient, 0);
-
         MediaFocusControl mfc;
         synchronized (mFocusEnvironmentsLock) {
             mfc = mFocusEnvironmentsMap.remove(focusEnvToken);
+            if (mfc != null) {
+                focusEnvToken.unlinkToDeath(mFocusEnvironmentDeathRecipient, 0);
+            }
         }
 
         if (mfc != null) {
             // Discard the entire focus stack and release associated resources.
-            mfc.maybeDiscardAudioFocusOwner();
+            mfc.discardFocusStack();
             return true;
         }
 
@@ -15652,14 +15661,22 @@ public class AudioService extends IAudioService.Stub
 
     /** Checks for audio focus on any focus environment */
     private boolean hasFocusOnAnyEnvironment(String packageName) {
+        MediaFocusControl[] focusStacks;
         synchronized (mFocusEnvironmentsLock) {
             if (mFocusEnvironmentsMap.isEmpty()) {
                 return false;
             }
-            for (int i = 0; i < mFocusEnvironmentsMap.size(); i++) {
-                if (mFocusEnvironmentsMap.valueAt(i).hasAudioFocus(packageName)) {
-                    return true;
-                }
+
+            int size = mFocusEnvironmentsMap.size();
+            focusStacks = new MediaFocusControl[size];
+            for (int i = 0; i < size; i++) {
+                focusStacks[i] = mFocusEnvironmentsMap.valueAt(i);
+            }
+        }
+
+        for (MediaFocusControl mfc : focusStacks) {
+            if (mfc.hasAudioFocus(packageName)) {
+                return true;
             }
         }
         return false;
