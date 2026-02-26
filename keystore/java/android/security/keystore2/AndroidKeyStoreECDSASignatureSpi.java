@@ -40,10 +40,14 @@ import java.util.Set;
  * @hide
  */
 abstract class AndroidKeyStoreECDSASignatureSpi extends AndroidKeyStoreSignatureSpiBase {
+    // Defined in RFC 8410.
+    private static final String ED25519_OID = "1.3.101.112";
+
     private static final Set<String> ACCEPTED_SIGNING_SCHEMES = Set.of(
             KeyProperties.KEY_ALGORITHM_EC.toLowerCase(),
             NamedParameterSpec.ED25519.getName().toLowerCase(),
-            "eddsa");
+            "eddsa",
+            ED25519_OID);
 
     public final static class NONE extends AndroidKeyStoreECDSASignatureSpi {
         public NONE() {
