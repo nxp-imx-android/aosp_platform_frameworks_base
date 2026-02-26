@@ -74,6 +74,7 @@ import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.view.Display;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
@@ -100,6 +101,7 @@ import java.util.List;
 public class AuthServiceTest {
 
     private static final String TEST_OP_PACKAGE_NAME = "test_package";
+    private static final int DISPLAY_ID = Display.DEFAULT_DISPLAY;
 
     private final @UserIdInt int mUserId = UserHandle.getCallingUserId();
 
@@ -435,11 +437,11 @@ public class AuthServiceTest {
 
         final int expectedResult = BIOMETRIC_SUCCESS;
         final int authenticators = 0;
-        when(mBiometricService.canAuthenticate(anyString(), anyInt(), anyInt(), anyInt()))
+        when(mBiometricService.canAuthenticate(anyString(), anyInt(), anyInt(), anyInt(), anyInt()))
                 .thenReturn(expectedResult);
 
         final int result = mAuthService.mImpl
-                .canAuthenticate(TEST_OP_PACKAGE_NAME, mUserId, authenticators);
+                .canAuthenticate(TEST_OP_PACKAGE_NAME, mUserId, authenticators, DISPLAY_ID);
 
         assertEquals(expectedResult, result);
         waitForIdle();
@@ -447,7 +449,8 @@ public class AuthServiceTest {
                 eq(TEST_OP_PACKAGE_NAME),
                 eq(mUserId),
                 eq(UserHandle.getCallingUserId()),
-                eq(authenticators));
+                eq(authenticators),
+                eq(DISPLAY_ID));
     }
 
     @Test

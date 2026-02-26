@@ -25,6 +25,7 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW;
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
 import static com.android.server.biometrics.PreAuthInfo.AUTHENTICATOR_OK;
+import static com.android.server.biometrics.PreAuthInfo.BIOMETRIC_COMPUTER_CONTROLLED;
 import static com.android.server.biometrics.PreAuthInfo.BIOMETRIC_DISABLED_BY_DEVICE_POLICY;
 import static com.android.server.biometrics.PreAuthInfo.BIOMETRIC_HARDWARE_NOT_DETECTED;
 import static com.android.server.biometrics.PreAuthInfo.BIOMETRIC_INSUFFICIENT_STRENGTH;
@@ -430,6 +431,7 @@ public class Utils {
                 return BiometricConstants.BIOMETRIC_ERROR_NOT_ENABLED_FOR_APPS;
             case BIOMETRIC_DISABLED_BY_DEVICE_POLICY:
             case BIOMETRIC_HARDWARE_NOT_DETECTED:
+            case BIOMETRIC_COMPUTER_CONTROLLED:
             default:
                 return BiometricConstants.BIOMETRIC_ERROR_HW_UNAVAILABLE;
         }

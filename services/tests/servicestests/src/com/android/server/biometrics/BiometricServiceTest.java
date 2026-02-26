@@ -129,6 +129,7 @@ import com.android.internal.statusbar.IStatusBarService;
 import com.android.server.biometrics.log.BiometricContextProvider;
 import com.android.server.biometrics.sensors.AuthSessionCoordinator;
 import com.android.server.biometrics.sensors.LockoutTracker;
+import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -240,6 +241,8 @@ public class BiometricServiceTest {
     private IDisplayManager mDisplayManager;
     @Mock
     private IAuthenticationPolicyService mAuthenticationPolicyService;
+    @Mock
+    private VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
 
     private AuthenticationPolicyManager mAuthenticationPolicyManager;
 
@@ -275,6 +278,8 @@ public class BiometricServiceTest {
         when(mInjector.getRequestGenerator()).thenReturn(() -> TEST_REQUEST_ID);
         when(mInjector.getUserManager(any())).thenReturn(mUserManager);
         when(mInjector.getBiometricCameraManager(any())).thenReturn(mBiometricCameraManager);
+        when(mInjector.getVirtualDeviceManagerInternal()).thenReturn(mVirtualDeviceManagerInternal);
+        when(mVirtualDeviceManagerInternal.isComputerControlDisplay(anyInt())).thenReturn(false);
 
         when(mResources.getString(R.string.biometric_error_hw_unavailable))
                 .thenReturn(ERROR_HW_UNAVAILABLE);
@@ -2473,8 +2478,8 @@ public class BiometricServiceTest {
 
     private int invokeCanAuthenticate(BiometricService service, int authenticators)
             throws Exception {
-        return service.mImpl.canAuthenticate(
-                TEST_PACKAGE_NAME, 0 /* userId */, 0 /* callingUserId */, authenticators);
+        return service.mImpl.canAuthenticate(TEST_PACKAGE_NAME, 0 /* userId */,
+                0 /* callingUserId */, authenticators, Display.DEFAULT_DISPLAY);
     }
 
     private void setupAuthForOnly(int modality, int strength) throws Exception {
