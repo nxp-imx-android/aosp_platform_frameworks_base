@@ -783,6 +783,19 @@ class DeviceUnlockedInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun deviceUnlockStatus_doesLock_secureSim_keyguardDisabled() =
+        testScope.runTest {
+            val isUnlocked by collectLastValue(underTest.deviceUnlockStatus.map { it.isUnlocked })
+
+            authenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.Sim)
+            runCurrent()
+            assertThat(isUnlocked).isFalse()
+
+            kosmos.keyguardEnabledInteractor.notifyKeyguardEnabled(false)
+            assertThat(isUnlocked).isFalse()
+        }
+
+    @Test
     fun deviceUnlockStatus_doesNotLock_insecureAuth_keyguardEnabled() =
         testScope.runTest {
             val isUnlocked by collectLastValue(underTest.deviceUnlockStatus.map { it.isUnlocked })

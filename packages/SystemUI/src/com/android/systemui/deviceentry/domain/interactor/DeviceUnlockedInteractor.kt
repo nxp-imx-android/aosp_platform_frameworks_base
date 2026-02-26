@@ -259,9 +259,14 @@ constructor(
                         ::Pair,
                     )
                     .collectLatest { (authMethod, keyguardEnabled) ->
-                        // Keyguard can be disabled externally (by an app, app pinning, etc.) even
-                        // if a secure auth method is set.
-                        if (!authMethod.isSecure || !keyguardEnabled) {
+                        if (authMethod == AuthenticationMethodModel.Sim) {
+                            // Device remains locked while SIM is locked.
+                            Log.d(TAG, "remaining locked because SIM locked")
+                            repository.deviceUnlockStatus.value = DeviceUnlockStatus(false, null)
+                        }
+                        // Keyguard can be disabled externally (by an app, app pinning, etc.)
+                        // even if a secure auth method is set.
+                        else if (!authMethod.isSecure || !keyguardEnabled) {
                             // Device remains unlocked as long as the authentication method is not
                             // secure or keyguard is disabled.
                             Log.d(
@@ -271,10 +276,6 @@ constructor(
                                     "keyguard is ${if (keyguardEnabled) "enabled" else "disabled"}",
                             )
                             repository.deviceUnlockStatus.value = DeviceUnlockStatus(true, null)
-                        } else if (authMethod == AuthenticationMethodModel.Sim) {
-                            // Device remains locked while SIM is locked.
-                            Log.d(TAG, "remaining locked because SIM locked")
-                            repository.deviceUnlockStatus.value = DeviceUnlockStatus(false, null)
                         } else {
                             handleLockAndUnlockEvents()
                         }
