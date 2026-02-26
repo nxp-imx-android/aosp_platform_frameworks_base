@@ -18,6 +18,7 @@ package android.widget;
 
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+import static android.service.autofill.Flags.setLocaleForTextView;
 import static android.view.ContentInfo.FLAG_CONVERT_TO_PLAIN_TEXT;
 import static android.view.ContentInfo.SOURCE_AUTOFILL;
 import static android.view.ContentInfo.SOURCE_CLIPBOARD;
@@ -14032,6 +14033,9 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
                 || viewFor == VIEW_STRUCTURE_FOR_CONTENT_CAPTURE) {
             if (viewFor == VIEW_STRUCTURE_FOR_AUTOFILL) {
                 structure.setDataIsSensitive(!mTextSetFromXmlOrResourceId);
+                if (setLocaleForTextView()) {
+                    structure.setLocaleList(getTextLocales());
+                }
             }
             if (mTextId != Resources.ID_NULL) {
                 try {
