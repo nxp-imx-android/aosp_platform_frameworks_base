@@ -28,6 +28,7 @@
 #include <media/AudioParameter.h>
 #include <media/AudioSystem.h>
 #include <media/AudioTrack.h>
+#include <media/AudioTrackMmap.h>
 #include <nativehelper/JNIHelp.h>
 #include <nativehelper/ScopedUtfChars.h>
 #include <utils/Log.h>
@@ -371,31 +372,46 @@ static jint android_media_AudioTrack_setup(JNIEnv* env, jobject thiz, jobject we
 
         // initialize the native AudioTrack object
         switch (memoryMode) {
-        case MODE_STREAM:
-            lpTrack = sp<AudioTrack>::make(AudioTrack::SetParams{
-                    .streamType = AUDIO_STREAM_DEFAULT,
-                    .sampleRate = static_cast<uint32_t>(sampleRateInHertz),
-                    .format = format,
-                    .channelMask = nativeChannelMask,
-                    .frameCount = offload ? 0 : frameCount,
-                    .flags = offload ? AUDIO_OUTPUT_FLAG_COMPRESS_OFFLOAD : AUDIO_OUTPUT_FLAG_NONE,
-                    .callback = lpJniStorage,
-                    .notificationFrames = 0,
-                    .sharedBuffer = nullptr,
-                    .threadCanCallJava = true,
-                    .sessionId = sessionId,
-                    .transferType = offload ? AudioTrack::TRANSFER_SYNC_NOTIF_CALLBACK
-                                            : AudioTrack::TRANSFER_SYNC,
-                    .offloadInfo = (offload || encapsulationMode) ? &offloadInfo : nullptr,
-                    .attributionSource = attributionSource,
-                    .pAttributes = paa.get(),
-                    .doNotReconnect = false,
-                    .maxRequiredSpeed = 1.0f,
-                    .selectedDeviceId = AUDIO_PORT_HANDLE_NONE,
-                    .codecProvenance =
-                            codecProvenanceStr.c_str() != nullptr ? codecProvenanceStr.c_str() : "",
-            });
-            break;
+            case MODE_STREAM: {
+                bool useMmapAsBackend = false;
+                if (audio_is_linear_pcm(format) && offload) {
+                    if (AudioSystem::useMmapForPcmOffload(&useMmapAsBackend) != NO_ERROR) {
+                        ALOGD("Failed to query useMmapForPcmOffload, will use classical offload");
+                        useMmapAsBackend = false;
+                    }
+                    ALOGD("Use aaudio mmap as backend for PCM offload: %d", useMmapAsBackend);
+                }
+                auto params = AudioTrack::SetParams{
+                        .streamType = AUDIO_STREAM_DEFAULT,
+                        .sampleRate = static_cast<uint32_t>(sampleRateInHertz),
+                        .format = format,
+                        .channelMask = nativeChannelMask,
+                        .frameCount = offload ? 0 : frameCount,
+                        .flags = offload ? AUDIO_OUTPUT_FLAG_COMPRESS_OFFLOAD
+                                         : AUDIO_OUTPUT_FLAG_NONE,
+                        .callback = lpJniStorage,
+                        .notificationFrames = 0,
+                        .sharedBuffer = nullptr,
+                        .threadCanCallJava = true,
+                        .sessionId = sessionId,
+                        .transferType = offload ? AudioTrack::TRANSFER_SYNC_NOTIF_CALLBACK
+                                                : AudioTrack::TRANSFER_SYNC,
+                        .offloadInfo = (offload || encapsulationMode) ? &offloadInfo : nullptr,
+                        .attributionSource = attributionSource,
+                        .pAttributes = paa.get(),
+                        .doNotReconnect = false,
+                        .maxRequiredSpeed = 1.0f,
+                        .selectedDeviceId = AUDIO_PORT_HANDLE_NONE,
+                        .codecProvenance = codecProvenanceStr.c_str() != nullptr
+                                ? codecProvenanceStr.c_str()
+                                : "",
+                };
+                if (useMmapAsBackend) {
+                    lpTrack = sp<AudioTrackMmap>::make(std::move(params));
+                } else {
+                    lpTrack = sp<AudioTrack>::make(std::move(params));
+                }
+            } break;
 
         case MODE_STATIC:
         {
