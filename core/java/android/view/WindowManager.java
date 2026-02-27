@@ -1340,6 +1340,30 @@ public interface WindowManager extends ViewManager {
             "android.window.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES";
 
     /**
+     * Application level {@link android.content.pm.PackageManager.Property PackageManager.Property}
+     * for an app to inform the system that the app should be opted-out from the compatibility
+     * override that enables virtual gamepad support.
+     *
+     * <p>With this property set to {@code false}, the system will not enable the virtual gamepad
+     * support for the app even if the device manufacturer has opted the app into the treatment.
+     *
+     * <p>Not setting this property at all, or setting this property to {@code true} has no effect.
+     *
+     * <p><b>Syntax:</b>
+     * <pre>
+     * &lt;application&gt;
+     *   &lt;property
+     *     android:name="android.window.PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE"
+     *     android:value="true|false"/&gt;
+     * &lt;/application&gt;
+     * </pre>
+     *
+     * @hide
+     */
+    String PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE =
+            "android.window.PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE";
+
+    /**
      * Application level
      * {@link android.content.pm.PackageManager.Property PackageManager.Property}
      * tag that (when set to false) informs the system the app has opted out of the
