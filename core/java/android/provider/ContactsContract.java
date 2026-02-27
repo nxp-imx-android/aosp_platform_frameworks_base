@@ -1885,8 +1885,8 @@ public final class ContactsContract {
         /**
         * Query parameter key used to specify a comma-separated list of mimetypes for filtering.
         * Used with URIs that support mimetype-based filtering.
-        * This is supported by com.android.contacts/contacts_data and
-        * com.android.contacts/contacts_data/filter uris.
+        * This is supported by com.android.contacts/contacts/mimes and
+        * com.android.contacts/contacts/mimes/filter uris.
         *
         * <p>
         * Example uri:
@@ -1908,7 +1908,7 @@ public final class ContactsContract {
         * specified mimetypes are returned. If "false" or absent, contacts having data for *any*
         * of the specified mimetypes are returned.
         * Used in conjunction with {@link #REQUESTED_MIMETYPES_PARAM_KEY} and is supported by
-        * com.android.contacts/contacts_data and com.android.contacts/contacts_data/filter uris.
+        * com.android.contacts/contacts/mimes and com.android.contacts/contacts/mimes/filter uris.
         *
         * <p>
         * Example uri:
