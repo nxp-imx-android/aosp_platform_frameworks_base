@@ -146,6 +146,20 @@ public final class DisplayManager {
             "android.hardware.display.category.PRESENTATION";
 
     /**
+     * Display category: XR projected displays.
+     *
+     * <p>
+     * This category can be used to identify displays that are projected to a user on a connected
+     * XR Device.
+     * </p>
+     *
+     * @see #getDisplays(String)
+     */
+    @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+    public static final String DISPLAY_CATEGORY_XR_PROJECTED =
+            "android.hardware.display.category.XR_PROJECTED";
+
+    /**
      * Display category: Built in displays.
      *
      * <p>
