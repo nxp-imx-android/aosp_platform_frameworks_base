@@ -39,3 +39,15 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+
+flag {
+    namespace: "communal"
+    name: "enforce_personal_context_allowlist_access_control"
+    description: "Checks allowlist to see if component can participate in personal context"
+    bug: "487759077"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+

@@ -8002,4 +8002,20 @@
 
     <!-- The package name of the allowlist provider service -->
     <string name="config_allowlistProviderServicePackage" />
+
+    <!-- Packages allowed to publish hints to PersonalContextManagerService -->
+    <string-array translatable="false" name="config_allowlistPersonalContextHintPublishing">
+    </string-array>
+
+    <!-- Packages allowed to receive hints to PersonalContextManagerService -->
+    <string-array translatable="false" name="config_allowlistPersonalContextHintReceiving">
+    </string-array>
+
+    <!-- Packages allowed to publish insights to PersonalContextManagerService -->
+    <string-array translatable="false" name="config_allowlistPersonalContextInsightPublishing">
+    </string-array>
+
+    <!-- Packages allowed to publish insights to PersonalContextManagerService -->
+    <string-array translatable="false" name="config_allowlistPersonalContextInsightReceiving">
+    </string-array>
 </resources>

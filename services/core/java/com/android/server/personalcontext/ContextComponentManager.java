@@ -22,6 +22,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.os.UserHandle;
+import android.service.personalcontext.Flags;
 import android.service.personalcontext.renderer.InsightRendererService;
 import android.text.TextUtils;
 import android.util.Log;
@@ -49,6 +50,7 @@ import java.util.UUID;
 
 /**
  * Manages the collection of personal context components.
+ *
  * @hide
  */
 class ContextComponentManager
@@ -70,9 +72,13 @@ class ContextComponentManager
     private final Map<UUID, Refiner> mRefiners = new HashMap<>();
     private final Map<UUID, Renderer> mRenderers = new HashMap<>();
 
-    ContextComponentManager(Context context, UserHandle userHandle) {
+    private final AccessController mAccessController;
+
+    ContextComponentManager(Context context, UserHandle userHandle,
+            AccessController accessController) {
         mContext = context;
         mUserHandle = userHandle;
+        mAccessController = accessController;
     }
 
     /** Registers an in-process refiner or understander. */
@@ -101,6 +107,13 @@ class ContextComponentManager
     /** Looks for all components in a single package installed on the device and registers each. */
     public void registerComponentsForPackage(String packageName) {
         for (ServiceInfo serviceInfo : getServiceInfo(ACTION_REFINER_SERVICE, packageName)) {
+            if (Flags.enforcePersonalContextAllowlistAccessControl()
+                    && !mAccessController.hasAccess(serviceInfo.packageName,
+                    AccessController.ACCESS_RECEIVE_HINTS
+                            | AccessController.ACCESS_PUBLISH_HINTS)) {
+                continue;
+            }
+
             registerComponent(
                     new ServiceClientRefiner(mContext, UUID.randomUUID(), serviceInfo,
                             mUserHandle),
@@ -110,6 +123,13 @@ class ContextComponentManager
         }
 
         for (ServiceInfo serviceInfo : getServiceInfo(ACTION_UNDERSTANDER_SERVICE, packageName)) {
+            if (Flags.enforcePersonalContextAllowlistAccessControl()
+                    && !mAccessController.hasAccess(serviceInfo.packageName,
+                    AccessController.ACCESS_RECEIVE_HINTS
+                            | AccessController.ACCESS_PUBLISH_INSIGHTS)) {
+                continue;
+            }
+
             registerComponent(
                     new ServiceClientUnderstander(mContext, UUID.randomUUID(), serviceInfo,
                             mUserHandle),
@@ -120,6 +140,12 @@ class ContextComponentManager
 
         for (ServiceInfo serviceInfo :
                 getServiceInfo(InsightRendererService.SERVICE_INTERFACE, packageName)) {
+            if (Flags.enforcePersonalContextAllowlistAccessControl()
+                    && !mAccessController.hasAccess(serviceInfo.packageName,
+                    AccessController.ACCESS_RECEIVE_INSIGHTS)) {
+                continue;
+            }
+
             registerComponent(
                     new ServiceClientRenderer(mContext, UUID.randomUUID(), serviceInfo,
                             mUserHandle),
