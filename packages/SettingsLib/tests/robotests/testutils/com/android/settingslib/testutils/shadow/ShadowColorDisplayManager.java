@@ -30,6 +30,8 @@ public class ShadowColorDisplayManager extends org.robolectric.shadows.ShadowCol
     private boolean mIsReduceBrightColorsActivated;
     private int mColorMode;
 
+    private boolean mIsDeviceColorManaged;
+
     @Implementation
     @SystemApi
     @RequiresPermission(Manifest.permission.CONTROL_DISPLAY_COLOR_TRANSFORMS)
@@ -52,5 +54,15 @@ public class ShadowColorDisplayManager extends org.robolectric.shadows.ShadowCol
     @Implementation
     public void setColorMode(int colorMode) {
         mColorMode = colorMode;
+    }
+
+    @Implementation
+    public boolean isDeviceColorManaged() {
+        return mIsDeviceColorManaged;
+    }
+
+    @Implementation
+    public void setDeviceColorManaged(boolean enabled) {
+        mIsDeviceColorManaged = enabled;
     }
 }
