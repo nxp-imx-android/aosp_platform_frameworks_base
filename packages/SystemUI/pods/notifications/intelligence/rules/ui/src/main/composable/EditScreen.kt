@@ -140,7 +140,7 @@ fun <T> EditScreen(
         }
     }
 
-    Box {
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Header(title = title, onDismissRequest = onDismissRequest)
 
@@ -158,7 +158,7 @@ fun <T> EditScreen(
                             text = text,
                         )
                     } else {
-                        LoadingIcon()
+                        LoadingIcon(Modifier.fillMaxSize())
                     }
 
                     // The floating save button has to be included both in the search results and
@@ -355,8 +355,8 @@ private fun NoSelection() {
 }
 
 @Composable
-private fun LoadingIcon() {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+private fun LoadingIcon(modifier: Modifier = Modifier) {
+    Box(contentAlignment = Alignment.Center, modifier = modifier) {
         CircularProgressIndicator(
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(top = 32.dp).size(32.dp),
