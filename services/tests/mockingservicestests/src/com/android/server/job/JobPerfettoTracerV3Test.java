@@ -22,7 +22,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSess
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 
-import android.os.PerfettoTrace;
+import android.os.PerfettoCategories;
 
 import com.android.internal.dev.perfetto.sdk.PerfettoTrackEventBuilder;
 
@@ -59,7 +59,7 @@ public final class JobPerfettoTracerV3Test {
                 Mockito.mock(PerfettoTrackEventBuilder.class, Mockito.RETURNS_SELF);
         doReturn(mockBuilderV3)
                 .when(() -> com.android.internal.dev.perfetto.sdk.PerfettoTrace.instant(
-                        eq(PerfettoTrace.JOB_SCHEDULER_CATEGORY_V3), anyString()));
+                        eq(PerfettoCategories.JOB_SCHEDULER_CATEGORY), anyString()));
         JobPerfettoTracer tracer = new JobPerfettoTracer.JobPerfettoTracerV3();
 
         tracer.startEvent("test_event_v3")
