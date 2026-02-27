@@ -32,41 +32,56 @@ public:
 
     Outline() : mShouldClip(false), mType(Type::None), mRadius(0), mAlpha(0.0f) {}
 
-    void setRoundRect(int left, int top, int right, int bottom, float radius, float alpha) {
-        mAlpha = alpha;
+    bool setRoundRect(int left, int top, int right, int bottom, float radius, float alpha) {
         if (mType == Type::RoundRect && left == mBounds.left && right == mBounds.right &&
-            top == mBounds.top && bottom == mBounds.bottom && radius == mRadius) {
+            top == mBounds.top && bottom == mBounds.bottom && radius == mRadius &&
+            alpha == mAlpha) {
             // nothing to change, don't do any work
-            return;
+            return false;
         }
-
+        mAlpha = alpha;
         mType = Type::RoundRect;
         mPath.reset();  // updated lazily
         mBounds.set(left, top, right, bottom);
         mRadius = radius;
+        return true;
     }
 
-    void setPath(const SkPath* outline, float alpha) {
+    bool setPath(const SkPath* outline, float alpha) {
         if (!outline) {
-            setEmpty();
-            return;
+            return setEmpty();
         }
+        if (mType == Type::Path && *outline == mPath && alpha == mAlpha) {
+            // nothing to change, don't do any work
+            return false;
+        }
+        mAlpha = alpha;
         mType = Type::Path;
         mPath = *outline;
         mBounds.set(outline->getBounds());
-        mAlpha = alpha;
+        return true;
     }
 
-    void setEmpty() {
+    bool setEmpty() {
+        bool dirty = false;
+        if (mType != Type::Empty && mType != Type::None) {
+            mPath.reset();
+            mAlpha = 0.0f;
+            dirty = true;
+        }
         mType = Type::Empty;
-        mPath.reset();
-        mAlpha = 0.0f;
+        return dirty;
     }
 
-    void setNone() {
+    bool setNone() {
+        bool dirty = false;
+        if (mType != Type::Empty && mType != Type::None) {
+            mPath.reset();
+            mAlpha = 0.0f;
+            dirty = true;
+        }
         mType = Type::None;
-        mPath.reset();
-        mAlpha = 0.0f;
+        return dirty;
     }
 
     bool isEmpty() const { return mType == Type::Empty; }
