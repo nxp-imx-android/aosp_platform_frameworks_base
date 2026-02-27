@@ -45,6 +45,7 @@ import android.Manifest.permission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.WorkerThread;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.AppOpsManager;
@@ -308,7 +309,11 @@ public class LocationManagerService extends ILocationManager.Stub implements
                 () -> refreshAppOpsRestrictions(UserHandle.USER_ALL));
         mInjector.getUserInfoHelper().addListener((userId, change) -> {
             if (change == UserInfoHelper.UserListener.USER_STARTED) {
-                refreshAppOpsRestrictions(userId);
+                if (Flags.fixAppOpsRestrictionForEmergencyMode()) {
+                    FgThread.getHandler().post(() -> refreshAppOpsRestrictions(userId));
+                } else {
+                    refreshAppOpsRestrictions(userId);
+                }
             }
         });
         mInjector.getEmergencyHelper().addOnEmergencyStateChangedListener(
@@ -627,6 +632,9 @@ public class LocationManagerService extends ILocationManager.Stub implements
 
     private void onEmergencyStateChanged() {
         this.logEmergencyState();
+        if (Flags.fixAppOpsRestrictionForEmergencyMode()) {
+            FgThread.getHandler().post(() -> refreshAppOpsRestrictions(UserHandle.USER_ALL));
+        }
     }
 
     private void logEmergencyState() {
@@ -1725,6 +1733,7 @@ public class LocationManagerService extends ILocationManager.Stub implements
         }
     }
 
+    @WorkerThread
     private void refreshAppOpsRestrictions(int userId) {
         if (userId == UserHandle.USER_ALL) {
             final int[] runningUserIds = mInjector.getUserInfoHelper().getRunningUserIds();
@@ -1747,10 +1756,21 @@ public class LocationManagerService extends ILocationManager.Stub implements
                     builder.add(identity.getPackageName(), identity.getAttributionTag());
                 }
             }
-            builder.addAll(mInjector.getSettingsHelper().getIgnoreSettingsAllowlist());
+            if (Flags.fixAppOpsRestrictionForEmergencyMode()) {
+                boolean isInEmergency =
+                        mInjector.getEmergencyHelper().isInEmergency(/* extensionTimeMs= */0);
+                if (isInEmergency) {
+                    // Allowlisted apps can be allowed to ignore settings only in emergency mode
+                    builder.addAll(mInjector.getSettingsHelper().getIgnoreSettingsAllowlist());
+                }
+            } else {
+                builder.addAll(mInjector.getSettingsHelper().getIgnoreSettingsAllowlist());
+            }
             builder.addAll(mInjector.getSettingsHelper().getAdasAllowlist());
             allowedPackages = builder.build();
         }
+
+        Log.d(TAG, "allowedPackages=" + allowedPackages);
 
         AppOpsManager appOpsManager = Objects.requireNonNull(
                 mContext.getSystemService(AppOpsManager.class));

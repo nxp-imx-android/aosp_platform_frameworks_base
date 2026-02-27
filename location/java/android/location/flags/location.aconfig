@@ -181,6 +181,16 @@ flag {
 }
 
 flag {
+    name: "fix_app_ops_restriction_for_emergency_mode"
+    namespace: "location"
+    description: "Only allow the ignore-setting allowlist to be excluded in app ops restrictions in emergency mode"
+    bug: "488393284"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "support_codetype_in_gnss_status"
     namespace: "location"
     description: "Support code type and elapsed real time in GnssStatus"
