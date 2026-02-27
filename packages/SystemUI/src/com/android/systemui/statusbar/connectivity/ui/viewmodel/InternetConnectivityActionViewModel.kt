@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.connectivity.ui.viewmodel
 
 import android.os.Handler
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
@@ -59,11 +58,9 @@ constructor(
 ) : CoreStartable {
 
     override fun start() {
-        if (Flags.launchInternetDetails()) {
-            scope.launch {
-                interactor.internetConnectivityActionEvent.collect {
-                    mainHandler.post { handleInternetConnectivityAction() }
-                }
+        scope.launch {
+            interactor.internetConnectivityActionEvent.collect {
+                mainHandler.post { handleInternetConnectivityAction() }
             }
         }
     }

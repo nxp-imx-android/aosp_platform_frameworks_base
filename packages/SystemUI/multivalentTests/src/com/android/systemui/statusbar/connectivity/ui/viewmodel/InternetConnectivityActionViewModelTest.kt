@@ -21,7 +21,6 @@ import android.os.Looper
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.qs.TileDetailsViewModel
@@ -48,7 +47,6 @@ import org.mockito.kotlin.isNull
 import org.mockito.kotlin.mock
 
 @SmallTest
-@EnableFlags(Flags.FLAG_LAUNCH_INTERNET_DETAILS)
 class InternetConnectivityActionViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
     private val interactor = FakeInternetConnectivityActionInteractor()
