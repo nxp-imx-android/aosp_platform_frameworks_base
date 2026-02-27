@@ -757,6 +757,13 @@ public class CameraDeviceImpl extends CameraDevice
                         }
                     }
 
+                    // Delete streams from mConfiguredOutputs
+                    // Should fail at cameraserver level only if we try to delete a stream
+                    // that is not registered.
+                    for (Integer streamId : deleteList) {
+                        mConfiguredOutputs.delete(streamId);
+                    }
+
                     OutputAndInputStreamIds outputAndInputStreamIds =
                             mRemoteDevice.configureStreams(sessionConfigurationAndStreamIds);
                     // Collect input stream information
@@ -766,11 +773,6 @@ public class CameraDeviceImpl extends CameraDevice
                             mConfiguredInput = new SimpleEntry<Integer, InputConfiguration>(
                                     streamId, inputConfig);
                         }
-                    }
-
-                    // Delete streams from mConfiguredOutputs
-                    for (Integer streamId : deleteList) {
-                        mConfiguredOutputs.delete(streamId);
                     }
 
                     // Add new output streams to mConfiguredOutputs
