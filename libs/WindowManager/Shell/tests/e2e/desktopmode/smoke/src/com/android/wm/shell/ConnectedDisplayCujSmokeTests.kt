@@ -122,7 +122,9 @@ class ConnectedDisplayCujSmokeTests {
     @Before
     fun setup() {
         Assume.assumeTrue(desktopState.canEnterDesktopMode)
+
         Utils.clearAllRememberedDesktopBounds()
+        browserApp.clearStorage()
 
         // Ensure rotation in launcher.
         tapl.setEnableRotation(true)
@@ -269,6 +271,7 @@ class ConnectedDisplayCujSmokeTests {
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
+        browserApp.closePopupsIfNeeded(device)
 
         launchAppFromAllApps(externalDisplayId, clockApp)
         verifyActivityState(clockApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
@@ -284,6 +287,7 @@ class ConnectedDisplayCujSmokeTests {
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
+        browserApp.closePopupsIfNeeded(device)
 
         launchAppFromAllApps(externalDisplayId, clockApp)
         verifyActivityState(clockApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
@@ -319,6 +323,7 @@ class ConnectedDisplayCujSmokeTests {
             createActivityOptions(DEFAULT_DISPLAY, WINDOWING_MODE_FULLSCREEN),
         )
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
+        browserApp.closePopupsIfNeeded(device)
         verifyTaskCount(browserApp, expectedCount = 1)
 
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
@@ -326,6 +331,7 @@ class ConnectedDisplayCujSmokeTests {
         launchAppFromTaskbar(externalDisplayId, browserApp)
         // TODO(b/418620963) - Check the display id of the app window here.
         verifyTaskCount(browserApp, expectedCount = 1)
+        browserApp.closePopupsIfNeeded(device)
     }
 
     // Projected: All apps can be invoked on either display at any time, but will only ever be shown
@@ -336,12 +342,14 @@ class ConnectedDisplayCujSmokeTests {
     fun cuj5p() {
         launchAppFromAllApps(DEFAULT_DISPLAY, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
+        browserApp.closePopupsIfNeeded(device)
         verifyTaskCount(browserApp, expectedCount = 1)
 
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
+        browserApp.closePopupsIfNeeded(device)
         verifyTaskCount(browserApp, expectedCount = 1)
     }
 
@@ -411,6 +419,7 @@ class ConnectedDisplayCujSmokeTests {
         // Start a freeform app.
         launchAppFromTaskbar(DEFAULT_DISPLAY, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, DEFAULT_DISPLAY, visible = true)
+        browserApp.closePopupsIfNeeded(device)
         verifyActivityState(clockApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = false)
 
         // Open overview. If the device is not expected to have DesktopWallpaperActivity (i.e.,
@@ -452,6 +461,7 @@ class ConnectedDisplayCujSmokeTests {
             externalDisplayId,
             visible = true,
         )
+        browserApp.closePopupsIfNeeded(device)
 
         // Start a freeform app. Specify launch windowing mode as by default an app opens in
         // fullscreen when another fullscreen app is on top even when desktop-first mode.
@@ -520,14 +530,17 @@ class ConnectedDisplayCujSmokeTests {
     fun cuj9p() {
         browserApp.launchViaIntent()
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
+        browserApp.closePopupsIfNeeded(device)
 
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
 
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
+        browserApp.closePopupsIfNeeded(device)
 
         launchAppFromAllApps(DEFAULT_DISPLAY, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FULLSCREEN, DEFAULT_DISPLAY, visible = true)
+        browserApp.closePopupsIfNeeded(device)
     }
 
     fun cuj10() {
@@ -541,6 +554,7 @@ class ConnectedDisplayCujSmokeTests {
         val externalDisplayId = setupTestDisplayAndWaitForTransitions()
         launchAppFromTaskbar(externalDisplayId, browserApp)
         verifyActivityState(browserApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
+        browserApp.closePopupsIfNeeded(device)
 
         // Verify disconnecting a display doesn't crash.
         connectedDisplayRule.setupTestDisplays(0)
