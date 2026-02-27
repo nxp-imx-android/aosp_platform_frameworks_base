@@ -380,7 +380,7 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
 
             val endedCalls = dreamSwipeDelegate.fake.swipeEndedCalls
             assertThat(endedCalls).hasSize(1)
-            assertThat(endedCalls[0]).isTrue() // Committed
+            assertThat(endedCalls[0].committed).isTrue() // Committed
         }
 
     @Test
@@ -410,7 +410,7 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
 
             val endedCalls = dreamSwipeDelegate.fake.swipeEndedCalls
             assertThat(endedCalls).hasSize(1)
-            assertThat(endedCalls[0]).isFalse() // Not committed
+            assertThat(endedCalls[0].committed).isFalse() // Not committed
         }
 
     @Test
@@ -440,7 +440,7 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
 
             val endedCalls = dreamSwipeDelegate.fake.swipeEndedCalls
             assertThat(endedCalls).hasSize(1)
-            assertThat(endedCalls[0]).isFalse() // Not committed
+            assertThat(endedCalls[0].committed).isFalse() // Not committed
         }
 
     @Test
@@ -464,7 +464,7 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
 
             val endedCalls = dreamSwipeDelegate.fake.swipeEndedCalls
             assertThat(endedCalls).hasSize(1)
-            assertThat(endedCalls[0]).isFalse() // Not committed (cancelled)
+            assertThat(endedCalls[0].committed).isFalse() // Not committed (cancelled)
         }
 
     private fun createMotionEvent(x: Float, y: Float, action: Int): MotionEvent {

@@ -49,8 +49,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
 private object EdgeSwipeDimensions {
-    const val MAX_TRANSLATION_X = 100f
-    const val RELEASE_TRANSLATION_X = 150f
+    val MaxTranslationX = 20.dp
+    val ReleaseTranslationX = 70.dp
     val EdgeSafeMargin = 16.dp
     val PillPaddingHorizontal = 16.dp
     val PillPaddingVertical = 12.dp
@@ -82,11 +82,16 @@ fun EdgeSwipeIndicator(viewModel: DreamEdgeSwipeViewModel, modifier: Modifier = 
     val alpha = remember { Animatable(0f) }
     val scale = remember { Animatable(1f) }
 
+    val maxTransPx = with(LocalDensity.current) { EdgeSwipeDimensions.MaxTranslationX.toPx() }
+    val releaseTransPx =
+        with(LocalDensity.current) { EdgeSwipeDimensions.ReleaseTranslationX.toPx() }
+
     LaunchedEffect(isReleasing, isCommitted, isFromLeft) {
         if (!isReleasing) {
             trackDragProgress(
                 viewModel = viewModel,
                 isFromLeft = isFromLeft,
+                maxTransPx = maxTransPx,
                 translationX = translationX,
                 alpha = alpha,
                 scale = scale,
@@ -95,6 +100,9 @@ fun EdgeSwipeIndicator(viewModel: DreamEdgeSwipeViewModel, modifier: Modifier = 
             animateToRestingPosition(
                 isFromLeft = isFromLeft,
                 isCommitted = isCommitted,
+                maxTransPx = maxTransPx,
+                releaseTransPx = releaseTransPx,
+                velocityX = uiState.releaseVelocityX,
                 translationX = translationX,
                 alpha = alpha,
                 scale = scale,
@@ -134,6 +142,7 @@ fun EdgeSwipeIndicator(viewModel: DreamEdgeSwipeViewModel, modifier: Modifier = 
 private suspend fun trackDragProgress(
     viewModel: DreamEdgeSwipeViewModel,
     isFromLeft: Boolean,
+    maxTransPx: Float,
     translationX: Animatable<Float, AnimationVector1D>,
     alpha: Animatable<Float, AnimationVector1D>,
     scale: Animatable<Float, AnimationVector1D>,
@@ -144,9 +153,9 @@ private suspend fun trackDragProgress(
             val currentScale = progress.coerceIn(0.5f, 1f)
             val currentTransX =
                 if (isFromLeft) {
-                    progress * EdgeSwipeDimensions.MAX_TRANSLATION_X
+                    progress * maxTransPx
                 } else {
-                    -progress * EdgeSwipeDimensions.MAX_TRANSLATION_X
+                    -progress * maxTransPx
                 }
 
             alpha.snapTo(currentAlpha)
@@ -162,6 +171,9 @@ private suspend fun trackDragProgress(
 private suspend fun animateToRestingPosition(
     isFromLeft: Boolean,
     isCommitted: Boolean,
+    maxTransPx: Float,
+    releaseTransPx: Float,
+    velocityX: Float,
     translationX: Animatable<Float, AnimationVector1D>,
     alpha: Animatable<Float, AnimationVector1D>,
     scale: Animatable<Float, AnimationVector1D>,
@@ -170,25 +182,29 @@ private suspend fun animateToRestingPosition(
     val targetScale = 1f
     val targetTransX =
         when {
-            isCommitted -> {
+            isCommitted ->
                 if (isFromLeft) {
-                    EdgeSwipeDimensions.RELEASE_TRANSLATION_X
+                    releaseTransPx
                 } else {
-                    -EdgeSwipeDimensions.RELEASE_TRANSLATION_X
+                    -releaseTransPx
                 }
-            }
-            else -> {
+            else ->
                 if (isFromLeft) {
-                    -EdgeSwipeDimensions.MAX_TRANSLATION_X
+                    -maxTransPx
                 } else {
-                    EdgeSwipeDimensions.MAX_TRANSLATION_X
+                    maxTransPx
                 }
-            }
         }
 
     launch { alpha.animateTo(targetAlpha, ReleaseAlphaSpec) }
     launch { scale.animateTo(targetScale, ReleaseTransformSpec) }
-    launch { translationX.animateTo(targetTransX, ReleaseTransformSpec) }
+    launch {
+        translationX.animateTo(
+            targetValue = targetTransX,
+            animationSpec = ReleaseTransformSpec,
+            initialVelocity = velocityX,
+        )
+    }
 }
 
 @Composable
