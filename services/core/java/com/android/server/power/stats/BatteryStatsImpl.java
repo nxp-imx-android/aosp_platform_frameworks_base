@@ -1907,7 +1907,8 @@ public class BatteryStatsImpl extends BatteryStats {
     final class PowerStatsCollectorInjector implements CpuTimeInStateCollector.Injector,
             ScreenPowerStatsCollector.Injector, MobileRadioPowerStatsCollector.Injector,
             WifiPowerStatsCollector.Injector, BluetoothPowerStatsCollector.Injector,
-            EnergyConsumerPowerStatsCollector.Injector, WakelockPowerStatsCollector.Injector {
+            EnergyConsumerPowerStatsCollector.Injector, WakelockPowerStatsCollector.Injector,
+            CpuCyclePerUidCollector.Injector {
         private PackageManager mPackageManager;
         private NetworkStatsManager mNetworkStatsManager;
         private TelephonyManager mTelephonyManager;
@@ -2036,6 +2037,10 @@ public class BatteryStatsImpl extends BatteryStats {
         @Override
         public NetworkStats networkStatsDelta(NetworkStats stats, NetworkStats oldStats) {
             return BatteryStatsImpl.this.networkStatsDelta(stats, oldStats);
+        }
+
+        public CpuCyclePerUidCollector.KernelCpuCycleReader getKernelCpuCycleReader() {
+            return new CpuCyclePerUidCollector.KernelCpuCycleReader();
         }
     }
 
@@ -10614,7 +10619,11 @@ public class BatteryStatsImpl extends BatteryStats {
         mHistory = new BatteryStatsHistory(null /* historyBuffer */, mConstants.MAX_HISTORY_BUFFER,
                 mBatteryHistoryDirectory, mClock, mMonotonicClock, traceDelegate, eventLogger);
 
-        mCpuPowerStatsCollector = new CpuTimeInStateCollector(mPowerStatsCollectorInjector);
+        if (Flags.x86CpuEnergyAttribution() && !KernelCpuThreadReader.isTimeInStateSupported()) {
+            mCpuPowerStatsCollector = new CpuCyclePerUidCollector(mPowerStatsCollectorInjector);
+        } else {
+            mCpuPowerStatsCollector = new CpuTimeInStateCollector(mPowerStatsCollectorInjector);
+        }
         mCpuPowerStatsCollector.addConsumer(this::recordPowerStats);
 
         mWakelockPowerStatsCollector = new WakelockPowerStatsCollector(
@@ -16004,6 +16013,9 @@ public class BatteryStatsImpl extends BatteryStats {
 
             pw.println();
             mCpuPowerStatsCollector.dumpLocked(pw);
+
+            pw.print("x86_cpu_energy_attribution enabled: ");
+            pw.println(Flags.x86CpuEnergyAttribution());
         }
     }
 }
