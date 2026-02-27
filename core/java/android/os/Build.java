@@ -1314,8 +1314,7 @@ public class Build {
         /**
          * Cinnamon Bun.
          */
-        @FlaggedApi(android.sdk.Flags.FLAG_VERSION_CODES_CINNAMON_BUN)
-        public static final int CINNAMON_BUN = CUR_DEVELOPMENT;
+        public static final int CINNAMON_BUN = 37;
     }
 
     /** @hide */
@@ -1541,8 +1540,7 @@ public class Build {
         /**
          * Android 17.
          */
-        @FlaggedApi(android.sdk.Flags.FLAG_VERSION_CODES_CINNAMON_BUN)
-        public static final int CINNAMON_BUN = CUR_DEVELOPMENT;
+        public static final int CINNAMON_BUN = VERSION_CODES.CINNAMON_BUN * SDK_INT_MULTIPLIER;
     }
 
     /**
