@@ -32,7 +32,6 @@ import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.annotations.GuardedBy
 import com.android.systemui.Flags
-import com.android.systemui.Flags.fixPrivacyIndicatorBothDotChipVisibleQs
 import com.android.systemui.ScreenDecorationsThread
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -506,18 +505,14 @@ constructor(
 
     private fun updateStatusBarState() {
         synchronized(lock) {
-            if (fixPrivacyIndicatorBothDotChipVisibleQs()) {
-                nextViewState =
-                    nextViewState.copy(
-                        // When status bar is manipulated, both shade and qs are used to determine
-                        // if
-                        // the privacy dot should show.
-                        shadeExpanded = isShadeInQs(),
-                        qsExpanded = shadeInteractor.isQsExpanded.value,
-                    )
-            } else {
-                nextViewState = nextViewState.copy(shadeExpanded = isShadeInQs())
-            }
+            nextViewState =
+                nextViewState.copy(
+                    // When status bar is manipulated, both shade and qs are used to determine
+                    // if
+                    // the privacy dot should show.
+                    shadeExpanded = isShadeInQs(),
+                    qsExpanded = shadeInteractor.isQsExpanded.value,
+                )
         }
     }
 
@@ -528,23 +523,14 @@ constructor(
      */
     @GuardedBy("lock")
     private fun isShadeInQs(): Boolean {
-        val isShadeExpanded =
-            if (fixPrivacyIndicatorBothDotChipVisibleQs()) {
-                shadeInteractor.isShadeAnyExpanded.value
-            } else {
-                (stateController.isExpanded && stateController.state == SHADE)
-            }
+        val isShadeExpanded = shadeInteractor.isShadeAnyExpanded.value
         val isShadeExpandedOnThisDisplay =
             if (shadeDisplaysInteractor != null) {
                 isShadeExpanded && shadeDisplaysInteractor.get().displayId.value == displayId
             } else {
                 isShadeExpanded
             }
-        if (fixPrivacyIndicatorBothDotChipVisibleQs()) {
-            return isShadeExpandedOnThisDisplay
-        } else {
-            return isShadeExpandedOnThisDisplay || (stateController.state == SHADE_LOCKED)
-        }
+        return isShadeExpandedOnThisDisplay
     }
 
     private fun scheduleUpdate() {
