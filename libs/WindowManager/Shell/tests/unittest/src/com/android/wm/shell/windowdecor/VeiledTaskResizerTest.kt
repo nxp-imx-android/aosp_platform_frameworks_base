@@ -27,6 +27,7 @@ import androidx.test.internal.runner.junit4.statement.UiThreadStatement.runOnUiT
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import org.junit.Assert
@@ -52,6 +53,7 @@ class VeiledTaskResizerTest : ShellTestCase() {
     private val mockDisplayController = mock<DisplayController>()
     private val mockDesktopRepository = mock<DesktopRepository>()
     private val mockDragEventListener = mock<DragPositioningCallbackUtility.DragEventListener>()
+    private val mockDisplayLayout = mock<DisplayLayout>()
 
     private val desktopState = FakeDesktopState()
     private lateinit var taskResizer: VeiledTaskResizer
@@ -62,6 +64,8 @@ class VeiledTaskResizerTest : ShellTestCase() {
         val taskToken = mock<WindowContainerToken>()
         val taskBinder = mock<IBinder>()
         whenever(taskToken.asBinder()).thenReturn(taskBinder)
+        whenever(mockDisplayController.getDisplayLayout(any())).thenReturn(mockDisplayLayout)
+        whenever(mockDisplayLayout.densityDpi()).thenReturn(400)
         whenever(mockWindowDecoration.taskInfo)
             .thenReturn(
                 ActivityManager.RunningTaskInfo().apply {

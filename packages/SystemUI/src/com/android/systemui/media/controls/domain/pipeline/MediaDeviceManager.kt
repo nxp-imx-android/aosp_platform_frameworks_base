@@ -28,7 +28,6 @@ import android.util.Log
 import androidx.annotation.AnyThread
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
-import com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing
 import com.android.settingslib.bluetooth.LocalBluetoothManager
 import com.android.settingslib.flags.Flags.enableLeAudioSharing
 import com.android.settingslib.media.LocalMediaManager
@@ -459,7 +458,7 @@ constructor(
         private fun getBroadcastDevice(): MediaDeviceData? =
             if (inBroadcast())
                 MediaDeviceData(
-                    enabled = enableOutputSwitcherPersonalAudioSharing(),
+                    enabled = true,
                     icon = MediaControlDrawables.getLeAudioSharing(context),
                     name = context.getString(R.string.audio_sharing_description),
                     intent = null,

@@ -8462,6 +8462,7 @@ package android.app.admin {
     field public static final String CAMERA_DISABLED_POLICY = "cameraDisabled";
     field @FlaggedApi("android.app.admin.flags.common_criteria_mode_coexistence") public static final String COMMON_CRITERIA_MODE_POLICY = "commonCriteriaMode";
     field @FlaggedApi("android.view.contentprotection.flags.manage_device_policy_enabled") public static final String CONTENT_PROTECTION_POLICY = "contentProtection";
+    field @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public static final String CONTENT_RESTRICTION_APPS_POLICY = "contentRestrictionApps";
     field @FlaggedApi("android.app.admin.flags.cross_profile_widget_provider_bulk_apis") public static final String CROSS_PROFILE_WIDGET_PROVIDER_POLICY = "crossProfileWidgetProvider";
     field public static final String KEYGUARD_DISABLED_FEATURES_POLICY = "keyguardDisabledFeatures";
     field public static final String LOCK_TASK_POLICY = "lockTask";
@@ -9071,6 +9072,7 @@ package android.app.admin {
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_ENABLED = 4; // 0x4
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_ENABLED_UNENFORCED = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_USER_CHOICE = 0; // 0x0
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.util.List<java.lang.String>> CONTENT_RESTRICTION_APPS;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.String> LOCKSCREEN_MESSAGE;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> SCREEN_CAPTURE;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") public static final int SCREEN_CAPTURE_ALLOWED = 2; // 0x2
@@ -9792,7 +9794,7 @@ package android.app.contentrestriction {
 
   @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public class ContentRestrictionManager {
     method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public boolean isContentRestrictionEnabled();
-    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void requestClassification(@NonNull android.app.contentrestriction.ClassifiableContent, @NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.lang.Boolean>);
+    method @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public void requestClassification(@NonNull android.app.contentrestriction.ClassifiableContent, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     field public static final String ACTION_SHOW_RESTRICTED_CONTENT_DETAILS = "android.app.contentrestriction.action.SHOW_RESTRICTED_CONTENT_DETAILS";
     field public static final String EXTRA_CONTENT_LOCUS_ID = "android.app.contentrestriction.extra.CONTENT_LOCUS_ID";
   }
@@ -45519,6 +45521,7 @@ package android.telephony {
     field public static final String KEY_ALLOW_MERGE_WIFI_CALLS_WHEN_VOWIFI_OFF_BOOL = "allow_merge_wifi_calls_when_vowifi_off_bool";
     field public static final String KEY_ALLOW_NON_EMERGENCY_CALLS_IN_ECM_BOOL = "allow_non_emergency_calls_in_ecm_bool";
     field public static final String KEY_ALLOW_VIDEO_CALLING_FALLBACK_BOOL = "allow_video_calling_fallback_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_vt_call_low_battery_config") public static final String KEY_ALLOW_VIDEO_CALL_IN_LOW_BATTERY_BOOL = "allow_video_call_in_low_battery_bool";
     field public static final String KEY_ALWAYS_SHOW_DATA_RAT_ICON_BOOL = "always_show_data_rat_icon_bool";
     field @Deprecated public static final String KEY_ALWAYS_SHOW_EMERGENCY_ALERT_ONOFF_BOOL = "always_show_emergency_alert_onoff_bool";
     field public static final String KEY_ALWAYS_SHOW_PRIMARY_SIGNAL_BAR_IN_OPPORTUNISTIC_NETWORK_BOOLEAN = "always_show_primary_signal_bar_in_opportunistic_network_boolean";

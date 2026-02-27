@@ -21,6 +21,7 @@ import com.android.hoststubgen.HostStubGenStats
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.asm.zipEntryNameToClassName
 import com.android.hoststubgen.executableName
+import com.android.hoststubgen.getJarMetadata
 import com.android.hoststubgen.log
 import com.android.hoststubgen.utils.ConcurrentZipFile
 import com.android.hoststubgen.utils.ZipEntryData
@@ -96,6 +97,10 @@ class Ravenizer {
                             "${inJar.fileName} is not a desktop jar file. It contains a *.dex file."
                         )
                     }
+                    if (entry.name.startsWith("META-INF/")) {
+                        // Do not touch any files in it.
+                        return@process entry
+                    }
 
                     if (options.stripMockito.get && entry.name.isMockitoFile()) {
                         // Remove this entry
@@ -130,7 +135,9 @@ class Ravenizer {
                 }
             }
         }
-        inJar.write(options.outJar.get) { writeTime ->
+        val out = options.outJar.get
+        val meta = getJarMetadata("ravenizer", inJar.fileName, out)
+        inJar.write(out, meta) { writeTime ->
             stats.totalWriteTime += writeTime
         }
     }

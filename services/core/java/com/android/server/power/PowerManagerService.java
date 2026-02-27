@@ -7798,8 +7798,8 @@ public final class PowerManagerService extends SystemService
                     int groupId = groupIds.get(i);
                     PowerGroup powerGroup = mPowerGroups.get(groupId);
                     if (powerGroup == null) {
-                        throw new IllegalArgumentException("power group(" + groupId
-                                + ") doesn't exist");
+                        Slog.w(TAG, "power group(" + groupId + ") doesn't exist");
+                        continue;
                     }
                     if ((flags & PowerManager.GO_TO_SLEEP_FLAG_SOFT_SLEEP) != 0) {
                         if (!powerGroup.hasWakeLockKeepingScreenOnLocked()) {

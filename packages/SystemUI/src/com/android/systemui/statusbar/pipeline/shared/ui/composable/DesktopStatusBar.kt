@@ -23,13 +23,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -74,6 +74,7 @@ import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewM
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.ui.compose.QuickActionChipsContainer
+import com.android.systemui.statusbar.shared.ui.compose.StatusBarIcon
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIconsLegacy
@@ -81,7 +82,7 @@ import com.android.systemui.statusbar.systemstatusicons.ui.compose.movableSystem
 
 object DesktopStatusBar {
     object Dimensions {
-        val ElementSpacing = 8.dp
+        val ElementSpacing = 12.dp
         val ChipInternalSpacing = 6.dp
         val ChipHeight = 24.dp
     }
@@ -202,6 +203,7 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
             modifier =
                 modifier
                     .height(DesktopStatusBar.Dimensions.ChipHeight)
+                    .widthIn(min = DesktopStatusBar.Dimensions.ChipHeight)
                     .semantics { this.contentDescription = contentDescription }
                     .sysuiResTag("notificationIcons"),
             onClick = { viewModel.onNotificationIconChipClicked() },
@@ -211,14 +213,14 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
             horizontalArrangement =
                 Arrangement.spacedBy(
                     DesktopStatusBar.Dimensions.ChipInternalSpacing,
-                    Alignment.Start,
+                    Alignment.CenterHorizontally,
                 ),
             includePadding = false,
             isClickable = viewModel.isNotificationsChipClickable,
         ) {
             if (viewModel.hasStatusBarNotifications) {
-                Box(modifier = Modifier.align(Alignment.CenterVertically).fillMaxHeight()) {
-                    Icon(
+                Box(modifier = Modifier.align(Alignment.CenterVertically)) {
+                    StatusBarIcon(
                         icon =
                             Icon.Resource(
                                 resId = R.drawable.ic_notification_bell_unread_base,
@@ -226,7 +228,7 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
                             ),
                         tint = tint,
                     )
-                    Icon(
+                    StatusBarIcon(
                         icon =
                             Icon.Resource(
                                 resId = R.drawable.ic_notification_bell_unread_dot,
@@ -239,14 +241,14 @@ private fun NotificationsChip(viewModel: HomeStatusBarViewModel, modifier: Modif
                     )
                 }
             } else {
-                Icon(
+                StatusBarIcon(
                     icon =
                         Icon.Resource(
                             resId = R.drawable.ic_notification_bell,
                             contentDescription = null,
                         ),
                     tint = tint,
-                    modifier = Modifier.align(Alignment.CenterVertically).fillMaxHeight(),
+                    modifier = Modifier.align(Alignment.CenterVertically),
                 )
             }
         }

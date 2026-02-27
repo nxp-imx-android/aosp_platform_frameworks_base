@@ -198,6 +198,11 @@ message PreferenceValueDescriptorProto {
   repeated PossibleValueProto possible_values = 6;
   optional string value_descriptor_key = 7;
   optional string description = 8;
+
+  // Schema for the key-value parameters, as a string. This will only be present
+  // when the value descriptor is parameterized.
+  optional string parameters_schema = 9;
+  optional KeyParametersProto parameters = 10;
 }
 
 // Proto of preference value that is an int

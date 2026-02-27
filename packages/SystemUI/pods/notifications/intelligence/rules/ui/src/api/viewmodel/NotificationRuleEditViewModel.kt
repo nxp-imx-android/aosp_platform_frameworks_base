@@ -28,7 +28,7 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.DraftR
 /** A view model for editing a specific notification rule. Work-in-progress. */
 public interface NotificationRuleEditViewModel {
     /** The rule being edited. */
-    public val rule: DraftRuleModel
+    public var rule: DraftRuleModel
 
     /**
      * Fetches all contacts whose name matches [searchQuery].

@@ -54,6 +54,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.times;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
+import static com.android.server.wm.ActivityRecord.State.RESTARTING_PROCESS;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowContainer.SYNC_STATE_READY;
@@ -2749,6 +2750,47 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @NonNull
+    @Test
+    public void testRestartTaskProcessIfVisible() {
+        final Task rootTask = createRootTask();
+        final Task task = createTask(rootTask);
+        final ActivityRecord activity1 = new ActivityBuilder(mAtm).setTask(task).build();
+        final ActivityRecord activity2 = new ActivityBuilder(mAtm).setTask(task).build();
+
+        spyOn(activity1);
+        spyOn(activity2);
+        // activity1 is at the bottom, activity2 is at the top.
+        doReturn(true).when(activity1).attachedToProcess();
+        doReturn(true).when(activity2).attachedToProcess();
+        activity1.setVisibleRequested(true);
+        activity2.setVisibleRequested(true);
+        activity1.setState(RESUMED, "test");
+        activity2.setState(RESUMED, "test");
+
+        mWm.mAtmService.mTaskOrganizerController.restartTaskProcessIfVisible(
+                task.mRemoteToken.toWindowContainerToken());
+
+        assertEquals(RESTARTING_PROCESS, activity2.getState());
+        verify(activity1).resetCompatConfiguration();
+        verify(activity2).resetCompatConfiguration();
+        verify(activity2).restartProcessIfVisible();
+    }
+
+    @Test
+    public void testRestartTaskProcessIfVisible_nullTopActivity() {
+        final Task rootTask = createRootTask();
+        final Task task = createTask(rootTask);
+        final ActivityRecord activity1 = new ActivityBuilder(mAtm).setTask(task).build();
+        spyOn(activity1);
+        activity1.finishing = true;
+
+        mWm.mAtmService.mTaskOrganizerController.restartTaskProcessIfVisible(
+                task.mRemoteToken.toWindowContainerToken());
+
+        verify(activity1, never()).resetCompatConfiguration();
+        verify(activity1, never()).restartProcessIfVisible();
+    }
+
     private TaskFragmentOrganizer createTaskFragmentOrganizer(
             @NonNull WindowContainerTransaction t, boolean isSystemOrganizer) {
         final TaskFragmentOrganizer organizer = new TaskFragmentOrganizer(Runnable::run);

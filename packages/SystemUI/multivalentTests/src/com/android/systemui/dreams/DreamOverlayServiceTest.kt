@@ -23,6 +23,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.service.dreams.Flags
+import android.service.dreams.Flags.FLAG_DREAMS_SWITCHER
 import android.service.dreams.IDreamOverlay
 import android.service.dreams.IDreamOverlayCallback
 import android.service.dreams.IDreamOverlayClient
@@ -67,6 +68,8 @@ import com.android.systemui.dreams.complication.dagger.DreamComplicationComponen
 import com.android.systemui.dreams.dagger.DreamOverlayComponent
 import com.android.systemui.dreams.touch.CommunalTouchHandler
 import com.android.systemui.dreams.touch.DismissTouchHandler
+import com.android.systemui.dreams.touch.LongPressTouchHandler
+import com.android.systemui.dreams.ui.viewmodel.DreamOverlayContainerViewModel
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.gesture.domain.gestureInteractor
@@ -127,6 +130,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     private val mHideComplicationTouchHandler = mock<HideComplicationTouchHandler>()
     private val mDreamOverlayComponentFactory = mock<DreamOverlayComponent.Factory>()
     private val mCommunalTouchHandler = mock<CommunalTouchHandler>()
+    private val mLongPressTouchHandler = mock<LongPressTouchHandler>()
     private val mAmbientTouchComponentFactory = mock<AmbientTouchComponent.Factory>()
     private val mDreamOverlayContainerView = mock<DreamOverlayContainerView>()
     private val mDreamOverlayContainerViewController =
@@ -142,6 +146,9 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     private val mScrimController = mock<ScrimController>()
     private val mSystemDialogsCloser = mock<SystemDialogsCloser>()
     private val mDreamOverlayCallbackController = mock<DreamOverlayCallbackController>()
+    private val mDreamOverlayContainerViewModel = mock<DreamOverlayContainerViewModel>()
+    private val mDreamOverlayContainerViewModelFactory =
+        DreamOverlayContainerViewModel.Factory { mDreamOverlayContainerViewModel }
 
     private val mViewCaptor = argumentCaptor<View>()
     private val mTouchHandlersCaptor = argumentCaptor<Set<TouchHandler>>()
@@ -209,10 +216,11 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         whenever(dreamComplicationComponent.getHideComplicationTouchHandler())
             .thenReturn(mHideComplicationTouchHandler)
         whenever(dreamOverlayComponent.communalTouchHandler).thenReturn(mCommunalTouchHandler)
+        whenever(dreamOverlayComponent.longPressTouchHandler).thenReturn(mLongPressTouchHandler)
         whenever(dreamComplicationComponentFactory.create(any(), any()))
             .thenReturn(dreamComplicationComponent)
 
-        whenever(dreamOverlayComponentFactory.create(any(), any(), any()))
+        whenever(dreamOverlayComponentFactory.create(any(), any(), any(), any()))
             .thenReturn(dreamOverlayComponent)
 
         val ambientTouchComponent = mock<AmbientTouchComponent>()
@@ -276,6 +284,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
                     wakeGestureMonitor,
                     powerInteractor,
                     WINDOW_NAME,
+                    mDreamOverlayContainerViewModelFactory,
                 )
         }
     }
@@ -1580,7 +1589,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         environmentComponents.verifyNoMoreInteractions()
     }
 
-    @DisableFlags(FLAG_GLANCEABLE_HUB_V2)
+    @DisableFlags(FLAG_GLANCEABLE_HUB_V2, FLAG_DREAMS_SWITCHER)
     @Test
     fun testAmbientTouchHandlersRegistration_registerHideComplicationAndCommunal() {
         val client = client
@@ -1602,6 +1611,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     }
 
     @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
+    @DisableFlags(FLAG_DREAMS_SWITCHER)
     @Test
     fun testAmbientTouchHandlersRegistration_v2_registerOnlyHideComplication() {
         kosmos.setCommunalV2ConfigEnabled(true)
@@ -1623,6 +1633,29 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         assertThat(mTouchHandlersCaptor.firstValue).containsExactly(mHideComplicationTouchHandler)
     }
 
+    @EnableFlags(FLAG_GLANCEABLE_HUB_V2, FLAG_DREAMS_SWITCHER)
+    @Test
+    fun testAmbientTouchHandlersRegistration_dreamsSwitcher() {
+        kosmos.setCommunalV2ConfigEnabled(true)
+
+        val client = client
+
+        // Inform the overlay service of dream starting.
+        client.startDream(
+            mWindowParams,
+            mDreamOverlayCallback,
+            DREAM_COMPONENT,
+            false /*isPreview*/,
+            false, /*shouldShowComplication*/
+        )
+        mMainExecutor.runAllReady()
+
+        verify(mAmbientTouchComponentFactory)
+            .create(any(), mTouchHandlersCaptor.capture(), any(), any())
+        assertThat(mTouchHandlersCaptor.firstValue)
+            .containsExactly(mHideComplicationTouchHandler, mLongPressTouchHandler)
+    }
+
     @Test
     fun testRequestExit_notCalledWhenDreamEnded() {
         // Start dream in preview mode
@@ -1639,8 +1672,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         // Capture the DismissTouchHandler, which is added for preview mode
         verify(mAmbientTouchComponentFactory)
             .create(any(), mTouchHandlersCaptor.capture(), any(), any())
-        val dismissTouchHandler = mTouchHandlersCaptor.firstValue
-            .filterIsInstance<DismissTouchHandler>().first()
+        val dismissTouchHandler =
+            mTouchHandlersCaptor.firstValue.filterIsInstance<DismissTouchHandler>().first()
 
         // Simulate the dream ending on its own before any touch interaction
         mService.onEndDream()
@@ -1681,9 +1714,7 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         @JvmStatic
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
-            return FlagsParameterization.allCombinationsOf(
-                    FLAG_GLANCEABLE_HUB_V2,
-                )
+            return FlagsParameterization.allCombinationsOf(FLAG_GLANCEABLE_HUB_V2)
                 .andSceneContainer()
         }
     }

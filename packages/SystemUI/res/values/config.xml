@@ -1111,13 +1111,6 @@
     <bool name="config_isDesktopForFalsingPurposes">false</bool>
 
     <!--
-    Whether to hide the Do Not Disturb (Modes) tile in Quick Settings when the device is in retail demo mode.
-    -If true, the tile will be hidden when in retail demo mode.
-    -If false (default), the tile will be available even in retail demo mode.
-    -->
-    <bool name="config_hideDNDinQSinRetailDemoMode">false</bool>
-
-    <!--
     Whether to enable heads up notifications expansion by default.
     -->
     <bool name="config_enableHUNExpansion">false</bool>
@@ -1210,7 +1203,7 @@
     <!-- Indicates whether the tapping to open qs panel is supported -->
     <bool name="config_statusBarTapToExpandShade">false</bool>
 
-    <!-- Enable 2 finger swipe down systemUi shade (qs/notification). -->
+    <!-- Enable 2 finger swipe down Dual Shade. -->
     <bool name="config_enableTwoFingerSwipeDownShade">true</bool>
 
     <!--
@@ -1242,4 +1235,10 @@
 
     <!-- Whether to disable notification shelf on keyguard. -->
     <bool name="config_disableNotificationShelfOnKeyguard">false</bool>
+
+    <!--
+    Indicates whether the standalone power menu background should be translucent,
+    revealing the blur underneath, or fully opaque.
+    -->
+    <bool name="config_translucentStandalonePowerMenu">true</bool>
 </resources>

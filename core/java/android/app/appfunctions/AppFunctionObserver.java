@@ -49,10 +49,12 @@ public interface AppFunctionObserver {
      * AppFunctionSearchSpec.Builder#setPackageNames} to retrieve the updated {@link
      * AppFunctionMetadata} for affected functions.
      *
-     * <p>If the runtime state of app functions also changed in the same event (e.g. when new
-     * functions are added, or their {@link AppFunctionMetadata#PROPERTY_ENABLED_BY_DEFAULT}
-     * changes), {@link #onAppFunctionStatesChanged} is guaranteed to be called synchronously after
-     * this callback returns.
+     * <p>Clients should call {@link AppFunctionManager#getAppFunctionStates} to retrieve the
+     * latest {@link AppFunctionState} for packages affected by these changes.
+     *
+     * <p><strong>Note:</strong> If packages are reported to have changed but are
+     * not returned from {@link AppFunctionManager#searchAppFunctions}, it means that the packages
+     * have been uninstalled or no longer have functions.
      *
      * @param changedPackageNames The names of the updated packages.
      */

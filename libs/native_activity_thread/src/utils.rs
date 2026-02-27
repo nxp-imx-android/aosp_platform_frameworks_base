@@ -44,8 +44,12 @@ pub fn reset_time_zone() {
     unsafe { tzset() };
 }
 
-fn get_debuggable() -> bool {
-    system_properties::read_bool(PROP_DEBUGGABLE, false).unwrap_or(false)
+/// Since Native Zygote only forks isolated process, which cannot read the `ro.debuggable` property,
+/// we should call this function and cache the value when the Native Zygote server is initialized.
+pub fn get_or_init_debuggable() -> bool {
+    static DEBUGGABLE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *DEBUGGABLE
+        .get_or_init(|| system_properties::read_bool(PROP_DEBUGGABLE, false).unwrap_or(false))
 }
 
 #[allow(non_camel_case_types)]
@@ -186,7 +190,7 @@ pub fn apply_runtime_flags(runtime_flags: u32) -> Result<()> {
         prctl_set_dumpable(Dumpable::ByUser).expect("prctl(PR_SET_DUMPABLE) failed");
     }
 
-    if get_debuggable() || flags.is_profileable() {
+    if get_or_init_debuggable() || flags.is_profileable() {
         // SAFETY: This opcode takes no arguments so a nullptr is passed
         //         instead.
         let ret = unsafe {

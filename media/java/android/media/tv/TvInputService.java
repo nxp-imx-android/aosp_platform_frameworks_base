@@ -24,6 +24,7 @@ import android.annotation.IntDef;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.StringDef;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.app.ActivityManager;
@@ -111,7 +112,7 @@ public abstract class TvInputService extends Service {
     public static final String SERVICE_META_DATA = "android.media.tv.input";
 
     /**
-     * Prioirity hint from use case types.
+     * Priority hint from use case types.
      *
      * @hide
      */
@@ -157,14 +158,115 @@ public abstract class TvInputService extends Service {
      * when session is created.
      * This key must be included in {@link Session#notifySessionEvent(String, Bundle)}'s bundle key
      * if event type is {@link #EVENT_SESSION_ID_SYNC}.
+     *
      * @hide
      */
     public static final String EXTRA_SESSION_ID = "session_id";
     /**
      * Session event to sync session id between TV input service and application through TvView.
+     *
      * @hide
      */
     public static final String EVENT_SESSION_ID_SYNC = "session_id_sync";
+    /**
+     * Session event to notify EAS start between TV input service and application through TvView.
+     *
+     * @hide
+     */
+    public static final String EVENT_EAS_START = "eas_start";
+    /**
+     * Session event to notify EAS stop between TV input service and application through TvView.
+     *
+     * @hide
+     */
+    public static final String EVENT_EAS_STOP = "eas_stop";
+    /**
+     * Session event to signal that the initial tuning sequence is complete.
+     * * <p><b>Usage for HbbTV:</b> This event acts as a synchronization barrier. It must be fired
+     * only after the hardware tuner has locked, the first frame is ready for display, and
+     * SI tables (specifically AIT and PMT) are available in the demux buffer. This prevents race
+     * conditions where HbbTV attempts to start before the broadcast data stream is stable</p>
+     *
+     * @hide
+     */
+    public static final String EVENT_FIRST_TUNE = "first_tune";
+    /**
+     * Session event that needs to be sent when media playback is blocked or fails due to a
+     * Conditional Access System (CAS) or CI+ module restriction.
+     * <p><b>Important:</b> To ensure the Android OS properly hides the video surface and
+     * updates its internal state, this event must be paired with a standard framework call to
+     * {@link android.media.tv.TvInputService.Session#notifyVideoUnavailable(int)} with a reason
+     * as {@link android.media.tv.TvInputManager#VIDEO_UNAVAILABLE_REASON_CAS_CARD_INVALID}.</p>
+     *
+     * @hide
+     */
+    public static final String EVENT_CAS_PLAYBACK_ERROR = "cam_playback_error";
+    /**
+     * Bundle extra key that must be included in {@link Session#notifySessionEvent(String, Bundle)}
+     * bundle if event type is {@link #EVENT_CAS_PLAYBACK_ERROR}.
+     * <p>The value associated with this key should be one of the {@link CasCcUriStatus}
+     * constants, representing the current CI+ Copy Control (CC) state of the stream.</p>
+     *
+     * @hide
+     */
+    public static final String EXTRA_CAS_CC_URI_STATUS = "extra_cas_cc_uri_status";
+    /** @hide */
+    @IntDef({
+            CAS_CC_URI_UNKNOWN,
+            CAS_CC_URI_COPY_FREELY,
+            CAS_CC_URI_COPY_NO_MORE,
+            CAS_CC_URI_COPY_ONCE,
+            CAS_CC_URI_COPY_NEVER
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface CasCcUriStatus {}
+    /**
+     * CI+ Copy Control State: Unknown or Uninitialized.
+     * <p>Uses -1 as it falls outside the standard 2-bit (0-3) specification.</p>
+     *
+     * @hide
+     */
+    public static final int CAS_CC_URI_UNKNOWN = -1;
+    /**
+     * CI+ Copy Control State: Copy Freely.
+     * <p>Indicates there are no DRM restrictions on the current content.</p>
+     *
+     * @hide
+     */
+    public static final int CAS_CC_URI_COPY_FREELY = 0x00;
+    /**
+     * CI+ Copy Control State: Copy No More.
+     * <p>Indicates that the content was originally marked as "Copy Once", but the single
+     * permitted recording has already occurred. Further recording is strictly prohibited.</p>
+     *
+     * @hide
+     */
+    public static final int CAS_CC_URI_COPY_NO_MORE = 0x01;
+    /**
+     * CI+ Copy Control State: Copy Once.
+     * <p>Indicates the content may be recorded to the PVR storage exactly once.</p>
+     *
+     * @hide
+     */
+    public static final int CAS_CC_URI_COPY_ONCE = 0x02;
+    /**
+     * CI+ Copy Control State: Copy Never.
+     * <p>Indicates that recording and timeshifting are strictly prohibited by the broadcaster.</p>
+     *
+     * @hide
+     */
+    public static final int CAS_CC_URI_COPY_NEVER = 0x03;
+    /** @hide */
+    @StringDef({
+            EVENT_SESSION_ID_SYNC,
+            EVENT_EAS_START,
+            EVENT_EAS_STOP,
+            EVENT_FIRST_TUNE,
+            EVENT_CAS_PLAYBACK_ERROR
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SessionEventType {}
+
     /**
      * Handler instance to handle request from TV Input Manager Service. Should be run in the main
      * looper to be synchronously run with {@code Session.mHandler}.
@@ -605,9 +707,8 @@ public abstract class TvInputService extends Service {
         /**
          * Dispatches an event to the application using this session.
          *
-         * @param eventType The type of the event.
-         * @param eventArgs Optional arguments of the event, must include {@link #EXTRA_SESSION_ID}
-         *                  if event type is {@link #EVENT_SESSION_ID_SYNC}.
+         * @param eventType The type of the event, see {@link SessionEventType} as reference.
+         * @param eventArgs Optional arguments of the event.
          * @hide
          */
         @SystemApi

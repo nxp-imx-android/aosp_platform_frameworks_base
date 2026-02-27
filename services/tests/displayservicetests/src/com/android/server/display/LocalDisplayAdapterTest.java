@@ -1185,14 +1185,14 @@ public class LocalDisplayAdapterTest {
                 ));
         waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         verify(mSurfaceControlProxy).setDesiredDisplayModeSpecs(
-                new SurfaceControl.DesiredDisplayModeSpecs[] {
+                any(IBinder.class),
+                eq(new SurfaceControl.DesiredDisplayModeSpecs[] {
                 new SurfaceControl.DesiredDisplayModeSpecs(
                         display.token,
-                        /* applyToken */ null,
                         /* baseModeId */ 0,
                         /* allowGroupSwitching */ false,
                         REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig, null
-                )});
+                )}));
 
         // Change the display
         display.dynamicInfo.supportedDisplayModes = new SurfaceControl.DisplayMode[]{
@@ -1225,14 +1225,14 @@ public class LocalDisplayAdapterTest {
 
         // Verify that this will reapply the desired modes.
         verify(mSurfaceControlProxy).setDesiredDisplayModeSpecs(
-                new SurfaceControl.DesiredDisplayModeSpecs[] {
+                any(IBinder.class),
+                eq(new SurfaceControl.DesiredDisplayModeSpecs[] {
                 new SurfaceControl.DesiredDisplayModeSpecs(
                         display.token,
-                        /* applyToken */ null,
                         /* baseModeId */ 2,
                         /* allowGroupSwitching */ false,
                         REFRESH_RATE_RANGES, REFRESH_RATE_RANGES, idleScreenRefreshRateConfig, null
-                )});
+                )}));
     }
 
     @Test
@@ -1988,7 +1988,6 @@ public class LocalDisplayAdapterTest {
         public SurfaceControl.DesiredDisplayModeSpecs desiredDisplayModeSpecs =
                 new SurfaceControl.DesiredDisplayModeSpecs(
                         token,
-                        /* applyToken */ null,
                         /* defaultMode */ 0,
                         /* allowGroupSwitching */ false,
                         REFRESH_RATE_RANGES, REFRESH_RATE_RANGES,

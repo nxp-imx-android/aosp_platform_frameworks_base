@@ -27,7 +27,7 @@ class FakeContextualSetupDefinition(override val id: String) : ContextualSetupDe
     private val _isReady = MutableStateFlow(false)
     override val isReady: Flow<Boolean> = _isReady
 
-    override val target: SetupTarget = SetupTarget.Activity(ComponentName("", ""))
+    override var target: SetupTarget? = null
 
     override var priority: Int = 0
 

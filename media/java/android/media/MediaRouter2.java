@@ -2671,12 +2671,10 @@ public final class MediaRouter2 {
         void releaseInternal(boolean shouldReleaseSession) {
             // SystemRoutingController will never be released. But in some cases, the session can be
             // released, for example Bluetooth broadcast
-            if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
-                mImpl.releaseSession(
-                        shouldReleaseSession,
-                        /* shouldNotifyStop= */ false,
-                        /* controller= */ this);
-            }
+            mImpl.releaseSession(
+                    shouldReleaseSession,
+                    /* shouldNotifyStop= */ false,
+                    /* controller= */ this);
         }
     }
 

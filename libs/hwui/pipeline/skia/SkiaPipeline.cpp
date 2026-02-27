@@ -586,6 +586,21 @@ uint64_t SkiaPipeline::getFrameNumber() {
     return ANativeWindow_getNextFrameId(anw);
 }
 
+void SkiaPipeline::setFrameTimelineInfo(const struct ANativeWindowFrameTimelineInfo& info) {
+    ANativeWindow* anw = getSurface();
+    if (anw) {
+        native_window_set_frame_timeline_info(anw, info);
+    }
+}
+
+int64_t SkiaPipeline::getLastDequeueDuration() {
+    ANativeWindow* anw = getSurface();
+    if (anw) {
+        return ANativeWindow_getLastDequeueDuration(anw);
+    }
+    return 0;
+}
+
 } /* namespace skiapipeline */
 } /* namespace uirenderer */
 } /* namespace android */

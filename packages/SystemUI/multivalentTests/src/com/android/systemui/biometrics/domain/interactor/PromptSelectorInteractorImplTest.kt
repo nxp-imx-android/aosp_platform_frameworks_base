@@ -315,6 +315,29 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
         }
 
     @Test
+    fun credentialKind_usesEffectiveUserId() =
+        testScope.runTest {
+            val effectiveUserId = 100
+            credentialInteractor.credentialOwnerId = effectiveUserId
+
+            whenever(lockPatternUtils.getCredentialTypeForUser(USER_ID))
+                .thenReturn(CREDENTIAL_TYPE_PASSWORD)
+            whenever(lockPatternUtils.getCredentialTypeForUser(effectiveUserId))
+                .thenReturn(CREDENTIAL_TYPE_PATTERN)
+
+            val promptKind by collectLastValue(interactor.promptKind)
+            val credentialKind by collectLastValue(interactor.credentialKind)
+            assertThat(promptKind).isEqualTo(PromptKind.None)
+
+            setPrompt(onSwitchToCredential = true)
+
+            assertThat(credentialKind).isEqualTo(PromptKind.Pattern)
+
+            interactor.resetPrompt(REQUEST_ID)
+            verifyUnset()
+        }
+
+    @Test
     fun switchToCredential_password() =
         testScope.runTest {
             setUserCredentialType(isPassword = true)

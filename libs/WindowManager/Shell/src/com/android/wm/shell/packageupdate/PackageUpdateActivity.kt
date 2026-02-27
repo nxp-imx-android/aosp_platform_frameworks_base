@@ -38,8 +38,7 @@ class PackageUpdateActivity : FragmentActivity() {
         setContentView(R.layout.package_update_activity)
         setupStaticProgressIndicator()
         createIcon(intent)
-        // Set title to none so that talkback doesn't announce it.
-        title = " "
+        setWindowTitle(intent)
     }
 
     private fun setupStaticProgressIndicator() {
@@ -56,12 +55,16 @@ class PackageUpdateActivity : FragmentActivity() {
 
     private fun createIcon(intent: Intent) {
         val bitmap = intent.getParcelableExtra(ICON, Bitmap::class.java)
-        val updatingAppName = intent.getParcelableExtra(UPDATING_APP, CharSequence::class.java)
         if (bitmap != null) {
             val iconView = requireViewById<ImageView>(R.id.veil_application_icon)
             iconView.setImageBitmap(bitmap)
-            iconView.contentDescription = updatingAppName?.toString() ?: "SystemUI"
+            iconView.contentDescription = null
         }
+    }
+
+    private fun setWindowTitle(intent: Intent) {
+        val updatingAppName = intent.getParcelableExtra(UPDATING_APP, CharSequence::class.java)
+        title = "${updatingAppName ?: "SystemUI"}${getString(R.string.package_update_text)}"
     }
 
     companion object {

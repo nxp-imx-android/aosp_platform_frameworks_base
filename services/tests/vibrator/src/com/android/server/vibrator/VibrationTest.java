@@ -47,11 +47,11 @@ public class VibrationTest {
         // Create PWLE segment
         // PwleSegment(float startAmplitude, float endAmplitude, float startFrequencyHz,
         // float endFrequencyHz, int duration)
-        PwleSegment pwle = new PwleSegment(0.5f, 1.0f, 100f, 200f, 50, false);
+        PwleSegment pwle = new PwleSegment(0.5f, 1.0f, 100f, 200f, 50);
         // Create Basic PWLE segment
         // BasicPwleSegment(float startIntensity, float endIntensity, float startSharpness,
         // float endSharpness, int duration)
-        BasicPwleSegment basicPwle = new BasicPwleSegment(0.2f, 0.8f, 0.4f, 0.6f, 60, false);
+        BasicPwleSegment basicPwle = new BasicPwleSegment(0.2f, 0.8f, 0.4f, 0.6f, 60);
         // StepSegment(float amplitude, float frequencyHz, int duration)
         StepSegment step = new StepSegment(0.5f, 10);
         // PrebakedSegment(int effectId, boolean shouldFallback, int effectStrength)

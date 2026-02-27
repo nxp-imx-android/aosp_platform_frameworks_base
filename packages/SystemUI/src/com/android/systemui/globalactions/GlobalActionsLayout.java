@@ -41,9 +41,12 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
     boolean mBackgroundsSet;
 
     private Boolean mIsBlurSupported = null;
+    private final boolean mTranslucentPowerMenu;
 
     public GlobalActionsLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mTranslucentPowerMenu =
+                context.getResources().getBoolean(R.bool.config_translucentStandalonePowerMenu);
     }
 
     public void setIsBlurSupported(boolean isBlurSupported) {
@@ -81,7 +84,8 @@ public abstract class GlobalActionsLayout extends MultiListLayout {
     private void updateIsBlurSupported() {
         if (blurOnMoreSurfaces() && mBackgroundsSet && mIsBlurSupported != null) {
             updateBackground(mContext.getColor(
-                    mIsBlurSupported ? R.color.global_actions_grid_background_blur
+                    mIsBlurSupported && mTranslucentPowerMenu
+                            ? R.color.global_actions_grid_background_blur
                             : R.color.global_actions_grid_background_blur_fallback));
         }
     }

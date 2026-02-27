@@ -16,12 +16,14 @@
 
 package com.android.systemui.communal.domain.interactor
 
+import android.content.ComponentName
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.contextualSetupDefinitionFactory
 import com.android.systemui.communal.contextualSetupRepository
 import com.android.systemui.communal.data.repository.SetupState
+import com.android.systemui.communal.domain.definition.SetupTarget
 import com.android.systemui.communal.fake
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.collectLastValue
@@ -54,6 +56,8 @@ class ContextualSetupInteractorTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        definition1.fake.target = SetupTarget.Activity(ComponentName("pkg", "cls"))
+        definition2.fake.target = SetupTarget.Activity(ComponentName("pkg", "cls"))
         underTest.init()
     }
 
@@ -72,6 +76,17 @@ class ContextualSetupInteractorTest : SysuiTestCase() {
             definition1.fake.setIsReady(true)
 
             assertThat(launchRequest).isEqualTo(definition1)
+        }
+
+    @Test
+    fun launchRequest_doesNotEmitWhenTargetIsNull() =
+        kosmos.runTest {
+            val launchRequest by collectLastValue(underTest.launchRequest)
+
+            definition1.fake.target = null
+            definition1.fake.setIsReady(true)
+
+            assertThat(launchRequest).isNull()
         }
 
     @Test

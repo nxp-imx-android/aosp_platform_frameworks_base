@@ -19,6 +19,7 @@ package com.android.wm.shell.transition;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
@@ -29,6 +30,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -40,6 +42,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.Log;
 import android.view.SurfaceControl;
 import android.view.animation.AlphaAnimation;
@@ -353,6 +356,67 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
                 mock(Transitions.TransitionFinishCallback.class));
 
         verify(startT).reparent(any(), any());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_CROSS_DISPLAY_TRANSITION)
+    public void startAnimation_crossDisplayMoveAnimation() {
+        final int startDisplayId = 0;
+        final int endDisplayId = 1;
+
+        final TransitionInfo.Change change = new ChangeBuilder(
+                createTaskInfo(1, WINDOWING_MODE_FULLSCREEN), TRANSIT_CHANGE).build();
+        change.setDisplayId(startDisplayId, endDisplayId);
+        final SurfaceControl mockSnapshot = mock(SurfaceControl.class);
+        change.setSnapshot(mockSnapshot, 0);
+        change.setParent(null);
+
+        final IBinder token = new Binder();
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CHANGE)
+                .addChange(change)
+                .build();
+        info.addRootLeash(startDisplayId, mock(SurfaceControl.class), 0, 0);
+
+        final SurfaceControl.Transaction startT = MockTransactionPool.create();
+        final SurfaceControl.Transaction finishT = MockTransactionPool.create();
+        final Transitions.TransitionFinishCallback finishCallback =
+                mock(Transitions.TransitionFinishCallback.class);
+
+        mTransitionHandler.startAnimation(token, info, startT, finishT, finishCallback);
+        flushHandlers();
+
+        verify(startT).setAlpha(change.getLeash(), 0f);
+        verify(startT).reparent(eq(mockSnapshot), any());
+        verify(startT).show(mockSnapshot);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_CROSS_DISPLAY_TRANSITION)
+    public void startAnimation_crossDisplayMoveWithoutSnapshot() {
+        final int startDisplayId = 0;
+        final int endDisplayId = 1;
+
+        final TransitionInfo.Change change = new ChangeBuilder(
+                createTaskInfo(1, WINDOWING_MODE_FULLSCREEN), TRANSIT_CHANGE).build();
+        change.setDisplayId(startDisplayId, endDisplayId);
+        change.setParent(null);
+
+        final IBinder token = new Binder();
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CHANGE)
+                .addChange(change)
+                .build();
+        info.addRootLeash(startDisplayId, mock(SurfaceControl.class), 0, 0);
+
+        final SurfaceControl.Transaction startT = MockTransactionPool.create();
+        final SurfaceControl.Transaction finishT = MockTransactionPool.create();
+
+        mTransitionHandler.startAnimation(token, info, startT, finishT,
+                mock(Transitions.TransitionFinishCallback.class));
+        flushHandlers();
+
+        verify(startT).setAlpha(change.getLeash(), 0f);
+        verify(startT, never()).reparent(any(), any());
+        verify(startT, never()).show(any());
     }
 
     private static void mergeSync(Transitions.TransitionHandler handler, IBinder token) {

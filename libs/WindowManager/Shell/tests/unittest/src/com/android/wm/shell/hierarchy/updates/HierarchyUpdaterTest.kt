@@ -51,12 +51,9 @@ import com.android.wm.shell.hierarchy.containers.StubContainer
 import com.android.wm.shell.hierarchy.modes.FormFactorModes
 import com.android.wm.shell.hierarchy.modes.Mode
 import com.android.wm.shell.hierarchy.modes.StubMode
-import com.android.wm.shell.hierarchy.properties.ActivityContainerProperties
 import com.android.wm.shell.hierarchy.properties.DisplayAreaContainerProperties
 import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
-import com.android.wm.shell.hierarchy.properties.RootContainerProperties
 import com.android.wm.shell.hierarchy.properties.TaskContainerProperties
-import com.android.wm.shell.hierarchy.properties.WallpaperContainerProperties
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
@@ -359,7 +356,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
         task.parent = display
 
         // Create a transition with a wallpaper and activity change
-        val displayId = display.props<DisplayContainerProperties>().displayId
+        val displayId = display.displayProps().displayId
         val wallpaperToken = WindowContainerToken.createProxy("test")
         val wallpaperChange = TransitionInfo.Change(wallpaperToken, mock<SurfaceControl>()).apply {
             mode = TRANSIT_OPEN
@@ -372,7 +369,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
             activityTransitionInfo =
                 ActivityTransitionInfo(
                     mock<ComponentName>(),
-                    task.props<TaskContainerProperties>().taskId
+                    task.taskProps().taskId
                 )
             parent = task.token
         }
@@ -390,10 +387,10 @@ class HierarchyUpdaterTest : ShellTestCase() {
                 // Verify transient containers exist
                 val wallpaper = hierarchy.getContainer(wallpaperToken)
                 assertThat(wallpaper).isNotNull()
-                assertThat(wallpaper!!.props).isInstanceOf(WallpaperContainerProperties::class.java)
+                assertThat(wallpaper!!.isWallpaper()).isTrue()
                 val activity = hierarchy.getContainer(activityToken)
                 assertThat(activity).isNotNull()
-                assertThat(activity!!.props).isInstanceOf(ActivityContainerProperties::class.java)
+                assertThat(activity!!.isActivity()).isTrue()
             }
         }
 
@@ -446,7 +443,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
         )
 
         // Verify the root container's focus state is updated
-        val rootProps = hierarchy.root.props<RootContainerProperties>()
+        val rootProps = hierarchy.root.rootProps()
         assertThat(rootProps.focusState.globallyFocusedTaskId).isEqualTo(taskId)
     }
 
@@ -643,7 +640,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
         updater.handleDisplayInsetsChanged(DEFAULT_DISPLAY, newInsets)
 
         // Verify that the display container props have the latest insets
-        assertThat(display.props<DisplayContainerProperties>().insetsState.insetsState).isEqualTo(
+        assertThat(display.displayProps().insetsState.insetsState).isEqualTo(
             newInsets
         )
         // Verify that the children modes are updated when the display changes

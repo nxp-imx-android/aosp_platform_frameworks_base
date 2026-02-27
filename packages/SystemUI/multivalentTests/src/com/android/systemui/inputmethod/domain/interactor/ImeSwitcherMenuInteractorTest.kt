@@ -26,6 +26,8 @@ import com.android.systemui.inputmethod.data.repository.fake
 import com.android.systemui.inputmethod.data.repository.imeSwitcherMenuRepository
 import com.android.systemui.inputmethod.shared.model.ImeSwitcherMenuModel
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
+import com.android.systemui.statusbar.policy.data.repository.fakeUserSetupRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertNull
@@ -41,6 +43,12 @@ class ImeSwitcherMenuInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val repository
         get() = kosmos.imeSwitcherMenuRepository.fake
+
+    private val userSetupRepository
+        get() = kosmos.fakeUserSetupRepository
+
+    private val deviceProvisioningRepository
+        get() = kosmos.fakeDeviceProvisioningRepository
 
     private val underTest
         get() = kosmos.imeSwitcherMenuInteractor
@@ -98,5 +106,35 @@ class ImeSwitcherMenuInteractorTest : SysuiTestCase() {
 
             val otherUserModel = underTest.getModel(3)
             assertNull(otherUserModel)
+        }
+
+    /** Verifies that shouldShowSettingsButton is true when all conditions are met. */
+    @Test
+    fun shouldShowSettingsButton_true_whenAllConditionsMet() =
+        kosmos.runTest {
+            deviceProvisioningRepository.setDeviceProvisioned(true)
+            userSetupRepository.setUserSetUp(true)
+
+            assertThat(underTest.shouldShowSettingsButton()).isTrue()
+        }
+
+    /** Verifies that shouldShowSettingsButton is false when the device is not provisioned. */
+    @Test
+    fun shouldShowSettingsButton_false_whenDeviceNotProvisioned() =
+        kosmos.runTest {
+            deviceProvisioningRepository.setDeviceProvisioned(false)
+            userSetupRepository.setUserSetUp(true)
+
+            assertThat(underTest.shouldShowSettingsButton()).isFalse()
+        }
+
+    /** Verifies that shouldShowSettingsButton is false when the user is not set up. */
+    @Test
+    fun shouldShowSettingsButton_false_whenUserNotSetup() =
+        kosmos.runTest {
+            deviceProvisioningRepository.setDeviceProvisioned(true)
+            userSetupRepository.setUserSetUp(false)
+
+            assertThat(underTest.shouldShowSettingsButton()).isFalse()
         }
 }

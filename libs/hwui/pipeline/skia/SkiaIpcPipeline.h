@@ -22,9 +22,11 @@
 #include <android/ipcrenderbuffer/RenderBufferOps.h>
 #include <gui/SurfaceComposerClient.h>
 #include <gui/SurfaceControl.h>
+#include <android/gui/FrameTimelineInfo.h>
 
 #include <memory>
 #include <mutex>
+#include <queue>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
@@ -65,10 +67,7 @@ public:
             std::mutex& profilerLock) override;
     bool swapBuffers(const renderthread::Frame& frame, IRenderPipeline::DrawResult& drawResult,
                      const SkRect& screenDirty, FrameInfo* currentFrameInfo,
-                     bool* requireSwap) override {
-        *requireSwap = true;
-        return true;
-    }
+                     bool* requireSwap) override;
     DeferredLayerUpdater* createTextureLayer() override { return nullptr; }
     bool setSurface(ANativeWindow* surface, renderthread::SwapBehavior swapBehavior) override;
 
@@ -101,6 +100,11 @@ public:
 
     void updateRenderTargetSize(uint64_t width, uint64_t height) override;
 
+    void setFrameTimelineInfo(const struct ANativeWindowFrameTimelineInfo& info) override;
+    int64_t getLastDequeueDuration() override;
+
+    bool hasRenderTarget() override;
+
 private:
     sp<IBinder> mApplyToken;
 
@@ -112,6 +116,7 @@ private:
     sp<SurfaceControl> mSurfaceControl;
     std::vector<std::tuple<uint64_t /* framenumber */, SurfaceComposerClient::Transaction>>
             mPendingTransactions GUARDED_BY(mLock);
+    std::queue<std::pair<uint64_t, FrameTimelineInfo>> mPendingFrameTimelines;
     SurfaceComposerClient::Transaction* mSyncTransaction GUARDED_BY(mLock) = nullptr;
     std::function<void(SurfaceComposerClient::Transaction*)> mTransactionReadyCallback
             GUARDED_BY(mLock);

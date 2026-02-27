@@ -548,6 +548,7 @@ object TestShortcuts {
             simpleShortcutCategory(System, "System controls", "Go to home screen"),
             simpleShortcutCategory(System, "System apps", "Open settings"),
             simpleShortcutCategory(System, "System apps", "Contextual Search"),
+            simpleShortcutCategory(System, "System apps", "Contextual Cursor"),
             simpleShortcutCategory(System, "System controls", "Lock screen"),
             simpleShortcutCategory(System, "System controls", "View notifications"),
             simpleShortcutCategory(System, "System controls", "View quick settings"),
@@ -589,6 +590,9 @@ object TestShortcuts {
             ),
             simpleInputGestureData(
                 keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH
+            ),
+            simpleInputGestureData(
+                keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_CURSOR
             ),
             simpleInputGestureData(
                 keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT

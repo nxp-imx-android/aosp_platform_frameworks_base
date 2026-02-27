@@ -1094,10 +1094,11 @@ public final class ActiveServices {
             boolean isBgFgsRestrictionEnabledForService =  isBgFgsRestrictionEnabled(r, callingUid);
             logFgsBackgroundStart(r, isBgFgsRestrictionEnabledForService);
             if (!r.isFgsAllowedStart() && isBgFgsRestrictionEnabledForService) {
-                String msg = "startForegroundService() not allowed due to "
-                        + "mAllowStartForeground false: service "
+                final String msg = "startForegroundService() not allowed: "
+                        + "service "
                         + r.shortInstanceName;
-                Slog.w(TAG, msg);
+                Slog.w(TAG, msg + (r.mInfoAllowStartForeground != null
+                        ? "; " + r.mInfoAllowStartForeground : ""));
                 showFgsBgRestrictedNotificationLocked(r);
                 logFGSStateChangeLocked(r,
                         FOREGROUND_SERVICE_STATE_CHANGED__STATE__DENIED,
@@ -2647,11 +2648,12 @@ public final class ActiveServices {
                         logFgsBackgroundStart(r, isBgFgsRestrictionEnabledForService);
                         if (!r.isFgsAllowedStart()
                                 && isBgFgsRestrictionEnabledForService) {
-                            final String msg = "Service.startForeground() not allowed due to "
-                                    + "mAllowStartForeground false: service "
+                            final String msg = "Service.startForeground() not allowed: "
+                                    + "service "
                                     + r.shortInstanceName
                                     + (isOldTypeShortFgs ? " (Called on SHORT_SERVICE)" : "");
-                            Slog.w(TAG, msg);
+                            Slog.w(TAG, msg + (r.mInfoAllowStartForeground != null
+                                    ? "; " + r.mInfoAllowStartForeground : ""));
                             showFgsBgRestrictedNotificationLocked(r);
                             updateServiceForegroundLocked(psr, true);
                             ignoreForeground = true;
@@ -9422,6 +9424,7 @@ public final class ActiveServices {
                         + "; callingUid: " + callingUid
                         + "; uidState: " + ProcessList.makeProcStateString(uidState)
                         + "; uidBFSL: " + (uidBfsl ? "[BFSL]" : "n/a")
+                        + "; BFGS denied: " + (ret == REASON_DENIED)
                         + "; intent: " + intent
                         + "; code:" + reasonCodeToString(ret)
                         + "; tempAllowListReason:<"
@@ -9437,7 +9440,7 @@ public final class ActiveServices {
                         + "; callerTargetSdkVersion:" + callerTargetSdkVersion
                         + "; startForegroundCount:" + r.mStartForegroundCount
                         + "; bindFromPackage:" + bindFromPackage
-                        + ": isBindService:" + isBindService
+                        + "; isBindService:" + isBindService
                         + "]";
         if (!debugInfo.equals(r.mInfoAllowStartForeground)) {
             r.mLoggedInfoAllowStartForeground = false;

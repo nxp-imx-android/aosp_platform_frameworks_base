@@ -682,10 +682,7 @@ public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCas
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_LE_AUDIO_SHARING,
-        com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING)
     fun onDeviceListUpdate_withBroadcastOn_returnsBroadcastDevice() {
         // GIVEN a notif is added
         loadMediaAndCaptureDeviceData()

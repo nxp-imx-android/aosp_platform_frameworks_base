@@ -412,6 +412,7 @@ cc_defaults_for_libandroid_runtime {
                 "libimg_utils",
                 "libnetd_client",
                 "libprocessgroup",
+                "libprocessgroup_platform",
                 "libnativebridge_lazy",
                 "libnativeloader_lazy",
                 "libmemunreachable",

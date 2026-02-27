@@ -124,9 +124,8 @@ public class SupervisionSettings {
     /**
      * Performs the given action for each user data entry in the settings.
      *
-     * <p>This method iterates over all stored {@link SupervisionUserData} entries
-     * and applies the provided {@link BiConsumer} action, passing the user ID and
-     * the corresponding user data.
+     * <p>This method iterates over all stored {@link SupervisionUserData} entries and applies the
+     * provided {@link BiConsumer} action, passing the user ID and the corresponding user data.
      *
      * @param action The action to be performed for each user data entry.
      */
@@ -360,8 +359,9 @@ public class SupervisionSettings {
                 continue;
             }
             switch (tagName) {
-                case KEY_LOCK_SCREEN_OPTIONS -> data.supervisionLockScreenOptions =
-                        PersistableBundle.restoreFromXml(parser);
+                case KEY_LOCK_SCREEN_OPTIONS ->
+                        data.supervisionLockScreenOptions =
+                                PersistableBundle.restoreFromXml(parser);
                 case KEY_ROLE_HOLDERS_LIST -> parseRoleHolders(parser, data);
                 case KEY_POLICIES_LIST -> {
                     if (Flags.enableSupervisionManagerPolicyApis()) {

@@ -596,6 +596,10 @@
         <item name="android:windowElevation">0dp</item>
     </style>
 
+    <style name="Theme.SystemUI.Dialog.SelectDream" parent="Theme.SystemUI.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
     <style name="Theme.SystemUI.BottomSheet" parent="Theme.SystemUI.Dialog">
         <!-- default dialog background has insets -->
         <item name="android:windowBackground">@android:color/transparent</item>

@@ -1367,8 +1367,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
         synchronized (mLock) {
             final AccessibilityUserState userState = getUserStateLocked(userId);
-            final Set<String> finalAllowedPackages = getPermittedServicesStrictApm(
-                    currentPermittedList, userId);
+            final Set<String> finalAllowedPackages;
+            if (currentPermittedList != null) {
+                finalAllowedPackages = getPermittedServicesLegacy(currentPermittedList, userId);
+            } else {
+                finalAllowedPackages = getPermittedServicesStrictApm(userId);
+            }
 
             return new AccessibilityManagerInternal.AccessibilityFeatureRestrictedCounts(
                     getServicesDisabledByDevicePolicyCountLocked(userState, finalAllowedPackages),
@@ -7458,6 +7462,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             return getPermittedServicesLegacy(adminPermittedServices, userId);
         }
 
+        // If an Enterprise Admin explicitly set an allowlist, Admin intent overrides AAPM.
+        if (adminPermittedServices != null) {
+            return getPermittedServicesLegacy(adminPermittedServices, userId);
+        }
+
         final boolean apmOn = mUmi.hasUserRestriction(
                 UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE, userId);
 
@@ -7465,7 +7474,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             return getPermittedServicesLegacy(adminPermittedServices, userId);
         }
 
-        return getPermittedServicesStrictApm(adminPermittedServices, userId);
+        return getPermittedServicesStrictApm(userId);
     }
 
     private Set<String> getPermittedServicesLegacy(
@@ -7492,19 +7501,14 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         return resultSet;
     }
 
-    private Set<String> getPermittedServicesStrictApm(
-            @Nullable List<String> adminPermittedServices, int userId) {
+    private Set<String> getPermittedServicesStrictApm(int userId) {
 
         List<AccessibilityServiceInfo> installedServices = getInstalledAccessibilityServiceList(
                 userId).getList();
 
         if (installedServices == null || installedServices.isEmpty()) {
-            return (adminPermittedServices != null) ? new HashSet<>(adminPermittedServices)
-                    : new HashSet<>();
+            return new HashSet<>();
         }
-
-        Set<String> basePermittedSet = (adminPermittedServices != null)
-                ? new HashSet<>(adminPermittedServices) : null;
 
         // Find all packages that contain at least one non-tool service
         Set<String> packagesWithNonTools = new HashSet<>();
@@ -7523,11 +7527,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         /*
          * Filters installed accessibility services to determine which packages are permitted
          * to run, particularly when Advanced Protection Mode (APM) is active.
+         *
+         * Note: If an Enterprise Admin policy is active, it takes precedence and this method
+         * is not called (handled in getPermittedAccessibilityServicePackages).
+         *
          * * Packages must satisfy these conditions:
          * 1. Be a system app OR an explicitly marked accessibility tool (isSystem || isTool).
-         * 2. If a Device Admin policy is set, the package must be explicitly permitted by the
-         * admin policy.
-         * 3. The package must NOT contain any non-tool accessibility service (enforcing the
+         * 2. The package must NOT contain any non-tool accessibility service (enforcing the
          * policy that one non-tool service blocks the entire package).
          */
         Set<String> finalAllowedPackageNames = new HashSet<>();
@@ -7542,14 +7548,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
             // Must be System OR Tool
             if (isSystem || isTool) {
-                // Must be Admin Allowed (if admin policy exists)
-                boolean adminAllowed = basePermittedSet == null || basePermittedSet.contains(
-                        packageName);
-
                 // Must NOT contain any non-tool service
                 boolean packageContainsNonToolService = packagesWithNonTools.contains(packageName);
 
-                if (adminAllowed && !packageContainsNonToolService) {
+                if (!packageContainsNonToolService) {
                     finalAllowedPackageNames.add(packageName);
                 }
             }

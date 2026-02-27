@@ -24,7 +24,7 @@ import com.android.systemui.screencapture.ui.viewmodel.screenCaptureUiDialogView
 import com.android.systemui.screencapture.ui.viewmodel.screenCaptureUiViewModelFactory
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
 
-val Kosmos.screenCaptureUiDialogFactory by
+var Kosmos.screenCaptureUiDialogFactory by
     Kosmos.Fixture {
         ScreenCaptureUiDialogFactory(
             appContext = applicationContext,

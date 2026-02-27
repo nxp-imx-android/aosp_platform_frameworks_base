@@ -25,6 +25,7 @@
 #endif
 #include <utils/RefBase.h>
 
+
 #include "ColorMode.h"
 #include "DamageAccumulator.h"
 #include "FrameInfoVisualizer.h"
@@ -35,6 +36,7 @@
 #include "hwui/Bitmap.h"
 
 struct ANativeWindow;
+struct ANativeWindowFrameTimelineInfo;
 
 namespace android {
 
@@ -121,6 +123,10 @@ public:
 
     virtual ANativeWindow* getSurface() = 0;
     virtual uint64_t getFrameNumber() = 0;
+    virtual void setFrameTimelineInfo(const ANativeWindowFrameTimelineInfo& info) = 0;
+    virtual int64_t getLastDequeueDuration() = 0;
+
+    virtual bool hasRenderTarget() = 0;
 
     virtual ~IRenderPipeline() {}
 };

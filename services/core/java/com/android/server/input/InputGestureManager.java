@@ -20,6 +20,7 @@ import static android.hardware.input.InputGestureData.createKeyTrigger;
 
 import static com.android.hardware.input.Flags.enableContextualInputTrigger;
 import static com.android.hardware.input.Flags.enableColorInversionKeyGestures;
+import static com.android.hardware.input.Flags.enableContextualCursorDesktopEntrypoints;
 import static com.android.hardware.input.Flags.enableContextualSearchDesktopEntrypoints;
 import static com.android.hardware.input.Flags.enableNoteTakingKeyboardShortcut;
 import static com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut;
@@ -392,6 +393,14 @@ final class InputGestureManager {
                             KeyGestureEvent.KEY_GESTURE_TYPE_CONTEXTUAL_INPUT,
                             /* allowCaptureByFocusedWindow = */false
                     ));
+        }
+        if (enableContextualCursorDesktopEntrypoints()) {
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_G,
+                            KeyEvent.META_META_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_CURSOR,
+                            /* allowCaptureByFocusedWindow= */ true));
         }
         synchronized (mGestureLock) {
             for (InputGestureData systemShortcut : systemShortcuts) {

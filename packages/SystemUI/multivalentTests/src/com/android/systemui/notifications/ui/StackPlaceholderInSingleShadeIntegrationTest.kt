@@ -19,6 +19,7 @@ package com.android.systemui.notifications.ui
 import android.content.res.mainResources
 import android.platform.test.annotations.MotionTest
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.TouchInjectionScope
@@ -125,7 +126,7 @@ class StackPlaceholderInSingleShadeIntegrationTest : SysuiTestCase() {
     }
 
     fun setupMediaForShade() {
-        kosmos.fakeMediaRepository.currentMedia = listOf(kosmos.fakeActiveMedia)
+        kosmos.fakeMediaRepository.currentMedia = mutableStateListOf(kosmos.fakeActiveMedia)
         val userMedia = MediaData(active = true)
         kosmos.mediaPipelineRepository.addCurrentUserMediaEntry(userMedia)
     }

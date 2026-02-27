@@ -29,8 +29,6 @@ import com.android.frameworks.coretests.R
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils
 
 import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertTrue
-
 
 import org.junit.Before
 import org.junit.Rule
@@ -63,14 +61,6 @@ class XmlResourcesFlaggedTest {
 
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_LAYOUT_READWRITE_FLAGS)
-    fun flaggedXmlTypedValueMarkedAsSuch() {
-        val tv = TypedValue()
-        mResources.getImpl().getValue(R.xml.flags, tv, false)
-        assertTrue(tv.usesFeatureFlags)
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LAYOUT_READWRITE_FLAGS)
     @Throws(IOException::class, XmlPullParserException::class)
     fun parsedFlaggedXmlWithTrueOneElement() {
         ParsingPackageUtils.getAconfigFlags()
@@ -87,29 +77,6 @@ class XmlResourcesFlaggedTest {
         assertEquals(XmlPullParser.START_DOCUMENT, parser.next())
         assertEquals(XmlPullParser.START_TAG, parser.next())
         assertEquals("first", parser.getName())
-        assertEquals(XmlPullParser.END_TAG, parser.next())
-        assertEquals(XmlPullParser.END_DOCUMENT, parser.next())
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_LAYOUT_READWRITE_FLAGS)
-    @Throws(IOException::class, XmlPullParserException::class)
-    fun parsedFlaggedXmlWithFalseTwoElements() {
-        val tv = TypedValue()
-        mResources.getImpl().getValue(R.xml.flags, tv, false)
-        val parser = mResources.loadXmlResourceParser(
-            tv.string.toString(),
-            R.xml.flags,
-            tv.assetCookie,
-            "xml",
-            false
-        )
-        assertEquals(XmlPullParser.START_DOCUMENT, parser.next())
-        assertEquals(XmlPullParser.START_TAG, parser.next())
-        assertEquals("first", parser.getName())
-        assertEquals(XmlPullParser.START_TAG, parser.next())
-        assertEquals("second", parser.getName())
-        assertEquals(XmlPullParser.END_TAG, parser.next())
         assertEquals(XmlPullParser.END_TAG, parser.next())
         assertEquals(XmlPullParser.END_DOCUMENT, parser.next())
     }

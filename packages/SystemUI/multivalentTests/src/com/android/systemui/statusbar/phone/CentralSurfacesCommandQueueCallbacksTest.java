@@ -40,6 +40,7 @@ import com.android.internal.logging.testing.FakeMetricsLogger;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.assist.AssistManager;
+import com.android.systemui.camera.domain.interactor.CameraNotifyWarmUpInteractor;
 import com.android.systemui.emergency.EmergencyGestureModule.EmergencyGestureIntentFactory;
 import com.android.systemui.flags.DisableSceneContainer;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
@@ -97,6 +98,7 @@ public class CentralSurfacesCommandQueueCallbacksTest extends SysuiTestCase {
     @Mock private DozeServiceHost mDozeServiceHost;
     @Mock private NotificationStackScrollLayoutController mNotificationStackScrollLayoutController;
     @Mock private PowerManager mPowerManager;
+    @Mock private CameraNotifyWarmUpInteractor mCameraNotifyWarmUpInteractor;
     @Mock private Vibrator mVibrator;
     @Mock private StatusBarHideIconsForBouncerManager mStatusBarHideIconsForBouncerManager;
     @Mock private Lazy<CameraLauncher> mCameraLauncherLazy;
@@ -137,6 +139,7 @@ public class CentralSurfacesCommandQueueCallbacksTest extends SysuiTestCase {
                 mNotificationStackScrollLayoutController,
                 mStatusBarHideIconsForBouncerManager,
                 mPowerManager,
+                mCameraNotifyWarmUpInteractor,
                 Optional.of(mVibrator),
                 DEFAULT_DISPLAY,
                 mCameraLauncherLazy,

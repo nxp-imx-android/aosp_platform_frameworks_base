@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -32,21 +33,28 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class NotificationRulesScreenViewModelTest : SysuiTestCase() {
     val kosmos = testKosmosNew()
+    val backStack = mutableStateListOf<RulesScreenViewState>(RulesScreenViewState.CurrentRules)
 
-    val Kosmos.underTest by Kosmos.Fixture { notificationRulesScreenViewModel }
+    val Kosmos.underTest by
+        Kosmos.Fixture { notificationRulesScreenViewModelFactory.create(backStack) }
 
     @Test
-    fun launchEditRuleScreen_updatesViewState() =
+    fun currentScreen_isUpdatedWithBackStack() =
         kosmos.runTest {
-            assertThat(underTest.viewState).isEqualTo(RulesScreenViewState.CurrentRules)
+            assertThat(underTest.currentScreen).isEqualTo(RulesScreenViewState.CurrentRules)
 
             val draftRule =
                 DraftRuleModel(action = ActionModel.Highlight, contacts = null, includedApps = null)
 
-            kosmos.underTest.launchEditRuleScreen(draftRule)
+            backStack.add(
+                RulesScreenViewState.EditRule(
+                    notificationRuleEditViewModelFactory.create(draftRule)
+                )
+            )
 
-            assertThat(underTest.viewState).isInstanceOf(RulesScreenViewState.RuleEdit::class.java)
-            assertThat((underTest.viewState as RulesScreenViewState.RuleEdit).editViewModel.rule)
+            assertThat(underTest.currentScreen)
+                .isInstanceOf(RulesScreenViewState.EditRule::class.java)
+            assertThat((underTest.currentScreen as RulesScreenViewState.EditRule).viewModel.rule)
                 .isEqualTo(draftRule)
         }
 }

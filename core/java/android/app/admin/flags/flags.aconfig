@@ -583,17 +583,6 @@ flag {
 }
 
 flag {
-  name: "managed_device_definition_extended"
-  is_exported: false
-  namespace: "enterprise"
-  description: "Extend the definition of managed device to include COPE and MUM"
-  bug: "451607072"
-  metadata {
-      purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "increase_watch_strong_auth_timeout"
   namespace: "cross_device_access_service"
   description: "Increase the watch strong auth timeout to 14 days."
@@ -632,4 +621,14 @@ flag {
   namespace: "enterprise"
   description: "Redirect set/getMaximumTimeToLock to the generic set/getPolicy APIs."
   bug: "444381053"
+}
+
+flag {
+  name: "check_personal_suspension_for_all_profiles"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+  namespace: "enterprise"
+  description: "When ACTION_DATE_CHANGED or ACTION_TIME_CHANGED is received, iterates through all managed profiles on the device to determine if personal apps should be suspended, instead of relying on the main user setting."
+  bug: "470176722"
 }

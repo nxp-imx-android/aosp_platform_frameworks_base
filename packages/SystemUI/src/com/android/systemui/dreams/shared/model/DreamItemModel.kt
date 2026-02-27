@@ -25,12 +25,20 @@ import android.service.dreams.DreamItem
  * from the framework's [android.service.dreams.DreamItem] class.
  */
 data class DreamItemModel(
+    /** The [ComponentName] for the [android.service.dreams.DreamService] */
     val componentName: ComponentName,
+    /** The title of the dream, if any */
     val title: CharSequence? = null,
+    /** The description of the dream, if any */
     val description: CharSequence? = null,
+    /** The icon of the dream, if any */
     val icon: Icon? = null,
+    /** The preview image of the dream, if any */
     val previewImage: Icon? = null,
+    /** The activity to launch when the dream is selected */
     val settingsActivity: ComponentName? = null,
+    /** Information on the application associated with the dream, if any. */
+    val appInfo: DreamAppModel? = null,
 ) {
     override fun toString(): String {
         return "$title (${componentName.flattenToShortString()})"

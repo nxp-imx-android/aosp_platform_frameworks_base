@@ -15,10 +15,12 @@
  */
 package android.app.supervision;
 
-import android.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
 import android.app.supervision.flags.Flags;
+
+import androidx.annotation.Nullable;
+
 import java.util.Objects;
 
 /**

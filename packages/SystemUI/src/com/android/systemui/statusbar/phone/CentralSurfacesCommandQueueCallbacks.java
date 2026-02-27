@@ -46,6 +46,7 @@ import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.camera.CameraIntents;
+import com.android.systemui.camera.domain.interactor.CameraNotifyWarmUpInteractor;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.DisplayId;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -104,6 +105,7 @@ public class CentralSurfacesCommandQueueCallbacks implements CommandQueue.Callba
     private final NotificationStackScrollLayoutController mNotificationStackScrollLayoutController;
     private final StatusBarHideIconsForBouncerManager mStatusBarHideIconsForBouncerManager;
     private final PowerManager mPowerManager;
+    private final CameraNotifyWarmUpInteractor mCameraNotifyWarmUpInteractor;
     private final Optional<Vibrator> mVibratorOptional;
     private final int mDisplayId;
     private final UserTracker mUserTracker;
@@ -152,6 +154,7 @@ public class CentralSurfacesCommandQueueCallbacks implements CommandQueue.Callba
             NotificationStackScrollLayoutController notificationStackScrollLayoutController,
             StatusBarHideIconsForBouncerManager statusBarHideIconsForBouncerManager,
             PowerManager powerManager,
+            CameraNotifyWarmUpInteractor cameraNotifyWarmUpInteractor,
             Optional<Vibrator> vibratorOptional,
             @DisplayId int displayId,
             Lazy<CameraLauncher> cameraLauncherLazy,
@@ -183,6 +186,7 @@ public class CentralSurfacesCommandQueueCallbacks implements CommandQueue.Callba
         mNotificationStackScrollLayoutController = notificationStackScrollLayoutController;
         mStatusBarHideIconsForBouncerManager = statusBarHideIconsForBouncerManager;
         mPowerManager = powerManager;
+        mCameraNotifyWarmUpInteractor = cameraNotifyWarmUpInteractor;
         mVibratorOptional = vibratorOptional;
         mDisplayId = displayId;
         mCameraLauncherLazy = cameraLauncherLazy;
@@ -383,6 +387,9 @@ public class CentralSurfacesCommandQueueCallbacks implements CommandQueue.Callba
         }
 
         if (!mKeyguardStateController.isShowing()) {
+            if (com.android.internal.camera.flags.Flags.cameraWarmUp()) {
+                mCameraNotifyWarmUpInteractor.notifyCameraWarmUp();
+            }
             final Intent cameraIntent = CameraIntents.getInsecureCameraIntent(mContext, mUserTracker.getUserId());
             cameraIntent.putExtra(CameraIntents.EXTRA_LAUNCH_SOURCE, source);
             mActivityStarter.startActivityDismissingKeyguard(cameraIntent,
@@ -711,6 +718,9 @@ public class CentralSurfacesCommandQueueCallbacks implements CommandQueue.Callba
     }
 
     private void startInsecureCameraIntent(int source) {
+        if (com.android.internal.camera.flags.Flags.cameraWarmUp()) {
+            mCameraNotifyWarmUpInteractor.notifyCameraWarmUp();
+        }
         final Intent cameraIntent = CameraIntents.getInsecureCameraIntent(mContext,
                 mUserTracker.getUserId());
         cameraIntent.putExtra(CameraIntents.EXTRA_LAUNCH_SOURCE, source);

@@ -32,6 +32,7 @@ import android.annotation.UserIdInt;
 import android.app.contentrestriction.flags.Flags;
 import android.content.Context;
 import android.os.Binder;
+import android.os.OutcomeReceiver;
 import android.os.RemoteException;
 
 import java.util.concurrent.Executor;
@@ -89,10 +90,10 @@ public class ContentRestrictionManager {
     public void requestClassification(
             @NonNull ClassifiableContent content,
             @NonNull @CallbackExecutor Executor executor,
-            @NonNull Consumer<Boolean> callback) {
+            @NonNull OutcomeReceiver<Boolean, Exception> callback) {
 
         if (!isContentRestrictionEnabled()) {
-            executor.execute(() -> callback.accept(true));
+            executor.execute(() -> callback.onResult(true));
             return;
         }
 
@@ -103,7 +104,18 @@ public class ContentRestrictionManager {
                 public void onResult(boolean isContentAllowed) {
                     final long token = Binder.clearCallingIdentity();
                     try {
-                        executor.execute(() -> callback.accept(isContentAllowed));
+                        executor.execute(() -> callback.onResult(isContentAllowed));
+                    } finally {
+                        Binder.restoreCallingIdentity(token);
+                    }
+                }
+
+                @Override
+                public void onError(int error, String message) {
+                    final long token = Binder.clearCallingIdentity();
+                    try {
+                        executor.execute(()
+                            -> callback.onError(new IllegalStateException(message)));
                     } finally {
                         Binder.restoreCallingIdentity(token);
                     }

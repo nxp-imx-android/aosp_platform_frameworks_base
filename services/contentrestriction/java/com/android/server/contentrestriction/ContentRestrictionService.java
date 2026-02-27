@@ -148,6 +148,12 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
                 public void onResult(boolean isContentAllowed) {
                     dispatchIsContentAllowedCallback(callback, isContentAllowed);
                 }
+
+                @Override
+                @RequiresNoPermission
+                public void onError(int error, String message) {
+                    dispatchOnErrorCallback(callback, error, message);
+                }
             };
 
             dispatchContentRestrictionAppServiceEvent(userId, service -> {
@@ -190,6 +196,20 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
         BackgroundThread.getExecutor().execute(() -> {
             try {
                 callback.onResult(isContentAllowed);
+            } catch (RemoteException e) {
+                // Client died, the service should have logged it.
+            }
+        });
+    }
+
+    private void dispatchOnErrorCallback(IContentRestrictionCallback callback,
+            int error, String message) {
+        if (callback == null) {
+            return;
+        }
+        BackgroundThread.getExecutor().execute(() -> {
+            try {
+                callback.onError(error, message);
             } catch (RemoteException e) {
                 // Client died, the service should have logged it.
             }

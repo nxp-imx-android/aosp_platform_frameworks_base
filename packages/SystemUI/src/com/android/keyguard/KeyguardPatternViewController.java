@@ -26,6 +26,7 @@ import android.content.res.ColorStateList;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
+import android.uilatencystats.UiLatencyStatsManager;
 import android.util.Log;
 import android.util.PluralsMessageFormatter;
 import android.view.MotionEvent;
@@ -54,6 +55,7 @@ import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 
 public class KeyguardPatternViewController
         extends KeyguardInputViewController<KeyguardPatternView> {
@@ -69,6 +71,7 @@ public class KeyguardPatternViewController
     private final LatencyTracker mLatencyTracker;
     private final FalsingCollector mFalsingCollector;
     private final EmergencyButtonController mEmergencyButtonController;
+    private final Optional<UiLatencyStatsManager> mUiLatencyStatsManager;
     private final DevicePostureController mPostureController;
     private final DevicePostureController.Callback mPostureCallback =
             posture -> mView.onDevicePostureChanged(posture);
@@ -199,6 +202,9 @@ public class KeyguardPatternViewController
                 if (dismissKeyguard) {
                     mLockPatternView.setDisplayMode(LockPatternView.DisplayMode.Correct);
                     mLatencyTracker.onActionStart(LatencyTracker.ACTION_LOCKSCREEN_UNLOCK);
+                    mUiLatencyStatsManager.ifPresent(m -> m.reportEvent(
+                            UiLatencyStatsManager.EVENT_LOCK_SCREEN_UNLOCK_START,
+                            SystemClock.elapsedRealtime()));
                     Log.i(TAG,
                             "StartUnlock. "
                             + "User: " + userId
@@ -241,7 +247,8 @@ public class KeyguardPatternViewController
             EmergencyButtonController emergencyButtonController,
             KeyguardMessageAreaController.Factory messageAreaControllerFactory,
             DevicePostureController postureController, FeatureFlags featureFlags,
-            SelectedUserInteractor selectedUserInteractor, BouncerHapticPlayer bouncerHapticPlayer
+            SelectedUserInteractor selectedUserInteractor, BouncerHapticPlayer bouncerHapticPlayer,
+            Optional<UiLatencyStatsManager> uiLatencyStatsManager
     ) {
         super(view, securityMode, keyguardSecurityCallback, emergencyButtonController,
                 messageAreaControllerFactory, featureFlags, selectedUserInteractor,
@@ -255,6 +262,7 @@ public class KeyguardPatternViewController
                 featureFlags.isEnabled(LOCKSCREEN_ENABLE_LANDSCAPE));
         mLockPatternView = mView.findViewById(R.id.lockPatternView);
         mPostureController = postureController;
+        mUiLatencyStatsManager = uiLatencyStatsManager;
     }
 
     @Override

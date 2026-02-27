@@ -143,3 +143,27 @@ policy_metadata {
   allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
   allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
 }
+policy_metadata {
+  identifier {
+    field_name: "CONTENT_RESTRICTION_APPS"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "List"
+    package_name: "java.util"
+  }
+  documentation: "Policy that sets the list of packages that are enforced as content restriction role holders.\nThis allows admins to designate specific apps responsible for filtering and monitoring\ncontent for the user.\n<p>\nIf the value is {@code null}, the admin's enforcement is cleared, and the system\nre-evaluates the role holders based on other active policies.\n<p>\nDesignation as a content restriction app is a privileged state that allows\nthe package to perform sensitive filtering actions."
+  type_specific_metadata {
+    list_metadata {
+      string_metadata {
+      }
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_PER_USER
+  required_permission: "android.permission.MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS"
+  required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL"
+  allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE
+}

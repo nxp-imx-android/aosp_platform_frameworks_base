@@ -20,8 +20,14 @@ import android.view.SurfaceControl
 import android.window.TransitionInfo
 import android.window.WindowContainerToken
 import com.android.wm.shell.hierarchy.modes.Mode
+import com.android.wm.shell.hierarchy.properties.ActivityContainerProperties
 import com.android.wm.shell.hierarchy.properties.ContainerProperties
+import com.android.wm.shell.hierarchy.properties.DisplayAreaContainerProperties
+import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
+import com.android.wm.shell.hierarchy.properties.RootContainerProperties
 import com.android.wm.shell.hierarchy.properties.SurfaceProperties
+import com.android.wm.shell.hierarchy.properties.TaskContainerProperties
+import com.android.wm.shell.hierarchy.properties.WallpaperContainerProperties
 import com.android.wm.shell.hierarchy.utils.HierarchyDebugUtils.Companion.tokenToString
 import com.android.wm.shell.hierarchy.utils.HierarchyUtils
 
@@ -137,6 +143,10 @@ open class Container(
         surface.updateReferenceFrame(relBounds)
     }
 
+    //
+    // Convenience methods
+    //
+
     /**
      * Convenience method to return a typed subclass of the container's properties.
      */
@@ -144,12 +154,30 @@ open class Container(
         return props as T
     }
 
-    //
-    // Hierarchy convenience methods
-    //
-
-    /**
-     * Returns the root container for the hierarchy this container is in.
-     */
-    fun getRoot(): Container = HierarchyUtils.getRoot(this)
+    /** Returns whether this is a root container. */
+    fun isRoot() = props is RootContainerProperties
+    /** Returns root props. */
+    fun rootProps() = props as RootContainerProperties
+    /** Returns whether this is a display container. */
+    fun isDisplay() = props is DisplayContainerProperties
+    /** Returns display props. */
+    fun displayProps() = props as DisplayContainerProperties
+    /** Returns whether this is a display area container. */
+    fun isDisplayArea() = props is DisplayAreaContainerProperties
+    /** Returns display area props. */
+    fun displayAreaProps() = props as DisplayAreaContainerProperties
+    /** Returns whether this is a task container. */
+    fun isTask() = props is TaskContainerProperties
+    /** Returns task props. */
+    fun taskProps() = props as TaskContainerProperties
+    /** Returns whether this is an activity container. */
+    fun isActivity() = props is ActivityContainerProperties
+    /** Returns activity props. */
+    fun activityProps() = props as ActivityContainerProperties
+    /** Returns whether this is a wallpaper container. */
+    fun isWallpaper() = props is WallpaperContainerProperties
+    /** Returns wallpaper props. */
+    fun wallpaperProps() = props as WallpaperContainerProperties
+    /** Returns whether this is a view overlay container. */
+    fun isViewOverlay() = this is ViewOverlayContainer
 }

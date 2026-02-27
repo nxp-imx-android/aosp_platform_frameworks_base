@@ -20,10 +20,12 @@ import com.android.systemui.communal.data.repository.ContextualSetupRepository
 import com.android.systemui.communal.data.repository.fake.FakeContextualSetupRepository
 import com.android.systemui.communal.domain.definition.ContextualSetupDefinition
 import com.android.systemui.communal.domain.definition.fake.FakeContextualSetupDefinition
+import com.android.systemui.communal.domain.interactor.ContextualSetupInteractor
 import com.android.systemui.communal.domain.interactor.UprightChargingInteractor
 import com.android.systemui.communal.domain.interactor.fake.FakeUprightChargingInteractor
 import com.android.systemui.communal.domain.preconditions.CommonSetupPreconditions
 import com.android.systemui.communal.domain.preconditions.fake.FakeCommonSetupPreconditions
+import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 
 val Kosmos.commonSetupPreconditions: CommonSetupPreconditions by
@@ -45,3 +47,15 @@ val Kosmos.contextualSetupDefinitionFactory: (String) -> ContextualSetupDefiniti
     Kosmos.Fixture { { id -> FakeContextualSetupDefinition(id) } }
 val ContextualSetupDefinition.fake: FakeContextualSetupDefinition
     get() = this as FakeContextualSetupDefinition
+
+val Kosmos.contextualSetupInteractorFactory:
+    (Set<ContextualSetupDefinition>) -> ContextualSetupInteractor by
+    Kosmos.Fixture {
+        { definitions ->
+            ContextualSetupInteractor(
+                repository = contextualSetupRepository,
+                definitions = definitions,
+                dumpManager = dumpManager,
+            )
+        }
+    }

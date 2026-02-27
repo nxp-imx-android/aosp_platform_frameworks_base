@@ -17,7 +17,6 @@ package com.android.wm.shell.hierarchy
 
 import com.android.wm.shell.Flags
 import com.android.wm.shell.hierarchy.modes.FormFactorModes
-import com.android.wm.shell.hierarchy.properties.RootContainerProperties
 import com.android.wm.shell.hierarchy.utils.HierarchyDebugUtils
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
@@ -71,7 +70,7 @@ class ContainerHierarchyCommandHandler(
     }
 
     private fun listModes(pw: PrintWriter): Boolean {
-        var rootProps = hierarchy.root.props<RootContainerProperties>()
+        val rootProps = hierarchy.root.rootProps()
         val displayId = rootProps.focusState.globallyFocusedDisplayId
         val modes = formFactorModes.getAvailableModesForDisplay(displayId)
         pw.println("Modes:")
@@ -87,7 +86,7 @@ class ContainerHierarchyCommandHandler(
             return false
         }
         val modeId = args.removeFirst()
-        var rootProps = hierarchy.root.props<RootContainerProperties>()
+        val rootProps = hierarchy.root.rootProps()
         val displayId = rootProps.focusState.globallyFocusedDisplayId
         val modes = formFactorModes.getAvailableModesForDisplay(displayId)
         val mode = modes.firstOrNull { mode -> mode.getId() == modeId }

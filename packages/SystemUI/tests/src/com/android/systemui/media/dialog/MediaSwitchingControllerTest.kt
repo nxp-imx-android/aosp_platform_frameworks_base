@@ -791,7 +791,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     fun onDeviceListUpdate_groupPlaybackAndExpanded_allSelectedDevicesOnTop() {
         whenever(mMediaDevice1.isSelected).thenReturn(true)
         whenever(mMediaDevice2.isSelected).thenReturn(true)
@@ -825,7 +824,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     fun onDeviceListUpdate_groupPlaybackAndCollapsed_groupControlAtTheTop() {
         whenever(mMediaDevice1.isSelected).thenReturn(true)
         whenever(mMediaDevice2.isSelected).thenReturn(true)
@@ -854,7 +852,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     fun onDeviceListUpdate_sessionVolumeUnavailable_noGroupControl() {
         whenever(mMediaDevice1.isSelected).thenReturn(true)
         whenever(mMediaDevice2.isSelected).thenReturn(true)
@@ -887,7 +884,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
     fun onDeviceListUpdate_groupPlaybackCreatedLater_noGroupControl() {
         whenever(mMediaDevice1.isSelected).thenReturn(true)
         whenever(mMediaDevice2.isSelected).thenReturn(false)
@@ -1857,10 +1853,7 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON,
-        Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
     fun getStopButtonText_sessionReleaseSharing_returnsSharingText() {
         doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING)
             .whenever(mLocalMediaManager)
@@ -1868,17 +1861,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
 
         assertThat(mMediaSwitchingController.getStopButtonStringRes())
             .isEqualTo(R.string.media_output_dialog_button_stop_sharing)
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
-    fun getStopButtonText_sessionReleaseSharingDisabled_returnsNull() {
-        doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING)
-            .whenever(mLocalMediaManager)
-            .sessionReleaseType
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull()
     }
 
     @Test

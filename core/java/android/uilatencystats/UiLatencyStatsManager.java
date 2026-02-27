@@ -52,6 +52,14 @@ public class UiLatencyStatsManager {
     public static final int EVENT_LAUNCHER_SHOWN = EventType.EVENT_LAUNCHER_SHOWN;
 
     /**
+     * Reports that the lockscreen unlocking starts.
+     *
+     * @hide
+     */
+    public static final int EVENT_LOCK_SCREEN_UNLOCK_START =
+            EventType.EVENT_LOCK_SCREEN_UNLOCK_START;
+
+    /**
      * Event type IDs which can be reported from clients outside of the system server.
      *
      * @hide
@@ -60,6 +68,7 @@ public class UiLatencyStatsManager {
             prefix = {"EVENT_"},
             value = {
                 EVENT_LAUNCHER_SHOWN,
+                EVENT_LOCK_SCREEN_UNLOCK_START,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Event {}
@@ -75,6 +84,8 @@ public class UiLatencyStatsManager {
         switch (event) {
             case EVENT_LAUNCHER_SHOWN:
                 return new EventType.LauncherShown();
+            case EVENT_LOCK_SCREEN_UNLOCK_START:
+                return new EventType.LockScreenUnlockStart();
             default:
                 return null;
         }

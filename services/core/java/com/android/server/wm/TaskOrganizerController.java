@@ -1295,6 +1295,43 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
     }
 
     @Override
+    public void restartTaskProcessIfVisible(WindowContainerToken token) {
+        enforceTaskPermission("restartTaskProcessIfVisible()");
+        final long origId = Binder.clearCallingIdentity();
+        try {
+            synchronized (mGlobalLock) {
+                final WindowContainer wc = fromBinder(token.asBinder());
+                if (wc == null) {
+                    Slog.w(TAG, "Could not resolve window from token");
+                    return;
+                }
+                final Task task = wc.asTask();
+                if (task == null) {
+                    Slog.w(TAG, "Could not resolve task from token");
+                    return;
+                }
+                ProtoLog.v(WM_DEBUG_WINDOW_ORGANIZER,
+                        "Restart all activities process of Task taskId=%d", task.mTaskId);
+
+                final ActivityRecord topActivity = task.getTopNonFinishingActivity();
+                if (topActivity == null) {
+                    return;
+                }
+
+                task.forAllActivities(r -> {
+                    if (r != topActivity && !r.finishing) {
+                        r.resetCompatConfiguration();
+                    }
+                });
+
+                topActivity.restartProcessIfVisible();
+            }
+        } finally {
+            Binder.restoreCallingIdentity(origId);
+        }
+    }
+
+    @Override
     public void setExcludeLayersFromTaskSnapshot(WindowContainerToken token,
             SurfaceControl[] layers) throws RemoteException {
         enforceTaskPermission("setExcludeLayersFromTaskSnapshot()");

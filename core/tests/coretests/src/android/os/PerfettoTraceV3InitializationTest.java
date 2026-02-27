@@ -77,16 +77,14 @@ public class PerfettoTraceV3InitializationTest {
 
     @Test
     public void testSendMessageQueueCategoryEvent() throws Exception {
-        // This asserts that we don't accidentally initialize the old API.
-        assertThat(PerfettoTrace.MQ_CATEGORY.isRegistered()).isFalse();
         // This asserts that we correctly initialize the new API.
-        assertThat(PerfettoTrace.MQ_CATEGORY_V3.isRegistered()).isTrue();
+        assertThat(PerfettoCategories.MQ_CATEGORY.isRegistered()).isTrue();
 
         com.android.internal.dev.perfetto.sdk.PerfettoTrace.Session session =
                 new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Session(
                         true, getTraceConfig("mq").toByteArray());
-        com.android.internal.dev.perfetto.sdk.PerfettoTrace.instant(
-                        PerfettoTrace.MQ_CATEGORY_V3, "my_event")
+        com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                .instant(PerfettoCategories.MQ_CATEGORY, "my_event")
                 .addArg("string_key", "foo")
                 .emit();
 

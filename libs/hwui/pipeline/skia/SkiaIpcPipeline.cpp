@@ -168,6 +168,18 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
     renderFrameImpl(dirty, renderNodes, opaque, contentDrawBounds, canvas, SkMatrix::I());
     mIPCRecordingCanvas->endRecording();
 
+    return {true, IRenderPipeline::DrawResult::kUnknownTime, android::base::unique_fd{}};
+}
+
+bool SkiaIpcPipeline::swapBuffers(const Frame& frame, IRenderPipeline::DrawResult& drawResult,
+                                     const SkRect& screenDirty, FrameInfo* currentFrameInfo,
+                                     bool* requireSwap) {
+    currentFrameInfo->markSwapBuffers();
+    *requireSwap = drawResult.success;
+    if (!drawResult.success) {
+        return false;
+    }
+
     SurfaceComposerClient::Transaction pendingTransactions;
     std::function<void(SurfaceComposerClient::Transaction*)> syncCallback;
     SurfaceComposerClient::Transaction* syncTransaction = nullptr;
@@ -193,8 +205,7 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
         transaction.setApplyToken(mApplyToken);
         transaction.apply(false, true);
     }
-
-    return {true, IRenderPipeline::DrawResult::kUnknownTime, android::base::unique_fd{}};
+    return true;
 }
 
 bool SkiaIpcPipeline::setSurface(ANativeWindow* surface, SwapBehavior swapBehavior) {
@@ -255,6 +266,17 @@ bool SkiaIpcPipeline::syncNextTransaction(
 
 bool SkiaIpcPipeline::mergePendingTransactions(SurfaceComposerClient::Transaction* t,
                                                uint64_t frameNumber) {
+    while (!mPendingFrameTimelines.empty()) {
+        auto& [targetFrameNumber, ftlInfo] = mPendingFrameTimelines.front();
+        if (targetFrameNumber > frameNumber) {
+            break;
+        }
+        if (targetFrameNumber == frameNumber) {
+            t->setFrameTimelineInfo(ftlInfo);
+        }
+        mPendingFrameTimelines.pop();
+    }
+
     if (mPendingTransactions.empty()) {
         return false;
     }
@@ -282,6 +304,28 @@ uint64_t SkiaIpcPipeline::getFrameNumber() {
 void SkiaIpcPipeline::updateRenderTargetSize(uint64_t width, uint64_t height) {
     mWidth = width;
     mHeight = height;
+}
+
+void SkiaIpcPipeline::setFrameTimelineInfo(const struct ANativeWindowFrameTimelineInfo& info) {
+    FrameTimelineInfo ftlInfo;
+    ftlInfo.vsyncId = info.frameTimelineVsyncId;
+    ftlInfo.inputEventId = info.inputEventId;
+    ftlInfo.startTimeNanos = info.startTimeNanos;
+    ftlInfo.useForRefreshRateSelection = info.useForRefreshRateSelection;
+    ftlInfo.skippedFrameVsyncId = info.skippedFrameVsyncId;
+    ftlInfo.skippedFrameStartTimeNanos = info.skippedFrameStartTimeNanos;
+    ftlInfo.vsyncResyncedJitterNanos = info.vsyncResyncedJitterNanos;
+    ftlInfo.dequeueBufferDurationNanos = info.dequeueBufferDurationNanos;
+    mPendingFrameTimelines.emplace(info.frameNumber, ftlInfo);
+}
+
+// TODO(b/485971052): Finish this.
+int64_t SkiaIpcPipeline::getLastDequeueDuration() {
+    return 0;
+}
+
+bool SkiaIpcPipeline::hasRenderTarget() {
+    return mSurfaceControl != nullptr;
 }
 
 } /* namespace skiapipeline */

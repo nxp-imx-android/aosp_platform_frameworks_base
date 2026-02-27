@@ -94,9 +94,10 @@ class HostStubGen(val options: HostStubGenOptions) {
             }
         }
 
-        options.outJar.get?.let {
-            inJar.write(it) { time -> stats.totalWriteTime = time }
-            log.d("Created: $it")
+        options.outJar.get?.let { outJar ->
+            val meta = getJarMetadata("hoststubgen", inJar.fileName, outJar)
+            inJar.write(outJar, meta) { time -> stats.totalWriteTime = time }
+            log.d("Created: $outJar")
         }
     }
 
@@ -119,6 +120,10 @@ class HostStubGen(val options: HostStubGenOptions) {
             // Just ignore all the directories. (TODO: make sure it's okay)
             if (name.endsWith("/")) {
                 return null
+            }
+            if (entry.name.startsWith("META-INF/")) {
+                // Do not touch any files in it.
+                return entry
             }
 
             // If it's a class, convert it.

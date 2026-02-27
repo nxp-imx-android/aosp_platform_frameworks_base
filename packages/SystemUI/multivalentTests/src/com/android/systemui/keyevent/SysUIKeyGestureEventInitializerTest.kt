@@ -23,6 +23,7 @@ import android.hardware.input.InputManager.KeyGestureEventHandler
 import android.hardware.input.InputManager.KeyGestureEventListener
 import android.hardware.input.KeyGestureEvent
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_CURSOR
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT
@@ -103,6 +104,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
         com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
         com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
         com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_SEARCH_DESKTOP_ENTRYPOINTS,
+        com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_CURSOR_DESKTOP_ENTRYPOINTS,
     )
     fun start_flagEnabled_registerKeyGestureEvents() {
         underTest.start()
@@ -116,6 +118,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
                     KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
                     KEY_GESTURE_TYPE_TAKE_APP_WINDOW_SCREENSHOT,
                     KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH,
+                    KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_CURSOR,
                 )
         }
     }
@@ -236,6 +239,27 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
         keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
             KeyGestureEvent.Builder()
                 .setKeyGestureType(KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_SEARCH)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        verify(launcherProxy)
+            .invokeContextualSearch(
+                eq(ContextualSearchManager.ENTRYPOINT_KEYBOARD_SHORTCUT),
+                eq(null),
+            )
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_CURSOR_DESKTOP_ENTRYPOINTS)
+    fun handleKeyGestureEvent_eventTypeContextualCursor_invokesContextualSearch() {
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_LAUNCH_CONTEXTUAL_CURSOR)
                 .build(),
             /* focusedToken= */ null,
         )

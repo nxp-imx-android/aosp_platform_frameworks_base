@@ -305,10 +305,7 @@ constructor(
                 // Decide whether to group devices only during the initial render.
                 // Avoid grouping broadcast devices because grouped volume control is not
                 // available for broadcast session.
-                mGroupSelectedItems =
-                    hasGroupPlayback() &&
-                        (!Flags.enableOutputSwitcherPersonalAudioSharing() ||
-                            isVolumeControlEnabledForSession())
+                mGroupSelectedItems = hasGroupPlayback() && isVolumeControlEnabledForSession()
             }
             mCallback.onDeviceListChanged()
         } else {
@@ -767,10 +764,7 @@ constructor(
     fun getSessionReleaseType(): Int = mLocalMediaManager.getSessionReleaseType()
 
     fun releaseSession() {
-        if (
-            Flags.enableOutputSwitcherPersonalAudioSharing() &&
-                getSessionReleaseType() == RoutingSessionInfo.RELEASE_TYPE_SHARING
-        ) {
+        if (getSessionReleaseType() == RoutingSessionInfo.RELEASE_TYPE_SHARING) {
             mMetricLogger.logInteractionStopSharing()
         } else {
             mMetricLogger.logInteractionStopCasting()
@@ -938,18 +932,13 @@ constructor(
         if (Flags.enableUseOfSessionReleaseTypeForStopButton()) {
             return when (getSessionReleaseType()) {
                 RoutingSessionInfo.RELEASE_TYPE_SHARING ->
-                    if (Flags.enableOutputSwitcherPersonalAudioSharing())
-                        R.string.media_output_dialog_button_stop_sharing
-                    else null
-
+                    R.string.media_output_dialog_button_stop_sharing
                 RoutingSessionInfo.RELEASE_TYPE_CASTING ->
                     R.string.media_output_dialog_button_stop_casting
                 else -> null
             }
         } else {
-            val inBroadcast =
-                Flags.enableOutputSwitcherPersonalAudioSharing() &&
-                    getSessionReleaseType() == RoutingSessionInfo.RELEASE_TYPE_SHARING
+            val inBroadcast = getSessionReleaseType() == RoutingSessionInfo.RELEASE_TYPE_SHARING
             if (inBroadcast) {
                 return R.string.media_output_dialog_button_stop_sharing
             } else if (isCurrentConnectedDeviceRemote()) {

@@ -568,7 +568,7 @@ public final class ViewRootImpl implements ViewParent,
      * target SDK versions.
      */
     private static boolean sCompatibilityDone = false;
-    private static int sCalledFromWrongThreadCount = 0;
+    private static boolean sCalledFromWrongThreadLogged = false;
 
     /**
      * Always assign focus if a focusable View is available.
@@ -601,6 +601,10 @@ public final class ViewRootImpl implements ViewParent,
     final TypedValue mTmpValue = new TypedValue();
 
     final Thread mThread;
+
+    /** The throwable with the stack trace filled when this ViewRootImpl was initialized. */
+    @Nullable
+    private final Throwable mInitStack;
 
     final WindowLeaked mLocation;
 
@@ -1396,6 +1400,7 @@ public final class ViewRootImpl implements ViewParent,
         final String name = DisplayProperties.debug_vri_package().orElse(null);
         mExtraDisplayListenerLogging = !TextUtils.isEmpty(name) && name.equals(mBasePackageName);
         mThread = Thread.currentThread();
+        mInitStack = Build.isDebuggable() ? new Throwable("Created") : null;
         mLocation = new WindowLeaked(null);
         mWidth = -1;
         mHeight = -1;
@@ -10239,10 +10244,18 @@ public final class ViewRootImpl implements ViewParent,
                 // resizing to a larger size).
                 mTransaction.setWindowCrop(mSurfaceControl,
                         mWinFrameInScreen.width(), mWinFrameInScreen.height());
-            } else if (!HardwareRenderer.isDrawingEnabled()) {
-                // When drawing is disabled the window layer won't have a valid buffer.
-                // Set a window crop so input can get delivered to the window.
-                mTransaction.setWindowCrop(mSurfaceControl, mSurfaceSize.x, mSurfaceSize.y).apply();
+            } else {
+                if (!HardwareRenderer.isDrawingEnabled()) {
+                    // When drawing is disabled the window layer won't have a valid buffer.
+                    // Set a window crop so input can get delivered to the window.
+                    mTransaction.setWindowCrop(mSurfaceControl, mSurfaceSize.x, mSurfaceSize.y)
+                            .apply();
+                } else if (!mPendingDragResizing) {
+                    // During the fluid resizing, the temporary crop bounds set on VRI.
+                    // The clean up is necessary here since the crop would break window content
+                    // if windowing mode change.
+                    mTransaction.setWindowCrop(mSurfaceControl, null);
+                }
             }
         }
 
@@ -11999,7 +12012,7 @@ public final class ViewRootImpl implements ViewParent,
         return new CalledFromWrongThreadException(
                 "Only the original thread that created a view hierarchy can touch its views."
                         + " Expected: " + mThread.getName()
-                        + " Calling: " + Thread.currentThread().getName());
+                        + " Calling: " + Thread.currentThread().getName(), mInitStack);
     }
 
     /**
@@ -12028,11 +12041,11 @@ public final class ViewRootImpl implements ViewParent,
         if (mEnforceThreadChecksCompat) {
             throwCalledFromWrongThreadException();
         } else {
-            // Log the issue, but not too many times per process.
-            // Note that this counter is not atomic, so it's possible we log more than the requisite
-            // times per process lifetime. That's fine because the precise number of logs isn't
-            // important so long as we eventually stop logging.
-            if (++sCalledFromWrongThreadCount <= 10) {
+            // Log the issue, but at most once per process, since WTF logs are expensive.
+            // Note that this is potentially racy, but considered benign.
+            // If two or more threads race to log, it's not much of a concern.
+            if (!sCalledFromWrongThreadLogged) {
+                sCalledFromWrongThreadLogged = true;
                 final CalledFromWrongThreadException e = newCalledFromWrongThreadException();
                 Log.wtf(
                         TAG,
@@ -12807,6 +12820,11 @@ public final class ViewRootImpl implements ViewParent,
         public CalledFromWrongThreadException(String msg) {
             super(msg);
         }
+
+        @UnsupportedAppUsage
+        public CalledFromWrongThreadException(String msg, @Nullable Throwable cause) {
+            super(msg, cause);
+        }
     }
 
     static HandlerActionQueue getRunQueue() {
@@ -13301,7 +13319,8 @@ public final class ViewRootImpl implements ViewParent,
         public void runOrPost(View source, int changeType) {
             if (mLooper != Looper.myLooper()) {
                 CalledFromWrongThreadException e = new CalledFromWrongThreadException("Only the "
-                        + "original thread that created a view hierarchy can touch its views.");
+                        + "original thread that created a view hierarchy can touch its views.",
+                        mInitStack);
                 // TODO: Throw the exception
                 Log.e(TAG, "Accessibility content change on non-UI thread. Future Android "
                         + "versions will throw an exception.", e);

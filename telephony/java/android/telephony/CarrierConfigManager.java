@@ -11508,6 +11508,14 @@ public class CarrierConfigManager {
             "opp_auto_data_switch_policy_int";
 
     /**
+     * Flag indicating whether or not an incoming video call will be auto rejected and logged
+     * since device is in low battery.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_VT_CALL_LOW_BATTERY_CONFIG)
+    public static final String KEY_ALLOW_VIDEO_CALL_IN_LOW_BATTERY_BOOL =
+            "allow_video_call_in_low_battery_bool";
+
+    /**
      * In the context of auto data switch between primary and opportunistic networks, defines the
      * duration for which a subscription's availability must be stable before switching, in
      * milliseconds. A value of 0 means the switch should occur immediately. A negative value
@@ -12457,6 +12465,7 @@ public class CarrierConfigManager {
         sDefaults.putString(KEY_SATELLITE_NIDD_APN_NAME_STRING, "");
         sDefaults.putBoolean(KEY_SATELLITE_ROAMING_TURN_OFF_SESSION_FOR_EMERGENCY_CALL_BOOL, true);
         sDefaults.putInt(KEY_CARRIER_ROAMING_NTN_CONNECT_TYPE_INT, 0);
+        sDefaults.putIntArray(KEY_SATELLITE_TECHNOLOGY_INT_ARRAY, new int[0]);
         sDefaults.putInt(KEY_CARRIER_ROAMING_NTN_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_INT,
                 SatelliteManager.EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_T911);
         sDefaults.putInt(KEY_CARRIER_SUPPORTED_SATELLITE_NOTIFICATION_HYSTERESIS_SEC_INT, 180);
@@ -12574,6 +12583,7 @@ public class CarrierConfigManager {
             sDefaults.putBoolean(KEY_SHOW_AVOID_BAD_WIFI_TOGGLE_BOOL, false);
         }
         sDefaults.putInt(KEY_OPP_AUTO_DATA_SWITCH_POLICY_INT, 0);
+        sDefaults.putBoolean(KEY_ALLOW_VIDEO_CALL_IN_LOW_BATTERY_BOOL, true);
         sDefaults.putLong(
                 KEY_OPP_AUTO_DATA_SWITCH_AVAILABILITY_STABILITY_MILLIS_LONG, 10000);
         sDefaults.putLong(

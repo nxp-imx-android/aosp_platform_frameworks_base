@@ -261,11 +261,10 @@
   // ensure when "RavenwoodUiTest_exp" is broken, it's because the exp-APIs
   // are broken, or something else.
   "ravenwood-presubmit-nonblocking": [
-// TODO(b/482443163) Enable this once the GCL is merged.
-//    {
-//      "name": "RavenwoodUiTest_exp",
-//      "host": true
-//    },
+    {
+      "name": "RavenwoodUiTest_exp",
+      "host": true
+    },
     {
       "name": "RavenwoodUiTest_noexp",
       "host": true

@@ -26,13 +26,14 @@ import android.view.WindowManager
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
@@ -203,76 +204,73 @@ constructor(
                                 ),
                             iconResource = R.drawable.ic_close,
                         )
-                        AnimatedVisibility(visible = viewModel.shouldShowSettingsButton) {
-                            ToggleToolbarButton(
-                                checked = viewModel.detailsPopup == RecordDetailsPopupType.Settings,
-                                onCheckedChange = {
-                                    if (it) {
-                                        viewModel.showSettings()
-                                    } else {
-                                        viewModel.resetDetailsPopup()
-                                    }
-                                },
-                                icon = {
-                                    LoadingIcon(
-                                        icon =
-                                            loadIcon(
-                                                    viewModel = viewModel,
-                                                    resId = R.drawable.ic_settings,
-                                                    contentDescription =
-                                                        ContentDescription.Resource(
-                                                            R.string.screen_record_settings
-                                                        ),
-                                                )
-                                                .value,
-                                        modifier = Modifier.size(24.dp),
-                                    )
-                                },
-                            )
-                        }
-                        AnimatedVisibility(visible = viewModel.shouldShowMarkupButton) {
-                            ToggleToolbarButton(
-                                checked = viewModel.markupEnabled == true,
-                                onCheckedChange = { viewModel.setMarkupEnabled(it) },
-                                icon = {
-                                    LoadingIcon(
-                                        icon =
-                                            loadIcon(
-                                                    viewModel = viewModel,
-                                                    resId = R.drawable.ic_markup,
-                                                    contentDescription =
-                                                        ContentDescription.Resource(
-                                                            R.string.screen_record_markup
-                                                        ),
-                                                )
-                                                .value,
-                                        modifier = Modifier.size(24.dp),
-                                    )
-                                },
-                            )
-                        }
-                        AnimatedVisibility(visible = viewModel.shouldShowColorPickerButton) {
-                            ToggleToolbarButton(
-                                checked =
-                                    viewModel.detailsPopup == RecordDetailsPopupType.ColorSelector,
-                                onCheckedChange = {
-                                    if (it) {
-                                        viewModel.showCameraColorSelector()
-                                    } else {
-                                        viewModel.resetDetailsPopup()
-                                    }
-                                },
-                                icon = {
-                                    val colorInt =
-                                        viewModel.recordDetailsColorPickerViewModel.cameraColor
-                                    RecordDetailsColorItem(
-                                        color = Color(colorInt),
-                                        selected = false,
-                                        modifier = Modifier.size(20.dp),
-                                    )
-                                },
-                            )
-                        }
+                        ToggleToolbarButton(
+                            visible = viewModel.shouldShowSettingsButton,
+                            checked = viewModel.detailsPopup == RecordDetailsPopupType.Settings,
+                            onCheckedChange = {
+                                if (it) {
+                                    viewModel.showSettings()
+                                } else {
+                                    viewModel.resetDetailsPopup()
+                                }
+                            },
+                            icon = {
+                                LoadingIcon(
+                                    icon =
+                                        loadIcon(
+                                                viewModel = viewModel,
+                                                resId = R.drawable.ic_settings,
+                                                contentDescription =
+                                                    ContentDescription.Resource(
+                                                        R.string.screen_record_settings
+                                                    ),
+                                            )
+                                            .value,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            },
+                        )
+                        ToggleToolbarButton(
+                            visible = viewModel.shouldShowMarkupButton,
+                            checked = viewModel.markupEnabled == true,
+                            onCheckedChange = { viewModel.setMarkupEnabled(it) },
+                            icon = {
+                                LoadingIcon(
+                                    icon =
+                                        loadIcon(
+                                                viewModel = viewModel,
+                                                resId = R.drawable.ic_markup,
+                                                contentDescription =
+                                                    ContentDescription.Resource(
+                                                        R.string.screen_record_markup
+                                                    ),
+                                            )
+                                            .value,
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            },
+                        )
+                        ToggleToolbarButton(
+                            visible = viewModel.shouldShowColorPickerButton,
+                            checked =
+                                viewModel.detailsPopup == RecordDetailsPopupType.ColorSelector,
+                            onCheckedChange = {
+                                if (it) {
+                                    viewModel.showCameraColorSelector()
+                                } else {
+                                    viewModel.resetDetailsPopup()
+                                }
+                            },
+                            icon = {
+                                val colorInt =
+                                    viewModel.recordDetailsColorPickerViewModel.cameraColor
+                                RecordDetailsColorItem(
+                                    color = Color(colorInt),
+                                    selected = false,
+                                    modifier = Modifier.size(20.dp),
+                                )
+                            },
+                        )
 
                         Spacer(Modifier.width(12.dp))
 
@@ -305,10 +303,9 @@ constructor(
                         shape = RoundedCornerShape(28.dp),
                         modifier =
                             Modifier.fillBoundsInWindowIf(
-                                    region = settingsBounds,
-                                    condition = viewTreeObserver != null,
-                                )
-                                .animateContentSize(),
+                                region = settingsBounds,
+                                condition = viewTreeObserver != null,
+                            ),
                     ) {
                         AnimatedContent(
                             targetState = viewModel.detailsPopup,
@@ -379,27 +376,42 @@ constructor(
 
 @Composable
 private fun ToggleToolbarButton(
+    visible: Boolean,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     icon: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(12.dp)
-    ToggleButton(
-        checked = checked,
-        onCheckedChange = onCheckedChange,
-        content = icon,
-        shapes = ToggleButtonShapes(shape = shape, pressedShape = shape, checkedShape = shape),
-        colors =
-            ToggleButtonDefaults.tonalToggleButtonColors(
-                containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                checkedContainerColor = MaterialTheme.colorScheme.secondary,
-                checkedContentColor = MaterialTheme.colorScheme.onSecondary,
-            ),
-        contentPadding = PaddingValues(6.dp),
-        modifier = modifier.size(48.dp).padding(6.dp),
-    )
+    AnimatedVisibility(
+        visible = visible,
+        enter =
+            expandHorizontally(
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+                expandFrom = Alignment.Start,
+            ) + fadeIn(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec()),
+        exit =
+            shrinkHorizontally(
+                animationSpec = MaterialTheme.motionScheme.fastSpatialSpec(),
+                shrinkTowards = Alignment.Start,
+            ) + fadeOut(animationSpec = MaterialTheme.motionScheme.fastEffectsSpec()),
+    ) {
+        ToggleButton(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            content = icon,
+            shapes = ToggleButtonShapes(shape = shape, pressedShape = shape, checkedShape = shape),
+            colors =
+                ToggleButtonDefaults.tonalToggleButtonColors(
+                    containerColor = Color.Transparent,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    checkedContainerColor = MaterialTheme.colorScheme.secondary,
+                    checkedContentColor = MaterialTheme.colorScheme.onSecondary,
+                ),
+            contentPadding = PaddingValues(6.dp),
+            modifier = modifier.size(48.dp).padding(6.dp),
+        )
+    }
 }
 
 @Composable

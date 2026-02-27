@@ -29,12 +29,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.advanceTimeBy
+import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.collectValues
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
 import com.android.systemui.screenrecord.data.repository.ScreenRecordingServiceRepository
-import com.android.systemui.screenrecord.data.repository.screenRecordingServiceRepository
+import com.android.systemui.screenrecord.screenRecordUxController
 import com.android.systemui.screenrecord.service.FakeScreenRecordingServiceCallbackWrapper
 import com.android.systemui.screenrecord.service.callbackStatus
 import com.android.systemui.screenrecord.service.fakeScreenRecordingService
@@ -42,6 +43,7 @@ import com.android.systemui.screenrecord.shared.model.ScreenRecording
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingParameters
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import com.android.systemui.testKosmosNew
+import com.android.systemui.user.data.repository.userRepository
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -70,7 +72,21 @@ class ScreenRecordingServiceRepositoryTest : SysuiTestCase() {
     private var serviceConnection: ServiceConnection? = null
 
     private val underTest: ScreenRecordingServiceRepository by lazy {
-        kosmos.screenRecordingServiceRepository
+        // Use custom instance of the ScreenRecordingServiceRepository because the one in the
+        // Kosmos simplifies setting up other tests, where's here we want to check that
+        // it correctly interacts with the Context
+        with(kosmos) {
+            ScreenRecordingServiceRepository(
+                applicationCoroutineScope,
+                screenRecordUxController,
+                ScreenRecordingServiceRepository.bindServiceAsAFlow(
+                    applicationContext,
+                    userRepository,
+                ) { _, _ ->
+                    fakeScreenRecordingService
+                },
+            )
+        }
     }
 
     @Before

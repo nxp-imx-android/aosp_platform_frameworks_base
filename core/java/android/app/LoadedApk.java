@@ -22,6 +22,7 @@ import static dalvik.system.DexFile.OptimizationInfo;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.appfunctions.AppFunctionManager;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -1799,6 +1800,17 @@ public final class LoadedApk {
             }
             mUnboundServices.remove(context);
             //Slog.i(TAG, "Service registrations: " + mServices);
+        }
+
+        if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
+            AppFunctionManager appFunctionManager = context.getSystemService(
+                AppFunctionManager.class
+            );
+            if (appFunctionManager != null) {
+                appFunctionManager.unregisterAllAppFunctions(
+                    /* callerDescription= */ what + " " + who
+                );
+            }
         }
     }
 

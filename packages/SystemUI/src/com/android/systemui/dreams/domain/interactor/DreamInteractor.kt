@@ -18,43 +18,30 @@ package com.android.systemui.dreams.domain.interactor
 
 import android.content.ComponentName
 import android.os.UserHandle
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dreams.data.repository.DreamRepository
 import com.android.systemui.dreams.shared.model.DreamPlaylistModel
 import javax.inject.Inject
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 
 /**
  * The DreamInteractor provides a layer of business logic over the dream repository and is used to
  * interact with the current dream state.
  */
+@SysUISingleton
 class DreamInteractor @Inject constructor(private val repository: DreamRepository) {
-    /** A request to show or dismiss the switcher dialog. */
-    sealed interface SwitcherRequest {
-        /** A request to show the switcher dialog. */
-        data object Show : SwitcherRequest
-
-        /** A request to dismiss the switcher dialog. */
-        data object Dismiss : SwitcherRequest
-    }
-
-    private val _switcherRequests = Channel<SwitcherRequest>(Channel.CONFLATED)
-    /** A flow of [SwitcherRequest]s. */
-    val switcherRequests: Flow<SwitcherRequest> = _switcherRequests.receiveAsFlow()
-
-    /** Sends a request to show the switcher dialog. */
-    fun showSwitcherDialog() {
-        _switcherRequests.trySend(SwitcherRequest.Show)
-    }
-
-    /** Sends a request to dismiss the switcher dialog. */
-    fun dismissSwitcherDialog() {
-        _switcherRequests.trySend(SwitcherRequest.Dismiss)
-    }
-
     /** The current dream playlist. */
     val dreamState: Flow<DreamPlaylistModel> = repository.dreamState
+
+    /** Emits whether the user can switch between dreams. */
+    val canSwitchDreams: Flow<Boolean> =
+        dreamState
+            .map { state ->
+                state.dreams.size > 1 && (state.nextDream ?: state.previousDream) != null
+            }
+            .distinctUntilChanged()
 
     /**
      * Sets the active dream.

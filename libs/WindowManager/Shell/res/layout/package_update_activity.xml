@@ -20,7 +20,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:focusable="true">
+    android:focusable="true"
+    android:importantForAccessibility="noHideDescendants">
 
     <FrameLayout
         android:layout_width="wrap_content"
@@ -31,7 +32,7 @@
             android:layout_width="@dimen/desktop_mode_resize_veil_icon_size"
             android:layout_height="@dimen/desktop_mode_resize_veil_icon_size"
             android:layout_gravity="center"
-            android:contentDescription="@string/app_icon_text" />
+            />
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/circular_progress_indicator"
@@ -40,7 +41,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:indeterminate="true"
-            android:importantForAccessibility="no"
             app:wavelength="20dp"
             app:indicatorSize="120dp" />
     </FrameLayout>
@@ -53,6 +53,5 @@
         android:textColor="@color/materialColorOnSurface"
         android:textSize="16sp"
         android:lineSpacingExtra="8sp"
-        android:text="@string/package_update_text"
-        android:accessibilityHeading="true" />
+        android:text="@string/package_update_text" />
 </LinearLayout>

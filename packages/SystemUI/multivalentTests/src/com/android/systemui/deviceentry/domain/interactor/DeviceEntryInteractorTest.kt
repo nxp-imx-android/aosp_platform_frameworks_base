@@ -355,7 +355,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun showOrUnlockDevice_notLocked_switchesToGoneScene() =
+    fun attemptDeviceEntry_notLocked_switchesToGoneScene() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             switchToScene(Scenes.Lockscreen)
@@ -373,7 +373,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun showOrUnlockDevice_notLocked_replacesLockscreenWithGoneInTheBackStack() =
+    fun attemptDeviceEntry_notLocked_replacesLockscreenWithGoneInTheBackStack() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val backStack by collectLastValue(sceneBackInteractor.backStack)
@@ -396,7 +396,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun showOrUnlockDevice_authMethodNotSecure_switchesToGoneScene() =
+    fun attemptDeviceEntry_authMethodNotSecure_switchesToGoneScene() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             switchToScene(Scenes.Lockscreen)
@@ -410,7 +410,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun showOrUnlockDevice_authMethodNotSecure_replacesLockscreenWithGoneInTheBackStack() =
+    fun attemptDeviceEntry_authMethodNotSecure_replacesLockscreenWithGoneInTheBackStack() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val backStack by collectLastValue(sceneBackInteractor.backStack)
@@ -429,7 +429,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun showOrUnlockDevice_authMethodNotSecure_switchesToGoneSceneWhenOnCommunal() =
+    fun attemptDeviceEntry_authMethodNotSecure_switchesToGoneSceneWhenOnCommunal() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val backStack by collectLastValue(sceneBackInteractor.backStack)
@@ -448,7 +448,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun showOrUnlockDevice_dismissActionAnimates_runsTransitionToGone() =
+    fun attemptDeviceEntry_dismissActionAnimates_runsTransitionToGone() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val backStack by collectLastValue(sceneBackInteractor.backStack)
@@ -593,7 +593,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun showOrUnlockDevice_authMethodSwipe_switchesToGoneScene() =
+    fun attemptDeviceEntry_authMethodSwipe_switchesToGoneScene() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             switchToScene(Scenes.Lockscreen)
@@ -608,7 +608,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun showOrUnlockDevice_authMethodSwipe_replacesLockscreenWithGoneInTheBackStack() =
+    fun attemptDeviceEntry_authMethodSwipe_replacesLockscreenWithGoneInTheBackStack() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val backStack by collectLastValue(sceneBackInteractor.backStack)
@@ -628,7 +628,7 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun showOrUnlockDevice_noAlternateBouncer_switchesToBouncerScene() =
+    fun attemptDeviceEntry_noAlternateBouncer_showsBouncerOverlay() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
@@ -644,18 +644,39 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun showOrUnlockDevice_showsAlternateBouncer_staysOnLockscreenScene() =
+    fun attemptDeviceEntry_showsAlternateBouncer_staysOnLockscreenScene_noBouncerOverlay() =
         kosmos.runTest {
             val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             switchToScene(Scenes.Lockscreen)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
             fakeAuthenticationRepository.setAuthenticationMethod(Pin)
             givenCanShowAlternateBouncer()
 
-            underTest.attemptDeviceEntry("test")
+            underTest.attemptDeviceEntry(
+                loggingReason = "test",
+                skipShowingAlternateBouncer = false,
+            )
 
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).isEmpty()
+        }
+
+    @Test
+    fun attemptDeviceEntry_skipShowingAlternateBouncer_showsBouncerOverlay() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            switchToScene(Scenes.Lockscreen)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+
+            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
+            givenCanShowAlternateBouncer()
+
+            underTest.attemptDeviceEntry(loggingReason = "test", skipShowingAlternateBouncer = true)
+
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
         }
 
     @Test

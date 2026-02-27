@@ -1735,8 +1735,7 @@ public abstract class VibrationEffect implements Parcelable {
                         firstSegment.getEndAmplitude(),
                         initialFrequencyHz, // Update start frequency
                         firstSegment.getEndFrequencyHz(),
-                        firstSegment.getDuration(),
-                        firstSegment.isFirstSegmentOfEnvelope()));
+                        firstSegment.getDuration()));
             }
 
             return this;
@@ -1776,14 +1775,8 @@ public abstract class VibrationEffect implements Parcelable {
                 mLastFrequencyHz = frequencyHz;
             }
 
-            mSegments.add(
-                    new PwleSegment(
-                            mLastAmplitude,
-                            amplitude,
-                            mLastFrequencyHz,
-                            frequencyHz,
-                            durationMillis,
-                            /* isFirstSegment= */ mSegments.isEmpty()));
+            mSegments.add(new PwleSegment(mLastAmplitude, amplitude, mLastFrequencyHz, frequencyHz,
+                    durationMillis));
 
             mLastAmplitude = amplitude;
             mLastFrequencyHz = frequencyHz;
@@ -1901,8 +1894,7 @@ public abstract class VibrationEffect implements Parcelable {
                         firstSegment.getEndIntensity(),
                         initialSharpness, // Update start sharpness
                         firstSegment.getEndSharpness(),
-                        firstSegment.getDuration(),
-                        firstSegment.isFirstSegmentOfEnvelope()));
+                        firstSegment.getDuration()));
             }
 
             return this;
@@ -1941,7 +1933,7 @@ public abstract class VibrationEffect implements Parcelable {
             }
 
             mSegments.add(new BasicPwleSegment(mLastIntensity, intensity, mLastSharpness, sharpness,
-                    durationMillis, /* isFirstSegment= */ mSegments.isEmpty()));
+                    durationMillis));
 
             mLastIntensity = intensity;
             mLastSharpness = sharpness;

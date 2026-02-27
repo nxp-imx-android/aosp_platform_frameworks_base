@@ -23,4 +23,5 @@ package android.app.contentrestriction;
  */
 oneway interface IContentRestrictionCallback {
     void onResult(boolean isContentAllowed);
+    void onError(int error, String message);
 }

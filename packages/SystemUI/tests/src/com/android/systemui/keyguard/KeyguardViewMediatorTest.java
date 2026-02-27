@@ -77,6 +77,7 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.telephony.TelephonyManager;
 import android.testing.TestableLooper;
+import android.uilatencystats.UiLatencyStatsManager;
 import android.view.RemoteAnimationTarget;
 import android.view.SurfaceControl;
 import android.view.View;
@@ -169,6 +170,7 @@ import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
 
 import java.util.List;
+import java.util.Optional;
 
 @RunWith(ParameterizedAndroidJunit4.class)
 @TestableLooper.RunWithLooper
@@ -252,6 +254,8 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
     private @Mock DreamViewModel mDreamViewModel;
     private @Mock CommunalTransitionViewModel mCommunalTransitionViewModel;
     private @Mock SystemPropertiesHelper mSystemPropertiesHelper;
+
+    private @Mock UiLatencyStatsManager mUiLatencyStatsManager;
 
     private FakeFeatureFlags mFeatureFlags;
     private final int mDefaultUserId = 100;
@@ -1867,7 +1871,8 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 mKeyguardTransitionBootInteractor,
                 mKosmos::getCommunalSceneInteractor,
                 mKosmos::getCommunalSettingsInteractor,
-                mock(WindowManagerOcclusionManager.class)) {
+                mock(WindowManagerOcclusionManager.class),
+                Optional.of(mUiLatencyStatsManager)) {
 
                     @Override
                     void postAfterTraversal(Runnable runnable) {

@@ -22,7 +22,6 @@ import android.view.View
 import androidx.annotation.DoNotInline
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
-import com.android.media.flags.Flags
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING_FAILED
 import com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_GROUPING
@@ -224,9 +223,7 @@ abstract class MediaOutputAdapterBase(protected val mController: MediaSwitchingC
             } else if (!isChecked && device.isDeselectable()) {
                 mController.removeDeviceFromPlayMedia(device)
             }
-            if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
-                notifyDataSetChanged()
-            }
+            notifyDataSetChanged()
         }
 
         private fun transferOutput(device: MediaDevice) {

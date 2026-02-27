@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
+import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.Pair;
 
@@ -207,8 +208,11 @@ public abstract class ComponentResolverBase extends WatchableImpl implements Com
             }
 
             if (processName != null) {
-                if (!p.getProcessName().equals(processName)
-                        || !computer.isCallerSameApp(pkg.getPackageName(), uid)) {
+                if (!p.getProcessName().equals(processName)) {
+                    continue;
+                }
+                final boolean isPcc = (p.getFlags() & ProviderInfo.FLAG_RUN_IN_PCC_SANDBOX) != 0;
+                if (UserHandle.getAppId(uid) != (isPcc ? ps.getPccId() : ps.getAppId())) {
                     continue;
                 }
             }

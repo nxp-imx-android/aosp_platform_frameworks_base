@@ -19,6 +19,7 @@ package com.android.systemui.motioncues
 import android.app.motioncues.MotionCuesVisualStyle
 import android.app.motioncues.MotionCuesSettings
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -48,6 +49,8 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.stub
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -70,6 +73,7 @@ class MotionCuesUiTest : SysuiTestCase() {
     @Mock private lateinit var drawable: Drawable
     @Mock private lateinit var configurationController: ConfigurationController
 
+    @Mock private lateinit var resources: Resources
     private lateinit var underTest: MotionCuesUi
 
     @Before
@@ -77,6 +81,11 @@ class MotionCuesUiTest : SysuiTestCase() {
         MockitoAnnotations.initMocks(this)
         whenever(windowManager.currentWindowMetrics).thenReturn(windowMetrics)
         whenever(windowMetrics.bounds).thenReturn(PORTRAIT_BOUNDS)
+
+        val initialConfig = Configuration()
+        initialConfig.orientation = Configuration.ORIENTATION_PORTRAIT
+        whenever(mockContext.resources).thenReturn(resources)
+        whenever(resources.configuration).thenReturn(initialConfig)
 
         underTest = MotionCuesUi(context, windowManager, configurationController)
     }

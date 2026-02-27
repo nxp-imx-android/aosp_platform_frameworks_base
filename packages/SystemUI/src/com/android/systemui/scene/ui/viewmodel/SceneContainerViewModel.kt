@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.ui.viewmodel
 
+import android.annotation.StringRes
 import android.content.res.Resources
 import android.os.Build
 import android.view.MotionEvent
@@ -33,6 +34,7 @@ import com.android.compose.animation.scene.SwipeSourceDetector
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.systemui.Flags
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.desktop.domain.interactor.DesktopInteractor
@@ -167,6 +169,24 @@ constructor(
             initialValue = 1f,
         )
 
+    val accessibilityTitle: Int?
+        @StringRes
+        get() {
+            val overlays = sceneInteractor.transitionState.currentOverlays
+            val topmostOverlay = if (overlays.isNotEmpty()) overlays.last() else null
+            return when {
+                topmostOverlay == Overlays.NotificationsShade ->
+                    R.string.accessibility_desc_notification_shade
+                topmostOverlay == Overlays.QuickSettingsShade ->
+                    R.string.accessibility_desc_quick_settings
+                topmostOverlay == Overlays.Bouncer -> null
+                currentScene == Scenes.Shade -> R.string.accessibility_desc_notification_shade
+                currentScene == Scenes.QuickSettings -> R.string.accessibility_desc_quick_settings
+                currentScene == Scenes.Lockscreen -> R.string.accessibility_desc_lock_screen
+                else -> null
+            }
+        }
+
     private val isDesktopStatusBarEnabled by
         hydrator.hydratedStateOf(
             traceName = "isDesktopStatusBarEnabled",
@@ -277,6 +297,13 @@ constructor(
                 event.action == MotionEvent.ACTION_OUTSIDE &&
                 sceneInteractor.currentOverlays.value.isNotEmpty()
         ) {
+            if (Flags.fixSceneContainerActionOutsideTouch()) {
+                val statusBarHeight = resources.getDimensionPixelSize(R.dimen.status_bar_height)
+                if (event.y <= statusBarHeight) {
+                    return
+                }
+            }
+
             sceneInteractor.currentOverlays.value.forEach {
                 sceneInteractor.hideOverlay(it, "Empty space touch")
             }

@@ -57,6 +57,7 @@ import android.permission.flags.Flags;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Log;
+import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 
@@ -673,10 +674,6 @@ public final class AppFunctionManager {
      *       AppFunctionObserver#onAppFunctionMetadataChanged}.
      * </ol>
      *
-     * <strong>Note:</strong> If app functions or packages are reported to have changed but are not
-     * returned from {@link #searchAppFunctions} or {@link #getAppFunctionStates}, it means that
-     * they have been removed.
-     *
      * @param executor the executor to run the {@link AppFunctionObserver} callbacks.
      * @param appFunctionObserver the observer to receive updates to registered app functions.
      * @return An {@link AppFunctionObservation} used to cancel this observation.
@@ -1288,6 +1285,23 @@ public final class AppFunctionManager {
     }
 
     /**
+     * Unregisters all app functions that were registered through this {@code AppFunctionManager}
+     * instance.
+     *
+     * <p>This method should be called to clean up all registrations when the associated
+     * {@link Context} is destroyed.
+     *
+     * @param callerDescription A description of the caller, used for logging.
+     *
+     * @hide
+     */
+    @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
+    public void unregisterAllAppFunctions(@NonNull String callerDescription) {
+        Objects.requireNonNull(callerDescription);
+        mRegistry.unregisterAllAppFunctions(callerDescription);
+    }
+
+    /**
      * Listener for changes to app function access for an agent.
      *
      * @hide
@@ -1437,6 +1451,27 @@ public final class AppFunctionManager {
                     throw e.rethrowFromSystemServer();
                 }
                 mRegistrations.removeAll(functionIdsToUnregister);
+            }
+        }
+
+        void unregisterAllAppFunctions(@NonNull String callerDescription) {
+            synchronized (mLock) {
+                if (mRegistrations.isEmpty()) {
+                    return;
+                }
+                Slog.e(TAG, "Leaked AppFunction registrations detected from " + callerDescription
+                                + ". Functions: [" + String.join(", ", mRegistrations.keySet())
+                                + "]. Ensure AppFunctionRegistration.unregister() is called to"
+                                + " prevent memory leaks.");
+                try {
+                    mService.unregisterAppFunctions(
+                            mContext.getPackageName(),
+                            new ArrayList<>(mRegistrations.keySet()),
+                            mExecutor);
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+                mRegistrations.clear();
             }
         }
 

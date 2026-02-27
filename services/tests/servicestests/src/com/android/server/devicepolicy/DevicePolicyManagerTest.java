@@ -141,9 +141,9 @@ import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
@@ -5268,67 +5268,32 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         assertThat(dpm.getLockTaskFeatures(admin1)).isEqualTo(flags);
     }
 
-    private int getMockedUidFromLocalPackageManager() {
-        String testPackageName = mContext.getPackageName();
-        int currentProcessUserId = UserHandle.getUserId(Process.myUid());
-        int appIdFromMockState;
-
-        try (var snapshot = dpms.mMockInjector.getPackageManagerLocal().withUnfilteredSnapshot()) {
-            appIdFromMockState = snapshot.getPackageStates()
-                    .get(testPackageName)
-                    .getAppId();
-        }
-        int uidExpectedByMock = UserHandle.getUid(currentProcessUserId, appIdFromMockState);
-        return uidExpectedByMock;
-    }
-
     @Test
-    public void isDeviceManaged_withDeviceOwner_fromSystemUser_returnsTrue() throws Exception {
+    public void testIsDeviceManaged() throws Exception {
         mContext.binder.callingUid = DpmMockContext.CALLER_SYSTEM_USER_UID;
         setupDeviceOwner();
+
+        // The device owner itself, any uid holding MANAGE_USERS permission and the system can
+        // find out that the device has a device owner.
         assertThat(dpm.isDeviceManaged()).isTrue();
-    }
-
-    @Test
-    public void isDeviceManaged_withDeviceOwner_withPermission_returnsTrue() throws Exception {
-        mContext.binder.callingUid = DpmMockContext.CALLER_SYSTEM_USER_UID;
-        setupDeviceOwner();
-        int mockedUid = getMockedUidFromLocalPackageManager();
-        mContext.binder.callingUid = mockedUid;
-        mContext.binder.callingPermissions
-                .computeIfAbsent(mockedUid, k -> new ArrayList<>())
-                .add(permission.MANAGE_USERS);
-
+        mContext.binder.callingUid = 1234567;
+        mContext.callerPermissions.add(permission.MANAGE_USERS);
         assertThat(dpm.isDeviceManaged()).isTrue();
-        mContext.binder.callingPermissions.remove(mockedUid);
-    }
-
-    @Test
-    public void isDeviceManaged_withDeviceOwner_withoutPermission_returnsTrue() throws Exception {
-        mContext.binder.callingUid = DpmMockContext.CALLER_SYSTEM_USER_UID;
-        setupDeviceOwner();
-        mContext.binder.callingUid = getMockedUidFromLocalPackageManager();
+        mContext.callerPermissions.remove(permission.MANAGE_USERS);
+        mContext.binder.clearCallingIdentity();
         assertThat(dpm.isDeviceManaged()).isTrue();
-    }
 
-    @Test
-    public void isDeviceManaged_withoutDeviceOwner_withPermission_returnsFalse() {
-        int mockedUid = getMockedUidFromLocalPackageManager();
-        mContext.binder.callingUid = mockedUid;
-        mContext.binder.callingPermissions
-                .computeIfAbsent(mockedUid, k -> new ArrayList<>())
-                .add(permission.MANAGE_USERS);
+        clearDeviceOwner();
 
+        // Any uid holding MANAGE_USERS permission and the system can find out that the device does
+        // not have a device owner.
+        mContext.binder.callingUid = 1234567;
+        mContext.callerPermissions.add(permission.MANAGE_USERS);
         assertThat(dpm.isDeviceManaged()).isFalse();
-        mContext.binder.callingPermissions.remove(mockedUid);
+        mContext.callerPermissions.remove(permission.MANAGE_USERS);
+        mContext.binder.clearCallingIdentity();
+        assertThat(dpm.isDeviceManaged()).isFalse();
     }
-
-    @Test
-    public void isDeviceManaged_withoutDeviceOwner_without_throwsSecurityException() {
-        mContext.binder.callingUid = getMockedUidFromLocalPackageManager();
-        assertThrows(SecurityException.class, () -> dpm.isDeviceManaged());
-    }
-
 
     @Test
     public void testDeviceOwnerOrganizationName() throws Exception {
@@ -7801,6 +7766,64 @@ public class DevicePolicyManagerTest extends DpmTestBase {
 
         // Verify the alarm was not set.
         verifyNoMoreInteractions(getServices().alarmManager);
+        // Now the user should see a notification about suspended apps.
+        verify(getServices().notificationManager, times(1))
+                .notifyAsUser(any(), anyInt(), any(), any());
+        // Verify that the apps are suspended.
+        verify(getServices().packageManagerInternal, times(1))
+                .setPackagesSuspendedByAdmin(anyInt(), any(), eq(true));
+    }
+
+    /**
+     * Tests the case when the user doesn't turn the profile on in time, verifies that the user is
+     * warned with a notification and then the apps get suspended.
+     */
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_CHECK_PERSONAL_SUSPENSION_FOR_ALL_PROFILES)
+    public void testMaximumProfileTimeOff_noMainUserAndTimeChanged() throws Exception {
+        prepareMocksForSetMaximumProfileTimeOff();
+        // Simulate the case when there is no main user.
+        when(getServices().userManager.getMainUser()).thenReturn(null);
+        when(getServices().userManager.isUserRunning(UserHandle.USER_SYSTEM)).thenReturn(true);
+        when(getServices().userManagerInternal.getUserIds())
+                .thenReturn(new int[] {UserHandle.USER_SYSTEM, CALLER_USER_HANDLE});
+        when(mContext.getResources().getStringArray(R.array.config_packagesExemptFromSuspension))
+                .thenReturn(new String[0]);
+
+        mContext.binder.callingUid = DpmMockContext.CALLER_UID;
+        dpm.setManagedProfileMaximumTimeOff(admin1, PROFILE_OFF_TIMEOUT);
+
+        mContext.binder.callingUid = DpmMockContext.SYSTEM_UID;
+        // The profile is running, notification should not be posted.
+        verify(getServices().notificationManager, never())
+                .notify(anyInt(), any(Notification.class));
+        // Apps shouldn't be suspended.
+        verifyNoMoreInteractions(getServices().ipackageManager);
+
+        setUserUnlocked(CALLER_USER_HANDLE, false);
+        sendBroadcastWithUser(dpms, Intent.ACTION_USER_STOPPED, CALLER_USER_HANDLE);
+
+        // Still no notification should be posted at this point.
+        verify(getServices().notificationManager, never())
+                .notify(anyInt(), any(Notification.class));
+        // Apps shouldn't be suspended.
+        verifyNoMoreInteractions(getServices().ipackageManager);
+
+        // Pretend the warning time has passed.
+        dpms.mMockInjector.setSystemCurrentTimeMillis(PROFILE_OFF_WARNING_TIME + 10);
+        sendBroadcastWithUser(dpms, Intent.ACTION_DATE_CHANGED, CALLER_USER_HANDLE);
+
+        // Now the user should see a warning notification.
+        verify(getServices().notificationManager, times(1))
+                .notifyAsUser(any(), anyInt(), any(), any());
+        // Apps shouldn't be suspended yet.
+        verifyNoMoreInteractions(getServices().ipackageManager);
+        clearInvocations(getServices().notificationManager);
+
+        // Pretend the grace period has passed.
+        dpms.mMockInjector.setSystemCurrentTimeMillis(PROFILE_OFF_DEADLINE + 10);
+        sendBroadcastWithUser(dpms, Intent.ACTION_DATE_CHANGED, CALLER_USER_HANDLE);
+
         // Now the user should see a notification about suspended apps.
         verify(getServices().notificationManager, times(1))
                 .notifyAsUser(any(), anyInt(), any(), any());

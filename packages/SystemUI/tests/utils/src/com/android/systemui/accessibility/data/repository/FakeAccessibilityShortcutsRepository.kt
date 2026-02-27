@@ -51,6 +51,8 @@ class FakeAccessibilityShortcutsRepository(
         const val FAKE_VOICE_ACCESS_TARGET_NAME = "com.android.test/.FakeVoiceAccess"
         const val FAKE_UNTRUSTED_SERVICE_TARGET_NAME = "com.android.test/.FakeUntrustedService"
         const val FAKE_HSU_EXCLUDED_TARGET_NAME = "com.android.test/.FakeHsuExcludedTarget"
+        const val FAKE_KEYGUARD_EXCLUDED_TARGET_NAME =
+            "com.android.test/.FakeKeyguardExcludedTarget"
     }
 
     private data class TargetInfo(
@@ -67,6 +69,7 @@ class FakeAccessibilityShortcutsRepository(
             TargetInfo(FAKE_VOICE_ACCESS_TARGET_NAME, "Voice Access", true),
             TargetInfo(FAKE_UNTRUSTED_SERVICE_TARGET_NAME, "Untrusted Service", true),
             TargetInfo(FAKE_HSU_EXCLUDED_TARGET_NAME, "HSU Excluded Service", true),
+            TargetInfo(FAKE_KEYGUARD_EXCLUDED_TARGET_NAME, "KEYGUARD Excluded Service", true),
         )
 
     // Target names existing in the set means they are assigned to that shortcut type.
@@ -87,6 +90,7 @@ class FakeAccessibilityShortcutsRepository(
         )
 
     override val hsuExcludedTargets = listOf(FAKE_HSU_EXCLUDED_TARGET_NAME)
+    override val keyguardExcludedTargets = listOf(FAKE_KEYGUARD_EXCLUDED_TARGET_NAME)
 
     private val _accessibilityButtonTargetComponent = MutableStateFlow<String?>(null)
     override val accessibilityButtonTargetComponent =

@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.transition;
 
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
@@ -30,16 +31,19 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.WindowManager.fixScale;
 import static android.window.TransitionInfo.FLAGS_IS_NON_APP_WINDOW;
+import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 import static android.window.TransitionInfo.FLAG_IS_BEHIND_STARTING_WINDOW;
 import static android.window.TransitionInfo.FLAG_IS_OCCLUDED;
 import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
+import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_NO_ANIMATION;
 import static android.window.TransitionInfo.FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT;
 
 import static com.android.window.flags.Flags.unifyShellBinders;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TRANSITIONS;
 import static com.android.wm.shell.shared.TransitionUtil.FLAG_IS_DESKTOP_WALLPAPER_ACTIVITY;
+import static com.android.wm.shell.shared.TransitionUtil.isClosingType;
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
 import static com.android.wm.shell.shared.TransitionUtil.setUpSurface;
 
@@ -59,6 +63,7 @@ import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Pair;
+import android.util.SparseBooleanArray;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.ITransitionPlayer;
@@ -599,8 +604,9 @@ public class Transitions implements RemoteCallable<Transitions>,
      */
     private static void setupStartState(@NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction t, @NonNull SurfaceControl.Transaction finishT) {
-        boolean isOpening = isOpeningType(info.getType());
-        for (int i = info.getChanges().size() - 1; i >= 0; --i) {
+        final boolean crossDisplay = com.android.window.flags.Flags.crossDisplayTransition();
+        final SparseBooleanArray isRevealingOnDisplay = new SparseBooleanArray();
+        for (int i = 0; i < info.getChanges().size(); ++i) {
             final TransitionInfo.Change change = info.getChanges().get(i);
             if (change.hasFlags(FLAGS_IS_NON_APP_WINDOW & ~FLAG_IS_WALLPAPER)) {
                 // Currently system windows are controlled by WindowState, so don't change their
@@ -611,7 +617,7 @@ public class Transitions implements RemoteCallable<Transitions>,
                 continue;
             }
             final SurfaceControl leash = change.getLeash();
-            final int mode = info.getChanges().get(i).getMode();
+            final int mode = change.getMode();
 
             if (mode == TRANSIT_TO_FRONT) {
                 // When the window is moved to front, make sure the crop is updated to prevent it
@@ -643,7 +649,22 @@ public class Transitions implements RemoteCallable<Transitions>,
                 }
                 continue;
             }
-
+            boolean isOpening;
+            if (crossDisplay) {
+                // If a window is closing or moving to another display, it reveals the content
+                // behind it.
+                if (isClosingType(mode) || change.getStartDisplayId() != change.getEndDisplayId()) {
+                    isRevealingOnDisplay.put(change.getStartDisplayId(), true);
+                }
+                // TODO(b/486224132): make predictive-back transitions consistent
+                // This prevents windows already being animated by a back navigation gesture from
+                // being incorrectly hidden at the start of the transition.
+                final boolean isExcluded =
+                        change.hasFlags(FLAG_MOVED_TO_TOP | FLAG_BACK_GESTURE_ANIMATED);
+                isOpening = !isRevealingOnDisplay.get(change.getEndDisplayId()) && !isExcluded;
+            } else {
+                isOpening = isOpeningType(info.getType());
+            }
             if (mode == TRANSIT_OPEN || mode == TRANSIT_TO_FRONT) {
                 t.show(leash);
                 t.setMatrix(leash, 1, 0, 0, 1);

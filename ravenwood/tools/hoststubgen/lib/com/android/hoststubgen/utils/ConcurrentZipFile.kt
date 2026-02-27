@@ -38,6 +38,8 @@ import kotlin.math.min
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
 import org.apache.commons.compress.archivers.zip.ZipFile
+import java.nio.file.Files
+import java.nio.file.Paths
 
 // Enable to debug concurrency issues
 const val DISABLE_PARALLELISM = false
@@ -223,11 +225,24 @@ class ConcurrentZipFile(
         exception.get()?.let { throw it }
     }
 
-    fun write(out: String, timeCollector: ((Double) -> Unit)? = null) {
+    fun write(out: String, metadaata: String? = null, timeCollector: ((Double) -> Unit)? = null) {
         var writeTime = .0
 
+        val metadataFilename = "hoststubgen.txt"
+
+        // Make sure the output directory exists.
+        Files.createDirectories(Paths.get(out).parent)
+
         ZipArchiveOutputStream(FileOutputStream(out).buffered(1024 * 1024)).use { zos ->
+            if (metadaata != null) {
+                zos.putArchiveEntry(ZipArchiveEntry(metadataFilename))
+                zos.write(metadaata.toByteArray())
+                zos.closeArchiveEntry()
+            }
             forEach { entry ->
+                if (entry.name == metadataFilename) {
+                    return@forEach
+                }
                 writeTime += log.nTime { entry.writeTo(zos) }
             }
         }

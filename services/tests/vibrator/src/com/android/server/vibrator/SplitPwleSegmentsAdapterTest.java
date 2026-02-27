@@ -62,7 +62,7 @@ public class SplitPwleSegmentsAdapterTest {
     public void testSplitPwleSegmentsAdapter_withFeatureFlagDisabled_returnsOriginalSegments() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 //  startAmplitude, endAmplitude, startFrequencyHz, endFrequencyHz, duration
-                new PwleSegment(0.0f, 1.0f, 300.0f, 300.0f, 5000, false)));
+                new PwleSegment(0.0f, 1.0f, 300.0f, 300.0f, 5000)));
         List<VibrationEffectSegment> originalSegments = new ArrayList<>(segments);
 
         VibratorInfo vibratorInfo = createVibratorInfo(
@@ -82,7 +82,7 @@ public class SplitPwleSegmentsAdapterTest {
     public void testSplitPwleSegmentsAdapter_noPwleCapability_returnsOriginalSegments() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 //  startAmplitude, endAmplitude, startFrequencyHz, endFrequencyHz, duration
-                new PwleSegment(0.0f, 1.0f, 300.0f, 300.0f, 5000, false)));
+                new PwleSegment(0.0f, 1.0f, 300.0f, 300.0f, 5000)));
         List<VibrationEffectSegment> originalSegments = new ArrayList<>(segments);
 
         VibratorInfo vibratorInfo = createVibratorInfo(
@@ -101,7 +101,7 @@ public class SplitPwleSegmentsAdapterTest {
     public void testSplitPwleSegmentsAdapter_noMaxEnvelopeEffectSize_returnsOriginalSegments() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 //  startAmplitude, endAmplitude, startFrequencyHz, endFrequencyHz, duration
-                new PwleSegment(0.0f, 1.0f, 300.0f, 300.0f, 5000, false)));
+                new PwleSegment(0.0f, 1.0f, 300.0f, 300.0f, 5000)));
         List<VibrationEffectSegment> originalSegments = new ArrayList<>(segments);
         VibratorInfo vibratorInfo = createVibratorInfo(/*maxEnvelopeControlPointDuration=*/ 0,
                 TEST_FREQUENCY_PROFILE, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
@@ -119,16 +119,16 @@ public class SplitPwleSegmentsAdapterTest {
     public void testSplitPwleSegmentsAdapter_withPwleCapability_adaptSegmentsCorrectly() {
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
                 //  startAmplitude, endAmplitude, startFrequencyHz, endFrequencyHz, duration
-                new PwleSegment(0.0f, 1.0f, 200.0f, 200.0f, 1000, false),
-                new PwleSegment(0.0f, 1.0f, 300.0f, 300.0f, 5000, false)));
+                new PwleSegment(0.0f, 1.0f, 200.0f, 200.0f, 1000),
+                new PwleSegment(0.0f, 1.0f, 300.0f, 300.0f, 5000)));
         List<VibrationEffectSegment> expectedSegments = Arrays.asList(
                 //  startAmplitude, endAmplitude, startFrequencyHz, endFrequencyHz, duration
-                new PwleSegment(0.0f, 1.0f, 200.0f, 200.0f, 1000, false),
-                new PwleSegment(0.0f, 0.2f, 300.0f, 300.0f, 1000, false),
-                new PwleSegment(0.2f, 0.4f, 300.0f, 300.0f, 1000, false),
-                new PwleSegment(0.4f, 0.6f, 300.0f, 300.0f, 1000, false),
-                new PwleSegment(0.6f, 0.8f, 300.0f, 300.0f, 1000, false),
-                new PwleSegment(0.8f, 1.0f, 300.0f, 300.0f, 1000, false));
+                new PwleSegment(0.0f, 1.0f, 200.0f, 200.0f, 1000),
+                new PwleSegment(0.0f, 0.2f, 300.0f, 300.0f, 1000),
+                new PwleSegment(0.2f, 0.4f, 300.0f, 300.0f, 1000),
+                new PwleSegment(0.4f, 0.6f, 300.0f, 300.0f, 1000),
+                new PwleSegment(0.6f, 0.8f, 300.0f, 300.0f, 1000),
+                new PwleSegment(0.8f, 1.0f, 300.0f, 300.0f, 1000));
         VibratorInfo vibratorInfo = createVibratorInfo(
                 /*maxEnvelopeControlPointDuration=*/1000, TEST_FREQUENCY_PROFILE,
                 IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
@@ -136,45 +136,6 @@ public class SplitPwleSegmentsAdapterTest {
         assertThat(mAdapter.adaptToVibrator(vibratorInfo, segments, /*repeatIndex= */ 0))
                 .isEqualTo(0);
         assertThat(segments).isEqualTo(expectedSegments);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
-    public void testSplitPwleSegmentsAdapter_firstSegmentFlagIsPropagated() {
-        {
-            List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
-                    new PwleSegment(0.5f, 1f, 100f,200f, 500, /* isFirstSegment= */ true)));
-
-            List<VibrationEffectSegment> expectedSegments = Arrays.asList(
-                    new PwleSegment(0.5f, 0.75f, 100f, 150f, 250, /* isFirstSegment= */ true),
-                    new PwleSegment(0.75f, 1f, 150f, 200f, 250, /* isFirstSegment= */ false));
-
-            VibratorInfo vibratorInfo =
-                    createVibratorInfo(
-                            /* maxEnvelopeControlPointDuration= */ 250,
-                            TEST_FREQUENCY_PROFILE,
-                            IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
-
-            mAdapter.adaptToVibrator(vibratorInfo, segments, -1);
-            assertThat(segments).isEqualTo(expectedSegments);
-        }
-        {
-            List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
-                    new PwleSegment(0.5f, 1f, 100f, 200f, 500, /* isFirstSegment= */ false)));
-
-            List<VibrationEffectSegment> expectedSegments = Arrays.asList(
-                    new PwleSegment(0.5f, 0.75f, 100f, 150f, 250, /* isFirstSegment= */ false),
-                    new PwleSegment(0.75f, 1f, 150f, 200f, 250, /* isFirstSegment= */ false));
-
-            VibratorInfo vibratorInfo =
-                    createVibratorInfo(
-                            /* maxEnvelopeControlPointDuration= */ 250,
-                            TEST_FREQUENCY_PROFILE,
-                            IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
-
-            mAdapter.adaptToVibrator(vibratorInfo, segments, -1);
-            assertThat(segments).isEqualTo(expectedSegments);
-        }
     }
 
     private static VibratorInfo createVibratorInfo(int maxEnvelopeControlPointDuration,

@@ -30,6 +30,7 @@ import static junit.framework.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -166,7 +167,7 @@ public class RecordingControllerTest extends SysuiTestCase {
 
         assertFalse(mController.isStarting());
         assertFalse(mController.isRecording());
-        verify(mCallback).onRecordingEnd();
+        verify(mCallback, atLeastOnce()).onRecordingEnd();
     }
 
     // Test that updating the controller state works and notifies listeners.
@@ -215,7 +216,7 @@ public class RecordingControllerTest extends SysuiTestCase {
         mController.mUserChangedCallback.onUserChanged(USER_ID, mContext);
 
         // Ensure that the recording was stopped
-        verify(mCallback).onRecordingEnd();
+        verify(mCallback, atLeastOnce()).onRecordingEnd();
         assertFalse(mController.isRecording());
     }
 
