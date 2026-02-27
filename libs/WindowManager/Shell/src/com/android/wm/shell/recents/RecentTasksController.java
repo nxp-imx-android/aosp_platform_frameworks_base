@@ -24,7 +24,6 @@ import static android.view.Display.INVALID_DISPLAY;
 import static com.android.wm.shell.Flags.enableShellTopTaskTracking;
 import static com.android.wm.shell.desktopmode.DesktopWallpaperActivity.isWallpaperTask;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_RECENT_TASKS;
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TASK_OBSERVER;
 
 import android.Manifest;
 import android.annotation.RequiresPermission;
@@ -506,7 +505,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
     void registerRecentTasksListener(IRecentTasksListener listener) {
         mListener = listener;
         if (enableShellTopTaskTracking()) {
-            ProtoLog.v(WM_SHELL_TASK_OBSERVER, "registerRecentTasksListener");
+            ProtoLog.v(WM_SHELL_RECENT_TASKS, "registerRecentTasksListener");
             // Post a notification for the current set of visible tasks
             mMainExecutor.executeDelayed(() -> notifyVisibleTasksChanged(mVisibleTasks), 0);
         }
@@ -590,11 +589,21 @@ public class RecentTasksController implements TaskStackListenerCallback,
     private void initializeDesksMap() {
         mTmpDesks.clear();
 
-        if (mDesktopState.canEnterDesktopMode()
-                && mDesktopUserRepositories.isPresent()) {
-            for (var deskId : mDesktopUserRepositories.get().getCurrent().getAllDeskIds()) {
-                getOrCreateDesk(deskId);
-            }
+        if (!mDesktopState.canEnterDesktopMode()) {
+            ProtoLog.v(WM_SHELL_RECENT_TASKS,
+                    "initializeDesksMap - desktop windowing not available");
+            return;
+        }
+        if (!mDesktopUserRepositories.isPresent()) {
+            ProtoLog.v(WM_SHELL_RECENT_TASKS,
+                    "initializeDesksMap - DesktopUserRepositories not present");
+            return;
+        }
+
+        Set<Integer> allDeskIds = mDesktopUserRepositories.get().getCurrent().getAllDeskIds();
+        ProtoLog.v(WM_SHELL_RECENT_TASKS, "initializeDesksMap - allDeskIds: %s", allDeskIds);
+        for (var deskId : allDeskIds) {
+            getOrCreateDesk(deskId);
         }
     }
 
@@ -636,14 +645,13 @@ public class RecentTasksController implements TaskStackListenerCallback,
     @VisibleForTesting
     <T extends TaskInfo> ArrayList<GroupedTaskInfo> generateList(@NonNull List<T> tasks,
             String reason) {
+        ProtoLog.v(WM_SHELL_RECENT_TASKS, "generateList(%s)", reason);
+
         initializeDesksMap();
 
         if (tasks.isEmpty() && mTmpDesks.isEmpty()) {
+            ProtoLog.v(WM_SHELL_RECENT_TASKS, "generateList - no desks or tasks present");
             return new ArrayList<>();
-        }
-
-        if (enableShellTopTaskTracking()) {
-            ProtoLog.v(WM_SHELL_TASK_OBSERVER, "RecentTasksController.generateList(%s)", reason);
         }
 
         // Make a mapping of task id -> task info for the remaining tasks to be processed, this
@@ -808,6 +816,7 @@ public class RecentTasksController implements TaskStackListenerCallback,
             }
         }
 
+        ProtoLog.v(WM_SHELL_RECENT_TASKS, "generateList - complete");
         return groupedTasks;
     }
 
@@ -839,12 +848,12 @@ public class RecentTasksController implements TaskStackListenerCallback,
 
     /** Dumps the set of tasks to protolog */
     private void dumpGroupedTasks(List<GroupedTaskInfo> groupedTasks, String reason) {
-        if (!WM_SHELL_TASK_OBSERVER.isEnabled()) {
+        if (!WM_SHELL_RECENT_TASKS.isEnabled()) {
             return;
         }
-        ProtoLog.v(WM_SHELL_TASK_OBSERVER, "    Tasks (%s):", reason);
+        ProtoLog.v(WM_SHELL_RECENT_TASKS, "    Tasks (%s):", reason);
         for (GroupedTaskInfo task : groupedTasks) {
-            ProtoLog.v(WM_SHELL_TASK_OBSERVER, "        %s", task);
+            ProtoLog.v(WM_SHELL_RECENT_TASKS, "        %s", task);
         }
     }
 
