@@ -18,10 +18,6 @@
         <option name="cleanup-apks" value="true" />
         <option name="test-file-name" value="TrustTokenTestsDevice.apk" />
     </target_preparer>
-    <target_preparer class="com.android.tradefed.targetprep.FeatureFlagTargetPreparer">
-        <option name="flag-value"
-            value="cross_device_authentication/android.security.enable_talisman_service=true" />
-    </target_preparer>
     <test class="com.android.tradefed.testtype.AndroidJUnitTest" >
         <option name="package" value="com.android.server.security.trusttoken" />
         <option name="runner" value="androidx.test.runner.AndroidJUnitRunner" />
