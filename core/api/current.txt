@@ -11895,6 +11895,7 @@ package android.content {
     field public static final String CONNECTIVITY_SERVICE = "connectivity";
     field public static final String CONSUMER_IR_SERVICE = "consumer_ir";
     field @FlaggedApi("android.provider.user_keys") public static final String CONTACT_KEYS_SERVICE = "contact_keys";
+    field @FlaggedApi("android.app.contentrestriction.flags.content_restriction_api") public static final String CONTENT_RESTRICTION_SERVICE = "content_restriction";
     field public static final int CONTEXT_IGNORE_SECURITY = 2; // 0x2
     field public static final int CONTEXT_INCLUDE_CODE = 1; // 0x1
     field public static final int CONTEXT_RESTRICTED = 4; // 0x4
