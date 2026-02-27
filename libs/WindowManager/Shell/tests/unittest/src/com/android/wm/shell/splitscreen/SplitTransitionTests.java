@@ -50,7 +50,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -680,17 +679,14 @@ public class SplitTransitionTests extends ShellTestCase {
                 .addChange(TRANSIT_TO_BACK, mStageCoordinator.mSplitRootTaskInfo)
                 .build();
 
-        Rect topLeft = mSplitLayout.getTopLeftBounds();
-        Rect bottomRight = mSplitLayout.getBottomRightBounds();
-
         // Add snapshot to the expanding change
         info.getChanges().get(1).setSnapshot(createMockSurface(), 0f);
-        info.getChanges().get(1).setStartAbsBounds(bottomRight);
-        info.getChanges().get(1).setEndAbsBounds(mSplitLayout.getRootBounds());
+        info.getChanges().get(1).setStartAbsBounds(new Rect(100, 0, 200, 200));
+        info.getChanges().get(1).setEndAbsBounds(new Rect(0, 0, 200, 200));
         info.getChanges().get(1).setLastParent(mSideStage.mRootTaskInfo.token);
 
         // Closing change bounds
-        info.getChanges().get(0).setStartAbsBounds(topLeft);
+        info.getChanges().get(0).setStartAbsBounds(new Rect(0, 0, 100, 200));
         info.getChanges().get(0).setLastParent(mMainStage.mRootTaskInfo.token);
 
         IBinder transition = mSplitScreenTransitions.startDismissTransition(
@@ -708,18 +704,18 @@ public class SplitTransitionTests extends ShellTestCase {
 
         // Verify invocation + 2 animations started (one for closing, one for expanding)
         verify(mSplitTransitionAnimations, times(2)).buildDismissAnimation(any(),
-                any(), eq(topLeft), eq(bottomRight), anyFloat(), any());
+                any(), eq(mStageCoordinator), any());
         verify(mAnimExecutor, times(2)).execute(any());
 
         // check animator created for expanding surface
         assertNotNull("Dismiss animation should be played for expanding surface",
                 mSplitTransitionAnimations.buildDismissAnimation(info.getChanges().get(1),
-                        mock(SurfaceControl.Transaction.class), topLeft, bottomRight, 0f,
+                        mock(SurfaceControl.Transaction.class), mStageCoordinator,
                         mock(Consumer.class)));
         // check animator created for closing surface
         assertNotNull("Dismiss animation should be played for closing surface",
                 mSplitTransitionAnimations.buildDismissAnimation(info.getChanges().get(0),
-                        mock(SurfaceControl.Transaction.class), topLeft, bottomRight, 0f,
+                        mock(SurfaceControl.Transaction.class), mStageCoordinator,
                         mock(Consumer.class)));
     }
 
