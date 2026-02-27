@@ -493,7 +493,7 @@ flag {
   name: "multi_user_management_device_provisioning"
   is_exported: true
   namespace: "enterprise"
-  description: "Enable the multi user management device provisioning APIs."
+  description: "Enable the multi user management device provisioning APIs. Will be replaced by multiuser_management_device_provisioning soon."
   bug: "390162247"
 }
 
@@ -552,7 +552,7 @@ flag {
   name: "multi_user_management_user_provisioning"
   is_exported: true
   namespace: "enterprise"
-  description: "Enable the multi user management user provisioning APIs."
+  description: "Enable the multi user management user provisioning APIs. Will be replaced by multiuser_management_user_provisioning soon."
   bug: "390162247"
 }
 
@@ -639,4 +639,20 @@ flag {
   description: "Redirect set/getAutoTimeZoneEnabled to the generic set/getPolicy APIs."
   bug: "434919316"
   is_exported: true
+}
+
+flag {
+  name: "multiuser_management_user_provisioning"
+  is_exported: false
+  namespace: "enterprise"
+  description: "Enable the multi user management user provisioning APIs."
+  bug: "390162247"
+}
+
+flag {
+  name: "multiuser_management_device_provisioning"
+  is_exported: false
+  namespace: "enterprise"
+  description: "Enable the multi user management device provisioning APIs."
+  bug: "390162247"
 }
