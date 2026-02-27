@@ -17,6 +17,7 @@
 package com.android.wm.shell.transition
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.content.Intent
 import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -87,11 +88,13 @@ class InteractiveTasksRepositoryTest : ShellTestCase() {
         taskId: Int,
         displayId: Int,
         isInteractive: Boolean = false,
+        baseIntent: Intent = Intent(),
     ): RunningTaskInfo {
         val info = RunningTaskInfo()
         info.taskId = taskId
         info.displayId = displayId
         info.isInteractive = isInteractive
+        info.baseIntent = baseIntent
         return info
     }
 
