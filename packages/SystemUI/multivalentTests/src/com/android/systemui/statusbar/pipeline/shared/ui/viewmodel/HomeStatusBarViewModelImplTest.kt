@@ -29,6 +29,7 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.TYPE_EXTERNAL
+import android.view.View
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.media.projection.flags.Flags.FLAG_SHOW_STOP_DIALOG_POST_CALL_END
@@ -107,7 +108,6 @@ import com.android.systemui.statusbar.pipeline.shared.domain.HomeStatusBarHelper
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarIconBlockList
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarInteractorShowOperatorName
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
-import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityState
 import com.android.systemui.statusbar.policy.configurationController
 import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
 import com.android.systemui.statusbar.window.shared.model.StatusBarWindowState
@@ -702,12 +702,13 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         kosmos.runTest {
             kosmos.setHomeStatusBarInteractorShowOperatorName(true)
 
+            val latest by collectLastValue(underTest.shouldShowOperatorNameView)
             transitionKeyguardToGone()
 
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(DISABLE_NONE, DISABLE2_NONE)
 
-            assertThat(underTest.shouldShowOperatorNameView).isTrue()
+            assertThat(latest).isTrue()
         }
 
     @Test
@@ -720,7 +721,9 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(DISABLE_NONE, DISABLE2_NONE)
 
-            assertThat(underTest.shouldShowOperatorNameView).isFalse()
+            val latest by collectLastValue(underTest.shouldShowOperatorNameView)
+
+            assertThat(latest).isFalse()
         }
 
     @Test
@@ -728,12 +731,13 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         kosmos.runTest {
             kosmos.setHomeStatusBarInteractorShowOperatorName(true)
 
+            val latest by collectLastValue(underTest.shouldShowOperatorNameView)
             transitionKeyguardToGone()
 
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(DISABLE_SYSTEM_INFO, DISABLE2_NONE)
 
-            assertThat(underTest.shouldShowOperatorNameView).isFalse()
+            assertThat(latest).isFalse()
         }
 
     @Test
@@ -754,8 +758,10 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 )
             )
 
+            val latest by collectLastValue(underTest.shouldShowOperatorNameView)
+
             // THEN we still show the operator name view
-            assertThat(underTest.shouldShowOperatorNameView).isTrue()
+            assertThat(latest).isTrue()
         }
 
     @Test
@@ -931,6 +937,9 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     @Test
     fun hunOnLockscreenWithBypass_everythingHidden() =
         kosmos.runTest {
+            val latestNotifs by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val latestSystemInfo by collectLastValue(underTest.systemInfoCombinedVis)
+
             // WHEN on lockscreen with bypass enabled
             if (SceneContainerFlag.isEnabled) {
                 sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
@@ -950,37 +959,38 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             )
 
             // THEN status bar content still hides
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(latestNotifs!!.visibility).isEqualTo(View.GONE)
+            assertThat(latestSystemInfo!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     fun isClockVisible_allowedByDisableFlags_visible() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.isClockVisible)
             transitionKeyguardToGone()
 
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(DISABLE_NONE, DISABLE2_NONE)
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.VISIBLE)
+            assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     fun isClockVisible_notAllowedByDisableFlags_invisible() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.isClockVisible)
             transitionKeyguardToGone()
 
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(DISABLE_CLOCK, DISABLE2_NONE)
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
+            assertThat(latest!!.visibility).isEqualTo(View.INVISIBLE)
         }
 
     @Test
     fun isClockVisible_allowedByDisableFlags_hunPinnedByUser_visible() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.isClockVisible)
             transitionKeyguardToGone()
 
             fakeDisableFlagsRepository.disableFlags.value =
@@ -993,12 +1003,13 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 )
             )
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.VISIBLE)
+            assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     fun isClockVisible_allowedByDisableFlags_hunPinnedBySystem_visible() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.isClockVisible)
             transitionKeyguardToGone()
 
             fakeDisableFlagsRepository.disableFlags.value =
@@ -1012,52 +1023,52 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             )
 
             // THEN we still show the clock view
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.VISIBLE)
+            assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     fun isNotificationIconContainerVisible_allowedByDisableFlags_visible() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()
 
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(DISABLE_NONE, DISABLE2_NONE)
 
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
+            assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     fun isNotificationIconContainerVisible_notAllowedByDisableFlags_gone() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()
 
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(DISABLE_NOTIFICATION_ICONS, DISABLE2_NONE)
 
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(latest!!.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     fun isNotificationIconContainerVisible_anyChipShowing_chipsModernizationOn() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()
 
             kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
 
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(latest!!.visibility).isEqualTo(View.GONE)
 
             kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.DoingNothing
 
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
+            assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunBySystem_gone() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()
 
             // Chip
@@ -1071,13 +1082,13 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 )
             )
 
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(latest!!.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunByUser_gone() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()
 
             // Chip
@@ -1091,76 +1102,65 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 )
             )
 
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(latest!!.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     fun isSystemInfoVisible_allowedByDisableFlags_visible() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.systemInfoCombinedVis)
             transitionKeyguardToGone()
 
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(DISABLE_NONE, DISABLE2_NONE)
 
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
+            assertThat(latest!!.baseVisibility.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     fun isSystemInfoVisible_notAllowedByDisableFlags_gone() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.systemInfoCombinedVis)
             transitionKeyguardToGone()
 
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(DISABLE_SYSTEM_INFO, DISABLE2_NONE)
 
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(latest!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     fun systemInfoCombineVis_animationsPassThrough() =
         kosmos.runTest {
+            val latest by collectLastValue(underTest.systemInfoCombinedVis)
             transitionKeyguardToGone()
 
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility)
-                .isEqualTo(
-                    VisibilityModel(
-                        visibility = VisibilityState.VISIBLE,
-                        shouldAnimateChange = false,
-                    )
-                )
-            assertThat(underTest.systemInfoCombinedVis.animationState).isEqualTo(Idle)
+            assertThat(latest!!.baseVisibility)
+                .isEqualTo(VisibilityModel(visibility = View.VISIBLE, shouldAnimateChange = false))
+            assertThat(latest!!.animationState).isEqualTo(Idle)
 
             // WHEN the animation state changes, but the visibility state doesn't change
             systemStatusEventAnimationRepository.animationState.value = AnimatingIn
 
             // THEN the visibility is the same
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility)
-                .isEqualTo(
-                    VisibilityModel(
-                        visibility = VisibilityState.VISIBLE,
-                        shouldAnimateChange = false,
-                    )
-                )
+            assertThat(latest!!.baseVisibility)
+                .isEqualTo(VisibilityModel(visibility = View.VISIBLE, shouldAnimateChange = false))
             // THEN the animation state updates
-            assertThat(underTest.systemInfoCombinedVis.animationState).isEqualTo(AnimatingIn)
+            assertThat(latest!!.animationState).isEqualTo(AnimatingIn)
 
             systemStatusEventAnimationRepository.animationState.value = AnimatingOut
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility)
-                .isEqualTo(
-                    VisibilityModel(
-                        visibility = VisibilityState.VISIBLE,
-                        shouldAnimateChange = false,
-                    )
-                )
-            assertThat(underTest.systemInfoCombinedVis.animationState).isEqualTo(AnimatingOut)
+            assertThat(latest!!.baseVisibility)
+                .isEqualTo(VisibilityModel(visibility = View.VISIBLE, shouldAnimateChange = false))
+            assertThat(latest!!.animationState).isEqualTo(AnimatingOut)
         }
 
     @Test
     fun lockscreenVisible_noStatusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             if (SceneContainerFlag.isEnabled) {
                 kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
             } else {
@@ -1170,16 +1170,18 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                     testScope = testScope,
                 )
             }
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     fun bouncerVisible_noStatusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             if (SceneContainerFlag.isEnabled) {
                 kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
                 kosmos.sceneContainerRepository.showOverlay(Overlays.Bouncer)
@@ -1191,16 +1193,18 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 )
             }
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     fun keyguardIsOccluded_statusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             if (SceneContainerFlag.isEnabled) {
                 kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Lockscreen)
                 kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(
@@ -1215,16 +1219,18 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 )
             }
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     fun statusBarViewsShown_whenKeyguardAndShadeAreNotActive() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             if (SceneContainerFlag.isEnabled) {
                 kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
             } else {
@@ -1232,46 +1238,49 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 kosmos.shadeTestUtil.setShadeExpansion(0f)
             }
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     @DisableSceneContainer
     fun shadeSlightlyShown_sceneFlagOff_statusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
             transitionKeyguardToGone()
 
             kosmos.shadeTestUtil.setShadeExpansion(0.1f)
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     @DisableSceneContainer
     fun shadeHalfShown_sceneFlagOff_noStatusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
             transitionKeyguardToGone()
 
             kosmos.shadeTestUtil.setShadeExpansion(0.5f)
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     fun shadeFullyShown_noStatusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
             transitionKeyguardToGone()
 
             if (SceneContainerFlag.isEnabled) {
@@ -1280,11 +1289,9 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 kosmos.shadeTestUtil.setShadeExpansion(1f)
             }
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     /** Regression test for b/394257529#comment24. */
@@ -1292,49 +1299,40 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     @DisableSceneContainer
     fun qqsToQsTransition_sceneFlagOff_statusBarViewsNeverShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
             transitionKeyguardToGone()
 
             kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 1f, qsExpansion = 0f)
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.9f, qsExpansion = 0.1f)
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.6f, qsExpansion = 0.4f)
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.5f, qsExpansion = 0.5f)
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.2f, qsExpansion = 0.8f)
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0f, qsExpansion = 1f)
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     /** Regression test for b/394257529#comment24. */
@@ -1342,70 +1340,66 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     @DisableSceneContainer
     fun qsToQqsTransition_sceneFlagOff_statusBarViewsNeverShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
             transitionKeyguardToGone()
 
             kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0f, qsExpansion = 1f)
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.3f, qsExpansion = 0.7f)
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.5f, qsExpansion = 0.5f)
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.7f, qsExpansion = 0.3f)
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 1f, qsExpansion = 0f)
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @EnableSceneContainer
     @Test
     fun shadeShown_noStatusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
             transitionKeyguardToGone()
 
             kosmos.sceneContainerRepository.instantlyTransitionTo(Scenes.Shade)
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     @DisableFlags(StatusBarShowIconsInSecureCamera.FLAG_NAME)
     fun secureCameraActive_noStatusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             launchSecureCamera()
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
@@ -1414,21 +1408,21 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         kosmos.runTest {
             setStatusBarWindowState(StatusBarWindowState.Showing)
 
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             launchSecureCamera()
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             setStatusBarWindowState(StatusBarWindowState.Hidden)
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
@@ -1437,34 +1431,32 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         kosmos.runTest {
             setStatusBarWindowState(StatusBarWindowState.Showing)
 
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             launchSecureCamera()
             setStatusBarWindowState(StatusBarWindowState.Hidden)
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             // WHEN user swipes down to show status bar
             setStatusBarWindowState(StatusBarWindowState.Showing)
 
             // THEN the icons can show
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.VISIBLE)
 
             // WHEN the status bar disappears after a few seconds
             setStatusBarWindowState(StatusBarWindowState.Hidden)
 
             // THEN we hide the icons again
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
@@ -1531,47 +1523,53 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
     @DisableSceneContainer
     fun launcherToDream_sceneFlagOff_noStatusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             // Gone to dreaming transition starts
             keyguardInteractor.setDreaming(true)
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.GONE,
                 to = KeyguardState.DREAMING,
-                throughTransitionState = TransitionState.FINISHED,
+                throughTransitionState = TransitionState.STARTED,
                 testScope = testScope,
             )
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     @EnableSceneContainer
     fun launcherToDream_sceneFlagOn_noStatusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.VISIBLE)
 
             sceneContainerRepository.instantlyTransitionTo(Scenes.Dream)
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     @DisableSceneContainer
     fun dreamingToLauncher_sceneFlagOff_statusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             // Dream stops and returns to launcher
             keyguardInteractor.setDreaming(false)
             fakeKeyguardTransitionRepository.sendTransitionSteps(
@@ -1580,17 +1578,19 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 testScope = testScope,
             )
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     @DisableSceneContainer
     fun finishedInDreaming_noStatusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             // Transition from gone to dreaming finishes.
             keyguardInteractor.setDreaming(true)
             fakeKeyguardTransitionRepository.sendTransitionSteps(
@@ -1599,38 +1599,40 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 testScope = testScope,
             )
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test
     @EnableSceneContainer
     fun dreamingToLauncher_sceneFlagOn_statusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             sceneContainerRepository.instantlyTransitionTo(Scenes.Dream)
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
 
             sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
 
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.VISIBLE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.VISIBLE)
         }
 
     @Test
     @DisableSceneContainer
     fun startsDreaming_fromLockscreen_noStatusBarViewsShown() =
         kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+
             // Starts transitioning to dream from any state other than launcher (lock screen)
             keyguardInteractor.setDreaming(true)
             fakeKeyguardTransitionRepository.sendTransitionSteps(
@@ -1640,11 +1642,9 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
                 testScope = testScope,
             )
             // home status bar should remain hidden
-            assertThat(underTest.isClockVisible.visibility).isEqualTo(VisibilityState.INVISIBLE)
-            assertThat(underTest.isNotificationIconContainerVisible.visibility)
-                .isEqualTo(VisibilityState.GONE)
-            assertThat(underTest.systemInfoCombinedVis.baseVisibility.visibility)
-                .isEqualTo(VisibilityState.GONE)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
         }
 
     @Test

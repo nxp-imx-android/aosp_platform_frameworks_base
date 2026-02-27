@@ -78,7 +78,6 @@ import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStat
 import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
-import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityState
 import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipsViewModel
@@ -194,16 +193,16 @@ interface HomeStatusBarViewModel : Activatable {
     val canShowOngoingActivityChips: Flow<Boolean>
 
     /** True if the operator name view is not hidden due to HUN or other visibility state */
-    val shouldShowOperatorNameView: Boolean
-    val isClockVisible: VisibilityModel
-    val isNotificationIconContainerVisible: VisibilityModel
+    val shouldShowOperatorNameView: Flow<Boolean>
+    val isClockVisible: Flow<VisibilityModel>
+    val isNotificationIconContainerVisible: Flow<VisibilityModel>
 
     /**
      * Pair of (system info visibility, event animation state). The animation state can be used to
      * respond to the system event chip animations. In all cases, system info visibility correctly
      * models the View.visibility for the system info area
      */
-    val systemInfoCombinedVis: SystemInfoCombinedVisibilityModel
+    val systemInfoCombinedVis: StateFlow<SystemInfoCombinedVisibilityModel>
 
     /** Which icons to block from the home status bar */
     val iconBlockList: Flow<List<String>>
@@ -566,7 +565,7 @@ constructor(
     private val shadeInvocationSplitRatio: Float =
         resources.getFloat(R.dimen.config_invocationGestureSplitRatio)
 
-    override val shouldShowOperatorNameView: Boolean by
+    override val shouldShowOperatorNameView: Flow<Boolean> =
         combine(
                 shouldHomeStatusBarBeVisible,
                 homeStatusBarInteractor.visibilityViaDisableFlags,
@@ -583,7 +582,6 @@ constructor(
                 initialValue = false,
             )
             .flowOn(bgDispatcher)
-            .hydratedStateOf(traceName = "shouldShowOperatorNameView", initialValue = false)
 
     override val canShowOngoingActivityChips: Flow<Boolean> =
         combine(
@@ -664,27 +662,23 @@ constructor(
             hasChips && canShowChips
         }
 
-    override val isClockVisible: VisibilityModel by
+    override val isClockVisible: Flow<VisibilityModel> =
         combine(shouldHomeStatusBarBeVisible, homeStatusBarInteractor.visibilityViaDisableFlags) {
                 shouldStatusBarBeVisible,
                 visibilityViaDisableFlags ->
                 val showClock = shouldStatusBarBeVisible && visibilityViaDisableFlags.isClockAllowed
-                // The clock should be INVISIBLE when hidden to preserve layout
+                // Always use View.INVISIBLE here, so that animations work
                 VisibilityModel(showClock.toVisibleOrInvisible(), visibilityViaDisableFlags.animate)
             }
             .distinctUntilChanged()
             .logDiffsForTable(
                 tableLogBuffer = tableLogger,
                 columnPrefix = COL_PREFIX_CLOCK,
-                initialValue = VisibilityModel(VisibilityState.INVISIBLE, false),
+                initialValue = VisibilityModel(false.toVisibleOrInvisible(), false),
             )
             .flowOn(bgDispatcher)
-            .hydratedStateOf(
-                traceName = "isClockVisible",
-                initialValue = VisibilityModel(VisibilityState.INVISIBLE, false),
-            )
 
-    override val isNotificationIconContainerVisible: VisibilityModel by
+    override val isNotificationIconContainerVisible: Flow<VisibilityModel> =
         combine(
                 shouldHomeStatusBarBeVisible,
                 isAnyChipVisible,
@@ -697,7 +691,6 @@ constructor(
                         shouldStatusBarBeVisible &&
                             visibilityViaDisableFlags.areNotificationIconsAllowed
                     }
-                // The icon container should be GONE when hidden
                 VisibilityModel(
                     showNotificationIconContainer.toVisibleOrGone(),
                     visibilityViaDisableFlags.animate,
@@ -707,13 +700,9 @@ constructor(
             .logDiffsForTable(
                 tableLogBuffer = tableLogger,
                 columnPrefix = COL_PREFIX_NOTIF_CONTAINER,
-                initialValue = VisibilityModel(VisibilityState.GONE, false),
+                initialValue = VisibilityModel(false.toVisibleOrInvisible(), false),
             )
             .flowOn(bgDispatcher)
-            .hydratedStateOf(
-                traceName = "isNotificationIconContainerVisible",
-                initialValue = VisibilityModel(VisibilityState.GONE, false),
-            )
 
     private val isSystemInfoVisible =
         combine(shouldHomeStatusBarBeVisible, homeStatusBarInteractor.visibilityViaDisableFlags) {
@@ -721,11 +710,10 @@ constructor(
             visibilityViaDisableFlags ->
             val showSystemInfo =
                 shouldStatusBarBeVisible && visibilityViaDisableFlags.isSystemInfoAllowed
-            // The system info area should be GONE when hidden
             VisibilityModel(showSystemInfo.toVisibleOrGone(), visibilityViaDisableFlags.animate)
         }
 
-    override val systemInfoCombinedVis: SystemInfoCombinedVisibilityModel by
+    override val systemInfoCombinedVis =
         combine(isSystemInfoVisible, animations.animationState) { sysInfoVisible, animationState ->
                 SystemInfoCombinedVisibilityModel(sysInfoVisible, animationState)
             }
@@ -734,20 +722,14 @@ constructor(
                 tableLogBuffer = tableLogger,
                 columnPrefix = COL_PREFIX_SYSTEM_INFO,
                 initialValue =
-                    SystemInfoCombinedVisibilityModel(
-                        VisibilityModel(VisibilityState.VISIBLE, false),
-                        Idle,
-                    ),
+                    SystemInfoCombinedVisibilityModel(VisibilityModel(View.VISIBLE, false), Idle),
             )
-            .flowOn(bgDispatcher)
-            .hydratedStateOf(
-                traceName = "systemInfoCombinedVis",
-                initialValue =
-                    SystemInfoCombinedVisibilityModel(
-                        VisibilityModel(VisibilityState.VISIBLE, false),
-                        Idle,
-                    ),
+            .stateIn(
+                bgDisplayScope,
+                SharingStarted.WhileSubscribed(),
+                SystemInfoCombinedVisibilityModel(VisibilityModel(View.VISIBLE, false), Idle),
             )
+
     override val iconBlockList: Flow<List<String>> =
         homeStatusBarIconBlockListInteractor.iconBlockList.flowOn(bgDispatcher)
 
@@ -779,13 +761,14 @@ constructor(
         enqueueOnActivatedScope { userLogoutInteractor.logOutToSystemUser() }
     }
 
-    private fun Boolean.toVisibleOrGone(): VisibilityState {
-        return if (this) VisibilityState.VISIBLE else VisibilityState.GONE
+    @View.Visibility
+    private fun Boolean.toVisibleOrGone(): Int {
+        return if (this) View.VISIBLE else View.GONE
     }
 
     // Similar to the above, but uses INVISIBLE in place of GONE
-    private fun Boolean.toVisibleOrInvisible(): VisibilityState =
-        if (this) VisibilityState.VISIBLE else VisibilityState.INVISIBLE
+    @View.Visibility
+    private fun Boolean.toVisibleOrInvisible(): Int = if (this) View.VISIBLE else View.INVISIBLE
 
     override suspend fun onActivated() {
         coroutineScope {
