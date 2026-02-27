@@ -16,6 +16,7 @@
 
 package com.android.systemui.screenrecord.data.repository
 
+import android.annotation.SuppressLint
 import android.app.Service.MODE_PRIVATE
 import android.content.Context
 import android.content.SharedPreferences
@@ -23,26 +24,28 @@ import android.provider.Settings
 import androidx.core.content.edit
 import com.android.systemui.statusbar.policy.Clock
 
+// This repository might be used in a separate process where we don't have access to the System UI
+// dagger graph.
+@SuppressLint("StaticSettingsProvider")
 class ScreenRecordingPreferenceRepository(private val context: Context) {
 
-    @JvmOverloads
-    fun updateSettings(
-        showTaps: Boolean,
-        rememberOriginalShowTaps: Boolean = true,
-        showSeconds: Boolean = false,
-    ) {
+    fun setShouldShowTaps(showTaps: Boolean) {
         val originalShowTapsSetting = getShowTaps()
         setShowTaps(showTaps)
-        if (rememberOriginalShowTaps && showTaps != originalShowTapsSetting) {
+        val hasTapsToRestore = sharedPreference().getBoolean(UPDATE_SHOW_TAPS, false)
+        if (!hasTapsToRestore && showTaps != originalShowTapsSetting) {
             sharedPreference().edit {
                 putBoolean(STORED_SHOW_TAPS_VALUE, originalShowTapsSetting)
                 putBoolean(UPDATE_SHOW_TAPS, true)
             }
         }
+    }
 
+    fun setShouldShowSeconds(showSeconds: Boolean) {
+        val hasSecondsToRestore = sharedPreference().getBoolean(UPDATE_SHOW_SECONDS, false)
         val originalShowSecondsSetting = getShowSeconds()
         setShowSeconds(showSeconds)
-        if (showSeconds != originalShowSecondsSetting) {
+        if (!hasSecondsToRestore && showSeconds != originalShowSecondsSetting) {
             sharedPreference().edit {
                 putBoolean(STORED_SHOW_SECONDS_VALUE, originalShowSecondsSetting)
                 putBoolean(UPDATE_SHOW_SECONDS, true)
