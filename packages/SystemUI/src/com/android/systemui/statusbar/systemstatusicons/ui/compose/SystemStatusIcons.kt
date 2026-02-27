@@ -19,12 +19,9 @@ package com.android.systemui.statusbar.systemstatusicons.ui.compose
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.os.UserHandle
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -34,6 +31,7 @@ import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
+import com.android.systemui.statusbar.icons.ui.compose.EllipsizingRow
 import com.android.systemui.statusbar.pipeline.mobile.ui.compose.MobileIcons
 import com.android.systemui.statusbar.pipeline.wifi.ui.compose.WifiIcon
 import com.android.systemui.statusbar.shared.ui.compose.StatusBarIcon
@@ -55,29 +53,31 @@ fun SystemStatusIcons(
         rememberViewModel(traceName = "SystemStatusIcons") { viewModelFactory.create(context) }
 
     CompositionLocalProvider(LocalContentColor provides tint) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(5.dp),
-            modifier = modifier.sysuiResTag("statusIcons"),
-        ) {
+        EllipsizingRow(spacing = 6.dp, modifier = modifier.sysuiResTag("statusIcons")) {
             viewModel.iconViewModels
                 .filter { it.visible }
                 .forEach { iconViewModel ->
                     when (iconViewModel) {
                         is SystemStatusIconViewModel.Default ->
-                            iconViewModel.icon?.let { StatusBarIcon(icon = it) }
+                            item(key = iconViewModel.slotName) {
+                                iconViewModel.icon?.let { StatusBarIcon(icon = it) }
+                            }
                         is SystemStatusIconViewModel.External -> {
-                            ExternalSystemStatusIcon(iconViewModel)
+                            item(key = iconViewModel.slotName) {
+                                ExternalSystemStatusIcon(iconViewModel)
+                            }
                         }
                         is SystemStatusIconViewModel.Wifi -> {
-                            WifiIcon(iconViewModel)
+                            item(key = iconViewModel.slotName) { WifiIcon(iconViewModel) }
                         }
 
                         is SystemStatusIconViewModel.MobileIcons -> {
-                            MobileIcons(
-                                iconViewModel.mobileIcons,
-                                iconViewModel.stackedMobileIconViewModel,
-                            )
+                            item(key = iconViewModel.slotName) {
+                                MobileIcons(
+                                    iconViewModel.mobileIcons,
+                                    iconViewModel.stackedMobileIconViewModel,
+                                )
+                            }
                         }
                     }
                 }
