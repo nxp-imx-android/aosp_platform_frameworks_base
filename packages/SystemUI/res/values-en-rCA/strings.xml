@@ -248,6 +248,8 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Front camera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"select"</string>
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"Menu expanded"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"Menu collapsed"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Stop sharing"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Screen sharing is on. Use privacy indicator to end sharing."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Sharing screen"</string>
@@ -1040,6 +1042,7 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# hour}=2{# hours}other{# hours}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minute}other{# minutes}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"to open demotion menu"</string>
+    <string name="notification_rules_activity_title" msgid="3580318899872813414">"Notification rules"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Battery Saver"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Button <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>

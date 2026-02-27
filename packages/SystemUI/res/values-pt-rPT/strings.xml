@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Mostrar câmara para selfies"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Mostrar toques"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Escolha uma app para gravar"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Mostrar próxima"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Mostrar anterior"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Definições de gravação de ecrã"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Marcação"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Vídeo guardado"</string>
@@ -189,8 +187,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Desativar som"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Reativar som"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> de <xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Junte/afaste os dedos, arraste e toque na selfie para ajustar"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"A captura de ecrã foi bloqueada pelo administrador de TI"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Fazer captura de todo o ecrã"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Gravar ecrã inteiro"</string>
@@ -250,8 +247,9 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Microfone"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Câmara frontal"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
-    <skip />
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"selecionar"</string>
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"Menu expandido"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"Menu reduzido"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Parar partilha"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"A partilha de ecrã está ativada. Use o indicador de privacidade para terminar a partilha."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"A partilhar o ecrã"</string>
@@ -430,10 +428,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistente"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Teclado"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Teclado"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"selecionar"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"ignorar"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Mais # notificação no grupo.}many{Mais # notificações no grupo.}other{Mais # notificações no grupo.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"O ecrã está bloqueado na orientação horizontal."</string>
@@ -1046,6 +1042,7 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# hora}=2{# horas}many{# horas}other{# horas}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minuto}many{# minutos}other{# minutos}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"para abrir o menu de despromoção"</string>
+    <string name="notification_rules_activity_title" msgid="3580318899872813414">"Regras de notificação"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Poupança de bateria"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Botão <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Início"</string>
@@ -1250,16 +1247,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Tecla de acessibilidade"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Pode premir a tecla de acessibilidade para começar a usar as funcionalidades de acessibilidade."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Adicionar funcionalidades"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Configure a tecla de acessibilidade"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Configure a <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Concluído"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Selecione uma funcionalidade"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Editar"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Escolha uma funcionalidade"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Esta funcionalidade vai ser aberta da próxima vez que selecionar o botão Acessibilidade"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Acessibilidade"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ecrã de bloqueio"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"A encerrar…"</string>
@@ -1752,8 +1746,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Mudar de app"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Concluir"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Seguinte"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"Tente novamente"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Voltar"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Deslize rapidamente para a esquerda ou direita com 3 dedos no touchpad"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Boa!"</string>
@@ -1761,25 +1754,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Para retroceder com o touchpad, deslize rapidamente para a esquerda ou direita com 3 dedos"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Aceder ao ecrã principal"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Deslize para cima com 3 dedos no touchpad"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"Primeiro, deslize rapidamente para cima com três dedos para ver as suas apps recentes"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"É assim mesmo!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Concluiu o gesto para aceder ao ecrã principal"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Deslize rapidamente para cima com 3 dedos no touchpad para aceder ao ecrã principal"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"Está quase!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"Em seguida, volte a deslizar rapidamente para cima com três dedos para aceder ao ecrã principal"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Ver apps recentes"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Deslize rapidamente para cima sem soltar com 3 dedos no touchpad"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"Deslize para cima com três dedos no touchpad"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Muito bem!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"Concluiu o gesto para ver as apps recentes"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Para ver as apps recentes, deslize rapidamente para cima sem soltar com 3 dedos no touchpad"</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"Deslize rapidamente para cima com três dedos no touchpad para aceder ao ecrã de apps recentes"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Mudar de app"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Deslize rapidamente para a direita com 4 dedos no touchpad"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Muito bem!"</string>

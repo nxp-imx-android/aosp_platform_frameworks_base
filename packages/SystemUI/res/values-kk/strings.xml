@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Селфи камерасын көрсету"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Түрту әрекетін көрсету"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Жазу үшін қолданба таңдаңыз"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Келесісін көрсету"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Алдыңғысын көрсету"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Экран жазу параметрлері"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Белгілеу"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Бейне сақталды."</string>
@@ -189,8 +187,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Дыбысты өшіру"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Дыбысты қосу"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Селфиді реттеу үшін екі саусақ арасын қосып, сүйреңіз және түртіңіз."</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"Әкімшіңіз экран жазбасын блоктады"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Бүкіл экранның скриншотын жасау"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Бүкіл экранды жазу"</string>
@@ -250,7 +247,10 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Микрофон"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Алдыңғы камера"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"таңдау"</string>
+    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
+    <skip />
+    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
     <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Бөлісуді тоқтату"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Экранды бөлісу функциясы қосулы. Бөлісуді тоқтату үшін құпиялық индикаторын пайдаланыңыз."</string>
@@ -336,7 +336,7 @@
     <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"Тым көп рет қате енгізгеннен кейін биометрияны қалпына келтіру үшін құпия сөз қажет."</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"PIN коды қате."</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"Өрнек қате."</string>
-    <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"Құпия сөз қате."</string>
+    <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"Құпия сөз қате"</string>
     <string name="biometric_dialog_credential_too_many_attempts" msgid="3083141271737748716">"Тым көп қате енгізілді.\n<xliff:g id="NUMBER">%d</xliff:g> секундта әрекетті қайталаңыз."</string>
     <string name="work_challenge_emergency_button_text" msgid="8946588434515599288">"Төтенше жағдай"</string>
     <string name="biometric_dialog_credential_attempts_before_wipe" msgid="6751859711975516999">"Әрекетті қайталаңыз. <xliff:g id="ATTEMPTS_0">%1$d</xliff:g> мүмкіндік, барлығы – <xliff:g id="MAX_ATTEMPTS">%2$d</xliff:g>."</string>
@@ -430,10 +430,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Пернетақта"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Пернетақта"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"таңдау"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"жабу"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{Ішінде тағы # хабарландыру бар.}other{Ішінде тағы # хабарландыру бар.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Экран ландшафт бағытында бекітілген."</string>
@@ -1046,6 +1044,8 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# сағат}=2{# сағат}other{# сағат}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# минут}other{# минут}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"деңгейді төмендету мәзірін ашу үшін"</string>
+    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Батареяны үнемдеу режимі"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g> түймесі"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1250,16 +1250,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Арнайы мүмкіндіктер пернесі"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Арнайы мүмкіндіктерді пайдалануды бастау үшін арнайы мүмкіндіктер пернесін басуға болады."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Функциялар қосу"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Арнайы мүмкіндіктер пернесін реттеу"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Параметрлерді реттеу: <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Дайын"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Функция таңдау"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Өзгерту"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Функция таңдау"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Бұл функция келесі жолы арнайы мүмкіндіктер түймесін таңдаған кезде ашылады."</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Арнайы мүмкіндіктер"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Құлыптаулы экран"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Өшіріліп жатыр…"</string>
@@ -1752,8 +1749,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Қолданбалар арасында ауысу"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Дайын"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Келесі"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"Қайталау"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Артқа"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Сенсорлық тақтада үш саусақпен оңға немесе солға сырғытыңыз."</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Керемет!"</string>
@@ -1761,25 +1757,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Сенсорлық тақта арқылы артқа оралу үшін үш саусақпен солға немесе оңға сырғытыңыз."</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Негізгі экранға өту"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Сенсорлық тақтада үш саусақпен жоғары сырғытыңыз."</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"Алдымен соңғы қолданбаларды көру үшін үш саусақпен жоғары сырғытыңыз."</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Жарайсыз!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Негізгі экранға өту қимылын орындадыңыз."</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Негізгі экранға өту үшін сенсорлық тақтада үш саусақпен жоғары сырғытыңыз."</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"Аз-ақ қалды!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"Содан кейін негізгі экранға өту үшін үш саусақпен жоғары сырғытыңыз."</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Соңғы қолданбаларды көру"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Сенсорлық тақтада үш саусақпен жоғары сырғытып, басып тұрыңыз."</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"Сенсорлық тақтада үш саусақпен жоғары сырғытыңыз."</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Жарайсыз!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"Соңғы қолданбаларды көру қимылын орындадыңыз."</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Соңғы қолданбаларды көру үшін сенсорлық тақтада үш саусақпен жоғары сырғытып, ұстап тұрыңыз."</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"Соңғы қолданбалар экранына өту үшін сенсорлық тақтада үш саусақпен жоғары сырғытыңыз."</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Қолданбалар арасында ауысу"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Сенсорлық тақтада төрт саусақпен оңға сырғытыңыз."</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Жарайсыз!"</string>

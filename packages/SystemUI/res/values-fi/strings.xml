@@ -170,10 +170,8 @@
     <string name="screen_record_should_show_camera_label" msgid="159628971484931357">"Näytä etukamera"</string>
     <string name="screen_record_should_show_touches_label" msgid="2203962566795833783">"Näytä kosketukset"</string>
     <string name="screen_record_capture_target_choose_app" msgid="3524481083640900931">"Valitse tallennettava sovellus"</string>
-    <!-- no translation found for screen_record_accessibility_label_show_next (6733148530962728100) -->
-    <skip />
-    <!-- no translation found for screen_record_accessibility_label_show_previous (5202414285722078012) -->
-    <skip />
+    <string name="screen_record_accessibility_label_show_next" msgid="6733148530962728100">"Näytä seuraava"</string>
+    <string name="screen_record_accessibility_label_show_previous" msgid="5202414285722078012">"Näytä edellinen"</string>
     <string name="screen_record_settings" msgid="2377267679200139285">"Näytön tallennusasetukset"</string>
     <string name="screen_record_markup" msgid="5583986085046693669">"Merkinnät"</string>
     <string name="screen_record_video_saved" msgid="1345283626390232282">"Video tallennettu"</string>
@@ -189,8 +187,7 @@
     <string name="screen_record_mute" msgid="8111682249858638168">"Mykistä"</string>
     <string name="screen_record_unmute" msgid="2207912659365156472">"Poista mykistys"</string>
     <string name="screen_record_video_preview_elapsed_time_a11y_template" formatted="false" msgid="969599623785875798">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="DURATION">%2$s</xliff:g>"</string>
-    <!-- no translation found for screen_record_selfie_hint (7176948583444196453) -->
-    <skip />
+    <string name="screen_record_selfie_hint" msgid="7176948583444196453">"Säädä selfietä nipistämällä, vetämällä ja napauttamalla"</string>
     <string name="screen_capture_blocked_by_admin" msgid="1751756953683506644">"IT-järjestelmänvalvoja on estänyt kuvakaappauksen ottamisen"</string>
     <string name="screen_capture_fullscreen_screenshot_button" msgid="3173749413928507877">"Ota kuvakaappaus koko näytöstä"</string>
     <string name="screen_capture_fullscreen_record_button" msgid="5697594296042198690">"Tallenna koko näyttö"</string>
@@ -250,7 +247,10 @@
     <string name="screen_capture_microphone_audio" msgid="1698835678818747741">"Mikrofoni"</string>
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Etukamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
-    <!-- no translation found for screen_capture_a11y_toolbar_radio_button_action (978101981178584140) -->
+    <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"valitse"</string>
+    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
+    <skip />
+    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
     <skip />
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Lopeta jakaminen"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Näytön jakaminen on päällä. Lopeta jakaminen yksityisyyden tilaosoittimen avulla."</string>
@@ -430,10 +430,8 @@
     <string name="accessibility_status_bar_assistant_icon" msgid="1174898709836451013">"Assistant"</string>
     <string name="accessibility_status_bar_input_method_indicator" msgid="4911669064186093506">"Näppäimistö"</string>
     <string name="input_method_switcher_title_large_screen" msgid="8490419050265486980">"Näppäimistö"</string>
-    <!-- no translation found for input_method_switcher_select_item (5370389660346295303) -->
-    <skip />
-    <!-- no translation found for input_method_switcher_dismiss (6026386403345712616) -->
-    <skip />
+    <string name="input_method_switcher_select_item" msgid="5370389660346295303">"valitse"</string>
+    <string name="input_method_switcher_dismiss" msgid="6026386403345712616">"ohita"</string>
     <string name="notification_group_overflow_indicator" msgid="7605120293801012648">"+ <xliff:g id="NUMBER">%s</xliff:g>"</string>
     <string name="notification_group_overflow_description" msgid="7176322877233433278">"{count,plural, =1{+# ilmoitus ryhmässä.}other{+# ilmoitusta ryhmässä.}}"</string>
     <string name="accessibility_rotation_lock_on_landscape" msgid="936972553861524360">"Ruutu on lukittu vaakasuuntaan."</string>
@@ -1046,6 +1044,8 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# tunti}=2{# tuntia}other{# tuntia}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minuutti}other{# minuuttia}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"avataksesi Live Activities -hallintavalikon"</string>
+    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
+    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Virransäästö"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Painike <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1250,16 +1250,13 @@
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Saavutettavuusnäppäin"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Voit aloittaa saavutettavuusominaisuuksien käytön painamalla saavutettavuusnäppäintä."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_positive_button_text" msgid="7095579813773247709">"Lisää ominaisuuksia"</string>
-    <!-- no translation found for accessibility_shortcutchooser_toprow_editor_dialog_title (1898531469029411168) -->
-    <skip />
+    <string name="accessibility_shortcutchooser_toprow_editor_dialog_title" msgid="1898531469029411168">"Ota saavutettavuusnäppäin käyttöön"</string>
     <string name="accessibility_shortcutchooser_editor_dialog_title" msgid="7881631878787325869">"Ota <xliff:g id="ID_1">%1$s</xliff:g> käyttöön"</string>
     <string name="accessibility_shortcutchooser_done_button" msgid="5288975589451082156">"Valmis"</string>
     <string name="accessibility_shortcutchooser_picker_dialog_title" msgid="6067291073174568750">"Valitse ominaisuus"</string>
     <string name="accessibility_shortcutchooser_edit_button" msgid="1924449663239985111">"Muokkaa"</string>
-    <!-- no translation found for accessibility_nav_bar_more_options_title (2549386798738178479) -->
-    <skip />
-    <!-- no translation found for accessibility_nav_bar_more_options_subtitle (4336832036115080533) -->
-    <skip />
+    <string name="accessibility_nav_bar_more_options_title" msgid="2549386798738178479">"Valitse ominaisuus"</string>
+    <string name="accessibility_nav_bar_more_options_subtitle" msgid="4336832036115080533">"Ominaisuus avautuu, kun klikkaat seuraavan kerran saavutettavuuspainiketta"</string>
     <string name="accessibility_quick_access_dialog_title" msgid="8792322423145117379">"Saavutettavuus"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Lukitusnäyttö"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Sammutetaan…"</string>
@@ -1690,7 +1687,7 @@
     <string name="privacy_dialog_manage_permissions" msgid="2543451567190470413">"Hallinnoi pääsyä"</string>
     <string name="privacy_dialog_active_call_usage" msgid="7858746847946397562">"Puhelun käytössä"</string>
     <string name="privacy_dialog_recent_call_usage" msgid="1214810644978167344">"Käytetty äskettäin puhelussa"</string>
-    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"Tämän käytössä: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="privacy_dialog_active_app_usage" msgid="631997836335929880">"<xliff:g id="APP_NAME">%1$s</xliff:g> käyttää"</string>
     <string name="privacy_dialog_recent_app_usage" msgid="4883417856848222450">"<xliff:g id="APP_NAME">%1$s</xliff:g> käytti tätä äskettäin"</string>
     <string name="privacy_dialog_active_app_usage_1" msgid="9047570143069220911">"Tämän käytössä: <xliff:g id="APP_NAME">%1$s</xliff:g> (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
     <string name="privacy_dialog_recent_app_usage_1" msgid="2551340497722370109">"<xliff:g id="APP_NAME">%1$s</xliff:g> käytti tätä äskettäin (<xliff:g id="ATTRIBUTION_LABEL">%2$s</xliff:g>)"</string>
@@ -1752,8 +1749,7 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Vaihda sovellusta"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Valmis"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Seuraava"</string>
-    <!-- no translation found for gesture_error_title (6041718460759544782) -->
-    <skip />
+    <string name="gesture_error_title" msgid="6041718460759544782">"Yritä uudelleen"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Takaisin"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Pyyhkäise kosketuslevyllä vasemmalle tai oikealle kolmella sormella"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Hienoa!"</string>
@@ -1761,25 +1757,19 @@
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Jos haluat palata takaisin kosketuslevyn avulla, pyyhkäise vasemmalle tai oikealle kolmella sormella"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Siirry etusivulle"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Pyyhkäise ylös kolmella sormella kosketuslevyllä"</string>
-    <!-- no translation found for touchpad_home_gesture_updated_guidance (606317296917583468) -->
-    <skip />
+    <string name="touchpad_home_gesture_updated_guidance" msgid="606317296917583468">"Näet äskeiset sovellukset, kun pyyhkäiset ensin ylös kolmella sormella"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Hienoa!"</string>
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Olet oppinut eleen, jolla pääset takaisin aloitusnäytölle"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Siirry aloitusnäytölle pyyhkäisemällä kosketuslevyll\' ylös kolmella sormella"</string>
-    <!-- no translation found for touchpad_home_gesture_partial_success_title (5618869261676484908) -->
-    <skip />
-    <!-- no translation found for touchpad_home_gesture_partial_success_body (8133100850302405630) -->
-    <skip />
+    <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"Melkein valmista!"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"Siirry sitten aloitusnäytölle pyyhkäisemällä ylös kolmella sormella uudelleen"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Katso viimeisimmät sovellukset"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Pyyhkäise ylös ja pidä kosketuslevyä painettuna kolmella sormella"</string>
-    <!-- no translation found for touchpad_recent_apps_updated_gesture_guidance (828804493094219998) -->
-    <skip />
+    <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"Pyyhkäise ylös kolmella sormella kosketuslevyllä"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Hienoa!"</string>
-    <!-- no translation found for touchpad_recent_apps_gesture_success_body (6217687180479342625) -->
-    <skip />
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"Olet oppinut Katso viimeisimmät sovellukset ‑eleen"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Näet äskeiset sovellukset, kun pyyhkäiset ylös ja pidät kosketuslevyä painettuna kolmella sormella."</string>
-    <!-- no translation found for touchpad_recent_updated_gesture_error_body (3310047209458414383) -->
-    <skip />
+    <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"Siirry äskeisten sovellusten näytölle pyyhkäisemällä kosketuslevyllä ylös kolmella sormella"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Vaihda sovellusta"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Pyyhkäise kosketuslevyllä oikealle neljällä sormella"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Hienoa!"</string>
