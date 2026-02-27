@@ -18,6 +18,7 @@ package com.android.systemui.activity.data.repository
 
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+import android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE
 import com.android.systemui.activity.data.model.AppVisibilityModel
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -55,6 +56,18 @@ interface ActivityManagerRepository {
      * @param identifyingLogTag a tag identifying who created this flow, used for logging.
      */
     fun createIsAppVisibleFlow(
+        creationUid: Int,
+        logger: Logger,
+        identifyingLogTag: String,
+    ): Flow<Boolean>
+
+    /**
+     * Given a UID, creates a flow that emits true when the process with the given UID is dead
+     * (IMPORTANCE_GONE) and false otherwise.
+     *
+     * @param identifyingLogTag a tag identifying who created this flow, used for logging.
+     */
+    fun createIsAppDeadFlow(
         creationUid: Int,
         logger: Logger,
         identifyingLogTag: String,
@@ -103,6 +116,38 @@ constructor(
         logger: Logger,
         identifyingLogTag: String,
     ): Flow<Boolean> {
+        return createUidImportanceFlow(
+            creationUid,
+            logger,
+            identifyingLogTag,
+            importanceCutpoint = IMPORTANCE_FOREGROUND,
+        ) { importance ->
+            importance <= IMPORTANCE_FOREGROUND
+        }
+    }
+
+    override fun createIsAppDeadFlow(
+        creationUid: Int,
+        logger: Logger,
+        identifyingLogTag: String,
+    ): Flow<Boolean> {
+        return createUidImportanceFlow(
+            creationUid,
+            logger,
+            identifyingLogTag,
+            importanceCutpoint = IMPORTANCE_GONE,
+        ) { importance ->
+            importance == IMPORTANCE_GONE
+        }
+    }
+
+    private fun createUidImportanceFlow(
+        creationUid: Int,
+        logger: Logger,
+        identifyingLogTag: String,
+        importanceCutpoint: Int,
+        mapper: (Int) -> Boolean,
+    ): Flow<Boolean> {
         return conflatedCallbackFlow {
                 val listener =
                     object : ActivityManager.OnUidImportanceListener {
@@ -110,21 +155,21 @@ constructor(
                             if (uid != creationUid) {
                                 return
                             }
-                            val isAppVisible = isAppVisibleToUser(importance)
+                            val mappedValue = mapper(importance)
                             logger.d({
-                                "$str1: #onUidImportance. importance=$int1, isAppVisible=$bool1"
+                                "$str1: #onUidImportance. importance=$int1, mappedValue=$bool1"
                             }) {
                                 str1 = identifyingLogTag
                                 int1 = importance
-                                bool1 = isAppVisible
+                                bool1 = mappedValue
                             }
-                            trySend(isAppVisible)
+                            trySend(mappedValue)
                         }
                     }
                 try {
                     // TODO(b/286258140): Replace this with the #addOnUidImportanceListener
                     //  overload that filters to certain UIDs.
-                    activityManager.addOnUidImportanceListener(listener, IMPORTANCE_CUTPOINT)
+                    activityManager.addOnUidImportanceListener(listener, importanceCutpoint)
                 } catch (e: SecurityException) {
                     logger.e({ "$str1: Security exception on #addOnUidImportanceListener" }, e) {
                         str1 = identifyingLogTag
@@ -136,13 +181,13 @@ constructor(
             .distinctUntilChanged()
             .onStart {
                 try {
-                    val isVisibleOnStart =
-                        isAppVisibleToUser(activityManager.getUidImportance(creationUid))
-                    logger.d({ "$str1: Starting UID observation. isAppVisible=$bool1" }) {
+                    val importanceOnStart = activityManager.getUidImportance(creationUid)
+                    val mappedValueOnStart = mapper(importanceOnStart)
+                    logger.d({ "$str1: Starting UID observation. mappedValue=$bool1" }) {
                         str1 = identifyingLogTag
-                        bool1 = isVisibleOnStart
+                        bool1 = mappedValueOnStart
                     }
-                    emit(isVisibleOnStart)
+                    emit(mappedValueOnStart)
                 } catch (e: SecurityException) {
                     logger.e({ "$str1: Security exception on #getUidImportance" }, e) {
                         str1 = identifyingLogTag
@@ -151,14 +196,5 @@ constructor(
                 }
             }
             .flowOn(backgroundContext)
-    }
-
-    /** Returns true if the given [importance] represents an app that's visible to the user. */
-    private fun isAppVisibleToUser(importance: Int): Boolean {
-        return importance <= IMPORTANCE_CUTPOINT
-    }
-
-    companion object {
-        private const val IMPORTANCE_CUTPOINT = IMPORTANCE_FOREGROUND
     }
 }
