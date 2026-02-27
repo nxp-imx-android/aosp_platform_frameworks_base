@@ -89,6 +89,7 @@ public class Events {
             "slider_touch_tracking"
     };
 
+    // LINT.IfChange(dismiss_reasons)
     public static final int DISMISS_REASON_UNKNOWN = 0;
     public static final int DISMISS_REASON_TOUCH_OUTSIDE = 1;
     public static final int DISMISS_REASON_VOLUME_CONTROLLER = 2;
@@ -103,7 +104,9 @@ public class Events {
     public static final int DISMISS_REASON_POSTURE_CHANGED = 11;
     public static final int DISMISS_REASON_QUICK_SETTINGS_EXPANDED = 12;
     public static final int DISMISS_REASON_BRIGHTNESS_DIALOG_SHOWING = 13;
+    // LINT.ThenChange(:dismiss_reasons_array)
 
+    // LINT.IfChange(dismiss_reasons_array)
     public static final String[] DISMISS_REASONS = {
             "unknown",
             "touch_outside",
@@ -117,19 +120,26 @@ public class Events {
             "usb_temperature_below_threshold",
             "csd_warning_timeout",
             "posture_changed",
-            "quick_settings_expanded"
+            "quick_settings_expanded",
+            "brightness_dialog_showing"
     };
+    // LINT.ThenChange(:dismiss_reasons)
 
+    // LINT.IfChange(show_reasons)
     public static final int SHOW_REASON_UNKNOWN = 0;
     public static final int SHOW_REASON_VOLUME_CHANGED = 1;
     public static final int SHOW_REASON_REMOTE_VOLUME_CHANGED = 2;
     public static final int SHOW_REASON_USB_OVERHEAD_ALARM_CHANGED = 3;
+    // LINT.ThenChange(:show_reasons_array)
+
+    // LINT.IfChange(show_reasons_array)
     public static final String[] SHOW_REASONS = {
         "unknown",
         "volume_changed",
         "remote_volume_changed",
         "usb_temperature_above_threshold"
     };
+    // LINT.ThenChange(:show_reasons)
 
     public static final int ICON_STATE_UNKNOWN = 0;
     public static final int ICON_STATE_UNMUTE = 1;
