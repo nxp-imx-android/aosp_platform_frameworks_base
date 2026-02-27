@@ -558,6 +558,7 @@ private fun ContentScope.SplitShade(
                 Box(
                     modifier =
                         Modifier.element(SplitShadeQuickSettings)
+                            .sysuiResTag("quick_settings_container")
                             .weight(1f)
                             // unfoldTranslationXForStartSide may be updated every frame, so only
                             // read value in the draw phase.
