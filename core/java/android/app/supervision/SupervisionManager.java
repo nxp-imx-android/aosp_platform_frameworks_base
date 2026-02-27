@@ -81,7 +81,9 @@ public class SupervisionManager {
 
                     @Override
                     public void onPolicyChanged(Policy policy) {
-                        // Empty for now. Can be implemented in the future if needed.
+                        if (Flags.enableSupervisionManagerPolicyApis()) {
+                            onPolicyChanged(policy);
+                        }
                     }
                 };
 
@@ -100,6 +102,14 @@ public class SupervisionManager {
          * @hide
          */
         public void onSupervisionDisabled(@UserIdInt int userId) {}
+
+        /**
+         * Called after a policy has been changed.
+         *
+         * @param policy the policy that has changed
+         * @hide
+         */
+        public void onPolicyChanged(Policy policy) {}
     }
 
     private final Context mContext;
