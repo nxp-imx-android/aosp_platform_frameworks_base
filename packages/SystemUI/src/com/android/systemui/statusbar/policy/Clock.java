@@ -74,16 +74,11 @@ public class Clock extends TextView implements
     public static final String CLOCK_SECONDS = "clock_seconds";
     private static final String CLOCK_SUPER_PARCELABLE = "clock_super_parcelable";
     private static final String CURRENT_USER_ID = "current_user_id";
-    private static final String VISIBLE_BY_POLICY = "visible_by_policy";
-    private static final String VISIBLE_BY_USER = "visible_by_user";
     private static final String SHOW_SECONDS = "show_seconds";
     private static final String VISIBILITY = "visibility";
 
     private final UserTracker mUserTracker;
     private int mCurrentUserId;
-
-    private boolean mClockVisibleByPolicy = true;
-    private boolean mClockVisibleByUser = true;
 
     private boolean mAttached;
     private boolean mScreenReceiverRegistered;
@@ -149,8 +144,6 @@ public class Clock extends TextView implements
         Bundle bundle = new Bundle();
         bundle.putParcelable(CLOCK_SUPER_PARCELABLE, super.onSaveInstanceState());
         bundle.putInt(CURRENT_USER_ID, mCurrentUserId);
-        bundle.putBoolean(VISIBLE_BY_POLICY, mClockVisibleByPolicy);
-        bundle.putBoolean(VISIBLE_BY_USER, mClockVisibleByUser);
         bundle.putBoolean(SHOW_SECONDS, mShowSeconds);
         bundle.putInt(VISIBILITY, getVisibility());
 
@@ -159,19 +152,16 @@ public class Clock extends TextView implements
 
     @Override
     public void onRestoreInstanceState(Parcelable state) {
-        if (state == null || !(state instanceof Bundle)) {
+        if (!(state instanceof Bundle bundle)) {
             super.onRestoreInstanceState(state);
             return;
         }
 
-        Bundle bundle = (Bundle) state;
         Parcelable superState = bundle.getParcelable(CLOCK_SUPER_PARCELABLE);
         super.onRestoreInstanceState(superState);
         if (bundle.containsKey(CURRENT_USER_ID)) {
             mCurrentUserId = bundle.getInt(CURRENT_USER_ID);
         }
-        mClockVisibleByPolicy = bundle.getBoolean(VISIBLE_BY_POLICY, true);
-        mClockVisibleByUser = bundle.getBoolean(VISIBLE_BY_USER, true);
         mShowSeconds = bundle.getBoolean(SHOW_SECONDS, false);
         if (bundle.containsKey(VISIBILITY)) {
             super.setVisibility(bundle.getInt(VISIBILITY));
@@ -267,10 +257,6 @@ public class Clock extends TextView implements
         }
     };
 
-    private boolean shouldBeVisible() {
-        return mClockVisibleByPolicy && mClockVisibleByUser;
-    }
-
     final void updateClock() {
         if (mDemoMode) return;
         mCalendar.setTimeInMillis(System.currentTimeMillis());
@@ -306,7 +292,6 @@ public class Clock extends TextView implements
     }
 
     public void onDensityOrFontScaleChanged() {
-
         // Note that this class is not being registered as configuration listener when used
         // from compose. It will instead receive a normal "View#onConfigurationChanged".
         reloadDimens();
@@ -364,7 +349,7 @@ public class Clock extends TextView implements
         }
     }
 
-    private final CharSequence getSmallTime() {
+    private CharSequence getSmallTime() {
         Context context = getContext();
         boolean is24 = DateFormat.is24HourFormat(context, mCurrentUserId);
         if (mDateTimePatternGenerator == null) {
