@@ -263,9 +263,6 @@ public class UsageStatsService extends SystemService implements
 
     private BroadcastResponseStatsTracker mResponseStatsTracker;
 
-    // Array to store the cumulative counts of each usage event type.
-    private final long[] mUsageEventCounts = new long[UsageEvents.Event.MAX_EVENT_TYPE + 1];
-
     private static class ActivityData {
         private final String mTaskRootPackage;
         private final String mTaskRootClass;
@@ -1292,11 +1289,8 @@ public class UsageStatsService extends SystemService implements
         FrameworkStatsLog.write(FrameworkStatsLog.APP_USAGE_EVENT_OCCURRED, uid, packageName,
                 "", getAppUsageEventOccurredAtomEventType(eventType));
         if (Flags.addReportEventMetrics()) {
-            if (eventType >= 0 && eventType < mUsageEventCounts.length) {
-                mUsageEventCounts[eventType]++;
-            }
             FrameworkStatsLog.write(FrameworkStatsLog.USAGE_EVENT_REPORTED_STATS,
-                    getAppUsageEventReportedAtomEventType(eventType), mUsageEventCounts[eventType]);
+                    getAppUsageEventReportedAtomEventType(eventType));
         }
     }
 
