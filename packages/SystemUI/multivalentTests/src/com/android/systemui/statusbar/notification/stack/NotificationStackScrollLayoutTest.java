@@ -1328,6 +1328,36 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
     @Test
     @EnableSceneContainer
+    public void testDispatchTouchEvent_sceneContainerEnabled_refusesTouchesWhenRootInvisible() {
+        // GIVEN NSSL would handle touches and the root view is invisible
+        mStackScroller.setIsBeingDragged(true);
+        View rootView = mock(View.class);
+        when(rootView.getVisibility()).thenReturn(View.INVISIBLE);
+        doReturn(rootView).when(mStackScroller).getRootView();
+
+        // WHEN a touch event is dispatched
+        MotionEvent moveEvent = MotionEvent.obtain(
+                SystemClock.uptimeMillis(),
+                SystemClock.uptimeMillis(),
+                MotionEvent.ACTION_MOVE,
+                0,
+                0,
+                0
+        );
+
+        boolean dispatchResult = mStackScroller.dispatchTouchEvent(moveEvent);
+        boolean onTouchResult = mStackScroller.onTouchEvent(moveEvent);
+        boolean onInterceptResult = mStackScroller.onInterceptTouchEvent(moveEvent);
+
+        // THEN the touch is refused
+        assertFalse(dispatchResult);
+        assertFalse(onTouchResult);
+        assertTrue(onInterceptResult); // true to prevent events from propagating to children
+        verify(mStackScrollLayoutController, never()).sendTouchToSceneFramework(any());
+    }
+
+    @Test
+    @EnableSceneContainer
     public void testDispatchTouchEvent_sceneContainerEnabled_sendLastActionUp() {
         mStackScroller.setIsBeingDragged(false);
         mStackScroller.setIsExpandingNotification(true);
