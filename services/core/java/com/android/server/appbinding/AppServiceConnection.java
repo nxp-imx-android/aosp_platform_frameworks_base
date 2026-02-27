@@ -48,6 +48,8 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
     private final ConditionVariable mConditionVariable = new ConditionVariable();
     private final Handler mHandler;
     @GuardedBy("mLock")
+    private final Queue<AppServiceCallback> mAppServiceCallbacks = new ArrayDeque<>();
+    @GuardedBy("mLock")
     private final Queue<Consumer<AppServiceConnection>> mCallbacks = new ArrayDeque<>();
     private final Object mLock = new Object();
 
@@ -114,9 +116,27 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
      * @param callback The action to be executed
      */
     public void addCallback(Consumer<AppServiceConnection> callback) {
+        if (Flags.enableTimeoutInDispatchAppServiceEvent()) {
+            addCallback(callback, 0);
+            return;
+        }
         if (Flags.enableAppServiceConnectionCallbacks()) {
             synchronized (mLock) {
                 mCallbacks.add(callback);
+            }
+            scheduleCallbacks();
+        }
+    }
+    /**
+     * Adds a callback to the queue and tries to schedule it immediately
+     *
+     * @param action The action to be executed
+     * @param timeoutMillis Time to wait for the connection to be established
+     */
+    public void addCallback(Consumer<AppServiceConnection> action, long timeoutMillis) {
+        if (Flags.enableTimeoutInDispatchAppServiceEvent()) {
+            synchronized (mLock) {
+                mAppServiceCallbacks.add(new AppServiceCallback(action, timeoutMillis));
             }
             scheduleCallbacks();
         }
@@ -127,17 +147,31 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
      * already established
      */
     private void scheduleCallbacks() {
+        if (!Flags.enableTimeoutInDispatchAppServiceEvent()) {
+            if (isConnected()) {
+                ArrayList<Consumer<AppServiceConnection>> callbacks;
+                synchronized (mLock) {
+                    callbacks = new ArrayList<>(mCallbacks);
+                    mCallbacks.clear();
+                }
+
+                for (Consumer<AppServiceConnection> action : callbacks) {
+                    mHandler.post(() -> {
+                        action.accept(this);
+                    });
+                }
+            }
+            return;
+        }
         if (isConnected()) {
-            ArrayList<Consumer<AppServiceConnection>> callbacks;
+            ArrayList<AppServiceCallback> callbacks;
             synchronized (mLock) {
-                callbacks = new ArrayList<>(mCallbacks);
-                mCallbacks.clear();
+                callbacks = new ArrayList<>(mAppServiceCallbacks);
+                mAppServiceCallbacks.clear();
             }
 
-            for (Consumer<AppServiceConnection> action : callbacks) {
-                mHandler.post(() -> {
-                    action.accept(this);
-                });
+            for (AppServiceCallback callback : callbacks) {
+                callback.postAction();
             }
         }
     }
@@ -155,4 +189,29 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
         }
         return isConnected();
     }
+
+    /**
+     * Internal class to track the lifecycle of a single dispatch request.
+     */
+    private class AppServiceCallback {
+        final Consumer<AppServiceConnection> mAction;
+
+        AppServiceCallback(Consumer<AppServiceConnection> action,
+                long timeoutMillis) {
+            this.mAction = action;
+            if (timeoutMillis > 0) {
+                mHandler.postDelayed(this::run, timeoutMillis);
+            }
+        }
+
+        void postAction() {
+            mHandler.post(this::run);
+        }
+
+        void run() {
+            mHandler.removeCallbacks(this::run);
+            mAction.accept(AppServiceConnection.this);
+        }
+    }
+
 }
