@@ -955,11 +955,13 @@ public class NotificationTest {
         Icon icon = Icon.createWithBitmap(
                 Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888));
         BridgedNotificationMetadata metadata = new BridgedNotificationMetadata(
-                "test_display_name",
+                BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_PHONE, "test_display_name",
                 "test_package", "test_channel_id", icon);
 
         Notification notification = new Notification.Builder(mContext, "whatever")
                 .setBridgedNotificationMetadata(metadata).build();
+        assertEquals(metadata.getOriginDeviceType(),
+                notification.getBridgedNotificationMetadata().getOriginDeviceType());
         assertEquals(metadata.getOriginDeviceName(),
                 notification.getBridgedNotificationMetadata().getOriginDeviceName());
         assertEquals(metadata.getPackageName(),
@@ -969,6 +971,8 @@ public class NotificationTest {
         metadata.getAppIcon().sameAs(notification.getBridgedNotificationMetadata().getAppIcon());
 
         Notification clone = writeAndReadParcelable(notification);
+        assertEquals(metadata.getOriginDeviceType(),
+                clone.getBridgedNotificationMetadata().getOriginDeviceType());
         assertEquals(metadata.getOriginDeviceName(),
                 clone.getBridgedNotificationMetadata().getOriginDeviceName());
         assertEquals(metadata.getPackageName(),

@@ -158,6 +158,7 @@ class BridgedNotificationInfoTest : SysuiTestCase() {
         val icon = Icon.createWithBitmap(Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888))
         val bridgedMetadata =
             BridgedNotificationMetadata(
+                BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_PHONE,
                 "test_display_name",
                 "test_package",
                 "test_channel_id",
