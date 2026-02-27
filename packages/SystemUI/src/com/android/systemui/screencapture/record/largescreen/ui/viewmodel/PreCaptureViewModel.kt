@@ -234,6 +234,9 @@ constructor(
 
     fun updateRegionBoxBounds(bounds: Rect) {
         regionBoxSource.value = bounds
+        backgroundScope.launch {
+            largeScreenCaptureParametersInteractor.setSelectedCaptureRegionBox(bounds)
+        }
     }
 
     /** Initiates capture of the screen depending on the currently chosen capture type. */
@@ -399,7 +402,7 @@ constructor(
         }
     }
 
-    private fun initializeRegionBox() {
+    private suspend fun initializeRegionBox() {
         if (regionBoxSource.value != null) {
             return
         }
@@ -407,8 +410,14 @@ constructor(
         val displayMetrics = DisplayMetrics()
         display.getRealMetrics(displayMetrics)
         val bounds = Rect(0, 0, displayMetrics.widthPixels, displayMetrics.heightPixels)
-        regionBoxSource.value =
-            Rect(bounds).apply { inset(bounds.width() / 4, bounds.height() / 4) }
+
+        val selectedRegionBox = largeScreenCaptureParametersInteractor.getSelectedCaptureRegionBox()
+        if (selectedRegionBox != null && bounds.contains(selectedRegionBox)) {
+            regionBoxSource.value = selectedRegionBox
+        } else {
+            regionBoxSource.value =
+                Rect(bounds).apply { inset(bounds.width() / 4, bounds.height() / 4) }
+        }
     }
 
     @AssistedFactory
