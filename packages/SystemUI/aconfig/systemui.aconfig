@@ -1481,16 +1481,6 @@ flag {
 }
 
 flag {
-  name: "restrict_communal_app_widget_host_listening"
-  namespace: "systemui"
-  description: "Only listens to AppWidgetHost when the communal hub is showing"
-  bug: "406044666"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
    name: "revamped_bouncer_messages"
    namespace: "systemui"
    description: "Change the bouncer message to be a 2-line more descriptive message"
