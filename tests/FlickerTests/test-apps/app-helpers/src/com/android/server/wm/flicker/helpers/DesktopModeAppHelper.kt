@@ -83,6 +83,8 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         NON_RESIZABLE
     }
 
+    val appName = innerHelper.appName
+
     /** Launch an app and ensure it's moved to Desktop if it has not. */
     fun enterDesktopMode(
         wmHelper: WindowManagerStateHelper,
