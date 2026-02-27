@@ -23,7 +23,6 @@ import android.view.Choreographer;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 
-import com.android.systemui.Flags;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.shared.system.InputChannelCompat;
 import com.android.systemui.shared.system.InputMonitorCompat;
@@ -78,7 +77,7 @@ public class InputSession {
                     if (ev instanceof MotionEvent
                             && mGestureDetector.onTouchEvent((MotionEvent) ev)
                             && pilferOnGestureConsume
-                            && !(mPilfering && Flags.dreamInputSessionPilferOnce())) {
+                            && !mPilfering) {
                         mPilfering = true;
                         mInputMonitor.pilferPointers();
                     }

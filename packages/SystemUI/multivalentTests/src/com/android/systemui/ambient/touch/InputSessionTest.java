@@ -23,7 +23,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper;
 import android.view.Choreographer;
 import android.view.GestureDetector;
@@ -33,7 +32,6 @@ import android.view.MotionEvent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.shared.system.InputChannelCompat;
 import com.android.systemui.shared.system.InputMonitorCompat;
@@ -131,7 +129,6 @@ public class InputSessionTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DREAM_INPUT_SESSION_PILFER_ONCE)
     public void testPilferOnce() {
         createSession(true);
         final MotionEvent event = Mockito.mock(MotionEvent.class);

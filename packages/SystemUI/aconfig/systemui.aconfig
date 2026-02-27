@@ -388,16 +388,6 @@ flag {
 }
 
 flag {
-    name: "dream_input_session_pilfer_once"
-    namespace: "systemui"
-    description: "Pilfer at most once per input session"
-    bug: "333596426"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "dream_overlay_bouncer_swipe_direction_filtering"
   namespace: "systemui"
   description: "do not initiate bouncer swipe when the direction is opposite of the expansion"
