@@ -81,6 +81,7 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
                 context = testCase.context,
                 userContextProvider = userContextProvider,
                 vibratorHelper = vibratorHelper,
+                logger = dreamTouchHandlerLogger,
             )
         }
 
@@ -292,6 +293,67 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
         }
 
     @Test
+    fun onScroll_ignored_if_gestureNotAccepted() =
+        kosmos.runTest {
+            underTest.onSessionStart(session)
+            verify(session).registerGestureListener(gestureListenerCaptor.capture())
+            val listener = gestureListenerCaptor.firstValue
+
+            // Down event outside edges (gesture rejected)
+            val downEvent =
+                createMotionEvent(
+                    x = SCREEN_WIDTH_PX / 2f,
+                    y = 100f,
+                    action = MotionEvent.ACTION_DOWN,
+                )
+            listener.onDown(downEvent)
+
+            // Scroll
+            val moveEvent =
+                createMotionEvent(
+                    x = SCREEN_WIDTH_PX / 2f + 50f,
+                    y = 100f,
+                    action = MotionEvent.ACTION_MOVE,
+                )
+            listener.onScroll(downEvent, moveEvent, 50f, 0f)
+
+            // Verify progress not reported
+            assertThat(dreamSwipeDelegate.fake.swipeProgressCalls).isEmpty()
+        }
+
+    @Test
+    fun onScroll_wrongDirection_doesNotVibrate() =
+        kosmos.runTest {
+            underTest.onSessionStart(session)
+            verify(session).registerGestureListener(gestureListenerCaptor.capture())
+            val listener = gestureListenerCaptor.firstValue
+
+            val startX = 10f
+            val downEvent =
+                createMotionEvent(x = startX, y = 100f, action = MotionEvent.ACTION_DOWN)
+            listener.onDown(downEvent)
+
+            val threshold = EDGE_WIDTH_PX * 2f
+            // Scroll left (negative dx) - away from center
+            // dx = -threshold - 10f
+            val moveEvent =
+                createMotionEvent(
+                    x = startX - threshold - 10f,
+                    y = 100f,
+                    action = MotionEvent.ACTION_MOVE,
+                )
+            listener.onScroll(downEvent, moveEvent, threshold + 10f, 0f)
+
+            // Progress reported with raw dx
+            val progressCalls = dreamSwipeDelegate.fake.swipeProgressCalls
+            assertThat(progressCalls).hasSize(1)
+            assertThat(progressCalls[0].dx).isEqualTo(-threshold - 10f)
+
+            // No vibration because distance is negative
+            assertThat(vibratorHelper.fake.totalVibrations).isEqualTo(0)
+        }
+
+    @Test
     fun onUp_commitsSwipe_ifPastThreshold() =
         kosmos.runTest {
             underTest.onSessionStart(session)
@@ -341,6 +403,36 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
             val upEvent =
                 createMotionEvent(
                     x = startX + threshold - 10f,
+                    y = 100f,
+                    action = MotionEvent.ACTION_UP,
+                )
+            inputListener.onInputEvent(upEvent)
+
+            val endedCalls = dreamSwipeDelegate.fake.swipeEndedCalls
+            assertThat(endedCalls).hasSize(1)
+            assertThat(endedCalls[0]).isFalse() // Not committed
+        }
+
+    @Test
+    fun onUp_wrongDirection_doesNotCommit() =
+        kosmos.runTest {
+            underTest.onSessionStart(session)
+            verify(session).registerGestureListener(gestureListenerCaptor.capture())
+            verify(session).registerInputListener(inputListenerCaptor.capture())
+            val gestureListener = gestureListenerCaptor.firstValue
+            val inputListener = inputListenerCaptor.firstValue
+
+            val startX = 10f
+            val downEvent =
+                createMotionEvent(x = startX, y = 100f, action = MotionEvent.ACTION_DOWN)
+            gestureListener.onDown(downEvent)
+
+            val threshold = EDGE_WIDTH_PX * 2f
+
+            // Up event far left (negative dx)
+            val upEvent =
+                createMotionEvent(
+                    x = startX - threshold - 10f,
                     y = 100f,
                     action = MotionEvent.ACTION_UP,
                 )

@@ -31,7 +31,6 @@ import com.android.systemui.res.R
 import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.statusbar.VibratorHelper
 import javax.inject.Inject
-import kotlin.math.abs
 
 /** A [TouchHandler] that intercepts edge swipes and forwards them to a [DreamSwipeDelegate]. */
 class EdgeSwipeTouchHandler
@@ -44,6 +43,7 @@ constructor(
     @Application context: Context,
     private val userContextProvider: UserContextProvider,
     private val vibratorHelper: VibratorHelper,
+    private val logger: DreamTouchHandlerLogger,
 ) : TouchHandler {
 
     private var edgeWidthLeft: Float = 0f
@@ -72,23 +72,34 @@ constructor(
         var isRightEdge = false
         var swipeThreshold = 0f
         var hapticPerformed = false
+        var gestureAccepted = false
 
         session.registerGestureListener(
             object : GestureDetector.SimpleOnGestureListener() {
                 override fun onDown(e: MotionEvent): Boolean {
+                    gestureAccepted = false
                     isLeftEdge = e.x < edgeWidthLeft
                     isRightEdge = e.x > containerView.width - edgeWidthRight
 
                     if (!isLeftEdge && !isRightEdge) {
+                        logger.logEdgeSwipeIgnoredNonEdge(
+                            e.x,
+                            e.y,
+                            edgeWidthLeft,
+                            edgeWidthRight,
+                            containerView.width,
+                        )
                         return false
                     }
 
                     val isClaimed =
                         swipeDelegate.onSwipeStarted(isFromLeft = isLeftEdge, startY = e.y)
                     if (!isClaimed) {
+                        logger.logEdgeSwipeRefused(e.x, e.y)
                         return false
                     }
 
+                    gestureAccepted = true
                     startX = e.x
                     swipeThreshold =
                         if (isLeftEdge) {
@@ -97,6 +108,7 @@ constructor(
                             edgeWidthRight * 2f
                         }
                     hapticPerformed = false
+                    logger.logEdgeSwipeDown(e.x, e.y, isLeftEdge, isRightEdge, swipeThreshold)
 
                     return true
                 }
@@ -107,14 +119,18 @@ constructor(
                     distanceX: Float,
                     distanceY: Float,
                 ): Boolean {
-                    if (!isLeftEdge && !isRightEdge || e1 == null) {
+                    if (!isLeftEdge && !isRightEdge || !gestureAccepted || e1 == null) {
                         return false
                     }
 
                     val dx = e2.x - startX
                     swipeDelegate.onSwipeProgress(dx, swipeThreshold)
 
-                    if (abs(dx) > swipeThreshold && !hapticPerformed) {
+                    // The distance towards the center of the screen
+                    val distance = if (isLeftEdge) dx else -dx
+
+                    if (distance > swipeThreshold && !hapticPerformed) {
+                        logger.logEdgeSwipeHapticPerformed()
                         vibratorHelper.performHapticFeedback(
                             containerView,
                             HapticFeedbackConstants.SEGMENT_TICK,
@@ -132,15 +148,18 @@ constructor(
                 ev is MotionEvent &&
                     (ev.action == MotionEvent.ACTION_UP || ev.action == MotionEvent.ACTION_CANCEL)
             ) {
-                if (isLeftEdge || isRightEdge) {
+                if ((isLeftEdge || isRightEdge) && gestureAccepted) {
                     val dx = ev.x - startX
-                    val committed = ev.action == MotionEvent.ACTION_UP && abs(dx) > swipeThreshold
+                    val distance = if (isLeftEdge) dx else -dx
+                    val committed = ev.action == MotionEvent.ACTION_UP && distance > swipeThreshold
 
+                    logger.logEdgeSwipeEnded(ev.action, dx, committed)
                     swipeDelegate.onSwipeEnded(committed)
 
                     isLeftEdge = false
                     isRightEdge = false
                     hapticPerformed = false
+                    gestureAccepted = false
                 }
             }
         }

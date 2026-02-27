@@ -33,7 +33,6 @@ import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.settings.UserTracker
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlin.math.abs
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -111,7 +110,8 @@ constructor(
     }
 
     override fun onSwipeProgress(dx: Float, swipeThreshold: Float) {
-        swipeProgress = (abs(dx) / swipeThreshold).coerceIn(0f, 1.5f)
+        val distance = if (_uiState.value.isFromLeft) dx else -dx
+        swipeProgress = (distance.coerceAtLeast(0f) / swipeThreshold).coerceIn(0f, 1.5f)
     }
 
     override fun onSwipeEnded(committed: Boolean) {

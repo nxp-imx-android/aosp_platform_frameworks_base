@@ -15,7 +15,6 @@
  */
 package com.android.systemui.dreams.touch
 
-import android.content.pm.UserInfo
 import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -53,7 +52,12 @@ class LongPressTouchHandlerTest : SysuiTestCase() {
 
     private val Kosmos.underTest: LongPressTouchHandler by
         Kosmos.Fixture {
-            LongPressTouchHandler(vibratorHelper, containerView, dreamDialogController)
+            LongPressTouchHandler(
+                vibratorHelper,
+                containerView,
+                dreamDialogController,
+                dreamTouchHandlerLogger,
+            )
         }
 
     @Test
@@ -128,9 +132,5 @@ class LongPressTouchHandlerTest : SysuiTestCase() {
 
     private fun Kosmos.setCanSwitchDreams(canSwitch: Boolean) {
         dreamDialogController.fake.setDialogAllowed(canSwitch)
-    }
-
-    private companion object {
-        val USER = UserInfo(0, "user", UserInfo.FLAG_MAIN)
     }
 }
