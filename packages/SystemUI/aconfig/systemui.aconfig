@@ -1091,6 +1091,16 @@ flag {
 }
 
 flag {
+    name: "nesteddraggable_gesture_pickup"
+    namespace: "systemui"
+    description: "Gesture drag pick up in NestedDraggable"
+    bug: "487588670"
+    metadata {
+         purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "new_aod_transition"
     namespace: "systemui"
     description: "New LOCKSCREEN <=> AOD transition"
