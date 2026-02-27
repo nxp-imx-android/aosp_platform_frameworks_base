@@ -27,7 +27,6 @@ namespace android {
 int register_android_server_BatteryStatsService(JNIEnv* env);
 int register_android_server_InputManager(JNIEnv* env);
 int register_android_server_input_VirtualInputDeviceController(JNIEnv* env);
-int register_android_server_LightsService(JNIEnv* env);
 int register_android_server_PowerManagerService(JNIEnv* env);
 int register_android_server_PowerStatsService(JNIEnv* env);
 int register_android_server_power_stats_CpuPowerStatsCollector(JNIEnv* env);
@@ -100,7 +99,6 @@ extern "C" jint JNI_OnLoad(JavaVM* vm, void* /* reserved */)
     register_android_server_HintManagerService(env);
     register_android_server_InputManager(env);
     register_android_server_input_VirtualInputDeviceController(env);
-    register_android_server_LightsService(env);
     register_android_server_UsbDeviceManager(vm, env);
     register_android_server_UsbAlsaDevice(env);
     register_android_server_UsbAlsaJackDetector(env);

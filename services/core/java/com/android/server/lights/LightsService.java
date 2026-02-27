@@ -267,11 +267,7 @@ public class LightsService extends SystemService {
             if (!DumpUtils.checkDumpPermission(getContext(), TAG, pw)) return;
 
             synchronized (LightsService.this) {
-                if (mVintfLights != null) {
-                    pw.println("Service: aidl (" + mVintfLights.get() + ")");
-                } else {
-                    pw.println("Service: hidl");
-                }
+                pw.println("Service: " + mVintfLights != null ? mVintfLights.get() : null);
 
                 pw.println("Lights:");
                 for (int i = 0; i < mLightsById.size(); i++) {
@@ -787,7 +783,7 @@ public class LightsService extends SystemService {
                     lightState.brightnessMode = (byte) brightnessMode;
                     mVintfLights.get().setLightState(mHwLight.id, lightState);
                 } else {
-                    setLight_native(mHwLight.id, color, mode, onMS, offMS, brightnessMode);
+                    Slog.e(TAG, "Failed issuing setLightState, no ILights HAL service available");
                 }
             } catch (RemoteException | UnsupportedOperationException ex) {
                 Slog.e(TAG, "Failed issuing setLightState", ex);
@@ -805,7 +801,7 @@ public class LightsService extends SystemService {
          * applications using the {@link android.hardware.lights.LightsManager} API.
          */
         private boolean isSystemLight() {
-            // This list of lights is based on the list of lights from the 2.0 HIDL HAL, which only
+            // This list of lights is based on the list of lights from the HAL, which only
             // contains system lights.
             //
             // Newly-added public lights are made available via the public LightsManager API and
@@ -903,9 +899,9 @@ public class LightsService extends SystemService {
 
     private void populateAvailableLights(Context context) {
         if (mVintfLights != null) {
-            populateAvailableLightsFromAidl(context);
+            populateAvailableLightsFromHal(context);
         } else {
-            populateAvailableLightsFromHidl(context);
+            Slog.e(TAG, "Failed to populate available lights, no ILights HAL service available");
         }
 
         for (int i = mLightsById.size() - 1; i >= 0; i--) {
@@ -916,7 +912,7 @@ public class LightsService extends SystemService {
         }
     }
 
-    private void populateAvailableLightsFromAidl(Context context) {
+    private void populateAvailableLightsFromHal(Context context) {
         try {
             mSupportsEffects =
                 Flags.enableLightAnimations() && mVintfLights.get().getInterfaceVersion() >= 3;
@@ -926,16 +922,6 @@ public class LightsService extends SystemService {
             }
         } catch (RemoteException ex) {
             Slog.e(TAG, "Unable to get lights from HAL", ex);
-        }
-    }
-
-    private void populateAvailableLightsFromHidl(Context context) {
-        for (int i = 0; i <  LightsManager.LIGHT_ID_COUNT; i++) {
-            HwLight hwLight = new HwLight();
-            hwLight.id = (byte) i;
-            hwLight.ordinal = 1;
-            hwLight.type = (byte) i;
-            mLightsById.put(hwLight.id, new LightImpl(context, hwLight));
         }
     }
 
@@ -1000,7 +986,4 @@ public class LightsService extends SystemService {
             mInstance = null;
         }
     }
-
-    static native void setLight_native(int light, int color, int mode,
-            int onMS, int offMS, int brightnessMode);
 }
