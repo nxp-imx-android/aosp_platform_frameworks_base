@@ -824,7 +824,7 @@
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"ઘણા બધા પ્રયાસો. તેને બદલે સ્ક્રીન લૉકનો ઉપયોગ કરો."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"ચહેરો ચકાસી શકાતો નથી. ફરી પ્રયાસ કરો."</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"તમે ફેસ અનલૉક સુવિધાનું સેટઅપ કર્યું નથી"</string>
-    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"ફેસ વડે અનલૉક કરવાની સુવિધાનું સેટઅપ હજી સુધી કરવામાં આવ્યું નથી"</string>
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"ચહેરા વડે અનલૉક કરવાનું સેટઅપ હજી સુધી કરવામાં આવ્યું નથી"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"આ ડિવાઇસ પર ફેસ અનલૉક સુવિધાને સપોર્ટ કરવામાં આવતો નથી"</string>
     <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"આ ડિવાઇસ પર ચહેરા વડે અનલૉક કરવાની સુવિધા સપોર્ટેડ નથી"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"સેન્સર હંગામી રૂપે બંધ કર્યું છે."</string>

@@ -1657,7 +1657,7 @@
     <string name="car_mode_disable_notification_title" msgid="8450693275833142896">"Апликација за вожњу је покренута"</string>
     <string name="car_mode_disable_notification_message" msgid="8954550232288567515">"Додирните да бисте изашли из апликације за вожњу."</string>
     <string name="back_button_label" msgid="4078224038025043387">"Назад"</string>
-    <string name="next_button_label" msgid="6040209156399907780">"Next"</string>
+    <string name="next_button_label" msgid="6040209156399907780">"Даље"</string>
     <string name="skip_button_label" msgid="3566599811326688389">"Прескочи"</string>
     <string name="no_matches" msgid="6472699895759164599">"Нема подударања"</string>
     <string name="find_on_page" msgid="5400537367077438198">"Пронађи на страници"</string>

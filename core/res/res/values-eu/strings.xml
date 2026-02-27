@@ -759,19 +759,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"Gailuaren desblokeoa"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"Probatu gailua desblokeatzeko beste modu bat"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"Erabili Aurpegi bidez desblokeatzea hatz-marka ezagutzen ez denean (adibidez, hatzak bustita dauzkazunean)"</string>
-    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
-    <skip />
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"Desblokeatu aurpegi bidez hatz-marka ezagutzen ez denean (adibidez, hatzak bustita dauzkazunean)"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Erabili Hatz-marka bidez desblokeatzea aurpegia ezagutzen ez denean (adibidez, argi nahikorik ez dagoenean)"</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"Aurpegi bidez desblokeatzea"</string>
-    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
-    <skip />
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"Desblokeatu aurpegi bidez"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"Arazoak ditugu aurpegi bidez desblokeatzeko eginbidearekin"</string>
-    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
-    <skip />
+    <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"Arazoak dituzu aurpegi bidez desblokeatzeko"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"Sakatu hau aurpegi-eredua ezabatzeko eta, gero, gehitu aurpegia berriro"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"Aurpegi bidez desblokeatzeko eginbidea erabiltzeko, aktibatu "<b>"kamera erabiltzeko baimena"</b>" Ezarpenak &gt; Pribatutasuna atalean"</string>
-    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
-    <skip />
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"Aurpegi bidez desblokeatzeko, aktibatu "<b>"kamera atzitzeko baimena"</b>" Ezarpenak &gt; Pribatutasuna atalean"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"Hatz-marka bidez desblokeatzea"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"Ezin da erabili hatz-marken sentsorea"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"Jarri harremanetan konponketak egiten dituen hornitzaile batekin."</string>
@@ -779,42 +775,31 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Argi gehiegi dago. Joan toki ilunago batera."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Ilunegi dago"</string>
     <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"Urrundu telefonoa"</string>
-    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
-    <skip />
+    <string name="face_acquired_too_close" product="desktop" msgid="7189579448504853047">"Urrundu gailua"</string>
     <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"Hurbildu telefonoa"</string>
-    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
-    <skip />
+    <string name="face_acquired_too_far" product="desktop" msgid="6590730829823321223">"Hurbildu gailua"</string>
     <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"Igo telefonoa"</string>
-    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
-    <skip />
+    <string name="face_acquired_too_high" product="desktop" msgid="717393614154504299">"Mugitu gailua gorago"</string>
     <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"Jaitsi telefonoa"</string>
-    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
-    <skip />
+    <string name="face_acquired_too_low" product="desktop" msgid="7695733281069538045">"Mugitu gailua beherago"</string>
     <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"Eraman telefonoa ezkerrera"</string>
-    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
-    <skip />
+    <string name="face_acquired_too_right" product="desktop" msgid="4058756237538843740">"Mugitu gailua ezkerrera"</string>
     <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"Eraman telefonoa eskuinera"</string>
-    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
-    <skip />
+    <string name="face_acquired_too_left" product="desktop" msgid="5804819007366973778">"Mugitu gailua eskuinera"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Begiratu zuzenago kamerari"</string>
     <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"Ezin da hauteman aurpegia. Eutsi telefonoari begien parean."</string>
-    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
-    <skip />
+    <string name="face_acquired_not_detected" product="desktop" msgid="1047701586390904260">"Ezin da hauteman aurpegia. Eutsi gailuari begien parean."</string>
     <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"Mugimendu gehiegi dago. Eutsi tinko telefonoari."</string>
-    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
-    <skip />
+    <string name="face_acquired_too_much_motion" product="desktop" msgid="7135563968992659161">"Mugimendu gehiegi dago. Eutsi gailuari tinko."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Erregistratu berriro aurpegia."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"Ez da ezagutu aurpegia. Saiatu berriro."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"Aldatu buruaren posizioa apur bat"</string>
     <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"Begiratu zuzenago telefonoari"</string>
-    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
-    <skip />
+    <string name="face_acquired_pan_too_extreme" product="desktop" msgid="821456302944137576">"Begiratu zuzenago gailuari"</string>
     <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"Begiratu zuzenago telefonoari"</string>
-    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
-    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="desktop" msgid="1119243364774233108">"Begiratu zuzenago gailuari"</string>
     <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"Begiratu zuzenago telefonoari"</string>
-    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
-    <skip />
+    <string name="face_acquired_roll_too_extreme" product="desktop" msgid="3665467581072397682">"Begiratu zuzenago gailuari"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"Kendu aurpegia estaltzen dizuten gauzak."</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"Garbitu pantailaren goialdea, barra beltza barne"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -828,30 +813,24 @@
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Ezin da egiaztatu aurpegia. Hardwarea ez dago erabilgarri."</string>
     <string name="face_error_timeout" product="default" msgid="2598544068593889762">"Saiatu berriro aurpegi bidez desblokeatzen"</string>
-    <!-- no translation found for face_error_timeout (8136501408214657840) -->
-    <skip />
+    <string name="face_error_timeout" product="desktop" msgid="8136501408214657840">"Saiatu berriro aurpegi bidez desblokeatzen"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"Ezin dira gorde aurpegiaren datu berriak. Ezabatu zaharrak."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"Utzi da aurpegiaren bidezko eragiketa."</string>
     <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"Erabiltzaileak aurpegi bidez desblokeatzeko aukera utzi du"</string>
-    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
-    <skip />
+    <string name="face_error_user_canceled" product="desktop" msgid="8903551031462609651">"Erabiltzaileak utzi du aurpegi bidez desblokeatzeko prozesua"</string>
     <string name="face_error_lockout" msgid="7864408714994529437">"Saiakera gehiegi egin dituzu. Saiatu berriro geroago."</string>
     <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"Saiakera gehiegi egin dira. Aurpegi bidez desblokeatzeko eginbidea ez dago erabilgarri."</string>
-    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
-    <skip />
+    <string name="face_error_lockout_permanent" product="desktop" msgid="1885291877517229762">"Saiakera gehiegi egin dira. Aurpegi bidez desblokeatzea ez dago erabilgarri."</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"Saiakera gehiegi egin dira. Horren ordez, erabili pantailaren blokeoa."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"Ezin da egiaztatu aurpegia. Saiatu berriro."</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"Ez duzu konfiguratu aurpegi bidez desblokeatzeko eginbidea"</string>
-    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
-    <skip />
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"Oraindik ez duzu konfiguratu Aurpegi bidez desblokeatzea"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"Aurpegi bidez desblokeatzeko eginbidea ez da onartzen gailu honetan"</string>
-    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
-    <skip />
+    <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"Gailu honetan ez da onartzen Aurpegi bidez desblokeatzea"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"Sentsorea aldi baterako desgaitu da."</string>
     <string name="face_name_template" msgid="3877037340223318119">"<xliff:g id="FACEID">%d</xliff:g> aurpegia"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"Erabili aurpegi bidez desblokeatzeko eginbidea"</string>
-    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
-    <skip />
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"Aurpegi bidez desblokeatzea"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"Erabili aurpegia edo pantailaren blokeoa"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"Aurrera egiteko, erabili aurpegia"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"Aurrera egiteko, erabili aurpegia edo pantailaren blokeoa"</string>
@@ -1112,8 +1091,7 @@
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Desblokeatzeko, sakatu edozein tekla"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Desblokeatu eginbide eta datu guztiak erabiltzeko"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Gainditu da aurpegi bidez desblokeatzeko saiakera-muga"</string>
-    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
-    <skip />
+    <string name="faceunlock_multiple_failures" product="desktop" msgid="5388142244463490793">"Aurpegi bidez desblokeatzeko gehieneko saiakera kopurura iritsi zara"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Ez dago SIMik"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"Ez dago SIMik tabletan."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"Ez dago SIMik Android TV darabilen gailuan."</string>
@@ -1185,8 +1163,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"Hatza lerratuta desblokeatzea."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"Ereduaren bidez desblokeatzea."</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"Aurpegi bidez desblokeatzea."</string>
-    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
-    <skip />
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"Desblokeatu aurpegi bidez."</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"PIN kodearen bidez desblokeatzea."</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"SIMa desblokeatzeko PINa."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"SIMa desblokeatzeko PUK kodea."</string>
@@ -1923,8 +1900,7 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Aldatu"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Ezarpenak"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"\"<xliff:g id="NAME">%1$s</xliff:g>\" erabiltzailera aldatzen…"</string>
-    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
-    <skip />
+    <string name="user_logging_out_message" msgid="2968888364742643174">"Saioa amaitzen…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Jabea"</string>
     <string name="guest_name" msgid="8502103277839834324">"Gonbidatua"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Sistemaren erabiltzailea"</string>
@@ -2187,12 +2163,10 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"%1$s atzitzeko baimena eman diezun AA bidezko agenteek eta zerbitzuek bertako datuak atzitzen jarraituko dute"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Gehitu aplikazioen blokeoa"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Aurpegi bidez desblokeatzea"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"Aurpegi bidez desbl."</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Hatz-marka bidez desblokeatzea"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"Hatz-marka bidez desblokeatzea, Aurpegi bidez desblokeatzea"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"Hatz-marka bidez desblok., Desblok. aurpegi bidez"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"pasahitza"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"eredua"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PINa"</string>
@@ -2689,11 +2663,9 @@
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> ez da ezagutzen jada. Konfiguratu berriro hatz-marka bidez desblokeatzeko eginbidea."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> eta <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> ez dira ezagutzen jada. Konfiguratu berriro hatz-marka bidez desblokeatzeko eginbidea."</string>
     <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"Konfiguratu berriro aurpegi bidez desblokeatzeko eginbidea"</string>
-    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
-    <skip />
+    <string name="face_dangling_notification_title" product="desktop" msgid="4632690536207343589">"Konfiguratu berriro Aurpegi bidez desblokeatzea"</string>
     <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"Zure aurpegi-eredua ez da ezagutzen jada. Konfiguratu berriro aurpegi bidez desblokeatzeko eginbidea."</string>
-    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
-    <skip />
+    <string name="face_dangling_notification_msg" product="desktop" msgid="5982979430103820891">"Zure aurpegi-eredua ez da ezagutzen jada. Konfiguratu berriro Aurpegi bidez desblokeatzea."</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"Konfiguratu"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"Orain ez"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"<xliff:g id="USER_NAME">%s</xliff:g> erabiltzailearentzako alarma"</string>
@@ -2733,6 +2705,5 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Gurasoak aldaketa bat egin du"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> kendu egin da oraingoz"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"Orain, <xliff:g id="APP_NAME">%1$s</xliff:g> erabilgarri dago"</string>
-    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
-    <skip />
+    <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Igorri beste batzuetara"</string>
 </resources>
