@@ -43,6 +43,7 @@ import androidx.core.content.withStyledAttributes
 import androidx.core.view.ViewCompat
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat
 import androidx.core.view.isVisible
+import androidx.core.view.marginStart
 import androidx.core.view.postDelayed
 import com.android.internal.R.color.materialColorOnSecondaryContainer
 import com.android.internal.R.color.materialColorOnSurface
@@ -570,7 +571,6 @@ class AppHeaderViewHolder(
             expandMenuErrorImageView.visibility =
                 if (isRestartMenuEnabledForDisplayMove) View.VISIBLE else View.GONE
             appNameTextView.apply {
-                isVisible = header.type == Header.Type.DEFAULT
                 setTextColor(colorStateList)
                 maxWidth =
                     if (isRestartMenuEnabledForDisplayMove) {
@@ -580,6 +580,7 @@ class AppHeaderViewHolder(
                     } else {
                         dimensions.appNameMaxWidth
                     }
+                isVisible = shouldAddAppName(header.type)
             }
             appIconImageView.imageAlpha = foregroundAlpha
             defaultFocusHighlightEnabled = false
@@ -657,6 +658,26 @@ class AppHeaderViewHolder(
                 // Disable long-click to open layout menu when in immersive.
                 null
             }
+    }
+
+    private fun shouldAddAppName(headerType: Header.Type): Boolean {
+        if (headerType != Header.Type.DEFAULT) {
+            return false
+        }
+        val openMenuWidthWithText =
+            if (appNameTextView.isVisible) {
+                openMenuButton.width
+            } else {
+                // If app name is not visible, add its max possible width to the expected width
+                // of the open menu button to assure there is room for it.
+                openMenuButton.width + appNameTextView.maxWidth + appNameTextView.marginStart
+            }
+
+        val controlButtonsWidth: Int =
+            (dimensions.windowControlButtonWidth + dimensions.windowControlButtonMarginEnd) *
+                WINDOW_CONTROLS_BUTTONS_COUNT
+
+        return (openMenuWidthWithText + controlButtonsWidth) <= captionView.width
     }
 
     private fun setCaptionVisibility(visible: Boolean) {
@@ -945,6 +966,7 @@ class AppHeaderViewHolder(
         private const val LIGHT_THEME_UNFOCUSED_OPACITY = 166 // 65%
         private const val FOCUSED_OPACITY = 255
         private const val CLICK_DELAY: Long = 500
+        private const val WINDOW_CONTROLS_BUTTONS_COUNT = 3
     }
 
     /** Factory for creating [AppHeaderViewHolder] instances. */
