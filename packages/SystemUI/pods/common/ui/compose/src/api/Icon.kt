@@ -35,7 +35,11 @@ import com.android.systemui.common.shared.model.Icon
  * [Icon.Loaded] icons, and won't be resized from their intrinsic size (b/394738023).
  */
 @Composable
-fun Icon(icon: Icon, modifier: Modifier = Modifier, tint: Color = LocalContentColor.current) {
+public fun Icon(
+    icon: Icon,
+    modifier: Modifier = Modifier,
+    tint: Color = LocalContentColor.current,
+) {
     val contentDescription = icon.contentDescription?.load()
     when (icon) {
         is Icon.Loaded -> {
@@ -57,7 +61,7 @@ fun Icon(icon: Icon, modifier: Modifier = Modifier, tint: Color = LocalContentCo
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Icon(icon: Icon, tint: (() -> Color)?, modifier: Modifier = Modifier) {
+public fun Icon(icon: Icon, tint: (() -> Color)?, modifier: Modifier = Modifier) {
     val localContentColor = LocalContentColor.current
     val contentDescription = icon.contentDescription?.load()
     when (icon) {

@@ -25,7 +25,7 @@ import com.android.compose.theme.colorAttr
 /** Resolves [com.android.systemui.common.shared.model.Color] into [Color] */
 @Composable
 @ReadOnlyComposable
-fun com.android.systemui.common.shared.model.Color.toColor(): Color {
+public fun com.android.systemui.common.shared.model.Color.toColor(): Color {
     return when (this) {
         is com.android.systemui.common.shared.model.Color.Attribute -> colorAttr(attribute)
         is com.android.systemui.common.shared.model.Color.Loaded -> Color(color)

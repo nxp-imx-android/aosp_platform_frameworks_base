@@ -28,13 +28,13 @@ import com.android.systemui.common.shared.model.Text.Companion.loadText
 /** Returns the loaded [String] or `null` if there isn't one. */
 @Composable
 @ReadOnlyComposable
-fun Text.load(): String? {
+public fun Text.load(): String? {
     return when (this) {
         is Text.Loaded -> text
         is Text.Resource -> stringResource(res)
     }
 }
 
-fun Text.toAnnotatedString(context: Context): AnnotatedString? {
+public fun Text.toAnnotatedString(context: Context): AnnotatedString? {
     return loadText(context)?.let { AnnotatedString(it) }
 }
