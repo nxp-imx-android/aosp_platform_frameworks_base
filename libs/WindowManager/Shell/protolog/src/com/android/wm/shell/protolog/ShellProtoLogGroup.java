@@ -40,7 +40,7 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
     WM_SHELL_STARTING_WINDOW(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_STARTING_WINDOW),
     WM_SHELL_REMOVE_STARTING_TRACKER(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_STARTING_WINDOW),
     WM_SHELL_BACK_PREVIEW(Consts.ENABLE_DEBUG, true, "ShellBackPreview"),
-    WM_SHELL_RECENT_TASKS(Consts.ENABLE_DEBUG, false, Consts.TAG_WM_SHELL),
+    WM_SHELL_RECENT_TASKS(Consts.ENABLE_DEBUG, true, "RecentTasksController"),
     WM_SHELL_TASK_OBSERVER(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_SHELL),
     // TODO(b/282232877): turn logToLogcat to false.
     WM_SHELL_PICTURE_IN_PICTURE(Consts.ENABLE_DEBUG, true, Consts.TAG_WM_SHELL),
