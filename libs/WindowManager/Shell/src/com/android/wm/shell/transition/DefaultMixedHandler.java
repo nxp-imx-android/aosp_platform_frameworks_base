@@ -40,7 +40,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.ArrayMap;
 import android.util.Log;
-import android.util.Pair;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.RemoteTransition;
@@ -411,7 +410,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
 
     @Nullable
     @Override
-    public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
+    public Transitions.RequestResult handleRequestOnly(@NonNull IBinder transition,
             @NonNull TransitionRequestInfo request) {
         // Transitions involving a task that is being bubbled
         final ActivityManager.RunningTaskInfo task = request.getTriggerTask();
@@ -427,7 +426,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE, transition));
                 mBubbleTransitions.handleRequest(out, transition, request);
                 mSplitHandler.addExitForBubblesIfNeeded(request, out);
-                return out;
+                return new Transitions.RequestResult(out, this);
             } else if (task != null && mPipHandler.isTaskActiveInPip(task.taskId)) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                         " Got a Bubble-enter request from a pip task");
@@ -435,7 +434,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE, transition));
                 mBubbleTransitions.handleRequest(out, transition, request);
-                return out;
+                return new Transitions.RequestResult(out, this);
             } else if (task != null && mDesktopTasksController != null
                     && mDesktopTasksController.isDesktopTask(task)) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
@@ -445,7 +444,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_DESKTOP_TASK_TO_BUBBLE, transition));
                 mBubbleTransitions.handleRequest(out, transition, request);
                 mDesktopTasksController.addMoveToBubbleFromDesktopChange(out, task, transition);
-                return out;
+                return new Transitions.RequestResult(out, this);
             } else {
                 // This check should happen after we've checked for split + bubble enter
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
@@ -454,7 +453,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE, transition));
                 mBubbleTransitions.handleRequest(out, transition, request);
-                return out;
+                return new Transitions.RequestResult(out, this);
             }
         } else if (requestHasBubbleEnterFromAppBubbleOrExistingBubble(request)) {
             consumeRemoteTransitionIfNecessary(transition, request.getRemoteTransition());
@@ -484,7 +483,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 mActiveTransitions.add(createDefaultMixedTransition(
                         MixedTransition.TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE,
                         transition));
-                return out;
+                return new Transitions.RequestResult(out, this);
             }
         }
 
@@ -511,7 +510,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 out.reorder(task.token, true);
             }
 
-            return out;
+            return new Transitions.RequestResult(out, this);
         } else if (request.getType() == TRANSIT_PIP
                 && (request.getFlags() & FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY) != 0 && (
                 mActivityEmbeddingController != null)) {
@@ -525,7 +524,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             if (mPinnedLayerHandler != null && mPinnedLayerHandler.hasActivePinnedTask()) {
                 mPinnedLayerHandler.augmentRequestDismissPinnedTask(transition, request, out);
             }
-            return out;
+            return new Transitions.RequestResult(out, this);
         } else if (request.getRemoteTransition() != null
                 && TransitionUtil.isOpeningType(request.getType())
                 && (task == null
@@ -535,47 +534,44 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
             // usually grab priority and often won't handle PiP. If there isn't an intent-provided
             // remote, then the transition will be dispatched normally and the PipHandler will
             // pick it up.
-            Pair<Transitions.TransitionHandler, WindowContainerTransaction> handler =
-                    mPlayer.dispatchRequest(transition, request, this);
+            Transitions.RequestResult handler = mPlayer.dispatchRequest(transition, request, this);
             if (handler == null) {
                 return null;
             }
             final MixedTransition mixed = createDefaultMixedTransition(
                     MixedTransition.TYPE_OPTIONS_REMOTE_AND_PIP_OR_DESKTOP_CHANGE, transition);
-            mixed.mLeftoversHandler = handler.first;
+            mixed.mLeftoversHandler = handler.mHandler;
             mActiveTransitions.add(mixed);
             if (mixed.mLeftoversHandler != mPlayer.getRemoteTransitionHandler()) {
                 mixed.mHasRequestToRemote = true;
                 mPlayer.getRemoteTransitionHandler().handleRequest(transition, request);
             }
-            if (handler.first == mPipHandler && mPinnedLayerHandler != null
+            if (handler.mHandler == mPipHandler && mPinnedLayerHandler != null
                     && mPinnedLayerHandler.hasActivePinnedTask()) {
                 // pip side effect to dismiss the pinned layer
                 mPinnedLayerHandler.augmentRequestDismissPinnedTask(transition, request,
-                        handler.second);
+                        handler.mWct);
             }
-            return handler.second;
+            return new Transitions.RequestResult(handler.mWct, this);
         } else if (mSplitHandler != null && mSplitHandler.isSplitScreenVisible()
                 && isOpeningType(request.getType()) && task != null
                 && task.getWindowingMode() == WINDOWING_MODE_FULLSCREEN
                 && task.getActivityType() == ACTIVITY_TYPE_HOME) {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a going-home request while "
                     + "Split-Screen is foreground, so treat it as Mixed.");
-            Pair<Transitions.TransitionHandler, WindowContainerTransaction> handler =
-                    mPlayer.dispatchRequest(transition, request, this);
+            Transitions.RequestResult handler = mPlayer.dispatchRequest(transition, request, this);
             if (handler == null) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                         " Lean on the remote transition handler to fetch a proper remote via"
                                 + " TransitionFilter");
-                handler = new Pair<>(
-                        mPlayer.getRemoteTransitionHandler(),
-                        new WindowContainerTransaction());
+                handler = new Transitions.RequestResult(new WindowContainerTransaction(),
+                        mPlayer.getRemoteTransitionHandler());
             }
             final MixedTransition mixed = createRecentsMixedTransition(
                     MixedTransition.TYPE_RECENTS_DURING_SPLIT, transition, task.displayId);
-            mixed.mLeftoversHandler = handler.first;
+            mixed.mLeftoversHandler = handler.mHandler;
             mActiveTransitions.add(mixed);
-            return handler.second;
+            return new Transitions.RequestResult(handler.mWct, this);
         } else if (mUnfoldHandler != null && mUnfoldHandler.shouldPlayUnfoldAnimation(request)) {
             final WindowContainerTransaction wct =
                     mUnfoldHandler.handleRequest(transition, request);
@@ -584,21 +580,21 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                         MixedTransition.TYPE_UNFOLD, transition));
                 mBubbleTransitions.notifyUnfoldTransitionStarting(transition);
             }
-            return wct;
+            return new Transitions.RequestResult(wct, this);
         } else if (mDesktopTasksController != null
                 && mDesktopTasksController.shouldPlayDesktopAnimation(request)) {
-            final Pair<Transitions.TransitionHandler, WindowContainerTransaction> handler =
+            final Transitions.RequestResult handler =
                     mPlayer.dispatchRequest(transition, request, /* skip= */ this);
             if (handler == null) {
                 return null;
             }
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, " Got a desktop request, so"
-                    + " treat it as Mixed. handler=%s", handler.first);
+                    + " treat it as Mixed. handler=%s", handler.mHandler);
             final MixedTransition mixed = createDefaultMixedTransition(
                     MixedTransition.TYPE_OPEN_IN_DESKTOP, transition);
-            mixed.mLeftoversHandler = handler.first;
+            mixed.mLeftoversHandler = handler.mHandler;
             mActiveTransitions.add(mixed);
-            return handler.second;
+            return new Transitions.RequestResult(handler.mWct, this);
         }
 
         // all mixed transitions related to pinned layer should be handled here.
@@ -622,7 +618,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 final WindowContainerTransaction out = new WindowContainerTransaction();
                 mPipHandler.augmentRequest(transition, request, out);
                 mPinnedLayerHandler.augmentRequestDismissPinnedTask(transition, request, out);
-                return out;
+                return new Transitions.RequestResult(out, this);
             }
         }
 

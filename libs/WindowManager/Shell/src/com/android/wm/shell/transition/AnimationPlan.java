@@ -89,6 +89,7 @@ public class AnimationPlan {
         final TransitionInfo out = new TransitionInfo(info.getType(), 0);
         out.setTrack(info.getTrack());
         out.setDebugId(info.getDebugId());
+        out.setFlags(info.getFlags());
         for (int i = 0; i < info.getRootCount(); ++i) {
             out.addRoot(info.getRoot(i));
         }
