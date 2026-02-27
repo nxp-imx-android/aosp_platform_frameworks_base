@@ -31,6 +31,8 @@ import android.annotation.UserHandleAware;
 import android.annotation.UserIdInt;
 import android.app.contentrestriction.flags.Flags;
 import android.content.Context;
+import android.content.Intent;
+import android.content.LocusId;
 import android.os.Binder;
 import android.os.OutcomeReceiver;
 import android.os.RemoteException;
@@ -176,5 +178,25 @@ public class ContentRestrictionManager {
                 throw e.rethrowFromSystemServer();
             }
         }
+    }
+
+    /**
+     * Creates an {@link Intent} that can be used with {@link Context#startActivity(Intent)} to
+     * display a dialog about the restricted content.
+     *
+     * @param locusId the {@link LocusId} of the content to be restricted
+     * @return the intent to display the restricted content dialog
+     */
+    @FlaggedApi(Flags.FLAG_CONTENT_RESTRICTION_API)
+    @NonNull
+    public Intent createContentRestrictedIntent(@NonNull LocusId locusId) {
+        if (mService != null) {
+            try {
+                return mService.createContentRestrictedIntent(locusId);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return null;
     }
 }
