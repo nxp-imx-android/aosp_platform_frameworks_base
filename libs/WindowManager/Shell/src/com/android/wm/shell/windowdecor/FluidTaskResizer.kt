@@ -102,6 +102,14 @@ class FluidTaskResizer(
                 desktopState.canEnterDesktopMode,
             )
 
+        logD(
+            TAG,
+            session.windowDecoration.taskInfo.taskId,
+            "onResizeEnd: isResizingOrAnimatingResize=%b, boundsChanged=%b, bounds=%s",
+            session.isResizingOrAnimatingResize,
+            boundsChangedBetweenUpdateAndEnd,
+            session.repositionTaskBounds,
+        )
         if (!session.isResizingOrAnimatingResize && !boundsChangedBetweenUpdateAndEnd) {
             return null
         }
@@ -117,6 +125,11 @@ class FluidTaskResizer(
     }
 
     override fun cleanup(session: DragSession) {
+        logD(TAG, session.windowDecoration.taskInfo.taskId, "cleanup")
         // No-op for fluid resize, as there are no visual artifacts to clean up.
+    }
+
+    companion object {
+        private const val TAG = "FluidTaskResizer"
     }
 }

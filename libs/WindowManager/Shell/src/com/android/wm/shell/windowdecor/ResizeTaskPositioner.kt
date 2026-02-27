@@ -89,6 +89,18 @@ class ResizeTaskPositioner(
         inputMethodType: Int,
     ): Rect {
         val taskBounds = Rect(windowDecoration.taskInfo.configuration.windowConfiguration.bounds)
+        logD(
+            TAG,
+            windowDecoration.taskInfo.taskId,
+            "onDragPositioningStart: taskId=%d, ctrlType=%d, displayId=%d, x=%f, y=%f, " +
+                "taskBounds=%s",
+            windowDecoration.taskInfo.taskId,
+            ctrlType,
+            displayId,
+            x,
+            y,
+            taskBounds,
+        )
         val rotation = windowDecoration.taskInfo.configuration.windowConfiguration.displayRotation
         val resizeTrigger =
             if (
@@ -124,6 +136,12 @@ class ResizeTaskPositioner(
                         it.desktopRepository = profile
                         it.shouldRestoreBoundsOnMove =
                             profile.hasBoundsBeforeSnapOrMaximize(windowDecoration.taskInfo)
+                        logD(
+                            TAG,
+                            windowDecoration.taskInfo.taskId,
+                            "onDragPositioningStart: shouldRestoreBoundsOnMove=%b",
+                            it.shouldRestoreBoundsOnMove,
+                        )
                     }
                 }
 
@@ -146,6 +164,14 @@ class ResizeTaskPositioner(
         check(Looper.myLooper() == handler.looper) {
             "This method must run on the shell main thread."
         }
+        motionEventLogD(
+            TAG,
+            windowDecoration.taskInfo.taskId,
+            "onDragPositioningMove: displayId=%d, x=%f, y=%f",
+            displayId,
+            x,
+            y,
+        )
         val session = checkNotNull(dragSession) { "DragSession must not be null during a move." }
 
         if (isResizing) {
@@ -180,6 +206,15 @@ class ResizeTaskPositioner(
     }
 
     override fun onDragPositioningEnd(displayId: Int, x: Float, y: Float): Rect {
+        logD(
+            TAG,
+            windowDecoration.taskInfo.taskId,
+            "onDragPositioningEnd: taskId=%d, displayId=%d, x=%f, y=%f",
+            windowDecoration.taskInfo.taskId,
+            displayId,
+            x,
+            y,
+        )
         val session =
             checkNotNull(dragSession) { "DragSession must not be null when ending a drag." }
         if (isResizing) {
@@ -192,6 +227,11 @@ class ResizeTaskPositioner(
             }
                 ?: run {
                     // If no transition is started, clear the session now.
+                    logD(
+                        TAG,
+                        windowDecoration.taskInfo.taskId,
+                        "onDragPositioningEnd: no transition started, clearing session",
+                    )
                     dragSession = null
                 }
         } else {
@@ -298,6 +338,8 @@ class ResizeTaskPositioner(
             .setTimeout(LONG_CUJ_TIMEOUT_MS)
 
     companion object {
+        private const val TAG = "ResizeTaskPositioner"
+
         // Timeout used for resize and drag CUJs, this is longer than the default timeout to avoid
         // timing out in the middle of a resize or drag action.
         private val LONG_CUJ_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(/* duration= */ 10L)

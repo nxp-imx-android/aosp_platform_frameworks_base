@@ -1429,10 +1429,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 Runnable interruptDragCallback);
     }
 
-    private static void logD(@NonNull String msg, @NonNull Object... args) {
-        ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: %s", TAG, String.format(msg, args));
-    }
-
 
     // InputEventReceiver to listen for touch input outside of caption bounds
     class EventReceiver extends InputEventReceiver {
@@ -2170,13 +2166,15 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         public void onMaximizeOrRestore(int taskId,
                 @NotNull ToggleTaskSizeInteraction.AmbiguousSource ambiguousSource,
                 @NotNull InputMethod inputMethod) {
-            logD("Using DefaultWindowDecorationActions to maximize or restore task=%d", taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to maximize or restore task=%d",
+                    taskId);
             mViewModel.onToggleSizeInteraction(taskId, ambiguousSource, inputMethod);
         }
 
         @Override
         public void onMinimize(@NonNull RunningTaskInfo taskInfo) {
-            logD("Using DefaultWindowDecorationActions to minimize task=%d", taskInfo.taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to minimize task=%d",
+                    taskInfo.taskId);
             final int nextFocusedTaskId =
                     mDesktopTasksController.getTopTask(
                         taskInfo.getDisplayId(),
@@ -2190,80 +2188,85 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         @Override
         public void onOpenIntent(int taskId, @NotNull Intent intent) {
-            logD("Using DefaultWindowDecorationActions to open intent=%s for task=%d",
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to open intent=%s for task=%d",
                     intent.toString(), taskId);
             mViewModel.openIntent(taskId, intent);
         }
 
         @Override
         public void onClose(@NonNull RunningTaskInfo taskInfo) {
-            logD("Using DefaultWindowDecorationActions to close task=%d", taskInfo.taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to close task=%d",
+                    taskInfo.taskId);
             mViewModel.closeTask(taskInfo, /* forceKeepDesktop= */ false);
         }
 
         @Override
         public void onClose(@NonNull RunningTaskInfo taskInfo, boolean forceKeepDesktop) {
-            logD("Using DefaultWindowDecorationActions to close task=%d with "
-                            + "forceKeepDesktop=%b", taskInfo.taskId, forceKeepDesktop);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to close task=%d with "
+                    + "forceKeepDesktop=%b", taskInfo.taskId, forceKeepDesktop);
             mViewModel.closeTask(taskInfo, forceKeepDesktop);
         }
 
         @Override
         public void onImmersiveOrRestore(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
-            logD("Using DefaultWindowDecorationActions to enter or restore from immersive for "
-                            + "task=%d", taskInfo.taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to enter or restore from "
+                    + "immersive for task=%d", taskInfo.taskId);
             mViewModel.onEnterOrExitImmersive(taskInfo);
         }
 
         @Override
         public void onLeftSnap(int taskId,
                 @NonNull DesktopModeEventLogger.Companion.InputMethod inputMethod) {
-            logD("Using DefaultWindowDecorationActions to snap left task=%d", taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to snap left task=%d", taskId);
             mViewModel.onSnapResize(taskId, /* isLeft= */ true, inputMethod, /* fromMenu= */ true);
         }
 
         @Override
         public void onRightSnap(int taskId,
                 @NonNull DesktopModeEventLogger.Companion.InputMethod inputMethod) {
-            logD("Using DefaultWindowDecorationActions to snap right task=%d", taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to snap right task=%d", taskId);
             mViewModel.onSnapResize(taskId, /* isLeft= */ false, inputMethod, /* fromMenu= */ true);
         }
 
         @Override
         public void onToFullscreen(int taskId) {
-            logD("Using DefaultWindowDecorationActions to enter fullscreen for task=%d", taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to enter fullscreen for task=%d",
+                    taskId);
             mViewModel.moveToFullscreen(taskId);
         }
 
         @Override
         public void onToSplitScreen(int taskId) {
-            logD("Using DefaultWindowDecorationActions to enter split for task=%d", taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to enter split for task=%d",
+                    taskId);
             mViewModel.moveToSplit(taskId);
         }
 
         @Override
         public void onToDesktop(int taskId, @NonNull DesktopModeTransitionSource transitionSource) {
-            logD("Using DefaultWindowDecorationActions to enter desktop for task=%d", taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to enter desktop for task=%d",
+                    taskId);
             mViewModel.moveToDesktop(taskId, transitionSource);
         }
 
         @Override
         public void onToFloat(int taskId) {
-            logD("Using DefaultWindowDecorationActions to enter float for task=%d", taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to enter float for task=%d",
+                    taskId);
             mViewModel.moveToFloat(taskId);
         }
 
         @Override
         public void onOpenInBrowser(int taskId, @NonNull Intent intent) {
-            logD("Using DefaultWindowDecorationActions to open in browser for task=%d using "
-                            + "intent=%s", taskId, intent.toString());
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to open in browser for task=%d "
+                    + "using intent=%s", taskId, intent.toString());
             mViewModel.openInBrowser(taskId, intent);
         }
 
         @Override
         public void onSwitchToBrowser(@NonNull RunningTaskInfo taskInfo, @NonNull Intent intent) {
-            logD("Using DefaultWindowDecorationActions to switch to browser for task=%d using "
-                            + "intent=%s", taskInfo.taskId, intent.toString());
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to switch to browser for "
+                    + "task=%d using intent=%s", taskInfo.taskId, intent.toString());
             onOpenInBrowser(taskInfo.taskId, intent);
             // Launching a browser happens asynchronously, so there can be a race between the
             // browser launch vs. the app close. We here forcefully keep the current desktop
@@ -2278,7 +2281,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         @Override
         public void onOpenInstance(@NonNull ActivityManager.RunningTaskInfo taskInfo,
                 int requestedTaskId) {
-            logD("Using DefaultWindowDecorationActions to open new instance for task=%d",
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to open new instance for task=%d",
                     taskInfo.taskId);
             mDesktopTasksController.openInstance(taskInfo, requestedTaskId);
             mDesktopModeUiEventLogger.log(taskInfo,
@@ -2287,42 +2290,44 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         @Override
         public void onManageWindows(int taskId) {
-            logD("Using DefaultWindowDecorationActions to opening manage windows for task=%d",
-                    taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to opening manage windows for "
+                    + "task=%d", taskId);
             mViewModel.onManageWindows(taskId);
         }
 
         @Override
         public void onRestart(int taskId) {
-            logD("Using DefaultWindowDecorationActions to show restart dialog for task=%d",
-                    taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to show restart dialog for "
+                    + "task=%d", taskId);
             mCompatUI.sendCompatUIRequest(new CompatUIRequests.DisplayCompatShowRestartDialog(
                     taskId));
         }
 
         @Override
         public void onChangeAspectRatio(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
-            logD("Using DefaultWindowDecorationActions to launch aspect ratio settings for task=%d",
-                    taskInfo.taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to launch aspect ratio "
+                            + "settings for task=%d", taskInfo.taskId);
             CompatUIController.launchUserAspectRatioSettingsNoAnimation(mContext, taskInfo);
         }
 
         @Override
         public void onLaunchGameControls(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
-            logD("Using DefaultWindowDecorationActions to launch game controls for task=%d",
-                    taskInfo.taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to launch game controls for "
+                    + "task=%d", taskInfo.taskId);
             GameControlsHelper.onLaunchGameControls(mContext, taskInfo);
         }
 
         @Override
         public void onNewWindow(int taskId) {
-            logD("Using DefaultWindowDecorationActions to launch new window for task=%d", taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to launch new window for task=%d",
+                    taskId);
             mViewModel.launchNewWindow(taskId);
         }
 
         @Override
         public void onOpenHandleMenu(int taskId) {
-            logD("Using DefaultWindowDecorationActions to open handle menu for task=%d", taskId);
+            WdLog.logD(TAG, "Using DefaultWindowDecorationActions to open handle menu for task=%d",
+                    taskId);
             mViewModel.openHandleMenu(taskId);
         }
     }

@@ -45,6 +45,7 @@ class MultiDisplayTaskMover(
         displayIds.clear()
         topology ?: return
         displayIds.addAll(topology.allNodesIdMap().keys)
+        logD(TAG, "onTopologyChanged: displayIds=%s", displayIds)
     }
 
     override fun onMoveUpdate(
@@ -59,6 +60,11 @@ class MultiDisplayTaskMover(
             DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue &&
                 session.pendingBoundsRestoreTransition != null
         ) {
+            logD(
+                TAG,
+                session.windowDecoration.taskInfo.taskId,
+                "onMoveUpdate: deferring move due to ongoing bounds restore transition",
+            )
             return null
         }
 
@@ -79,6 +85,12 @@ class MultiDisplayTaskMover(
                     val currentBounds =
                         session.windowDecoration.taskInfo.configuration.windowConfiguration.bounds
                     val restoredBounds = calculateOnMoveRestoredBounds(prevBounds, currentBounds, x)
+                    logD(
+                        TAG,
+                        session.windowDecoration.taskInfo.taskId,
+                        "onMoveUpdate: restoredBounds=%s",
+                        restoredBounds,
+                    )
                     session.taskBoundsAtDragStart.set(restoredBounds)
 
                     WindowContainerTransaction()
@@ -98,6 +110,14 @@ class MultiDisplayTaskMover(
         val currentDisplayLayout = displayController.getDisplayLayout(displayId)
 
         if (startDisplayLayout == null || currentDisplayLayout == null) {
+            logD(
+                TAG,
+                session.windowDecoration.taskInfo.taskId,
+                "onMoveUpdate: falling back to single-display move (startLayout=%s, " +
+                    "currentLayout=%s)",
+                startDisplayLayout,
+                currentDisplayLayout,
+            )
             // Fall back to single-display drag behavior if any display layout is unavailable.
             DragPositioningCallbackUtility.setPositionOnDrag(
                 session.windowDecoration,
@@ -155,6 +175,14 @@ class MultiDisplayTaskMover(
     }
 
     override fun onMoveEnd(session: DragSession, displayId: Int, x: Float, y: Float) {
+        logD(
+            TAG,
+            session.windowDecoration.taskInfo.taskId,
+            "onMoveEnd: displayId=%d, x=%f, y=%f",
+            displayId,
+            x,
+            y,
+        )
         val startDisplayLayout =
             displayController.getDisplayLayout(session.windowDecoration.taskInfo.displayId)
         val currentDisplayLayout = displayController.getDisplayLayout(displayId)
@@ -164,6 +192,15 @@ class MultiDisplayTaskMover(
                 startDisplayLayout == null ||
                 currentDisplayLayout == null
         ) {
+            logD(
+                TAG,
+                session.windowDecoration.taskInfo.taskId,
+                "onMoveEnd: falling back to single-display move (sameDisplay=%b, " +
+                    "startLayout=%s, currentLayout=%s)",
+                session.windowDecoration.taskInfo.displayId == displayId,
+                startDisplayLayout,
+                currentDisplayLayout,
+            )
             // Fall back to single-display drag behavior if:
             // 1. The drag destination display is the same as the start display. This prevents
             // unnecessary animations caused by minor width/height changes due to DPI scaling.
@@ -194,6 +231,12 @@ class MultiDisplayTaskMover(
                 )
             )
         }
+        logD(
+            TAG,
+            session.windowDecoration.taskInfo.taskId,
+            "onMoveEnd: bounds=%s",
+            session.repositionTaskBounds,
+        )
     }
 
     private fun calculateOnMoveRestoredBounds(
@@ -214,5 +257,9 @@ class MultiDisplayTaskMover(
             (newLeft + prevWidth).toInt(),
             currentBounds.top + prevHeight,
         )
+    }
+
+    companion object {
+        private const val TAG = "MultiDisplayTaskMover"
     }
 }
