@@ -568,7 +568,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
         final DreamOverlayComponent dreamOverlayComponent = mDreamOverlayComponentFactory.create(
                 mLifecycleOwner, complicationComponent.getComplicationHostViewController(),
-                mTouchInsetManager, viewModel);
+                mTouchInsetManager, viewModel, viewModel.getSwipeDelegate());
 
         final ArrayList<TouchHandler> touchHandlers = new ArrayList<>(
                 List.of(dreamComplicationComponent.getHideComplicationTouchHandler()));
@@ -589,6 +589,7 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
 
         if (dreamsSwitcher()) {
             touchHandlers.add(dreamOverlayComponent.getLongPressTouchHandler());
+            touchHandlers.add(dreamOverlayComponent.getEdgeSwipeTouchHandler());
         }
 
         final AmbientTouchComponent ambientTouchComponent = mAmbientTouchComponentFactory.create(

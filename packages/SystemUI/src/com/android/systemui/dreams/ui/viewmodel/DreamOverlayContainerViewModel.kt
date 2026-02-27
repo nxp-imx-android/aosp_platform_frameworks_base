@@ -19,8 +19,10 @@ package com.android.systemui.dreams.ui.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.app.tracing.coroutines.coroutineScopeTraced
 import com.android.systemui.dreams.domain.interactor.DreamInteractor
 import com.android.systemui.dreams.shared.model.AccessibilityActionModel
+import com.android.systemui.dreams.touch.DreamSwipeDelegate
 import com.android.systemui.dreams.ui.DreamSwitcherDialogDelegate
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
@@ -35,7 +37,11 @@ class DreamOverlayContainerViewModel
 constructor(
     dreamInteractor: DreamInteractor,
     private val dialogDelegateFactory: DreamSwitcherDialogDelegate.Factory,
+    edgeSwipeViewModelFactory: DreamEdgeSwipeViewModel.Factory,
 ) : HydratedActivatable(enableEnqueuedActivations = true), DreamDialogController {
+    private companion object {
+        const val TAG = "DreamOverlayContainerViewModel"
+    }
 
     private val dialogDelegate: DreamSwitcherDialogDelegate by lazy {
         dialogDelegateFactory.create(this)
@@ -43,9 +49,16 @@ constructor(
 
     private var currentDialog: SystemUIDialog? = null
 
+    /** Whether the dream switcher dialog is currently visible to the user. */
     var dialogShowing: Boolean by mutableStateOf(false)
         private set
 
+    /**
+     * An optional [AccessibilityActionModel] that provides an accessibility action for opening the
+     * dream switcher.
+     *
+     * This will be `null` if the ability to switch dreams is currently disabled.
+     */
     val dreamSwitcherAction: AccessibilityActionModel? by
         dreamInteractor.canSwitchDreams
             .map { canSwitch ->
@@ -57,8 +70,16 @@ constructor(
             }
             .hydratedStateOf(initialValue = null)
 
+    /** Whether the user is currently allowed to switch between different dream types. */
     val canSwitchDreams: Boolean by
         dreamInteractor.canSwitchDreams.hydratedStateOf(initialValue = false)
+
+    /** Child ViewModel which handles edge swipe gestures to switch dreams */
+    val edgeSwipeViewModel by lazy { edgeSwipeViewModelFactory.create() }
+
+    /** Delegate for handling edge swipe gesture events. */
+    val swipeDelegate: DreamSwipeDelegate
+        get() = edgeSwipeViewModel
 
     override fun showDialog(): Boolean {
         if (canSwitchDreams && currentDialog == null) {
@@ -78,6 +99,10 @@ constructor(
 
     override fun dismissDialog() {
         currentDialog?.dismiss()
+    }
+
+    override suspend fun onActivated() {
+        coroutineScopeTraced("$TAG#onActivated") { edgeSwipeViewModel.activate() }
     }
 
     override suspend fun onDeactivated() {

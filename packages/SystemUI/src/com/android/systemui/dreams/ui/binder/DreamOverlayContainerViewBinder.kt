@@ -17,12 +17,17 @@
 package com.android.systemui.dreams.ui.binder
 
 import android.view.View
+import android.view.ViewStub
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.ViewCompat
+import com.android.compose.theme.PlatformTheme
+import com.android.systemui.dream.ui.composable.EdgeSwipeIndicator
 import com.android.systemui.dreams.ui.viewmodel.DreamOverlayContainerViewModel
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
 import com.android.systemui.lifecycle.viewModel
+import com.android.systemui.res.R
 import java.util.function.Consumer
 
 object DreamOverlayContainerViewBinder {
@@ -42,6 +47,8 @@ object DreamOverlayContainerViewBinder {
                  */
                 factory = { viewModel },
             ) { _ ->
+                createEdgeSwipeIndicatorView(view, viewModel)
+
                 var currentActionId: Int? = null
                 view.setSnapshotBinding {
                     val actionModel = viewModel.dreamSwitcherAction
@@ -65,6 +72,21 @@ object DreamOverlayContainerViewBinder {
                     onDialogShowingChanged.accept(viewModel.dialogShowing)
                 }
             }
+        }
+    }
+
+    private fun createEdgeSwipeIndicatorView(
+        view: View,
+        viewModel: DreamOverlayContainerViewModel,
+    ) {
+        var composeView = view.findViewById<ComposeView>(R.id.edge_swipe_indicator_compose_view)
+        if (composeView == null) {
+            val stub = view.findViewById<ViewStub>(R.id.edge_swipe_indicator_stub)
+            composeView = stub?.inflate() as? ComposeView
+        }
+
+        composeView?.setContent {
+            PlatformTheme { EdgeSwipeIndicator(viewModel.edgeSwipeViewModel) }
         }
     }
 }
