@@ -23,7 +23,7 @@ import android.graphics.RectF
 import android.view.View
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
@@ -36,7 +36,6 @@ import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewM
 import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
-import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityState
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
@@ -47,7 +46,7 @@ import org.mockito.Mockito.mock
 
 class FakeHomeStatusBarViewModel(
     override val operatorNameViewModel: StatusBarOperatorNameViewModel
-) : HomeStatusBarViewModel, HydratedActivatable() {
+) : HomeStatusBarViewModel, ExclusiveActivatable() {
     private val hydrator = Hydrator("FakeHomeStatusBarViewModel.hydrator")
 
     override val areNotificationsLightsOut = MutableStateFlow(false)
@@ -105,32 +104,21 @@ class FakeHomeStatusBarViewModel(
                 mock(AppHandlesViewModel::class.java)
         }
 
-    private val shouldShowOperatorNameViewSource = MutableStateFlow(false)
-    override val shouldShowOperatorNameView: Boolean by
-        shouldShowOperatorNameViewSource.hydratedStateOf()
+    override val shouldShowOperatorNameView = MutableStateFlow(false)
 
-    private val isClockVisibleSource =
-        MutableStateFlow(
-            VisibilityModel(visibility = VisibilityState.GONE, shouldAnimateChange = false)
-        )
-    override val isClockVisible by isClockVisibleSource.hydratedStateOf()
+    override val isClockVisible =
+        MutableStateFlow(VisibilityModel(visibility = View.GONE, shouldAnimateChange = false))
 
-    private val isNotificationIconContainerVisibleSource =
-        MutableStateFlow(
-            VisibilityModel(visibility = VisibilityState.GONE, shouldAnimateChange = false)
-        )
-    override val isNotificationIconContainerVisible: VisibilityModel by
-        isNotificationIconContainerVisibleSource.hydratedStateOf()
+    override val isNotificationIconContainerVisible =
+        MutableStateFlow(VisibilityModel(visibility = View.GONE, shouldAnimateChange = false))
 
-    private val systemInfoCombinedVisSource =
+    override val systemInfoCombinedVis =
         MutableStateFlow(
             SystemInfoCombinedVisibilityModel(
-                VisibilityModel(visibility = VisibilityState.GONE, shouldAnimateChange = false),
+                VisibilityModel(visibility = View.GONE, shouldAnimateChange = false),
                 Idle,
             )
         )
-    override val systemInfoCombinedVis: SystemInfoCombinedVisibilityModel by
-        systemInfoCombinedVisSource.hydratedStateOf()
 
     override val iconBlockList: MutableStateFlow<List<String>> = MutableStateFlow(listOf())
 

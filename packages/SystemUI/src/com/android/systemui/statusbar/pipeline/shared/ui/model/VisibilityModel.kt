@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,34 +16,26 @@
 
 package com.android.systemui.statusbar.pipeline.shared.ui.model
 
+import android.view.View
 import com.android.systemui.log.table.Diffable
 import com.android.systemui.log.table.TableRowLogger
+import com.android.systemui.util.visibilityString
 
-/** The three visibility states required by Views. */
-enum class VisibilityState {
-    /** The view is visible. */
-    VISIBLE,
-    /** The view is invisible, but still takes up space. */
-    INVISIBLE,
-    /** The view is gone, and takes up no space. */
-    GONE,
-}
-
-/** Models the current visibility for a specific child of the status bar. */
+/** Models the current visibility for a specific child view of status bar. */
 data class VisibilityModel(
-    val visibility: VisibilityState,
+    @View.Visibility val visibility: Int,
     /** True if a visibility change should be animated. */
     val shouldAnimateChange: Boolean,
 ) : Diffable<VisibilityModel> {
     override fun logDiffs(prevVal: VisibilityModel, row: TableRowLogger) {
         if (visibility != prevVal.visibility) {
-            row.logChange(COL_VIS, visibility.name)
+            row.logChange(COL_VIS, visibilityString(visibility))
         }
         // Purposefully don't log `shouldAnimate`, since it adds noise to logs without being useful
     }
 
     override fun logFull(row: TableRowLogger) {
-        row.logChange(COL_VIS, visibility.name)
+        row.logChange(COL_VIS, visibilityString(visibility))
     }
 
     companion object {

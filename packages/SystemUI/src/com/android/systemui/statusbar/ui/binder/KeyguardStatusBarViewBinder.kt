@@ -31,7 +31,6 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.RunningChipAnim
 import com.android.systemui.statusbar.phone.KeyguardStatusBarView
 import com.android.systemui.statusbar.phone.fragment.StatusBarSystemEventDefaultAnimator
-import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityState
 import com.android.systemui.statusbar.ui.viewmodel.KeyguardStatusBarViewModel
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -76,12 +75,7 @@ object KeyguardStatusBarViewBinder {
                     val (baseVis, animState) = viewModel.systemInfoCombinedVis
 
                     // Always update base visibility first
-                    systemInfoView.visibility =
-                        when (baseVis.visibility) {
-                            VisibilityState.VISIBLE -> View.VISIBLE
-                            VisibilityState.INVISIBLE -> View.INVISIBLE
-                            VisibilityState.GONE -> View.GONE
-                        }
+                    systemInfoView.visibility = baseVis.visibility
 
                     if (animState != lastAnimState) {
                         currentAnimator?.cancel()
