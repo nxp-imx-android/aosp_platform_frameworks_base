@@ -44,7 +44,6 @@ import static com.android.server.wallpaper.WallpaperUtils.WALLPAPER_LOCK_ORIG;
 import static com.android.server.wallpaper.WallpaperUtils.getWallpaperDir;
 import static com.android.server.wallpaper.WallpaperUtils.makeWallpaperIdLocked;
 import static com.android.server.wm.DesktopModeHelper.isDeviceEligibleForDesktopExperienceWallpaper;
-import static com.android.window.flags.Flags.avoidRebindingIntentionallyDisconnectedWallpaper;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -880,8 +879,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     return;
                 }
 
-                if (avoidRebindingIntentionallyDisconnectedWallpaper()
-                        && mWallpaper.connection == null) {
+                if (mWallpaper.connection == null) {
                     Slog.w(TAG, "Trying to reset an intentionally disconnected wallpaper!");
                     return;
                 }
@@ -1063,8 +1061,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     return;
                 }
 
-                if (avoidRebindingIntentionallyDisconnectedWallpaper()
-                        && mWallpaper.connection == null) {
+                if (mWallpaper.connection == null) {
                     Slog.w(TAG, "Trying to rebind an intentionally disconnected wallpaper!");
                     return;
                 }
