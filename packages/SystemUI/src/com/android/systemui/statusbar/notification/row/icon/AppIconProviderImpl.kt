@@ -21,7 +21,6 @@ import android.app.ActivityManager
 import android.app.Flags.notificationsRedesignThemedAppIcons
 import android.content.Context
 import android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES
-import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -39,6 +38,7 @@ import com.android.systemui.Dumpable
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
+import com.android.systemui.notifications.content.icon.AppIconProvider
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.util.asIndenting
 import com.android.systemui.util.dpToPx
@@ -48,36 +48,6 @@ import com.android.users.UserType
 import java.io.PrintWriter
 import javax.inject.Inject
 import kotlin.math.ceil
-
-/** A provider used to cache and fetch app icons used by notifications. */
-interface AppIconProvider {
-    /**
-     * Loads the icon corresponding to [packageName] into cache, or fetches it from there if already
-     * present. This should only be called from the background.
-     */
-    @Throws(NameNotFoundException::class)
-    @WorkerThread
-    fun getOrFetchAppIcon(
-        packageName: String,
-        userHandle: UserHandle,
-        instanceKey: String,
-    ): Drawable
-
-    /**
-     * Loads the skeleton (black and white)-themed icon corresponding to [packageName] into cache,
-     * or fetches it from there if already present. This should only be called from the background.
-     */
-    @Throws(NameNotFoundException::class)
-    @WorkerThread
-    fun getOrFetchSkeletonAppIcon(packageName: String, userHandle: UserHandle): Drawable
-
-    /**
-     * Mark all the entries in the cache that are NOT in [wantedPackages] to be cleared. If they're
-     * still not needed on the next call of this method (made after a timeout of 1s, in case they
-     * happen more frequently than that), they will be purged. This can be done from any thread.
-     */
-    fun purgeCache(wantedPackages: Collection<String>)
-}
 
 // TODO: b/476412775 - This class shouldn't be open, instead the open methods should be moved to
 //  an interface we can inject.

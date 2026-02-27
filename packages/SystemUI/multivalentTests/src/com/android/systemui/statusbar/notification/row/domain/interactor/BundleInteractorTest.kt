@@ -31,13 +31,13 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.controls.dagger.ControlsComponentTest.Companion.eq
 import com.android.systemui.controls.ui.ControlActionCoordinatorImplTest.Companion.any
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.notifications.content.icon.appIconProvider
+import com.android.systemui.notifications.content.icon.mockAppIconProvider
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
 import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.BundleRepository
 import com.android.systemui.statusbar.notification.row.data.repository.testBundleRepository
 import com.android.systemui.statusbar.notification.row.domain.bundleInteractor
-import com.android.systemui.statusbar.notification.row.icon.appIconProvider
-import com.android.systemui.statusbar.notification.row.icon.mockAppIconProvider
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.systemui.util.time.systemClock

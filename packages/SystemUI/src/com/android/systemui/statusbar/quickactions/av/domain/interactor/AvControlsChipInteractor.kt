@@ -26,11 +26,11 @@ import android.hardware.SensorPrivacyManager
 import android.os.UserHandle
 import android.permission.PermissionManager
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.notifications.content.icon.AppIconProvider
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.PrivacyChipRepository
 import com.android.systemui.statusbar.data.repository.StatusBarModePerDisplayRepository
-import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.policy.IndividualSensorPrivacyController
 import com.android.systemui.statusbar.quickactions.av.shared.model.AvControlsChipModel
 import com.android.systemui.statusbar.quickactions.av.shared.model.Sensor
