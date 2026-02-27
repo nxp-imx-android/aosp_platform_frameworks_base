@@ -36,7 +36,6 @@ import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
 import com.android.systemui.communal.shared.model.CommunalScenes
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepositorySpy
@@ -245,7 +244,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
             val primaryBouncerShowing by collectLastValue(keyguardInteractor.primaryBouncerShowing)
             fakeKeyguardRepository.setKeyguardShowing(true)
             fakeKeyguardBouncerRepository.setPrimaryShow(true)
-            fakeDeviceEntryRepository.setLockscreenEnabled(false)
+            fakeKeyguardRepository.setKeyguardEnabled(false)
             runCurrent()
             Truth.assertThat(primaryBouncerShowing).isTrue()
 

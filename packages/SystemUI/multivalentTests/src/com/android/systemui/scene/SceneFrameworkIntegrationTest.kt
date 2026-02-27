@@ -36,7 +36,6 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.bouncer.ui.viewmodel.PasswordBouncerViewModel
 import com.android.systemui.bouncer.ui.viewmodel.PinBouncerViewModel
 import com.android.systemui.bouncer.ui.viewmodel.bouncerOverlayContentViewModel
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.integration.SystemUiIntegrationTest
@@ -475,7 +474,7 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
         // Set the lockscreen enabled bit _before_ set the auth method as the code picks up on the
         // lockscreen enabled bit _after_ the auth method is changed and the lockscreen enabled bit
         // is not an observable that can trigger a new evaluation.
-        fakeDeviceEntryRepository.setLockscreenEnabled(enableLockscreen)
+        fakeKeyguardRepository.setKeyguardEnabled(enableLockscreen)
         fakeAuthenticationRepository.setAuthenticationMethod(authMethod)
 
         // TODO(b/466145787): Merge this state with the one in DeviceEntryRepository.

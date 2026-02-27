@@ -27,8 +27,8 @@ import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
@@ -158,7 +158,7 @@ class QuickSettingsUserActionsViewModelTest : SysuiTestCase() {
             val actions by collectLastValue(underTest.actions)
             val homeScene by collectLastValue(homeSceneFamilyResolver.resolvedScene)
             editModeViewModel.stopEditing()
-            fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            fakeKeyguardRepository.setKeyguardEnabled(true)
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.None)
 
             assertThat(actions)

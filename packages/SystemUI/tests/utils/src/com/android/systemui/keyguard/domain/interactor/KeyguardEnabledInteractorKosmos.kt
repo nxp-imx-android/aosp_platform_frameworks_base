@@ -24,6 +24,7 @@ import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 
 val Kosmos.keyguardEnabledInteractor: KeyguardEnabledInteractor by
@@ -37,8 +38,9 @@ val Kosmos.keyguardEnabledInteractor: KeyguardEnabledInteractor by
             lockPatternUtils,
             { keyguardDismissTransitionInteractor },
             internalTransitionInteractor = internalKeyguardTransitionInteractor,
-            deviceEntryInteractor = deviceEntryInteractor,
+            deviceEntryInteractor = { deviceEntryInteractor },
             authenticationInteractor = authenticationInteractor,
             keyguardServiceShowLockscreenInteractor = keyguardServiceShowLockscreenInteractor,
+            sceneInteractor = { sceneInteractor },
         )
     }

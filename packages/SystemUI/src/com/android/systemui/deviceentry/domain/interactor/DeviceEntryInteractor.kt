@@ -32,6 +32,7 @@ import com.android.systemui.deviceentry.data.repository.DeviceEntryRepository
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
 import com.android.systemui.keyguard.DismissCallbackRegistry
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.KeyguardState
@@ -57,7 +58,6 @@ import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -65,7 +65,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -89,6 +88,7 @@ constructor(
     private val sceneBackInteractor: Lazy<SceneBackInteractor>,
     @SceneFrameworkTableLog private val tableLogBuffer: Lazy<TableLogBuffer>,
     private val keyguardDismissActionInteractor: Lazy<KeyguardDismissActionInteractor>,
+    private val keyguardEnabledInteractor: Lazy<KeyguardEnabledInteractor>,
     private val statusBarStateController: SysuiStatusBarStateController,
     private val uiEventLogger: UiEventLogger,
     private val keyguardInteractor: KeyguardInteractor,
@@ -206,10 +206,6 @@ constructor(
             )
     }
 
-    val isLockscreenEnabled: Flow<Boolean> by lazy {
-        repository.get().isLockscreenEnabled.onStart { refreshLockscreenEnabled() }
-    }
-
     /**
      * Whether it's currently possible to swipe up to enter the device without requiring
      * authentication or when the device is already authenticated using a passive authentication
@@ -227,11 +223,11 @@ constructor(
                 authenticationInteractor.get().authenticationMethod.map {
                     it == AuthenticationMethodModel.None
                 },
-                isLockscreenEnabled,
+                keyguardEnabledInteractor.get().isKeyguardEnabled,
                 deviceUnlockedInteractor.get().deviceUnlockStatus,
                 isDeviceEntered,
-            ) { isNoneAuthMethod, isLockscreenEnabled, deviceUnlockStatus, isDeviceEntered ->
-                val isSwipeAuthMethod = isNoneAuthMethod && isLockscreenEnabled
+            ) { isNoneAuthMethod, isKeyguardEnabled, deviceUnlockStatus, isDeviceEntered ->
+                val isSwipeAuthMethod = isNoneAuthMethod && isKeyguardEnabled
                 (isSwipeAuthMethod ||
                     (deviceUnlockStatus.isUnlocked &&
                         deviceUnlockStatus.deviceUnlockSource?.dismissesLockscreen == false)) &&
@@ -347,26 +343,6 @@ constructor(
             authenticationInteractor.get().authenticationMethod.value.isSecure
     }
 
-    /**
-     * Whether the lockscreen is enabled for the current user. This is `true` whenever the user has
-     * chosen any secure authentication method and even if they set the lockscreen to be dismissed
-     * when the user swipes on it.
-     */
-    suspend fun isLockscreenEnabled(): Boolean {
-        return repository.get().isLockscreenEnabled()
-    }
-
-    /**
-     * Forces a refresh of the value of [isLockscreenEnabled] such that the flow emits the latest
-     * value.
-     *
-     * Without calling this method, the flow will have a stale value unless the collector is removed
-     * and re-added.
-     */
-    suspend fun refreshLockscreenEnabled() {
-        isLockscreenEnabled()
-    }
-
     /** Locks the device instantly. */
     fun lockNow(debuggingReason: String) {
         deviceUnlockedInteractor.get().lockNow(debuggingReason)
@@ -374,7 +350,10 @@ constructor(
         applicationScope.launch {
             // The device unlock interactor can't lock the device if the device has SWIPE as screen
             // lock, so we need to manually transition to lockscreen in this case.
-            if (isLockscreenEnabled() && !isAuthenticationRequired()) {
+            if (
+                keyguardEnabledInteractor.get().isKeyguardEnabledAndNotSuppressed() &&
+                    !isAuthenticationRequired()
+            ) {
                 sceneInteractor.get().resolveSceneFamilyOrNull(SceneFamilies.Home)?.value?.let {
                     resolvedScene ->
                     // If the resolved scene is Gone, we should always show the lockscreen.

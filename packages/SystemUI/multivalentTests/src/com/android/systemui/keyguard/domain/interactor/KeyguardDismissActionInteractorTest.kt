@@ -25,7 +25,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
@@ -320,7 +319,7 @@ class KeyguardDismissActionInteractorTest : SysuiTestCase() {
             var wasDismissActionInvoked = false
             var wasCancelActionInvoked = false
             fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.None)
-            fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            fakeKeyguardRepository.setKeyguardEnabled(true)
             assertThat(canSwipeToEnter).isTrue()
             sceneInteractor.changeScene(Scenes.QuickSettings, "")
             transitionState.value = ObservableTransitionState.Idle(Scenes.QuickSettings)
