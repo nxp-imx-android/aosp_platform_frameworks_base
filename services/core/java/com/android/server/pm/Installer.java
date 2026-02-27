@@ -462,7 +462,7 @@ public class Installer extends SystemService {
     }
 
     public void getAppSize(String uuid, String[] packageNames, int userId, int flags, int appId,
-            long[] ceDataInodes, String[] codePaths, PackageStats stats)
+            int pccId, long[] ceDataInodes, String[] codePaths, PackageStats stats)
             throws InstallerException {
         if (!checkBeforeRemote()) return;
         if (codePaths != null) {
@@ -472,7 +472,7 @@ public class Installer extends SystemService {
         }
         try {
             final long[] res = mInstalld.getAppSize(uuid, packageNames, userId, flags,
-                    appId, ceDataInodes, codePaths);
+                    appId, pccId, ceDataInodes, codePaths);
             stats.codeSize += res[0];
             stats.dataSize += res[1];
             stats.cacheSize += res[2];
@@ -484,11 +484,14 @@ public class Installer extends SystemService {
         }
     }
 
-    public void getUserSize(String uuid, int userId, int flags, int[] appIds, PackageStats stats)
-            throws InstallerException {
+    /**
+     * Populates stats for a user.
+     */
+    public void getUserSize(String uuid, int userId, int flags, int[] appIds, int[] pccIds,
+            PackageStats stats) throws InstallerException {
         if (!checkBeforeRemote()) return;
         try {
-            final long[] res = mInstalld.getUserSize(uuid, userId, flags, appIds);
+            final long[] res = mInstalld.getUserSize(uuid, userId, flags, appIds, pccIds);
             stats.codeSize += res[0];
             stats.dataSize += res[1];
             stats.cacheSize += res[2];
