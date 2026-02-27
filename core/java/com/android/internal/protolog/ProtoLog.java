@@ -268,8 +268,7 @@ public class ProtoLog {
             if (android.tracing.Flags.protologAsyncInit()) {
                 initAsync(group);
                 instance = sController.mProtoLogInstance;
-                ProtoLog.w(PROTOLOG_GROUP,
-                        "ProtoLog used before initialization, calling initAsync");
+                Log.w(LOG_TAG, "ProtoLog used before initialization, calling initAsync");
             } else {
                 Log.wtfStack(LOG_TAG,
                         "Trying to use ProtoLog before it is initialized in this process.");
