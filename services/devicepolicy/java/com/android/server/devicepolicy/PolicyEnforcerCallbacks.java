@@ -82,7 +82,7 @@ public final class PolicyEnforcerCallbacks {
         return AndroidFuture.completedFuture(true);
     }
 
-    static CompletableFuture<Boolean> setAutoTimeZonePolicy(
+    public static CompletableFuture<Boolean> setAutoTimeZonePolicy(
             @Nullable Integer policy, @NonNull Context context, int userId,
             @NonNull PolicyKey policyKey) {
         if (!Flags.setAutoTimeZoneEnabledCoexistence()) {
