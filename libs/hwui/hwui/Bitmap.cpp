@@ -64,8 +64,6 @@
 #include <format>
 #include <limits>
 
-namespace hwui_flags = com::android::graphics::hwui::flags;
-
 namespace android {
 
 #ifdef __ANDROID__
@@ -151,8 +149,7 @@ static sk_sp<Bitmap> allocateBitmap(SkBitmap* bitmap, AllocPixelRef alloc) {
 
 std::string Bitmap::getAshmemId(const char* tag, uint64_t bitmapId,
                                 int width, int height, size_t size) {
-    if (!hwui_flags::bitmap_ashmem_long_name() ||
-        !uirenderer::Properties::bitmapAshmemLongName) {
+    if (!uirenderer::Properties::bitmapAshmemLongName) {
         return "bitmap";
     }
     static std::string sCmdline = [] {
