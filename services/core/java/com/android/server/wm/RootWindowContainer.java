@@ -2783,7 +2783,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
     }
 
-    private void setShouldShowSystemDecorationsForNewDisplay(DisplayContent displayContent) {
+    void setShouldShowSystemDecorationsForNewDisplay(DisplayContent displayContent) {
         if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
             displayContent.updateShouldShowSystemDecorations();
             final boolean inTopology = mWindowManager.mDisplayWindowSettings
