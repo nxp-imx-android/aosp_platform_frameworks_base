@@ -49,9 +49,11 @@ class DisplayUpdater {
     private static final String TAG = "DisplayUpdater";
 
     private final RootWindowContainer mRootWindowContainer;
+    private final DisplayUnblocker mDisplayUnblocker;
 
-    DisplayUpdater(RootWindowContainer rootWindowContainer) {
+    DisplayUpdater(RootWindowContainer rootWindowContainer, DisplayUnblocker displayUnblocker) {
         mRootWindowContainer = rootWindowContainer;
+        mDisplayUnblocker = displayUnblocker;
         mRootWindowContainer.mDisplayManager.registerDisplayListener(new DisplayUpdatesListener(),
                 mRootWindowContainer.mService.mUiHandler);
     }
@@ -78,6 +80,7 @@ class DisplayUpdater {
                         + displays.displayInfos());
             }
 
+            mDisplayUnblocker.onCollectionStarted(transition, displays);
             mRootWindowContainer.mWmService.mAtmService.mChainTracker.start("dispChg", transition);
             mRootWindowContainer.mWmService.mAtmService.deferWindowLayout();
 
@@ -89,6 +92,7 @@ class DisplayUpdater {
                 updateContentModeIfNeeded(shouldStartTransition ? transition : null);
 
                 if (shouldStartTransition) {
+                    mDisplayUnblocker.onDisplayChangesApplied(transition);
                     mRootWindowContainer.mTransitionController.requestStartTransition(transition,
                             /* startTask= */ null, /* remoteTransition= */ null, displayChanges);
                 } else {

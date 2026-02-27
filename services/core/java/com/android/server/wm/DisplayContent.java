@@ -3474,7 +3474,14 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
             if (physicalDisplayChanged) {
                 mDisplayPolicy.physicalDisplayUpdated();
-                mDisplayUpdater.onDisplayContentDisplayPropertiesPostChanged();
+                if (Flags.syncedDisplayModeUpdates()) {
+                    if (mDisplayContent.isDefaultDisplay) {
+                        mWmService.mRoot.mDisplayUnblocker
+                                .onDefaultDisplayContentDisplayPropertiesPostChanged();
+                    }
+                } else {
+                    mDisplayUpdater.onDisplayContentDisplayPropertiesPostChanged();
+                }
             }
         }
     }

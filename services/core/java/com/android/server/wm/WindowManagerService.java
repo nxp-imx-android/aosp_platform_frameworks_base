@@ -8464,10 +8464,14 @@ public class WindowManagerService extends IWindowManager.Stub
                 // The waiting container doesn't exist, no need to wait. Treat as drawn.
                 return true;
             }
-            if (displayId == INVALID_DISPLAY
-                    && mRoot.getDefaultDisplay().mDisplayUpdater.waitForTransition(message)) {
-                // Use the ready-to-play of transition as the signal.
-                return false;
+            if (displayId == INVALID_DISPLAY) {
+                final boolean useTransitionToUnblock = Flags.syncedDisplayModeUpdates() ?
+                        mRoot.mDisplayUnblocker.waitForDefaultDisplayTransition(message)
+                        : mRoot.getDefaultDisplay().mDisplayUpdater.waitForTransition(message);
+                if (useTransitionToUnblock) {
+                    // Use the ready-to-play of transition as the signal.
+                    return false;
+                }
             }
             container.waitForAllWindowsDrawn();
             mWindowPlacerLocked.requestTraversal();
