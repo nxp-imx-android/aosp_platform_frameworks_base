@@ -16,6 +16,7 @@
 package com.android.wm.shell.windowdecor
 
 import android.content.Context
+import android.graphics.Rect
 import android.hardware.input.InputManager
 import android.os.Looper
 import android.testing.AndroidTestingRunner
@@ -40,15 +41,16 @@ import com.android.wm.shell.TestHandler
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.DisplayLayout
 import com.google.common.truth.Truth.assertThat
+import java.util.function.Consumer
 import kotlin.test.assertNotNull
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.eq
@@ -70,7 +72,10 @@ class DragResizeInputListenerTest : ShellTestCase() {
     private val testBgExecutor = TestShellExecutor()
     private val mockWindowSession = mock<IWindowSession>()
     private val mockInputManager = mock<InputManager>()
+    private val mockDragPositioningCallback = mock<DragPositioningCallback>()
     private val mockGeometry = mock<DragResizeWindowGeometry>()
+    private val mockDisplayController = mock<DisplayController>()
+    private val mockPreDragEventConduit = mock<Consumer<MotionEvent>>()
     private val inputChannelPairs = ArrayList<Array<InputChannel>>()
     private val mockOnInputEventReceiverDisposed = mock<Runnable>()
     private lateinit var receiver: InputEventReceiver
@@ -82,14 +87,14 @@ class DragResizeInputListenerTest : ShellTestCase() {
     fun setUp() {
         whenever(
                 mockWindowSession.grantInputChannel(
-                    anyInt(), // displayId
+                    any(), // displayId
                     any(), // decorationSurface
                     any(), // clientToken
                     anyOrNull(), // hostInputToken
-                    anyInt(), // flags
-                    anyInt(), // privateFlags
-                    anyInt(), // inputFeatures
-                    anyInt(), // type
+                    any(), // flags
+                    any(), // privateFlags
+                    any(), // inputFeatures
+                    any(), // type
                     anyOrNull(), // windowToken
                     any(), // inputTransferToken
                     any(), // name
@@ -143,14 +148,14 @@ class DragResizeInputListenerTest : ShellTestCase() {
 
             verify(mockWindowSession)
                 .grantInputChannel(
-                    anyInt(),
+                    any(),
                     argThat<SurfaceControl> { isValid && isSameSurface(forVerification) },
                     any(),
                     anyOrNull(),
-                    anyInt(),
-                    anyInt(),
-                    anyInt(),
-                    anyInt(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
                     anyOrNull(),
                     any(),
                     any(),
@@ -277,6 +282,384 @@ class DragResizeInputListenerTest : ShellTestCase() {
     }
 
     @Test
+    fun testDispatchNonDraggingEventsToPreDragEventConduit() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(
+                mockDragPositioningCallback.onDragPositioningStart(
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                )
+            )
+            .thenReturn(Rect(0, 0, TASK_WIDTH, TASK_HEIGHT))
+        whenever(mockDragPositioningCallback.onDragPositioningMove(eq(DISPLAY_ID), any(), any()))
+            .thenReturn(Rect(0, 0, TASK_WIDTH, TASK_HEIGHT))
+        whenever(mockDragPositioningCallback.onDragPositioningEnd(eq(DISPLAY_ID), any(), any()))
+            .thenReturn(Rect(0, 0, TASK_WIDTH, TASK_HEIGHT))
+
+        val mockDisplayLayout = mock<DisplayLayout>()
+        whenever(mockDisplayLayout.width()).thenReturn(DISPLAY_WIDTH)
+        whenever(mockDisplayLayout.height()).thenReturn(DISPLAY_HEIGHT)
+        whenever(mockDisplayController.getDisplayLayout(DISPLAY_ID)).thenReturn(mockDisplayLayout)
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(TASK_WIDTH, TASK_HEIGHT))
+        whenever(mockGeometry.shouldHandleEvent(any(), any())).thenReturn(true)
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        val pointerCoordsOfDowns = ArrayList<MotionEvent.PointerCoords>()
+        val pointerCoordsOfMoves = ArrayList<MotionEvent.PointerCoords>()
+        val pointerCoordsOfUps = ArrayList<MotionEvent.PointerCoords>()
+        val pointerCoordsOfCancels = ArrayList<MotionEvent.PointerCoords>()
+        whenever(mockPreDragEventConduit.accept(any())).thenAnswer { invocation ->
+            val event = invocation.arguments[0] as MotionEvent
+            val pointerCoordsArray =
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> pointerCoordsOfDowns
+                    MotionEvent.ACTION_MOVE -> pointerCoordsOfMoves
+                    MotionEvent.ACTION_UP -> pointerCoordsOfUps
+                    MotionEvent.ACTION_CANCEL -> pointerCoordsOfCancels
+                    else -> throw IllegalStateException("Unknown event $event")
+                }
+            pointerCoordsArray.add(MotionEvent.PointerCoords())
+            event.getPointerCoords(0, pointerCoordsArray[pointerCoordsArray.size - 1])
+        }
+
+        val down =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_DOWN)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+        receiver.onInputEvent(down)
+        assertThat(pointerCoordsOfDowns.size).isEqualTo(1)
+        assertThat(pointerCoordsOfDowns[0].y).isEqualTo(Y)
+        assertThat(pointerCoordsOfMoves.size).isEqualTo(0)
+        assertThat(pointerCoordsOfUps.size).isEqualTo(0)
+        assertThat(pointerCoordsOfCancels.size).isEqualTo(0)
+
+        val move =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_MOVE)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y + 3).build(), // within slop
+                )
+                .build()
+        receiver.onInputEvent(move)
+        assertThat(pointerCoordsOfDowns.size).isEqualTo(1)
+        assertThat(pointerCoordsOfMoves.size).isEqualTo(1)
+        assertThat(pointerCoordsOfMoves[0].y).isEqualTo(Y + 3)
+        assertThat(pointerCoordsOfUps.size).isEqualTo(0)
+        assertThat(pointerCoordsOfCancels.size).isEqualTo(0)
+
+        val up =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_UP)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y + 3).build(), // within slop
+                )
+                .build()
+        receiver.onInputEvent(up)
+        assertThat(pointerCoordsOfDowns.size).isEqualTo(1)
+        assertThat(pointerCoordsOfMoves.size).isEqualTo(1)
+        assertThat(pointerCoordsOfUps.size).isEqualTo(1)
+        assertThat(pointerCoordsOfUps[0].y).isEqualTo(Y + 3)
+        assertThat(pointerCoordsOfCancels.size).isEqualTo(0)
+    }
+
+    @Test
+    fun testDispatchNonDraggingEventsToPreDragEventConduit_cancelledGesture() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(
+                mockDragPositioningCallback.onDragPositioningStart(
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                )
+            )
+            .thenReturn(Rect(0, 0, TASK_WIDTH, TASK_HEIGHT))
+        whenever(mockDragPositioningCallback.onDragPositioningMove(eq(DISPLAY_ID), any(), any()))
+            .thenReturn(Rect(0, 0, TASK_WIDTH, TASK_HEIGHT))
+        whenever(mockDragPositioningCallback.onDragPositioningEnd(eq(DISPLAY_ID), any(), any()))
+            .thenReturn(Rect(0, 0, TASK_WIDTH, TASK_HEIGHT))
+
+        val mockDisplayLayout = mock<DisplayLayout>()
+        whenever(mockDisplayLayout.width()).thenReturn(DISPLAY_WIDTH)
+        whenever(mockDisplayLayout.height()).thenReturn(DISPLAY_HEIGHT)
+        whenever(mockDisplayController.getDisplayLayout(DISPLAY_ID)).thenReturn(mockDisplayLayout)
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(TASK_WIDTH, TASK_HEIGHT))
+        whenever(mockGeometry.shouldHandleEvent(any(), any())).thenReturn(true)
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        val pointerCoordsOfDowns = ArrayList<MotionEvent.PointerCoords>()
+        val pointerCoordsOfMoves = ArrayList<MotionEvent.PointerCoords>()
+        val pointerCoordsOfUps = ArrayList<MotionEvent.PointerCoords>()
+        val pointerCoordsOfCancels = ArrayList<MotionEvent.PointerCoords>()
+        whenever(mockPreDragEventConduit.accept(any())).thenAnswer { invocation ->
+            val event = invocation.arguments[0] as MotionEvent
+            val pointerCoordsArray =
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> pointerCoordsOfDowns
+                    MotionEvent.ACTION_MOVE -> pointerCoordsOfMoves
+                    MotionEvent.ACTION_UP -> pointerCoordsOfUps
+                    MotionEvent.ACTION_CANCEL -> pointerCoordsOfCancels
+                    else -> throw IllegalStateException("Unknown event $event")
+                }
+            pointerCoordsArray.add(MotionEvent.PointerCoords())
+            event.getPointerCoords(0, pointerCoordsArray[pointerCoordsArray.size - 1])
+        }
+
+        val down =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_DOWN)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+        receiver.onInputEvent(down)
+        assertThat(pointerCoordsOfDowns.size).isEqualTo(1)
+        assertThat(pointerCoordsOfDowns[0].y).isEqualTo(Y)
+        assertThat(pointerCoordsOfMoves.size).isEqualTo(0)
+        assertThat(pointerCoordsOfUps.size).isEqualTo(0)
+        assertThat(pointerCoordsOfCancels.size).isEqualTo(0)
+
+        val move =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_MOVE)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y + 3).build(), // within slop
+                )
+                .build()
+        receiver.onInputEvent(move)
+        assertThat(pointerCoordsOfDowns.size).isEqualTo(1)
+        assertThat(pointerCoordsOfMoves.size).isEqualTo(1)
+        assertThat(pointerCoordsOfMoves[0].y).isEqualTo(Y + 3)
+        assertThat(pointerCoordsOfUps.size).isEqualTo(0)
+        assertThat(pointerCoordsOfCancels.size).isEqualTo(0)
+
+        val cancel =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_CANCEL)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y + 3).build(), // within slop
+                )
+                .build()
+        receiver.onInputEvent(cancel)
+        assertThat(pointerCoordsOfDowns.size).isEqualTo(1)
+        assertThat(pointerCoordsOfMoves.size).isEqualTo(1)
+        assertThat(pointerCoordsOfUps.size).isEqualTo(0)
+        assertThat(pointerCoordsOfCancels.size).isEqualTo(1)
+        assertThat(pointerCoordsOfCancels[0].y).isEqualTo(Y + 3)
+    }
+
+    @Test
+    fun testCancelDraggingEventsToPreDragEventConduit() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        whenever(
+                mockDragPositioningCallback.onDragPositioningStart(
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                )
+            )
+            .thenReturn(Rect(0, 0, TASK_WIDTH, TASK_HEIGHT))
+        whenever(mockDragPositioningCallback.onDragPositioningMove(eq(DISPLAY_ID), any(), any()))
+            .thenReturn(Rect(0, 0, TASK_WIDTH, TASK_HEIGHT))
+        whenever(mockDragPositioningCallback.onDragPositioningEnd(eq(DISPLAY_ID), any(), any()))
+            .thenReturn(Rect(0, 0, TASK_WIDTH, TASK_HEIGHT))
+
+        val mockDisplayLayout = mock<DisplayLayout>()
+        whenever(mockDisplayLayout.width()).thenReturn(DISPLAY_WIDTH)
+        whenever(mockDisplayLayout.height()).thenReturn(DISPLAY_HEIGHT)
+        whenever(mockDisplayController.getDisplayLayout(DISPLAY_ID)).thenReturn(mockDisplayLayout)
+
+        whenever(mockGeometry.taskSize).thenReturn(Size(TASK_WIDTH, TASK_HEIGHT))
+        whenever(mockGeometry.shouldHandleEvent(any(), any())).thenReturn(true)
+        inputListener.setGeometry(mockGeometry, 5 /* touchSlop */)
+
+        val pointerCoordsOfDowns = ArrayList<MotionEvent.PointerCoords>()
+        val pointerCoordsOfMoves = ArrayList<MotionEvent.PointerCoords>()
+        val pointerCoordsOfUps = ArrayList<MotionEvent.PointerCoords>()
+        val pointerCoordsOfCancels = ArrayList<MotionEvent.PointerCoords>()
+        whenever(mockPreDragEventConduit.accept(any())).thenAnswer { invocation ->
+            val event = invocation.arguments[0] as MotionEvent
+            val pointerCoordsArray =
+                when (event.action) {
+                    MotionEvent.ACTION_DOWN -> pointerCoordsOfDowns
+                    MotionEvent.ACTION_MOVE -> pointerCoordsOfMoves
+                    MotionEvent.ACTION_UP -> pointerCoordsOfUps
+                    MotionEvent.ACTION_CANCEL -> pointerCoordsOfCancels
+                    else -> throw IllegalStateException("Unknown event $event")
+                }
+            pointerCoordsArray.add(MotionEvent.PointerCoords())
+            event.getPointerCoords(0, pointerCoordsArray[pointerCoordsArray.size - 1])
+        }
+
+        val down =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_DOWN)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y).build(),
+                )
+                .build()
+        receiver.onInputEvent(down)
+        assertThat(pointerCoordsOfDowns.size).isEqualTo(1)
+        assertThat(pointerCoordsOfDowns[0].y).isEqualTo(Y)
+        assertThat(pointerCoordsOfMoves.size).isEqualTo(0)
+        assertThat(pointerCoordsOfUps.size).isEqualTo(0)
+        assertThat(pointerCoordsOfCancels.size).isEqualTo(0)
+
+        val move =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_MOVE)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y + 3).build(), // within slop
+                )
+                .build()
+        receiver.onInputEvent(move)
+        assertThat(pointerCoordsOfDowns.size).isEqualTo(1)
+        assertThat(pointerCoordsOfMoves.size).isEqualTo(1)
+        assertThat(pointerCoordsOfMoves[0].y).isEqualTo(Y + 3)
+        assertThat(pointerCoordsOfUps.size).isEqualTo(0)
+        assertThat(pointerCoordsOfCancels.size).isEqualTo(0)
+
+        val move2 =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_MOVE)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y + 10).build(), // out of slop
+                )
+                .build()
+        receiver.onInputEvent(move2)
+        assertThat(pointerCoordsOfDowns.size).isEqualTo(1)
+        assertThat(pointerCoordsOfMoves.size).isEqualTo(1)
+        assertThat(pointerCoordsOfUps.size).isEqualTo(0)
+        assertThat(pointerCoordsOfCancels.size).isEqualTo(1)
+        assertThat(pointerCoordsOfCancels[0].y).isEqualTo(Y + 10)
+
+        val move3 =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_MOVE)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder()
+                        .setCoords(X, Y + 4)
+                        .build(), // within slop again
+                )
+                .build()
+        receiver.onInputEvent(move3)
+        assertThat(pointerCoordsOfDowns.size).isEqualTo(1)
+        assertThat(pointerCoordsOfMoves.size).isEqualTo(1)
+        assertThat(pointerCoordsOfUps.size).isEqualTo(0)
+        assertThat(pointerCoordsOfCancels.size).isEqualTo(1)
+
+        val up =
+            MotionEventBuilder.newBuilder()
+                .setAction(MotionEvent.ACTION_UP)
+                .setSource(InputDevice.SOURCE_MOUSE)
+                .setDeviceId(DEVICE_ID)
+                .setActionIndex(0)
+                .setPointer(
+                    PointerPropertiesBuilder.newBuilder()
+                        .setId(POINTER_ID)
+                        .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+                        .build(),
+                    PointerCoordsBuilder.newBuilder().setCoords(X, Y + 3).build(), // within slop
+                )
+                .build()
+        receiver.onInputEvent(up)
+        assertThat(pointerCoordsOfDowns.size).isEqualTo(1)
+        assertThat(pointerCoordsOfMoves.size).isEqualTo(1)
+        assertThat(pointerCoordsOfUps.size).isEqualTo(0)
+        assertThat(pointerCoordsOfCancels.size).isEqualTo(1)
+    }
+
+    @Test
     fun testSkipUpdatingCursorIcon_nonPointingDevice() {
         val inputListener = create()
         testBgExecutor.flushAll()
@@ -312,7 +695,7 @@ class DragResizeInputListenerTest : ShellTestCase() {
 
         receiver.onInputEvent(hoverEnter)
 
-        verify(mockInputManager, never()).setPointerIcon(any(), anyInt(), anyInt(), anyInt(), any())
+        verify(mockInputManager, never()).setPointerIcon(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -351,7 +734,7 @@ class DragResizeInputListenerTest : ShellTestCase() {
 
         receiver.onInputEvent(hoverEnter)
 
-        verify(mockInputManager, never()).setPointerIcon(any(), anyInt(), anyInt(), anyInt(), any())
+        verify(mockInputManager, never()).setPointerIcon(any(), any(), any(), any(), any())
     }
 
     @Test
@@ -751,14 +1134,14 @@ class DragResizeInputListenerTest : ShellTestCase() {
     private fun verifyNoInputChannelGrantRequests() {
         verify(mockWindowSession, never())
             .grantInputChannel(
-                anyInt(),
+                any(),
                 any(),
                 any(),
                 anyOrNull(),
-                anyInt(),
-                anyInt(),
-                anyInt(),
-                anyInt(),
+                any(),
+                any(),
+                any(),
+                any(),
                 anyOrNull(),
                 any(),
                 any(),
@@ -776,7 +1159,7 @@ class DragResizeInputListenerTest : ShellTestCase() {
             mock<Choreographer>(),
             DISPLAY_ID,
             decorationSurface,
-            mock<DragPositioningCallback>(),
+            mockDragPositioningCallback,
             {
                 object : SurfaceControl.Builder() {
                     override fun build(): SurfaceControl {
@@ -794,7 +1177,8 @@ class DragResizeInputListenerTest : ShellTestCase() {
                     }
                 }
             },
-            mock<DisplayController>(),
+            mockDisplayController,
+            mockPreDragEventConduit,
             mockOnInputEventReceiverDisposed,
         ) { r ->
             receiver = r
@@ -815,5 +1199,10 @@ class DragResizeInputListenerTest : ShellTestCase() {
         val POINTER_ID = 6
         val X = 30f
         val Y = 40f
+
+        val DISPLAY_WIDTH = 1920
+        val DISPLAY_HEIGHT = 1080
+        val TASK_WIDTH = 300
+        val TASK_HEIGHT = 200
     }
 }
