@@ -145,7 +145,8 @@ private fun SettingsFooter(settingsButtonAction: () -> Unit) {
             horizontalArrangement = Arrangement.End,
         ) {
             PlatformButton(
-                modifier = Modifier.wrapContentHeight().heightIn(min = 40.dp).testTag("button1"),
+                modifier =
+                    Modifier.wrapContentHeight().heightIn(min = 40.dp).testTag("settings_button"),
                 onClick = settingsButtonAction,
             ) {
                 Text(
@@ -164,7 +165,7 @@ private fun SettingsFooter(settingsButtonAction: () -> Unit) {
                     .testTag("settings_footer"),
         ) {
             PlatformOutlinedButton(
-                modifier = Modifier.testTag("button1"),
+                modifier = Modifier.testTag("settings_button"),
                 onClick = settingsButtonAction,
             ) {
                 Text(
