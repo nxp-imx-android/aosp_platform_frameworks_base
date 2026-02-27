@@ -193,7 +193,6 @@ public:
         APerformanceHint_getRateLimiterPropertiesForTesting(&mMaxLoadHintsPerInterval,
                                                             &mLoadHintInterval);
         APerformanceHint_setIHintManagerForTesting(&mMockIHintManager);
-        APerformanceHint_setUseNewLoadHintBehaviorForTesting(true);
         mTids.push_back(1);
         mTids.push_back(2);
     }
