@@ -76,8 +76,6 @@ public final class RavenwoodEnvironment {
     public static final String MAIN_THREAD_NAME = "Ravenwood:Main";
     private static final String TEST_THREAD_NAME = "Ravenwood:Test";
 
-    private static final String RESOURCE_APK_DIR = "ravenwood-res-apks";
-
     private static final int DEFAULT_TARGET_SDK_LEVEL = Build.VERSION_CODES.CUR_DEVELOPMENT;
     private static final String DEFAULT_PACKAGE_NAME = "com.android.ravenwoodtests.defaultname";
     private static final String DEFAULT_INSTRUMENTATION_CLASS =
@@ -304,12 +302,12 @@ public final class RavenwoodEnvironment {
     public File getResourcesApkFile(@NonNull String packageName) {
         if (packageName.equals(getInstPackageName())) {
             if (mResourceApk != null) {
-                return new File(RESOURCE_APK_DIR, mResourceApk);
+                return new File(mResourceApk);
             }
             // fall-through and use the default resources.
         } else if (packageName.equals(getTargetPackageName())) {
             if (mTargetResourceApk != null) {
-                return new File(RESOURCE_APK_DIR, mTargetResourceApk);
+                return new File(mTargetResourceApk);
             }
             // fall-through and use the default resources.
         } else if (packageName.equals(RavenwoodInternalUtils.ANDROID_PACKAGE_NAME)) {
