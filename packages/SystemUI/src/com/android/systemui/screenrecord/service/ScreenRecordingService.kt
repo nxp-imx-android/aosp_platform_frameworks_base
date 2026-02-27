@@ -128,7 +128,7 @@ open class ScreenRecordingService : ComponentService() {
     }
 
     private fun RecordingContext.startRecording() {
-        screenRecordingPreferenceRepository.updateSettings(shouldShowTaps)
+        screenRecordingPreferenceRepository.setShouldShowTaps(shouldShowTaps)
         try {
             Log.d(tag, "Starting screen recording user=$userId $this")
             val notification = notificationInteractor.createRecordingNotification(audioSource)
@@ -194,7 +194,7 @@ open class ScreenRecordingService : ComponentService() {
             if (Flags.screenRecordingServiceFix()) {
                 stopForeground(STOP_FOREGROUND_DETACH)
             }
-            stopSelf() // only stop if there is an error. Otherwise leave it to saveRecording
+            stopSelf() // only stop if there is an error. Otherwise, leave it to saveRecording
         }
     }
 
@@ -213,10 +213,7 @@ open class ScreenRecordingService : ComponentService() {
         }
 
         override fun updateParameters(parameters: ScreenRecordingParameters) {
-            screenRecordingPreferenceRepository.updateSettings(
-                showTaps = parameters.shouldShowTaps,
-                rememberOriginalShowTaps = false,
-            )
+            screenRecordingPreferenceRepository.setShouldShowTaps(parameters.shouldShowTaps)
         }
 
         override fun startRecording(parameters: ScreenRecordingParameters) {
