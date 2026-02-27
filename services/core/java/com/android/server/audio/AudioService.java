@@ -12323,7 +12323,7 @@ public class AudioService extends IAudioService.Stub
         Objects.requireNonNull(request);
         Objects.requireNonNull(callback);
 
-        return new AudioModeSession(this, request, callback);
+        return mDeviceBroker.createAudioModeSession(request, callback);
     }
 
     /** only public for mocking/spying, do not call outside of AudioService */
