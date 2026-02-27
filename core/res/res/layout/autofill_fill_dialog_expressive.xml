@@ -99,7 +99,7 @@ insets. -->
             android:scaleType="center"
             android:background="@drawable/autofill_close_background"
             android:layout_gravity="top|end"
-            android:contentDescription="@string/dismiss_action"/>
+            android:contentDescription="@string/close_button_text"/>
 
     </com.android.server.autofill.ui.AutofillBottomSheetLayout>
 </FrameLayout>
