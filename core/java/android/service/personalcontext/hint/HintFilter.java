@@ -16,13 +16,13 @@
 
 package android.service.personalcontext.hint;
 
+import android.annotation.CallSuper;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.os.ParcelableException;
 import android.service.personalcontext.Flags;
 import android.text.TextUtils;
 import android.util.ArraySet;
@@ -56,21 +56,47 @@ public final class HintFilter implements Parcelable {
     private static final String TAG = "HintFilter";
 
     /**
-     * An interface for {@link PublishedContextHint} filters to implement.
+     * A base class for {@link PublishedContextHint} filters to extend.
      */
-    private interface FilterEntry extends Parcelable {
+    private abstract static class FilterEntry implements Parcelable {
+
+        private final @FilterType int mFilterType;
+
+        FilterEntry(@FilterType int filterType) {
+            // Mark required filters as also being allowed.
+            if ((filterType & FILTER_TYPE_REQUIRED) > 0) {
+                filterType = filterType | FILTER_TYPE_ALLOWED;
+            }
+
+            mFilterType = filterType;
+        }
+
+        FilterEntry(Parcel src) {
+            mFilterType = src.readInt();
+        }
+
+        @CallSuper
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            dest.writeInt(mFilterType);
+        }
+
+        public final int getFilterType() {
+            return mFilterType;
+        }
+
         /**
          * Returns {@code true} if the supplied hint matches this filter.
          * @param hint The {@link PublishedContextHint} to be chcked
          * @return {@code true} if matches, {@code false} otherwise.
          */
-        boolean matches(PublishedContextHint hint);
+        public abstract boolean matches(PublishedContextHint hint);
 
         /**
          * Passes self to visit.
          * @param visitor
          */
-        void visit(FilterEntryVisitor visitor);
+        public abstract void visit(FilterEntryVisitor visitor);
     }
 
     /**
@@ -78,21 +104,23 @@ public final class HintFilter implements Parcelable {
      */
     private interface FilterEntryVisitor {
         default void onVisit(PackageEntry entry) {}
-        default void onVisit(ContextHintTypeEntry entry) {}
+        default void onVisit(ContextHintClassEntry entry) {}
         default void onVisit(BundleHintTypeNameEntry entry) {}
     }
 
     /**
      * {@link PublishedContextHint} filter for package names.
      */
-    private static class PackageEntry implements FilterEntry {
+    private static class PackageEntry extends FilterEntry {
         private final String mPackageName;
 
-        PackageEntry(String packageName) {
+        PackageEntry(@FilterType int filterType, String packageName) {
+            super(filterType);
             mPackageName = packageName;
         }
 
         PackageEntry(Parcel in) {
+            super(in);
             mPackageName = in.readString8();
         }
 
@@ -107,6 +135,7 @@ public final class HintFilter implements Parcelable {
 
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
+            super.writeToParcel(dest, flags);
             dest.writeString8(mPackageName);
         }
 
@@ -136,13 +165,15 @@ public final class HintFilter implements Parcelable {
     /**
      * {@link PublishedContextHint} filter for types specified on {@link BundleHint}.
      */
-    private static class BundleHintTypeNameEntry implements FilterEntry {
+    private static class BundleHintTypeNameEntry extends FilterEntry {
         private final String mBundleHintTypeName;
 
-        protected BundleHintTypeNameEntry(String contextHintClassType) {
-            mBundleHintTypeName = contextHintClassType;
+        protected BundleHintTypeNameEntry(@FilterType int filterType, String hintTypeName) {
+            super(filterType);
+            mBundleHintTypeName = hintTypeName;
         }
         protected BundleHintTypeNameEntry(Parcel in) {
+            super(in);
             mBundleHintTypeName = in.readString();
         }
 
@@ -157,9 +188,9 @@ public final class HintFilter implements Parcelable {
 
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
+            super.writeToParcel(dest, flags);
             dest.writeString(mBundleHintTypeName);
         }
-
 
         public static final Creator<BundleHintTypeNameEntry> CREATOR =
                 new Creator<>() {
@@ -188,24 +219,30 @@ public final class HintFilter implements Parcelable {
     /**
      * {@link PublishedContextHint} filter for {@link ContextHint} subtypes.
      */
-    private static class ContextHintTypeEntry implements FilterEntry {
-        final String mContextHintClassType;
+    private static class ContextHintClassEntry extends FilterEntry {
+        final String mContextHintClassName;
 
-        ContextHintTypeEntry(Class<? extends ContextHint> contextHintClassType) {
-            mContextHintClassType = contextHintClassType.getName();
+        ContextHintClassEntry(
+                @FilterType int filterType,
+                Class<? extends ContextHint> contextHintClassType) {
+            super(filterType);
+            mContextHintClassName = contextHintClassType.getName();
         }
 
-        public Class<? extends ContextHint> getContextHintClass() throws ClassNotFoundException {
-            return (Class<? extends ContextHint>) Class.forName(mContextHintClassType);
+        protected ContextHintClassEntry(Parcel in) {
+            super(in);
+            mContextHintClassName = in.readString8();
         }
 
-        public Class getContextHintClassType() throws ClassNotFoundException {
-            return Class.forName(mContextHintClassType);
+        public Class getContextHintClass() throws ClassNotFoundException {
+            return Class.forName(mContextHintClassName);
         }
 
         @Override
         public boolean matches(PublishedContextHint hint) {
-            return TextUtils.equals(hint.getClass().getName(), mContextHintClassType);
+            return TextUtils.equals(
+                    hint.getContextHint().getClass().getName(),
+                    mContextHintClassName);
         }
 
         @Override
@@ -213,13 +250,10 @@ public final class HintFilter implements Parcelable {
             visitor.onVisit(this);
         }
 
-        protected ContextHintTypeEntry(Parcel in) {
-            mContextHintClassType = in.readString8();
-        }
-
         @Override
         public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString8(mContextHintClassType);
+            super.writeToParcel(dest, flags);
+            dest.writeString8(mContextHintClassName);
         }
 
         @Override
@@ -227,16 +261,16 @@ public final class HintFilter implements Parcelable {
             return 0;
         }
 
-        public static final Creator<ContextHintTypeEntry> CREATOR =
+        public static final Creator<ContextHintClassEntry> CREATOR =
                 new Creator<>() {
                     @Override
-                    public ContextHintTypeEntry createFromParcel(Parcel in) {
-                        return new ContextHintTypeEntry(in);
+                    public ContextHintClassEntry createFromParcel(Parcel in) {
+                        return new ContextHintClassEntry(in);
                     }
 
                     @Override
-                    public ContextHintTypeEntry[] newArray(int size) {
-                        return new ContextHintTypeEntry[size];
+                    public ContextHintClassEntry[] newArray(int size) {
+                        return new ContextHintClassEntry[size];
                     }
                 };
     }
@@ -265,86 +299,15 @@ public final class HintFilter implements Parcelable {
      */
     public static final int FILTER_TYPE_REQUIRED = 1 << 1;
 
-    private static class FilterRecord<C extends FilterEntry> implements Parcelable {
-        private final C mEntry;
+    private final Set<FilterEntry> mFilterEntries;
 
-        private final @FilterType int mFilterType;
-
-        FilterRecord(C entry, @FilterType int filterType) {
-            int adjustedFilter = filterType;
-
-            if ((filterType & FILTER_TYPE_REQUIRED) == FILTER_TYPE_REQUIRED) {
-                adjustedFilter |= FILTER_TYPE_ALLOWED;
-            }
-
-            mEntry = entry;
-            mFilterType = adjustedFilter;
-        }
-
-        @FilterType int getFilterType() {
-            return mFilterType;
-        }
-
-        public C getEntry() {
-            return mEntry;
-        }
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(@NonNull Parcel dest, int flags) {
-            dest.writeString8(mEntry.getClass().getName());
-            dest.writeParcelable(mEntry, flags);
-            dest.writeInt(mFilterType);
-        }
-
-        @SuppressWarnings("unchecked")
-        protected FilterRecord(Parcel in) throws ClassNotFoundException {
-            final String entryClassName = in.readString();
-            final FilterEntry entry;
-
-            if (ContextHintTypeEntry.class.getName().matches(entryClassName)) {
-                entry = ContextHintTypeEntry.CREATOR.createFromParcel(in);
-            } else if (PackageEntry.class.getName().matches(entryClassName)) {
-                entry = PackageEntry.CREATOR.createFromParcel(in);
-            } else if (BundleHintTypeNameEntry.class.getName().matches(entryClassName)) {
-                entry = BundleHintTypeNameEntry.CREATOR.createFromParcel(in);
-            } else {
-                throw new ClassNotFoundException();
-            }
-
-            mEntry = (C) entry;
-            mFilterType = in.readInt();
-        }
-
-        public static final Creator<FilterRecord> CREATOR = new Creator<>() {
-            @Override
-            public FilterRecord createFromParcel(Parcel in) {
-                try {
-                    return new FilterRecord<>(in);
-                } catch (ClassNotFoundException e) {
-                    throw new ParcelableException(e);
-                }
-            }
-
-            @Override
-            public FilterRecord[] newArray(int size) {
-                return new FilterRecord[size];
-            }
-        };
-    }
-    private final Set<FilterRecord<FilterEntry>> mFilterRecords;
-
-    private HintFilter(Collection<FilterRecord<FilterEntry>> filterRecords) {
-        mFilterRecords = Set.copyOf(filterRecords);
+    private HintFilter(Collection<FilterEntry> filterEntries) {
+        mFilterEntries = Set.copyOf(filterEntries);
     }
 
     @SuppressWarnings({"unchecked"})
     private HintFilter(Parcel in) {
-        mFilterRecords = Set.copyOf((Set<FilterRecord<FilterEntry>>)
+        mFilterEntries = Set.copyOf((Set<FilterEntry>)
                 in.readArraySet(/* classLoader= */ null));
     }
 
@@ -356,9 +319,8 @@ public final class HintFilter implements Parcelable {
     @NonNull
     public Set<String> getPackages(@FilterType int filter) {
         final HashSet<String> returnSet = new HashSet<>();
-        final Set<FilterRecord> candidateRecords = getFilterRecords(filter);
-        for (FilterRecord record : candidateRecords) {
-            record.getEntry().visit(new FilterEntryVisitor() {
+        for (FilterEntry entry : getFilterEntries(filter)) {
+            entry.visit(new FilterEntryVisitor() {
                 @Override
                 public void onVisit(PackageEntry entry) {
                     returnSet.add(entry.getPackageName());
@@ -387,13 +349,12 @@ public final class HintFilter implements Parcelable {
     @NonNull
     public Set<Class> getHintTypes(@FilterType int filter) {
         final HashSet<Class> returnSet = new HashSet<>();
-        final Set<FilterRecord> candidateRecords = getFilterRecords(filter);
-        for (FilterRecord record : candidateRecords) {
-            record.getEntry().visit(new FilterEntryVisitor() {
+        for (FilterEntry entry : getFilterEntries(filter)) {
+            entry.visit(new FilterEntryVisitor() {
                 @Override
-                public void onVisit(ContextHintTypeEntry entry) {
+                public void onVisit(ContextHintClassEntry entry) {
                     try {
-                        returnSet.add(entry.getContextHintClassType());
+                        returnSet.add(entry.getContextHintClass());
                     } catch (Exception e) {
                         Log.e(TAG, "could not get class type for:" + entry, e);
                     }
@@ -424,9 +385,8 @@ public final class HintFilter implements Parcelable {
     @NonNull
     public Set<String> getBundleHintTypeNames(@FilterType int filter) {
         final HashSet<String> returnSet = new HashSet<>();
-        final Set<FilterRecord> candidateRecords = getFilterRecords(filter);
-        for (FilterRecord record : candidateRecords) {
-            record.getEntry().visit(new FilterEntryVisitor() {
+        for (FilterEntry entry : getFilterEntries(filter)) {
+            entry.visit(new FilterEntryVisitor() {
                 @Override
                 public void onVisit(BundleHintTypeNameEntry entry) {
                     returnSet.add(entry.getBundleHintTypeName());
@@ -446,35 +406,24 @@ public final class HintFilter implements Parcelable {
         return getBundleHintTypeNames(FILTER_TYPE_NONE);
     }
 
-    private ArraySet<FilterRecord> getFilterRecords(@FilterType int filterType) {
-        final ArraySet<FilterRecord> matchingFilters = new ArraySet<>();
+    private ArraySet<FilterEntry> getFilterEntries(@FilterType int filterType) {
+        final ArraySet<FilterEntry> matchingFilters = new ArraySet<>();
         // Get required filters
-        for (FilterRecord record : mFilterRecords) {
-            if ((record.getFilterType() & filterType) == filterType) {
-                matchingFilters.add(record);
+        for (FilterEntry entry : mFilterEntries) {
+            if ((entry.getFilterType() & filterType) == filterType) {
+                matchingFilters.add(entry);
             }
         }
 
         return matchingFilters;
     }
 
-    private FilterRecord findFirstMatch(PublishedContextHint hintWithSignature,
-            Set<FilterRecord> records) {
-        for (FilterRecord record : records) {
-            if (record.getEntry().matches(hintWithSignature)) {
-                return record;
-            }
-        }
-
-        return null;
-    }
-
-    private Set<FilterRecord> findAllMatches(PublishedContextHint hintWithSignature,
-            Set<FilterRecord> records) {
-        final HashSet<FilterRecord> matches = new HashSet<>();
-        for (FilterRecord record : records) {
-            if (record.getEntry().matches(hintWithSignature)) {
-                matches.add(record);
+    private Set<FilterEntry> findMatchingFilters(PublishedContextHint hintWithSignature,
+            Set<FilterEntry> entries) {
+        final HashSet<FilterEntry> matches = new HashSet<>();
+        for (FilterEntry entry : entries) {
+            if (entry.matches(hintWithSignature)) {
+                matches.add(entry);
             }
         }
 
@@ -487,26 +436,31 @@ public final class HintFilter implements Parcelable {
     public Set<PublishedContextHint> getInterestedHintClusters(
             @NonNull Set<PublishedContextHint> allContextHints,
             @NonNull Set<UUID> seenIDs) {
-        final ArraySet<FilterRecord> requiredFilters = getFilterRecords(FILTER_TYPE_REQUIRED);
-        final ArraySet<FilterRecord> allowedFilters = getFilterRecords(FILTER_TYPE_ALLOWED);
+        final ArraySet<FilterEntry> requiredFilters = getFilterEntries(FILTER_TYPE_REQUIRED);
+        final ArraySet<FilterEntry> allowedFilters = getFilterEntries(FILTER_TYPE_ALLOWED);
 
         final Set<PublishedContextHint> interestingHints = new HashSet<>();
-
         for (PublishedContextHint hintWithSignature : allContextHints) {
             final ContextHint hint = hintWithSignature.getContextHint();
+
+            // Filter out hints that have already been seen.
             if (seenIDs.contains(hint.getHintId())) {
                 continue;
             }
 
-            if (!allowedFilters.isEmpty()
-                    && findFirstMatch(hintWithSignature, allowedFilters) == null) {
+            // Filter out hints that don't match at least one filter.
+            Set<FilterEntry> matchingFilters =
+                    findMatchingFilters(hintWithSignature, allowedFilters);
+            if (!allowedFilters.isEmpty() && matchingFilters.isEmpty()) {
                 continue;
             }
 
-            requiredFilters.removeAll(findAllMatches(hintWithSignature, requiredFilters));
+            // Add the hint to the results and remove any matching filters that are satisfied.
+            requiredFilters.removeAll(matchingFilters);
             interestingHints.add(hintWithSignature);
         }
 
+        // If we're missing any required filters then we haven't met requirements, return nothing.
         if (!requiredFilters.isEmpty()) {
             return Collections.emptySet();
         }
@@ -521,7 +475,7 @@ public final class HintFilter implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeArraySet(new ArraySet<>(mFilterRecords));
+        dest.writeArraySet(new ArraySet<>(mFilterEntries));
     }
 
     @NonNull
@@ -540,7 +494,7 @@ public final class HintFilter implements Parcelable {
 
     /** Builder for a {@link HintFilter}. */
     public static final class Builder {
-        private final Set<FilterRecord<FilterEntry>> mFilterRecords = Sets.newHashSet();
+        private final Set<FilterEntry> mFilterEntries = Sets.newHashSet();
 
         /**
          * Creates a new instance of a {@link HintFilter} {@link Builder}.
@@ -557,8 +511,7 @@ public final class HintFilter implements Parcelable {
         @NonNull
         public Builder addBundleHintTypeName(@NonNull String hintTypeName,
                 @FilterType int filterType) {
-            mFilterRecords.add(
-                    new FilterRecord<>(new BundleHintTypeNameEntry(hintTypeName), filterType));
+            mFilterEntries.add(new BundleHintTypeNameEntry(filterType, hintTypeName));
             return this;
         }
 
@@ -570,7 +523,7 @@ public final class HintFilter implements Parcelable {
         @NonNull
         public Builder addHintType(@NonNull Class<? extends ContextHint> hintClass,
                 @FilterType int filterType) {
-            mFilterRecords.add(new FilterRecord<>(new ContextHintTypeEntry(hintClass), filterType));
+            mFilterEntries.add(new ContextHintClassEntry(filterType, hintClass));
             return this;
         }
 
@@ -581,14 +534,14 @@ public final class HintFilter implements Parcelable {
          */
         @NonNull
         public Builder addPackage(@NonNull String packageName, @FilterType int filterType) {
-            mFilterRecords.add(new FilterRecord<>(new PackageEntry(packageName), filterType));
+            mFilterEntries.add(new PackageEntry(filterType, packageName));
             return this;
         }
 
         /** Builds the new HintFilter. */
         @NonNull
         public HintFilter build() {
-            return new HintFilter(mFilterRecords);
+            return new HintFilter(mFilterEntries);
         }
     }
 }

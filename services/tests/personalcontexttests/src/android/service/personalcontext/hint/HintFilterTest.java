@@ -16,6 +16,8 @@
 
 package android.service.personalcontext.hint;
 
+import static android.service.personalcontext.ParcelUtils.roundTripThroughParcel;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Parcel;
@@ -49,6 +51,7 @@ public class HintFilterTest {
         return new PublishedContextHint.Builder(
                 new BundleHint.Builder().setHintTypeName(hintClass).build(),
                 ContextHintTestUtils.generateSignedHintKey())
+            .setOriginatingPackage("personalcontext.cts")
             .build();
     }
 
@@ -59,11 +62,11 @@ public class HintFilterTest {
         PublishedContextHint hintC = makeHint(HINT_CLASS_C);
 
         final Set<PublishedContextHint> interestedHintSet =
-                new HintFilter.Builder()
+                roundTripThroughParcel(new HintFilter.Builder()
                         .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_REQUIRED)
                         .addBundleHintTypeName(HINT_CLASS_B, HintFilter.FILTER_TYPE_REQUIRED)
                         .addBundleHintTypeName(HINT_CLASS_C, HintFilter.FILTER_TYPE_REQUIRED)
-                        .build()
+                        .build())
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
 
@@ -77,10 +80,10 @@ public class HintFilterTest {
         PublishedContextHint hintC = makeHint(HINT_CLASS_C);
 
         final Set<PublishedContextHint> interestedHintSet =
-                new HintFilter.Builder()
+                roundTripThroughParcel(new HintFilter.Builder()
                         .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_REQUIRED)
                         .addBundleHintTypeName(HINT_CLASS_B, HintFilter.FILTER_TYPE_REQUIRED)
-                        .build()
+                        .build())
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
 
@@ -89,9 +92,9 @@ public class HintFilterTest {
 
     @Test
     public void testHintFilterParceling() throws GeneralSecurityException {
-        final HintFilter filter = new HintFilter.Builder()
+        final HintFilter filter = roundTripThroughParcel(new HintFilter.Builder()
                 .addBundleHintTypeName("hintTypeName", HintFilter.FILTER_TYPE_ALLOWED)
-                .build();
+                .build());
 
         Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(filter, 0);
@@ -107,13 +110,13 @@ public class HintFilterTest {
         PublishedContextHint hintC = makeHint(HINT_CLASS_C);
 
         final Set<PublishedContextHint> interestedHintSet =
-                new HintFilter.Builder()
+                roundTripThroughParcel(new HintFilter.Builder()
                         .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_REQUIRED)
                         .addBundleHintTypeName(HINT_CLASS_B, HintFilter.FILTER_TYPE_REQUIRED)
                         .addBundleHintTypeName(HINT_CLASS_C, HintFilter.FILTER_TYPE_REQUIRED)
                         .addBundleHintTypeName(HINT_CLASS_D, HintFilter.FILTER_TYPE_REQUIRED)
                         .addBundleHintTypeName(HINT_CLASS_E, HintFilter.FILTER_TYPE_REQUIRED)
-                        .build()
+                        .build())
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
 
@@ -127,10 +130,10 @@ public class HintFilterTest {
         PublishedContextHint hintC = makeHint(HINT_CLASS_C);
 
         final Set<PublishedContextHint> interestedHintSet =
-                new HintFilter.Builder()
+                roundTripThroughParcel(new HintFilter.Builder()
                         .addBundleHintTypeName(HINT_CLASS_D, HintFilter.FILTER_TYPE_REQUIRED)
                         .addBundleHintTypeName(HINT_CLASS_E, HintFilter.FILTER_TYPE_REQUIRED)
-                        .build()
+                        .build())
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
 
@@ -144,10 +147,10 @@ public class HintFilterTest {
         PublishedContextHint hintC = makeHint(HINT_CLASS_C);
 
         final Set<PublishedContextHint> interestedHintSet =
-                new HintFilter.Builder()
+                roundTripThroughParcel(new HintFilter.Builder()
                         .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_ALLOWED)
                         .addBundleHintTypeName(HINT_CLASS_D, HintFilter.FILTER_TYPE_ALLOWED)
-                        .build()
+                        .build())
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
 
@@ -161,11 +164,11 @@ public class HintFilterTest {
         PublishedContextHint hintC = makeHint(HINT_CLASS_C);
 
         final Set<PublishedContextHint> interestedHintSet =
-                new HintFilter.Builder()
+                roundTripThroughParcel(new HintFilter.Builder()
                         .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_ALLOWED)
                         .addBundleHintTypeName(HINT_CLASS_B, HintFilter.FILTER_TYPE_ALLOWED)
                         .addBundleHintTypeName(HINT_CLASS_C, HintFilter.FILTER_TYPE_ALLOWED)
-                        .build()
+                        .build())
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
 
@@ -179,13 +182,47 @@ public class HintFilterTest {
         PublishedContextHint hintC = makeHint(HINT_CLASS_C);
 
         final Set<PublishedContextHint> interestedHintSet =
-                new HintFilter.Builder()
+                roundTripThroughParcel(new HintFilter.Builder()
                         .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_ALLOWED)
                         .addBundleHintTypeName(HINT_CLASS_B, HintFilter.FILTER_TYPE_ALLOWED)
-                        .build()
+                        .build())
                         .getInterestedHintClusters(
                                 Set.of(hintA, hintB, hintC), Collections.emptySet());
 
         assertThat(interestedHintSet).containsExactly(hintA, hintB);
+    }
+
+    @Test
+    public void testHintFilterMultipleFilterTypesOneHint() throws GeneralSecurityException {
+        PublishedContextHint hintA = makeHint(HINT_CLASS_A);
+
+        final Set<PublishedContextHint> interestedHintSet =
+                roundTripThroughParcel(new HintFilter.Builder()
+                        .addHintType(BundleHint.class, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addPackage("personalcontext.cts", HintFilter.FILTER_TYPE_REQUIRED)
+                        .build())
+                        .getInterestedHintClusters(
+                                Set.of(hintA), Collections.emptySet());
+
+        assertThat(interestedHintSet).containsExactly(hintA);
+    }
+
+    @Test
+    public void testHintFilterMultipleFilterTypesMultipleHints() throws GeneralSecurityException {
+        PublishedContextHint hintA = makeHint(HINT_CLASS_A);
+        PublishedContextHint hintB = makeHint(HINT_CLASS_B);
+        PublishedContextHint hintC = makeHint(HINT_CLASS_C);
+
+        final Set<PublishedContextHint> interestedHintSet =
+                roundTripThroughParcel(new HintFilter.Builder()
+                        .addHintType(BundleHint.class, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addBundleHintTypeName(HINT_CLASS_A, HintFilter.FILTER_TYPE_REQUIRED)
+                        .addPackage("personalcontext.cts", HintFilter.FILTER_TYPE_REQUIRED)
+                        .build())
+                        .getInterestedHintClusters(
+                                Set.of(hintA, hintB, hintC), Collections.emptySet());
+
+        assertThat(interestedHintSet).containsExactly(hintA, hintB, hintC);
     }
 }
