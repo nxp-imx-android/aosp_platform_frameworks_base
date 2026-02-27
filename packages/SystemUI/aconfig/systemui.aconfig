@@ -20,16 +20,6 @@ flag {
 }
 
 flag {
-  name: "ambient_touch_monitor_listen_to_display_changes"
-  namespace: "systemui"
-  description: "listen to display changes and cache window metrics"
-  bug: "330906135"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "animation_library_atomic_listeners"
     namespace: "systemui"
     description: "Better atomicity enforcement for Animation Library listeners."

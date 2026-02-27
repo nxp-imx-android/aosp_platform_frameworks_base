@@ -34,16 +34,11 @@ import static org.mockito.Mockito.when;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.graphics.Region;
-import android.hardware.display.DisplayManager;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper;
 import android.view.GestureDetector;
 import android.view.IWindowManager;
 import android.view.InputEvent;
 import android.view.MotionEvent;
-import android.view.WindowManager;
-import android.view.WindowMetrics;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
@@ -54,14 +49,12 @@ import androidx.lifecycle.LifecycleRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.ambient.touch.dagger.InputSessionComponent;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.log.LogBufferHelperKt;
 import com.android.systemui.shared.system.InputChannelCompat;
 import com.android.systemui.util.concurrency.FakeExecutor;
-import com.android.systemui.util.display.DisplayHelper;
 import com.android.systemui.util.time.FakeSystemClock;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -114,14 +107,9 @@ public class TouchMonitorTest extends SysuiTestCase {
         private final TouchMonitor mMonitor;
         private final InputChannelCompat.InputEventListener mEventListener;
         private final GestureDetector.OnGestureListener mGestureListener;
-        private final DisplayHelper mDisplayHelper;
-        private final DisplayManager mDisplayManager;
-        private final WindowManager mWindowManager;
-        private final WindowMetrics mWindowMetrics;
         private final FakeExecutor mExecutor = new FakeExecutor(new FakeSystemClock());
         private final FakeExecutor mBackgroundExecutor = new FakeExecutor(new FakeSystemClock());
 
-        private final Rect mDisplayBounds = Mockito.mock(Rect.class);
         private final IWindowManager mIWindowManager;
 
         private final KosmosJavaAdapter mKosmos;
@@ -134,8 +122,6 @@ public class TouchMonitorTest extends SysuiTestCase {
             mLifecycleRegistry = spy(new LifecycleRegistry(mLifecycleOwner));
 
             mIWindowManager = Mockito.mock(IWindowManager.class);
-            mDisplayManager = Mockito.mock(DisplayManager.class);
-            mWindowManager = Mockito.mock(WindowManager.class);
             mKosmos = kosmos;
 
             mInputFactory = Mockito.mock(InputSessionComponent.Factory.class);
@@ -146,15 +132,8 @@ public class TouchMonitorTest extends SysuiTestCase {
                     .thenReturn(inputComponent);
             when(inputComponent.getInputSession()).thenReturn(mInputSession);
 
-            mDisplayHelper = Mockito.mock(DisplayHelper.class);
-            when(mDisplayHelper.getMaxBounds(anyInt(), anyInt()))
-                    .thenReturn(mDisplayBounds);
-
-            mWindowMetrics = Mockito.mock(WindowMetrics.class);
-            when(mWindowMetrics.getBounds()).thenReturn(mDisplayBounds);
-            when(mWindowManager.getMaximumWindowMetrics()).thenReturn(mWindowMetrics);
             mMonitor = new TouchMonitor(mExecutor, mBackgroundExecutor, mLifecycleRegistry,
-                    mInputFactory, mDisplayHelper, mKosmos.getConfigurationInteractor(),
+                    mInputFactory, mKosmos.getConfigurationInteractor(),
                     handlers, mIWindowManager, 0, "TouchMonitorTest",
                     LogBufferHelperKt.logcatLogBuffer("TouchMonitorTest"));
             clearInvocations(mLifecycleRegistry);
@@ -179,10 +158,6 @@ public class TouchMonitorTest extends SysuiTestCase {
                     eq(true));
             mEventListener = inputEventListenerCaptor.getValue();
             mGestureListener = gestureListenerCaptor.getValue();
-        }
-
-        public Rect getDisplayBounds() {
-            return mDisplayBounds;
         }
 
         void executeAll() {
@@ -252,13 +227,10 @@ public class TouchMonitorTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_AMBIENT_TOUCH_MONITOR_LISTEN_TO_DISPLAY_CHANGES)
     public void testConfigurationListenerUpdatesBounds() {
         final TouchHandler touchHandler = createTouchHandler();
         final Environment environment = new Environment(Stream.of(touchHandler)
                 .collect(Collectors.toCollection(HashSet::new)), mKosmos);
-        ArgumentCaptor<DisplayManager.DisplayListener> listenerCaptor =
-                ArgumentCaptor.forClass(DisplayManager.DisplayListener.class);
         final Rect testRect = new Rect(0, 0, 2, 2);
         final Configuration configuration = new Configuration();
         configuration.windowConfiguration.setMaxBounds(testRect);
@@ -272,31 +244,6 @@ public class TouchMonitorTest extends SysuiTestCase {
         // Verify display bounds passed into TouchHandler#getTouchInitiationRegion
         verify(touchHandler).getTouchInitiationRegion(eq(testRect), any(), any());
     }
-
-    @Test
-    @DisableFlags(Flags.FLAG_AMBIENT_TOUCH_MONITOR_LISTEN_TO_DISPLAY_CHANGES)
-    public void testReportedDisplayBounds() {
-        final TouchHandler touchHandler = createTouchHandler();
-        final Environment environment = new Environment(Stream.of(touchHandler)
-                .collect(Collectors.toCollection(HashSet::new)), mKosmos);
-
-        final MotionEvent initialEvent = Mockito.mock(MotionEvent.class);
-        when(initialEvent.getX()).thenReturn(0.0f);
-        when(initialEvent.getY()).thenReturn(0.0f);
-        environment.publishInputEvent(initialEvent);
-
-        // Verify display bounds passed into TouchHandler#getTouchInitiationRegion
-        verify(touchHandler).getTouchInitiationRegion(
-                eq(environment.getDisplayBounds()), any(), any());
-        final ArgumentCaptor<TouchHandler.TouchSession> touchSessionArgumentCaptor =
-                ArgumentCaptor.forClass(TouchHandler.TouchSession.class);
-        verify(touchHandler).onSessionStart(touchSessionArgumentCaptor.capture());
-
-        // Verify that display bounds provided from TouchSession#getBounds
-        assertThat(touchSessionArgumentCaptor.getValue().getBounds())
-                .isEqualTo(environment.getDisplayBounds());
-    }
-
     @Test
     public void testEntryTouchZone() {
         final TouchHandler touchHandler = createTouchHandler();
