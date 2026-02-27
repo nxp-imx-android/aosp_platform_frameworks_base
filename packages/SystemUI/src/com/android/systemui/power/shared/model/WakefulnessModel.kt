@@ -95,4 +95,14 @@ class WakefulnessModel(
     override fun logDiffs(prevVal: WakefulnessModel, row: TableRowLogger) {
         row.logChange(columnName = "wakefulness", value = toString())
     }
+
+    override fun toString(): String {
+        return "WakefulnessModel(" +
+            "internalWakefulnessState=$internalWakefulnessState, " +
+            "lastWakeReason=$lastWakeReason, " +
+            "lastSleepReason=$lastSleepReason, " +
+            "powerGesture=$powerButtonLaunchGestureTriggered, " +
+            "asleepOrWakingFromPreviouslyEnteredDevice=$asleepOrWakingFromPreviouslyEnteredDevice" +
+            ")"
+    }
 }
