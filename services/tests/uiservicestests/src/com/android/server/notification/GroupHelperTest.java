@@ -159,7 +159,8 @@ public class GroupHelperTest extends UiServiceTestCase {
             Icon icon =
                     Icon.createWithBitmap(Bitmap.createBitmap(300, 300, Bitmap.Config.ARGB_8888));
             BridgedNotificationMetadata metadata = new BridgedNotificationMetadata(
-                    "test_display_name", "test_bridged_package", TEST_CHANNEL_ID, icon);
+                    BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_PHONE, "test_display_name",
+                    "test_bridged_package", TEST_CHANNEL_ID, icon);
             nb.setBridgedNotificationMetadata(metadata);
         }
         if (groupKey != null) {
