@@ -295,6 +295,10 @@ final class AppCompatCameraDisplayRotationPolicy implements AppCompatCameraState
                 .shouldForceRotateForCameraCompat();
     }
 
+    boolean shouldIgnoreReqOrientationForCameraCompat(@NonNull ActivityRecord activity) {
+        return isTreatmentEnabledForActivity(activity);
+    }
+
     /**
      * Whether camera compat treatment is applicable for the given activity.
      *

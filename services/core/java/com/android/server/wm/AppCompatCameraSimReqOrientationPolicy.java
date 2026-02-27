@@ -176,6 +176,11 @@ final class AppCompatCameraSimReqOrientationPolicy implements AppCompatCameraSta
         updateAndDispatchCameraConfiguration(cameraAppInfo, appProcess, topActivity);
     }
 
+    boolean shouldIgnoreReqOrientationForCameraCompat(@NonNull ActivityRecord activity) {
+        final CameraCompatibilityInfo cameraCompatInfo = getActiveCameraCompatibilityInfo(activity);
+        return isCameraCompatModeActive(cameraCompatInfo);
+    }
+
     private void updateAndDispatchCameraConfiguration(@NonNull CameraAppInfo cameraAppInfo,
             @Nullable WindowProcessController app,
             @Nullable ActivityRecord activity) {
