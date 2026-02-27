@@ -19047,11 +19047,11 @@ package android.telephony.ims {
     method public void callSessionRttMessageReceived(String);
     method public void callSessionRttModifyRequestReceived(android.telephony.ims.ImsCallProfile);
     method public void callSessionRttModifyResponseReceived(int);
-    method @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public final void callSessionSendAnbrQuery(int, int, @IntRange(from=0) int);
+    method public final void callSessionSendAnbrQuery(int, int, @IntRange(from=0) int);
     method public void callSessionSuppServiceReceived(android.telephony.ims.ImsSuppServiceNotification);
     method public void callSessionTerminated(android.telephony.ims.ImsReasonInfo);
-    method @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public void callSessionTransferFailed(@NonNull android.telephony.ims.ImsReasonInfo);
-    method @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public void callSessionTransferred();
+    method public void callSessionTransferFailed(@NonNull android.telephony.ims.ImsReasonInfo);
+    method public void callSessionTransferred();
     method public void callSessionTtyModeReceived(int);
     method public void callSessionUpdateFailed(android.telephony.ims.ImsReasonInfo);
     method public void callSessionUpdateReceived(android.telephony.ims.ImsCallProfile);
@@ -19858,7 +19858,7 @@ package android.telephony.ims.feature {
     method public int getRadioTech();
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public final class ConnectionFailureInfo implements android.os.Parcelable {
+  public final class ConnectionFailureInfo implements android.os.Parcelable {
     method public int describeContents();
     method public int getCauseCode();
     method public int getReason();
@@ -19904,7 +19904,7 @@ package android.telephony.ims.feature {
     method public void onChangeCapabilityConfigurationError(int, int, int);
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public interface ImsTrafficSessionCallback {
+  public interface ImsTrafficSessionCallback {
     method public void onError(@NonNull android.telephony.ims.feature.ConnectionFailureInfo);
     method public void onReady();
   }
@@ -19921,7 +19921,7 @@ package android.telephony.ims.feature {
     method @NonNull public android.telephony.ims.stub.ImsMultiEndpointImplBase getMultiEndpoint();
     method @NonNull public android.telephony.ims.stub.ImsSmsImplBase getSmsImplementation();
     method @NonNull public android.telephony.ims.stub.ImsUtImplBase getUt();
-    method @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public final void modifyImsTrafficSession(int, @NonNull android.telephony.ims.feature.ImsTrafficSessionCallback);
+    method public final void modifyImsTrafficSession(int, @NonNull android.telephony.ims.feature.ImsTrafficSessionCallback);
     method public final void notifyCapabilitiesStatusChanged(@NonNull android.telephony.ims.feature.MmTelFeature.MmTelCapabilities);
     method @Deprecated public final void notifyIncomingCall(@NonNull android.telephony.ims.stub.ImsCallSessionImplBase, @NonNull android.os.Bundle);
     method @Nullable public final android.telephony.ims.ImsCallSessionListener notifyIncomingCall(@NonNull android.telephony.ims.stub.ImsCallSessionImplBase, @NonNull String, @NonNull android.os.Bundle);
@@ -19942,24 +19942,24 @@ package android.telephony.ims.feature {
     method public void setTerminalBasedCallWaitingStatus(boolean);
     method public void setUiTtyMode(int, @Nullable android.os.Message);
     method public int shouldProcessCall(@NonNull String[]);
-    method @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public final void startImsTrafficSession(int, int, int, @NonNull java.util.concurrent.Executor, @NonNull android.telephony.ims.feature.ImsTrafficSessionCallback);
-    method @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public final void stopImsTrafficSession(@NonNull android.telephony.ims.feature.ImsTrafficSessionCallback);
-    method @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public final void triggerEpsFallback(int);
+    method public final void startImsTrafficSession(int, int, int, @NonNull java.util.concurrent.Executor, @NonNull android.telephony.ims.feature.ImsTrafficSessionCallback);
+    method public final void stopImsTrafficSession(@NonNull android.telephony.ims.feature.ImsTrafficSessionCallback);
+    method public final void triggerEpsFallback(int);
     field public static final int AUDIO_HANDLER_ANDROID = 0; // 0x0
     field public static final int AUDIO_HANDLER_BASEBAND = 1; // 0x1
-    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public static final int EPS_FALLBACK_REASON_NO_NETWORK_RESPONSE = 2; // 0x2
-    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public static final int EPS_FALLBACK_REASON_NO_NETWORK_TRIGGER = 1; // 0x1
+    field public static final int EPS_FALLBACK_REASON_NO_NETWORK_RESPONSE = 2; // 0x2
+    field public static final int EPS_FALLBACK_REASON_NO_NETWORK_TRIGGER = 1; // 0x1
     field public static final String EXTRA_IS_UNKNOWN_CALL = "android.telephony.ims.feature.extra.IS_UNKNOWN_CALL";
     field public static final String EXTRA_IS_USSD = "android.telephony.ims.feature.extra.IS_USSD";
-    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public static final int IMS_TRAFFIC_DIRECTION_INCOMING = 0; // 0x0
-    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public static final int IMS_TRAFFIC_DIRECTION_OUTGOING = 1; // 0x1
-    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public static final int IMS_TRAFFIC_TYPE_EMERGENCY = 0; // 0x0
-    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public static final int IMS_TRAFFIC_TYPE_EMERGENCY_SMS = 1; // 0x1
-    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public static final int IMS_TRAFFIC_TYPE_REGISTRATION = 5; // 0x5
-    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public static final int IMS_TRAFFIC_TYPE_SMS = 4; // 0x4
-    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public static final int IMS_TRAFFIC_TYPE_UT_XCAP = 6; // 0x6
-    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public static final int IMS_TRAFFIC_TYPE_VIDEO = 3; // 0x3
-    field @FlaggedApi("com.android.internal.telephony.flags.support_ims_mmtel_interface") public static final int IMS_TRAFFIC_TYPE_VOICE = 2; // 0x2
+    field public static final int IMS_TRAFFIC_DIRECTION_INCOMING = 0; // 0x0
+    field public static final int IMS_TRAFFIC_DIRECTION_OUTGOING = 1; // 0x1
+    field public static final int IMS_TRAFFIC_TYPE_EMERGENCY = 0; // 0x0
+    field public static final int IMS_TRAFFIC_TYPE_EMERGENCY_SMS = 1; // 0x1
+    field public static final int IMS_TRAFFIC_TYPE_REGISTRATION = 5; // 0x5
+    field public static final int IMS_TRAFFIC_TYPE_SMS = 4; // 0x4
+    field public static final int IMS_TRAFFIC_TYPE_UT_XCAP = 6; // 0x6
+    field public static final int IMS_TRAFFIC_TYPE_VIDEO = 3; // 0x3
+    field public static final int IMS_TRAFFIC_TYPE_VOICE = 2; // 0x2
     field public static final int PROCESS_CALL_CSFB = 1; // 0x1
     field public static final int PROCESS_CALL_IMS = 0; // 0x0
   }
