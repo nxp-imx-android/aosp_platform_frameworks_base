@@ -35,7 +35,6 @@ import java.util.Locale;
  * @hide
  */
 public final class ChronometerLowFrequencyFormat {
-    private static final long TICK_PERIOD = Duration.ofMinutes(1).toMillis();
     private static final Object sLock = new Object();
 
     private static String sElapsedFormatHMMLowFrequency;
@@ -102,12 +101,6 @@ public final class ChronometerLowFrequencyFormat {
                 MeasureFormat.FormatWidth.NARROW);
         final Measure minute = new Measure(1, MeasureUnit.MINUTE);
         return String.format(sAdaptiveLowFreqNegLessThanAMinute, formatter.formatMeasures(minute));
-    }
-    /**
-    * Returns the fixed tick period for low-frequency updates.
-    */
-    public static long getTickPeriod() {
-        return TICK_PERIOD;
     }
 
     private static String formatChronometerLowFrequency(Duration duration) {
