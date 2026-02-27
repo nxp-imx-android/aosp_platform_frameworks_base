@@ -23,6 +23,7 @@ import android.content.ComponentName;
 import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.view.Display;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,6 +63,7 @@ public class PromptInfo implements Parcelable {
     private ComponentName mRealCallerForConfirmDeviceCredentialActivity = null;
     private String mClassNameIfItIsConfirmDeviceCredentialActivity = null;
     private boolean mIsSystemCaller = false;
+    private int mDisplayId = Display.DEFAULT_DISPLAY;
 
     public PromptInfo() {
     }
@@ -102,6 +104,7 @@ public class PromptInfo implements Parcelable {
         mIsSystemCaller = in.readBoolean();
         mIdentityCheckInfo = in.readParcelable(IdentityCheckInfo.class.getClassLoader(),
                 IdentityCheckInfo.class);
+        mDisplayId = in.readInt();
     }
 
     public static final Creator<PromptInfo> CREATOR = new Creator<PromptInfo>() {
@@ -152,6 +155,7 @@ public class PromptInfo implements Parcelable {
         dest.writeTypedList(mFallbackOptions);
         dest.writeBoolean(mIsSystemCaller);
         dest.writeParcelable(mIdentityCheckInfo, 0 /* parcelableFlags */);
+        dest.writeInt(mDisplayId);
     }
 
     // LINT.IfChange
@@ -375,6 +379,9 @@ public class PromptInfo implements Parcelable {
         mIsSystemCaller = isSystemCaller;
     }
 
+    public void setDisplayId(int displayId) {
+        mDisplayId = displayId;
+    }
 
     // Getters
 
@@ -449,6 +456,10 @@ public class PromptInfo implements Parcelable {
 
     public CharSequence getNegativeButtonText() {
         return mNegativeButtonText;
+    }
+
+    public int getDisplayId() {
+        return mDisplayId;
     }
 
     public boolean isClearIdentityCheckFallbackOption() {

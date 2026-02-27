@@ -96,8 +96,10 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.SomeArgs;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.DumpUtils;
+import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.biometrics.log.BiometricContext;
+import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.utils.Slogf;
 
 import java.io.FileDescriptor;
@@ -131,6 +133,7 @@ public class BiometricService extends SystemService {
     @NonNull private final Supplier<Long> mRequestCounter;
     @NonNull private final BiometricContext mBiometricContext;
     private final UserManager mUserManager;
+    private final VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
 
     @VisibleForTesting
     IStatusBarService mStatusBarService;
@@ -1029,7 +1032,7 @@ public class BiometricService extends SystemService {
         @android.annotation.EnforcePermission(android.Manifest.permission.USE_BIOMETRIC_INTERNAL)
         @Override // Binder call
         public int canAuthenticate(String opPackageName, int userId, int callingUserId,
-                @Authenticators.Types int authenticators) {
+                @Authenticators.Types int authenticators, int displayId) {
 
             super.canAuthenticate_enforcePermission();
 
@@ -1043,7 +1046,7 @@ public class BiometricService extends SystemService {
 
             try {
                 final PreAuthInfo preAuthInfo =
-                        createPreAuthInfo(opPackageName, userId, authenticators);
+                        createPreAuthInfo(opPackageName, userId, authenticators, displayId);
                 return preAuthInfo.getCanAuthenticateResult();
             } catch (RemoteException e) {
                 Slog.e(TAG, "Remote exception", e);
@@ -1321,7 +1324,8 @@ public class BiometricService extends SystemService {
                 String opPackageName,
                 int userId,
                 int callingUserId,
-                @Authenticators.Types int authenticators) {
+                @Authenticators.Types int authenticators,
+                int displayId) {
 
 
             super.getCurrentModality_enforcePermission();
@@ -1335,8 +1339,8 @@ public class BiometricService extends SystemService {
             }
 
             try {
-                final PreAuthInfo preAuthInfo =
-                        createPreAuthInfo(opPackageName, userId, authenticators);
+                final PreAuthInfo preAuthInfo = createPreAuthInfo(opPackageName, userId,
+                        authenticators, displayId);
                 return preAuthInfo.getPreAuthenticateStatus().first;
             } catch (RemoteException e) {
                 Slog.e(TAG, "Remote exception", e);
@@ -1418,14 +1422,16 @@ public class BiometricService extends SystemService {
     private PreAuthInfo createPreAuthInfo(
             @NonNull String opPackageName,
             int userId,
-            @Authenticators.Types int authenticators) throws RemoteException {
+            @Authenticators.Types int authenticators,
+            int displayId) throws RemoteException {
 
         final PromptInfo promptInfo = new PromptInfo();
         promptInfo.setAuthenticators(authenticators);
+        promptInfo.setDisplayId(displayId);
 
         return PreAuthInfo.create(mTrustManager, mDevicePolicyManager, mSettingObserver, mSensors,
                 userId, promptInfo, opPackageName, false /* checkDevicePolicyManager */,
-                getContext(), mBiometricCameraManager, mUserManager);
+                getContext(), mBiometricCameraManager, mUserManager, mVirtualDeviceManagerInternal);
     }
 
     /**
@@ -1537,6 +1543,10 @@ public class BiometricService extends SystemService {
         public AuthenticationPolicyManager getAuthenticationPolicyManager(Context context) {
             return context.getSystemService(AuthenticationPolicyManager.class);
         }
+
+        public VirtualDeviceManagerInternal getVirtualDeviceManagerInternal() {
+            return LocalServices.getService(VirtualDeviceManagerInternal.class);
+        }
     }
 
     /**
@@ -1572,6 +1582,7 @@ public class BiometricService extends SystemService {
         mKeyStoreAuthorization = injector.getKeyStoreAuthorization();
         mGateKeeper = injector.getGateKeeperService();
         mBiometricNotificationLogger = injector.getNotificationLogger();
+        mVirtualDeviceManagerInternal = injector.getVirtualDeviceManagerInternal();
 
         try {
             injector.getActivityManagerService().registerUserSwitchObserver(
@@ -1855,7 +1866,8 @@ public class BiometricService extends SystemService {
                 final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager,
                         mDevicePolicyManager, mSettingObserver, mSensors, userId,
                         promptInfo, opPackageName, promptInfo.isDisallowBiometricsIfPolicyExists(),
-                        getContext(), mBiometricCameraManager, mUserManager);
+                        getContext(), mBiometricCameraManager, mUserManager,
+                        mVirtualDeviceManagerInternal);
 
                 // Set the default title if necessary.
                 if (promptInfo.isUseDefaultTitle()) {

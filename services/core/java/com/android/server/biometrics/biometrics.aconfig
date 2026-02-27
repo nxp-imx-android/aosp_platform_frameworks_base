@@ -17,3 +17,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "bp_computer_controlled"
+  namespace: "biometrics_framework"
+  description: "This flag is to block biometric prompt in computer controlled displays"
+  bug: "481273047"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

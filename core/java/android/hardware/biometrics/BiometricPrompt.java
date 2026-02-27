@@ -235,6 +235,7 @@ public class BiometricPrompt implements BiometricAuthenticator, BiometricConstan
         public Builder(Context context) {
             mPromptInfo = new PromptInfo();
             mContext = context;
+            mPromptInfo.setDisplayId(mContext.getDisplayId());
         }
 
         /**

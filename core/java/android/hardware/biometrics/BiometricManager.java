@@ -487,7 +487,8 @@ public class BiometricManager {
             final int userId = mContext.getUserId();
             final String opPackageName = mContext.getOpPackageName();
             try {
-                return mService.getButtonLabel(userId, opPackageName, mAuthenticators);
+                return mService.getButtonLabel(userId, opPackageName, mAuthenticators,
+                        mContext.getDisplayId());
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -521,7 +522,8 @@ public class BiometricManager {
             final int userId = mContext.getUserId();
             final String opPackageName = mContext.getOpPackageName();
             try {
-                return mService.getPromptMessage(userId, opPackageName, mAuthenticators);
+                return mService.getPromptMessage(userId, opPackageName, mAuthenticators,
+                        mContext.getDisplayId());
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -721,7 +723,8 @@ public class BiometricManager {
         if (mService != null) {
             try {
                 final String opPackageName = mContext.getOpPackageName();
-                return mService.canAuthenticate(opPackageName, userId, authenticators);
+                final int displayId = mContext.getDisplayId();
+                return mService.canAuthenticate(opPackageName, userId, authenticators, displayId);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
