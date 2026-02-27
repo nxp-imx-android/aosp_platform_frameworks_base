@@ -141,7 +141,6 @@
     <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"স্ক্ৰীন মেক্সিমাইজ কৰক"</string>
     <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"আকাৰ সলনি কৰক"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"ইয়ালৈ এপ্‌টো আনিব নোৱাৰি"</string>
-    <string name="desktop_mode_talkback_state_opening" msgid="8505494249513712682">"নতুন এপৰ ৱিণ্ড’ খুলি থকা হৈছে"</string>
     <string name="desktop_mode_talkback_state_closing" msgid="6791583518636526904">"এপৰ ৱিণ্ড’ বন্ধ কৰি থকা হৈছে"</string>
     <string name="desktop_mode_talkback_state_minimizing" msgid="7406911785134757827">"এপৰ ৱিণ্ড’ মিনিমাইজ কৰা হৈছে"</string>
     <string name="desktop_mode_talkback_state_focused" msgid="6287982923335568236">"<xliff:g id="APP_NAME">%1$s</xliff:g> (ফ’কাছ কৰা)"</string>

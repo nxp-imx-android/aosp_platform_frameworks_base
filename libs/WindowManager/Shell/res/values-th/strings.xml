@@ -141,7 +141,6 @@
     <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"ขยายหน้าจอให้ใหญ่สุด"</string>
     <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"ปรับขนาด"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"ย้ายแอปมาที่นี่ไม่ได้"</string>
-    <string name="desktop_mode_talkback_state_opening" msgid="8505494249513712682">"กำลังเปิดหน้าต่างแอปใหม่"</string>
     <string name="desktop_mode_talkback_state_closing" msgid="6791583518636526904">"กำลังปิดหน้าต่างแอป"</string>
     <string name="desktop_mode_talkback_state_minimizing" msgid="7406911785134757827">"กำลังย่อหน้าต่างแอป"</string>
     <string name="desktop_mode_talkback_state_focused" msgid="6287982923335568236">"<xliff:g id="APP_NAME">%1$s</xliff:g> (โฟกัสอยู่)"</string>

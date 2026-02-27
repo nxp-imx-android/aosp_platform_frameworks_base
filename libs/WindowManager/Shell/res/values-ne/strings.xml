@@ -141,7 +141,6 @@
     <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"स्क्रिन म्याक्सिमाइज गर्नुहोस्"</string>
     <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"आकार बदल्नुहोस्"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"एप सारेर यहाँ ल्याउन सकिएन"</string>
-    <string name="desktop_mode_talkback_state_opening" msgid="8505494249513712682">"एपको नयाँ विन्डो खोल्नुहोस्"</string>
     <string name="desktop_mode_talkback_state_closing" msgid="6791583518636526904">"एपको विन्डो बन्द गरिँदै छ"</string>
     <string name="desktop_mode_talkback_state_minimizing" msgid="7406911785134757827">"एपको विन्डो मिनिमाइज गरिँदै छ"</string>
     <string name="desktop_mode_talkback_state_focused" msgid="6287982923335568236">"<xliff:g id="APP_NAME">%1$s</xliff:g> (फोकस गरिएको)"</string>

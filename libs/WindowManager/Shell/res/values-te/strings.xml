@@ -141,7 +141,6 @@
     <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"స్క్రీన్ సైజ్‌ను మ్యాగ్జిమైజ్ చేయండి"</string>
     <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"సైజ్ మార్చండి"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"యాప్‌ను ఇక్కడకి తరలించడం సాధ్యం కాదు"</string>
-    <string name="desktop_mode_talkback_state_opening" msgid="8505494249513712682">"కొత్త యాప్ విండోను తెరుస్తోంది"</string>
     <string name="desktop_mode_talkback_state_closing" msgid="6791583518636526904">"యాప్ విండోను మూసివేస్తోంది"</string>
     <string name="desktop_mode_talkback_state_minimizing" msgid="7406911785134757827">"యాప్ విండోను మినిమైజ్ చేస్తోంది"</string>
     <string name="desktop_mode_talkback_state_focused" msgid="6287982923335568236">"<xliff:g id="APP_NAME">%1$s</xliff:g> (ఫోకస్డ్)"</string>
