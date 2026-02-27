@@ -17,6 +17,7 @@
 package com.android.wm.shell.transition;
 
 import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Matrix;
@@ -76,6 +77,16 @@ class WindowAnimation {
         }
     }
 
+    void cancelRemoveListeners() {
+        if (mAnimator != null) {
+            if (mAnimator instanceof ValueAnimator) {
+                // Remove all update listeners so we don't trigger a jump to end state
+                ((ValueAnimator) mAnimator).removeAllUpdateListeners();
+            }
+            mAnimator.cancel();
+        }
+    }
+
     void setTransformation(@Nullable Transformation transformation) {
         mTransformation = transformation;
     }
@@ -87,11 +98,14 @@ class WindowAnimation {
      * @return A {@link WindowAnimationState} representing the current state of the window
      * animation.
      */
-    @Nullable
     WindowAnimationState getWindowAnimationState() {
         PointF position = new PointF();
         PointF scale = new PointF();
         RectF currentBoundsF = getTransformComponents(position, scale);
+
+        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                "getWindowAnimationState: capture bounds=%s scale=%s pos=%s corner=%f",
+                currentBoundsF, scale, position, mCornerRadius);
 
         mWindowAnimationState.bounds = currentBoundsF;
         // We assume that the scaling is uniform eg. scale.x == scale.y
@@ -164,7 +178,9 @@ class WindowAnimation {
         }
 
         /* Apply the current transformation based on the starting bounds of the change */
-        RectF currentBoundsF = new RectF(mChange.getStartAbsBounds());
+        float w = mChange.getStartAbsBounds().width();
+        float h = mChange.getStartAbsBounds().height();
+        RectF currentBoundsF = new RectF(0, 0, w, h);
         mTransformation.getMatrix().mapRect(currentBoundsF);
 
         final float[] matrix = new float[9];

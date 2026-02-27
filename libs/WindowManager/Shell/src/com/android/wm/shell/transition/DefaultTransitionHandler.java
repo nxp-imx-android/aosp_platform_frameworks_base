@@ -97,9 +97,11 @@ import android.util.ArrayMap;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.window.TransitionInfo;
 import android.window.TransitionMetrics;
 import android.window.TransitionRequestInfo;
+import android.window.WindowAnimationState;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.R;
@@ -122,6 +124,7 @@ import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.sysui.ShellInit;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -129,6 +132,7 @@ import java.util.function.Consumer;
 /** The default handler that handles anything not already handled. */
 public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     private static final int SIZE_CHANGE_ANIMATION_DURATION = 400;
+    private static final int MERGE_ANIMATION_DURATION = 400;
 
     private final TransactionPool mTransactionPool;
     private final DisplayController mDisplayController;
@@ -143,6 +147,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     /** Keeps track of the currently-running transitions and their window animations */
     private final ArrayMap<IBinder, ArrayList<WindowAnimation>>
             mTransitionAnimators = new ArrayMap<>();
+    private final ArrayMap<IBinder, Transitions.TransitionFinishCallback> mFinishCallbacks =
+            new ArrayMap<>();
     private final CounterRotatorHelper mRotator = new CounterRotatorHelper();
     private final Rect mInsets = new Rect(0, 0, 0, 0);
     private float mTransitionAnimationScaleSetting = 1.0f;
@@ -362,6 +368,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         }
         final ArrayList<WindowAnimation> animations = new ArrayList<>();
         mTransitionAnimators.put(transition, animations);
+        mFinishCallbacks.put(transition, finishCallback);
 
         final boolean isTaskTransition = com.android.window.flags.Flags.transitionHandlerCujTags()
                 && isTaskTransition(info);
@@ -599,8 +606,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 final TransitionInfo.Root animRoot = TransitionUtil.getRootFor(change, info);
                 final Rect boundsForOffset =
                         com.android.window.flags.Flags.refineAncestorSearchAndBounds()
-                        && TransitionUtil.isClosingType(change.getMode())
-                        ? change.getStartAbsBounds() : change.getEndAbsBounds();
+                                && TransitionUtil.isClosingType(change.getMode())
+                                ? change.getStartAbsBounds() : change.getEndAbsBounds();
                 final Point animRelOffset = new Point(
                         boundsForOffset.left - animRoot.getOffset().x,
                         boundsForOffset.top - animRoot.getOffset().y);
@@ -698,6 +705,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             mInteractionJankMonitor.end(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
         }
         mTransitionAnimators.remove(transition);
+        mFinishCallbacks.remove(transition);
 
         if (!Flags.releaseAllTransitionSurfaces()) {
             info.releaseAllSurfaces();
@@ -836,6 +844,91 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             @NonNull Transitions.TransitionFinishCallback finishCallback) {
         ArrayList<WindowAnimation> animations = mTransitionAnimators.get(mergeTarget);
         if (animations == null) return;
+        if (!Flags.enableMergeAnimations() || !MergeTransitionHelper.canCreateMergeAnimation(
+                info)) {
+            endAllAnimations(animations);
+            return;
+        }
+
+        Transitions.TransitionFinishCallback originalFinishCallback = mFinishCallbacks.get(
+                mergeTarget);
+
+        List<WindowAnimation> newAnimations = new ArrayList<>();
+        List<WindowAnimation> animationsToCancel = new ArrayList<>();
+
+        var conflictingWindowAnimationsMap = MergeTransitionHelper.getMergeConflicts(animations,
+                info);
+
+        Consumer<WindowAnimation> onAnimFinish = (wa) -> {
+            animations.remove(wa);
+            if (animations.isEmpty()) {
+                finishTransition(mergeTarget, info, originalFinishCallback, true);
+            }
+        };
+
+        // Create animations for the conflicting layers
+        var validConflictingChanges = new ArrayList<TransitionInfo.Change>();
+        for (int i = 0; i < conflictingWindowAnimationsMap.size(); ++i) {
+            WindowAnimation runningWindowAnimation = conflictingWindowAnimationsMap.keyAt(i);
+            TransitionInfo.Change incomingChange = conflictingWindowAnimationsMap.valueAt(i);
+
+            animationsToCancel.add(runningWindowAnimation);
+
+            WindowAnimationState mergingWindowState =
+                    runningWindowAnimation.getWindowAnimationState();
+            Animation a = new MergeTransitionHelper.StateToRectAnimation(
+                    mergingWindowState,
+                    incomingChange.getEndAbsBounds(),
+                    MERGE_ANIMATION_DURATION,
+                    Interpolators.EMPHASIZED);
+
+            // We need to modify the startT so that the window remains visually "frozen" in its
+            // correct starting position during the tiny gap between the merge request and
+            // the first animation frame
+            if (incomingChange.getEndAbsBounds().width() > 0
+                    && incomingChange.getEndAbsBounds().height() > 0) {
+                Transformation transformation = new Transformation();
+                a.getTransformation(0, transformation);
+                float[] matrix = new float[9];
+
+                startT.setMatrix(incomingChange.getLeash(),
+                        transformation.getMatrix(),
+                        matrix);
+                startT.setAlpha(incomingChange.getLeash(), 1f);
+            }
+
+            WindowAnimation newWinAnim = buildWindowAnimation(a, incomingChange,
+                    incomingChange.getLeash(),
+                    onAnimFinish, mTransactionPool, mMainExecutor, null /* position */,
+                    runningWindowAnimation.mCornerRadius,
+                    null /* clipRect */, null /* roundedBounds */);
+            newAnimations.add(newWinAnim);
+            validConflictingChanges.add(incomingChange);
+        }
+
+        // Arrange the layers based on recency, as we want overwriting changes to have priority
+        MergeTransitionHelper.arrangeStartTransactionLayers(info, validConflictingChanges,
+                startT);
+
+        startT.apply();
+
+        if (!newAnimations.isEmpty()) {
+            finishCallback.onTransitionFinished(null);
+            animations.addAll(newAnimations);
+            mAnimExecutor.execute(() -> {
+                animationsToCancel.forEach(WindowAnimation::cancelRemoveListeners);
+                newAnimations.forEach(WindowAnimation::start);
+            });
+        } else {
+            // Fallback if no matching changes found
+            for (int i = animations.size() - 1; i >= 0; --i) {
+                final WindowAnimation winAnim = animations.get(i);
+                mAnimExecutor.execute(winAnim::end);
+            }
+        }
+    }
+
+    private void endAllAnimations(List<WindowAnimation> animations) {
         for (int i = animations.size() - 1; i >= 0; --i) {
             final WindowAnimation winAnim = animations.get(i);
             mAnimExecutor.execute(winAnim::end);
@@ -1174,6 +1267,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
             @Nullable SurfaceControl.Transaction finishTransaction) {
         mInteractionJankMonitor.cancel(CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
+        mFinishCallbacks.remove(transition);
     }
 
 }

@@ -20,6 +20,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_APPEARING;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
@@ -356,6 +357,68 @@ public class DefaultTransitionHandlerTest extends ShellTestCase {
                 mock(Transitions.TransitionFinishCallback.class));
 
         verify(startT).reparent(any(), any());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_ENABLE_MERGE_ANIMATIONS)
+    public void testMergeAnimation_allowedFlag_mergesAnimation() {
+        final RunningTaskInfo taskInfo = createTaskInfo(1);
+        final TransitionInfo.Change openTask = new ChangeBuilder(taskInfo, TRANSIT_OPEN)
+                .build();
+        final IBinder token = new Binder();
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(openTask)
+                .build();
+        final SurfaceControl.Transaction startT = MockTransactionPool.create();
+        final SurfaceControl.Transaction finishT = MockTransactionPool.create();
+        final Transitions.TransitionFinishCallback finishCallback =
+                mock(Transitions.TransitionFinishCallback.class);
+
+        mTransitionHandler.startAnimation(token, info, startT, finishT, finishCallback);
+
+        final IBinder mergeToken = new Binder();
+        final TransitionInfo mergeInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(new ChangeBuilder(taskInfo, TRANSIT_OPEN).build())
+                .build();
+        final Transitions.TransitionFinishCallback mergeFinishCallback =
+                mock(Transitions.TransitionFinishCallback.class);
+
+        mTransitionHandler.mergeAnimation(mergeToken, mergeInfo, MockTransactionPool.create(),
+                MockTransactionPool.create(), token, mergeFinishCallback);
+
+        verify(mergeFinishCallback).onTransitionFinished(any());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_ENABLE_MERGE_ANIMATIONS)
+    public void testMergeAnimation_disallowedFlag_doesNotMerge() {
+        final RunningTaskInfo taskInfo = createTaskInfo(1);
+        final TransitionInfo.Change openTask = new ChangeBuilder(taskInfo, TRANSIT_OPEN)
+                .build();
+        final IBinder token = new Binder();
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(openTask)
+                .build();
+        final SurfaceControl.Transaction startT = MockTransactionPool.create();
+        final SurfaceControl.Transaction finishT = MockTransactionPool.create();
+        final Transitions.TransitionFinishCallback finishCallback =
+                mock(Transitions.TransitionFinishCallback.class);
+
+        mTransitionHandler.startAnimation(token, info, startT, finishT, finishCallback);
+
+        // Should NOT merge for specific transition flags eg. TRANSIT_FLAG_KEYGUARD_APPEARING
+        final IBinder mergeToken = new Binder();
+        final TransitionInfo mergeInfo = new TransitionInfoBuilder(TRANSIT_OPEN,
+                TRANSIT_FLAG_KEYGUARD_APPEARING)
+                .addChange(new ChangeBuilder(taskInfo, TRANSIT_OPEN).build())
+                .build();
+        final Transitions.TransitionFinishCallback mergeFinishCallback =
+                mock(Transitions.TransitionFinishCallback.class);
+
+        mTransitionHandler.mergeAnimation(mergeToken, mergeInfo, MockTransactionPool.create(),
+                MockTransactionPool.create(), token, mergeFinishCallback);
+
+        verify(mergeFinishCallback, never()).onTransitionFinished(any());
     }
 
     @Test
