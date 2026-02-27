@@ -18,6 +18,7 @@ package com.android.systemui.customization.clocks.view
 
 import android.annotation.SuppressLint
 import android.graphics.Canvas
+import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -37,12 +38,14 @@ import com.android.systemui.plugins.keyguard.VMeasureSpec
 import com.android.systemui.plugins.keyguard.VPointF
 import com.android.systemui.plugins.keyguard.VPointF.Companion.max
 import com.android.systemui.plugins.keyguard.VRectF
+import com.android.systemui.plugins.keyguard.ui.clocks.ClockAxisStyle
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.HOUR_DIGIT_PAIR
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.HOUR_FIRST_DIGIT
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.HOUR_SECOND_DIGIT
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.MINUTE_DIGIT_PAIR
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.MINUTE_FIRST_DIGIT
 import com.android.systemui.plugins.keyguard.ui.clocks.ClockViewIds.MINUTE_SECOND_DIGIT
+import java.util.Locale
 import kotlin.math.ceil
 
 interface IDigitalClockViewGroup : IDigitalClockView {
@@ -51,6 +54,18 @@ interface IDigitalClockViewGroup : IDigitalClockView {
     fun updateMeasuredSize()
 
     fun updateLocation()
+
+    fun onLocaleChanged(locale: Locale)
+
+    fun animateDoze(isDozing: Boolean, isAnimated: Boolean)
+
+    fun updateAxes(axes: ClockAxisStyle, isAnimated: Boolean)
+
+    fun animateCharge()
+
+    fun onFontSettingChanged(fontSizePx: Float)
+
+    fun updateColor(lockscreenColor: Int, aodColor: Int = Color.WHITE)
 }
 
 @SuppressLint("ViewConstructor")
