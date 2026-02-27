@@ -45,7 +45,6 @@ import kotlin.coroutines.resume
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
@@ -133,12 +132,13 @@ constructor(
         if (!screenCaptureRecordFeaturesInteractor.isSmallScreenRecordingEnabled) return
 
         screenRecordingServiceInteractor.screenRecordings
-            .filter { it is ScreenRecording.Saving }
+            .filterIsInstance(ScreenRecording.Saving::class)
             .onEach { recording ->
                 activityStarter.startActivityDismissingKeyguard(
                     /* intent = */ SmallScreenPostRecordingActivity.waitForRecording(
                         context = context,
                         videoUri = recording.uri,
+                        notificationId = recording.notificationId,
                     ),
                     /* onlyProvisioned = */ true,
                     /* dismissShade = */ true,
@@ -158,9 +158,10 @@ constructor(
                 if (display != null) {
                     val shelf =
                         postRecordingShelfFactory.create(
-                            recording.uri,
-                            recording.thumbnail,
-                            display,
+                            uri = recording.uri,
+                            thumbnail = recording.thumbnail,
+                            display = display,
+                            notificationId = recording.notificationId,
                         )
                     shelf.show()
                 }

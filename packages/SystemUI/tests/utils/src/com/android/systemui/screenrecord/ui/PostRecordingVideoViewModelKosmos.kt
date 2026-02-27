@@ -25,8 +25,11 @@ import com.android.systemui.screenrecord.domain.interactor.screenRecordingServic
 val Kosmos.postRecordingImmediateVideoViewModelFactory by
     Kosmos.Fixture {
         object : PostRecordingImmediateVideoViewModel.Factory {
-            override fun create(videoUri: Uri): PostRecordingImmediateVideoViewModel {
-                return PostRecordingImmediateVideoViewModel(videoUri)
+            override fun create(
+                videoUri: Uri,
+                notificationId: Int,
+            ): PostRecordingImmediateVideoViewModel {
+                return PostRecordingImmediateVideoViewModel(videoUri, notificationId)
             }
         }
     }
@@ -34,9 +37,13 @@ val Kosmos.postRecordingImmediateVideoViewModelFactory by
 val Kosmos.postRecordingWaitingVideoViewModelFactory by
     Kosmos.Fixture {
         object : PostRecordingWaitingVideoViewModel.Factory {
-            override fun create(videoUri: Uri): PostRecordingWaitingVideoViewModel {
+            override fun create(
+                videoUri: Uri,
+                notificationId: Int,
+            ): PostRecordingWaitingVideoViewModel {
                 return PostRecordingWaitingVideoViewModel(
                     videoUri = videoUri,
+                    notificationId = notificationId,
                     screenRecordingServiceInteractor = screenRecordingServiceInteractor,
                 )
             }

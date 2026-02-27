@@ -71,7 +71,7 @@ class ScreenCaptureCoreStartableTest : SysuiTestCase() {
                 }
             postRecordingShelfFactory =
                 mock<PostRecordingShelf.Factory> {
-                    on { create(any(), any(), any()) } doReturn mock<PostRecordingShelf>()
+                    on { create(any(), any(), any(), any()) } doReturn mock<PostRecordingShelf>()
                 }
         }
     private val displayCaptor = argumentCaptor<Display>()
@@ -144,9 +144,16 @@ class ScreenCaptureCoreStartableTest : SysuiTestCase() {
             serviceCallback!!.onRecordingSaved(
                 "content://test".toUri(),
                 Icon.createWithBitmap(createBitmap(1, 1)),
+                1,
             )
 
-            verify(postRecordingShelfFactory).create(any(), any(), displayCaptor.capture())
+            verify(postRecordingShelfFactory)
+                .create(
+                    uri = any(),
+                    thumbnail = any(),
+                    display = displayCaptor.capture(),
+                    notificationId = any(),
+                )
             assertThat(displayCaptor.lastValue.displayId).isEqualTo(display2.displayId)
         }
 
@@ -168,9 +175,16 @@ class ScreenCaptureCoreStartableTest : SysuiTestCase() {
             serviceCallback!!.onRecordingSaved(
                 "content://test".toUri(),
                 Icon.createWithBitmap(createBitmap(1, 1)),
+                1,
             )
 
-            verify(postRecordingShelfFactory).create(any(), any(), displayCaptor.capture())
+            verify(postRecordingShelfFactory)
+                .create(
+                    uri = any(),
+                    thumbnail = any(),
+                    display = displayCaptor.capture(),
+                    notificationId = any(),
+                )
             assertThat(displayCaptor.lastValue.displayId).isEqualTo(display1.displayId)
         }
 }

@@ -250,17 +250,23 @@ constructor(
             stopRecording(reason)
         }
 
-        override fun onSavingRecording(recordingUri: Uri) {
-            _screenRecording.value = ScreenRecording.Saving(uri = recordingUri)
-        }
-
-        override fun onRecordingSaved(recordingUri: Uri, thumbnail: Icon) {
+        override fun onSavingRecording(recordingUri: Uri, notificationId: Int) {
             _screenRecording.value =
-                ScreenRecording.Saved(uri = recordingUri, thumbnail = thumbnail)
+                ScreenRecording.Saving(uri = recordingUri, notificationId = notificationId)
         }
 
-        override fun onRecordingSaveError(recordingUri: Uri) {
-            _screenRecording.value = ScreenRecording.NotSaved(uri = recordingUri)
+        override fun onRecordingSaved(recordingUri: Uri, thumbnail: Icon, notificationId: Int) {
+            _screenRecording.value =
+                ScreenRecording.Saved(
+                    uri = recordingUri,
+                    thumbnail = thumbnail,
+                    notificationId = notificationId,
+                )
+        }
+
+        override fun onRecordingSaveError(recordingUri: Uri?, notificationId: Int) {
+            _screenRecording.value =
+                ScreenRecording.NotSaved(uri = recordingUri, notificationId = notificationId)
         }
     }
 
