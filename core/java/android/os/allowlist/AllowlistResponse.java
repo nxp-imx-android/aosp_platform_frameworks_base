@@ -26,6 +26,7 @@ import android.os.Parcelable;
 import android.os.allowlist.AllowlistManager.ResponseStatus;
 
 import java.util.Objects;
+import java.util.TreeSet;
 
 /**
  * A class representing a response to a specific allowlist query. A response consists of two fields:
@@ -102,5 +103,60 @@ public final class AllowlistResponse implements Parcelable {
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeInt(mStatus);
         dest.writeParcelable(mData, 0);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AllowlistResponse that)) {
+            return false;
+        }
+
+        return mStatus == that.mStatus && bundleEquals(mData, that.mData);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mStatus, bundleHashCode(mData));
+    }
+
+    @Override
+    public String toString() {
+        return "status=" + mStatus + ", data=" + (mData == null ? "null" : mData.toString());
+    }
+
+    private boolean bundleEquals(Bundle a, Bundle b) {
+        if (a == b) return true;
+        if (a == null || b == null) return false;
+        if (a.size() != b.size()) return false;
+
+        for (String key : a.keySet()) {
+            if (!b.containsKey(key)) return false;
+
+            Object valueOne = a.get(key);
+            Object valueTwo = b.get(key);
+
+            if (valueOne instanceof Bundle && valueTwo instanceof Bundle) {
+                if (!bundleEquals((Bundle) valueOne, (Bundle) valueTwo)) return false;
+            } else {
+                if (!Objects.deepEquals(valueOne, valueTwo)) return false;
+            }
+        }
+        return true;
+    }
+
+    private int bundleHashCode(Bundle bundle) {
+        if (bundle == null) {
+            return 0;
+        }
+        int hash = 0;
+        TreeSet<String> treeSet = new TreeSet<>(bundle.keySet());
+        for (String key : treeSet) {
+            Object value = bundle.get(key);
+            hash = 31 * hash + key.hashCode();
+            hash = 31 * hash + Objects.hashCode(value);
+        }
+
+        return hash;
     }
 }
