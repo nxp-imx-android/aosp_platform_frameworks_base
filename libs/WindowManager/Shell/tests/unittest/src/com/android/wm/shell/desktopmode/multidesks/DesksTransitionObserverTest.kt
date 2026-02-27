@@ -1641,6 +1641,53 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
+    fun onTransitionFinished_mergedToken_doesNotClearPlayingTransitionState() {
+        val mergedTransition = Binder()
+        val playingTransition = Binder()
+        val repository = desktopUserRepositories.getProfile(USER_ID_1)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 1)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 1)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 2)
+
+        val deactivateTransition =
+            DeskTransition.DeactivateDesk(
+                playingTransition,
+                userId = USER_ID_1,
+                deskId = 1,
+                displayId = DEFAULT_DISPLAY,
+                switchingUser = false,
+                exitReason = ExitReason.UNKNOWN_EXIT,
+            )
+        val activateTransition =
+            DeskTransition.ActivateDesk(
+                mergedTransition,
+                userId = USER_ID_1,
+                displayId = DEFAULT_DISPLAY,
+                deskId = 2,
+                enterReason = EnterReason.UNKNOWN_ENTER,
+            )
+        observer.addPendingTransition(deactivateTransition)
+        observer.addPendingTransition(activateTransition)
+        observer.onTransitionReady(
+            transition = playingTransition,
+            info = buildTransitionInfo().addDeskChange(deskId = 1, mode = TRANSIT_TO_BACK),
+        )
+        observer.onTransitionReady(
+            transition = mergedTransition,
+            info = buildTransitionInfo().addDeskChange(deskId = 2, mode = TRANSIT_TO_FRONT),
+        )
+
+        // Merge the transition
+        observer.onTransitionMerged(merged = mergedTransition, playing = playingTransition)
+
+        // Verify the state for the playing transition is still present
+        val result = observer.findDeskToDeskTransition(playingTransition)
+        assertThat(result).isNotNull()
+        assertThat(result?.fromDeskId).isEqualTo(1)
+        assertThat(result?.toDeskId).isEqualTo(2)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun findDeskToDeskTransition_multiDisplay_returnsCorrectTransition() {
         val transition = Binder()
