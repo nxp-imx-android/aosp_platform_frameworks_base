@@ -1363,6 +1363,7 @@ constructor(
 
         @UiThread
         fun postTimeouts() {
+            if (cancelled) return
             timeoutHandler?.let {
                 it.postDelayed(onTimeout, TRANSITION_TIMEOUT)
                 it.postDelayed(onLongTimeout, LONG_TRANSITION_TIMEOUT)
@@ -1506,9 +1507,29 @@ constructor(
         override fun onTransitionConsumed(token: IBinder?, aborted: Boolean) {
             removeTimeouts()
             token?.let { transitionHelper.onTransitionConsumed(it) }
-            mainExecutor.execute {
-                cancelled = true
-                delegate?.onAnimationCancelled()
+
+            scope.launch {
+                if (delegate == null) {
+                    val controller = createController?.invoke() ?: return@launch
+                    delegate =
+                        TransitionAnimationDelegate(
+                            mainExecutor,
+                            controller,
+                            callback,
+                            DelegatingAnimationCompletionListener(
+                                listener,
+                                this@OriginTransition::dispose,
+                            ),
+                            transitionAnimator,
+                            disableWmTimeout,
+                            skipReparentTransaction,
+                        )
+                }
+
+                mainExecutor.execute {
+                    cancelled = true
+                    delegate?.onAnimationCancelled()
+                }
             }
         }
 
