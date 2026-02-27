@@ -24,16 +24,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -125,26 +122,15 @@ private fun CurrentRule(rule: RuleModel, onNavigateToEditScreen: (DraftRuleModel
                     color = MaterialTheme.colorScheme.surfaceContainer,
                     shape = MaterialTheme.shapes.large,
                 )
-                .padding(8.dp)
                 .clickable(onClick = { isExpanded = !isExpanded })
+                .padding(8.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.minimumInteractiveComponentSize(),
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Star,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(18.dp).padding(start = 4.dp),
-            )
-            Text(
-                text = rule.toText(),
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f).padding(start = 4.dp),
-            )
-        }
+        ReadOnlyAction(rule.action)
+        Text(
+            text = rule.toText(),
+            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.bodyMedium,
+        )
 
         if (isExpanded) {
             Button(onClick = { onNavigateToEditScreen(rule.toDraft()) }) {
@@ -173,5 +159,5 @@ private fun RuleModel.toText(): String {
             ""
         }
 
-    return "${action.name} notifications$contactsString$includedAppsString [TK]"
+    return "Notifications$contactsString$includedAppsString [TK]"
 }
