@@ -21,6 +21,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.MotionTest
 import android.testing.TestableLooper.RunWithLooper
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.hasTestTag
@@ -29,19 +30,20 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipe
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.snapshot.ObserveReadsRoot
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.compose.modifiers.resIdToTestTag
+import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
-import com.android.systemui.keyguard.data.repository.keyguardRepository
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesParentViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
+import com.android.systemui.scene.data.repository.unlockDevice
+import com.android.systemui.scene.domain.interactor.awaitTransitionIdle
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.sceneContainerTransitions
 import com.android.systemui.scene.sceneContainerViewModelFactory
@@ -65,8 +67,9 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificati
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.flow.MutableStateFlow
-import org.junit.Before
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -117,12 +120,6 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
                 },
         )
 
-    @Before
-    fun setup() {
-        // Disabled keyguard. Otherwise during the transition leads to Lockscreen.
-        kosmos.keyguardRepository.setKeyguardEnabled(false)
-    }
-
     private val shadeScene =
         ShadeScene(
             shadeSession = shadeSession,
@@ -141,6 +138,7 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
     fun swipeUpFromShadeToGoneScene_recordingQQSPanelSize() {
         motionTestRule.runTest(60.seconds) {
             kosmos.enableSingleShade()
+            kosmos.unlockDevice()
             kosmos.usingMediaInComposeFragment = true
             kosmos.populateQuickSettings(tileCount = 7)
 
@@ -150,11 +148,7 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
                     recordingSpec =
                         ComposeRecordingSpec(
                             MotionControl(
-                                delayRecording = {
-                                    awaitCondition {
-                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
-                                    }
-                                }
+                                delayReadyToPlay = { awaitTransitionIdle(kosmos, Scenes.Shade) }
                             ) {
                                 performTouchInputAsync(onRoot()) {
                                     swipe(
@@ -163,6 +157,7 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
                                         durationMillis = 500,
                                     )
                                 }
+                                awaitTransitionIdle(kosmos)
                             }
                         ) {
                             feature(
@@ -182,6 +177,7 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
     fun swipeUpFromShadeNotCrossingThreshold_recordingQQSPanelHeight() {
         motionTestRule.runTest(60.seconds) {
             kosmos.enableSingleShade()
+            kosmos.unlockDevice()
             kosmos.usingMediaInComposeFragment = true
             kosmos.populateQuickSettings(tileCount = 7)
             val motion =
@@ -190,11 +186,7 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
                     recordingSpec =
                         ComposeRecordingSpec(
                             MotionControl(
-                                delayRecording = {
-                                    awaitCondition {
-                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
-                                    }
-                                }
+                                delayReadyToPlay = { awaitTransitionIdle(kosmos, Scenes.Shade) }
                             ) {
                                 performTouchInputAsync(onRoot()) {
                                     swipe(
@@ -203,9 +195,7 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
                                         durationMillis = 500,
                                     )
                                 }
-                                awaitCondition {
-                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
-                                }
+                                awaitTransitionIdle(kosmos)
                             }
                         ) {
                             val qqsPanelHeight =
@@ -223,24 +213,18 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
 
     @Composable
     private fun ShadeToGoneSceneContainer() {
-        val transitionState =
-            MutableStateFlow<ObservableTransitionState>(
-                ObservableTransitionState.Idle(Scenes.Shade)
-            )
         PlatformTheme {
             WithStatusIconContext(kosmos.tintedIconManagerFactory) {
                 val vm =
                     rememberViewModel("HomeScreenShadeTest") {
-                        kosmos.sceneContainerViewModelFactory
-                            .create() {}
-                            .apply { setTransitionState(transitionState = transitionState) }
+                        kosmos.sceneContainerViewModelFactory.create() {}
                     }
 
                 ObserveReadsRoot {
                     SceneContainer(
                         viewModel = vm,
                         sceneByKey = mapOf(Scenes.Gone to goneScene, Scenes.Shade to shadeScene),
-                        initialSceneKey = Scenes.Shade,
+                        initialSceneKey = Scenes.Gone,
                         transitionsBuilder = kosmos.sceneContainerTransitions,
                         overlayByKey = mapOf(),
                         onTransitionStart = { _, _ -> },
@@ -248,6 +232,20 @@ class ShadeSceneToGoneSceneTransitionTest : SysuiTestCase() {
                         dataSourceDelegator = kosmos.sceneDataSourceDelegator,
                         sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
                     )
+                }
+
+                LaunchedEffect(Unit) {
+                    // To ensure the device is unlocked, the device must be entered first. This
+                    // will happen automatically when the Gone scene is shown. Thus, the
+                    // initialSceneKey is Gone, then wait here until the is isDeviceEntered was
+                    // processed, and only then snap to the real initial scene for the test.
+                    kosmos.deviceEntryInteractor.isDeviceEntered.first { it }
+
+                    // TODO b/477544904: remove launch(Dispatchers.Main) once migrated to v2 compose
+                    //  test rule
+                    launch(Dispatchers.Main) {
+                        kosmos.sceneInteractor.snapToScene(Scenes.Shade, "Test")
+                    }
                 }
             }
         }
