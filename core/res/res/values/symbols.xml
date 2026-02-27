@@ -6557,6 +6557,15 @@
    <!-- The package name of the AllowlistProviderService -->
    <java-symbol type="string" name="config_allowlistProviderServicePackage"/>
 
+  <!-- Packages allowed to publish context hints -->
+  <java-symbol type="array" name="config_allowlistPersonalContextHintPublishing" />
+  <!-- Packages allowed to receive context hints -->
+  <java-symbol type="array" name="config_allowlistPersonalContextHintReceiving" />
+  <!-- Packages allowed to publish context insights -->
+  <java-symbol type="array" name="config_allowlistPersonalContextInsightPublishing" />
+  <!-- Packages allowed to receive context insights -->
+  <java-symbol type="array" name="config_allowlistPersonalContextInsightReceiving" />
+
   <!-- TV Watchdog configuration -->
   <java-symbol type="integer" name="config_tvWatchdogUidIoUsageSummaryTopCount" />
   <java-symbol type="integer" name="config_tvWatchdogIoUsageSummaryMinSystemTotalWrittenBytes" />
