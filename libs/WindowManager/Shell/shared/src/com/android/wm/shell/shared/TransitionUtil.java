@@ -31,11 +31,13 @@ import static android.view.WindowManager.TRANSIT_PREPARE_BACK_NAVIGATION;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
+import static android.window.TransitionInfo.FLAG_CHANGED_INTERACTIVE;
 import static android.window.TransitionInfo.FLAG_FIRST_CUSTOM;
 import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
 import static android.window.TransitionInfo.FLAG_IS_WALLPAPER;
 import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
+import static android.window.TransitionInfo.FLAG_NO_ANIMATION;
 import static android.window.TransitionInfo.FLAG_STARTING_WINDOW_TRANSFER_RECIPIENT;
 
 import android.annotation.NonNull;
@@ -110,12 +112,12 @@ public class TransitionUtil {
     /**
      * Returns {@code true} if the transition has a display change that is not just an order-change.
      */
-    public static boolean hasNonOrderOnlyDisplayChange(@NonNull TransitionInfo info) {
+    public static boolean hasStationaryOnlyDisplayChange(@NonNull TransitionInfo info) {
         for (int i = info.getChanges().size() - 1; i >= 0; --i) {
             final TransitionInfo.Change change = info.getChanges().get(i);
             if (change.getMode() == TRANSIT_CHANGE
                     && change.hasFlags(FLAG_IS_DISPLAY)
-                    && !isOrderOnly(change)) {
+                    && !isStationary(change)) {
                 return true;
             }
         }
@@ -148,20 +150,26 @@ public class TransitionUtil {
 
     /** Returns `true` if `change` is only re-ordering. */
     public static boolean isOrderOnly(TransitionInfo.Change change) {
-        return change.getMode() == TRANSIT_CHANGE
-                && (change.getFlags() & FLAG_MOVED_TO_TOP) != 0
-                && change.getStartAbsBounds().equals(change.getEndAbsBounds())
-                && (change.getLastParent() == null
-                        || change.getLastParent().equals(change.getParent()))
-                && (change.getStartRotation() == change.getEndRotation());
+        return isStationary(change) && (change.getFlags() & FLAG_MOVED_TO_TOP) != 0;
     }
 
     /**
-     * Check if all changes in this transition are only ordering changes. If so, we won't animate.
+     * Returns `true` if a `change` is stationary. Stationary changes are those that do not change
+     * task's visual representation and don't need an animation, but do not prevent them either.
      */
-    public static boolean isAllOrderOnly(TransitionInfo info) {
+    public static boolean isStationary(TransitionInfo.Change change) {
+        return change.getMode() == TRANSIT_CHANGE
+                && (change.getFlags() & (FLAG_MOVED_TO_TOP | FLAG_CHANGED_INTERACTIVE)) != 0
+                && change.getStartAbsBounds().equals(change.getEndAbsBounds())
+                && (change.getLastParent() == null
+                || change.getLastParent().equals(change.getParent()))
+                && (change.getStartRotation() == change.getEndRotation());
+    }
+
+    /** Returns true if all changes in this transition are stationary. */
+    public static boolean isAllStationary(TransitionInfo info) {
         for (int i = info.getChanges().size() - 1; i >= 0; --i) {
-            if (!isOrderOnly(info.getChanges().get(i))) return false;
+            if (!isStationary(info.getChanges().get(i))) return false;
         }
         return true;
     }
@@ -184,12 +192,13 @@ public class TransitionUtil {
                 // animate.
                 continue;
             }
-            if (change.hasFlags(TransitionInfo.FLAG_NO_ANIMATION)) {
+            if (change.hasFlags(FLAG_NO_ANIMATION)) {
                 hasNoAnimation = true;
-            } else if (!isOrderOnly(change) && !change.hasFlags(TransitionInfo.FLAG_IS_OCCLUDED)) {
-                // Ignore the order only or occluded changes since they shouldn't be visible during
-                // animation. For anything else, we need to animate if at-least one relevant
-                // participant *is* animated,
+            } else if (!isStationary(change) && !change.hasFlags(
+                    TransitionInfo.FLAG_IS_OCCLUDED)) {
+                // Ignore the non-stationary or occluded changes since they shouldn't be visible
+                // during animation. For anything else, we need to animate if at-least one relevant
+                // participant *is* animated.
                 return false;
             }
         }
@@ -268,7 +277,7 @@ public class TransitionUtil {
 
     /**
      * Checks whether a transition change should be skipped when setting up surfaces and leashes,
-     * based on whether it is independent or an order-only display-level change.
+     * based on whether it is independent or a stationary display-level change.
      */
     public static boolean skipReparenting(
             @NonNull TransitionInfo.Change change, @NonNull TransitionInfo info) {
@@ -277,8 +286,8 @@ public class TransitionUtil {
             return true;
         }
 
-        // Don't reparent display level if only changing order (since root will be inside it).
-        if (change.hasFlags(FLAG_IS_DISPLAY) && TransitionUtil.isOrderOnly(change)
+        // Don't reparent display level if the change is stationary (since root will be inside it).
+        if (change.hasFlags(FLAG_IS_DISPLAY) && TransitionUtil.isStationary(change)
                 && change.getStartRotation() == change.getEndRotation()) {
             return true;
         }
@@ -345,7 +354,7 @@ public class TransitionUtil {
                 return zSplitLine + numChanges - order;
             }
         } else { // CHANGE or other
-            if (isClosing || TransitionUtil.isOrderOnly(change)) {
+            if (isClosing || TransitionUtil.isStationary(change)) {
                 // Put below CLOSE mode (in the "static" section).
                 return zSplitLine - order;
             } else {

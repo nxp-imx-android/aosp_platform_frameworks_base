@@ -18,15 +18,19 @@ package com.android.wm.shell.shared
 
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
+import android.graphics.Rect
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.window.TransitionInfo
+import android.window.TransitionInfo.FLAG_CHANGED_INTERACTIVE
 import android.window.TransitionInfo.FLAG_IS_DISPLAY
 import android.window.TransitionInfo.FLAG_IS_WALLPAPER
 import android.window.TransitionInfo.FLAG_MOVED_TO_TOP
+import android.window.TransitionInfo.FLAG_NO_ANIMATION
+import android.window.TransitionInfo.FLAG_TRANSLUCENT
 import android.window.WindowContainerToken
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -270,6 +274,63 @@ class TransitionUtilTest {
 
         // null TransitionInfo
         assertFalse(TransitionUtil.isHomeTransitionEndingOnDisplay(null /* info */, displayId))
+    }
+
+    @Test
+    fun testIsAllNoAnimation_noAnimationAndInteractivityChanged_noAnimation() {
+        val info =
+            TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_CHANGE, FLAG_NO_ANIMATION)
+                .addChange(TRANSIT_CHANGE, FLAG_CHANGED_INTERACTIVE)
+                .build()
+
+        assertTrue(TransitionUtil.isAllNoAnimation(info))
+    }
+
+    @Test
+    fun testIsAllNoAnimation_translucentChangeWithInteractivity_skipNoAnimation() {
+        val info =
+            TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_CHANGE, FLAG_NO_ANIMATION)
+                .addChange(TRANSIT_CHANGE, FLAG_TRANSLUCENT and FLAG_CHANGED_INTERACTIVE)
+                .build()
+
+        assertFalse(TransitionUtil.isAllNoAnimation(info))
+    }
+
+    @Test
+    fun testIsStationary_movedToTop_returnsTrue() {
+        val change = TransitionInfo.Change(mock(), mock())
+        change.mode = TRANSIT_CHANGE
+        change.flags = FLAG_MOVED_TO_TOP
+        assertTrue(TransitionUtil.isStationary(change))
+    }
+
+    @Test
+    fun testIsStationary_interactivityChanged_returnsTrue() {
+        val change = TransitionInfo.Change(mock(), mock())
+        change.mode = TRANSIT_CHANGE
+        change.flags = FLAG_CHANGED_INTERACTIVE
+        assertTrue(TransitionUtil.isStationary(change))
+    }
+
+    @Test
+    fun testIsStationary_changedBounds_returnsFalse() {
+        val change = TransitionInfo.Change(mock(), mock())
+        change.mode = TRANSIT_CHANGE
+        change.flags = FLAG_CHANGED_INTERACTIVE
+        change.setEndAbsBounds(Rect(10, 10, 10, 10))
+        assertFalse(TransitionUtil.isStationary(change))
+    }
+
+    @Test
+    fun testIsAllStationary() {
+        val info =
+            TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_CHANGE, FLAG_MOVED_TO_TOP)
+                .addChange(TRANSIT_CHANGE, FLAG_CHANGED_INTERACTIVE)
+                .build()
+        assertTrue(TransitionUtil.isAllStationary(info))
     }
 
     private fun createTransitionInfoWithTask(activityType: Int, endDisplayId: Int): TransitionInfo {

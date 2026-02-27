@@ -348,7 +348,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
 
         // Early check if the transition doesn't warrant an animation.
         if (isAnimationsDisabledForAnyDisplay(info) || TransitionUtil.isAllNoAnimation(info)
-                || TransitionUtil.isAllOrderOnly(info)
+                || TransitionUtil.isAllStationary(info)
                 || (info.getFlags() & WindowManager.TRANSIT_FLAG_INVISIBLE) != 0) {
             startTransaction.apply();
             // As a contract, finishTransaction should only be applied in Transitions#onFinish

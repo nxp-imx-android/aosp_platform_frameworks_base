@@ -1288,8 +1288,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                                 "display change") /* action */);
                         return;
                     }
-                    // Don't consider order-only & non-leaf changes as changing apps.
-                    if (!TransitionUtil.isOrderOnly(change) && isLeafTask) {
+                    // Don't consider stationary & non-leaf changes as changing apps.
+                    if (!TransitionUtil.isStationary(change) && isLeafTask) {
                         hasChangingApp = true;
                         // Check if the changing app is moving to top and fullscreen. This handles
                         // the case where we moved from desktop to recents and launching a desktop
