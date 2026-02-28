@@ -224,6 +224,10 @@ constructor(
                     useDesktopStatusBar
             }
             .distinctUntilChanged()
+            .traceEach(
+                TrackGroupUtils.trackGroup(TRACK_GROUP, "canShowOngoingActivityChips"),
+                logcat = true,
+            )
             .stateIn(bgDisplayScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     val shouldHomeStatusBarBeVisible: StateFlow<Boolean> =

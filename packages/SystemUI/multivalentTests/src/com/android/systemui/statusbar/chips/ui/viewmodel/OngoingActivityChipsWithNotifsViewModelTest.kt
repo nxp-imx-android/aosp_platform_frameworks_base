@@ -70,6 +70,7 @@ import com.android.systemui.statusbar.notification.data.repository.removeNotif
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.shared.NotificationChipFromCompactContent
+import com.android.systemui.statusbar.notification.shared.StatusBarHeadline
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.mockSystemUIDialogFactory
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper
@@ -315,6 +316,7 @@ class OngoingActivityChipsWithNotifsViewModelTest(flags: FlagsParameterization) 
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
         }
 
+    @DisableFlags(StatusBarHeadline.FLAG_NAME)
     @Test
     fun chips_twoTimerChips_isSmallPortrait_bothSquished() =
         kosmos.runTest {
@@ -330,6 +332,7 @@ class OngoingActivityChipsWithNotifsViewModelTest(flags: FlagsParameterization) 
                 .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
+    @DisableFlags(StatusBarHeadline.FLAG_NAME)
     @Test
     fun chips_threeChips_isSmallPortrait_allSquished() =
         kosmos.runTest {
@@ -369,6 +372,7 @@ class OngoingActivityChipsWithNotifsViewModelTest(flags: FlagsParameterization) 
                 .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
+    @DisableFlags(StatusBarHeadline.FLAG_NAME)
     @Test
     fun chips_countdownChipAndTimerChip_countdownNotSquished_butTimerSquished() =
         kosmos.runTest {
@@ -385,6 +389,7 @@ class OngoingActivityChipsWithNotifsViewModelTest(flags: FlagsParameterization) 
                 .isInstanceOf(OngoingActivityChipModel.Content.IconOnly::class.java)
         }
 
+    @DisableFlags(StatusBarHeadline.FLAG_NAME)
     @Test
     fun chips_numberOfChipsChanges_chipsGetSquishedAndUnsquished() =
         kosmos.runTest {
@@ -416,6 +421,7 @@ class OngoingActivityChipsWithNotifsViewModelTest(flags: FlagsParameterization) 
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
         }
 
+    @DisableFlags(StatusBarHeadline.FLAG_NAME)
     @Test
     fun chips_twoChips_isWideScreen_notSquished() =
         kosmos.runTest {
@@ -430,6 +436,21 @@ class OngoingActivityChipsWithNotifsViewModelTest(flags: FlagsParameterization) 
             // THEN the chips aren't squished (squished chips would be icon only)
             assertThat(latest!!.active[0].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+            assertThat(latest!!.active[1].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
+        }
+
+    @EnableFlags(StatusBarHeadline.FLAG_NAME)
+    @Test
+    fun chips_withHeadline_shouldNotSquish() =
+        kosmos.runTest {
+            screenRecordState.value = ScreenRecordModel.Starting(millisUntilStarted = 2000)
+            addOngoingCallState(key = "call")
+
+            val latest by collectLastValue(underTest.chips)
+
+            assertThat(latest!!.active[0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.Countdown::class.java)
             assertThat(latest!!.active[1].content)
                 .isInstanceOf(OngoingActivityChipModel.Content.Timer::class.java)
         }

@@ -66,6 +66,7 @@ import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarBoundsViewMod
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModel
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.icon.domain.interactor.StatusBarNotificationIconsInteractor
+import com.android.systemui.statusbar.notification.shared.StatusBarHeadline
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.domain.interactor.LightsOutInteractor
@@ -428,14 +429,23 @@ constructor(
             .flowOn(bgDispatcher)
 
     private val chipsVisibilityModel: StateFlow<ChipsVisibilityModel> =
-        combine(
-                ongoingActivityChipsViewModel.chips,
-                statusBarVisibilityInteractor.canShowOngoingActivityChips,
-            ) { chips, canShow ->
-                ChipsVisibilityModel(chips, areChipsAllowed = canShow)
-            }
-            .traceEach(trackGroup(TRACK_GROUP, "chips"), logcat = true) {
-                "Chips[allowed=${it.areChipsAllowed} numChips=${it.chips.active.size}]"
+        if (StatusBarHeadline.isEnabled) {
+                flowOf(
+                    ChipsVisibilityModel(
+                        chips = MultipleOngoingActivityChipsModel(),
+                        areChipsAllowed = false,
+                    )
+                )
+            } else {
+                combine(
+                        ongoingActivityChipsViewModel.chips,
+                        statusBarVisibilityInteractor.canShowOngoingActivityChips,
+                    ) { chips, canShow ->
+                        ChipsVisibilityModel(chips, areChipsAllowed = canShow)
+                    }
+                    .traceEach(trackGroup(TRACK_GROUP, "chips"), logcat = true) {
+                        "Chips[allowed=${it.areChipsAllowed} numChips=${it.chips.active.size}]"
+                    }
             }
             .stateIn(
                 bgDisplayScope,
