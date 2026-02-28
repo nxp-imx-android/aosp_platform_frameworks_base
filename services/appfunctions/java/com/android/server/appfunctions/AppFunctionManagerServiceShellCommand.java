@@ -40,7 +40,11 @@ import android.app.appfunctions.ISetAppFunctionEnabledCallback;
 import android.app.appsearch.GenericDocument;
 import android.app.appsearch.SearchResult;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.SignedPackage;
+import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.os.Binder;
 import android.os.ICancellationSignal;
 import android.os.Process;
@@ -64,6 +68,7 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.xmlpull.v1.XmlPullParser;
 
 /** Shell command implementation for the {@link AppFunctionManagerService}. */
 public class AppFunctionManagerServiceShellCommand extends ShellCommand {
@@ -266,6 +271,9 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         return -1;
                     }
                     return disableAllowlist();
+                case "read-app-description":
+                    // Not added to help, because it is not a platform feature yet.
+                    return readAppDescription();
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -273,6 +281,65 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             getOutPrintWriter().println("Exception: " + e);
         }
         return -1;
+    }
+
+    private int readAppDescription() throws Exception {
+        final PrintWriter pw = getOutPrintWriter();
+        final PrintWriter errPw = getErrPrintWriter();
+        String packageName = null;
+        int userId = 0;
+        String opt;
+
+        while ((opt = getNextOption()) != null) {
+            switch (opt) {
+                case "--package":
+                    packageName = getNextArgRequired();
+                    break;
+                case "--user":
+                    userId = UserHandle.parseUserArg(getNextArgRequired());
+                    break;
+                default:
+                    errPw.println("Unknown option: " + opt);
+                    return -1;
+            }
+        }
+        Context userContext = mContext.createContextAsUser(UserHandle.of(userId), /* flags= */ 0);
+        PackageManager pm = userContext.getPackageManager();
+        int appMetadataXmlRes =
+                pm.getProperty(packageName, "android.app.appfunctions.app_metadata")
+                        .getResourceId();
+        if (appMetadataXmlRes == Resources.ID_NULL) {
+            errPw.println("No app metadata found for package: " + packageName);
+            return -1;
+        }
+        ApplicationInfo targetAppInfo = pm.getApplicationInfo(packageName, /* flags= */ 0);
+        Resources targetAppResources =
+                pm.getResourcesForApplication(
+                        targetAppInfo, userContext.getResources().getConfiguration());
+        var xmlParser = targetAppResources.getXml(appMetadataXmlRes);
+
+        while (xmlParser.getEventType() != XmlPullParser.START_TAG) {
+            xmlParser.next();
+
+            if (xmlParser.getEventType() == XmlPullParser.END_DOCUMENT) {
+                errPw.println("No app description found for package: " + packageName);
+                return -1;
+            }
+        }
+        String description = getXmlAttributeValue(xmlParser, "description");
+        pw.println(description);
+        return 0;
+    }
+
+    private String getXmlAttributeValue(XmlResourceParser xmlParser, String attributeName) {
+        var value =
+                xmlParser.getAttributeValue(
+                        "http://schemas.android.com/apk/res-auto", attributeName);
+
+        return value == null
+                ? xmlParser.getAttributeValue(
+                        "http://schemas.android.com/apk/androidx.appfunctions", attributeName)
+                : value;
     }
 
     private int runListAppFunctions() throws Exception {
