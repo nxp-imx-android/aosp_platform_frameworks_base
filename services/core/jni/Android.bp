@@ -142,7 +142,6 @@ cc_defaults {
         "libutils",
         "libui",
         "libvibratorservice",
-        "libPlatformProperties",
         "libinput",
         "libinputflinger",
         "libinputservice",
@@ -215,6 +214,7 @@ cc_defaults {
         "libadb_pairing_server_jni",
         "libaidlcommonsupport",
         "libvirtualdevicebuildflags",
+        "libPlatformProperties",
     ],
 
     product_variables: {
