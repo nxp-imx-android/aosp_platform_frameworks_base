@@ -416,16 +416,6 @@ flag {
 }
 
 flag {
-    name: "dream_privacy_indicator"
-    namespace: "systemui"
-    description: "Show mic and camera privacy indicators in dream"
-    bug: "367251365"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "dual_shade"
     namespace: "systemui"
     description: "Enables the Dual Shade (go/bc25-dual-shade-design)."
