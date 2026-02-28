@@ -76,6 +76,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.ArraySet;
 import android.util.Pair;
 import android.view.Surface;
@@ -99,6 +100,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.R;
+import com.android.internal.hidden_from_bootclasspath.com.android.window.flags.Flags;
 import com.android.internal.policy.TransitionAnimation;
 import com.android.testing.wm.util.ChangeBuilder;
 import com.android.testing.wm.util.StubTransaction;
@@ -142,7 +144,7 @@ import java.util.function.Function;
 public class ShellTransitionTests extends ShellTestCase {
 
     private final ShellTaskOrganizer mOrganizer = mock(ShellTaskOrganizer.class);
-    private final TransactionPool mTransactionPool = mock(TransactionPool.class);
+    private final TransactionPool mTransactionPool = new MockTransactionPool();
     private final Context mContext =
             InstrumentationRegistry.getInstrumentation().getTargetContext();
     private final TestShellExecutor mMainExecutor = new TestShellExecutor();
@@ -1789,6 +1791,55 @@ public class ShellTransitionTests extends ShellTestCase {
                     new WindowContainerTransaction(),
                     null /* handler */);
         });
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_TRANSIT_MIXPATCHER_BASE)
+    public void testDecoupledHandleRequest() {
+        Transitions transitions = createTestTransitions();
+        Transitions.TransitionObserver observer = mock(Transitions.TransitionObserver.class);
+        transitions.registerObserver(observer);
+        transitions.replaceDefaultHandlerForTest(mDefaultHandler);
+
+        final Transitions.RequestResult[] result = new Transitions.RequestResult[1];
+        TestTransitionHandler testHandler = new TestTransitionHandler() {
+            @Override
+            public boolean startAnimation(@NonNull IBinder transition, @NonNull TransitionInfo info,
+                    @NonNull SurfaceControl.Transaction startTransaction,
+                    @NonNull SurfaceControl.Transaction finishTransaction,
+                    @NonNull Transitions.TransitionFinishCallback finishCallback) {
+                for (TransitionInfo.Change chg : info.getChanges()) {
+                    if (chg.getMode() == TRANSIT_CHANGE) {
+                        return super.startAnimation(transition, info, startTransaction,
+                                finishTransaction, finishCallback);
+                    }
+                }
+                return false;
+            }
+
+            @Nullable
+            @Override
+            public Transitions.RequestResult handleRequestOnly(@NonNull IBinder transition,
+                    @NonNull TransitionRequestInfo request) {
+                return result[0];
+            }
+        };
+
+        IBinder transitToken1 = new Binder();
+        RunningTaskInfo mwTaskInfo =
+                createTaskInfo(1, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);
+        // If result is not a "legacy" result, then the animation shouldn't be claimed.
+        result[0] = new Transitions.RequestResult(new WindowContainerTransaction());
+        transitions.requestStartTransition(transitToken1,
+                new TransitionRequestInfo(TRANSIT_CHANGE, mwTaskInfo, null /* remote */));
+        TransitionInfo change = new TransitionInfoBuilder(TRANSIT_CHANGE)
+                .addChange(TRANSIT_CHANGE).build();
+        SurfaceControl.Transaction startT1 = new StubTransaction();
+        SurfaceControl.Transaction finishT1 = new StubTransaction();
+        transitions.onTransitionReady(transitToken1, change, startT1, finishT1);
+
+        // Thus it falls through to the default handler (in this case).
+        assertEquals(1, mDefaultHandler.activeCount());
     }
 
     class TestTransitionHandler implements Transitions.TransitionHandler {

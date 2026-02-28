@@ -1976,7 +1976,7 @@ class DesktopTasksController(
                 )
             val requestRes =
                 transitions.dispatchRequest(SYNTHETIC_TRANSITION, requestInfo, /* skip= */ null)
-            wct.merge(requestRes.second, true)
+            wct.merge(requestRes.mWct, true)
 
             // In multi-activity case, we either explicitly minimize the parent task, or reorder the
             // parent task to the back so that it is not brought to the front and shown when the
@@ -7162,6 +7162,15 @@ class DesktopTasksController(
                     remoteTransition = remoteTransition,
                     unminimizeReason = toFrontReason.toUnminimizeReason(),
                 )
+            }
+        }
+
+        override fun minimizeDesktopApp(taskId: Int) {
+            executeRemoteCallWithTaskPermission(controller, "minimizeDesktopApp") { c ->
+                val taskInfo = c.shellTaskOrganizer.getRunningTaskInfo(taskId)
+                if (taskInfo != null) {
+                    c.minimizeTask(taskInfo, MinimizeReason.TASKBAR_ICON_TAP)
+                }
             }
         }
 

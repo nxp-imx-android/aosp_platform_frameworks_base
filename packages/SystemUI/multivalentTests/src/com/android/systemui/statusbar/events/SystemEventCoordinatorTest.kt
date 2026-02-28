@@ -37,13 +37,13 @@ import com.android.systemui.privacy.PrivacyItemController
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.FakeBatteryControllerImpl
-import com.android.systemui.statusbar.policy.batteryController
 import com.android.systemui.testKosmosNew
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argThat
 import com.android.systemui.util.time.fakeSystemClock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -803,8 +803,8 @@ class SystemEventCoordinatorTest(flags: FlagsParameterization) : SysuiTestCase()
 
         suspend fun emit() = flow.emit(Unit)
 
-        override val connectedDisplayState: Flow<ConnectedDisplayInteractor.State>
-            get() = MutableSharedFlow()
+        override val connectedDisplayState: StateFlow<ConnectedDisplayInteractor.State>
+            get() = TODO("Not yet implemented")
 
         override val connectedDisplayAddition: Flow<Unit>
             get() = flow

@@ -178,10 +178,10 @@ class AppCompatOrientationPolicy {
                 return true;
             }
 
-            if (AppCompatCameraPolicy.isTreatmentEnabledForActivity(mActivityRecord)) {
+            if (AppCompatCameraPolicy.shouldIgnoreReqOrientationForCameraCompat(mActivityRecord)) {
                 Slog.w(TAG, "Ignoring orientation update to "
                         + screenOrientationToString(requestedOrientation)
-                        + " due to force-rotate camera compat treatment for " + mActivityRecord);
+                        + " due to camera compat treatment for " + mActivityRecord);
                 return true;
             }
         }

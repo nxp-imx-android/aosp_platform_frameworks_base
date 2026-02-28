@@ -144,13 +144,6 @@ flag {
 }
 
 flag {
-  name: "bitmap_ashmem_long_name"
-  namespace: "core_graphics"
-  description: "Whether to have more information in ashmem filenames for bitmaps"
-  bug: "369619160"
-}
-
-flag {
   name: "animated_image_drawable_filter_bitmap"
   is_exported: true
   namespace: "core_graphics"

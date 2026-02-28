@@ -23,6 +23,7 @@ import com.android.systemui.dagger.qualifiers.AndroidUi
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dagger.qualifiers.MainImmediate
+import com.android.systemui.util.compose.state.SnapshotFlowBuilder
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
@@ -93,4 +94,6 @@ class GlobalCoroutinesModule {
     @Singleton
     @MainImmediate
     fun mainImmediateContext(): CoroutineContext = Dispatchers.Main.immediate
+
+    @Provides @Singleton @Main fun mainSnapshotFlowBuilder() = SnapshotFlowBuilder.Main
 }

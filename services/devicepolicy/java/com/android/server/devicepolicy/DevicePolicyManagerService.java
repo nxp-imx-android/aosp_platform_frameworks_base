@@ -8517,7 +8517,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 IntegerPolicyValue.createIfNotDefault(
                         policy, DevicePolicyManager.AUTO_TIME_ZONE_NOT_CONTROLLED_BY_POLICY);
         mDevicePolicyEngine.setOrRemoveGlobalPolicy(
-                PolicyDefinition.AUTO_TIME_ZONE, enforcingAdmin, value);
+                getPolicyDefinitionForIdentifier(PolicyIdentifier.AUTO_TIME_ZONE),
+                enforcingAdmin,
+                value);
 
         if (value != null) {
             DevicePolicyEventLogger.createEvent(DevicePolicyEnums.SET_AUTO_TIME_ZONE)
@@ -8541,7 +8543,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         mPermissions.enforce(SET_TIME_ZONE, caller, UserHandle.USER_ALL);
         EnforcingAdmin enforcingAdmin = getEnforcingAdmin(caller);
         Integer state = mDevicePolicyEngine.getGlobalPolicySetByAdmin(
-                PolicyDefinition.AUTO_TIME_ZONE, enforcingAdmin);
+                getPolicyDefinitionForIdentifier(PolicyIdentifier.AUTO_TIME_ZONE), enforcingAdmin);
         return state != null ? state : DevicePolicyManager.AUTO_TIME_ZONE_NOT_CONTROLLED_BY_POLICY;
     }
 
@@ -9193,8 +9195,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         synchronized (getLockObject()) {
             mDeviceAdmins.getOwners().setDeviceManaged(false);
             mDeviceAdmins.getOwners().writeDeviceOwner();
-            forceRemoveActiveAdminUnchecked(adminReceiver, UserHandle.USER_SYSTEM);
         }
+        mInjector.binderWithCleanCallingIdentity(() -> {
+            forceRemoveActiveAdminUnchecked(adminReceiver, UserHandle.USER_SYSTEM);
+        });
     }
 
     private boolean isPackage(CallerIdentity caller, String packageName) {

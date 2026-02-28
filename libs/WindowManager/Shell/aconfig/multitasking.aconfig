@@ -323,6 +323,16 @@ flag {
 }
 
 flag {
+    name: "bbev_square_corners_fix"
+    namespace: "multitasking"
+    description: "Fixes square corners when expanding Bubbles from PiP"
+    bug: "475068406"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "update_bubble_bounds_during_rotation"
     namespace: "multitasking"
     description: "Update the bounds of the expanded bubble task as part of the rotation transition"
@@ -367,6 +377,26 @@ flag {
     namespace: "multitasking"
     description: "Fixes a bug where bubble bar stashes incorrectly when a hardware keyboard is connected"
     bug: "461660471"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "fix_swipe_up_notification_shade_with_bubble_bar"
+    namespace: "multitasking"
+    description: "Fixes an issue where swiping from the bottom of the notification shade while bubbles were expanded below wouldn't work"
+    bug: "483561405"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "fix_verify_bubble_task_id_on_removal"
+    namespace: "multitasking"
+    description: "Fixes a bug where we remove a bubble based on package name after the bubble task has changed"
+    bug: "482877474"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -29,7 +29,6 @@ import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.KeyguardWmStateRefactor
 import com.android.systemui.keyguard.data.repository.KeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode.Companion.isWakeAndDismiss
@@ -61,7 +60,7 @@ constructor(
     private val communalSettingsInteractor: CommunalSettingsInteractor,
     private val communalSceneInteractor: CommunalSceneInteractor,
     keyguardOcclusionInteractor: KeyguardOcclusionInteractor,
-    val deviceEntryInteractor: DeviceEntryInteractor,
+    val keyguardEnabledInteractor: KeyguardEnabledInteractor,
     private val wakeToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
     private val dreamManager: DreamManager,
 ) :
@@ -160,15 +159,19 @@ constructor(
 
                     // Do not transition to LOCKSCREEN if we are waking and dismissing.
                     // That transition is handled by listenForWakeFromDozing.
-                    if (Flags.wakefulnessForAnimations() &&
-                            isWakeAndDismiss(biometricUnlockState.mode)) {
+                    if (
+                        Flags.wakefulnessForAnimations() &&
+                            isWakeAndDismiss(biometricUnlockState.mode)
+                    ) {
                         return@collect
                     }
 
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
 
-                    if (!deviceEntryInteractor.isLockscreenEnabled() && canDismissLockscreen()) {
+                    if (
+                        !keyguardEnabledInteractor.isKeyguardEnabled.value && canDismissLockscreen()
+                    ) {
                         if (!SceneContainerFlag.isEnabled) {
                             startTransitionTo(
                                 KeyguardState.GONE,

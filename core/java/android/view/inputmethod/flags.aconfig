@@ -225,7 +225,7 @@ flag {
   name: "set_source_invisible_on_multi_window_mode"
   namespace: "input_method"
   description: "Feature flag to fix the race between invalidateInput and restartInput"
-  bug: "396066692"
+  bug: "420907225"
   metadata {
     purpose: PURPOSE_BUGFIX
   }

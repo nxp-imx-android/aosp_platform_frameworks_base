@@ -617,6 +617,7 @@ public final class SigningDetails implements Parcelable {
         if (mSignatures.length > 1 || otherDetails.mSignatures.length > 1) {
             return signaturesMatchExactly(otherDetails);
         }
+
         // The Signature class does not use the granted capabilities in the hashCode
         // computation, so a Set can be used to check for a common signer.
         Set<Signature> otherSignatures = new ArraySet<>();
@@ -625,24 +626,63 @@ public final class SigningDetails implements Parcelable {
         } else {
             otherSignatures.addAll(Arrays.asList(otherDetails.mSignatures));
         }
+
+        boolean matchFound = false;
         // If the current signer of this instance is an ancestor of the other than return true
         // since all capabilities are granted to the current signer.
         if (otherSignatures.contains(mSignatures[0])) {
-            return true;
-        }
-        if (hasPastSigningCertificates()) {
+            matchFound = true;
+        } else if (hasPastSigningCertificates()) {
             // Since the current signer was checked above and the last signature in the
             // pastSigningCertificates is the current signer skip checking the last element.
             for (int i = 0; i < mPastSigningCertificates.length - 1; i++) {
                 if (otherSignatures.contains(mPastSigningCertificates[i])) {
                     // If the caller specified multiple capabilities ensure all are set.
                     if ((mPastSigningCertificates[i].getFlags() & flags) == flags) {
-                        return true;
+                        matchFound = true;
                     }
                 }
             }
         }
-        return false;
+
+        if (!android.security.Flags.apkPqcHybridSigning() || !matchFound) {
+            return matchFound;
+        }
+
+        // If either app is currently signed with a hybrid configuration, the platform must ensure
+        // that neither app is reusing just one of the hybrid keys. If an app's lineage contains one
+        // of the active hybrid keys of the other app, it must contain both keys to satisfy the no
+        // key reuse between hybrid and single signer requirement.
+        boolean reuseDetected = false;
+        // If this instance is hybrid signed, then verify the other app's signing identity either
+        // contains both or none of the current hybrid signers.
+        if (isV32Hybrid()) {
+            boolean otherHasPrimary = otherSignatures.contains(mSignatures[0]);
+            boolean otherHasClassical = otherSignatures.contains(getV32ClassicalHybridSigner());
+            // If the other app has one hybrid key but not the other, it's an invalid reuse. If both
+            // are false, the matchFound above must have been an older common ancestor.
+            if (otherHasPrimary != otherHasClassical) {
+                reuseDetected = true;
+            }
+        }
+
+        // While the otherDetails represent the requesting app, the same key reuse check is still
+        // performed to enforce the platform's requirement that hybrid key material must not be
+        // reused in a single signer config.
+        if (otherDetails.isV32Hybrid() && !reuseDetected) {
+            boolean thisHasPrimary = hasCertificate(otherDetails.mSignatures[0]);
+            boolean thisHasClassical = hasCertificate(otherDetails.getV32ClassicalHybridSigner());
+            if (thisHasPrimary != thisHasClassical) {
+                reuseDetected = true;
+            }
+        }
+
+        if (reuseDetected) {
+            ApkSignatureVerifierMetrics.logSigningKeyPolicyFailure(mSignatureSchemeVersion,
+                    mSignatureSchemeMinorVersion, VerificationResult.VERIFICATION_V32_KEY_REUSE);
+            return false;
+        }
+        return true;
     }
 
     /**

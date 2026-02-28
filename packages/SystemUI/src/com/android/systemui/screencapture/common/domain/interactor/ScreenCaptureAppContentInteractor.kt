@@ -27,6 +27,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 
 /** The app content available to be shared for a single package. */
 data class SingleAppContent(
@@ -108,8 +109,8 @@ constructor(
         thumbnailWidthPx: Int,
         thumbnailHeightPx: Int,
         iconSizePx: Int,
-    ): Flow<MultiAppContent> =
-        combine(
+    ): Flow<MultiAppContent> {
+        return combine(
             packageNames.distinct().map { packageName ->
                 appContentsFor(
                         packageName = packageName,
@@ -118,6 +119,14 @@ constructor(
                         iconSizePx = iconSizePx,
                     )
                     .map { result -> packageName to result }
+                    // Emit an initial empty result so combine triggers immediately for all
+                    // packages.
+                    .onStart {
+                        emit(
+                            packageName to
+                                Result.success(SingleAppContent(emptyList(), WeakReference(null)))
+                        )
+                    }
             }
         ) { results ->
             val contents = mutableListOf<ScreenCaptureAppContent>()
@@ -134,4 +143,5 @@ constructor(
             }
             MultiAppContent(contents = contents, projectionCallbacks = callbacks)
         }
+    }
 }

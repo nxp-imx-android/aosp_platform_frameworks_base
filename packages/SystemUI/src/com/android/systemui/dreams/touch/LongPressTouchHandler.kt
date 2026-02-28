@@ -15,7 +15,6 @@
  */
 package com.android.systemui.dreams.touch
 
-import android.util.Log
 import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
@@ -33,21 +32,18 @@ constructor(
     private val vibratorHelper: VibratorHelper,
     private val containerView: DreamOverlayContainerView,
     private val dialogController: DreamDialogController,
+    private val logger: DreamTouchHandlerLogger,
 ) : TouchHandler {
-    private companion object {
-        const val TAG = "LongPressTouchHandler"
-    }
-
     override fun onSessionStart(session: TouchSession) {
         session.registerGestureListener {
             if (dialogController.showDialog()) {
-                Log.d(TAG, "long press detected")
+                logger.logLongPressDetected()
                 vibratorHelper.performHapticFeedback(
                     containerView,
                     HapticFeedbackConstants.LONG_PRESS,
                 )
             } else {
-                Log.d(TAG, "long press ignored")
+                logger.logLongPressIgnored()
             }
         }
     }

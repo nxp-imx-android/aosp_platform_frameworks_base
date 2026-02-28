@@ -17,7 +17,6 @@
 package com.android.systemui.qs.ui.composable
 
 import android.platform.test.annotations.EnableFlags
-import android.platform.test.annotations.WithDesktopTest
 import android.testing.TestableLooper
 import android.view.Display
 import androidx.compose.ui.Modifier
@@ -110,7 +109,8 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
     }
 
     @Test
-    @WithDesktopTest
+    // TODO(b/485387343): Re-enable this test on desktop once the
+    // SystemUITests_desktop is fixed.
     fun testBrightnessSlider() =
         kosmos.runTest {
             composeTestRule.setQSShadeOverlay()
@@ -131,7 +131,8 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
         }
 
     @Test
-    @WithDesktopTest
+    // TODO(b/485387343): Re-enable this test on desktop once the
+    // SystemUITests_desktop is fixed.
     fun testSmallTileSize() =
         kosmos.runTest {
             currentTilesInteractor.setTiles(listOf(TileSpec.create("airplane")))
@@ -154,7 +155,8 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
         }
 
     @Test
-    @WithDesktopTest
+    // TODO(b/485387343): Re-enable this test on desktop once the
+    // SystemUITests_desktop is fixed.
     fun testLargeTileSize() =
         kosmos.runTest {
             iconTilesInteractor.setLargeTiles(defaultLargeTilesRepository.defaultLargeTiles)
@@ -173,7 +175,8 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
         }
 
     @Test
-    @WithDesktopTest
+    // TODO(b/485387343): Re-enable this test on desktop once the
+    // SystemUITests_desktop is fixed.
     fun testToolbar() =
         kosmos.runTest {
             composeTestRule.setQSShadeOverlay()
@@ -191,7 +194,8 @@ class QuickSettingsShadeOverlayTest : SysuiTestCase() {
         }
 
     @Test
-    @WithDesktopTest
+    // TODO(b/485387343): Re-enable this test on desktop once the
+    // SystemUITests_desktop is fixed.
     @EnableFlags(FLAG_QS_TILE_DETAILED_VIEW, FLAG_EXPANDED_AUDIO_DETAILED_VIEW)
     fun testVolumeSlider() =
         kosmos.runTest {

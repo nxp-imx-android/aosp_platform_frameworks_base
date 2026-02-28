@@ -34,8 +34,8 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -182,7 +182,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
     fun userActions_combinedShade() =
         kosmos.runTest {
             disableDualShade()
-            fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            fakeKeyguardRepository.setKeyguardEnabled(true)
             fakeAuthenticationRepository.setAuthenticationMethod(
                 if (canSwipeToEnter) {
                     AuthenticationMethodModel.None
@@ -273,7 +273,7 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
     fun userActions_dualShade() =
         kosmos.runTest {
             enableDualShade(wideLayout = !isNarrowScreen)
-            fakeDeviceEntryRepository.setLockscreenEnabled(true)
+            fakeKeyguardRepository.setKeyguardEnabled(true)
             fakeAuthenticationRepository.setAuthenticationMethod(
                 if (canSwipeToEnter) {
                     AuthenticationMethodModel.None
@@ -307,7 +307,8 @@ class LockscreenUserActionsViewModelTest : SysuiTestCase() {
                 downWithTwoPointers ->
                     assertThat(downDestination).isEqualTo(ShowOverlay(Overlays.QuickSettingsShade))
                 // A one-finger swipe should open the notifications shade.
-                else -> assertThat(downDestination).isEqualTo(ShowOverlay(Overlays.NotificationsShade))
+                else ->
+                    assertThat(downDestination).isEqualTo(ShowOverlay(Overlays.NotificationsShade))
             }
 
             val upContent =

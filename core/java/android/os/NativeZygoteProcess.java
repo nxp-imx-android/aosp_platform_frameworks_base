@@ -154,7 +154,15 @@ public class NativeZygoteProcess implements IZygoteProcess {
         // path to Native Zygote over the JNI code.
         String serverAddressForNative = "@" + serverAddress;
 
-        LoadedApk.LinkerNamespaceParams params = LoadedApk.createLinkerNamespaceParams(appInfo);
+        LoadedApk loadedApk = new LoadedApk(
+                /*activityThread*/ null,
+                appInfo,
+                /*compatInfo*/ null,
+                /*classLoader*/ null,
+                /*securityViolation*/ false,
+                /*includeCode*/ true,
+                /*registerPackage*/ false);
+        LoadedApk.LinkerNamespaceParams params = loadedApk.createLinkerNamespaceParams();
 
         int pid;
         try {

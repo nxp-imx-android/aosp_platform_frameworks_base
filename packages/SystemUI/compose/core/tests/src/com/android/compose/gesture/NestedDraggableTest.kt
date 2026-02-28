@@ -16,6 +16,8 @@
 
 package com.android.compose.gesture
 
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.rememberScrollableState
@@ -56,6 +58,7 @@ import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeWithVelocity
 import androidx.compose.ui.unit.Velocity
+import com.android.systemui.Flags
 import com.google.common.truth.Truth.assertThat
 import kotlin.math.ceil
 import kotlinx.coroutines.CompletableDeferred
@@ -80,6 +83,8 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
     }
 
     @get:Rule val rule = createComposeRule()
+
+    @get:Rule val setFlagsRule = SetFlagsRule()
 
     @Test
     fun simpleDrag() {
@@ -1154,6 +1159,70 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
                 }
             }
         )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NESTEDDRAGGABLE_GESTURE_PICKUP)
+    fun gesturePickup_continuesDragWhenChildScrollableIsRemoved() {
+        var showChildScrollable by mutableStateOf(true)
+        val draggable = TestDraggable()
+
+        val touchSlop =
+            rule.setContentWithTouchSlop {
+                Box(Modifier.fillMaxSize().nestedDraggable(draggable, orientation)) {
+                    if (showChildScrollable) {
+                        Box(
+                            Modifier.fillMaxSize()
+                                // Return 0f so the scroll bubbles up to the parent NestedDraggable
+                                .scrollable(rememberScrollableState { 0f }, orientation)
+                        )
+                    }
+                }
+            }
+
+        // 1. Start the gesture on the child scrollable.
+        rule.onRoot().performTouchInput {
+            down(center)
+            moveBy((touchSlop + 10f).toOffset())
+        }
+
+        assertThat(draggable.onDragStartedCalled).isTrue()
+        assertThat(draggable.onDragStoppedCalled).isFalse()
+        assertThat(draggable.onDragDelta).isEqualTo(10f)
+
+        // Reset the tracker so we can explicitly see the pickup happen.
+        draggable.onDragStartedCalled = false
+
+        // 2. Remove the child scrollable mid-gesture.
+        showChildScrollable = false
+        rule.waitForIdle()
+
+        // 3. Continue the gesture, the parent pointerInput loop picks up the raw touch events.
+        rule.onRoot().performTouchInput {
+            // Wakes up the Final pass loop.
+            moveBy(20f.toOffset())
+
+            // Evaluated by the slop detector, immediately passing slop and starting a new drag.
+            moveBy(30f.toOffset())
+        }
+
+        // Because the nested scroll node was removed, it cleanly aborts the nested scroll and calls
+        // onDragStopped on the parent.
+        assertThat(draggable.onDragStoppedCalled).isTrue()
+        // Reset to verify the final stop
+        draggable.onDragStoppedCalled = false
+
+        // The parent started a new drag seamlessly!
+        assertThat(draggable.onDragStartedCalled).isTrue()
+
+        // The picked-up drag recalculates slop relative to the original down event.
+        // Total movement = 10f (initial) + 20f (wake up) + 30f (slop trigger) = 60f.
+        assertThat(draggable.onDragDelta).isEqualTo(60f)
+
+        // 4. Finish the gesture normally
+        rule.onRoot().performTouchInput { up() }
+
+        assertThat(draggable.onDragStoppedCalled).isTrue()
     }
 
     private fun ComposeContentTestRule.setContentWithTouchSlop(

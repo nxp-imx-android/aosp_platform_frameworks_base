@@ -387,6 +387,12 @@ class MemoryLimiter implements AutoCloseable {
             memInfo.readMemInfo();
             mVmem = memInfo.getTotalSize();
             mPageSize = Os.sysconf(OsConstants._SC_PAGE_SIZE);
+            // If either system parameter is invalid, log an error but keep going.  Limit checks
+            // will be disabled.
+            if (mVmem <= 0 || mPageSize <= 0) {
+                Slog.e(TAG, formatSimple("Invalid system config: vmem=%d pageSize=%d",
+                                mVmem, mPageSize));
+            }
 
             // Note that getConfiguration() accepts a null input.
             Configuration cfg = getConfiguration(mInjector.configFile());
@@ -404,9 +410,12 @@ class MemoryLimiter implements AutoCloseable {
         // A helper function that returns the correct memory limit given a total memory size and a
         // percentage.  If the percentage is 100, then MAX_MEMORY is returned.  A non-positive
         // percentage should not be seen but if it is, the function returns zero.  Return values
-        // are truncated to the kernel page size.
+        // are truncated to the kernel page size.  If either system configuration parameter (total
+        // and pageSize) is invalid, MAX_MEMORY is returned.
         private static long memLimit(long total, long pageSize, int percentage) {
             if (percentage >= 100) {
+                return MAX_MEMORY;
+            } else if (total <= 0 || pageSize <= 0) {
                 return MAX_MEMORY;
             } else if (percentage <= 0) {
                 return 0;
@@ -509,16 +518,30 @@ class MemoryLimiter implements AutoCloseable {
             Slog.i(TAG, formatSimple("onLimitExceeded: pid=%d uid=%d type=%s limit=%d pkg=%s",
                     pid, uid, limitTypeToString(type), limit, pkg));
 
+            // If mVmem is zero, something is badly wrong with the system.  The code should never
+            // reach this point, because an invalid mVmem should disable limits, but just in case
+            // we do reach this point, log and exit immediately.
+            if (mVmem <= 0) {
+                Slog.e(TAG, formatSimple("onLimitExceeded: invalid mVmem=%d", mVmem));
+                return;
+            }
+
+            // Convert the limit into a percentage of available memory.  The next two lines
+            // safely generate the percentage between 0 and 100.
+            final double ratio = (100.0D * limit) / mVmem;
+            final int percent = (int) Math.round(Math.max(0.0, Math.min(100.0, ratio)));
+
             // statsd logging is throttled to at most 28 events per day.
             if (shouldLogAtom()) {
                 FrameworkStatsLog.write(FrameworkStatsLog.MEMORY_LIMITER_OVER_LIMIT_EVENT,
-                        uid, limitTypeToAtom(type), limit);
+                        uid, limitTypeToAtom(type), percent);
             }
-            onLimitExceeded(pid, uid, type, limit, pkg);
+            onLimitExceeded(pid, uid, type, limit, percent, pkg);
         }
 
         // This method can be overridden by test clients to capture the full over-limit event.
-        public void onLimitExceeded(int pid, int uid, int type, long limit, String pkg) {
+        public void onLimitExceeded(int pid, int uid, int type, long limit, int percent,
+                String pkg) {
             if (pkg == null) {
                 // A null package cannot be reported.
                 return;

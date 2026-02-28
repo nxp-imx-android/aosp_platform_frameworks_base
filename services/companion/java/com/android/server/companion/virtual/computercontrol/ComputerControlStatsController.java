@@ -150,6 +150,12 @@ final class ComputerControlStatsController {
         this(packageManager, attributionSource, params, Instant::now);
     }
 
+    void monitor() {
+        synchronized (mBlockReasons) { /* no-op */ }
+        synchronized (mApplicationLaunchPackages) { /* no-op */ }
+        synchronized (mPerformedActions) { /* no-op */ }
+    }
+
     /** Marks the start of the session, unless it was already marked. */
     void onSessionActive() {
         mCreationTime.compareAndSet(null, mClock.get());

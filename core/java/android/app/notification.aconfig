@@ -138,9 +138,9 @@ flag {
 }
 
 flag {
-  name: "automation_gi_treatment_enabled"
+  name: "enable_automation_notification_ui"
   namespace: "notifications"
-  description: "Whether gi automation visual treatment is enabled for notifications."
+  description: "Whether automation visual treatment is enabled for notifications."
   bug: "483447802"
   metadata {
     purpose: PURPOSE_FEATURE

@@ -36,6 +36,7 @@ android_test {
         "PlatformComposeCore",
         "PlatformMotionTestingCompose",
         "platform-test-annotations",
+        "flag-junit-base",
 
         "androidx.test.ext.junit",
         "androidx.test.runner",

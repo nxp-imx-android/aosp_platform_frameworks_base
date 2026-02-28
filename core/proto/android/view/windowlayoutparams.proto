@@ -72,6 +72,7 @@ message WindowLayoutParamsProto {
     optional uint32 forcibly_shown_types = 34 [(.android.typedef) = "android.view.WindowInsets.Type.InsetsType"];
     repeated InsetsFrameProviderProto provided_insets = 35;
     repeated WindowLayoutParamsProto params_for_rotation = 36;
+    optional uint32 rendering_hints = 37 [(.android.typedef) = "android.view.WindowManager.LayoutParams.RenderingHints"];
 }
 
 /* represents InsetsFrameProvider */

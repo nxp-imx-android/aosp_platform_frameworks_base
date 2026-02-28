@@ -14270,6 +14270,7 @@ public final class Settings {
          * (0 disabled, 1 - enabled)
          * @hide
          */
+        @Readable
         public static final String AIRPLANE_MODE_SYNC = "airplane_mode_sync";
 
         /**

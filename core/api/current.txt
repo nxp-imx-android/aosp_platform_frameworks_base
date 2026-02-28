@@ -9072,6 +9072,12 @@ package android.app.admin {
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_ENABLED = 4; // 0x4
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_ENABLED_UNENFORCED = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time") public static final int AUTO_TIME_USER_CHOICE = 0; // 0x0
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time_zone") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> AUTO_TIME_ZONE;
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time_zone") public static final int AUTO_TIME_ZONE_DISABLED = 3; // 0x3
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time_zone") public static final int AUTO_TIME_ZONE_DISABLED_UNENFORCED = 1; // 0x1
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time_zone") public static final int AUTO_TIME_ZONE_ENABLED = 4; // 0x4
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time_zone") public static final int AUTO_TIME_ZONE_ENABLED_UNENFORCED = 2; // 0x2
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time_zone") public static final int AUTO_TIME_ZONE_USER_CHOICE = 0; // 0x0
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.util.List<java.lang.String>> CONTENT_RESTRICTION_APPS;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.String> LOCKSCREEN_MESSAGE;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> SCREEN_CAPTURE;
@@ -34977,7 +34983,7 @@ package android.os {
     field public static final int BAKLAVA = 36; // 0x24
     field public static final int BASE = 1; // 0x1
     field public static final int BASE_1_1 = 2; // 0x2
-    field @FlaggedApi("android.sdk.version_codes_cinnamon_bun") public static final int CINNAMON_BUN = 10000; // 0x2710
+    field public static final int CINNAMON_BUN = 37; // 0x25
     field public static final int CUPCAKE = 3; // 0x3
     field public static final int CUR_DEVELOPMENT = 10000; // 0x2710
     field public static final int DONUT = 4; // 0x4
@@ -35019,7 +35025,7 @@ package android.os {
     field public static final int BAKLAVA_1 = 3600001; // 0x36ee81
     field public static final int BASE = 100000; // 0x186a0
     field public static final int BASE_1_1 = 200000; // 0x30d40
-    field @FlaggedApi("android.sdk.version_codes_cinnamon_bun") public static final int CINNAMON_BUN = 1000000000; // 0x3b9aca00
+    field public static final int CINNAMON_BUN = 3700000; // 0x387520
     field public static final int CUPCAKE = 300000; // 0x493e0
     field public static final int DONUT = 400000; // 0x61a80
     field public static final int ECLAIR = 500000; // 0x7a120
@@ -49108,15 +49114,15 @@ package android.telephony.ims {
     method public int describeContents();
     method public int getAttributeFlags();
     method @NonNull public java.util.Set<java.lang.String> getFeatureTags();
-    method @FlaggedApi("com.android.internal.telephony.flags.emergency_registration_state") public boolean getFlagRegistrationTypeEmergency();
-    method @FlaggedApi("com.android.internal.telephony.flags.emergency_registration_state") public boolean getFlagVirtualRegistrationForEmergencyCall();
+    method public boolean getFlagRegistrationTypeEmergency();
+    method public boolean getFlagVirtualRegistrationForEmergencyCall();
     method @FlaggedApi("com.android.internal.telephony.flags.pcscf_address") @Nullable public String getPcscfAddress();
     method @Nullable public android.telephony.ims.SipDetails getSipDetails();
     method public int getTransportType();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field public static final int ATTR_EPDG_OVER_CELL_INTERNET = 1; // 0x1
-    field @FlaggedApi("com.android.internal.telephony.flags.emergency_registration_state") public static final int ATTR_REGISTRATION_TYPE_EMERGENCY = 2; // 0x2
-    field @FlaggedApi("com.android.internal.telephony.flags.emergency_registration_state") public static final int ATTR_VIRTUAL_FOR_ANONYMOUS_EMERGENCY_CALL = 4; // 0x4
+    field public static final int ATTR_REGISTRATION_TYPE_EMERGENCY = 2; // 0x2
+    field public static final int ATTR_VIRTUAL_FOR_ANONYMOUS_EMERGENCY_CALL = 4; // 0x4
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.ims.ImsRegistrationAttributes> CREATOR;
   }
 
@@ -54336,7 +54342,7 @@ package android.view {
     method @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") public float getDesiredMaxRate();
     method @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") public float getDesiredMinRate();
     method @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") public float getFixedSourceRate();
-    field @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") public static final android.view.Surface.FrameRateParams IGNORE;
+    field @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") @NonNull public static final android.view.Surface.FrameRateParams IGNORE;
   }
 
   @FlaggedApi("com.android.graphics.surfaceflinger.flags.arr_setframerate_api") public static final class Surface.FrameRateParams.Builder {

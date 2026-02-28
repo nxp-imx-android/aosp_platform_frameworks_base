@@ -17,6 +17,7 @@
 package com.android.systemui.screencapture.record.smallscreen.ui.compose
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -184,9 +185,14 @@ private fun AppPreview(viewModel: RecentTaskViewModel, modifier: Modifier = Modi
                     }
                 ),
         ) {
+            val animationSpec: FiniteAnimationSpec<Float> =
+                MaterialTheme.motionScheme.slowEffectsSpec()
             AnimatedContent(
                 targetState = viewModel.thumbnail?.getOrNull(),
-                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                transitionSpec = {
+                    fadeIn(animationSpec = animationSpec) togetherWith
+                        fadeOut(animationSpec = animationSpec)
+                },
                 contentAlignment = Alignment.Center,
                 modifier =
                     Modifier.shadow(

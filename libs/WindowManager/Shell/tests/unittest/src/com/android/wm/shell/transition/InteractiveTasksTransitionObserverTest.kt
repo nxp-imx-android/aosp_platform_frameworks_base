@@ -17,6 +17,7 @@
 package com.android.wm.shell.transition
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.content.Intent
 import android.os.IBinder
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
@@ -89,11 +90,17 @@ class InteractiveTasksTransitionObserverTest : ShellTestCase() {
         assertFalse(repository.isTaskInteractiveOnDisplay(DEFAULT_DISPLAY, 1))
     }
 
-    private fun createTask(taskId: Int, displayId: Int, isInteractive: Boolean): RunningTaskInfo {
+    private fun createTask(
+        taskId: Int,
+        displayId: Int,
+        isInteractive: Boolean,
+        baseIntent: Intent = Intent(),
+    ): RunningTaskInfo {
         val info = RunningTaskInfo()
         info.taskId = taskId
         info.displayId = displayId
         info.isInteractive = isInteractive
+        info.baseIntent = baseIntent
         return info
     }
 

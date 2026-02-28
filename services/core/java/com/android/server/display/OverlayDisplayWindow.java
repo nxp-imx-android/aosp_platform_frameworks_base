@@ -239,8 +239,8 @@ final class OverlayDisplayWindow implements DumpUtils.Dump {
             mWindowParams.privateFlags |=
                     WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY;
         }
-        mWindowParams.privateFlags |=
-                WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_HARDWARE_ACCELERATED;
+        mWindowParams.renderingHints |=
+                WindowManager.LayoutParams.RENDERING_HINT_FORCE_HARDWARE_ACCELERATED;
         mWindowParams.alpha = WINDOW_ALPHA;
         mWindowParams.gravity = Gravity.TOP | Gravity.LEFT;
         mWindowParams.setTitle(mTitle);

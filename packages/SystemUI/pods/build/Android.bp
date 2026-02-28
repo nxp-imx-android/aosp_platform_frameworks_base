@@ -46,9 +46,6 @@ java_defaults {
     libs: [
         "jsr330", // javax.inject.*
     ],
-    kotlincflags: [
-        "-Xexplicit-api=strict",
-    ],
     visibility: ["//visibility:public"],
     defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
 }

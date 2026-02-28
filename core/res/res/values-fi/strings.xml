@@ -759,19 +759,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"Laitteen lukituksen avaus"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"Kokeile toista tapaa avata lukitus"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"Käytä kasvojentunnistusavausta, kun sormenjälkeä ei tunnisteta, esimerkiksi sormien ollessa märät"</string>
-    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
-    <skip />
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"Avaa lukitus kasvoilla, kun sormenjälkeä ei tunnisteta, esimerkiksi sormien ollessa märät"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Käytä sormenjälkiavausta, kun kasvoja ei tunnisteta, esimerkiksi hämärässä"</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"Kasvojentunnistusavaus"</string>
-    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
-    <skip />
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"Avaa lukitus kasvoilla"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"Face Unlockiin liittyvä ongelma"</string>
-    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
-    <skip />
+    <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"Ongelma lukituksen avaamisessa kasvoilla"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"Poista kasvomalli napauttamalla ja lisää sitten kasvosi uudelleen"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"Jos haluat käyttää kasvojentunnistusavausta, valitse Asetukset &gt; Yksityisyys ja laita "<b>"Pääsy kameraan"</b>" päälle"</string>
-    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
-    <skip />
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"Jos haluat avata lukituksen kasvoilla, laita "<b>"Pääsy kameraan"</b>" päälle kohdasta Asetukset ja Yksityisyys"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"Sormenjälkiavaus"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"Sormenjälkitunnistinta ei voi käyttää"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"Ota yhteys korjauspalveluun."</string>
@@ -779,42 +775,31 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Liian kirkasta. Kokeile pehmeämpää valaistusta."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Ei tarpeeksi valoa"</string>
     <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"Vie puhelin kauemmas"</string>
-    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
-    <skip />
+    <string name="face_acquired_too_close" product="desktop" msgid="7189579448504853047">"Siirrä laitetta kauemmas"</string>
     <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"Tuo puhelin lähemmäs"</string>
-    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
-    <skip />
+    <string name="face_acquired_too_far" product="desktop" msgid="6590730829823321223">"Siirrä laitetta lähemmäs"</string>
     <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"Siirrä puhelinta ylemmäs"</string>
-    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
-    <skip />
+    <string name="face_acquired_too_high" product="desktop" msgid="717393614154504299">"Siirrä laitetta ylemmäs"</string>
     <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"Siirrä puhelinta alemmas"</string>
-    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
-    <skip />
+    <string name="face_acquired_too_low" product="desktop" msgid="7695733281069538045">"Siirrä laitetta alemmas"</string>
     <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"Siirrä puhelinta vasemmalle"</string>
-    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
-    <skip />
+    <string name="face_acquired_too_right" product="desktop" msgid="4058756237538843740">"Siirrä laitetta vasemmalle"</string>
     <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"Siirrä puhelinta oikealle"</string>
-    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
-    <skip />
+    <string name="face_acquired_too_left" product="desktop" msgid="5804819007366973778">"Siirrä laitetta oikealle"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Katso suoremmin kameraan"</string>
     <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"Kasvoja ei näy. Pidä puhelinta silmien korkeudella."</string>
-    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
-    <skip />
+    <string name="face_acquired_not_detected" product="desktop" msgid="1047701586390904260">"Kasvojasi ei näy. Pidä laitetta silmien korkeudella."</string>
     <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"Laite liikkui liikaa. Pidä puhelin vakaana."</string>
-    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
-    <skip />
+    <string name="face_acquired_too_much_motion" product="desktop" msgid="7135563968992659161">"Laite liikkui liikaa. Pidä se paikoillaan."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Rekisteröi kasvot uudelleen."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"Kasvoja ei tunnistettu. Yritä uudelleen."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"Liikuta päätä hieman"</string>
     <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"Katso suoremmin puhelimeen"</string>
-    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
-    <skip />
+    <string name="face_acquired_pan_too_extreme" product="desktop" msgid="821456302944137576">"Katso suoremmin laitteeseen"</string>
     <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"Katso suoremmin puhelimeen"</string>
-    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
-    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="desktop" msgid="1119243364774233108">"Katso suoremmin laitteeseen"</string>
     <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"Katso suoremmin puhelimeen"</string>
-    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
-    <skip />
+    <string name="face_acquired_roll_too_extreme" product="desktop" msgid="3665467581072397682">"Katso suoremmin laitteeseen"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"Poista esteet kasvojesi edestä"</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"Puhdista näytön yläreuna, mukaan lukien musta palkki"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -828,30 +813,24 @@
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Kasvoja ei voi vahvistaa. Laitteisto ei käytettäv."</string>
     <string name="face_error_timeout" product="default" msgid="2598544068593889762">"Yritä käyttää kasvojentunnistusavausta uudelleen"</string>
-    <!-- no translation found for face_error_timeout (8136501408214657840) -->
-    <skip />
+    <string name="face_error_timeout" product="desktop" msgid="8136501408214657840">"Yritä avata lukitus kasvoilla uudelleen"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"Uutta kasvodataa ei voi tallentaa. Poista ensin vanhaa."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"Kasvotoiminto peruutettu"</string>
     <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"Käyttäjä perui kasvojentunnistusavauksen"</string>
-    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
-    <skip />
+    <string name="face_error_user_canceled" product="desktop" msgid="8903551031462609651">"Käyttäjä perui lukituksen avaamisen kasvoilla"</string>
     <string name="face_error_lockout" msgid="7864408714994529437">"Liian monta yritystä. Yritä myöhemmin uudelleen."</string>
     <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"Liikaa yrityksiä. Face Unlock ei saatavilla."</string>
-    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
-    <skip />
+    <string name="face_error_lockout_permanent" product="desktop" msgid="1885291877517229762">"Liian monta yritystä. Lukituksen avaaminen kasvoilla ei ole käytettävissä."</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"Liian monta yritystä. Lisää sen sijaan näytön lukitus."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"Kasvoja ei voi vahvistaa. Yritä uudelleen."</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"Et ole ottanut käyttöön kasvojentunnistusavausta"</string>
-    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
-    <skip />
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"Lukituksen avaamista kasvoilla ei ole vielä otettu käyttöön"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"Kasvojentunnistusavausta ei tueta tällä laitteella"</string>
-    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
-    <skip />
+    <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"Lukituksen avaamista kasvoilla ei tueta tällä laitteella"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"Tunnistin poistettu väliaikaisesti käytöstä."</string>
     <string name="face_name_template" msgid="3877037340223318119">"Kasvot <xliff:g id="FACEID">%d</xliff:g>"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"Käytä kasvojentunnistusavausta"</string>
-    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
-    <skip />
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"Avaa lukitus kasvoilla"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"Käytä kasvojentunnistusavausta tai näytön lukitusta"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"Jatka kasvojesi avulla"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"Jatka kasvojentunnistuksen tai näytön lukituksen avulla"</string>
@@ -1112,8 +1091,7 @@
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Avaa lukitus painamalla mitä tahansa näppäintä"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Käytä kaikkia ominaisuuksia avaamalla lukitus."</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"Kasvojentunnistusavauksen yrityksiä tehty suurin sallittu määrä."</string>
-    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
-    <skip />
+    <string name="faceunlock_multiple_failures" product="desktop" msgid="5388142244463490793">"Kasvoilla avaamisyritysten enimmäismäärä saavutettu"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Ei SIM-korttia"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"Tabletissa ei ole SIM-korttia."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"Android TV ‑laitteessa ei ole SIM-korttia."</string>
@@ -1185,8 +1163,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"Lukituksen poisto liu\'uttamalla."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"Lukituksen poisto salasanalla."</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"Kasvojentunnistusavaus."</string>
-    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
-    <skip />
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"Avaa lukitus kasvoilla."</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"Lukituksen poisto PIN-koodilla."</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"SIM-kortin PIN-koodin lukituksen avaus"</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"SIM-kortin PUK-koodin lukituksen avaus"</string>
@@ -1923,8 +1900,7 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Vaihda"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Asetukset"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Siirry kohteeseen <xliff:g id="NAME">%1$s</xliff:g>…"</string>
-    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
-    <skip />
+    <string name="user_logging_out_message" msgid="2968888364742643174">"Kirjaudutaan ulos…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Omistaja"</string>
     <string name="guest_name" msgid="8502103277839834324">"Vieras"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Järjestelmäkäyttäjä"</string>
@@ -2187,12 +2163,10 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"Tekoälyagentit ja ‑palvelut, joille olet sallinut pääsyn (%1$s) voivat edelleen käyttää sen dataa"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Lisää sovellusluk."</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Kasvojentunnistusav."</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"Avaa kasvoilla"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Sormenjälkiavaus"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"Sormenjälkiavaus, kasvojentunnistusavaus"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"Sormenjälkiavaus, avaa lukitus kasvoilla"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"salasana"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"kuvio"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN-koodi"</string>
@@ -2412,7 +2386,7 @@
     <string name="accessibility_system_action_dpad_left_label" msgid="6557647179116479152">"Suuntanäppäimistö: vasen painike"</string>
     <string name="accessibility_system_action_dpad_right_label" msgid="9180196950365804081">"Suuntanäppäimistö: oikea painike"</string>
     <string name="accessibility_system_action_dpad_center_label" msgid="8149791419358224893">"Suuntanäppäimistö: keskipainike"</string>
-    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"Automaattisten klikkausten asetusvalikko"</string>
+    <string name="accessibility_autoclick_type_settings_panel_title" msgid="2153131135765368397">"Automaattiklikkausten asetusvalikko"</string>
     <string name="accessibility_autoclick_left_click" msgid="8241237237588793835">"Klikkaa ykköspainikkeella"</string>
     <string name="accessibility_autoclick_right_click" msgid="6208390123529830506">"Klikkaa kakkospainikkeella"</string>
     <string name="accessibility_autoclick_double_click" msgid="2800154470129612873">"Kaksoisklikkaa"</string>
@@ -2689,11 +2663,9 @@
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> ei enää ole tunnistettavissa. Ota sormenjälkiavaus uudelleen käyttöön."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> ja <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> eivät enää ole tunnistettavissa. Ota sormenjälkiavaus uudelleen käyttöön."</string>
     <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"Ota kasvojentunnistusavaus uudelleen käyttöön"</string>
-    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
-    <skip />
+    <string name="face_dangling_notification_title" product="desktop" msgid="4632690536207343589">"Ota lukituksen avaaminen kasvoilla uudelleen käyttöön"</string>
     <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"Kasvomallia ei enää tunnisteta. Ota kasvojentunnistusavaus uudelleen käyttöön."</string>
-    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
-    <skip />
+    <string name="face_dangling_notification_msg" product="desktop" msgid="5982979430103820891">"Kasvomallia ei enää tunnisteta. Ota lukituksen avaaminen kasvoilla uudelleen käyttöön."</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"Ota käyttöön"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"Ei nyt"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"Herätys: <xliff:g id="USER_NAME">%s</xliff:g>"</string>
@@ -2733,6 +2705,5 @@
     <string name="supervision_blocked_app_title" msgid="5546803865875383588">"Päivitys vanhemmalta"</string>
     <string name="supervision_blocked_app_content" msgid="4125452996088641559">"<xliff:g id="APP_NAME">%1$s</xliff:g> poistettiin toistaiseksi"</string>
     <string name="supervision_unblocked_app_content" msgid="8282985265957852278">"<xliff:g id="APP_NAME">%1$s</xliff:g> on nyt saatavilla"</string>
-    <!-- no translation found for media_route_chooser_share_cast_others (8797886650999355673) -->
-    <skip />
+    <string name="media_route_chooser_share_cast_others" msgid="8797886650999355673">"Striimaa muille"</string>
 </resources>

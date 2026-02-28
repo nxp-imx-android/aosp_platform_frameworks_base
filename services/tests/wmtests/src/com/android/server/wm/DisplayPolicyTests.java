@@ -34,7 +34,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR;
 import static android.view.WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
-import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS;
+import static android.view.WindowManager.LayoutParams.RENDERING_HINT_FORCE_DRAW_BAR_BACKGROUNDS;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
@@ -66,9 +66,9 @@ import android.view.WindowManager;
 
 import androidx.test.filters.SmallTest;
 
-import com.google.protobuf.InvalidProtocolBufferException;
-
 import com.android.window.flags.Flags;
+
+import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -314,7 +314,7 @@ public class DisplayPolicyTests extends WindowTestsBase {
     public void testMainAppWindowDisallowFitSystemWindowTypes() {
         final DisplayPolicy policy = mDisplayContent.getDisplayPolicy();
         final WindowState activity = createBaseApplicationWindow();
-        activity.mAttrs.privateFlags |= PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS;
+        activity.mAttrs.renderingHints |= RENDERING_HINT_FORCE_DRAW_BAR_BACKGROUNDS;
 
         policy.adjustWindowParamsLw(activity, activity.mAttrs);
     }

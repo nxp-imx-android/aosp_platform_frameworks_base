@@ -388,7 +388,7 @@ public class AuthService extends SystemService {
 
         @Override
         public int canAuthenticate(String opPackageName, int userId,
-                @Authenticators.Types int authenticators) throws RemoteException {
+                @Authenticators.Types int authenticators, int displayId) throws RemoteException {
 
             // Only allow internal clients to call canAuthenticate with a different userId.
             final int callingUserId = UserHandle.getCallingUserId();
@@ -402,7 +402,7 @@ public class AuthService extends SystemService {
             final long identity = Binder.clearCallingIdentity();
             try {
                 final int result = mBiometricService.canAuthenticate(
-                        opPackageName, userId, callingUserId, authenticators);
+                        opPackageName, userId, callingUserId, authenticators, displayId);
                 Slog.d(TAG, "canAuthenticate"
                         + ", userId: " + userId
                         + ", callingUserId: " + callingUserId
@@ -711,7 +711,8 @@ public class AuthService extends SystemService {
         public CharSequence getButtonLabel(
                 int userId,
                 String opPackageName,
-                @Authenticators.Types int authenticators) throws RemoteException {
+                @Authenticators.Types int authenticators,
+                int displayId) throws RemoteException {
 
             // Only allow internal clients to call getButtonLabel with a different userId.
             final int callingUserId = UserHandle.getCallingUserId();
@@ -726,7 +727,7 @@ public class AuthService extends SystemService {
             try {
                 @BiometricAuthenticator.Modality final int modality =
                         mBiometricService.getCurrentModality(
-                                opPackageName, userId, callingUserId, authenticators);
+                                opPackageName, userId, callingUserId, authenticators, displayId);
 
                 final String result;
                 switch (getCredentialBackupModality(modality)) {
@@ -757,7 +758,8 @@ public class AuthService extends SystemService {
         public CharSequence getPromptMessage(
                 int userId,
                 String opPackageName,
-                @Authenticators.Types int authenticators) throws RemoteException {
+                @Authenticators.Types int authenticators,
+                int displayId) throws RemoteException {
 
             // Only allow internal clients to call getButtonLabel with a different userId.
             final int callingUserId = UserHandle.getCallingUserId();
@@ -772,7 +774,7 @@ public class AuthService extends SystemService {
             try {
                 @BiometricAuthenticator.Modality final int modality =
                         mBiometricService.getCurrentModality(
-                                opPackageName, userId, callingUserId, authenticators);
+                                opPackageName, userId, callingUserId, authenticators, displayId);
 
                 final boolean isCredentialAllowed = Utils.isCredentialRequested(authenticators);
 

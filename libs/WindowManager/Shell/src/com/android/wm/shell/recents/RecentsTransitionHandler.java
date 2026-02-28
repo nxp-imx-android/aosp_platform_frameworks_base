@@ -1837,11 +1837,10 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             // Use mTransition IBinder token temporarily just to get PipTransition
                             // to return from its handleRequest(). The actual TRANSIT_PIP will have
                             // anew token once it arrives into PipTransition#startAnimation().
-                            Pair<Transitions.TransitionHandler, WindowContainerTransaction>
-                                    requestRes = mTransitions.dispatchRequest(mTransition,
-                                            requestInfo, null /* skip */);
-                            wct.merge(requestRes.second, true);
-                            mTransitions.startTransition(TRANSIT_PIP, wct, requestRes.first);
+                            Transitions.RequestResult requestRes = mTransitions.dispatchRequest(
+                                    mTransition, requestInfo, null /* skip */);
+                            wct.merge(requestRes.mWct, true);
+                            mTransitions.startTransition(TRANSIT_PIP, wct, requestRes.mHandler);
                             // We need to clear the WCT to send finishWCT=null for Recents.
                             wct.clear();
 

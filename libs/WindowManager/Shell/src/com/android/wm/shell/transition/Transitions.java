@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.transition;
 
-import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
@@ -240,6 +239,7 @@ public class Transitions implements RemoteCallable<Transitions>,
     private final SleepHandler mSleepHandler = new SleepHandler();
     private final TransitionTracer mTransitionTracer;
 
+    private final TransactionPool mTransactionPool;
     private final TransitionMixpatcher mMixpatcher;
 
     /** List of possible handlers. Ordered by specificity (eg. tapped back to front). */
@@ -274,6 +274,7 @@ public class Transitions implements RemoteCallable<Transitions>,
         TransitionInfo mInfo;
         SurfaceControl.Transaction mStartT;
         SurfaceControl.Transaction mFinishT;
+        List<ITransitionPlanner> mInterestedPlanners;
 
         /** Ordered list of transitions which have been merged into this one. */
         private ArrayList<ActiveTransition> mMerged;
@@ -392,6 +393,7 @@ public class Transitions implements RemoteCallable<Transitions>,
         shellInit.addInitCallback(this::onInit, this);
         mHomeTransitionObserver = homeTransitionObserver;
         mFocusTransitionObserver = focusTransitionObserver;
+        mTransactionPool = pool;
 
         mTransitionTracer = new PerfettoTransitionTracer();
         if (com.android.window.flags.Flags.transitMixpatcherBase()) {
@@ -1106,7 +1108,7 @@ public class Transitions implements RemoteCallable<Transitions>,
                 "This shouldn't happen, maybe the default handler is broken.");
     }
 
-    private Pair<TransitionHandler, WindowContainerTransaction> dispatchRequestWithTracing(
+    private RequestResult dispatchRequestWithTracing(
             @NonNull IBinder transition, @NonNull TransitionRequestInfo request,
             @Nullable TransitionHandler skip) {
         final boolean useTrace = Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER);
@@ -1114,11 +1116,10 @@ public class Transitions implements RemoteCallable<Transitions>,
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER,
                     "dispatchRequest: " + transitTypeToString(request.getType()));
         }
-        Pair<TransitionHandler, WindowContainerTransaction> result =
-                dispatchRequest(transition, request, skip);
+        final RequestResult result = dispatchRequest(transition, request, skip);
         if (useTrace) {
             if (result != null) {
-                Trace.instant(TRACE_TAG_WINDOW_MANAGER, result.first.getClass().getSimpleName()
+                Trace.instant(TRACE_TAG_WINDOW_MANAGER, result.mHandler.getClass().getSimpleName()
                         + "#handleRequest handled " + transitTypeToString(request.getType()));
             }
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
@@ -1130,14 +1131,14 @@ public class Transitions implements RemoteCallable<Transitions>,
      * Gives every handler (in order) a chance to handle request until one consumes the transition.
      * @return the WindowContainerTransaction given by the handler which consumed the transition.
      */
-    public Pair<TransitionHandler, WindowContainerTransaction> dispatchRequest(
+    public RequestResult dispatchRequest(
             @NonNull IBinder transition, @NonNull TransitionRequestInfo request,
             @Nullable TransitionHandler skip) {
         for (int i = mHandlers.size() - 1; i >= 0; --i) {
             if (mHandlers.get(i) == skip) continue;
-            WindowContainerTransaction wct = mHandlers.get(i).handleRequest(transition, request);
-            if (wct != null) {
-                return new Pair<>(mHandlers.get(i), wct);
+            RequestResult result = mHandlers.get(i).handleRequestOnly(transition, request);
+            if (result != null) {
+                return result;
             }
         }
         return null;
@@ -1307,16 +1308,31 @@ public class Transitions implements RemoteCallable<Transitions>,
 
         // If we have sleep, we use a special handler and we try to finish everything ASAP.
         if (request.getType() == TRANSIT_SLEEP) {
-            mSleepHandler.handleRequest(transitionToken, request);
+            mSleepHandler.handleRequestOnly(transitionToken, request);
             active.mHandler = mSleepHandler;
         } else {
-            Pair<TransitionHandler, WindowContainerTransaction> requestResult =
+            RequestResult requestResult =
                     dispatchRequestWithTracing(transitionToken, request, /* skip= */ null);
             if (requestResult != null) {
-                active.mHandler = requestResult.first;
-                wct = requestResult.second;
-                ProtoLog.v(WM_SHELL_TRANSITIONS, "Transition (#%d): request handled by %s",
-                        request.getDebugId(), active.mHandler.getClass().getSimpleName());
+                active.mHandler = requestResult.mHandler;
+                active.mInterestedPlanners = requestResult.mInterest;
+                wct = requestResult.mWct;
+                if (com.android.window.flags.Flags.transitMixpatcherBase()) {
+                    if (requestResult.mHandler != null) {
+                        // Legacy handling expects that the handler which responded to the request
+                        // is the first to animate, so insert legacy planner as interest.
+                        active.mInterestedPlanners = List.of(mMixpatchLegacyPlanner);
+                        ProtoLog.v(WM_SHELL_TRANSITIONS, "Transition (#%d): request redirected to "
+                                + "legacy handler %s", request.getDebugId(),
+                                active.mHandler.getClass().getSimpleName());
+                    } else {
+                        ProtoLog.v(WM_SHELL_TRANSITIONS, "Transition (#%d): request redirected to "
+                                + "%s", request.getDebugId(), active.mInterestedPlanners);
+                    }
+                } else if (active.mHandler != null) {
+                    ProtoLog.v(WM_SHELL_TRANSITIONS, "Transition (#%d): request handled by %s",
+                            request.getDebugId(), active.mHandler.getClass().getSimpleName());
+                }
             }
             if (request.getDisplayChange() != null) {
                 TransitionRequestInfo.DisplayChange change = request.getDisplayChange();
@@ -1347,12 +1363,8 @@ public class Transitions implements RemoteCallable<Transitions>,
             wct.setBounds(request.getTriggerTask().token, null);
         }
         if (com.android.window.flags.Flags.transitMixpatcherBase()) {
-            ArrayList<ITransitionPlanner> interest = null;
-            if (active.mHandler != null) {
-                interest = new ArrayList<>();
-                interest.add(new MixpatchLegacyPlanner(active.mHandler));
-            }
-            mMixpatcher.startTransition(transitionToken, request.getType(), wct, interest);
+            mMixpatcher.startTransition(transitionToken, request.getType(), wct,
+                    active.mInterestedPlanners);
             return;
         }
         mKnownTransitions.put(transitionToken, active);
@@ -1384,10 +1396,9 @@ public class Transitions implements RemoteCallable<Transitions>,
         }
 
         if (com.android.window.flags.Flags.transitMixpatcherBase()) {
-            ArrayList<ITransitionPlanner> interest = null;
+            List<ITransitionPlanner> interest = null;
             if (handler != null) {
-                interest = new ArrayList<>();
-                interest.add(new MixpatchLegacyPlanner(handler));
+                interest = List.of(new MixpatchLegacyPlanner(handler));
             }
             return mMixpatcher.startTransition(null /* token */, type, wct, interest);
         }
@@ -1639,8 +1650,8 @@ public class Transitions implements RemoteCallable<Transitions>,
     private class MixpatchAnimationWrapper implements ITransitionAnimation {
         final IBinder mTransition;
         TransitionInfo mInfo = null;
-        final SurfaceControl.Transaction mStartT = new SurfaceControl.Transaction();
-        final SurfaceControl.Transaction mFinishT = new SurfaceControl.Transaction();
+        final SurfaceControl.Transaction mStartT = mTransactionPool.acquire();
+        final SurfaceControl.Transaction mFinishT = mTransactionPool.acquire();
         ITransitionAnimation.IFinishedCallback mFinishCB = null;
 
         MixpatchAnimationWrapper(@NonNull IBinder transit) {
@@ -1700,6 +1711,42 @@ public class Transitions implements RemoteCallable<Transitions>,
          * @param wct A WindowContainerTransaction to run along with the transition clean-up.
          */
         void onTransitionFinished(@Nullable WindowContainerTransaction wct);
+    }
+
+    /**
+     * Result of processing a transition request. It includes work that needs to be added to
+     * the transition.
+     *
+     * If using mixpatcher, this can provide a list of interested planners (planners which want to
+     * be first to plan the resulting transition info).
+     *
+     * If NOT using mixpatcher, the {@link #mHandler} will be first in line to play the resulting
+     * animation.
+     */
+    public static final class RequestResult {
+        @NonNull public final WindowContainerTransaction mWct;
+        public final TransitionHandler mHandler;
+        List<ITransitionPlanner> mInterest;
+
+        public RequestResult(@NonNull WindowContainerTransaction wct,
+                @NonNull List<ITransitionPlanner> interest) {
+            mWct = wct;
+            mHandler = null;
+            mInterest = interest;
+        }
+
+        public RequestResult(@NonNull WindowContainerTransaction wct) {
+            mWct = wct;
+            mHandler = null;
+            mInterest = List.of();
+        }
+
+        @Deprecated
+        public RequestResult(@NonNull WindowContainerTransaction wct,
+                @NonNull TransitionHandler handler) {
+            mWct = wct;
+            mHandler = handler;
+        }
     }
 
     /**
@@ -1839,16 +1886,35 @@ public class Transitions implements RemoteCallable<Transitions>,
         }
 
         /**
+         * @deprecated Use {@link #handleRequestOnly}.
+         */
+        @Nullable
+        @Deprecated
+        default WindowContainerTransaction handleRequest(@NonNull IBinder transition,
+                @NonNull TransitionRequestInfo request) {
+            throw new UnsupportedOperationException("Must implement either handleRequestOnly"
+                    + " (preferred) or handleRequest (deprecated)");
+        }
+
+        /**
          * Potentially handles a startTransition request.
+         *
+         * The default implementation falls through to the legacy {@link #handleRequest}.
          *
          * @param transition The transition whose start is being requested.
          * @param request Information about what is requested.
-         * @return WCT to apply with transition-start or null. If a WCT is returned here, this
-         *         handler will be the first in line to animate.
+         * @return Extra work to submit with the transition or null. See {@link RequestResult} for
+         *         more information about how this result is used.
          */
         @Nullable
-        WindowContainerTransaction handleRequest(@NonNull IBinder transition,
-                @NonNull TransitionRequestInfo request);
+        default RequestResult handleRequestOnly(
+                @NonNull IBinder transition, @NonNull TransitionRequestInfo request) {
+            final WindowContainerTransaction wct = handleRequest(transition, request);
+            if (wct == null) {
+                return null;
+            }
+            return new RequestResult(wct, this);
+        }
 
         /**
          * Called when a transition which was already "claimed" by this handler has been merged

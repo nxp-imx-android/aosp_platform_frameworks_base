@@ -22,12 +22,14 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_CONTENT_RESTRICTI
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE;
 import static android.Manifest.permission.SET_TIME;
+import static android.Manifest.permission.SET_TIME_ZONE;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
 import static android.app.admin.DevicePolicyManager.RESOURCE_DEVICE_WIDE;
 import static android.app.admin.DevicePolicyManager.RESOURCE_PER_USER;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME;
+import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE;
 import static android.processor.devicepolicy.AllowedDpcTypes.ALLOWED;
 import static android.processor.devicepolicy.AllowedDpcTypes.DISALLOWED;
 
@@ -173,16 +175,14 @@ public final class PolicyIdentifier<T> {
 
     /**
      * The admin has disabled the time to be automatically obtained from the network. This is not
-     * enforced and the user can still enable it. Use {@link UserManager#DISALLOW_CONFIG_DATE_TIME}
-     * to enforce the policy.
+     * enforced and the user can still enable it.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
     public static final int AUTO_TIME_DISABLED_UNENFORCED = 1;
 
     /**
      * The admin has enabled the time to be automatically obtained from the network. This is not
-     * enforced and the user can still disable it. Use {@link UserManager#DISALLOW_CONFIG_DATE_TIME}
-     * to enforce the policy.
+     * enforced and the user can still disable it.
      */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME)
     public static final int AUTO_TIME_ENABLED_UNENFORCED = 2;
@@ -307,6 +307,84 @@ public final class PolicyIdentifier<T> {
                                                             DISALLOWED))))
     public static final PolicyIdentifier<List<String>> CONTENT_RESTRICTION_APPS =
             new PolicyIdentifier<>("CONTENT_RESTRICTION_APPS");
+
+    /**
+     * The user can choose whether the device's time zone is set automatically or not.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE)
+    public static final int AUTO_TIME_ZONE_USER_CHOICE = 0;
+
+    /**
+     * The admin has disabled automatic time zone detection. This is not enforced and the user can
+     * still enable it. Use {@link UserManager#DISALLOW_CONFIG_DATE_TIME} to enforce the policy.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE)
+    public static final int AUTO_TIME_ZONE_DISABLED_UNENFORCED = 1;
+
+    /**
+     * The admin has enabled the time zone to be automatically obtained from the network. This is
+     * not enforced and the user can still disable it. Use {@link
+     * UserManager#DISALLOW_CONFIG_DATE_TIME} to enforce the policy.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE)
+    public static final int AUTO_TIME_ZONE_ENABLED_UNENFORCED = 2;
+
+    /**
+     * The admin has disabled automatic time zone detection. This is enforced and the user cannot
+     * enable it.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE)
+    public static final int AUTO_TIME_ZONE_DISABLED = 3;
+
+    /**
+     * The admin has enabled the time zone to be automatically obtained from the network. This is
+     * enforced and the user cannot disable it.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE)
+    public static final int AUTO_TIME_ZONE_ENABLED = 4;
+
+    /**
+     * Possible values {@link #AUTO_TIME_ZONE}
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = {"AUTO_TIME_ZONE_"},
+            value = {
+                AUTO_TIME_ZONE_USER_CHOICE,
+                AUTO_TIME_ZONE_DISABLED_UNENFORCED,
+                AUTO_TIME_ZONE_ENABLED_UNENFORCED,
+                AUTO_TIME_ZONE_DISABLED,
+                AUTO_TIME_ZONE_ENABLED,
+            })
+    public @interface AutoTimeZoneValue {}
+
+    /**
+     * Policy that controls whether the device's time zone is set automatically, e.g. obtained from
+     * network or location.
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE)
+    @NonNull
+    @EnumPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {POLICY_SCOPE_DEVICE},
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            requiredPermission = SET_TIME_ZONE,
+                            requiredCrossUserPermission = MANAGE_DEVICE_POLICY_ACROSS_USERS,
+                            allowedDpcTypes =
+                                    @AllowedDpcTypes(
+                                            deviceOwner = ALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED,
+                                            profileOwnerOnUser0 = ALLOWED)),
+            intDef = AutoTimeZoneValue.class,
+            defaultValue = AUTO_TIME_ZONE_USER_CHOICE,
+            resolutionMechanism = @EnumResolutionMechanism(custom = true))
+    public static final PolicyIdentifier<Integer> AUTO_TIME_ZONE =
+            new PolicyIdentifier<>("AUTO_TIME_ZONE");
 
     // LINT.ThenChange(/tools/policymetadata/policies.textproto)
 }

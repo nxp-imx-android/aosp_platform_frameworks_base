@@ -141,7 +141,6 @@
     <string name="desktop_mode_layout_menu_maximize_text" msgid="7086608727256054454">"بزرگ کردن صفحه"</string>
     <string name="desktop_mode_layout_menu_snap_text" msgid="7558194147987254333">"تغییر اندازه"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"برنامه را نمی‌توان به اینجا منتقل کرد"</string>
-    <string name="desktop_mode_talkback_state_opening" msgid="8505494249513712682">"باز کردن پنجره برنامه جدید"</string>
     <string name="desktop_mode_talkback_state_closing" msgid="6791583518636526904">"بستن پنجره برنامه"</string>
     <string name="desktop_mode_talkback_state_minimizing" msgid="7406911785134757827">"کوچک کردن پنجره برنامه"</string>
     <string name="desktop_mode_talkback_state_focused" msgid="6287982923335568236">"‫<xliff:g id="APP_NAME">%1$s</xliff:g> (کانونی‌شده)"</string>

@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.largescreen.domain.interactor
 
+import android.graphics.Rect
 import android.net.Uri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -144,5 +145,14 @@ class LargeScreenCaptureParametersInteractorTest : SysuiTestCase() {
             underTest.setSelectedCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
             assertThat(underTest.getSelectedCaptureRegion())
                 .isEqualTo(ScreenCaptureRegion.FULLSCREEN)
+        }
+
+    @Test
+    fun setSelectedCaptureRegionBox_setAndGetCaptureRegionBox() =
+        kosmos.runTest {
+            assertThat(underTest.getSelectedCaptureRegionBox()).isNull()
+
+            underTest.setSelectedCaptureRegionBox(Rect(50, 50, 100, 100))
+            assertThat(underTest.getSelectedCaptureRegionBox()).isEqualTo(Rect(50, 50, 100, 100))
         }
 }

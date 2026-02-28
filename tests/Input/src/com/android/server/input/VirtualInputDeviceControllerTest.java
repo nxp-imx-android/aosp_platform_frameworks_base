@@ -299,14 +299,11 @@ public class VirtualInputDeviceControllerTest {
     }
 
     @Test
-    public void createInputDevice_duplicateNamesAreNotAllowed() {
+    public void createInputDevice_duplicateNamesAreAllowed() {
         mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_1, DISPLAY_ID_1,
                 /* viewBehaviorConfig= */ null);
-        assertThrows("Device names need to be unique",
-                IllegalArgumentException.class,
-                () -> mInputController.createDpad(
-                        NAME, VENDOR_ID, PRODUCT_ID, TOKEN_2, DISPLAY_ID_2,
-                        /* viewBehaviorConfig= */ null));
+        mInputController.createDpad(NAME, VENDOR_ID, PRODUCT_ID, TOKEN_2, DISPLAY_ID_2,
+                /* viewBehaviorConfig= */ null);
     }
 
     @Test

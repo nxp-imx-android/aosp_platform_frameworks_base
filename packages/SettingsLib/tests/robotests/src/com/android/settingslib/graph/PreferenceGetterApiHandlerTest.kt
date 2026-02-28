@@ -28,7 +28,6 @@ import com.android.settingslib.ipc.ApiPermissionChecker
 import com.android.settingslib.metadata.PreferenceCoordinate
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel
-import com.android.settingslib.robotests.R
 import com.android.settingslib.testutils.GraphTestUtils
 import com.android.settingslib.testutils.GraphTestUtils.createPersistentPreference
 import com.android.settingslib.testutils.GraphTestUtils.createScreen
@@ -40,6 +39,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.spy
 import org.robolectric.RobolectricTestRunner
+import com.android.settingslib.robotests.R
 
 @RunWith(RobolectricTestRunner::class)
 @EnableFlags(Flags.FLAG_CATALYST_USE_KEY_PARAMETERS)
@@ -87,7 +87,7 @@ class PreferenceGetterApiHandlerTest {
                     isRestricted = false,
                 ),
                 valueType = String::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY,
+                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 readPermission = INTERACT_ACROSS_USERS,
                 readPermit = ReadWritePermit.ALLOW,
                 writePermission = INTERACT_ACROSS_PROFILES,
@@ -115,7 +115,7 @@ class PreferenceGetterApiHandlerTest {
             restricted = false
             purpose = R.string.preference_purpose
             persistent = true
-            sensitivityLevel = SensitivityLevel.LOW_SENSITIVITY
+            sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO
             readPermissions = Permissions.allOf(
                 INTERACT_ACROSS_USERS
             ).toProto()
@@ -142,6 +142,4 @@ class PreferenceGetterApiHandlerTest {
         ]
         assertThat(actualProto).isEqualTo(expectedProto)
     }
-
-
 }

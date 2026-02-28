@@ -6875,6 +6875,7 @@ public class AudioManager {
      * Return true if the device code corresponds to an output device.
      * @hide
      */
+    @RavenwoodKeep
     public static boolean isOutputDevice(int device)
     {
         return !AudioSystem.isInputDevice(device);
@@ -6884,6 +6885,7 @@ public class AudioManager {
      * Return true if the device code corresponds to an input device.
      * @hide
      */
+    @RavenwoodKeep
     public static boolean isInputDevice(int device)
     {
         return AudioSystem.isInputDevice(device);

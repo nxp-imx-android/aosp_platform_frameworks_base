@@ -79,6 +79,7 @@ import com.android.internal.graphics.drawable.BackgroundBlurDrawable
 import com.android.systemui.Flags
 import com.android.systemui.keyboard.shortcut.ui.composable.hasCompactWindowSize
 import com.android.systemui.res.R
+import com.android.systemui.shared.system.BlurUtils.isVolumeAndPowerBlurEnabled
 import kotlin.math.roundToInt
 
 /**
@@ -203,8 +204,9 @@ fun SystemUIDialogFactory.createBottomSheet(
                 val radius = dimensionResource(R.dimen.bottom_sheet_corner_radius)
                 val isBlurSupported by
                     dialog.blurInteractor!!.isBlurCurrentlySupported.collectAsStateWithLifecycle()
+                val isBlurEnabled = isVolumeAndPowerBlurEnabled()
                 val backgroundBlurModifier =
-                    if (Flags.blurOnMoreSurfaces()) {
+                    if (isBlurEnabled) {
                         val bottomsheetBlurRadius =
                             dimensionResource(R.dimen.bottomsheet_blur_radius)
                         val cornerRadius = dimensionResource(R.dimen.bottom_sheet_corner_radius)
@@ -252,7 +254,7 @@ fun SystemUIDialogFactory.createBottomSheet(
                             .then(backgroundBlurModifier ?: Modifier),
                     shape = RoundedCornerShape(topStart = radius, topEnd = radius),
                     color =
-                        if (Flags.blurOnMoreSurfaces()) {
+                        if (isBlurEnabled) {
                             if (isBlurSupported) {
                                 Color(
                                     ColorUtils.compositeColors(

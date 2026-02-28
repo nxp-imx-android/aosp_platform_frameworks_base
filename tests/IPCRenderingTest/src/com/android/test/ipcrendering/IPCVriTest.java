@@ -20,12 +20,12 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
-import android.view.animation.BounceInterpolator;
 import android.widget.FrameLayout;
 
 public class IPCVriTest extends Activity {
@@ -47,6 +47,15 @@ public class IPCVriTest extends Activity {
         params.topMargin = 50;
         content.addView(view, params);
 
+        View vectorView = new View(this);
+        Drawable vectorDrawable = getDrawable(R.drawable.ic_star);
+        vectorView.setBackground(vectorDrawable);
+
+        FrameLayout.LayoutParams vectorParams = new FrameLayout.LayoutParams(
+                size, size, Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
+        vectorParams.bottomMargin = 50;
+        content.addView(vectorView, vectorParams);
+
         setContentView(content);
 
         view.post(() -> {
@@ -58,6 +67,14 @@ public class IPCVriTest extends Activity {
             animator.setRepeatCount(5);
             animator.setRepeatMode(ValueAnimator.REVERSE);
             animator.setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator());
+            animator.start();
+        });
+
+        vectorView.post(() -> {
+            ObjectAnimator animator = ObjectAnimator.ofFloat(vectorView, "rotation", 0f, 360f);
+            animator.setDuration(1000);
+            animator.setRepeatCount(ValueAnimator.INFINITE);
+            animator.setInterpolator(new android.view.animation.LinearInterpolator());
             animator.start();
         });
     }

@@ -16,136 +16,209 @@
 
 package com.android.settingslib.graph
 
+import com.android.settingslib.graph.proto.BundleProto
+import com.android.settingslib.graph.proto.IntentProto
+import com.android.settingslib.graph.proto.KeyParametersProto
+import com.android.settingslib.graph.proto.ParameterizedPreferenceScreenProto
 import com.android.settingslib.graph.proto.PreferenceGraphProto
 import com.android.settingslib.graph.proto.PreferenceGroupProto
 import com.android.settingslib.graph.proto.PreferenceOrGroupProto
 import com.android.settingslib.graph.proto.PreferenceProto
 import com.android.settingslib.graph.proto.PreferenceScreenProto
 
-/** Utility to shrink and expand [PreferenceGraphProto] by de-duplicating redundant sibling fields. */
+/**
+ * Utility to shrink and expand [PreferenceGraphProto] using In-Place Skeleton Parameterization.
+ *
+ * It deduplicates sibling screens by identifying those with identical internal structures.
+ *
+ * --- SHRINKING ---
+ * 1. The first sibling in a group is the ANCHOR. It stores a structural template where concrete
+ *    routing values are replaced by ${key} placeholders.
+ * 2. Subsequent identical siblings are SKELETONS. Their 'screen' field is cleared to save space,
+ *    as their structure can be derived from the Anchor.
+ *
+ * --- EXPANDING ---
+ * 1. The pass maintains the 'activeTemplate' from the most recent Anchor.
+ * 2. Every sibling (Anchor or Skeleton) is materialized by re-injecting its unique parameters
+ *    into the active template, perfectly restoring the original LOSSLESS state.
+ */
 object PreferenceGraphCompressor {
 
-    /** Shrinks a proto by removing redundant purposes within the same parent.
-     * Note: Use [expand] to restore the original proto file
-     */
+    /** Performs hierarchy-wide deduplication. Returns the original if no changes were made. */
     fun shrink(proto: PreferenceGraphProto): PreferenceGraphProto {
-        val builder = proto.toBuilder()
-        for ((key, screen) in proto.screens) {
-            builder.putScreens(key, shrinkScreen(screen))
-        }
-        return builder.build()
+        val shrunkenScreens = proto.screensMap.mapValues { (_, screen) -> shrinkScreen(screen) }
+        return if (shrunkenScreens == proto.screensMap) proto else proto.toBuilder().putAllScreens(shrunkenScreens).build()
     }
 
-    /** Takes a shrunken proto file using [shrink] and return it to its original state. */
+    /** Re-materializes all skeletons. Returns the original if no expansion was needed. */
     fun expand(proto: PreferenceGraphProto): PreferenceGraphProto {
-        val builder = proto.toBuilder()
-        for ((key, screen) in proto.screens) {
-            builder.putScreens(key, expandScreen(screen))
-        }
-        return builder.build()
+        val expandedScreens = proto.screensMap.mapValues { (_, screen) -> expandScreen(screen) }
+        return if (expandedScreens == proto.screensMap) proto else proto.toBuilder().putAllScreens(expandedScreens).build()
     }
 
     private fun shrinkScreen(screen: PreferenceScreenProto): PreferenceScreenProto {
-        val b = screen.toBuilder()
-        if (screen.hasRoot()) b.root = shrinkGroup(screen.root)
-        val children = screen.parameterizedScreensList.toMutableList()
-        val keyGroups = children.indices.groupBy { children[it].screen?.root?.preference?.key ?: "" }
-        for ((key, indices) in keyGroups) {
-            if (key.isEmpty() || indices.size < 2) continue
-            val purposes = indices.map { children[it].screen?.root?.preference?.purpose ?: 0 }
-            if (purposes.all { it != 0 && it == purposes[0] }) {
-                for (i in 1 until indices.size) {
-                    val idx = indices[i]
-                    val ps = children[idx].toBuilder()
-                    val sc = ps.screen.toBuilder()
-                    val rt = sc.root.toBuilder()
-                    rt.preference = rt.preference.toBuilder().clearPurpose().build()
-                    children[idx] = ps.setScreen(sc.setRoot(rt)).build()
-                }
+        val builder = screen.toBuilder().apply { if (hasRoot()) setRoot(shrinkGroup(root)) }
+        val siblings = screen.parameterizedScreensList
+        if (siblings.isEmpty()) return builder.build()
+
+        val shrunkenSiblings = mutableListOf<ParameterizedPreferenceScreenProto>()
+        var index = 0
+        while (index < siblings.size) {
+            val anchor = siblings[index]
+            val shrunkenAnchorSubTree = if (anchor.hasScreen()) shrinkScreen(anchor.screen) else null
+            val anchorTemplate = if (shrunkenAnchorSubTree != null) {
+                mapStringsInScreen(
+                    shrunkenAnchorSubTree,
+                    anchor.keyParameters.valuesMap,
+                    ::replaceWithPlaceholder)
+            } else null
+
+            // Add the Anchor: It carries the structural template for its group.
+            shrunkenSiblings.add(anchor.toBuilder().apply { if (anchorTemplate != null) setScreen(anchorTemplate) }.build())
+
+            var lookAheadIndex = index + 1
+            while (lookAheadIndex < siblings.size) {
+                val candidate = siblings[lookAheadIndex]
+                val shrunkenCandidateSubTree = if (candidate.hasScreen()) shrinkScreen(candidate.screen) else null
+                val candidateTemplate = if (shrunkenCandidateSubTree != null) {
+                    mapStringsInScreen(
+                            shrunkenCandidateSubTree,
+                        candidate.keyParameters.valuesMap,
+                        ::replaceWithPlaceholder)
+                } else null
+
+                if (candidateTemplate == anchorTemplate) {
+                    // SKELETON: Identical structure found. Clear the screen field to deduplicate.
+                    shrunkenSiblings.add(candidate.toBuilder().clearScreen().build())
+                    lookAheadIndex++
+                } else break
             }
+            index = lookAheadIndex
         }
-        for (i in children.indices) {
-            val ps = children[i]
-            if (ps.hasScreen()) children[i] = ps.toBuilder().setScreen(shrinkScreen(ps.screen)).build()
-        }
-        return b.clearParameterizedScreens().addAllParameterizedScreens(children).build()
+        return builder.clearParameterizedScreens().addAllParameterizedScreens(shrunkenSiblings).build()
     }
 
     private fun expandScreen(screen: PreferenceScreenProto): PreferenceScreenProto {
-        val b = screen.toBuilder()
-        if (screen.hasRoot()) b.root = expandGroup(screen.root)
-        val children = screen.parameterizedScreensList.toMutableList()
-        val keyGroups = children.indices.groupBy { children[it].screen?.root?.preference?.key ?: "" }
-        for ((key, indices) in keyGroups) {
-            if (key.isEmpty()) continue
-            val sourcePurpose = indices.map { children[it].screen?.root?.preference?.purpose ?: 0 }.firstOrNull { it != 0 } ?: 0
-            if (sourcePurpose != 0) {
-                for (idx in indices) {
-                    val p = children[idx].screen?.root?.preference
-                    if (p != null && !p.hasPurpose()) {
-                        val ps = children[idx].toBuilder()
-                        val sc = ps.screen.toBuilder()
-                        val rt = sc.root.toBuilder()
-                        rt.preference = rt.preference.toBuilder().setPurpose(sourcePurpose).build()
-                        children[idx] = ps.setScreen(sc.setRoot(rt)).build()
-                    }
-                }
-            }
+        val builder = screen.toBuilder().apply { if (hasRoot()) setRoot(expandGroup(root)) }
+        val siblings = screen.parameterizedScreensList
+        if (siblings.isEmpty()) return builder.build()
+
+        var activeTemplate: PreferenceScreenProto? = null
+        val expandedSiblings = siblings.map { sibling ->
+            // If the sibling has a screen, it's a new Anchor. Update the active template.
+            if (sibling.hasScreen()) activeTemplate = sibling.screen
+
+            val template = activeTemplate ?: error("Dangling Skeleton: No preceding Anchor found.")
+
+            // Materialize the template using this sibling's unique parameters.
+            val materialized =
+                mapStringsInScreen(template,
+                    sibling.keyParameters.valuesMap,
+                    ::restoreFromPlaceholder)
+
+            // Ensure the materialized sub-tree is also expanded.
+            sibling.toBuilder().setScreen(expandScreen(materialized)).build()
         }
-        for (i in children.indices) {
-            val ps = children[i]
-            if (ps.hasScreen()) children[i] = ps.toBuilder().setScreen(expandScreen(ps.screen)).build()
-        }
-        return b.clearParameterizedScreens().addAllParameterizedScreens(children).build()
+        return builder.clearParameterizedScreens().addAllParameterizedScreens(expandedSiblings).build()
     }
 
-    private fun shrinkGroup(group: PreferenceGroupProto): PreferenceGroupProto {
-        val b = group.toBuilder()
-        val children = group.preferencesList.toMutableList()
-        val keyGroups = children.indices.groupBy { getPref(children[it])?.key ?: "" }
-        for ((key, indices) in keyGroups) {
-            if (key.isEmpty() || indices.size < 2) continue
-            val purposes = indices.map { getPref(children[it])?.purpose ?: 0 }
-            if (purposes.all { it != 0 && it == purposes[0] }) {
-                for (i in 1 until indices.size) {
-                    val idx = indices[i]
-                    val p = getPref(children[idx])!!
-                    children[idx] = updatePref(children[idx], p.toBuilder().clearPurpose().build())
-                }
-            }
+    private fun shrinkGroup(group: PreferenceGroupProto): PreferenceGroupProto = group.toBuilder()
+        .clearPreferences().addAllPreferences(group.preferencesList.map { child ->
+            if (child.hasGroup()) PreferenceOrGroupProto.newBuilder().setGroup(shrinkGroup(child.group)).build() else child
+        }).build()
+
+    private fun expandGroup(group: PreferenceGroupProto): PreferenceGroupProto = group.toBuilder()
+        .clearPreferences().addAllPreferences(group.preferencesList.map { child ->
+            if (child.hasGroup()) PreferenceOrGroupProto.newBuilder().setGroup(expandGroup(child.group)).build() else child
+        }).build()
+
+    // --- String Mapping Engine: The recursive "Search & Replace" heart of the compressor ---
+
+    private fun mapStringsInScreen(
+        screen: PreferenceScreenProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): PreferenceScreenProto = screen.toBuilder().apply {
+        if (hasRoot()) setRoot(mapStringsInGroup(root, parameters, stringMapper))
+        if (hasIntent()) setIntent(mapStringsInIntent(intent, parameters, stringMapper))
+    }.build()
+
+    private fun mapStringsInGroup(
+        group: PreferenceGroupProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): PreferenceGroupProto = group.toBuilder().apply {
+        if (hasPreference()) setPreference(mapStringsInPreference(preference, parameters, stringMapper))
+        val mappedChildren = preferencesList.map { child ->
+            val childBuilder = child.toBuilder()
+            if (child.hasGroup()) childBuilder.setGroup(mapStringsInGroup(child.group, parameters, stringMapper))
+            else if (child.hasPreference()) childBuilder.setPreference(mapStringsInPreference(child.preference, parameters, stringMapper))
+            childBuilder.build()
         }
-        for (i in children.indices) {
-            if (children[i].hasGroup()) {
-                children[i] = children[i].toBuilder().setGroup(shrinkGroup(children[i].group)).build()
+        clearPreferences().addAllPreferences(mappedChildren)
+    }.build()
+
+    private fun mapStringsInPreference(
+        preference: PreferenceProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): PreferenceProto = preference.toBuilder().apply {
+        if (hasKey()) setKey(stringMapper(key, parameters))
+        if (hasLaunchIntent()) setLaunchIntent(mapStringsInIntent(launchIntent, parameters, stringMapper))
+        if (hasActionTarget()) setActionTarget(actionTarget.toBuilder().apply {
+            if (hasKey()) setKey(stringMapper(key, parameters))
+            if (hasKeyParameters()) setKeyParameters(mapKeyParameterStrings(keyParameters, parameters, stringMapper))
+        }.build())
+    }.build()
+
+    private fun mapStringsInIntent(
+        intent: IntentProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): IntentProto = intent.toBuilder().apply {
+        if (hasAction()) setAction(stringMapper(action, parameters))
+        if (hasData()) setData(stringMapper(data, parameters))
+        if (hasPkg()) setPkg(stringMapper(pkg, parameters))
+        if (hasComponent()) setComponent(stringMapper(component, parameters))
+        if (hasExtras()) setExtras(mapStringsInBundle(extras, parameters, stringMapper))
+    }.build()
+
+    private fun mapStringsInBundle(
+        bundle: BundleProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): BundleProto = bundle.toBuilder().apply {
+        for ((key, value) in bundle.valuesMap) {
+            val valueBuilder = value.toBuilder()
+            if (value.hasStringValue()) {
+                valueBuilder.setStringValue(stringMapper(value.stringValue, parameters))
+            } else if (value.hasBundleValue()) {
+                valueBuilder.setBundleValue(mapStringsInBundle(value.bundleValue, parameters, stringMapper))
             }
+            putValues(key, valueBuilder.build())
         }
-        return b.clearPreferences().addAllPreferences(children).build()
+    }.build()
+
+    private fun mapKeyParameterStrings(
+        keyParameters: KeyParametersProto,
+        parameters: Map<String, String>,
+        stringMapper: (String, Map<String, String>) -> String
+    ): KeyParametersProto = keyParameters.toBuilder().apply {
+        for ((key, value) in keyParameters.valuesMap) putValues(key, stringMapper(value, parameters))
+    }.build()
+
+    private fun replaceWithPlaceholder(text: String, parameters: Map<String, String>): String {
+        var result = text
+        // PRECEDENCE: Longer values are replaced first to prevent partial overlaps.
+        parameters.entries.sortedByDescending { it.value.length }.forEach { (key, value) ->
+            if (value.isNotEmpty()) result = result.replace(value, "\${$key}")
+        }
+        return result
     }
 
-    private fun expandGroup(group: PreferenceGroupProto): PreferenceGroupProto {
-        val b = group.toBuilder()
-        val children = group.preferencesList.toMutableList()
-        val keyGroups = children.indices.groupBy { getPref(children[it])?.key ?: "" }
-        for ((key, indices) in keyGroups) {
-            if (key.isEmpty()) continue
-            val sourcePurpose = indices.map { getPref(children[it])?.purpose ?: 0 }.firstOrNull { it != 0 } ?: 0
-            if (sourcePurpose != 0) {
-                for (idx in indices) {
-                    val p = getPref(children[idx])
-                    if (p != null && !p.hasPurpose()) {
-                        children[idx] = updatePref(children[idx], p.toBuilder().setPurpose(sourcePurpose).build())
-                    }
-                }
-            }
-        }
-        for (i in children.indices) {
-            if (children[i].hasGroup()) {
-                children[i] = children[i].toBuilder().setGroup(expandGroup(children[i].group)).build()
-            }
-        }
-        return b.clearPreferences().addAllPreferences(children).build()
+    private fun restoreFromPlaceholder(text: String, parameters: Map<String, String>): String {
+        var result = text
+        parameters.forEach { (key, value) -> result = result.replace("\${$key}", value) }
+        return result
     }
-
-    private fun getPref(child: PreferenceOrGroupProto) = if (child.hasPreference()) child.preference else if (child.hasGroup()) child.group.preference else null
-    private fun updatePref(child: PreferenceOrGroupProto, p: PreferenceProto) = if (child.hasPreference()) child.toBuilder().setPreference(p).build() else child.toBuilder().setGroup(child.group.toBuilder().setPreference(p)).build()
 }

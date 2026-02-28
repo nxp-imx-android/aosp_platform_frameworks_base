@@ -42,8 +42,8 @@ import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraManager;
 import android.util.proto.ProtoOutputStream;
 
-import com.android.internal.hidden_from_bootclasspath.com.android.window.flags.Flags;
 import com.android.server.wm.utils.OptPropFactory;
+import com.android.window.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -69,7 +69,6 @@ public final class PerfettoTrace {
      */
     private static final AtomicInteger sFlowEventId = new AtomicInteger();
 
-    public static final PerfettoTrace.Category MQ_CATEGORY = new PerfettoTrace.Category("mq");
     public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace
             .Category PROC_STATE_CATEGORY = getProcStateCategory();
 
@@ -81,7 +80,6 @@ public final class PerfettoTrace {
 
     public static final PerfettoTrace.Category GFX_CATEGORY = new PerfettoTrace.Category("gfx");
 
-    // The same as a previous MQ_CATEGORY, but to be used with a V3 API.
     public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
             GFX_CATEGORY_V3 = getGfxCategoryV3();
 
@@ -89,20 +87,6 @@ public final class PerfettoTrace {
     private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
             getGfxCategoryV3() {
         return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("gfx");
-    }
-
-    public static final PerfettoTrace.Category JOB_SCHEDULER_CATEGORY =
-            new PerfettoTrace.Category("jobscheduler");
-
-    // The same as a previous JOB_SCHEDULER_CATEGORY, but to be used with a V3 API.
-    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
-            JOB_SCHEDULER_CATEGORY_V3 = getJobSchedulerCategoryV3();
-
-    @RavenwoodIgnore // Just use null on Ravenwood.
-    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
-            getJobSchedulerCategoryV3() {
-        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category(
-                "jobscheduler");
     }
 
     // For tracing coroutine execution (coroutine creation and coroutine continuations)
@@ -142,7 +126,7 @@ public final class PerfettoTrace {
     }
 
     /**
-     * This is temporary wrapper to check if either new or old APIs "mq" category is enabled, should
+     * This is temporary wrapper to check if "mq" category is enabled, should
      * be called only from the MessageQueue.java and Looper.java.
      */
     // Tracing currently completely disabled under Ravenwood, just return false.
@@ -162,9 +146,9 @@ public final class PerfettoTrace {
     @RavenwoodIgnore
     public static boolean isJobSchedulerCategoryEnabled() {
         if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
-            return PerfettoTrace.JOB_SCHEDULER_CATEGORY_V3.isEnabled();
+            return PerfettoCategories.JOB_SCHEDULER_CATEGORY.isEnabled();
         }
-        return PerfettoTrace.JOB_SCHEDULER_CATEGORY.isEnabled();
+        return false;
     }
 
     /**
@@ -493,13 +477,10 @@ public final class PerfettoTrace {
     public static void registerCategories() {
         if (IS_USE_SDK_TRACING_API_V3) {
             GFX_CATEGORY_V3.register();
-            JOB_SCHEDULER_CATEGORY_V3.register();
             CC_CATEGORY_V3.register();
             BIG_LOCKS_V3.register();
         } else {
-            MQ_CATEGORY.register();
             GFX_CATEGORY.register();
-            JOB_SCHEDULER_CATEGORY.register();
             CC_CATEGORY.register();
         }
         if (android.os.Flags.perfettoSdkTracingV3()) {

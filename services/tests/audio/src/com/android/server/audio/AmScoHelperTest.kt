@@ -35,6 +35,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 
 @SmallTest
+@Suppress("DEPRECATION")
 @RunWith(AndroidJUnit4::class)
 class AmScoHelperTest {
 

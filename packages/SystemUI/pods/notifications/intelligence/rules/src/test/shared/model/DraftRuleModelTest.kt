@@ -53,7 +53,16 @@ class DraftRuleModelTest : SysuiTestCase() {
                 )
             )
         val includedApps =
-            IncludedAppsModel(listOf(AppModel(label = "app label", icon = ShapeDrawable())))
+            IncludedAppsModel(
+                listOf(
+                    AppModel(
+                        uid = 13,
+                        label = "app label",
+                        icon = ShapeDrawable(),
+                        packageName = "app.name",
+                    )
+                )
+            )
         val rule =
             RuleModel(
                 action = ActionModel.Silence,

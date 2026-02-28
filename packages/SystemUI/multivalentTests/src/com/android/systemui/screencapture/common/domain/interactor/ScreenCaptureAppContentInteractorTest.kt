@@ -158,7 +158,7 @@ class ScreenCaptureAppContentInteractorTest : SysuiTestCase() {
                     50,
                 )
             val job = testScope.launch { appContents.collect { result = it } }
-            assertThat(result).isNull()
+            assertThat(result).isEqualTo(MultiAppContent(emptyList(), emptyMap()))
             with(fakeScreenCaptureAppContentRepository) {
                 val fakeCallback1 = FakeAppContentProjectionCallback(context)
                 setAppContentSuccess(

@@ -21,6 +21,7 @@ package com.android.systemui.scene.ui.composable.transitions
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.ui.geometry.Offset
+import com.android.compose.animation.Easings
 import com.android.compose.animation.scene.Edge
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.compose.animation.scene.transformation.seekSharedElementToOffsetUntilRelease
@@ -52,6 +53,7 @@ fun TransitionBuilder.toSingleShadeTransition(
         if (isLargeScreenPortrait) {
             fade(QuickSettings.Elements.QuickQuickSettingsAndMedia)
             fade(Notifications.Elements.NotificationScrim)
+            fade(Notifications.Elements.StackPlaceholder)
         }
     }
 
@@ -59,6 +61,9 @@ fun TransitionBuilder.toSingleShadeTransition(
 
     if (!isLargeScreenPortrait) {
         translate(Notifications.Elements.NotificationScrim, Edge.Top, false)
+        fractionRange(start = .42f, easing = Easings.Legacy) {
+            fade(Notifications.Elements.StackPlaceholder)
+        }
     }
 
     if (seekAnimation) {

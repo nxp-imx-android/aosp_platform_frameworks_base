@@ -1091,6 +1091,16 @@ flag {
 }
 
 flag {
+    name: "nesteddraggable_gesture_pickup"
+    namespace: "systemui"
+    description: "Gesture drag pick up in NestedDraggable"
+    bug: "487588670"
+    metadata {
+         purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "new_aod_transition"
     namespace: "systemui"
     description: "New LOCKSCREEN <=> AOD transition"
@@ -1478,16 +1488,6 @@ flag {
    metadata {
      purpose: PURPOSE_BUGFIX
    }
-}
-
-flag {
-  name: "restrict_communal_app_widget_host_listening"
-  namespace: "systemui"
-  description: "Only listens to AppWidgetHost when the communal hub is showing"
-  bug: "406044666"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {

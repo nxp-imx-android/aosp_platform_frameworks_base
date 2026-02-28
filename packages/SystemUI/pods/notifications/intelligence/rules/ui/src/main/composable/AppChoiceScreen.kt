@@ -17,110 +17,50 @@
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DockedSearchBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 
 /** Renders a fullscreen page to select 1 or more apps matching a search string. */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppChoiceScreen(viewState: RulesScreenViewState.EditField.Apps) {
+fun AppChoiceScreen(viewState: RulesScreenViewState.EditField.Apps, onDismissRequest: () -> Unit) {
     val viewModel = viewState.viewModel
+
+    val initialSelection: List<AppModel> =
+        when (val apps = viewModel.rule.includedApps) {
+            is RuleValue.Specified -> apps.value.apps
+            is RuleValue.Ambiguous -> emptyList()
+            null -> emptyList()
+        }
+
     // All apps on the device. Null while the apps are being fetched.
     val allApps by
         produceState<List<AppModel>?>(initialValue = null, key1 = viewModel) {
             value = viewModel.fetchInstalledApps()
         }
 
-    var currentQuery by remember { mutableStateOf("") }
-    var isExpanded by rememberSaveable { mutableStateOf(true) }
-
-    val currentSearchResults =
-        remember(allApps, currentQuery) { getSearchResults(allApps, currentQuery) }
-
-    DockedSearchBar(
-        inputField = {
-            SearchBarDefaults.InputField(
-                query = currentQuery,
-                onQueryChange = { newQuery: String -> currentQuery = newQuery },
-                onSearch = {},
-                placeholder = { Text(text = "Search [TK]") },
-                expanded = isExpanded,
-                onExpandedChange = { isExpanded = it },
-            )
-        },
-        expanded = isExpanded,
-        onExpandedChange = { isExpanded = it },
-    ) {
-        val modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
-        if (currentSearchResults != null) {
-            AppSearchResults(currentSearchResults, modifier = modifier)
-        } else {
-            LoadingIcon(modifier = modifier)
-        }
-    }
-}
-
-@Composable
-private fun AppSearchResults(currentSearchResults: List<AppModel>, modifier: Modifier = Modifier) {
-    // TODO: b/478225883 - Allow users to select apps and save them.
-    // TODO: b/478225883 - Show apps for other profiles in separate tabs.
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier,
-    ) {
-        // TODO: b/478225883 - Use package name as item key.
-        items(currentSearchResults) { AppIcon(it) }
-    }
+    EditScreen(
+        title = "Apps [TK]",
+        initialSelection = initialSelection,
+        onSelectionSaved = { viewState.onAppsSaved(it) },
+        onDismissRequest = onDismissRequest,
+        allSearchResults = allApps,
+        fetchSearchResults = { query -> getSearchResults(allApps, query) },
+        sortKey = { it.label },
+        uniqueId = { it.uniqueId },
+        image = { AppIcon(it) },
+        text = { it.label },
+    )
 }
 
 @Composable
 private fun AppIcon(appModel: AppModel) {
-    Column {
-        Image(
-            rememberDrawablePainter(appModel.icon),
-            contentDescription = null,
-            modifier = Modifier.size(32.dp),
-        )
-        Text(appModel.label)
-    }
-}
-
-@Composable
-private fun LoadingIcon(modifier: Modifier = Modifier) {
-    Box(contentAlignment = Alignment.Center, modifier = modifier) {
-        CircularProgressIndicator(
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.size(32.dp),
-        )
-    }
+    // TODO: b/478225883 - Use AppIconProvider to fetch the icons instead.
+    Image(rememberDrawablePainter(appModel.icon), contentDescription = null)
 }
 
 /** Returns the subset of [allApps] that match [query]. */

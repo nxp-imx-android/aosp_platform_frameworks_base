@@ -21,9 +21,8 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.audio.audioManager
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -237,7 +236,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
             kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
                 AuthenticationMethodModel.None
             )
-            kosmos.fakeDeviceEntryRepository.setLockscreenEnabled(false)
+            kosmos.fakeKeyguardRepository.setKeyguardEnabled(false)
             kosmos.sceneInteractor.changeScene(Scenes.Gone, "SystemStatusIconsViewModelTest")
 
             showZenMode()

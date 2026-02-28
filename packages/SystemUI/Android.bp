@@ -891,14 +891,11 @@ android_app {
             ":sysui_proguard_common_and_kotlin",
         ],
     },
-
-    plugins: ["dagger2-compiler"],
 }
 
 java_library {
     name: "RoboTestLibraries",
     static_libs: [
-        "dagger2",
         "androidx.test.uiautomator_uiautomator",
         "androidx.core_core-animation-testing",
         "androidx.test.ext.junit",
@@ -946,9 +943,6 @@ android_robolectric_test {
 
     instrumentation_for: "SystemUIRobo-stub",
     java_resource_dirs: ["tests/robolectric/config"],
-    plugins: [
-        "dagger2-compiler",
-    ],
     strict_mode: false,
 }
 
@@ -985,9 +979,6 @@ android_robolectric_test {
 
     instrumentation_for: "SystemUIRobo-stub",
     java_resource_dirs: ["tests/robolectric/config"],
-    plugins: [
-        "dagger2-compiler",
-    ],
     strict_mode: false,
 }
 
@@ -1022,11 +1013,6 @@ android_ravenwood_test {
     aaptflags: [
         "--extra-packages",
         "com.android.systemui",
-    ],
-    enable_ksp: true,
-    plugins: ["dagger2-compiler"],
-    annotation_processor_flags: [
-        "dagger.useBindingGraphFix=ENABLED",
     ],
     team: "trendy_team_ravenwood",
 }

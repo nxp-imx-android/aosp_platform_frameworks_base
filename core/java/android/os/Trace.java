@@ -595,6 +595,7 @@ public final class Trace {
             // TODO(475548318): Once all categories are migrated, replace with
             // PerfettoCategories.registerCategories()
             PerfettoCategories.MQ_CATEGORY.register();
+            PerfettoCategories.JOB_SCHEDULER_CATEGORY.register();
         }
     }
 }

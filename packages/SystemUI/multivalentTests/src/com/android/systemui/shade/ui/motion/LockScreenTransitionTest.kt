@@ -22,7 +22,6 @@ import android.platform.test.annotations.MotionTest
 import android.testing.TestableLooper.RunWithLooper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
-import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipeDown
@@ -64,7 +63,7 @@ import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notifi
 import com.android.systemui.qs.ui.composable.QuickSettingsScene
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsUserActionsViewModelFactory
-import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.domain.interactor.awaitTransitionIdle
 import com.android.systemui.scene.sceneContainerTransitions
 import com.android.systemui.scene.sceneContainerViewModelFactory
 import com.android.systemui.scene.session.shared.SessionStorage
@@ -100,10 +99,7 @@ import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
-import platform.test.motion.compose.values.MotionTestValueKey
-import platform.test.motion.golden.FeatureCapture
-import platform.test.motion.golden.TimeSeriesCaptureScope
-import platform.test.motion.golden.asDataPoint
+import platform.test.motion.golden.DataPointTypes
 import platform.test.motion.golden.feature
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
@@ -213,23 +209,17 @@ class LockScreenTransitionTest : SysuiTestCase() {
                     content = { SceneContainerUnderTest() },
                     recordingSpec =
                         ComposeRecordingSpec(
-                            MotionControl(
-                                delayRecording = {
-                                    awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.isIdle()
-                                    }
-                                }
-                            ) {
+                            MotionControl(delayRecording = { awaitTransitionIdle(kosmos) }) {
                                 performTouchInputAsync(onRoot()) { swipeLeft(startX = centerX) }
-
-                                awaitCondition {
-                                    kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
-                                }
+                                awaitTransitionIdle(kosmos)
                             },
                             recordAfter = false,
                             recordBefore = false,
                         ) {
-                            featureFloat(LockscreenContent.LockscreenContentMotionTestKeys.Alpha)
+                            feature(
+                                LockscreenContent.LockscreenContentMotionTestKeys.Alpha,
+                                DataPointTypes.float,
+                            )
                             feature(
                                 isElement(Communal.Elements.Grid),
                                 ComposeFeatureCaptures.x,
@@ -254,13 +244,7 @@ class LockScreenTransitionTest : SysuiTestCase() {
                     content = { SceneContainerUnderTest() },
                     recordingSpec =
                         ComposeRecordingSpec(
-                            MotionControl(
-                                delayRecording = {
-                                    awaitCondition {
-                                        kosmos.sceneInteractor.transitionStateFlow.value.isIdle()
-                                    }
-                                }
-                            ) {
+                            MotionControl(delayRecording = { awaitTransitionIdle(kosmos) }) {
 
                                 // perform swipe down gesture from top
                                 performTouchInputAsync(onRoot()) {
@@ -268,7 +252,10 @@ class LockScreenTransitionTest : SysuiTestCase() {
                                 }
                             }
                         ) {
-                            featureFloat(LockscreenContent.LockscreenContentMotionTestKeys.Alpha)
+                            feature(
+                                LockscreenContent.LockscreenContentMotionTestKeys.Alpha,
+                                DataPointTypes.float,
+                            )
                         },
                 )
             assertThat(motion).timeSeriesMatchesGolden()
@@ -289,17 +276,10 @@ class LockScreenTransitionTest : SysuiTestCase() {
                     content = { SceneContainerUnderTest() },
                     recordingSpec =
                         ComposeRecordingSpec(
-                            MotionControl(
-                                delayRecording = {
-                                    awaitCondition {
-                                        kosmos.sceneInteractor.transitionState.isIdle()
-                                    }
-                                }
-                            ) {
+                            MotionControl(delayRecording = { awaitTransitionIdle(kosmos) }) {
                                 performTouchInputAsync(onRoot()) {
                                     swipeDown(startY = centerY, endY = bottom, durationMillis = 500)
                                 }
-                                awaitCondition { kosmos.sceneInteractor.transitionState.isIdle() }
                             }
                         ) {
                             feature(
@@ -342,21 +322,6 @@ class LockScreenTransitionTest : SysuiTestCase() {
                     )
                 }
             }
-        }
-    }
-
-    private companion object {
-        fun TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.featureFloat(
-            motionTestValueKey: MotionTestValueKey<Float>
-        ) {
-            feature(
-                motionTestValueKey = motionTestValueKey,
-                capture =
-                    FeatureCapture(motionTestValueKey.semanticsPropertyKey.name) {
-                        it.asDataPoint()
-                    },
-                name = motionTestValueKey.semanticsPropertyKey.name,
-            )
         }
     }
 }

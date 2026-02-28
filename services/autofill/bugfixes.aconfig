@@ -169,3 +169,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "set_locale_for_text_view"
+  namespace: "autofill"
+  description: "Let TextView set the locale field when providing AssistStructure for autofill"
+  bug: "487046283"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

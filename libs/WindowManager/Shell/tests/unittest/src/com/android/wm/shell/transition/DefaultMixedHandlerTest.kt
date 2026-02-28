@@ -183,7 +183,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
             .`when`(bubbleTransitions)
             .storePendingEnterTransition(any(), any())
 
-        mixedHandler.handleRequest(Binder(), request)
+        mixedHandler.handleRequestOnly(Binder(), request)
         verify(remoteTransition).onTransitionConsumed(any(), eq(false))
     }
 
@@ -245,7 +245,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
 
         bubbleHelper.stub { onGeneric { isAppBubbleTask(any()) } doReturn true }
 
-        mixedHandler.handleRequest(Binder(), request)
+        mixedHandler.handleRequestOnly(Binder(), request)
 
         verify(remoteTransition).onTransitionConsumed(any(), eq(false))
     }

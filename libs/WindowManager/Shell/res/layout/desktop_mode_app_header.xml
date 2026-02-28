@@ -87,7 +87,6 @@
             android:contentDescription="@null"
             android:layout_marginHorizontal="8dp"
             android:layout_gravity="center_vertical"/>
-
     </LinearLayout>
 
     <View

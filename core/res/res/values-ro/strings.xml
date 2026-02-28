@@ -760,19 +760,15 @@
     <string name="device_unlock_notification_name" msgid="2632928999862915709">"Deblocarea dispozitivului"</string>
     <string name="alternative_unlock_setup_notification_title" msgid="6241508547901933544">"Încearcă o altă modalitate de deblocare"</string>
     <string name="alternative_face_setup_notification_content" product="default" msgid="3384959224091897331">"Folosește Deblocarea facială atunci când amprenta ta nu este recunoscută, de exemplu, când ai degetele ude"</string>
-    <!-- no translation found for alternative_face_setup_notification_content (8589631194028810041) -->
-    <skip />
+    <string name="alternative_face_setup_notification_content" product="desktop" msgid="8589631194028810041">"Deblochează cu fața când nu ți se recunoaște amprenta, de exemplu, dacă ai degetele ude"</string>
     <string name="alternative_fp_setup_notification_content" msgid="7454096947415721639">"Folosește Deblocarea cu amprenta atunci când chipul tău nu este recunoscut, de exemplu, când nu există suficientă lumină"</string>
     <string name="face_recalibrate_notification_name" product="default" msgid="7311163114750748686">"Deblocare facială"</string>
-    <!-- no translation found for face_recalibrate_notification_name (6343244778393495390) -->
-    <skip />
+    <string name="face_recalibrate_notification_name" product="desktop" msgid="6343244778393495390">"Deblochează cu fața"</string>
     <string name="face_recalibrate_notification_title" product="default" msgid="2524791952735579082">"Problemă cu Deblocarea facială"</string>
-    <!-- no translation found for face_recalibrate_notification_title (7502893130398903561) -->
-    <skip />
+    <string name="face_recalibrate_notification_title" product="desktop" msgid="7502893130398903561">"Problemă la deblocarea cu fața"</string>
     <string name="face_recalibrate_notification_content" msgid="3064513770251355594">"Atinge pentru a șterge modelul facial, apoi adaugă din nou chipul"</string>
     <string name="face_sensor_privacy_enabled" product="default" msgid="7407126963510598508">"Pentru a folosi Deblocarea facială, activează "<b>"Accesul la cameră"</b>" în Setări și confidențialitate"</string>
-    <!-- no translation found for face_sensor_privacy_enabled (7690221855638766930) -->
-    <skip />
+    <string name="face_sensor_privacy_enabled" product="desktop" msgid="7690221855638766930">"Pentru a debloca cu fața, activează "<b>"Accesul la cameră"</b>" în Setări și confidențialitate"</string>
     <string name="fingerprint_recalibrate_notification_name" msgid="1414578431898579354">"Deblocare cu amprenta"</string>
     <string name="fingerprint_recalibrate_notification_title" msgid="2406561052064558497">"Nu se poate folosi senzorul de amprentă"</string>
     <string name="fingerprint_recalibrate_notification_content" msgid="8519935717822194943">"Vizitează un furnizor de servicii de reparații."</string>
@@ -780,42 +776,31 @@
     <string name="face_acquired_too_bright" msgid="8070756048978079164">"Prea luminos. Încearcă o lumină mai slabă."</string>
     <string name="face_acquired_too_dark" msgid="8539853432479385326">"Lumină insuficientă"</string>
     <string name="face_acquired_too_close" product="default" msgid="4453646176196302462">"Mută telefonul mai departe"</string>
-    <!-- no translation found for face_acquired_too_close (7189579448504853047) -->
-    <skip />
+    <string name="face_acquired_too_close" product="desktop" msgid="7189579448504853047">"Îndepărtează dispozitivul"</string>
     <string name="face_acquired_too_far" product="default" msgid="2922278214231064859">"Mută telefonul mai aproape"</string>
-    <!-- no translation found for face_acquired_too_far (6590730829823321223) -->
-    <skip />
+    <string name="face_acquired_too_far" product="desktop" msgid="6590730829823321223">"Apropie dispozitivul"</string>
     <string name="face_acquired_too_high" product="default" msgid="8278815780046368576">"Mută telefonul mai sus"</string>
-    <!-- no translation found for face_acquired_too_high (717393614154504299) -->
-    <skip />
+    <string name="face_acquired_too_high" product="desktop" msgid="717393614154504299">"Mută dispozitivul mai sus"</string>
     <string name="face_acquired_too_low" product="default" msgid="4075391872960840081">"Mută telefonul mai jos"</string>
-    <!-- no translation found for face_acquired_too_low (7695733281069538045) -->
-    <skip />
+    <string name="face_acquired_too_low" product="desktop" msgid="7695733281069538045">"Mută dispozitivul mai jos"</string>
     <string name="face_acquired_too_right" product="default" msgid="6245286514593540859">"Mută telefonul spre stânga"</string>
-    <!-- no translation found for face_acquired_too_right (4058756237538843740) -->
-    <skip />
+    <string name="face_acquired_too_right" product="desktop" msgid="4058756237538843740">"Mută dispozitivul spre stânga"</string>
     <string name="face_acquired_too_left" product="default" msgid="9201762240918405486">"Mută telefonul spre dreapta"</string>
-    <!-- no translation found for face_acquired_too_left (5804819007366973778) -->
-    <skip />
+    <string name="face_acquired_too_left" product="desktop" msgid="5804819007366973778">"Mută dispozitivul spre dreapta"</string>
     <string name="face_acquired_poor_gaze" msgid="6746437451436776485">"Privește direct spre camera foto"</string>
     <string name="face_acquired_not_detected" product="default" msgid="1057966913397548150">"Nu ți se vede fața. Ține telefonul la nivelul ochilor."</string>
-    <!-- no translation found for face_acquired_not_detected (1047701586390904260) -->
-    <skip />
+    <string name="face_acquired_not_detected" product="desktop" msgid="1047701586390904260">"Nu ți se vede fața. Ține dispozitivul la nivelul ochilor."</string>
     <string name="face_acquired_too_much_motion" product="default" msgid="8199691445085189528">"Prea multă mișcare. Ține telefonul nemișcat."</string>
-    <!-- no translation found for face_acquired_too_much_motion (7135563968992659161) -->
-    <skip />
+    <string name="face_acquired_too_much_motion" product="desktop" msgid="7135563968992659161">"Prea multă mișcare. Ține dispozitivul nemișcat."</string>
     <string name="face_acquired_recalibrate" msgid="8724013080976469746">"Reînregistrează-ți chipul."</string>
     <string name="face_acquired_too_different" msgid="4505278456634706967">"Fața nu a fost recunoscută. Încearcă din nou."</string>
     <string name="face_acquired_too_similar" msgid="8882920552674125694">"Schimbă ușor poziția capului"</string>
     <string name="face_acquired_pan_too_extreme" product="default" msgid="5417928604710621088">"Privește mai direct spre telefon"</string>
-    <!-- no translation found for face_acquired_pan_too_extreme (821456302944137576) -->
-    <skip />
+    <string name="face_acquired_pan_too_extreme" product="desktop" msgid="821456302944137576">"Privește mai direct spre dispozitiv"</string>
     <string name="face_acquired_tilt_too_extreme" product="default" msgid="5715715666540716620">"Privește mai direct spre telefon"</string>
-    <!-- no translation found for face_acquired_tilt_too_extreme (1119243364774233108) -->
-    <skip />
+    <string name="face_acquired_tilt_too_extreme" product="desktop" msgid="1119243364774233108">"Privește mai direct spre dispozitiv"</string>
     <string name="face_acquired_roll_too_extreme" product="default" msgid="8261939882838881194">"Privește mai direct spre telefon"</string>
-    <!-- no translation found for face_acquired_roll_too_extreme (3665467581072397682) -->
-    <skip />
+    <string name="face_acquired_roll_too_extreme" product="desktop" msgid="3665467581072397682">"Privește mai direct spre dispozitiv"</string>
     <string name="face_acquired_obscured" msgid="4917643294953326639">"Îndepărtează orice îți ascunde chipul."</string>
     <string name="face_acquired_sensor_dirty" msgid="8968391891086721678">"Curăță partea de sus a ecranului, inclusiv bara neagră"</string>
     <!-- no translation found for face_acquired_dark_glasses_detected (5643703296620631986) -->
@@ -829,30 +814,24 @@
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Nu se poate confirma fața. Hardware-ul nu este disponibil."</string>
     <string name="face_error_timeout" product="default" msgid="2598544068593889762">"Încearcă din nou Deblocarea facială"</string>
-    <!-- no translation found for face_error_timeout (8136501408214657840) -->
-    <skip />
+    <string name="face_error_timeout" product="desktop" msgid="8136501408214657840">"Încearcă să deblochezi din nou cu fața"</string>
     <string name="face_error_no_space" msgid="5649264057026021723">"Nu se pot stoca date faciale noi. Șterge întâi unele vechi."</string>
     <string name="face_error_canceled" msgid="2164434737103802131">"Operațiunea privind chipul a fost anulată."</string>
     <string name="face_error_user_canceled" product="default" msgid="5766472033202928373">"Deblocarea facială a fost anulată de utilizator"</string>
-    <!-- no translation found for face_error_user_canceled (8903551031462609651) -->
-    <skip />
+    <string name="face_error_user_canceled" product="desktop" msgid="8903551031462609651">"Deblocarea cu fața a fost anulată de utilizator"</string>
     <string name="face_error_lockout" msgid="7864408714994529437">"Prea multe încercări. Reîncearcă mai târziu."</string>
     <string name="face_error_lockout_permanent" product="default" msgid="8533257333130473422">"Prea multe încercări. Deblocarea facială nu este disponibilă."</string>
-    <!-- no translation found for face_error_lockout_permanent (1885291877517229762) -->
-    <skip />
+    <string name="face_error_lockout_permanent" product="desktop" msgid="1885291877517229762">"Prea multe încercări. Deblocarea cu fața nu este disponibilă."</string>
     <string name="face_error_lockout_screen_lock" msgid="5062609811636860928">"Prea multe încercări. Folosește blocarea ecranului."</string>
     <string name="face_error_unable_to_process" msgid="5723292697366130070">"Nu se poate confirma fața. Încearcă din nou."</string>
     <string name="face_error_not_enrolled" product="default" msgid="1134739108536328412">"Nu ai configurat Deblocarea facială"</string>
-    <!-- no translation found for face_error_not_enrolled (7350396330456504527) -->
-    <skip />
+    <string name="face_error_not_enrolled" product="desktop" msgid="7350396330456504527">"Deblocarea cu fața nu este configurată încă"</string>
     <string name="face_error_hw_not_present" product="default" msgid="7940978724978763011">"Deblocarea facială nu este acceptată pe acest dispozitiv"</string>
-    <!-- no translation found for face_error_hw_not_present (4947323392112708365) -->
-    <skip />
+    <string name="face_error_hw_not_present" product="desktop" msgid="4947323392112708365">"Deblocarea cu fața nu este acceptată pe acest dispozitiv"</string>
     <string name="face_error_security_update_required" msgid="5076017208528750161">"Senzorul este dezactivat temporar."</string>
     <string name="face_name_template" msgid="3877037340223318119">"Chip <xliff:g id="FACEID">%d</xliff:g>"</string>
     <string name="face_app_setting_name" product="default" msgid="5854024256907828015">"Folosește Deblocarea facială"</string>
-    <!-- no translation found for face_app_setting_name (8226850671242901114) -->
-    <skip />
+    <string name="face_app_setting_name" product="desktop" msgid="8226850671242901114">"Deblochează cu fața"</string>
     <string name="face_or_screen_lock_app_setting_name" msgid="1603149075605709106">"Folosește deblocarea facială sau ecranul de blocare"</string>
     <string name="face_dialog_default_subtitle" msgid="6620492813371195429">"Folosește-ți chipul pentru a continua"</string>
     <string name="face_or_screen_lock_dialog_default_subtitle" msgid="5006381531158341844">"Folosește-ți chipul sau blocarea ecranului pentru a continua"</string>
@@ -1113,8 +1092,7 @@
     <string name="lockscreen_key_to_unlock_hint" msgid="9042402393653798264">"Apasă orice tastă pentru a debloca"</string>
     <string name="lockscreen_storage_locked" msgid="634993789186443380">"Deblochează pentru toate funcțiile și datele"</string>
     <string name="faceunlock_multiple_failures" product="default" msgid="681991538434031708">"S-a depășit numărul maxim de încercări pentru Deblocare facială"</string>
-    <!-- no translation found for faceunlock_multiple_failures (5388142244463490793) -->
-    <skip />
+    <string name="faceunlock_multiple_failures" product="desktop" msgid="5388142244463490793">"Ai atins numărul maxim de încercări de deblocare cu fața"</string>
     <string name="lockscreen_missing_sim_message_short" msgid="1229301273156907613">"Niciun card SIM"</string>
     <string name="lockscreen_missing_sim_message" product="tablet" msgid="3986843848305639161">"Nu există card SIM în tabletă."</string>
     <string name="lockscreen_missing_sim_message" product="tv" msgid="3903140876952198273">"Nu există card SIM în dispozitivul Android TV."</string>
@@ -1186,8 +1164,7 @@
     <string name="keyguard_accessibility_slide_unlock" msgid="2968195219692413046">"Deblocare prin glisare."</string>
     <string name="keyguard_accessibility_pattern_unlock" msgid="8669128146589233293">"Deblocare cu model."</string>
     <string name="keyguard_accessibility_face_unlock" product="default" msgid="4533832120787386728">"Deblocare facială."</string>
-    <!-- no translation found for keyguard_accessibility_face_unlock (6739732585954513653) -->
-    <skip />
+    <string name="keyguard_accessibility_face_unlock" product="desktop" msgid="6739732585954513653">"Deblochează cu fața."</string>
     <string name="keyguard_accessibility_pin_unlock" msgid="4020864007967340068">"Deblocare cu PIN."</string>
     <string name="keyguard_accessibility_sim_pin_unlock" msgid="4895939120871890557">"Deblocare PIN pentru cardul SIM."</string>
     <string name="keyguard_accessibility_sim_puk_unlock" msgid="3459003464041899101">"Deblocare PUK pentru cardul SIM."</string>
@@ -1924,8 +1901,7 @@
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Schimbă"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Setări"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Se trece la <xliff:g id="NAME">%1$s</xliff:g>…"</string>
-    <!-- no translation found for user_logging_out_message (2968888364742643174) -->
-    <skip />
+    <string name="user_logging_out_message" msgid="2968888364742643174">"Se deconectează…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Proprietar"</string>
     <string name="guest_name" msgid="8502103277839834324">"Invitat"</string>
     <string name="headless_system_user_name" msgid="1849150903255530049">"Utilizator de sistem"</string>
@@ -2188,12 +2164,10 @@
     <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"Agenții și serviciile AI cărora le-ai permis accesul la %1$s vor putea în continuare să acceseze datele sale"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Adaugă blocarea aplicației"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Deblocare facială"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_face (380233309639495358) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"Deblochează cu fața"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Deblocare cu amprenta"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"Deblocare cu amprenta, Deblocare facială"</string>
-    <!-- no translation found for app_lock_edu_dialog_biometric_description_has_fingerprint_and_face (4797005135507921547) -->
-    <skip />
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"Deblocare cu amprenta și cu fața"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"parolă"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"model"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN"</string>
@@ -2690,11 +2664,9 @@
     <string name="fingerprint_dangling_notification_msg_all_deleted_1" msgid="1824812666549916586">"<xliff:g id="FINGERPRINT">%s</xliff:g> nu mai poate fi recunoscută. Configurează din nou Deblocarea cu amprenta."</string>
     <string name="fingerprint_dangling_notification_msg_all_deleted_2" msgid="5974657382960155099">"<xliff:g id="FINGERPRINT_0">%1$s</xliff:g> și <xliff:g id="FINGERPRINT_1">%2$s</xliff:g> nu mai pot fi recunoscute. Configurează din nou Deblocarea cu amprenta."</string>
     <string name="face_dangling_notification_title" product="default" msgid="947852541060975473">"Reconfigurează Deblocarea facială"</string>
-    <!-- no translation found for face_dangling_notification_title (4632690536207343589) -->
-    <skip />
+    <string name="face_dangling_notification_title" product="desktop" msgid="4632690536207343589">"Reconfigurează deblocarea cu fața"</string>
     <string name="face_dangling_notification_msg" product="default" msgid="746235263598985384">"Modelul tău facial nu mai poate fi recunoscut. Configurează din nou Deblocarea facială."</string>
-    <!-- no translation found for face_dangling_notification_msg (5982979430103820891) -->
-    <skip />
+    <string name="face_dangling_notification_msg" product="desktop" msgid="5982979430103820891">"Modelul tău facial nu mai poate fi recunoscut. Configurează din nou deblocarea cu fața."</string>
     <string name="biometric_dangling_notification_action_set_up" msgid="8246885009807817961">"Configurează"</string>
     <string name="biometric_dangling_notification_action_not_now" msgid="8095249216864443491">"Nu acum"</string>
     <string name="bg_user_sound_notification_title_alarm" msgid="5251678483393143527">"Alarmă pentru <xliff:g id="USER_NAME">%s</xliff:g>"</string>

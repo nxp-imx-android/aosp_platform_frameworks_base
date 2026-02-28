@@ -95,19 +95,6 @@ public final class PolicyDefinition<V> {
     static final MostRestrictive<Boolean> TRUE_MORE_RESTRICTIVE = new MostRestrictive<>(
             List.of(new BooleanPolicyValue(true), new BooleanPolicyValue(false)));
 
-    static PolicyDefinition<Integer> AUTO_TIME_ZONE = new PolicyDefinition<>(
-            new NoArgsPolicyKey(DevicePolicyIdentifiers.AUTO_TIMEZONE_POLICY),
-            // Auto time zone is enabled by default. Enabled state has higher priority given it
-            // means the time will be more precise and other applications can rely on that for
-            // their purposes.
-            new TopPriority<>(List.of(
-                    EnforcingAdmin.getRoleAuthorityOf(ROLE_SYSTEM_SUPERVISION),
-                    EnforcingAdmin.getRoleAuthorityOf(ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER),
-                    EnforcingAdmin.DPC_AUTHORITY)),
-            POLICY_FLAG_GLOBAL_ONLY_POLICY,
-            PolicyEnforcerCallbacks::setAutoTimeZonePolicy,
-            new IntegerPolicySerializer());
-
     static final PolicyDefinition<Integer> GENERIC_PERMISSION_GRANT =
             new PolicyDefinition<>(
                     new PackagePermissionPolicyKey(DevicePolicyIdentifiers.PERMISSION_GRANT_POLICY),

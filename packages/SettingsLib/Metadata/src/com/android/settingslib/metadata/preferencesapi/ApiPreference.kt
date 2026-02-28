@@ -20,10 +20,8 @@ import android.content.Context
 import android.os.Process
 import android.os.UserHandle
 import android.provider.Settings
+import android.util.Log
 import androidx.annotation.StringRes
-import com.android.settingslib.metadata.preferencesapi.types.CustomEnum
-import com.android.settingslib.metadata.preferencesapi.types.EnumApi
-import com.android.settingslib.utils.applications.AppUtils
 import com.android.settingslib.datastore.KeyValueStore
 import com.android.settingslib.datastore.NoOpKeyedObservable
 import com.android.settingslib.datastore.Permissions
@@ -31,15 +29,18 @@ import com.android.settingslib.datastore.and
 import com.android.settingslib.datastore.or
 import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.ReadWritePermit
-import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
-import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageAlreadyDefined
+import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageMultipleDefines
+import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageWrongOrder
 import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget
 import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.preconditions.ApiPreconditions
 import com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed
 import com.android.settingslib.metadata.preferencesapi.types.ApiType
+import com.android.settingslib.metadata.preferencesapi.types.CustomEnum
+import com.android.settingslib.metadata.preferencesapi.types.EnumApi
+import com.android.settingslib.utils.applications.AppUtils
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -204,6 +205,8 @@ abstract class ApiPreference<V : Any>(
     val appliesTo: PreferenceTarget
 ) : PersistentPreference<V> {
     companion object {
+        private const val TAG = "ApiPreference"
+
         private const val VALUE_TYPE_MISMATCH_ERROR = "Value type mismatch. Expected %s, got %s"
 
         private fun buildValueTypeMismatchError(expected: Class<*>, actual: Class<*>) =
@@ -258,14 +261,26 @@ abstract class ApiPreference<V : Any>(
         val operationContext: ApiOperationContext by lazy { getApiOperationContext(context) }
 
         screenPreconditions?.check(operationContext)?.let {
+            if (it is Disallowed) {
+                Log.d(TAG, "Screen precondition failed: ${it.getReason(context)}")
+            }
+
             if (it != Allowed) return it
         }
 
         preconditions?.check(operationContext)?.let {
+            if (it is Disallowed) {
+                Log.d(TAG, "Preference precondition failed: ${it.getReason(context)}")
+            }
+
             if (it != Allowed) return it
         }
 
         operationPreconditions?.check(operationContext)?.let {
+            if (it is Disallowed) {
+                Log.d(TAG, "Operation precondition failed: ${it.getReason(context)}")
+            }
+
             if (it != Allowed) return it
         }
 
@@ -505,17 +520,17 @@ class WarningConfigBuilder<V : Any> {
             preconditionsConfig != null ->
                 if (warning != null) {
                     PreconditionsWarningConfig(preconditionsConfig!!, warning!!)
-                }
-                else {
+                } else {
                     PreconditionsWarningConfig(preconditionsConfig!!, warningRes!!)
                 }
+
             valuePreconditionsConfig != null ->
                 if (warning != null) {
                     ValuePreconditionsWarningConfig(valuePreconditionsConfig!!, warning!!)
-                }
-                else {
+                } else {
                     ValuePreconditionsWarningConfig(valuePreconditionsConfig!!, warningRes!!)
                 }
+
             else ->
                 error(
                     "Exactly one of warning 'preconditions' or 'valuePreconditions' block is required"
@@ -800,7 +815,8 @@ class SetConfigBuilder<V : Any>(private val type: ApiType<V>) {
             error("executeEnum is only supported for CustomEnum types")
         }
 
-        executeBlock = { value -> lambda(type.fromApiValue(value) ?: error("Invalid enum value: $value")) }
+        executeBlock =
+            { value -> lambda(type.fromApiValue(value) ?: error("Invalid enum value: $value")) }
     }
 
     internal fun build(): SetConfig<V> {
@@ -983,12 +999,14 @@ class ApiPreferenceConfigBuilder<V : Any>(
         override val preconditions: PreconditionsConfig? = preconditionsConfig
         override fun tags(context: Context): Array<String> =
             (tagsList?.toTypedArray() ?: emptyArray()) + "api-first"
+
         override val get: GetConfig<V> = getConfig ?: error("'get' block is required")
         override val set: SetConfig<V>? = setConfig
         override val type: ApiType<V> = this@ApiPreferenceConfigBuilder.type
         override val valueType: Class<V> = this@ApiPreferenceConfigBuilder.valueType
         override val key: String = this@ApiPreferenceConfigBuilder.key
         override val purpose: Int = this@ApiPreferenceConfigBuilder.purpose
-        override val getScreenParameters: () -> ValidatedKeyParameters? = this@ApiPreferenceConfigBuilder.getScreenParameters
+        override val getScreenParameters: () -> ValidatedKeyParameters? =
+            this@ApiPreferenceConfigBuilder.getScreenParameters
     }
 }

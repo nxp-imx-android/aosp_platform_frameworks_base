@@ -351,8 +351,6 @@ public final class Looper {
                 com.android.internal.dev.perfetto.sdk.PerfettoTrace
                         .end(PerfettoCategories.MQ_CATEGORY)
                         .emit();
-            } else {
-                PerfettoTrace.end(PerfettoTrace.MQ_CATEGORY).emit();
             }
         }
 

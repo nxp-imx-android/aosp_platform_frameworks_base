@@ -170,12 +170,12 @@ class DevicePolicyEngineTest {
 
     @Test
     fun setAndGetGlobalPolicy_returnsCorrectPolicy() {
-        ensurePolicyIsSetGlobally(AUTO_TIME_ZONE_POLICY, AUTO_TIME_ZONE_ENABLED)
+        ensurePolicyIsSetGlobally(COMMON_CRITERIA_MODE_POLICY, COMMON_CRITERIA_MODE_ENABLED)
 
         val resolvedPolicy =
-            devicePolicyEngine.getResolvedPolicy(AUTO_TIME_ZONE_POLICY, SYSTEM_USER_ID)
+            devicePolicyEngine.getResolvedPolicy(COMMON_CRITERIA_MODE_POLICY, SYSTEM_USER_ID)
 
-        assertThat(resolvedPolicy).isEqualTo(AUTO_TIME_ZONE_ENABLED.value)
+        assertThat(resolvedPolicy).isEqualTo(COMMON_CRITERIA_MODE_ENABLED.value)
     }
 
     @Test
@@ -319,9 +319,9 @@ class DevicePolicyEngineTest {
         assertThrows(IllegalArgumentException::class.java) {
             val result =
                 devicePolicyEngine.setLocalPolicy(
-                    AUTO_TIME_ZONE_POLICY,
+                    COMMON_CRITERIA_MODE_POLICY,
                     DEVICE_OWNER_ADMIN,
-                    AUTO_TIME_ZONE_ENABLED,
+                    COMMON_CRITERIA_MODE_ENABLED,
                     SYSTEM_USER_ID,
                 )
         }
@@ -633,27 +633,27 @@ class DevicePolicyEngineTest {
         // Call setOrRemoveGlobalPolicy with a non-null value, expecting it to set the policy.
         val result =
             devicePolicyEngine.setOrRemoveGlobalPolicy(
-                AUTO_TIME_ZONE_POLICY,
+                COMMON_CRITERIA_MODE_POLICY,
                 DEVICE_OWNER_ADMIN,
-                AUTO_TIME_ZONE_ENABLED,
+                COMMON_CRITERIA_MODE_ENABLED,
             )
         assertThat(result.get()).isEqualTo(POLICY_SET)
 
         // Verify that the policy was correctly set.
         val resolvedPolicy =
-            devicePolicyEngine.getResolvedPolicy(AUTO_TIME_ZONE_POLICY, SYSTEM_USER_ID)
-        assertThat(resolvedPolicy).isEqualTo(AUTO_TIME_ZONE_ENABLED.value)
+            devicePolicyEngine.getResolvedPolicy(COMMON_CRITERIA_MODE_POLICY, SYSTEM_USER_ID)
+        assertThat(resolvedPolicy).isEqualTo(COMMON_CRITERIA_MODE_ENABLED.value)
     }
 
     @Test
     fun setOrRemoveGlobalPolicy_withNull_removesPolicy() {
         // Pre-condition: A global policy is already set.
-        ensurePolicyIsSetGlobally(AUTO_TIME_ZONE_POLICY, AUTO_TIME_ZONE_ENABLED)
+        ensurePolicyIsSetGlobally(COMMON_CRITERIA_MODE_POLICY, COMMON_CRITERIA_MODE_ENABLED)
 
         // Call setOrRemoveGlobalPolicy with a null value, expecting it to remove the policy.
         val result =
             devicePolicyEngine.setOrRemoveGlobalPolicy(
-                AUTO_TIME_ZONE_POLICY,
+                COMMON_CRITERIA_MODE_POLICY,
                 DEVICE_OWNER_ADMIN,
                 /* policyValue= */ null,
             )
@@ -661,7 +661,7 @@ class DevicePolicyEngineTest {
 
         // Verify that the policy was correctly removed.
         val resolvedPolicy =
-            devicePolicyEngine.getResolvedPolicy(AUTO_TIME_ZONE_POLICY, SYSTEM_USER_ID)
+            devicePolicyEngine.getResolvedPolicy(COMMON_CRITERIA_MODE_POLICY, SYSTEM_USER_ID)
         assertThat(resolvedPolicy).isNull()
     }
 
@@ -754,7 +754,7 @@ class DevicePolicyEngineTest {
             PolicyUpdateResult.RESULT_FAILURE_CONFLICTING_ADMIN_POLICY
 
         private val PASSWORD_COMPLEXITY_POLICY = PolicyDefinition.PASSWORD_COMPLEXITY
-        private val AUTO_TIME_ZONE_POLICY = PolicyDefinition.AUTO_TIME_ZONE
+        private val COMMON_CRITERIA_MODE_POLICY = PolicyDefinition.COMMON_CRITERIA_MODE
         private val USER_CONTROLLED_DISABLED_PACKAGES_POLICY =
             PolicyDefinition.USER_CONTROLLED_DISABLED_PACKAGES
 
@@ -762,8 +762,8 @@ class DevicePolicyEngineTest {
             IntegerPolicyValue(DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH)
         private val LOW_PASSWORD_COMPLEXITY =
             IntegerPolicyValue(DevicePolicyManager.PASSWORD_COMPLEXITY_LOW)
-        private val AUTO_TIME_ZONE_ENABLED =
-            IntegerPolicyValue(DevicePolicyManager.AUTO_TIME_ZONE_ENABLED)
+        private val COMMON_CRITERIA_MODE_ENABLED =
+            IntegerPolicyValue(DevicePolicyManager.COMMON_CRITERIA_MODE_ENABLED)
         private val PACKAGE_SET_POLICY_VALUE_1 =
             PackageSetPolicyValue(setOf("com.example.package1", "com.example.package2"))
         private val PACKAGE_SET_POLICY_VALUE_1_SUBSET =

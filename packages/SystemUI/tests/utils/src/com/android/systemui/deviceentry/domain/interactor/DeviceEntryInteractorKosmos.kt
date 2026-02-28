@@ -22,6 +22,7 @@ import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
 import com.android.systemui.deviceentry.data.repository.deviceEntryRepository
 import com.android.systemui.keyguard.dismissCallbackRegistry
 import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -43,6 +44,7 @@ val Kosmos.deviceEntryInteractor by
             alternateBouncerInteractor = { alternateBouncerInteractor },
             dismissCallbackRegistry = { dismissCallbackRegistry },
             sceneBackInteractor = { sceneBackInteractor },
+            keyguardEnabledInteractor = { keyguardEnabledInteractor },
             tableLogBuffer = { logcatTableLogBuffer(this, "sceneFrameworkTableLogBuffer") },
             keyguardDismissActionInteractor = { keyguardDismissActionInteractor },
             statusBarStateController = statusBarStateController,

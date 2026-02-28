@@ -120,6 +120,31 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun onActivated_initializesRegionBoxWithSavedBounds() =
+        kosmos.runTest {
+            setupViewModel()
+
+            viewModel.updateRegionBoxBounds(Rect(10, 10, 70, 70))
+
+            setupViewModel()
+            assertThat(viewModel.regionBox).isEqualTo(Rect(10, 10, 70, 70))
+        }
+
+    @Test
+    fun onActivated_initializesRegionBoxWithInvalidSavedBounds() =
+        kosmos.runTest {
+            setupViewModel()
+
+            viewModel.updateRegionBoxBounds(Rect(0, 0, 200, 200))
+
+            setupViewModel()
+            val bounds = Rect(0, 0, 100, 100)
+            val expectedRegionBox = Rect(bounds)
+            expectedRegionBox.inset(bounds.width() / 4, bounds.height() / 4)
+            assertThat(viewModel.regionBox).isEqualTo(expectedRegionBox)
+        }
+
+    @Test
     fun captureType_defaultsToScreenshot() =
         kosmos.runTest {
             setupViewModel()
@@ -417,6 +442,18 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             viewModel.updateRegionBoxBounds(regionBox)
 
             assertThat(viewModel.regionBox).isEqualTo(regionBox)
+        }
+
+    @Test
+    fun updateRegionBoxBounds_updateSavedBounds() =
+        kosmos.runTest {
+            setupViewModel()
+
+            val regionBox = Rect(0, 0, 100, 100)
+            viewModel.updateRegionBoxBounds(regionBox)
+
+            assertThat(largeScreenCaptureParametersInteractor.getSelectedCaptureRegionBox())
+                .isEqualTo(regionBox)
         }
 
     @Test

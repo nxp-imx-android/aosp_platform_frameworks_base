@@ -826,51 +826,60 @@ void NativeInputManager::getReaderConfiguration(InputReaderConfiguration* outCon
                 env->CallObjectMethod(mServiceObj,
                                       gServiceClassInfo.getDeviceConfigurationOverrides);
         !checkAndClearExceptionFromCallback(env, "getDeviceConfigurationOverrides") && configMap) {
-        jobject entrySet = env->CallObjectMethod(configMap, gMapClassInfo.entrySet);
-        jobject iterator = env->CallObjectMethod(entrySet, gSetClassInfo.iterator);
+        ScopedLocalRef<jobject> entrySet(env,
+                                         env->CallObjectMethod(configMap, gMapClassInfo.entrySet));
+        ScopedLocalRef<jobject> iterator(env,
+                                         env->CallObjectMethod(entrySet.get(),
+                                                               gSetClassInfo.iterator));
 
-        while (env->CallBooleanMethod(iterator, gIteratorClassInfo.hasNext)) {
-            auto entry = env->CallObjectMethod(iterator, gIteratorClassInfo.next);
-            auto key = jstring(env->CallObjectMethod(entry, gMapEntryClassInfo.getKey));
-            auto value = env->CallObjectMethod(entry, gMapEntryClassInfo.getValue);
+        while (env->CallBooleanMethod(iterator.get(), gIteratorClassInfo.hasNext)) {
+            ScopedLocalRef<jobject> entry(env,
+                                          env->CallObjectMethod(iterator.get(),
+                                                                gIteratorClassInfo.next));
+            ScopedLocalRef<jstring> key(env,
+                                        jstring(env->CallObjectMethod(entry.get(),
+                                                                      gMapEntryClassInfo.getKey)));
+            ScopedLocalRef<jobject> value(env,
+                                          env->CallObjectMethod(entry.get(),
+                                                                gMapEntryClassInfo.getValue));
 
-            ScopedUtfChars keyChars(env, key);
-            std::string inputPort = keyChars.c_str();
+            std::string inputPort;
+            {
+                ScopedUtfChars keyChars(env, key.get());
+                inputPort = keyChars.c_str();
+            }
 
             InputDeviceConfigurationOverride deviceConfigOverride;
 
-            auto deviceType = jstring(
-                    env->GetObjectField(value, gConfigurationOverrideClassInfo.mDeviceType));
-            if (deviceType) {
-                ScopedUtfChars typeChars(env, deviceType);
+            ScopedLocalRef<jstring>
+                    deviceType(env,
+                               jstring(env->GetObjectField(value.get(),
+                                                           gConfigurationOverrideClassInfo
+                                                                   .mDeviceType)));
+            if (deviceType.get()) {
+                ScopedUtfChars typeChars(env, deviceType.get());
                 deviceConfigOverride.deviceType = std::make_optional(typeChars.c_str());
-                env->DeleteLocalRef(deviceType);
             }
 
-            jobject viewBehavior =
-                    env->GetObjectField(value, gConfigurationOverrideClassInfo.mViewBehaviorConfig);
-            if (viewBehavior) {
+            ScopedLocalRef<jobject> viewBehavior(env,
+                                                 env->GetObjectField(value.get(),
+                                                                     gConfigurationOverrideClassInfo
+                                                                             .mViewBehaviorConfig));
+            if (viewBehavior.get()) {
                 InputDeviceViewBehavior behavior{};
                 behavior.primaryDirectionalMotionAxis = std::make_optional(
-                        env->GetIntField(viewBehavior,
+                        env->GetIntField(viewBehavior.get(),
                                          gViewBehaviorConfigClassInfo
                                                  .mPrimaryDirectionalMotionAxis));
                 behavior.shouldSmoothScroll = std::make_optional(
-                        env->GetBooleanField(viewBehavior,
+                        env->GetBooleanField(viewBehavior.get(),
                                              gViewBehaviorConfigClassInfo.mShouldSmoothScroll));
                 deviceConfigOverride.viewBehavior = std::make_optional(behavior);
-                env->DeleteLocalRef(viewBehavior);
             }
 
             outConfig->deviceConfigurationOverrides.insert({inputPort, deviceConfigOverride});
-
-            env->DeleteLocalRef(entry);
-            env->DeleteLocalRef(key);
-            env->DeleteLocalRef(value);
         }
         env->DeleteLocalRef(configMap);
-        env->DeleteLocalRef(entrySet);
-        env->DeleteLocalRef(iterator);
     }
 
     outConfig->keyboardLayoutAssociations = readMapFromInterleavedJavaArray<

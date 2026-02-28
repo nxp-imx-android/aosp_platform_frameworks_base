@@ -51,6 +51,7 @@ constructor(
     private val shadeInteractor: ShadeInteractor,
     private val keyguardOcclusionInteractor: KeyguardOcclusionInteractor,
     private val deviceEntryInteractor: DeviceEntryInteractor,
+    private val keyguardEnabledInteractor: KeyguardEnabledInteractor,
 ) {
 
     @OptIn(FlowPreview::class)
@@ -94,8 +95,8 @@ constructor(
         }
 
         scope.launch {
-            deviceEntryInteractor.isLockscreenEnabled.collect {
-                logger.log(TAG, VERBOSE, "DeviceEntry isLockscreenEnabled", it)
+            keyguardEnabledInteractor.isKeyguardEnabled.collect {
+                logger.log(TAG, VERBOSE, "isKeyguardEnabled", it)
             }
         }
 

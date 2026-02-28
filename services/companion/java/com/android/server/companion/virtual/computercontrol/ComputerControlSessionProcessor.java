@@ -66,6 +66,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
+import com.android.server.Watchdog;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 
 import java.io.FileDescriptor;
@@ -78,7 +79,7 @@ import java.util.Objects;
  * <p>This class enforces session creation policies, such as limiting the number of concurrent
  * sessions and preventing creation when the device is locked.
  */
-public final class ComputerControlSessionProcessor {
+public final class ComputerControlSessionProcessor implements Watchdog.Monitor{
 
     private static final String TAG = ComputerControlSessionProcessor.class.getSimpleName();
 
@@ -102,6 +103,7 @@ public final class ComputerControlSessionProcessor {
     private final ComputerControlAllowlistController mAllowlistController;
 
     /** The binders of all currently active sessions. */
+    @GuardedBy("mSessions")
     private final ArraySet<ComputerControlSessionImpl> mSessions = new ArraySet<>();
 
     private final Object mHandlerThreadLock = new Object();
@@ -117,6 +119,7 @@ public final class ComputerControlSessionProcessor {
         this(context, virtualDeviceManagerInternal, virtualDeviceFactory,
                 ComputerControlSessionProcessor::createPendingIntent,
                 new ComputerControlAllowlistController(context));
+        Watchdog.getInstance().addMonitor(this);
     }
 
     @VisibleForTesting
@@ -470,6 +473,17 @@ public final class ComputerControlSessionProcessor {
                 mSessions.valueAt(i).dump(fd, fout, args);
             }
         }
+    }
+
+    @Override
+    public void monitor() {
+        synchronized (mSessions) {
+            for (int i = 0; i < mSessions.size(); i++) {
+                mSessions.valueAt(i).monitor();
+            }
+        }
+        synchronized (mHandlerThreadLock) { /* no-op */ }
+        mAllowlistController.monitor();
     }
 
     private final class ConsentResultReceiver extends ResultReceiver {

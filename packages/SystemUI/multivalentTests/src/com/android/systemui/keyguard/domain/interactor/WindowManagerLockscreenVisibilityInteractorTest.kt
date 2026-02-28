@@ -1214,7 +1214,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun lockscreenVisibilityWithScenes_staysTrue_despiteEnteringIndirectly() =
+    fun lockscreenVisibilityWithScenes_becomesFalse_whenEnteringIndirectly() =
         kosmos.runTest {
             enableSingleShade()
             runCurrent()
@@ -1249,7 +1249,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             assertThat(isDeviceEntered).isTrue()
             assertThat(isDeviceEnteredDirectly).isFalse()
             assertThat(isDeviceUnlocked).isTrue()
-            assertThat(lockscreenVisibility).isTrue()
+            assertThat(lockscreenVisibility).isFalse()
         }
 
     @Test

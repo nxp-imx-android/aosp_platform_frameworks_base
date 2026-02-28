@@ -49,6 +49,8 @@ java_library {
         "com.android.systemui.brightness_api",
         "com.android.systemui.common.shared.colors_api",
         "com.android.systemui.common.shared.model_api",
+        "com.android.systemui.common.ui.compose.windowinsets_api",
+        "com.android.systemui.common.ui.compose_api",
         "com.android.systemui.flags_api",
         "com.android.systemui.graphics_api",
         "com.android.systemui.headline.ui_api",

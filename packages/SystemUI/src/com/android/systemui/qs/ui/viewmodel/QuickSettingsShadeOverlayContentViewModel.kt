@@ -85,7 +85,7 @@ constructor(
     @Assisted private val volumeSliderCoroutineScope: CoroutineScope?,
     val toolbarViewModelFactory: ToolbarViewModel.Factory,
     private val blurConfig: BlurConfig,
-    windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
+    private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     private val qsPanelAppearanceInteractor: QSPanelAppearanceInteractor,
 ) : ExclusiveActivatable() {
 
@@ -132,7 +132,7 @@ constructor(
      */
     fun calculateTargetBlurRadius(transitionState: TransitionState): Float {
         return when {
-            !isTransparencyEnabled -> 0f
+            !windowRootViewBlurInteractor.isBlurCurrentlySupported.value -> 0f
             Overlays.QuickSettingsShade !in transitionState.currentOverlays -> 0f
             Overlays.Bouncer in transitionState.currentOverlays -> blurConfig.maxBlurRadiusPx
             else -> 0f

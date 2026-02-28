@@ -23,7 +23,6 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.fakeAuthenticationRepository
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
@@ -160,7 +159,7 @@ class HomeSceneFamilyResolverTest : SysuiTestCase() {
 
     private fun Kosmos.setupSwipeDeviceEntryMethod() {
         fakeAuthenticationRepository.setAuthenticationMethod(AuthenticationMethodModel.None)
-        fakeDeviceEntryRepository.setLockscreenEnabled(true)
+        fakeKeyguardRepository.setKeyguardEnabled(true)
     }
 
     private fun Kosmos.switchToScene(sceneKey: SceneKey) {

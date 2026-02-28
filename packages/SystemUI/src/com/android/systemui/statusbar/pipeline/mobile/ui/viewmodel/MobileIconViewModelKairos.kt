@@ -142,7 +142,33 @@ private class CarrierBasedSatelliteViewModelKairosImpl(
     override val icon: KairosState<SignalIconModel>
         get() = iconInteractor.signalLevelIcon
 
-    override val contentDescription: KairosState<MobileContentDescription?> = stateOf(null)
+    override val contentDescription: KairosState<MobileContentDescription?> =
+        if (NewSatelliteIcon.isEnabled) {
+            icon.map { iconModel ->
+                if (iconModel is SignalIconModel.CellularTypeIconModel.SatelliteV2) {
+                    val reportedLevel =
+                        if (iconModel.numberOfLevels == 6) {
+                            iconModel.level - 1
+                        } else {
+                            iconModel.level
+                        }
+                    val resId =
+                        when (reportedLevel) {
+                            0 -> R.string.accessibility_status_bar_satellite_no_connection
+                            1,
+                            2 -> R.string.accessibility_status_bar_satellite_poor_connection
+                            3,
+                            4 -> R.string.accessibility_status_bar_satellite_good_connection
+                            else -> R.string.accessibility_status_bar_satellite_no_connection
+                        }
+                    MobileContentDescription.SatelliteContentDescription(resId)
+                } else {
+                    null
+                }
+            }
+        } else {
+            stateOf(null)
+        }
 
     override val networkTypeIcon: KairosState<Icon.Resource?> =
         stateOf(

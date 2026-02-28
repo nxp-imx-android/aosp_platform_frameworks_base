@@ -24,7 +24,6 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.SurfaceControl;
-import android.window.IRemoteTransition;
 import android.window.IRemoteTransitionFinishedCallback;
 import android.window.RemoteTransition;
 import android.window.TransitionInfo;
@@ -95,6 +94,7 @@ public class OneShotRemoteHandler implements Transitions.TransitionHandler {
             if (mRemote.asBinder() != null) {
                 mRemote.asBinder().unlinkToDeath(remoteDied, 0 /* flags */);
             }
+            finishTransaction.merge(startTransaction);
             finishCallback.onTransitionFinished(null /* wct */);
             mRemote = null;
         }
@@ -202,10 +202,11 @@ public class OneShotRemoteHandler implements Transitions.TransitionHandler {
     @Override
     @Nullable
     public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
-            @Nullable TransitionRequestInfo request) {
+            @NonNull TransitionRequestInfo request) {
         RemoteTransition remote = request.getRemoteTransition();
-        IRemoteTransition iRemote = remote != null ? remote.getRemoteTransition() : null;
-        if (iRemote != mRemote.getRemoteTransition()) return null;
+        if (remote == null || remote.getRemoteTransition() != mRemote.getRemoteTransition()) {
+            return null;
+        }
         mTransition = transition;
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "RemoteTransition directly requested"
                 + " for %s: %s", transition, remote);
@@ -216,9 +217,14 @@ public class OneShotRemoteHandler implements Transitions.TransitionHandler {
     public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
             @Nullable SurfaceControl.Transaction finishTransaction) {
         try {
-            ProtoLog.d(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
-                    "OneShot onTransitionConsumed for %s", mRemote);
-            mRemote.getRemoteTransition().onTransitionConsumed(transition, aborted);
+            if (mRemote != null) {
+                ProtoLog.d(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                        "OneShot onTransitionConsumed for %s", mRemote);
+                mRemote.getRemoteTransition().onTransitionConsumed(transition, aborted);
+            } else {
+                ProtoLog.w(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                        "OneShot onTransitionConsumed with null remote transition");
+            }
         } catch (RemoteException e) {
             Log.e(Transitions.TAG, "Error calling onTransitionConsumed()", e);
         }

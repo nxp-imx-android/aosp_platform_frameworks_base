@@ -19,6 +19,7 @@ package com.android.settingslib.metadata.preferencesapi
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import com.android.settingslib.datastore.Permissions
@@ -43,6 +44,7 @@ import com.android.settingslib.metadata.preferencesapi.multiusers.ManagementScop
 import com.android.settingslib.metadata.preferencesapi.multiusers.ManagementScope.OWN_USER
 import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget
 import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget.USER
+import com.android.settingslib.metadata.preferencesapi.preconditions.Disallowed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -250,6 +252,9 @@ abstract class PreferencesApiScreen private constructor(
             runBlocking { screenPreconditions?.check(opContext) } ?: Allowed
 
         if (checkScreenPreconditions != Allowed) {
+            if (checkScreenPreconditions is Disallowed) {
+                Log.d(TAG, "Screen precondition failed: ${checkScreenPreconditions.getReason(context)}")
+            }
             return null
         }
 
@@ -580,6 +585,8 @@ abstract class PreferencesApiScreen private constructor(
     }
 
     companion object {
+        private const val TAG = "PreferencesApiScreen"
+
         const val PARTIALLY_MIGRATED_PREFIX = "api_"
 
         // Matches DeviceStateConfig.DeviceStateAppFunctionType

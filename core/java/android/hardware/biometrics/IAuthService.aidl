@@ -64,7 +64,7 @@ interface IAuthService {
 
     // TODO(b/141025588): Make userId the first arg to be consistent with hasEnrolledBiometrics.
     // Checks if biometrics can be used.
-    int canAuthenticate(String opPackageName, int userId, int authenticators);
+    int canAuthenticate(String opPackageName, int userId, int authenticators, int displayId);
 
     // Gets the time of last authentication for the given user and authenticators.
     long getLastAuthenticationTime(int userId, int authenticators);
@@ -114,11 +114,13 @@ interface IAuthService {
 
     // Provides a localized string that may be used as the label for a button that invokes
     // BiometricPrompt.
-    CharSequence getButtonLabel(int userId, String opPackageName, int authenticators);
+    CharSequence getButtonLabel(int userId, String opPackageName, int authenticators,
+            int displayId);
 
     // Provides a localized string that may be shown while the user is authenticating with
     // BiometricPrompt.
-    CharSequence getPromptMessage(int userId, String opPackageName, int authenticators);
+    CharSequence getPromptMessage(int userId, String opPackageName, int authenticators,
+            int displayId);
 
     // Provides a localized string that may be shown as the title for an app setting that enables
     // biometric authentication.

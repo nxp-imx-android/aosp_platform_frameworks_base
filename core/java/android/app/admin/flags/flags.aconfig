@@ -493,7 +493,7 @@ flag {
   name: "multi_user_management_device_provisioning"
   is_exported: true
   namespace: "enterprise"
-  description: "Enable the multi user management device provisioning APIs."
+  description: "Enable the multi user management device provisioning APIs. Will be replaced by multiuser_management_device_provisioning soon."
   bug: "390162247"
 }
 
@@ -552,7 +552,7 @@ flag {
   name: "multi_user_management_user_provisioning"
   is_exported: true
   namespace: "enterprise"
-  description: "Enable the multi user management user provisioning APIs."
+  description: "Enable the multi user management user provisioning APIs. Will be replaced by multiuser_management_user_provisioning soon."
   bug: "390162247"
 }
 
@@ -631,4 +631,28 @@ flag {
   namespace: "enterprise"
   description: "When ACTION_DATE_CHANGED or ACTION_TIME_CHANGED is received, iterates through all managed profiles on the device to determine if personal apps should be suspended, instead of relying on the main user setting."
   bug: "470176722"
+}
+
+flag {
+  name: "policy_streamlining_auto_time_zone"
+  namespace: "enterprise"
+  description: "Redirect set/getAutoTimeZoneEnabled to the generic set/getPolicy APIs."
+  bug: "434919316"
+  is_exported: true
+}
+
+flag {
+  name: "multiuser_management_user_provisioning"
+  is_exported: false
+  namespace: "enterprise"
+  description: "Enable the multi user management user provisioning APIs."
+  bug: "390162247"
+}
+
+flag {
+  name: "multiuser_management_device_provisioning"
+  is_exported: false
+  namespace: "enterprise"
+  description: "Enable the multi user management device provisioning APIs."
+  bug: "390162247"
 }

@@ -960,6 +960,81 @@ class MobileIconViewModelKairosTest : SysuiTestCase() {
             .isTrue()
     }
 
+    @Test
+    @EnableFlags(NewSatelliteIcon.FLAG_NAME)
+    fun contentDescription_satellite_usesLevel() = runTest {
+        val latest by underTest.contentDescription.collectLastValue()
+        repository.isNonTerrestrial.setValue(true)
+
+        repository.satelliteLevel.setValue(0)
+        assertThat((latest as MobileContentDescription.SatelliteContentDescription).resId)
+            .isEqualTo(R.string.accessibility_status_bar_satellite_no_connection)
+
+        repository.satelliteLevel.setValue(1)
+        assertThat((latest as MobileContentDescription.SatelliteContentDescription).resId)
+            .isEqualTo(R.string.accessibility_status_bar_satellite_poor_connection)
+
+        repository.satelliteLevel.setValue(2)
+        assertThat((latest as MobileContentDescription.SatelliteContentDescription).resId)
+            .isEqualTo(R.string.accessibility_status_bar_satellite_poor_connection)
+
+        repository.satelliteLevel.setValue(3)
+        assertThat((latest as MobileContentDescription.SatelliteContentDescription).resId)
+            .isEqualTo(R.string.accessibility_status_bar_satellite_good_connection)
+
+        repository.satelliteLevel.setValue(4)
+        assertThat((latest as MobileContentDescription.SatelliteContentDescription).resId)
+            .isEqualTo(R.string.accessibility_status_bar_satellite_good_connection)
+    }
+
+    @Test
+    @EnableFlags(NewSatelliteIcon.FLAG_NAME)
+    fun contentDescription_satellite_usesLevel_inflated() = runTest {
+        val latest by underTest.contentDescription.collectLastValue()
+        repository.isNonTerrestrial.setValue(true)
+        repository.inflateSignalStrength.setValue(true)
+        repository.numberOfLevels.setValue(6)
+
+        // Inflated level 0 -> shown level 1 -> reported level 0 (No connection)
+        repository.satelliteLevel.setValue(0)
+        assertThat((latest as MobileContentDescription.SatelliteContentDescription).resId)
+            .isEqualTo(R.string.accessibility_status_bar_satellite_no_connection)
+
+        // Inflated level 1 -> shown level 2 -> reported level 1 (Poor connection)
+        repository.satelliteLevel.setValue(1)
+        assertThat((latest as MobileContentDescription.SatelliteContentDescription).resId)
+            .isEqualTo(R.string.accessibility_status_bar_satellite_poor_connection)
+
+        // Inflated level 2 -> shown level 3 -> reported level 2 (Poor connection)
+        repository.satelliteLevel.setValue(2)
+        assertThat((latest as MobileContentDescription.SatelliteContentDescription).resId)
+            .isEqualTo(R.string.accessibility_status_bar_satellite_poor_connection)
+
+        // Inflated level 3 -> shown level 4 -> reported level 3 (Good connection)
+        repository.satelliteLevel.setValue(3)
+        assertThat((latest as MobileContentDescription.SatelliteContentDescription).resId)
+            .isEqualTo(R.string.accessibility_status_bar_satellite_good_connection)
+
+        // Inflated level 4 -> shown level 5 -> reported level 4 (Good connection)
+        repository.satelliteLevel.setValue(4)
+        assertThat((latest as MobileContentDescription.SatelliteContentDescription).resId)
+            .isEqualTo(R.string.accessibility_status_bar_satellite_good_connection)
+
+        // Inflated level 5 -> shown level 6 -> reported level 5 (No connection - fallback)
+        repository.satelliteLevel.setValue(5)
+        assertThat((latest as MobileContentDescription.SatelliteContentDescription).resId)
+            .isEqualTo(R.string.accessibility_status_bar_satellite_no_connection)
+    }
+
+    @Test
+    @DisableFlags(NewSatelliteIcon.FLAG_NAME)
+    fun contentDescription_satellite_flagOff_isNull() = runTest {
+        val latest by underTest.contentDescription.collectLastValue()
+        repository.isNonTerrestrial.setValue(true)
+
+        assertThat(latest).isNull()
+    }
+
     companion object {
         private const val SUB_1_ID = 1
 

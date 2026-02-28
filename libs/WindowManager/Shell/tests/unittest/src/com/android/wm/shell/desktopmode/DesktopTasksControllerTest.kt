@@ -67,7 +67,6 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableContext
-import android.util.Pair
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.Display.INVALID_DISPLAY
@@ -5155,7 +5154,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private fun minimizePipTask(task: RunningTaskInfo, appOpsAllowed: Boolean = true) {
         val handler = mock(TransitionHandler::class.java)
         whenever(transitions.dispatchRequest(any(), any(), anyOrNull()))
-            .thenReturn(Pair(handler, WindowContainerTransaction()))
+            .thenReturn(Transitions.RequestResult(WindowContainerTransaction(), handler))
         spyContext.addMockSystemService(Context.APP_OPS_SERVICE, mockAppOpsManager)
 
         whenever(

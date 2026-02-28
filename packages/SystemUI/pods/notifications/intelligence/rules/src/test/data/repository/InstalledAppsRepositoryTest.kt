@@ -50,15 +50,19 @@ class InstalledAppsRepositoryTest : SysuiTestCase() {
             val drawable1 = mock<Drawable>()
             val appInfo1 =
                 mock<ApplicationInfo>().apply {
+                    this.uid = 1
                     whenever(this.loadLabel(eq(packageManager))).thenReturn("App 1")
                     whenever(this.loadIcon(eq(packageManager))).thenReturn(drawable1)
+                    this.packageName = "app.1"
                 }
 
             val drawable2 = mock<Drawable>()
             val appInfo2 =
                 mock<ApplicationInfo>().apply {
+                    this.uid = 2
                     whenever(this.loadLabel(eq(packageManager))).thenReturn("App 2")
                     whenever(this.loadIcon(eq(packageManager))).thenReturn(drawable2)
+                    this.packageName = "app.2"
                 }
 
             whenever(packageManager.getInstalledApplications(any<Int>()))
@@ -68,8 +72,8 @@ class InstalledAppsRepositoryTest : SysuiTestCase() {
 
             assertThat(result)
                 .containsExactly(
-                    AppModel(label = "App 1", icon = drawable1),
-                    AppModel(label = "App 2", icon = drawable2),
+                    AppModel(uid = 1, label = "App 1", icon = drawable1, packageName = "app.1"),
+                    AppModel(uid = 2, label = "App 2", icon = drawable2, packageName = "app.2"),
                 )
                 .inOrder()
         }

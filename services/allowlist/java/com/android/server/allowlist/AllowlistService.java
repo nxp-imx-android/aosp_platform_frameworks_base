@@ -87,6 +87,45 @@ public final class AllowlistService extends SystemService {
                 }
             };
 
+    // When the provider service dies, re-register all listeners once it's reconnected and
+    // then notify the listeners.
+    private final IBinder.DeathRecipient mProviderDeathRecipient = new IBinder.DeathRecipient() {
+        @Override
+        public void binderDied() {
+            Slog.w(LOG_TAG, "AllowlistProviderService disconnected.");
+
+            final List<AllowlistRequest> requests;
+            synchronized (mLock) {
+                requests = new ArrayList<>(mRequestListeners.keySet());
+            }
+
+            dispatchAllowlistServiceEvent(getContext().getUserId(), service -> {
+                // Link to death on the new binder object.
+                try {
+                    service.asBinder().linkToDeath(mProviderDeathRecipient, 0);
+                } catch (RemoteException e) {
+                    Slog.e(LOG_TAG, "Failed to link to death for IAllowlistProviderService", e);
+                    return;
+                }
+
+                for (AllowlistRequest request : requests) {
+                    try {
+                        service.addRequestForAllowlistChange(request,
+                                mOnProviderAllowlistsChangedListener);
+                    } catch (RemoteException e) {
+                        Slog.w(LOG_TAG, "Failed to re-register an AllowlistRequest", e);
+                    }
+                }
+
+                synchronized (mLock) {
+                    for (AllowlistRequest request : requests) {
+                        dispatchAllowlistChangedLocked(request);
+                    }
+                }
+            });
+        }
+    };
+
     public AllowlistService(@NonNull Context context) {
         super(context);
     }
@@ -111,7 +150,7 @@ public final class AllowlistService extends SystemService {
                 Slog.w(LOG_TAG, "Exception when querying test provider", e);
             }
         } else {
-            dispatchAllowlistServiceEvent(getContext().getUserId(), (service) -> {
+            dispatchAllowlistServiceEvent(getContext().getUserId(), service -> {
                 service.queryAllowlist(request, callback);
             });
         }
@@ -126,7 +165,10 @@ public final class AllowlistService extends SystemService {
      */
     private void addOnAllowlistChangedListener(@NonNull AllowlistRequest request,
             @NonNull IOnAllowlistChangedListener listener) {
+        boolean isFirstListener;
+
         synchronized (mLock) {
+            isFirstListener = mListenerRecords.isEmpty();
             ListenerRecord record = mListenerRecords.get(listener.asBinder());
             if (record == null) {
                 record = new ListenerRecord(listener);
@@ -149,6 +191,15 @@ public final class AllowlistService extends SystemService {
         } else {
             dispatchAllowlistServiceEvent(getContext().getUserId(), service -> {
                 service.addRequestForAllowlistChange(request, mOnProviderAllowlistsChangedListener);
+                // If this is the first listener, when receiving the IBinder, call
+                // linkToDeath so when the binder dies we can re-register listeners.
+                if (isFirstListener) {
+                    try {
+                        service.asBinder().linkToDeath(mProviderDeathRecipient, 0);
+                    } catch (RemoteException e) {
+                        Slog.e(LOG_TAG, "Failed to link to death for IAllowlistProviderService", e);
+                    }
+                }
             });
         }
     }
@@ -190,11 +241,10 @@ public final class AllowlistService extends SystemService {
                     Slog.w(LOG_TAG, "Exception when adding test provider listener", e);
                 }
             } else {
-                dispatchAllowlistServiceEvent(getContext().getUserId(), (service) -> {
+                dispatchAllowlistServiceEvent(getContext().getUserId(), service -> {
                     service.removeRequestForAllowlistChange(request);
                 });
             }
-
         }
     }
 

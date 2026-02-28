@@ -535,6 +535,8 @@ cc_library_shared {
                 "libpiex",
                 "libpng",
                 "libsqlite",
+                "libstatssocket-fake",
+                "libstatspull-fake",
                 "libtiff_directory",
                 "libtracing_perfetto",
                 "libultrahdr",

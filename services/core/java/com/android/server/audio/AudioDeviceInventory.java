@@ -947,6 +947,9 @@ public class AudioDeviceInventory {
 
             // device restore done, notify AudioDeviceBroker
             mDeviceBroker.setWaitingForDeviceRestore(false);
+            if (!failedReconnectionDeviceList.isEmpty()) {
+                mDeviceBroker.postOnConnectedDevicesChanged();
+            }
         }
 
         reapplyExternalDevicesRoles();
@@ -3501,6 +3504,7 @@ public class AudioDeviceInventory {
             }
         }
         updateAlwaysRingDeviceConnected();
+        mDeviceBroker.postOnConnectedDevicesChanged();
     }
 
     @GuardedBy("mDevicesLock")
@@ -3544,6 +3548,7 @@ public class AudioDeviceInventory {
             }
         }
         updateAlwaysRingDeviceConnected();
+        mDeviceBroker.postOnConnectedDevicesChanged();
     }
 
     //----------------------------------------------------------
