@@ -35,6 +35,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.app.StatsManager;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.security.trusttoken.ITrustTokenManager;
 import android.security.trusttoken.TrustConfiguration;
 import android.security.trusttoken.TrustToken;
@@ -114,6 +117,9 @@ public final class TrustTokenManagerServiceTest {
     public final ExtendedMockitoRule mExtendedMockitoRule =
             new ExtendedMockitoRule.Builder(this).mockStatic(StatsLog.class).build();
 
+    @Rule
+    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
     @Captor ArgumentCaptor<StatsEvent> mStatsEventCaptor;
 
     ExtensionRegistryLite mLogRegistry = ExtensionRegistryLite.newInstance();
@@ -189,6 +195,7 @@ public final class TrustTokenManagerServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
     public void acquireVerifiedDeviceToken_success() throws Exception {
         mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
         assertThrows(
@@ -212,6 +219,7 @@ public final class TrustTokenManagerServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
     public void verifyTrustTokenAndChallenge_success() throws Exception {
         mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
         assertThat(
@@ -226,6 +234,7 @@ public final class TrustTokenManagerServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
     public void verifyTrustTokenAndChallenge_errors() throws Exception {
         mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
         assertThat(
@@ -250,6 +259,7 @@ public final class TrustTokenManagerServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
     public void verifyTrustTokenAndChallenge_trustConfigurationUnavailable() throws Exception {
         assertThrows(
                 TrustConfigurationUnavailableException.class,
@@ -363,6 +373,7 @@ public final class TrustTokenManagerServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
     public void addTrustTokens_keysAndTokensInOrder() {
         mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
         mInternal.addTrustTokens(
@@ -377,6 +388,7 @@ public final class TrustTokenManagerServiceTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
     public void addTrustTokens_keysAndTokensOutOfOrder() {
         mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
         mInternal.addTrustTokens(
