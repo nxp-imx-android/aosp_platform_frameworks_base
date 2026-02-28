@@ -56,6 +56,8 @@ import com.android.systemui.statusbar.layout.mockStatusBarContentInsetsProvider
 import com.android.systemui.statusbar.mockCommandQueue
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
+import com.android.systemui.statusbar.pipeline.shared.domain.interactor.StatusBarVisibilityInteractor
+import com.android.systemui.statusbar.pipeline.shared.domain.interactor.statusBarVisibilityInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.statusBarRootFactory
@@ -96,6 +98,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
     statusBarRootFactory: () -> StatusBarRootFactory = { this.statusBarRootFactory },
     ongoingActivityChipsViewModel: () -> OngoingActivityChipsViewModel = {
         this.ongoingActivityChipsViewModel
+    },
+    statusBarVisibilityInteractor: () -> StatusBarVisibilityInteractor = {
+        this.statusBarVisibilityInteractor
     },
     statusBarContentInsetsProvider: () -> StatusBarContentInsetsProvider = {
         this.mockStatusBarContentInsetsProvider
@@ -145,6 +150,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel
             get() = ongoingActivityChipsViewModel()
+
+        override val statusBarVisibilityInteractor: StatusBarVisibilityInteractor
+            get() = statusBarVisibilityInteractor()
 
         override val statusBarContentInsetsProvider: StatusBarContentInsetsProvider
             get() = statusBarContentInsetsProvider()

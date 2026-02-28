@@ -31,8 +31,6 @@ import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarVie
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinderImpl
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModelImpl.HomeStatusBarViewModelFactoryImpl
-import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStatePerDisplayRepository
-import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStatePerDisplayRepositoryImpl
 import dagger.Binds
 import dagger.Lazy
 import dagger.Module
@@ -64,12 +62,6 @@ interface PerDisplayStatusBarReferenceModule {
     fun ongoingCallStatusBarInteractorAsLifecycleListener(
         interactor: OngoingCallStatusBarInteractor
     ): SystemUIDisplaySubcomponent.LifecycleListener
-
-    @Binds
-    @DisplayAware
-    fun statusBarWindowStateRepository(
-        impl: StatusBarWindowStatePerDisplayRepositoryImpl
-    ): StatusBarWindowStatePerDisplayRepository
 
     @Binds
     @IntoSet

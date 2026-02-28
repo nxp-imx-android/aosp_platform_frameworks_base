@@ -53,6 +53,7 @@ import com.android.systemui.statusbar.layout.StatusBarContentInsetsProviderImpl
 import com.android.systemui.statusbar.layout.ui.viewmodel.StatusBarContentInsetsViewModel
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStatusBarInteractor
+import com.android.systemui.statusbar.pipeline.shared.domain.interactor.StatusBarVisibilityInteractor
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractorImpl
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.NoOpAvControlsChipInteractor
@@ -60,6 +61,8 @@ import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
+import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStatePerDisplayRepository
+import com.android.systemui.statusbar.window.data.repository.StatusBarWindowStatePerDisplayRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -109,9 +112,23 @@ interface PerDisplayStatusBarModule {
     @Binds
     @PerDisplaySingleton
     @DisplayAware
+    fun statusBarWindowStateRepository(
+        impl: StatusBarWindowStatePerDisplayRepositoryImpl
+    ): StatusBarWindowStatePerDisplayRepository
+
+    @Binds
+    @PerDisplaySingleton
+    @DisplayAware
     fun ongoingActivityChipsViewModel(
         impl: OngoingActivityChipsViewModel
     ): OngoingActivityChipsViewModel
+
+    @Binds
+    @PerDisplaySingleton
+    @DisplayAware
+    fun statusBarVisibilityInteractor(
+        impl: StatusBarVisibilityInteractor
+    ): StatusBarVisibilityInteractor
 
     @Binds
     @DisplayAware
