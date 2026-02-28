@@ -32,4 +32,5 @@ interface IInsightSurfaceClient {
     oneway void onReceiveInsight(in ContextInsightWrapper insight);
     oneway void onSizeChanged(in int width, in int height);
     oneway void onVisualizationError(int errorCode);
+    oneway void onRegistered();
 }
