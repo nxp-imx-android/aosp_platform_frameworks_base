@@ -209,7 +209,8 @@ public class InsightSurfaceClient implements AutoCloseable {
                     executeWithCallbacks(clientCallback -> {
                         if (mSession != null) {
                             Preconditions.checkState(
-                                    mSession.getSurfacePackage() == surfacePackage);
+                                    mSession.getSurfacePackage().getSurfaceControl()
+                                            .isSameSurface(surfacePackage.getSurfaceControl()));
                             clientCallback.onSessionDestroyed(mSession);
                             mSession.close();
                             mSession = null;
@@ -224,7 +225,8 @@ public class InsightSurfaceClient implements AutoCloseable {
                     }
                     executeWithCallbacks(clientCallback -> {
                         Preconditions.checkState(
-                                mSession != null && mSession.getSurfacePackage() == surfacePackage);
+                                mSession != null && mSession.getSurfacePackage().getSurfaceControl()
+                                        .isSameSurface(surfacePackage.getSurfaceControl()));
                         clientCallback.onSessionUpdated(mSession);
                     });
                 }

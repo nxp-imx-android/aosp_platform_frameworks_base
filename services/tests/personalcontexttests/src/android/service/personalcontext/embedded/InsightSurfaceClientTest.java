@@ -36,6 +36,7 @@ import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.view.Display;
+import android.view.SurfaceControl;
 import android.view.SurfaceControlViewHost.SurfacePackage;
 import android.view.View;
 
@@ -65,6 +66,7 @@ public class InsightSurfaceClientTest {
     @Mock private PersonalContextManager mPersonalContextManager;
     @Mock private InsightSurfaceClient.ClientCallback mClientCallbacks;
     @Mock private IInsightSurfaceSession mSession;
+    @Mock private SurfaceControl mSurfaceControl;
     private final Executor mExecutor = Runnable::run;
     private InsightSurfaceClient mClient;
 
@@ -75,6 +77,8 @@ public class InsightSurfaceClientTest {
         when(mContext.getDisplay()).thenReturn(mDisplay);
         when(mContext.getResources()).thenReturn(mResources);
         when(mResources.getConfiguration()).thenReturn(mConfiguration);
+        when(mSurfacePackage.getSurfaceControl()).thenReturn(mSurfaceControl);
+        when(mSurfaceControl.isSameSurface(mSurfaceControl)).thenReturn(true);
 
         when(mContext.getSystemService(PersonalContextManager.class))
                 .thenReturn(mPersonalContextManager);
