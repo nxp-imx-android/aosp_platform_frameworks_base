@@ -18,6 +18,7 @@ package com.android.server.security.trusttoken;
 
 import android.annotation.NonNull;
 import android.security.trusttoken.TrustConfiguration;
+import android.security.trusttoken.TrustTokenUnavailableException;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -27,12 +28,12 @@ abstract class TrustTokenDatabase {
     /**
      * Gets a new {@link TrustTokenSet} of the specified type from the database.
      *
-     * @throws TrustTokenExhaustedException if the database contains no more valid trust tokens of
+     * @throws TrustTokenUnavailableException if the database contains no more valid trust tokens of
      *     the specified type.
      */
     @NonNull
     abstract TrustTokenSetWithKey getTrustTokenSet(@TrustTokenSet.Type int type)
-            throws TrustTokenExhaustedException;
+            throws TrustTokenUnavailableException;
 
     /**
      * Adds a batch of {@link TrustTokenSet} to the database. The keys associated with the trust

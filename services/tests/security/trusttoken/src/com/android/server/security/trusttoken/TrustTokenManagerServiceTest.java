@@ -39,9 +39,11 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.security.trusttoken.ITrustTokenManager;
+import android.security.trusttoken.TrustAnchorUnavailableException;
 import android.security.trusttoken.TrustConfiguration;
 import android.security.trusttoken.TrustToken;
 import android.security.trusttoken.TrustTokenManager;
+import android.security.trusttoken.TrustTokenUnavailableException;
 import android.testing.TestableContext;
 import android.util.Base64;
 import android.util.StatsEvent;
@@ -199,7 +201,7 @@ public final class TrustTokenManagerServiceTest {
     public void acquireVerifiedDeviceToken_success() throws Exception {
         mInternal.updateTrustConfiguration(TRUST_CONFIGURATION_1);
         assertThrows(
-                TrustTokenExhaustedException.class,
+                TrustTokenUnavailableException.class,
                 () -> mManager.acquireVerifiedDeviceToken(CHALLENGE));
         AcquireTrustTokenCalled log =
                 getLogEvent(TrustTokenExtensionAtomsProto.acquireTrustTokenCalled);
@@ -214,7 +216,7 @@ public final class TrustTokenManagerServiceTest {
         assertThat(log.getOutcome()).isEqualTo(AcquireTrustTokenCalled.Outcome.OUTCOME_SUCCESS);
 
         assertThrows(
-                TrustTokenExhaustedException.class,
+                TrustTokenUnavailableException.class,
                 () -> mManager.acquireVerifiedDeviceToken(CHALLENGE));
     }
 
@@ -262,7 +264,7 @@ public final class TrustTokenManagerServiceTest {
     @RequiresFlagsEnabled(android.security.Flags.FLAG_ENABLE_TALISMAN_SERVICE)
     public void verifyTrustTokenAndChallenge_trustConfigurationUnavailable() throws Exception {
         assertThrows(
-                TrustConfigurationUnavailableException.class,
+                TrustAnchorUnavailableException.class,
                 () ->
                         mManager.verifyTrustToken(
                                 new TrustToken(TRUST_TOKEN_1), "".getBytes(), "".getBytes()));
