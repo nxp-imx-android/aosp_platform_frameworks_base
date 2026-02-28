@@ -327,7 +327,8 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
                             fr.getSdkTarget(),
                             /*forceDuck*/ false,
                             /*testUid*/ 0,
-                            /*permissionOverridesCheck*/ false);
+                            /*permissionOverridesCheck*/ false,
+                            /*isForCall*/ false);
                     if (result == AUDIOFOCUS_REQUEST_GRANTED) {
                         return true;
                     }
@@ -1422,7 +1423,8 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
             IBinder cb, IAudioFocusDispatcher fd, @NonNull String clientId,
             @NonNull String callingPackageName,
             int flags, int sdk, boolean forceDuck, int testUid,
-            boolean permissionOverridesCheck) {
+            boolean permissionOverridesCheck,
+            boolean isForCall) {
         new MediaMetrics.Item(mMetricsId)
                 .setUid(callerUid)
                 .set(MediaMetrics.Property.CALLING_PACKAGE, callingPackageName)
@@ -1521,7 +1523,7 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
             }
 
             boolean enteringRingOrCall = !mRingOrCallActive
-                    & (AudioSystem.IN_VOICE_COMM_FOCUS_ID.compareTo(clientId) == 0);
+                    && isForCall;
             if (enteringRingOrCall) { mRingOrCallActive = true; }
 
             final AudioFocusInfo afiForExtPolicy;
@@ -1658,7 +1660,7 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
      * @see AudioManager#abandonAudioFocus(AudioManager.OnAudioFocusChangeListener, AudioAttributes)
      * */
     protected int abandonAudioFocus(IAudioFocusDispatcher fl, String clientId, AudioAttributes aa,
-            String callingPackageName) {
+            String callingPackageName, boolean isForCall) {
         new MediaMetrics.Item(mMetricsId)
                 .setUid(Binder.getCallingUid())
                 .set(MediaMetrics.Property.CALLING_PACKAGE, callingPackageName)
@@ -1695,8 +1697,7 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
                     return AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
                 }
 
-                boolean exitingRingOrCall = mRingOrCallActive
-                        & (AudioSystem.IN_VOICE_COMM_FOCUS_ID.compareTo(clientId) == 0);
+                boolean exitingRingOrCall = mRingOrCallActive && isForCall;
                 if (exitingRingOrCall) { mRingOrCallActive = false; }
 
                 removeFocusStackEntry(clientId, true /*signal*/, true /*notifyFocusFollowers*/);

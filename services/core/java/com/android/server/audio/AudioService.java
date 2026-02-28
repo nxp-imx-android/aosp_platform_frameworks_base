@@ -12833,11 +12833,13 @@ public class AudioService extends IAudioService.Stub
             Binder.restoreCallingIdentity(token);
         }
 
+        boolean isForCall = AudioSystem.IN_VOICE_COMM_FOCUS_ID.compareTo(clientId) == 0;
+
         mmi.record();
         return getMediaFocusControlForEnvironment(focusEnvToken).requestAudioFocus(uid, aa,
                 focusReqType, cb, fd, clientId, callingPackageName, flags, sdk,
                 forceFocusDuckingForAccessibility(aa, focusReqType, uid), -1 /*testUid, ignored*/,
-                permissionOverridesCheck);
+                permissionOverridesCheck, isForCall);
     }
 
     /** see {@link AudioManager#requestAudioFocusForTest(AudioFocusRequest, String, int, int)} */
@@ -12855,7 +12857,8 @@ public class AudioService extends IAudioService.Stub
         return getMediaFocusControlForEnvironment(focusEnvToken)
                 .requestAudioFocus(Binder.getCallingUid(), aa, focusReqType, cb, fd, clientId,
                         callingPackageName, flags, sdk, false /*forceDuck*/, fakeUid,
-                        true /*permissionOverridesCheck*/);
+                        true /*permissionOverridesCheck*/,
+                        false /*isForCall*/);
     }
 
     public int abandonAudioFocus(IAudioFocusDispatcher fd, String clientId, AudioAttributes aa,
@@ -12872,6 +12875,8 @@ public class AudioService extends IAudioService.Stub
             return AudioManager.AUDIOFOCUS_REQUEST_FAILED;
         }
         mmi.record();
+
+        boolean isForCall = AudioSystem.IN_VOICE_COMM_FOCUS_ID.compareTo(clientId) == 0;
         //delay abandon focus requests from Telecom if an audio mode reset from Telecom
         // is still being processed
         final boolean abandonFromTelecom = (mContext.checkCallingOrSelfPermission(
@@ -12907,7 +12912,7 @@ public class AudioService extends IAudioService.Stub
         }
 
         return getMediaFocusControlForEnvironment(focusEnvToken)
-                .abandonAudioFocus(fd, clientId, aa, callingPackageName);
+                .abandonAudioFocus(fd, clientId, aa, callingPackageName, isForCall);
     }
 
     /**
@@ -12967,6 +12972,71 @@ public class AudioService extends IAudioService.Stub
         }
     }
 
+    public int requestAudioFocusForModeSession(AttributionSource attrSource, IBinder cb,
+            AudioAttributes aa, int focusChangeHint, IAudioFocusDispatcher fd) {
+        final int uid = attrSource.getUid();
+        final int flags = AudioManager.AUDIOFOCUS_FLAG_LOCK;
+        final String clientId = "session:" + attrSource.getPackageName() + "@" + cb.toString();
+
+        MediaMetrics.Item mmi =
+                new MediaMetrics.Item(mMetricsId + "focus")
+                        .setUid(uid)
+                        .set(MediaMetrics.Property.CALLING_PACKAGE, attrSource.getPackageName())
+                        .set(MediaMetrics.Property.CLIENT_NAME, clientId)
+                        .set(MediaMetrics.Property.EVENT, "requestAudioFocus")
+                        .set(MediaMetrics.Property.FLAGS, flags);
+
+        mmi.record();
+        return getMediaFocusControlForEnvironment(null).requestAudioFocus(
+                uid, aa, focusChangeHint, cb, fd, clientId,
+                attrSource.getPackageName(), flags, Build.VERSION_CODES.CUR_DEVELOPMENT,
+                false /* forceDuck */, -1 /* testUid */, true /* permissionOverridesCheck */,
+                true /* isForCall */);
+    }
+
+    public int abandonAudioFocusForModeSession(AttributionSource attrSource, IBinder cb,
+            AudioAttributes aa, IAudioFocusDispatcher fd) {
+        // should be consistent with request
+        final String clientId = "session:" + attrSource.getPackageName() + "@" + cb.toString();
+
+        MediaMetrics.Item mmi = new MediaMetrics.Item(mMetricsId + "focus")
+                .set(MediaMetrics.Property.CALLING_PACKAGE, attrSource.getPackageName())
+                .set(MediaMetrics.Property.CLIENT_NAME, clientId)
+                .set(MediaMetrics.Property.EVENT, "abandonAudioFocus");
+        mmi.record();
+
+        //delay abandon focus requests from Telecom if an audio mode reset from Telecom
+        // is still being processed
+        synchronized (mAudioModeResetLock) {
+            final long start = java.lang.System.currentTimeMillis();
+            long elapsed = 0;
+            while (mAudioModeResetCount > 0) {
+                if (DEBUG_MODE) {
+                    Log.i(TAG, "Abandon focus from Telecom, waiting for mode change");
+                }
+                try {
+                    mAudioModeResetLock.wait(
+                            AUDIO_MODE_RESET_TIMEOUT_MS - elapsed);
+                } catch (InterruptedException e) {
+                    Log.w(TAG, "Interrupted while waiting for audio mode reset");
+                }
+                elapsed = java.lang.System.currentTimeMillis() - start;
+                if (elapsed >= AUDIO_MODE_RESET_TIMEOUT_MS) {
+                    Log.e(TAG, "Timeout waiting for audio mode reset");
+                    // reset count to avoid sticky out of sync state.
+                    resetAudioModeResetCount();
+                    break;
+                }
+            }
+            if (DEBUG_MODE && elapsed != 0) {
+                Log.i(TAG, "Abandon focus from Telecom done waiting");
+            }
+        }
+
+        return getMediaFocusControlForEnvironment(null)
+                .abandonAudioFocus(fd, clientId, aa, attrSource.getPackageName(), true);
+    }
+
     /** see {@link AudioManager#abandonAudioFocusForTest(AudioFocusRequest, String)} */
     public int abandonAudioFocusForTest(IAudioFocusDispatcher fd, String clientId,
             AudioAttributes aa, String callingPackageName, @Nullable IBinder focusEnvToken) {
@@ -12974,7 +13044,7 @@ public class AudioService extends IAudioService.Stub
             return AudioManager.AUDIOFOCUS_REQUEST_FAILED;
         }
         return getMediaFocusControlForEnvironment(focusEnvToken)
-                .abandonAudioFocus(fd, clientId, aa, callingPackageName);
+                .abandonAudioFocus(fd, clientId, aa, callingPackageName, false);
     }
 
     /**

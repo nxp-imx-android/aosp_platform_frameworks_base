@@ -26,15 +26,20 @@ import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresNoPermission;
 import android.annotation.SuppressLint;
 import android.content.AttributionSource;
+import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
+import android.media.IAudioFocusDispatcher;
 import android.media.audio.AudioModeSessionRequest;
 import android.media.audio.DeviceIdentity;
 import android.media.audio.IAudioModeSession;
 import android.media.audio.IAudioModeSessionCallback;
+import android.os.Binder;
+import android.os.Build;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.FunctionalUtils;
 
 import java.util.concurrent.Executor;
@@ -58,6 +63,10 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     @SuppressLint("DebugTrue")
     private static final boolean DEBUG = true;
 
+    private static final AudioAttributes CALL_AUDIO_ATTRIBUTES = new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_VOICE_COMMUNICATION)
+            .build();
+
     private final Object mLock = new Object();
     private final IAudioModeSessionCallback mCallback;
     private final AttributionSource mAttributionSource;
@@ -66,6 +75,16 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     private final int[] mNoFocusModes;
     private final AudioDeviceBroker mDeviceBroker;
     private final Executor mExecutor;
+
+    // Intentionally no-op; session focus is locked, so doesn't have to respond to loss
+    private final IAudioFocusDispatcher mAudioFocusDispatcher = new IAudioFocusDispatcher.Stub() {
+        @Override
+        @RequiresNoPermission
+        public void dispatchAudioFocusChange(int focusChange, String clientId) {}
+        @Override
+        @RequiresNoPermission
+        public void dispatchFocusResultFromExtPolicy(int requestResult, String clientId) {}
+    };
 
     // Session State
     @GuardedBy("mLock")
@@ -85,6 +104,9 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
 
     @GuardedBy("mLock")
     private boolean mIsClosed;
+
+    @GuardedBy("mLock")
+    private boolean mHasFocus = false;
 
     @GuardedBy("mLock")
     // TODO: This is currently a layer inversion, since we still call into AudioService to get the
@@ -159,6 +181,32 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
         }
     }
 
+    @GuardedBy("mLock")
+    private void updateAudioFocus() {
+        boolean shouldHaveFocus = isLive() && !ArrayUtils.contains(mNoFocusModes, mMode);
+
+        if (shouldHaveFocus && !mHasFocus) {
+            int res = mAudioService.requestAudioFocusForModeSession(
+                    mAttributionSource,
+                    mCallback.asBinder(),
+                    CALL_AUDIO_ATTRIBUTES,
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT,
+                    mAudioFocusDispatcher);
+            if (res == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                mHasFocus = true;
+            } else {
+                Slog.wtf(TAG, "Unexpected focus result: " + res);
+            }
+        } else if (!shouldHaveFocus && mHasFocus) {
+            mAudioService.abandonAudioFocusForModeSession(
+                    mAttributionSource,
+                    mCallback.asBinder(),
+                    CALL_AUDIO_ATTRIBUTES,
+                    mAudioFocusDispatcher);
+            mHasFocus = false;
+        }
+    }
+
     public AudioModeSession(
             @NonNull AudioService audioService,
             @NonNull AudioDeviceBroker deviceBroker,
@@ -185,6 +233,7 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
             mIsDisplayActiveUseCase = request.isDisplayActiveUseCase;
             mNoFocusModes = request.noFocusModes;
             mSetCommDevice = mDeviceBroker.getCommunicationDevice();
+            updateAudioFocus();
         }
 
         mAudioService.setMode(
@@ -216,7 +265,8 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                 return;
             }
             mMode = mode;
-            if (isApplicable()) {
+            if (isLive()) {
+                updateAudioFocus();
                 mAudioService.setMode(
                         mMode, mCallback.asBinder(), mAttributionSource.getPackageName());
             }
@@ -260,8 +310,10 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                         mAttributionSource.getPackageName());
                 mDeviceBroker.setCommunicationDevice(
                         mCallback.asBinder(), mAttributionSource, null, true, TAG);
+                updateAudioFocus();
                 dispatchRemote(() -> mCallback.onPaused());
             } else {
+                updateAudioFocus();
                 mAudioService.setMode(
                         mMode, mCallback.asBinder(), mAttributionSource.getPackageName());
                 dispatchRemote(() -> mCallback.onResumed(applyRouteAndTrack()));
@@ -291,13 +343,13 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                 return;
             }
             mIsClosed = true;
-
             mAudioService.setMode(
                     AudioManager.MODE_NORMAL,
                     mCallback.asBinder(),
                     mAttributionSource.getPackageName());
             mDeviceBroker.setCommunicationDevice(
                     mCallback.asBinder(), mAttributionSource, null, true, TAG);
+            updateAudioFocus();
         }
         mDeviceBroker.removeAudioModeSession(this);
         dispatchRemote(() -> mCallback.onClosed());
@@ -319,6 +371,7 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                         mAttributionSource.getPackageName());
                 mDeviceBroker.setCommunicationDevice(
                         mCallback.asBinder(), mAttributionSource, null, true, TAG);
+                updateAudioFocus();
             }
             dispatchRemote(() -> mCallback.onPaused());
         }
@@ -334,6 +387,7 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
             }
             mIsServerPaused = false;
             if (!mIsClientPaused) {
+                updateAudioFocus();
                 mAudioService.setMode(
                         mMode, mCallback.asBinder(), mAttributionSource.getPackageName());
                 dispatchRemote(() -> mCallback.onResumed(applyRouteAndTrack()));
@@ -358,7 +412,7 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
     @GuardedBy("mLock")
     private int applyRouteAndTrack() {
         int requestId = getNextRequestId();
-        if (isApplicable()) {
+        if (isLive()) {
             // Preempt previous if exists
             if (mPendingRequestId != 0) {
                 final int pRequestId = mPendingRequestId;
@@ -410,7 +464,7 @@ public final class AudioModeSession extends IAudioModeSession.Stub {
                 });
     }
 
-    private boolean isApplicable() {
+    private boolean isLive() {
         return !mIsClosed && !mIsClientPaused && !mIsServerPaused;
     }
 
