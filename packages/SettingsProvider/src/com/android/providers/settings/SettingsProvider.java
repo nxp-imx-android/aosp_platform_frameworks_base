@@ -3693,7 +3693,7 @@ public class SettingsProvider extends ContentProvider {
 
                 // If this is an aconfig flag, it will be written as a staged flag.
                 // Notify that its staged flag value will be updated.
-                if (Flags.notifyIndividualAconfigSyspropChanged() && type == SETTINGS_TYPE_CONFIG) {
+                if (type == SETTINGS_TYPE_CONFIG) {
                     int slashIndex = name.indexOf('/');
                     boolean validSlashIndex = slashIndex != -1
                             && slashIndex != 0
