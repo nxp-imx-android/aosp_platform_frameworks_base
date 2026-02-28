@@ -117,7 +117,8 @@ public class Events {
             "usb_temperature_below_threshold",
             "csd_warning_timeout",
             "posture_changed",
-            "quick_settings_expanded"
+            "quick_settings_expanded",
+            "brightness_dialog_showing"
     };
 
     public static final int SHOW_REASON_UNKNOWN = 0;
@@ -190,7 +191,9 @@ public class Events {
         VOLUME_DIALOG_DISMISS_USB_TEMP_ALARM_CHANGED(142),
         @UiEvent(doc = "The volume dialog was dismissed because the quick settings shade was "
                 + "expanded")
-        VOLUME_DIALOG_DISMISS_QUICK_SETTINGS(2345);
+        VOLUME_DIALOG_DISMISS_QUICK_SETTINGS(2345),
+        @UiEvent(doc = "The volume dialog was dismissed because the brightness dialog was shown")
+        VOLUME_DIALOG_DISMISS_BRIGHTNESS_DIALOG_SHOWING(2663);
 
         private final int mId;
         VolumeDialogCloseEvent(int id) {
@@ -218,6 +221,8 @@ public class Events {
                     return VOLUME_DIALOG_DISMISS_USB_TEMP_ALARM_CHANGED;
                 case DISMISS_REASON_QUICK_SETTINGS_EXPANDED:
                     return VOLUME_DIALOG_DISMISS_QUICK_SETTINGS;
+                case DISMISS_REASON_BRIGHTNESS_DIALOG_SHOWING:
+                    return VOLUME_DIALOG_DISMISS_BRIGHTNESS_DIALOG_SHOWING;
             }
             return INVALID;
         }
@@ -397,7 +402,8 @@ public class Events {
                     final Boolean keyguard = (Boolean) list[1];
                     sLegacyLogger.histogram("volume_from_keyguard", keyguard ? 1 : 0);
                     sUiEventLogger.log(VolumeDialogOpenEvent.fromReasons(reason));
-                    sb.append(SHOW_REASONS[reason]).append(" keyguard=").append(keyguard);
+                    sb.append(getReason(SHOW_REASONS, reason))
+                            .append(" keyguard=").append(keyguard);
                 }
                 break;
             case EVENT_EXPAND: {
@@ -412,7 +418,7 @@ public class Events {
                 sLegacyLogger.hidden(MetricsEvent.VOLUME_DIALOG);
                 final Integer reason = (Integer) list[0];
                 sUiEventLogger.log(VolumeDialogCloseEvent.fromReason(reason));
-                sb.append(DISMISS_REASONS[reason]);
+                sb.append(getReason(DISMISS_REASONS, reason));
                 break;
             }
             case EVENT_ACTIVE_STREAM_CHANGED: {
@@ -491,7 +497,8 @@ public class Events {
                     final Boolean keyguard = (Boolean) list[1];
                     sLegacyLogger.histogram("show_usb_overheat_alarm", keyguard ? 1 : 0);
                     final Integer reason = (Integer) list[0];
-                    sb.append(SHOW_REASONS[reason]).append(" keyguard=").append(keyguard);
+                    sb.append(getReason(SHOW_REASONS, reason))
+                            .append(" keyguard=").append(keyguard);
                 }
                 break;
             case EVENT_DISMISS_USB_OVERHEAT_ALARM:
@@ -501,7 +508,7 @@ public class Events {
                     final Boolean keyguard = (Boolean) list[1];
                     sLegacyLogger.histogram("dismiss_usb_overheat_alarm", keyguard ? 1 : 0);
                     final Integer reason = (Integer) list[0];
-                    sb.append(DISMISS_REASONS[reason])
+                    sb.append(getReason(DISMISS_REASONS, reason))
                             .append(" keyguard=").append(keyguard);
                 }
                 break;
@@ -525,6 +532,10 @@ public class Events {
         if (sCallback != null) {
             sCallback.writeState(time, state);
         }
+    }
+
+    private static String getReason(String[] reasons, int reason) {
+        return reason >= 0 && reason < reasons.length ? reasons[reason] : "unknown_" + reason;
     }
 
     private static String iconStateToString(int iconState) {
