@@ -20,7 +20,9 @@ import static android.service.messaging.AlternativeMessageTransportService.UPGRA
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -32,6 +34,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -53,7 +56,7 @@ public final class MessageUpgradeController {
         if (sInstance == null) {
             synchronized (MessageUpgradeController.class) {
                 if (sInstance == null) {
-                    sInstance = new MessageUpgradeController(context.getApplicationContext());
+                    sInstance = new MessageUpgradeController(context);
                 }
             }
         }
@@ -95,6 +98,12 @@ public final class MessageUpgradeController {
      * @param context The calling app's context.
      * @param callingUser The calling app's user id.
      * @param messageUri The uri of the message in the telephony db.
+     * @param sentIntents A list of {@link PendingIntent}s to broadcast when the message is
+     * successfully sent or failed. For multipart messages, these intents
+     * are all broadcast at once after the last part is sent or failed.
+     * @param deliveryIntents A list of {@link PendingIntent}s to broadcast when the message is
+     * delivered to the recipient. For multipart messages, these intents
+     * are all broadcast at once after the last part is delivered or failed.
      * @param clientCallbackExecutor The executor to run the callback on.
      * @param clientCallback The callback to report the upgrade status.
      */
@@ -102,6 +111,8 @@ public final class MessageUpgradeController {
             @NonNull Context context,
             int callingUser,
             @NonNull Uri messageUri,
+            @Nullable List<PendingIntent> sentIntents,
+            @Nullable List<PendingIntent> deliveryIntents,
             @NonNull Executor clientCallbackExecutor,
             @NonNull Consumer<Integer> clientCallback) {
         Objects.requireNonNull(context, "context cannot be null");
@@ -112,10 +123,68 @@ public final class MessageUpgradeController {
         MessageUpgradeWorker upgradeWorker = getInstance(context).getUpgradeWorkerForUser(
                 context, callingUser);
         if (upgradeWorker != null) {
-            upgradeWorker.upgradeMessage(messageUri, clientCallbackExecutor, clientCallback);
+            upgradeWorker.upgradeMessage(messageUri,
+                    sentIntents,
+                    deliveryIntents,
+                    clientCallbackExecutor,
+                    clientCallback);
         } else {
             Log.e(TAG, "Upgrade message failed, no upgrade worker for user " + callingUser);
             clientCallbackExecutor.execute(() -> clientCallback.accept(UPGRADE_STATUS_REJECTED));
+        }
+    }
+
+    /**
+     * Called when an SMS message is updated in the Telephony provider.
+     *
+     * <p>Checks if the updated SMS corresponds to an upgraded message and dispatches the associated
+     * PendingIntents (sent/delivery) if the status or type has changed.
+     *
+     * @param context The calling app's context.
+     * @param callingUser The calling app's user id.
+     * @param messageUri The URI of the updated SMS message.
+     * @param values     The updated values of the SMS message.
+     */
+    public static void dispatchSmsPendingIntentsIfUpgraded(@NonNull Context context,
+            int callingUser, Uri messageUri, @NonNull ContentValues values) {
+        Objects.requireNonNull(context, "context cannot be null");
+        Objects.requireNonNull(messageUri, "messageUri cannot be null");
+        Objects.requireNonNull(values, "values cannot be null");
+
+        MessageUpgradeWorker upgradeWorker = getInstance(context).getUpgradeWorkerForUser(
+                context, callingUser);
+        if (upgradeWorker != null) {
+            upgradeWorker.dispatchSmsPendingIntentsIfUpgraded(messageUri, values);
+        } else {
+            Log.e(TAG, "dispatchSmsPendingIntentsIfUpgraded, no upgrade worker for user "
+                    + callingUser);
+        }
+    }
+
+    /**
+     * Called when an MMS message is updated in the Telephony provider.
+     *
+     * <p>Checks if the updated MMS corresponds to an upgraded message and dispatches the associated
+     * PendingIntents (sent) if the message box has changed.
+     *
+     * @param context The calling app's context.
+     * @param callingUser The calling app's user id.
+     * @param messageUri The URI of the updated MMS message.
+     * @param values     The updated values of the MMS message.
+     */
+    public static void dispatchMmsPendingIntentsIfUpgraded(@NonNull Context context,
+            int callingUser, Uri messageUri, @NonNull ContentValues values) {
+        Objects.requireNonNull(context, "context cannot be null");
+        Objects.requireNonNull(messageUri, "messageUri cannot be null");
+        Objects.requireNonNull(values, "values cannot be null");
+
+        MessageUpgradeWorker upgradeWorker = getInstance(context).getUpgradeWorkerForUser(
+                context, callingUser);
+        if (upgradeWorker != null) {
+            upgradeWorker.dispatchMmsPendingIntentsIfUpgraded(messageUri, values);
+        } else {
+            Log.e(TAG, "dispatchSmsPendingIntentsIfUpgraded, no upgrade worker for user "
+                    + callingUser);
         }
     }
 
