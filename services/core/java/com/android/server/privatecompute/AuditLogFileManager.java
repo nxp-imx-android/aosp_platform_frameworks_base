@@ -16,14 +16,10 @@
 
 package com.android.server.privatecompute;
 
-import android.sysprop.PccProperties;
-import android.util.Log;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.privatecompute.AuditModeContext.Injector;
 import java.io.File;
-import java.util.Arrays;
-import java.util.Comparator;
 
 /**
  * Manages file names for audit log files. Exposes a single method {@link #getNextAuditLogFileName}

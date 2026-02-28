@@ -40,9 +40,11 @@ public class AuditLogFileManagerTest {
 
     private static final int MAX_FILES = 10;
 
-    @Rule(order = 0) public final MockitoRule mockito = MockitoJUnit.rule();
+    @Rule(order = 0)
+    public final MockitoRule mockito = MockitoJUnit.rule();
 
-    @Rule(order = 1) public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
+    @Rule(order = 1)
+    public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
 
     @Mock private Injector mInjector;
 

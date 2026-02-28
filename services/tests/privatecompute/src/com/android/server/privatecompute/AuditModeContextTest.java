@@ -35,9 +35,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -61,9 +59,11 @@ public class AuditModeContextTest {
 
     private AuditModeContext mAuditModeContext;
 
-    @Rule(order = 0) public MockitoRule mMockitoRule = MockitoJUnit.rule();
+    @Rule(order = 0)
+    public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
-    @Rule(order = 1) public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
+    @Rule(order = 1)
+    public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
 
     @Mock private Injector mInjector;
 
@@ -322,9 +322,7 @@ public class AuditModeContextTest {
         PersistableBundle invalidBundle = getDeepNestedBundle101();
         AuditLogEntry entry = new AuditLogEntry(invalidBundle, 234L, TEST_PACKAGE_NAME, 123);
 
-        assertThrows(
-                SecurityException.class,
-                () -> mAuditModeContext.serializeAndWrite(entry));
+        assertThrows(SecurityException.class, () -> mAuditModeContext.serializeAndWrite(entry));
 
         mAuditModeContext.stopAuditing();
 

@@ -138,8 +138,6 @@ class AuditModeContext {
                 new Injector());
     }
 
-
-
     @VisibleForTesting
     static class Injector {
         /**
