@@ -152,9 +152,9 @@ public final class AllowlistRequest implements Parcelable {
         int hash = 0;
         TreeSet<String> treeSet = new TreeSet<>(bundle.keySet());
         for (String key : treeSet) {
-            Object val = bundle.get(key);
+            Object value = bundle.get(key);
             hash = 31 * hash + key.hashCode();
-            hash = 31 * hash + (val != null ? val.hashCode() : 0);
+            hash = 31 * hash + Objects.hashCode(value);
         }
 
         return hash;

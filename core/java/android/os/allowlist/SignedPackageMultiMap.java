@@ -28,6 +28,7 @@ import android.util.ArrayMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A Parcelable that is a map of {@link SignedPackage} to a list of {@link SignedPackage} in
@@ -83,6 +84,20 @@ public final class SignedPackageMultiMap implements Parcelable {
     @Override
     public int describeContents() {
         return 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SignedPackageMultiMap that = (SignedPackageMultiMap) o;
+
+        return Objects.equals(mMap, that.mMap);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(mMap);
     }
 
     public static final @NonNull Creator<SignedPackageMultiMap> CREATOR = new Creator<>() {
