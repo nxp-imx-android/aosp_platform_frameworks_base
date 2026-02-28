@@ -39,6 +39,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -464,7 +466,15 @@ fun RegionBox(
     val state = remember { RegionBoxState(minSizePx, density, initialRect) }
     val scrimColor = ScreenCaptureColors.scrimColor
     val pointerIcon = rememberPointerIcon(state)
+    val focusRequester = remember { FocusRequester() }
 
+    // Ensure the region box grabs focus as soon as a selection is made,
+    // allowing Enter/Spacebar to trigger the capture.
+    LaunchedEffect(state.rect) {
+        if (state.rect != null) {
+            focusRequester.requestFocus()
+        }
+    }
     fun notifyRegionSelected() {
         state.rect?.let { rect: Rect ->
             onRegionSelected(
@@ -489,6 +499,15 @@ fun RegionBox(
                     state.screenHeight = sizeInPixels.height.toFloat()
                 }
                 .pointerHoverIcon(pointerIcon)
+                .onKeyEvent { event ->
+                    val isActionKey = event.key == Key.Enter || event.key == Key.Spacebar
+                    if (isActionKey && event.type == KeyEventType.KeyDown && state.rect != null) {
+                        onCaptureClick()
+                        true
+                    } else {
+                        false
+                    }
+                }
                 .pointerInput(Unit) {
                     awaitPointerEventScope {
                         while (true) {
@@ -751,6 +770,8 @@ fun RegionBox(
                                 Box(
                                     modifier =
                                         Modifier.size(boxWidthDp, boxHeightDp)
+                                            .focusRequester(focusRequester)
+                                            .focusable()
                                             .border(
                                                 width = 2.dp,
                                                 color = MaterialTheme.colorScheme.primary,
