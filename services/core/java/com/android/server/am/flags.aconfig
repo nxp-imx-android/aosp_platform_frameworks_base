@@ -49,13 +49,6 @@ flag {
     is_fixed_read_only: true
 }
 
-flag {
-    name: "enable_dropbox_watchdog_headers"
-    namespace: "stability"
-    description: "Add watchdog-specific dropbox headers"
-    bug: "330682397"
-    is_fixed_read_only: true
-}
 
 flag {
     name: "push_global_state_to_oomadjuster"
