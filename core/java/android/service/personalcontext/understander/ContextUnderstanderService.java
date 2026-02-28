@@ -32,7 +32,6 @@ import android.os.Looper;
 import android.os.ParcelUuid;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.IOpCallback;
-import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.hint.HintFilter;
 import android.service.personalcontext.hint.PublishedContextHint;
@@ -63,14 +62,30 @@ import java.util.concurrent.Executor;
  * stopped if not utilized for some time. Services should start as rapidly as possible to minimize
  * latency in the Personal Context workflow.
  *
+ * <p>You must declare the service in the AndroidManifest of the app hosting the service with the
+ * {@link android.Manifest.permission#BIND_CONTEXT_COMPONENT_SERVICE} permission, and include an
+ * intent filter with the necessary action indicating that it is a {@link
+ * ContextUnderstanderService} (android.service.personalcontext.UnderstanderService).
+ *
+ * <p>For example:
+ *
+ * <pre>
+ *     &lt;service android:name=".ExampleContextUnderstanderService"
+ *             android:exported="true"
+ *             android:permission="android.permission.BIND_CONTEXT_COMPONENT_SERVICE"&gt;
+ *         &lt;intent-filter&gt;
+ *             &lt;action
+ *             android:name="android.service.personalcontext.UnderstanderService"
+ *             /&gt;
+ *     &lt;/service&gt;
+ * </pre>
+ *
  * @hide
  */
 @SystemApi
 @FlaggedApi(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
 public abstract class ContextUnderstanderService extends Service {
     private static final String TAG = "ContextUnderstanderSvc";
-
-    private PersonalContextManager mPersonalContextManager;
 
     private UUID mComponentId = null;
 
@@ -165,7 +180,6 @@ public abstract class ContextUnderstanderService extends Service {
      *
      * @param insight  {@link ContextInsight} that the user feedback is related to
      * @param feedback information about the requested feedback and user responses
-     * @see android.service.personalcontext.insight.interaction.FeedbackRequest
      */
     public void onHandleUserFeedback(@NonNull PublishedContextInsight insight,
             @NonNull Bundle feedback) {
