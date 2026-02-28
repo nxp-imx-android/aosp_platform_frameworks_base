@@ -225,6 +225,18 @@ public class InsightSurfaceClient implements AutoCloseable {
                     executeWithCallbacks(clientCallback ->
                             clientCallback.onSizeChanged(width, height));
                 }
+
+                @Override
+                public void onVisualizationError(
+                        @InsightSurfaceSessionException.ClientError int errorCode) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onVisualizationError: errorCode=" + errorCode);
+                    }
+                    executeWithCallbacks(clientCallback ->
+                            clientCallback.onError(
+                                    new InsightSurfaceSessionException(
+                                            errorCode, "failed to create a visualization")));
+                }
             };
 
     private InsightSurfaceClient(

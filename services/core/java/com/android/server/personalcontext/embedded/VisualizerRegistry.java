@@ -17,6 +17,7 @@
 package com.android.server.personalcontext.embedded;
 
 import static android.Manifest.permission.BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE;
+import static android.service.personalcontext.embedded.InsightSurfaceSessionException.ERROR_FAILED_TO_CREATE_SESSION;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -256,6 +257,8 @@ public class VisualizerRegistry {
             RenderToken renderToken,
             Iterator<VisualizerConnection> visualizers) {
         if (!visualizers.hasNext()) {
+            // Didn't find a visualizer that could produce a visualization.
+            client.onVisualizationError(ERROR_FAILED_TO_CREATE_SESSION);
             return;
         }
 
