@@ -59,6 +59,7 @@ import com.android.internal.logging.InstanceIdSequence
 import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
+import com.android.wm.shell.Flags
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.Flags.FLAG_FIX_BUBBLE_SWIPE_UP_GESTURE
@@ -68,6 +69,7 @@ import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.bubbles.Bubbles.BubbleExpandListener
+import com.android.wm.shell.bubbles.Bubbles.DISMISS_TASK_FINISHED
 import com.android.wm.shell.bubbles.Bubbles.DISMISS_USER_GESTURE
 import com.android.wm.shell.bubbles.Bubbles.SysuiProxy
 import com.android.wm.shell.bubbles.logging.BubbleLogger
@@ -964,6 +966,75 @@ class BubbleControllerTest {
 
         assertThat(layerView!!.visibility).isEqualTo(View.VISIBLE)
         verify(windowManager, never()).removeView(any())
+    }
+
+    @EnableFlags(Flags.FLAG_FIX_VERIFY_BUBBLE_TASK_ID_ON_REMOVAL)
+    @Test
+    fun removeBubble_withTaskId_taskIdsMatch_removeBubble() {
+        val bubble = createBubble("key", taskId = 123)
+        // Initialize the fake task view so we can set the task id
+        val bubbleTaskView =
+            bubble.getOrCreateBubbleTaskView(FakeBubbleTaskViewFactory(context, mainExecutor))
+        bubbleTaskView.listener.onTaskCreated(/* taskId= */ 123, COMPONENT)
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true,
+            )
+        }
+        bubble.taskView.taskInfo?.taskId = 123
+        assertThat(bubbleData.hasBubbles()).isTrue()
+        assertThat(bubble.taskId).isEqualTo(123)
+
+        getInstrumentation().runOnMainSync {
+            bubbleController.removeBubble("key", 123, DISMISS_TASK_FINISHED)
+        }
+        assertThat(bubbleData.hasBubbles()).isFalse()
+    }
+
+    @EnableFlags(Flags.FLAG_FIX_VERIFY_BUBBLE_TASK_ID_ON_REMOVAL)
+    @Test
+    fun removeBubble_withTaskId_bubbleHasNoTaskId_removeBubble() {
+        val bubble = createBubble("key", taskId = -1)
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true,
+            )
+        }
+        assertThat(bubbleData.hasBubbles()).isTrue()
+        assertThat(bubble.taskId).isEqualTo(-1)
+
+        getInstrumentation().runOnMainSync {
+            bubbleController.removeBubble("key", 123, DISMISS_TASK_FINISHED)
+        }
+        assertThat(bubbleData.hasBubbles()).isFalse()
+    }
+
+    @EnableFlags(Flags.FLAG_FIX_VERIFY_BUBBLE_TASK_ID_ON_REMOVAL)
+    @Test
+    fun removeBubble_withTaskId_differentTaskIds_doesNotRemoveBubble() {
+        val bubble = createBubble("key", taskId = 123)
+        // Initialize the fake task view so we can set the task id
+        val bubbleTaskView =
+            bubble.getOrCreateBubbleTaskView(FakeBubbleTaskViewFactory(context, mainExecutor))
+        bubbleTaskView.listener.onTaskCreated(/* taskId= */ 123, COMPONENT)
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true,
+            )
+        }
+        assertThat(bubbleData.hasBubbles()).isTrue()
+        assertThat(bubble.taskId).isEqualTo(123)
+
+        getInstrumentation().runOnMainSync {
+            bubbleController.removeBubble("key", 456, DISMISS_TASK_FINISHED)
+        }
+        assertThat(bubbleData.hasBubbles()).isTrue()
     }
 
     @Test
