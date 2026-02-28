@@ -81,6 +81,7 @@ import java.util.function.BiConsumer;
  * Current known shared libraries on the device.
  */
 public final class SharedLibrariesImpl implements SharedLibrariesRead, Watchable, Snappable {
+    private static final String TAG = "SharedLibrariesImpl";
     private static final boolean DEBUG_SHARED_LIBRARIES = false;
 
     private static final String LIBRARY_TYPE_SDK = "sdk";
@@ -333,6 +334,8 @@ public final class SharedLibrariesImpl implements SharedLibrariesRead, Watchable
     boolean pruneUnusedStaticSharedLibraries(@NonNull Computer computer, long neededSpace,
             long maxCachePeriod)
             throws IOException {
+        Slog.i(TAG, "Start pruneUnusedStaticSharedLibraries for neededSpace: " + neededSpace
+                + " maxCachePeriod: " + maxCachePeriod);
         final StorageManager storage = mInjector.getSystemService(StorageManager.class);
         final File volume = storage.findPathForUuid(StorageManager.UUID_PRIVATE_INTERNAL);
 
@@ -368,6 +371,9 @@ public final class SharedLibrariesImpl implements SharedLibrariesRead, Watchable
                     continue;
                 }
 
+                Slog.i(TAG, "pruning candidate: lib=" + libInfo.getName()
+                        + " version=" + libInfo.getVersion()
+                        + " pkg=" + ps.getPkg().getPackageName());
                 packagesToDelete.add(new VersionedPackage(ps.getPkg().getPackageName(),
                         libInfo.getDeclaringPackage().getLongVersionCode()));
             }
@@ -376,6 +382,7 @@ public final class SharedLibrariesImpl implements SharedLibrariesRead, Watchable
         final int packageCount = packagesToDelete.size();
         for (int i = 0; i < packageCount; i++) {
             final VersionedPackage pkgToDelete = packagesToDelete.get(i);
+            Slog.i(TAG, "attempting to delete: " + pkgToDelete.getPackageName());
             // Delete the package synchronously (will fail of the lib used for any user).
             if (mDeletePackageHelper.deletePackageX(pkgToDelete.getPackageName(),
                     pkgToDelete.getLongVersionCode(), UserHandle.USER_SYSTEM,
