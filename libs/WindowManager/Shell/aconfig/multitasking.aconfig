@@ -353,6 +353,16 @@ flag {
 }
 
 flag {
+    name: "fix_bubble_bar_not_collapsed_if_animating_bubble"
+    namespace: "multitasking"
+    description: "Fixes bubble bar collapse failure when setExpandedFromSysui() is called while a bubble is animating."
+    bug: "487678424"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_bubble_notification_showing_in_lock_screen"
     namespace: "multitasking"
     description: "Fixes a bug where bubble notification persist on lock screen"
