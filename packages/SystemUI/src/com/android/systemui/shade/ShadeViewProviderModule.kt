@@ -37,6 +37,7 @@ import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
 import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.scene.ui.view.SceneJankMonitor
+import com.android.systemui.scene.ui.view.SceneTransitionLatencyMonitor
 import com.android.systemui.scene.ui.view.SceneWindowRootView
 import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler
@@ -82,6 +83,7 @@ abstract class ShadeViewProviderModule {
             layoutInsetController: NotificationInsetsController,
             sceneDataSourceDelegator: Provider<SceneDataSourceDelegator>,
             sceneJankMonitorFactory: SceneJankMonitor.Factory,
+            sceneTransitionLatencyMonitor: SceneTransitionLatencyMonitor,
             windowRootViewKeyEventHandler: WindowRootViewKeyEventHandler,
             tintedIconManagerFactory: TintedIconManager.Factory,
             authRippleViewModelFactory: AuthRippleScrimViewModel.Factory,
@@ -100,6 +102,7 @@ abstract class ShadeViewProviderModule {
                     layoutInsetController = layoutInsetController,
                     sceneDataSourceDelegator = sceneDataSourceDelegator.get(),
                     sceneJankMonitorFactory = sceneJankMonitorFactory,
+                    sceneTransitionLatencyMonitor = sceneTransitionLatencyMonitor,
                     windowRootViewKeyEventHandler = windowRootViewKeyEventHandler,
                     tintedIconManagerFactory = tintedIconManagerFactory,
                     authRippleViewModelFactory = authRippleViewModelFactory,

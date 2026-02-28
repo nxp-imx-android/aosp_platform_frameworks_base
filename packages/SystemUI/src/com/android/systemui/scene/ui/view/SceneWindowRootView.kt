@@ -33,6 +33,7 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
         layoutInsetController: LayoutInsetsController,
         sceneDataSourceDelegator: SceneDataSourceDelegator,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
+        sceneTransitionLatencyMonitor: SceneTransitionLatencyMonitor,
         windowRootViewKeyEventHandler: WindowRootViewKeyEventHandler,
         tintedIconManagerFactory: TintedIconManager.Factory,
         authRippleViewModelFactory: AuthRippleScrimViewModel.Factory,
@@ -54,6 +55,7 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
             },
             dataSourceDelegator = sceneDataSourceDelegator,
             sceneJankMonitorFactory = sceneJankMonitorFactory,
+            sceneTransitionLatencyMonitor = sceneTransitionLatencyMonitor,
             tintedIconManagerFactory = tintedIconManagerFactory,
             authRippleViewModelFactory = authRippleViewModelFactory,
         )

@@ -62,6 +62,7 @@ import com.android.systemui.ribbon.ui.composable.BottomRightCornerRibbon
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
 import com.android.systemui.scene.ui.view.SceneJankMonitor
+import com.android.systemui.scene.ui.view.SceneTransitionLatencyMonitor
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.shade.ui.composable.OverlayShade
 import kotlinx.coroutines.CoroutineScope
@@ -98,6 +99,7 @@ fun SceneContainer(
     transitionsBuilder: SceneContainerTransitionsBuilder,
     dataSourceDelegator: SceneDataSourceDelegator,
     sceneJankMonitorFactory: SceneJankMonitor.Factory,
+    sceneTransitionLatencyMonitor: SceneTransitionLatencyMonitor,
     onTransitionStart:
         (transition: TransitionState.Transition, animationScope: CoroutineScope) -> Unit,
     onSnap: (idle: TransitionState.Idle) -> Unit,
@@ -113,6 +115,7 @@ fun SceneContainer(
             transitionsBuilder = transitionsBuilder,
             dataSourceDelegator = dataSourceDelegator,
             sceneJankMonitorFactory = sceneJankMonitorFactory,
+            sceneTransitionLatencyMonitor = sceneTransitionLatencyMonitor,
             onTransitionStart = onTransitionStart,
             onSnap = onSnap,
             modifier = modifier,
@@ -130,6 +133,7 @@ private fun InternalSceneContainer(
     transitionsBuilder: SceneContainerTransitionsBuilder,
     dataSourceDelegator: SceneDataSourceDelegator,
     sceneJankMonitorFactory: SceneJankMonitor.Factory,
+    sceneTransitionLatencyMonitor: SceneTransitionLatencyMonitor,
     onTransitionStart:
         (transition: TransitionState.Transition, animationScope: CoroutineScope) -> Unit,
     onSnap: (idle: TransitionState.Idle) -> Unit,
@@ -183,6 +187,7 @@ private fun InternalSceneContainer(
                     cuj = transition.cuj,
                     cujTag = transition.cujTag,
                 )
+                sceneTransitionLatencyMonitor.onTransitionStart(transition)
             },
             onTransitionEnd = { transition ->
                 sceneJankMonitor.onTransitionEnd(
