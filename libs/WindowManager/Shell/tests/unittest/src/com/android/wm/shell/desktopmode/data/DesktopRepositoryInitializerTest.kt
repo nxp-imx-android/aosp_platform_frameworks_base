@@ -61,7 +61,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.spy
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -225,9 +224,8 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             whenever(persistentRepository.readDesktop(USER_ID_1, DESKTOP_ID_2)).thenReturn(desktop2)
 
             // Make [DESKTOP_ID_2] re-creation fail.
-            val testDeskRootHelper = TestDeskRootHelper(
-                deskIdsToFailRecreation = listOf(DESKTOP_ID_2)
-            )
+            val testDeskRootHelper =
+                TestDeskRootHelper(deskIdsToFailRecreation = listOf(DESKTOP_ID_2))
             repositoryInitializer.deskRootHelper = testDeskRootHelper
 
             repositoryInitializer.initialize(desktopUserRepositories)
@@ -263,7 +261,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun initWithPersistence_persistedExternalDisplay_addedCorrectly() =
+    fun initWithPersistence_persistedExternalDisplay_restoredToDefaultDisplayAndPreserved() =
         runTest(StandardTestDispatcher()) {
             val mockDisplay = mock<Display>()
             desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
@@ -277,12 +275,16 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertRestoredDeskIds(
-                deskRootHelper,
-                USER_ID_1,
-                SECOND_DISPLAY_ON_REBOOT,
-                listOf(DESKTOP_ID_4),
-            )
+            assertRestoredDeskIds(deskRootHelper, USER_ID_1, SECOND_DISPLAY_ON_REBOOT, listOf())
+            assertRestoredDeskIds(deskRootHelper, USER_ID_1, DEFAULT_DISPLAY, listOf(DESKTOP_ID_4))
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .removePreservedDisplay(UNIQUE_DISPLAY_ID)
+                        ?.orderedDesks
+                        ?.map { desk -> desk.deskId }
+                )
+                .containsExactly(deskRootHelper.getRecreatedDeskId(DESKTOP_ID_4))
             assertRestoredDeskActiveTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_4, listOf(7, 8))
         }
 
@@ -304,15 +306,10 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             repositoryInitializer.initialize(desktopUserRepositories)
 
             // The transient desk is removed from the repository.
-            assertRestoredDeskIds(
-                deskRootHelper,
-                USER_ID_1,
-                DEFAULT_DISPLAY,
-                listOf()
-            )
+            assertRestoredDeskIds(deskRootHelper, USER_ID_1, DEFAULT_DISPLAY, listOf())
             assertRestoredDeskActiveTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_4, listOf())
             // The transient desk was preserved again.
-             val recreatedDeskId = deskRootHelper.getRecreatedDeskId(DESKTOP_ID_4)
+            val recreatedDeskId = deskRootHelper.getRecreatedDeskId(DESKTOP_ID_4)
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
@@ -345,18 +342,8 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertRestoredDeskIds(
-                deskRootHelper,
-                USER_ID_1,
-                DEFAULT_DISPLAY,
-                listOf(DESKTOP_ID_4)
-            )
-            assertRestoredDeskActiveTasks(
-                deskRootHelper,
-                USER_ID_1,
-                DESKTOP_ID_4,
-                listOf(7, 8),
-            )
+            assertRestoredDeskIds(deskRootHelper, USER_ID_1, DEFAULT_DISPLAY, listOf(DESKTOP_ID_4))
+            assertRestoredDeskActiveTasks(deskRootHelper, USER_ID_1, DESKTOP_ID_4, listOf(7, 8))
             val recreatedDeskId = deskRootHelper.getRecreatedDeskId(DESKTOP_ID_4)
             assertThat(
                     desktopUserRepositories
@@ -370,7 +357,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun initWithPersistence_preservedDisplayPresent_initializesAsDesk() =
+    fun initWithPersistence_preservedDisplayPresent_deskPreservedAgain() =
         runTest(StandardTestDispatcher()) {
             desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
             whenever(persistentRepository.getUserDesktopRepositoryMap())
@@ -385,29 +372,23 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            assertRestoredDeskIds(
-                deskRootHelper,
-                USER_ID_1,
-                SECOND_DISPLAY_ON_REBOOT,
-                listOf(DESKTOP_ID_4),
-            )
-            assertRestoredDeskActiveTasks(
-                deskRootHelper,
-                USER_ID_1,
-                DESKTOP_ID_4,
-                listOf(7, 8),
-            )
+            // The desk is not restored on either display
+            assertRestoredDeskIds(deskRootHelper, USER_ID_1, DEFAULT_DISPLAY, listOf())
+            assertRestoredDeskIds(deskRootHelper, USER_ID_1, SECOND_DISPLAY_ON_REBOOT, listOf())
+            // Instead, it is preserved again.
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
                         .removePreservedDisplay(UNIQUE_DISPLAY_ID)
+                        ?.orderedDesks
+                        ?.map { desk -> desk.deskId }
                 )
-                .isNull()
+                .containsExactly(deskRootHelper.getRecreatedDeskId(DESKTOP_ID_4))
         }
 
     @Test
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun initWithPersistence_preservedDisplayNotPresent_preservedAgain() =
+    fun initWithPersistence_preservedDisplayNotPresent_deskPreservedAgain() =
         runTest(StandardTestDispatcher()) {
             desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
             whenever(persistentRepository.getUserDesktopRepositoryMap())
@@ -419,20 +400,9 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            // The preserved desk isn't restored.
-            assertRestoredDeskIds(
-                deskRootHelper,
-                USER_ID_1,
-                DEFAULT_DISPLAY,
-                listOf(),
-            )
-            assertRestoredDeskActiveTasks(
-                deskRootHelper,
-                USER_ID_1,
-                DESKTOP_ID_4,
-                listOf(),
-            )
-            // The preserved desk was preserved again.
+            // The preserved desk is not restored.
+            assertRestoredDeskIds(deskRootHelper, USER_ID_1, DEFAULT_DISPLAY, listOf())
+            // Instead, the preserved desk is preserved again.
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
@@ -574,7 +544,6 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         deskRootHelper.reset()
     }
 
-
     private fun assertRestoredDeskIds(
         deskRootHelper: TestDeskRootHelper,
         userId: Int,
@@ -582,7 +551,9 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         originalDeskIds: List<Int>,
     ) {
         assertThat(desktopUserRepositories.getProfile(userId).getDeskIds(displayId))
-            .containsExactlyElementsIn(originalDeskIds.map { deskRootHelper.getRecreatedDeskId(it) })
+            .containsExactlyElementsIn(
+                originalDeskIds.map { deskRootHelper.getRecreatedDeskId(it) }
+            )
     }
 
     /**
@@ -596,16 +567,12 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
         taskIds: List<Int>,
     ) {
         val tasksInOriginalDesk =
-            desktopUserRepositories
-                .getProfile(userId)
-                .getActiveTaskIdsInDesk(originalDeskId)
+            desktopUserRepositories.getProfile(userId).getActiveTaskIdsInDesk(originalDeskId)
         assertThat(tasksInOriginalDesk).isEmpty()
 
         val recreatedDeskId = deskRootHelper.getRecreatedDeskId(originalDeskId)
         val tasksInRestoredDesk =
-            desktopUserRepositories
-                .getProfile(userId)
-                .getActiveTaskIdsInDesk(recreatedDeskId)
+            desktopUserRepositories.getProfile(userId).getActiveTaskIdsInDesk(recreatedDeskId)
         assertThat(tasksInRestoredDesk).containsExactlyElementsIn(taskIds).inOrder()
     }
 
@@ -651,9 +618,7 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
         val recreatedDeskId = deskRootHelper.getRecreatedDeskId(originalDeskId)
         val tasksInRestoredDesk =
-            desktopUserRepositories
-                .getProfile(userId)
-                .getMinimizedTaskIdsInDesk(recreatedDeskId)
+            desktopUserRepositories.getProfile(userId).getMinimizedTaskIdsInDesk(recreatedDeskId)
         assertThat(tasksInRestoredDesk).containsExactlyElementsIn(taskIds).inOrder()
     }
 
@@ -807,9 +772,8 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
      *
      * If the original desk id is in [deskIdsToFailRecreation], desk root recreation will fail.
      */
-    private class TestDeskRootHelper(
-        private val deskIdsToFailRecreation: List<Int> = emptyList(),
-    ) : DesktopRepositoryInitializer.DeskRootHelper {
+    private class TestDeskRootHelper(private val deskIdsToFailRecreation: List<Int> = emptyList()) :
+        DesktopRepositoryInitializer.DeskRootHelper {
         private val DESKTOP_ID_RECREATION_OFFSET = 1000
         private val removedDeskRoots =
             mutableListOf<DesktopRepositoryInitializer.DeskRootHelper.DeskRootRemovalRequest>()
