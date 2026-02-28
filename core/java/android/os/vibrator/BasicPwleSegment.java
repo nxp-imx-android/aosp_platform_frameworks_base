@@ -50,12 +50,26 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
     private final long mDuration;
 
     BasicPwleSegment(@NonNull Parcel in) {
-        this(in.readFloat(), in.readFloat(), in.readFloat(), in.readFloat(), in.readLong());
+        this(in.readFloat(), in.readFloat(), in.readFloat(), in.readFloat(), in.readLong(),
+             in.readLong());
     }
 
     /** @hide */
     public BasicPwleSegment(float startIntensity, float endIntensity, float startSharpness,
             float endSharpness, long duration) {
+        this(startIntensity, endIntensity, startSharpness, endSharpness, duration, -1);
+    }
+
+    /**
+     * @param startTimeMillis The time in milliseconds at which this segment should start within the
+     *                        overall {@link VibrationEffect}. The default value is -1. When the
+     *                        value is negative, it means the segment is not the first segment of an
+     *                        atomic event, it is an intermediate segment.
+     * @hide
+     */
+    public BasicPwleSegment(float startIntensity, float endIntensity, float startSharpness,
+            float endSharpness, long duration, long startTimeMillis) {
+        super(startTimeMillis);
         mStartIntensity = startIntensity;
         mEndIntensity = endIntensity;
         mStartSharpness = startSharpness;
@@ -94,7 +108,8 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
                 && Float.compare(mEndIntensity, other.mEndIntensity) == 0
                 && Float.compare(mStartSharpness, other.mStartSharpness) == 0
                 && Float.compare(mEndSharpness, other.mEndSharpness) == 0
-                && mDuration == other.mDuration;
+                && mDuration == other.mDuration
+                && getStartTimeMillis() == other.getStartTimeMillis();
     }
 
     /** @hide */
@@ -138,7 +153,8 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
         }
         return new BasicPwleSegment(newStartIntensity, newEndIntensity, mStartSharpness,
                 mEndSharpness,
-                mDuration);
+                mDuration,
+                getStartTimeMillis());
     }
 
     /** @hide */
@@ -153,7 +169,8 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
         }
         return new BasicPwleSegment(newStartIntensity, newEndIntensity, mStartSharpness,
                 mEndSharpness,
-                mDuration);
+                mDuration,
+                getStartTimeMillis());
     }
 
     /** @hide */
@@ -163,10 +180,18 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
         return this;
     }
 
+    /** @hide */
+    @NonNull
+    @Override
+    public BasicPwleSegment applyStartTime(long startTimeMillis) {
+        return new BasicPwleSegment(mStartIntensity, mEndIntensity, mStartSharpness, mEndSharpness,
+                mDuration, startTimeMillis);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(mStartIntensity, mEndIntensity, mStartSharpness, mEndSharpness,
-                mDuration);
+                mDuration, getStartTimeMillis());
     }
 
     @Override
@@ -176,18 +201,20 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
                 + ", startSharpness=" + mStartSharpness
                 + ", endSharpness=" + mEndSharpness
                 + ", duration=" + mDuration
+                + (getStartTimeMillis() > 0 ? ", startTimeMillis=" + getStartTimeMillis() : "")
                 + "}";
     }
 
     /** @hide */
     @Override
     public String toDebugString() {
-        return String.format(Locale.US, "Pwle=%dms(intensity=%.2f @ %.2f to %.2f @ %.2f)",
+        return String.format(Locale.US, "BasicPwle=%dms(intensity=%.2f @ %.2f to %.2f @ %.2f%s)",
                 mDuration,
                 mStartIntensity,
                 mStartSharpness,
                 mEndIntensity,
-                mEndSharpness);
+                mEndSharpness,
+                ", startTime=" + getStartTimeMillis());
     }
 
     @Override
@@ -203,6 +230,7 @@ public final class BasicPwleSegment extends VibrationEffectSegment {
         dest.writeFloat(mStartSharpness);
         dest.writeFloat(mEndSharpness);
         dest.writeLong(mDuration);
+        dest.writeLong(getStartTimeMillis());
     }
 
     @NonNull

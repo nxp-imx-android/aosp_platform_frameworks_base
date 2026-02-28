@@ -49,8 +49,34 @@ public abstract class VibrationEffectSegment implements Parcelable {
     static final int PARCEL_TOKEN_PWLE = 4;
     static final int PARCEL_TOKEN_BASIC_PWLE = 5;
 
+    private final long mStartTimeMillis;
+
     /** Prevent subclassing from outside of this package */
     VibrationEffectSegment() {
+        this(/* startTimeMillis= */ -1);
+    }
+
+    /**
+     * Prevent subclassing from outside of this package
+     *
+     * <p>The default value of startTimeMillis is -1. When the value is negative, it means the
+     * segment is not the first segment of an atomic event, it is an intermediate segment.
+     */
+    VibrationEffectSegment(long startTimeMillis) {
+        mStartTimeMillis = startTimeMillis;
+    }
+
+    /**
+     * The start time of the segment in the composition, in milliseconds.
+     *
+     * <p> This is used to determine the start of the vibration relative to the start of the
+     * composition. If the value is negative, the segment should be played immediately after the
+     * previous segment.
+     *
+     * @hide
+     */
+    public long getStartTimeMillis() {
+        return mStartTimeMillis;
     }
 
     /**
@@ -144,6 +170,23 @@ public abstract class VibrationEffectSegment implements Parcelable {
      */
     @NonNull
     public abstract <T extends VibrationEffectSegment> T applyEffectStrength(int effectStrength);
+
+    /**
+     * Applies given start time to the segment and returns a new segment with the applied start
+     * time.
+     *
+     * <p>It throws an exception if the segment doesn't support it, i.e. when the segment is a
+     * legacy PrimitiveSegment.
+     *
+     * <p>The default value of startTimeMillis is -1. When the value is negative, it means the
+     * segment is not the first segment of an atomic event, it is an intermediate segment. When the
+     * value is non-negative, it means the segment is the first segment of an atomic event, it is
+     * a leading segment.
+     *
+     * @hide
+     */
+    @NonNull
+    public abstract <T extends VibrationEffectSegment> T applyStartTime(long startTimeMillis);
 
     /**
      * Returns a compact version of the {@link #toString()} result for debugging purposes.

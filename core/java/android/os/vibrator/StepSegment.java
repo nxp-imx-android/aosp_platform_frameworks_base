@@ -44,11 +44,35 @@ public final class StepSegment extends VibrationEffectSegment {
     private final int mDuration;
 
     StepSegment(@NonNull Parcel in) {
-        this(in.readFloat(), in.readInt());
+        this(in.readFloat(), in.readInt(), in.readLong());
     }
 
-    /** @hide */
+    /**
+     * Create a step segment.
+     *
+     * @param amplitude The vibration amplitude, a value between 0 and 1 inclusive, or
+     *                  {@link VibrationEffect#DEFAULT_AMPLITUDE}.
+     * @param duration The duration of the segment in milliseconds. Must be positive.
+     * @hide
+     */
     public StepSegment(float amplitude, int duration) {
+        this(amplitude, duration, -1);
+    }
+
+    /**
+     * Create a step segment.
+     *
+     * @param amplitude The vibration amplitude, a value between 0 and 1 inclusive, or
+     *                  {@link VibrationEffect#DEFAULT_AMPLITUDE}.
+     * @param duration The duration of the segment in milliseconds. Must be positive.
+     * @param startTimeMillis The time in milliseconds at which this segment should start within the
+     *                        overall {@link VibrationEffect}. The default value is -1. When the
+     *                        value is negative, it means the segment is not the first segment of an
+     *                        atomic event, it is an intermediate segment.
+     * @hide
+     */
+    public StepSegment(float amplitude, int duration, long startTimeMillis) {
+        super(startTimeMillis);
         mAmplitude = amplitude;
         mDuration = duration;
     }
@@ -60,7 +84,8 @@ public final class StepSegment extends VibrationEffectSegment {
         }
         StepSegment other = (StepSegment) o;
         return Float.compare(mAmplitude, other.mAmplitude) == 0
-                && mDuration == other.mDuration;
+                && mDuration == other.mDuration
+                && getStartTimeMillis() == other.getStartTimeMillis();
     }
 
     public float getAmplitude() {
@@ -106,7 +131,9 @@ public final class StepSegment extends VibrationEffectSegment {
         if (Float.compare(mAmplitude, VibrationEffect.DEFAULT_AMPLITUDE) != 0) {
             return this;
         }
-        return new StepSegment((float) defaultAmplitude / VibrationEffect.MAX_AMPLITUDE, mDuration);
+        return new StepSegment((float) defaultAmplitude / VibrationEffect.MAX_AMPLITUDE,
+                mDuration,
+                getStartTimeMillis());
     }
 
     /** @hide */
@@ -120,7 +147,7 @@ public final class StepSegment extends VibrationEffectSegment {
         if (Float.compare(newAmplitude, mAmplitude) == 0) {
             return this;
         }
-        return new StepSegment(newAmplitude, mDuration);
+        return new StepSegment(newAmplitude, mDuration, getStartTimeMillis());
     }
 
     /** @hide */
@@ -134,7 +161,7 @@ public final class StepSegment extends VibrationEffectSegment {
         if (Float.compare(newAmplitude, mAmplitude) == 0) {
             return this;
         }
-        return new StepSegment(newAmplitude, mDuration);
+        return new StepSegment(newAmplitude, mDuration, getStartTimeMillis());
     }
 
     /** @hide */
@@ -144,22 +171,31 @@ public final class StepSegment extends VibrationEffectSegment {
         return this;
     }
 
+    /** @hide */
+    @NonNull
+    @Override
+    public StepSegment applyStartTime(long startTimeMillis) {
+        return new StepSegment(mAmplitude, mDuration, startTimeMillis);
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(mAmplitude, mDuration);
+        return Objects.hash(mAmplitude, mDuration, getStartTimeMillis());
     }
 
     @Override
     public String toString() {
         return "Step{amplitude=" + mAmplitude
                 + ", duration=" + mDuration
+                + (getStartTimeMillis() > 0 ? ", startTimeMillis=" + getStartTimeMillis() : "")
                 + "}";
     }
 
     /** @hide */
     @Override
     public String toDebugString() {
-        return String.format("Step=%dms(amplitude=%.2f)", mDuration, mAmplitude);
+        return String.format("Step=%dms(amplitude=%.2f%s)", mDuration, mAmplitude,
+                ", startTime=" + getStartTimeMillis());
     }
 
     @Override
@@ -172,6 +208,7 @@ public final class StepSegment extends VibrationEffectSegment {
         out.writeInt(PARCEL_TOKEN_STEP);
         out.writeFloat(mAmplitude);
         out.writeInt(mDuration);
+        out.writeLong(getStartTimeMillis());
     }
 
     @NonNull
