@@ -117,7 +117,7 @@ public class SplitScreenUtils {
 
     /** Returns true if the task is valid for split screen. */
     public static boolean isValidToSplit(ActivityManager.RunningTaskInfo taskInfo) {
-        return taskInfo != null && taskInfo.supportsMultiWindow
+        return taskInfo != null && taskInfo.supportsMultiWindowWithoutConstraints
                 && ArrayUtils.contains(CONTROLLED_ACTIVITY_TYPES, taskInfo.getActivityType())
                 && ArrayUtils.contains(CONTROLLED_WINDOWING_MODES, taskInfo.getWindowingMode());
     }

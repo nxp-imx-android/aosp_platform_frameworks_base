@@ -3492,6 +3492,8 @@ class Task extends TaskFragment {
         info.lastActiveTime = lastActiveTime;
         info.taskDescription = new ActivityManager.TaskDescription(getTaskDescription());
         info.supportsMultiWindow = supportsMultiWindowInDisplayArea(tda);
+        info.supportsMultiWindowWithoutConstraints =
+                supportsMultiWindowWithoutConstraintsInDisplayArea(tda);
         info.configuration.setTo(getConfiguration());
         // Update to the task's current activity type and windowing mode which may differ from the
         // window configuration
