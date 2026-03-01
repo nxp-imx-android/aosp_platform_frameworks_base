@@ -130,8 +130,8 @@ import java.util.List;
  * <h3>Resource Management</h3>
  *
  * <p>The system maintains a limited cache of trust tokens, which are fetched by a {@link
- * android.security.trusttoken.TrustTokenService}. Fetching new trust tokens can consume
- * network and battery resources.
+ * android.security.trusttoken.TrustTokenService}. Fetching new trust tokens can consume network and
+ * battery resources.
  *
  * <p>For {@link TrustTokenIdentitySet}s, clients <b>should</b> declare their needs ahead of time
  * using {@link #updatePreparedIdentities(List)}. This allows the system to efficiently manage the
@@ -185,14 +185,17 @@ public class TrustTokenManager {
      * battery to refresh the cache. Therefore, clients should only request trust tokens that they
      * will use imminently.
      *
-     * <p>This operation requires the {@link android.Manifest.permission#SIGN_WITH_TRUST_TOKEN}
-     *  and the {@link android.Manifest.permission#ACQUIRE_VERIFIED_DEVICE_TOKEN} permissions.
+     * <p>This operation requires the {@link android.Manifest.permission#SIGN_WITH_TRUST_TOKEN} and
+     * the {@link android.Manifest.permission#ACQUIRE_VERIFIED_DEVICE_TOKEN} permissions.
      *
      * @param challenge the challenge from the verifier.
+     * @throws TrustTokenUnavailableException if there's no token.
+     * @throws TrustAnchorUnavailableException if there's no trust anchor.
      * @return a token with the challenge response.
      */
     // TODO(b/418280383): Add @RequiresPermission
-    public TrustTokenWithChallenge acquireVerifiedDeviceToken(byte[] challenge) {
+    public TrustTokenWithChallenge acquireVerifiedDeviceToken(byte[] challenge)
+            throws TrustTokenUnavailableException, TrustAnchorUnavailableException {
         try {
             return mService.acquireVerifiedDeviceToken(challenge);
         } catch (RemoteException e) {
@@ -252,6 +255,7 @@ public class TrustTokenManager {
      * corresponding to the trust token's public key. That signature is provided as the {@code
      * remoteResponse}.
      *
+     * @throw TrustAnchorUnavailableException if there's no trust anchor.
      * @return a {@link VerificationResult} code.
      */
     @CheckResult
@@ -259,7 +263,8 @@ public class TrustTokenManager {
     public int verifyTrustToken(
             @NonNull TrustToken token,
             @NonNull byte[] remoteResponse,
-            @NonNull byte[] expectedChallenge) {
+            @NonNull byte[] expectedChallenge)
+            throws TrustTokenUnavailableException {
         try {
             return mService.verifyTrustTokenAndChallenge(token, remoteResponse, expectedChallenge);
         } catch (RemoteException e) {

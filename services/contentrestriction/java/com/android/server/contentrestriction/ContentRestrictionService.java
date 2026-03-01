@@ -28,18 +28,22 @@ import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresNoPermission;
 import android.annotation.UserIdInt;
 import android.app.contentrestriction.ClassifiableContent;
+import android.app.contentrestriction.ContentRestrictionManager;
 import android.app.contentrestriction.IContentRestrictionCallback;
 import android.app.contentrestriction.IContentRestrictionManager;
 import android.app.contentrestriction.IContentRestrictionAppService;
 import android.app.role.OnRoleHoldersChangedListener;
 import android.app.role.RoleManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.LocusId;
 import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
@@ -186,6 +190,14 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
 
         enforcePermission(BYPASS_ROLE_QUALIFICATION);
         mAllowContentRestrictionDevicePolicyBypassing = enabled;
+    }
+
+    @Override
+    @RequiresNoPermission
+    public Intent createContentRestrictedIntent(LocusId locusId) {
+        Intent intent = new Intent(Settings.ACTION_SHOW_RESTRICTED_CONTENT);
+        intent.putExtra(ContentRestrictionManager.EXTRA_CONTENT_LOCUS_ID, locusId);
+        return intent;
     }
 
     private void dispatchIsContentAllowedCallback(IContentRestrictionCallback callback,

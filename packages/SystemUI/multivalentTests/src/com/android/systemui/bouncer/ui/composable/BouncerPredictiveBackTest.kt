@@ -61,6 +61,7 @@ import com.android.systemui.scene.shared.model.sceneDataSourceDelegator
 import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.scene.ui.composable.SceneContainer
 import com.android.systemui.scene.ui.view.sceneJankMonitorFactory
+import com.android.systemui.scene.ui.view.sceneTransitionLatencyMonitor
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.testKosmos
 import kotlin.test.Ignore
@@ -175,6 +176,8 @@ class BouncerPredictiveBackTest : SysuiTestCase() {
                                 overlayByKey = mapOf(Overlays.Bouncer to bouncerScene),
                                 dataSourceDelegator = kosmos.sceneDataSourceDelegator,
                                 sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
+                                sceneTransitionLatencyMonitor =
+                                    kosmos.sceneTransitionLatencyMonitor,
                                 onTransitionStart = { _, _ -> },
                                 onSnap = {},
                             )

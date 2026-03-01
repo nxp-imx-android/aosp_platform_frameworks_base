@@ -125,8 +125,8 @@ constructor(
             }
         }
         var isShowingDeletionDialog: Boolean by rememberSaveable(Unit) { mutableStateOf(false) }
-        LaunchedEffect(isShowingDeletionDialog) {
-            if (isShowingDeletionDialog) {
+        LaunchedEffect(isShowingDeletionDialog, recording) {
+            if (isShowingDeletionDialog && recording is ScreenRecording.Saved) {
                 val shouldDeleteVideo =
                     postRecordingConfirmDeletion(
                         systemUIDialogFactory,
@@ -134,7 +134,11 @@ constructor(
                         actionsViewModel,
                     )
                 if (shouldDeleteVideo) {
-                    postRecordSnackbarDialogs.showVideoDeleted(recording.uri)
+                    postRecordSnackbarDialogs.showVideoDeleted(
+                        uri = recording.uri,
+                        thumbnail = recording.thumbnail,
+                        notificationId = videoViewModel.notificationId,
+                    )
                     finish()
                 }
                 isShowingDeletionDialog = false
@@ -170,7 +174,7 @@ constructor(
                             is ScreenRecording.Saved -> {
                                 var controlsVisible by remember { mutableStateOf(true) }
                                 videoPlayer.Content(
-                                    uri = recording.uri,
+                                    uri = currentRecording.uri,
                                     modifier =
                                         Modifier.fillMaxSize()
                                             .clickable(
@@ -276,10 +280,11 @@ constructor(
             "SmallScreenPostRecordingActivity#videoViewModel",
             listOf(shouldShowVideoSaved, intent.data),
         ) {
+            val notificationId = intent.getIntExtra(NOTIFICATION_ID, INVALID_NOTIFICATION_ID)
             if (shouldShowVideoSaved) {
-                waitingViewModelFactory.create(intent.data!!)
+                waitingViewModelFactory.create(intent.data!!, notificationId)
             } else {
-                immediateViewModelFactory.create(intent.data!!)
+                immediateViewModelFactory.create(intent.data!!, notificationId)
             }
         }
     }
@@ -287,16 +292,23 @@ constructor(
     companion object {
 
         private const val SHOULD_WAIT_FOR_VIDEO = "should_show_video_saved"
+        private const val NOTIFICATION_ID = "notification_id"
+        private const val INVALID_NOTIFICATION_ID = 0
 
         /** Immediately shows the recording by the [videoUri] */
-        fun showRecording(context: Context, videoUri: Uri): Intent = createIntent(context, videoUri)
+        fun showRecording(context: Context, videoUri: Uri, notificationId: Int): Intent =
+            createIntent(context, videoUri) { putExtra(NOTIFICATION_ID, notificationId) }
 
         /**
-         * Listens to the [ScreenRecordingsInteractor] for the recording status identified by the
-         * [videoUri]
+         * Listens to the
+         * [com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor]
+         * for the recording status identified by the [videoUri]
          */
-        fun waitForRecording(context: Context, videoUri: Uri): Intent =
-            createIntent(context, videoUri) { putExtra(SHOULD_WAIT_FOR_VIDEO, true) }
+        fun waitForRecording(context: Context, videoUri: Uri, notificationId: Int): Intent =
+            createIntent(context, videoUri) {
+                putExtra(SHOULD_WAIT_FOR_VIDEO, true)
+                putExtra(NOTIFICATION_ID, notificationId)
+            }
 
         private fun createIntent(
             context: Context,

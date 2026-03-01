@@ -56,6 +56,7 @@ import com.android.systemui.scene.transitionState
 import com.android.systemui.scene.ui.composable.GoneScene
 import com.android.systemui.scene.ui.composable.SceneContainer
 import com.android.systemui.scene.ui.view.sceneJankMonitorFactory
+import com.android.systemui.scene.ui.view.sceneTransitionLatencyMonitor
 import com.android.systemui.scene.ui.viewmodel.GoneUserActionsViewModel
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
@@ -325,6 +326,7 @@ class QuickSettingsShadeTransitionTest() : SysuiTestCase() {
                             mapOf(Overlays.QuickSettingsShade to quickSettingsShadeOverlay),
                         dataSourceDelegator = kosmos.sceneDataSourceDelegator,
                         sceneJankMonitorFactory = kosmos.sceneJankMonitorFactory,
+                        sceneTransitionLatencyMonitor = kosmos.sceneTransitionLatencyMonitor,
                         onTransitionStart = { _, _ -> },
                         onSnap = {},
                     )

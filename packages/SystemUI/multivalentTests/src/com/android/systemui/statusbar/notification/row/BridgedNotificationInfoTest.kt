@@ -50,14 +50,14 @@ import com.android.systemui.Dependency
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.testCase
+import com.android.systemui.notifications.content.icon.AppIconProvider
+import com.android.systemui.notifications.content.icon.mockAppIconProvider
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor
-import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
-import com.android.systemui.statusbar.notification.row.icon.mockAppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.mockNotificationIconStyleProvider
 import com.android.systemui.testKosmos
 import com.android.telecom.telecomManager

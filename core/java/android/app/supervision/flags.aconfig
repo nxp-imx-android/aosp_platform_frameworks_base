@@ -200,10 +200,20 @@ flag {
 }
 
 flag {
-     name: "app_binding_service_rework"
-     namespace: "supervision"
-     description: "Enables improvements to the AppBinding service connection lifecycle"
-     bug: "475606763"
+    name: "app_binding_service_rework"
+    namespace: "supervision"
+    description: "Enables improvements to the AppBinding service connection lifecycle"
+    bug: "475606763"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+ }
+
+flag {
+    name: "enable_timeout_in_dispatch_app_service_event"
+    namespace: "supervision"
+    description: "Enables timeout parameter in dispatchAppServiceEvent"
+    bug: "474075949"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

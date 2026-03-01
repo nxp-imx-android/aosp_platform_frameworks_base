@@ -27,13 +27,11 @@ interface NotificationInteractor {
 
     fun notifyProcessing(notificationId: Int, audioSource: ScreenRecordingAudioSource)
 
-    fun notifySaved(
-        notificationId: Int,
-        audioSource: ScreenRecordingAudioSource,
-        savedRecording: SavedRecording,
-    )
+    fun notifySaved(notificationId: Int, savedRecording: SavedRecording)
 
     fun notifyErrorSaving(notificationId: Int)
 
     fun notifyErrorStarting(notificationId: Int)
+
+    fun cancel(notificationId: Int)
 }

@@ -54,9 +54,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
@@ -254,6 +256,8 @@ private fun PowerMenuToggleButton(
                 },
         )
 
+    val stateDescription = stringResource(viewModel.stateDescriptionRes)
+
     Row(
         modifier =
             modifier
@@ -267,7 +271,11 @@ private fun PowerMenuToggleButton(
                     end = PowerMenuToggleButtonConstants.PaddingEnd,
                     top = PowerMenuToggleButtonConstants.PaddingVertical,
                     bottom = PowerMenuToggleButtonConstants.PaddingVertical,
-                ),
+                )
+                .semantics {
+                    this.stateDescription = stateDescription
+                    role = Role.Button
+                },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(PowerMenuToggleButtonConstants.IconSpacing),
     ) {

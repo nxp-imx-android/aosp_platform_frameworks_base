@@ -941,27 +941,34 @@ public class SupervisionService extends ISupervisionManager.Stub {
         abs.dispatchAppServiceEvent(
                 SupervisionAppServiceFinder.class,
                 userId,
-                connection -> {
-                    ISupervisionListener binder =
-                            (ISupervisionListener) connection.getServiceBinder();
-                    String target = connection.getPackageName();
-                    if (binder == null) {
-                        if (DEBUG) {
-                            Slogf.i(
-                                    SupervisionLog.TAG,
-                                    "Failed to connect to SupervisionAppService in %s",
-                                    target);
-                        }
-                    } else {
-                        if (DEBUG) {
-                            Slogf.i(
-                                    SupervisionLog.TAG,
-                                    "Connected to SupervisionAppService in %s",
-                                    target);
-                        }
-                        action.accept(binder);
-                    }
-                });
+                connection -> onAppServiceConnection(connection, action));
+    }
+
+    private void onAppServiceConnection(AppServiceConnection connection,
+            @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
+        if (Flags.enableTimeoutInDispatchAppServiceEvent() &&
+                (connection == null || !connection.isConnected())) {
+            return;
+        }
+        ISupervisionListener binder =
+                (ISupervisionListener) connection.getServiceBinder();
+        String target = connection.getPackageName();
+        if (binder == null) {
+            if (DEBUG) {
+                Slogf.i(
+                        SupervisionLog.TAG,
+                        "Failed to connect to SupervisionAppService in %s",
+                        target);
+            }
+        } else {
+            if (DEBUG) {
+                Slogf.i(
+                        SupervisionLog.TAG,
+                        "Connected to SupervisionAppService in %s",
+                        target);
+            }
+            action.accept(binder);
+        }
     }
 
     private void clearAllDevicePoliciesAndSuspendedPackages(@UserIdInt int userId) {

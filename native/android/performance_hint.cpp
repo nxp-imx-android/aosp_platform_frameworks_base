@@ -95,8 +95,6 @@ constexpr double kMaxLoadHintsPerInterval = 20;
 // Replenish rate is used for new rate limiting behavior, it currently replenishes at a rate of
 // 20 / 2s = 1 per 100us, which is the same limit as before, just enforced differently
 constexpr double kReplenishRate = kMaxLoadHintsPerInterval / static_cast<double>(kLoadHintInterval);
-constexpr int64_t kSendHintTimeout = kLoadHintInterval / kMaxLoadHintsPerInterval;
-bool kForceNewHintBehavior = false;
 
 std::optional<size_t> kReportBatchSizeCap =
         android::os::adpf_cap_max_batch_size() ? std::make_optional(50) : std::nullopt;
@@ -104,10 +102,6 @@ std::optional<size_t> kReportBatchSizeCap =
 template <class T>
 constexpr int32_t enum_size() {
     return static_cast<int32_t>(*(ndk::enum_range<T>().end() - 1)) + 1;
-}
-
-bool useNewLoadHintBehavior() {
-    return android::os::adpf_use_load_hints() || kForceNewHintBehavior;
 }
 
 // Shared lock for the whole PerformanceHintManager and sessions
@@ -636,18 +630,8 @@ int APerformanceHintSession::sendHints(std::vector<hal::SessionHint>& hints, int
     }
 
     std::scoped_lock lock(sHintMutex);
-    if (useNewLoadHintBehavior()) {
-        if (!APerformanceHintManager::getInstance()->canSendLoadHints(hints, now)) {
-            return EBUSY;
-        }
-    }
-    // keep old rate limiter behavior for legacy flag
-    else {
-        for (auto&& hint : hints) {
-            if (now < (mLastHintSentTimestamp[static_cast<int32_t>(hint)] + kSendHintTimeout)) {
-                return EBUSY;
-            }
-        }
+    if (!APerformanceHintManager::getInstance()->canSendLoadHints(hints, now)) {
+        return EBUSY;
     }
 
     if (!getFMQ().sendHints(mSessionConfig, hints, now)) {
@@ -661,10 +645,8 @@ int APerformanceHintSession::sendHints(std::vector<hal::SessionHint>& hints, int
         }
     }
 
-    if (!useNewLoadHintBehavior()) {
-        for (auto&& hint : hints) {
-            mLastHintSentTimestamp[static_cast<int32_t>(hint)] = now;
-        }
+    for (auto&& hint : hints) {
+        mLastHintSentTimestamp[static_cast<int32_t>(hint)] = now;
     }
 
     if (ATrace_isEnabled()) {
@@ -1416,10 +1398,6 @@ void APerformanceHint_getRateLimiterPropertiesForTesting(int32_t* maxLoadHintsPe
                                                          int64_t* loadHintInterval) {
     *maxLoadHintsPerInterval = kMaxLoadHintsPerInterval;
     *loadHintInterval = kLoadHintInterval;
-}
-
-void APerformanceHint_setUseNewLoadHintBehaviorForTesting(bool newBehavior) {
-    kForceNewHintBehavior = newBehavior;
 }
 
 void APerformanceHint_setReportBatchSizeCapForTesting(int cap) {

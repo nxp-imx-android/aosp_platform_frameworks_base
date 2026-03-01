@@ -3150,6 +3150,20 @@ public final class Settings {
     public static final String ACTION_PERSONAL_CONTEXT_SETTINGS =
             "android.settings.PERSONAL_CONTEXT_SETTINGS";
 
+    /**
+     * Activity Action: Show a dialog with a restricted content message.
+     * <p>
+     * Input: Nothing.
+     * <p>
+     * Output: Nothing.
+     *
+     * @hide
+     */
+    @FlaggedApi("android.app.contentrestriction.flags.enable_content_restriction_api")
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_SHOW_RESTRICTED_CONTENT =
+            "android.settings.SHOW_RESTRICTED_CONTENT";
+
     // End of Intent actions for Settings
 
     /**

@@ -49,20 +49,38 @@ import java.util.concurrent.Executor;
 /**
  * This is the base class for refiner services to implement, handling service details.
  *
- * <p>A refiner provides more information to the Personal Context system by adding
- * {@link ContextHint}s. These hints can be created with no basis on existing hints (e.g. a
- * device screenshot), or they can be derived from other hints (e.g. OCR text from a screenshot).
- * Generated hints will be forwarded to understanding components to be analyzed, and to other
- * refiners that may be interested in them.
+ * <p>A refiner provides more information to the Personal Context system by adding {@link
+ * ContextHint}s. These hints can be created with no basis on existing hints (e.g. a device
+ * screenshot), or they can be derived from other hints (e.g. OCR text from a screenshot). Generated
+ * hints will be forwarded to understanding components to be analyzed, and to other refiners that
+ * may be interested in them.
  *
- * <p>A refiner receives incoming hints based on the filter specified in
- * {@link #onInitializeFilter()}. While a refiner only processes a particular {@link ContextHint}
- * once, it may encounter {@link ContextHint} derived by another refiner from a previously seen
- * {@link ContextHint} if it matches the filter as well.
+ * <p>A refiner receives incoming hints based on the filter specified in {@link
+ * #onInitializeFilter()}. While a refiner only processes a particular {@link ContextHint} once, it
+ * may encounter {@link ContextHint} derived by another refiner from a previously seen {@link
+ * ContextHint} if it matches the filter as well.
  *
  * <p>The Personal Context service will manage the lifetime of this service, and this service may be
  * stopped if not utilized for some time. Services should start as rapidly as possible to minimize
  * latency in the Personal Context workflow.
+ *
+ * <p>You must declare the service in the AndroidManifest of the app hosting the service with the
+ * {@link android.Manifest.permission#BIND_CONTEXT_COMPONENT_SERVICE} permission, and include an
+ * intent filter with the necessary action indicating that it is a {@link HintRefinerService}
+ * (android.service.personalcontext.RefinerService).
+ *
+ * <p>For example:
+ *
+ * <pre>
+ *     &lt;service android:name=".ExampleHintRefinerService"
+ *             android:exported="true"
+ *             android:permission="android.permission.BIND_CONTEXT_COMPONENT_SERVICE"&gt;
+ *         &lt;intent-filter&gt;
+ *             &lt;action
+ *             android:name="android.service.personalcontext.RefinerService"
+ *             /&gt;
+ *     &lt;/service&gt;
+ * </pre>
  *
  * @hide
  */

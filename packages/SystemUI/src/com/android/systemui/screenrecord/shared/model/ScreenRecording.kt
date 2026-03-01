@@ -22,17 +22,22 @@ import android.net.Uri
 /** Models the screen recording */
 sealed interface ScreenRecording {
 
-    val uri: Uri
+    val uri: Uri?
+    val notificationId: Int
 
     /** Screen recording is being saved and will be available with the [uri]. */
-    data class Saving(override val uri: Uri) : ScreenRecording
+    data class Saving(override val uri: Uri, override val notificationId: Int) : ScreenRecording
 
     /**
      * Screen recording is saved and is available with the [uri]. You can[thumbnail] when it's
      * available for the video preview.
      */
-    data class Saved(override val uri: Uri, val thumbnail: Icon?) : ScreenRecording
+    data class Saved(
+        override val uri: Uri,
+        val thumbnail: Icon?,
+        override val notificationId: Int,
+    ) : ScreenRecording
 
     /** Couldn't save the screen recording with the [uri]. */
-    data class NotSaved(override val uri: Uri) : ScreenRecording
+    data class NotSaved(override val uri: Uri?, override val notificationId: Int) : ScreenRecording
 }

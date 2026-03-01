@@ -7296,9 +7296,7 @@ public abstract class Context {
      *
      * @see #getSystemService(String)
      * @see android.app.contentrestriction.ContentRestrictionManager
-     * @hide
      */
-    @SystemApi
     @FlaggedApi(android.app.contentrestriction.flags.Flags.FLAG_CONTENT_RESTRICTION_API)
     public static final String CONTENT_RESTRICTION_SERVICE = "content_restriction";
 

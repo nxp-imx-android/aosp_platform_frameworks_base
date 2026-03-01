@@ -21,6 +21,7 @@ import static android.content.pm.ActivityInfo.FORCE_RESIZE_APP;
 import static android.content.pm.ActivityInfo.OVERRIDE_ENABLE_VIRTUAL_GAMEPAD;
 import static android.content.pm.PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_OPT_OUT;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES;
+import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -187,6 +188,16 @@ public class AppCompatResizeOverridesTest extends WindowTestsBase {
     public void testShouldOverrideForceResizeApp_propertyFalse_gamepadEnabled_returnsFalse() {
         runTestScenario((robot) -> {
             robot.prop().disable(PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES);
+            robot.activity().createActivityWithComponent();
+            robot.checkShouldOverrideForceResizeApp(/* expected */ false);
+        });
+    }
+
+    @Test
+    @CoreCompatChangeRule.EnableCompatChanges({OVERRIDE_ENABLE_VIRTUAL_GAMEPAD})
+    public void testShouldOverrideForceResizeApp_gamepadOptOutProperty_returnsFalse() {
+        runTestScenario((robot) -> {
+            robot.prop().disable(PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE);
             robot.activity().createActivityWithComponent();
             robot.checkShouldOverrideForceResizeApp(/* expected */ false);
         });

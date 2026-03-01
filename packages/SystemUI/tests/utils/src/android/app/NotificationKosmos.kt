@@ -40,7 +40,8 @@ class FakeUserProfileBadgeProvider(
     override fun getProfileBadge(context: Context): Bitmap? {
         val badgeDrawableRes =
             when (userType) {
-                UserType.MAIN -> return null
+                UserType.MAIN,
+                UserType.SYSTEM_HEADLESS -> return null
                 UserType.WORK -> internalR.drawable.ic_corp_badge
                 UserType.CLONED -> internalR.drawable.ic_clone_badge
                 UserType.PRIVATE -> internalR.drawable.ic_private_profile_badge
@@ -70,7 +71,7 @@ class FakeUserProfileBadgeProvider(
         when (userType) {
             UserType.WORK -> "Work Profile"
             UserType.CLONED -> "Cloned Profile"
-            UserType.PRIVATE -> "Private Space"
+            UserType.SYSTEM_HEADLESS -> "System Headless"
             else -> "Unknown Profile"
         }
 }

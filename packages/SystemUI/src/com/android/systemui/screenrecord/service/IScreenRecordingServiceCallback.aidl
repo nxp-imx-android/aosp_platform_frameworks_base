@@ -37,15 +37,15 @@ oneway interface IScreenRecordingServiceCallback {
     /**
     * Called when service started saving the recording.
     */
-    void onSavingRecording(in Uri recordingUri);
+    void onSavingRecording(in Uri recordingUri, in int notificationId);
 
     /**
     * Called when service finished saving the recording.
     */
-    void onRecordingSaved(in Uri recordingUri, in Icon thumbnail);
+    void onRecordingSaved(in Uri recordingUri, in Icon thumbnail, in int notificationId);
 
     /**
     * Called when service couldn't save the recording.
     */
-    void onRecordingSaveError(in Uri recordingUri);
+    void onRecordingSaveError(in Uri recordingUri, in int notificationId);
 }

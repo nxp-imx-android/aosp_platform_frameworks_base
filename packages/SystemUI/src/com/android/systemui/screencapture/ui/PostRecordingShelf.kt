@@ -63,7 +63,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.android.compose.modifiers.padding
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.rememberViewModel
@@ -94,8 +93,9 @@ class PostRecordingShelf
 constructor(
     @Assisted private val uri: Uri,
     @Assisted private val thumbnail: Icon?,
-    @Application private val context: Context,
     @Assisted private val display: Display,
+    @Assisted private val notificationId: Int,
+    @Application private val context: Context,
     private val dialogFactory: SystemUIDialogFactory,
     private val actionsViewModelFactory: PostRecordingActionsViewModel.Factory,
     private val videoViewModelFactory: PostRecordingImmediateVideoViewModel.Factory,
@@ -109,7 +109,12 @@ constructor(
                 context.createWindowContext(display, DIALOG_WINDOW_TYPE, null),
                 theme = R.style.Theme_SystemUI_Dialog,
             ) { dialogInstance ->
-                DialogContent(uri = uri, thumbnail = thumbnail, window = dialogInstance.window)
+                DialogContent(
+                    uri = uri,
+                    thumbnail = thumbnail,
+                    notificationId = notificationId,
+                    window = dialogInstance.window,
+                )
             }
             .apply {
                 setupWindow(window!!)
@@ -133,7 +138,7 @@ constructor(
     }
 
     @Composable
-    private fun DialogContent(uri: Uri, thumbnail: Icon?, window: Window?) {
+    private fun DialogContent(uri: Uri, thumbnail: Icon?, notificationId: Int, window: Window?) {
         var isConfirmDeletionDialogShowing by remember { mutableStateOf(false) }
         if (!visibleState.targetState && visibleState.isIdle) {
             SideEffect {
@@ -180,7 +185,9 @@ constructor(
                 actionsViewModelFactory.create(uri, display.displayId)
             }
         val videoViewModel =
-            rememberViewModel("PostRecordingShelf#viewModel") { videoViewModelFactory.create(uri) }
+            rememberViewModel("PostRecordingShelf#viewModel") {
+                videoViewModelFactory.create(uri, notificationId)
+            }
         val parentUri = actionsViewModel.parentUri
         val shareIcon =
             loadIcon(
@@ -261,8 +268,10 @@ constructor(
                                     ) {
                                         hide()
                                         postRecordSnackbarDialogs.showVideoDeleted(
-                                            videoViewModel.recording.uri,
-                                            display,
+                                            uri = videoViewModel.recording.uri,
+                                            thumbnail = videoViewModel.recording.thumbnail,
+                                            notificationId = videoViewModel.notificationId,
+                                            display = display,
                                         )
                                     }
                                     isConfirmDeletionDialogShowing = false
@@ -384,7 +393,12 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(uri: Uri, thumbnail: Icon?, display: Display): PostRecordingShelf
+        fun create(
+            uri: Uri,
+            thumbnail: Icon?,
+            display: Display,
+            notificationId: Int,
+        ): PostRecordingShelf
     }
 
     companion object {

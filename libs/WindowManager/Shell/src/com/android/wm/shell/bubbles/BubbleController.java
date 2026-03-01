@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles;
 
+import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.service.notification.NotificationListenerService.NOTIFICATION_CHANNEL_OR_GROUP_DELETED;
 import static android.service.notification.NotificationListenerService.NOTIFICATION_CHANNEL_OR_GROUP_UPDATED;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
@@ -2356,6 +2357,28 @@ public class BubbleController implements ConfigurationChangeListener,
     public void removeBubble(String key, int reason) {
         if (mBubbleData.hasAnyBubbleWithKey(key)) {
             mBubbleData.dismissBubbleWithKey(key, reason);
+        }
+    }
+
+    /**
+     * Removes the bubble with the given key if it has the given taskId.
+     * <p>
+     * Task id check is ignored if the bubble with the given key is not associated with a task.
+     */
+    @MainThread
+    public void removeBubble(String key, int taskId, @Bubbles.DismissReason int reason) {
+        Bubble bubble = mBubbleData.getBubbleInStackWithKey(key);
+        if (bubble != null) {
+            int bubbleTaskId = bubble.getTaskId();
+            if (bubbleTaskId == taskId || bubbleTaskId == INVALID_TASK_ID) {
+                mBubbleData.dismissBubbleWithKey(key, reason);
+            } else {
+                BubbleLog.d("BubbleController.removeBubble() key=%s taskId=%d bubbleTaskId=%d "
+                        + "no bubble for given key and taskId", key, taskId, bubbleTaskId);
+            }
+        } else {
+            BubbleLog.d("BubbleController.removeBubble() key=%s taskId=%d no bubble for given key",
+                    key, taskId);
         }
     }
 

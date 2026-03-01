@@ -107,7 +107,8 @@ public class MediaFocusControlTest {
         mMediaFocusControl.requestAudioFocus(MEDIA_UID, MEDIA_ATTRIBUTES,
                 AudioManager.AUDIOFOCUS_GAIN, mICallBack, null /*focusDispatcher*/,
                 "clientMedia", "packMedia", AudioManager.AUDIOFOCUS_FLAG_TEST /*flags*/,
-                35 /*sdk*/, false/*forceDuck*/, MEDIA_UID, true /*permissionOverridesCheck*/);
+                35 /*sdk*/, false/*forceDuck*/, MEDIA_UID, true /*permissionOverridesCheck*/,
+                false /*isForCall*/);
         final AudioFocusInfo alarm = new AudioFocusInfo(ALARM_ATTRIBUTES, ALARM_UID,
                 "clientAlarm", "packAlarm",
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK, 0/*lossReceived*/,
@@ -115,7 +116,7 @@ public class MediaFocusControlTest {
         mMediaFocusControl.requestAudioFocus(ALARM_UID, alarm.getAttributes(),
                 alarm.getGainRequest(), mICallBack, null /*focusDispatcher*/, alarm.getClientId(),
                 alarm.getPackageName(), alarm.getFlags(), alarm.getSdkTarget(), false/*forceDuck*/,
-                alarm.getClientUid(), true /*permissionOverridesCheck*/);
+                alarm.getClientUid(), true /*permissionOverridesCheck*/, false /*isForCall*/);
         // verify stack is in expected state
         List<AudioFocusInfo> stack = mMediaFocusControl.getFocusStack();
         Assert.assertEquals("focus stack should have 2 entries", 2, stack.size());

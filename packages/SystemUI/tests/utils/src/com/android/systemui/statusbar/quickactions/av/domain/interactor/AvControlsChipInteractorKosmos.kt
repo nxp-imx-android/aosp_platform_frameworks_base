@@ -25,10 +25,10 @@ import com.android.systemui.display.data.repository.displaySubcomponentPerDispla
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.notifications.content.icon.appIconProvider
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.shade.data.repository.privacyChipRepository
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
-import com.android.systemui.statusbar.notification.row.icon.appIconProvider
 import com.android.systemui.statusbar.policy.FakeIndividualSensorPrivacyController
 import com.android.systemui.statusbar.quickactions.av.AvControlsChipModule
 import com.android.systemui.statusbar.quickactions.av.shared.model.AvControlsChipModel

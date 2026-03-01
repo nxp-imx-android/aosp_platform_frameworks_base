@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.server.security.trusttoken;
+package com.android.systemui.scene.ui.view
 
-public class TrustTokenExhaustedException extends IllegalStateException {
-    TrustTokenExhaustedException() {}
+import android.os.fakeHandler
+import com.android.internal.logging.latencyTracker
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
+
+val Kosmos.sceneTransitionLatencyMonitor: SceneTransitionLatencyMonitor by Fixture {
+    SceneTransitionLatencyMonitor(latencyTracker = latencyTracker, handler = fakeHandler)
 }

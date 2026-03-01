@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
@@ -46,6 +47,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -244,6 +247,36 @@ public class InsightSurfaceClientTest {
         mClient.register(null, mClientCallbacks);
         mClient.getClientInfo().getClient().onSizeChanged(0, 0);
         assertThat(executorCalled[0]).isTrue();
+    }
+
+    @Test
+    public void testCallbackNotInvokedAfterUnregister_raceCondition() throws RemoteException {
+        // Use a custom executor that captures the runnable instead of executing it immediately.
+        // This allows us to simulate a race condition where unregister() is called after a
+        // callback has been scheduled but before it has been executed.
+        final List<Runnable> capturedRunnables = new ArrayList<>();
+        final Executor delayedExecutor = capturedRunnables::add;
+
+        // Register the client with the delayed executor.
+        mClient.register(delayedExecutor, mClientCallbacks);
+
+        // Trigger a callback. This will schedule a runnable on our delayedExecutor.
+        mClient.getClientInfo().getClient().onSizeChanged(100, 200);
+
+        // At this point, the callback has been scheduled but not executed.
+        assertThat(capturedRunnables).hasSize(1);
+        verifyNoInteractions(mClientCallbacks);
+
+        // Now, unregister the client. This should nullify the internal callbacks object.
+        mClient.unregister();
+
+        // Finally, execute the captured runnable.
+        capturedRunnables.get(0).run();
+
+        // Verify that the callback was NOT invoked because the client was unregistered before
+        // the callback runnable was executed. This tests the null-check inside the executor's
+        // runnable.
+        verifyNoInteractions(mClientCallbacks);
     }
 
     @Test

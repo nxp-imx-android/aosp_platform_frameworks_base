@@ -163,7 +163,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final @ShellMainThread ShellExecutor mMainExecutor;
     private final @ShellMainThread MainCoroutineDispatcher mMainDispatcher;
     private final @ShellMainThread CoroutineScope mMainScope;
-    private final @ShellBackgroundThread CoroutineScope mBgScope;
     private final Transitions mTransitions;
     private final Choreographer mChoreographer;
     private final SyncTransactionQueue mSyncQueue;
@@ -233,6 +232,12 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /** The last calculated valid drag area of the task. */
     private Rect mLastValidDragArea = null;
 
+    /**
+     * Whether we're receiving a gesture received from {@link DragResizeInputListener} started in
+     * the root view.
+     */
+    private boolean mInjectingGestureOfInterest = false;
+
     private final Function0<Unit> mCloseLayoutMenuFunction = () -> {
         closeLayoutMenu();
         return Unit.INSTANCE;
@@ -257,7 +262,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
             @ShellMainThread CoroutineScope mainScope,
-            @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             Transitions transitions,
             Choreographer choreographer,
@@ -280,7 +284,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             FocusTransitionObserver focusTransitionObserver) {
         this (context, userContext, displayController, taskResourceLoader, splitScreenController,
                 desktopUserRepositories, taskOrganizer, taskInfo, taskSurface, handler,
-                mainExecutor, mainDispatcher, mainScope, bgScope, bgExecutor, transitions,
+                mainExecutor, mainDispatcher, mainScope, bgExecutor, transitions,
                 choreographer, syncQueue, appHeaderViewHolderFactory, appHandleViewHolderFactory,
                 rootTaskDisplayAreaOrganizer, genericLinksParser, assistContentRequester,
                 SurfaceControl.Builder::new, SurfaceControl.Transaction::new,
@@ -310,7 +314,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
             @ShellMainThread CoroutineScope mainScope,
-            @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             Transitions transitions,
             Choreographer choreographer,
@@ -349,7 +352,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mMainExecutor = mainExecutor;
         mMainDispatcher = mainDispatcher;
         mMainScope = mainScope;
-        mBgScope = bgScope;
         mTransitions = transitions;
         mChoreographer = choreographer;
         mSyncQueue = syncQueue;
@@ -747,7 +749,30 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mDragPositioningCallback,
                     mSurfaceControlBuilderSupplier,
                     mSurfaceControlTransactionSupplier,
-                    mDisplayController);
+                    mDisplayController,
+                    event -> {
+                        final boolean isDown = event.getAction() == ACTION_DOWN;
+                        final boolean isUpOrCancel =
+                                event.getAction() == ACTION_UP
+                                        || event.getAction() == ACTION_CANCEL;
+                        final float x = event.getX();
+                        final float y = event.getY();
+                        final View rootView = mResult.mRootView;
+                        final float left = rootView.getLeft();
+                        final float top = rootView.getTop();
+                        event.offsetLocation(left, top);
+                        if (isDown) {
+                            mInjectingGestureOfInterest = x >= 0 && y >= 0
+                                    && x < rootView.getWidth() && y < rootView.getHeight();
+                        }
+                        if (mInjectingGestureOfInterest) {
+                            rootView.dispatchTouchEvent(event);
+                        }
+                        if (isUpOrCancel) {
+                            mInjectingGestureOfInterest = false;
+                        }
+                        event.offsetLocation(-left, -top);
+                    });
         }
         final DragResizeInputListener newListener = mDragResizeListener;
         final int touchSlop = ViewConfiguration.get(mResult.mRootView.getContext())

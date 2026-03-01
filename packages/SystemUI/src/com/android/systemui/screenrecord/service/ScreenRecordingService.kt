@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.media.MediaRecorder
 import android.media.projection.StopReason
+import android.net.Uri
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -32,7 +33,6 @@ import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.data.repository.StaticScreenCaptureDeviceStateRepository
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
-import com.android.systemui.screenrecord.RecordingServiceStrings
 import com.android.systemui.screenrecord.ScreenMediaRecorder
 import com.android.systemui.screenrecord.ScreenMediaRecorder.SavedRecording
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
@@ -50,17 +50,13 @@ private const val TAG = "ScreenRecordingService"
 open class ScreenRecordingService : ComponentService() {
     private val tag: String = TAG
     private val createNotificationInteractor: Context.() -> NotificationInteractor = {
-        val featuresInteractor =
-            ScreenCaptureRecordFeaturesInteractor(
-                StaticScreenCaptureDeviceStateRepository(resources)
-            )
         ScreenRecordingServiceNotificationInteractor(
             context = this,
             notificationManager = getSystemService(NotificationManager::class.java)!!,
-            strings = RecordingServiceStrings(resources),
-            channelId = CHANNEL_ID,
-            serviceClass = ScreenRecordingService::class.java,
-            screenCaptureRecordFeaturesInteractor = featuresInteractor,
+            screenCaptureRecordFeaturesInteractor =
+                ScreenCaptureRecordFeaturesInteractor(
+                    StaticScreenCaptureDeviceStateRepository(resources)
+                ),
         )
     }
     private val onRecordingSaved:
@@ -70,7 +66,6 @@ open class ScreenRecordingService : ComponentService() {
         { recordingContext, recording ->
             notificationInteractor.notifySaved(
                 notificationId = recordingContext.notificationId,
-                audioSource = recordingContext.audioSource,
                 savedRecording = recording,
             )
         }
@@ -128,7 +123,7 @@ open class ScreenRecordingService : ComponentService() {
     }
 
     private fun RecordingContext.startRecording() {
-        screenRecordingPreferenceRepository.updateSettings(shouldShowTaps)
+        screenRecordingPreferenceRepository.setShouldShowTaps(shouldShowTaps)
         try {
             Log.d(tag, "Starting screen recording user=$userId $this")
             val notification = notificationInteractor.createRecordingNotification(audioSource)
@@ -152,21 +147,24 @@ open class ScreenRecordingService : ComponentService() {
         }
     }
 
-    private suspend fun RecordingContext.saveRecording() {
+    private suspend fun RecordingContext.saveRecording(uri: Uri) {
         try {
+            callback?.onSavingRecording(uri, notificationId)
             Log.d(tag, "Saving screen recording")
             notificationInteractor.notifyProcessing(
                 notificationId = notificationId,
                 audioSource = audioSource,
             )
+
             val savedRecording: SavedRecording =
                 withContext(backgroundContext) {
-                    recorder
-                        .save { uri -> callback?.onSavingRecording(uri) }
-                        .apply { callback?.onRecordingSaved(uri, thumbnail) }
+                    recorder.save(uri).apply {
+                        callback?.onRecordingSaved(uri, thumbnail, notificationId)
+                    }
                 }
             onRecordingSaved(this, savedRecording)
         } catch (e: Exception) {
+            launchCallbackAction { onRecordingSaveError(uri, notificationId) }
             notificationInteractor.notifyErrorSaving(notificationId)
             Log.e(tag, "Error saving screen recording", e)
             showToast(R.string.screenrecord_save_error)
@@ -180,13 +178,16 @@ open class ScreenRecordingService : ComponentService() {
     }
 
     private fun RecordingContext.stopRecording(@StopReason reason: Int) {
+        var recordingUri: Uri? = null
         try {
+            recordingUri = recorder.createRecordingUri()
             Log.d(tag, "Stopping screen recording reason=$reason")
             recordingContext = null
             screenRecordingPreferenceRepository.maybeRestoreSetting()
             recorder.end(reason)
-            coroutineScope.launch { saveRecording() }
+            coroutineScope.launch { saveRecording(recordingUri) }
         } catch (e: Exception) {
+            launchCallbackAction { onRecordingSaveError(recordingUri, notificationId) }
             notificationInteractor.notifyErrorSaving(notificationId)
             Log.e(tag, "Error stopping screen recording", e)
             showToast(R.string.screenrecord_save_error)
@@ -194,7 +195,7 @@ open class ScreenRecordingService : ComponentService() {
             if (Flags.screenRecordingServiceFix()) {
                 stopForeground(STOP_FOREGROUND_DETACH)
             }
-            stopSelf() // only stop if there is an error. Otherwise leave it to saveRecording
+            stopSelf() // only stop if there is an error. Otherwise, leave it to saveRecording
         }
     }
 
@@ -213,10 +214,7 @@ open class ScreenRecordingService : ComponentService() {
         }
 
         override fun updateParameters(parameters: ScreenRecordingParameters) {
-            screenRecordingPreferenceRepository.updateSettings(
-                showTaps = parameters.shouldShowTaps,
-                rememberOriginalShowTaps = false,
-            )
+            screenRecordingPreferenceRepository.setShouldShowTaps(parameters.shouldShowTaps)
         }
 
         override fun startRecording(parameters: ScreenRecordingParameters) {
@@ -253,8 +251,6 @@ open class ScreenRecordingService : ComponentService() {
     )
 
     companion object {
-
-        const val CHANNEL_ID = "screen_record"
 
         const val ACTION_STOP =
             "com.android.systemui.screenrecord.ScreenRecordingService.ACTION_STOP"

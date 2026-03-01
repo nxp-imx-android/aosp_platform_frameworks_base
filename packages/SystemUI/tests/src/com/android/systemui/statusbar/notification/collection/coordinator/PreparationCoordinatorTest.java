@@ -42,7 +42,6 @@ import static org.mockito.Mockito.when;
 import static java.util.Objects.requireNonNull;
 
 import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.os.Handler;
@@ -56,6 +55,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.notifications.content.icon.AppIconProvider;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.RankingBuilder;
@@ -80,7 +80,6 @@ import com.android.systemui.statusbar.notification.collection.provider.SectionSt
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
 import com.android.systemui.statusbar.notification.collection.render.NotifViewBarn;
 import com.android.systemui.statusbar.notification.row.NotifInflationErrorManager;
-import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController;
 import com.android.systemui.util.settings.SecureSettings;

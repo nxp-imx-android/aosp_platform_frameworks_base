@@ -22,6 +22,7 @@ import static android.content.pm.ActivityInfo.OVERRIDE_ENABLE_VIRTUAL_GAMEPAD;
 import static android.internal.perfetto.protos.Windowmanagerservice.ActivityRecordProto.SHOULD_OVERRIDE_FORCE_RESIZE_APP;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY;
+import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE;
 
 import static com.android.server.wm.AppCompatUtils.isChangeEnabled;
 
@@ -60,6 +61,9 @@ class AppCompatResizeOverrides {
     private final OptPropFactory.OptProp mAllowForceResizeOverrideOptProp;
 
     @NonNull
+    private final OptPropFactory.OptProp mAllowVirtualGamepadOverrideOptProp;
+
+    @NonNull
     private final BooleanSupplier mAllowRestrictedResizability;
 
     private final BooleanSupplier mEnableSizeOverrideForVirtualGamepad;
@@ -70,6 +74,8 @@ class AppCompatResizeOverrides {
         mActivityRecord = activityRecord;
         mAllowForceResizeOverrideOptProp = optPropBuilder.create(
                 PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES);
+        mAllowVirtualGamepadOverrideOptProp = optPropBuilder.create(
+                PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE);
         mAllowRestrictedResizability = AppCompatUtils.asLazy(() -> {
             if (mActivityRecord.info.applicationInfo.isChangeEnabled(
                     DISABLE_OPT_OUT_UNIVERSAL_RESIZABLE_BY_DEFAULT)) {
@@ -99,7 +105,9 @@ class AppCompatResizeOverrides {
                 if (userOption == PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_OPT_OUT) {
                     return false;
                 }
-                return isChangeEnabled(activityRecord, OVERRIDE_ENABLE_VIRTUAL_GAMEPAD);
+                return mAllowVirtualGamepadOverrideOptProp
+                        .shouldEnableWithOptInOverrideAndOptOutProperty(
+                                isChangeEnabled(activityRecord, OVERRIDE_ENABLE_VIRTUAL_GAMEPAD));
             } catch (RemoteException e) {
                 return false;
             }

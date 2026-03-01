@@ -18,7 +18,6 @@ package com.android.wm.shell.windowdecor;
 
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.INPUT_FEATURE_NO_INPUT_CHANNEL;
-import static android.view.WindowManager.LayoutParams.INPUT_FEATURE_SPY;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_CONSUMER;
@@ -122,12 +121,13 @@ class DragResizeInputListener implements AutoCloseable {
             DragPositioningCallback callback,
             Supplier<SurfaceControl.Builder> surfaceControlBuilderSupplier,
             Supplier<SurfaceControl.Transaction> surfaceControlTransactionSupplier,
-            DisplayController displayController) {
+            DisplayController displayController,
+            Consumer<MotionEvent> preDragEventConduit) {
         this(context, windowSession, mainExecutor, bgExecutor, taskInfo,
                 handler, choreographer, displayId, decorationSurface, callback,
                 surfaceControlBuilderSupplier, surfaceControlTransactionSupplier,
-                displayController, null /* onInputEventReceiverDisposed */,
-                null /* onReceiverCreated */);
+                displayController, preDragEventConduit,
+                null /* onInputEventReceiverDisposed */, null /* onReceiverCreated */);
     }
 
     @VisibleForTesting
@@ -145,6 +145,7 @@ class DragResizeInputListener implements AutoCloseable {
             Supplier<SurfaceControl.Builder> surfaceControlBuilderSupplier,
             Supplier<SurfaceControl.Transaction> surfaceControlTransactionSupplier,
             DisplayController displayController,
+            Consumer<MotionEvent> preDragEventConduit,
             @Nullable Runnable onInputEventReceiverDisposed,
             @Nullable Consumer<InputEventReceiver> onReceiverCreated) {
         mContext = context;
@@ -197,6 +198,7 @@ class DragResizeInputListener implements AutoCloseable {
                             return new Size(layout.width(), layout.height());
                         },
                         this::updateSinkInputChannel,
+                        preDragEventConduit,
                         onInputEventReceiverDisposed);
                 mInputEventReceiver.setTouchSlop(
                         ViewConfiguration.get(mContext).getScaledTouchSlop());
@@ -245,7 +247,7 @@ class DragResizeInputListener implements AutoCloseable {
                     null /* hostInputToken */,
                     FLAG_NOT_FOCUSABLE,
                     PRIVATE_FLAG_TRUSTED_OVERLAY,
-                    INPUT_FEATURE_SPY,
+                    0 /* inputFeatures */,
                     TYPE_APPLICATION,
                     null /* windowToken */,
                     inputTransferToken,
@@ -318,7 +320,7 @@ class DragResizeInputListener implements AutoCloseable {
                     mDecorationSurface,
                     FLAG_NOT_FOCUSABLE,
                     PRIVATE_FLAG_TRUSTED_OVERLAY,
-                    INPUT_FEATURE_SPY,
+                    0 /* inputFeatures */,
                     mTouchRegion);
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
@@ -437,6 +439,7 @@ class DragResizeInputListener implements AutoCloseable {
         @NonNull private final DragDetector mDragDetector;
         @NonNull private final Supplier<Size> mDisplayLayoutSizeSupplier;
         @NonNull private final Consumer<Region> mTouchRegionConsumer;
+        @NonNull private final Consumer<MotionEvent> mPreDragEventConduit;
         @Nullable private final Runnable mOnDisposed;
         private final MotionEvent.PointerProperties mTmpPointerProperties =
                 new MotionEvent.PointerProperties();
@@ -451,6 +454,7 @@ class DragResizeInputListener implements AutoCloseable {
         // resize events. For example, if multiple fingers are touching the screen, then each one
         // has a separate pointer id, but we only accept drag input from one.
         private int mDragPointerId = -1;
+        private boolean mDragStarted;
 
         private TaskResizeInputEventReceiver(@NonNull Context context,
                 @NonNull InputChannel inputChannel,
@@ -458,6 +462,7 @@ class DragResizeInputListener implements AutoCloseable {
                 @NonNull Choreographer choreographer,
                 @NonNull Supplier<Size> displayLayoutSizeSupplier,
                 @NonNull Consumer<Region> touchRegionConsumer,
+                @NonNull Consumer<MotionEvent> preDragEventConduit,
                 @Nullable Runnable onDisposed) {
             super(inputChannel, handler.getLooper());
             mContext = context;
@@ -480,6 +485,7 @@ class DragResizeInputListener implements AutoCloseable {
                     ViewConfiguration.get(mContext).getScaledTouchSlop());
             mDisplayLayoutSizeSupplier = displayLayoutSizeSupplier;
             mTouchRegionConsumer = touchRegionConsumer;
+            mPreDragEventConduit = preDragEventConduit;
 
             mOnDisposed = onDisposed;
         }
@@ -546,10 +552,38 @@ class DragResizeInputListener implements AutoCloseable {
         }
 
         private boolean handleInputEvent(InputEvent inputEvent) {
-            if (!(inputEvent instanceof MotionEvent)) {
+            if (!(inputEvent instanceof MotionEvent motionEvent)) {
                 return false;
             }
-            return mDragDetector.onMotionEvent((MotionEvent) inputEvent);
+            final boolean dragHasStarted = mDragStarted;
+            final boolean result = mDragDetector.onMotionEvent(motionEvent);
+
+            // The logic below sends input events before the drag detector determines that this is a
+            // drag gesture. This is necessary because after the drag resize handles aren't spy
+            // windows anymore, the app header buttons can't automatically receive touches/clicks in
+            // the overlapping area with the drag handles at the top two corners. This conduit
+            // sends those events explicitly. See b/450722440 for more details.
+
+            // Up and cancel conclude the gesture, so mDragStarted is reset back to false at this
+            // point. We should use the state before we call the drag detector to decide if they
+            // should be redispatched.
+            final boolean isUpOrCancel = motionEvent.getAction() == MotionEvent.ACTION_UP
+                            || motionEvent.getAction() == MotionEvent.ACTION_CANCEL;
+            final boolean dragStarted = isUpOrCancel ? dragHasStarted : mDragStarted;
+            if (!dragStarted) {
+                mPreDragEventConduit.accept(motionEvent);
+            }
+            if (!dragHasStarted && mDragStarted) {
+                // This is the first time when a gesture is determined to be a drag. We should send
+                // a cancel event to the conduit so the caption buttons get a result of the gesture
+                // and without acting upon it.
+                final int oldAction = motionEvent.getAction();
+                motionEvent.setAction(MotionEvent.ACTION_CANCEL);
+                mPreDragEventConduit.accept(motionEvent);
+                motionEvent.setAction(oldAction);
+            }
+
+            return result;
         }
 
         @Override
@@ -590,7 +624,6 @@ class DragResizeInputListener implements AutoCloseable {
                     if (!mShouldHandleEvents) {
                         break;
                     }
-                    mInputManager.pilferPointers(getToken());
                     final int dragPointerIndex = e.findPointerIndex(mDragPointerId);
                     if (dragPointerIndex < 0) {
                         ProtoLog.d(WM_SHELL_DESKTOP_MODE,
@@ -599,6 +632,7 @@ class DragResizeInputListener implements AutoCloseable {
                                 TAG);
                         break;
                     }
+                    mDragStarted = true;
                     final float rawX = e.getRawX(dragPointerIndex);
                     final float rawY = e.getRawY(dragPointerIndex);
                     final Rect taskBounds = mCallback.onDragPositioningMove(e.getDisplayId(),
@@ -628,6 +662,7 @@ class DragResizeInputListener implements AutoCloseable {
                     }
                     mShouldHandleEvents = false;
                     mDragPointerId = -1;
+                    mDragStarted = false;
                     result = true;
                     break;
                 }

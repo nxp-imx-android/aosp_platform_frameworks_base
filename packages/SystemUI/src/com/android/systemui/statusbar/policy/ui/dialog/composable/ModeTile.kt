@@ -45,6 +45,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.android.systemui.common.shared.model.copy
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.statusbar.policy.ui.dialog.viewmodel.ModeTileViewModel
 
@@ -127,7 +128,10 @@ fun ModeTile(
                 horizontalArrangement =
                     Arrangement.spacedBy(space = 12.dp, alignment = Alignment.Start),
             ) {
-                Icon(icon = viewModel.icon, modifier = Modifier.size(24.dp))
+                // Clear the content description of the icon to prevent the mode name from getting
+                // called out twice (once by the icon and once by the text).
+                val decorativeIcon = viewModel.icon.copy(contentDescription = null)
+                Icon(icon = decorativeIcon, modifier = Modifier.size(24.dp))
                 Column {
                     Text(
                         viewModel.text,

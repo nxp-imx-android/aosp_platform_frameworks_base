@@ -61,7 +61,6 @@ import com.android.settingslib.mobile.MobileStatusTracker.SubscriptionDefaults;
 import com.android.settingslib.mobile.TelephonyIcons;
 import com.android.settingslib.net.DataUsageController;
 import com.android.systemui.Dumpable;
-import com.android.systemui.Flags;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
@@ -521,7 +520,6 @@ public class NetworkControllerImpl extends BroadcastReceiver
         filter.addAction(Intent.ACTION_AIRPLANE_MODE_CHANGED);
         filter.addAction(Intent.ACTION_SERVICE_STATE);
         filter.addAction(Intent.ACTION_SIM_STATE_CHANGED);
-        filter.addAction(Settings.Panel.ACTION_INTERNET_CONNECTIVITY);
         filter.addAction(TelephonyManager.ACTION_DEFAULT_DATA_SUBSCRIPTION_CHANGED);
         filter.addAction(TelephonyManager.ACTION_DEFAULT_VOICE_SUBSCRIPTION_CHANGED);
         filter.addAction(TelephonyManager.ACTION_SERVICE_PROVIDERS_UPDATED);
@@ -839,16 +837,6 @@ public class NetworkControllerImpl extends BroadcastReceiver
                 mConfig = Config.readConfig(mContext);
                 mReceiverHandler.post(this::handleConfigurationChanged);
                 break;
-            case Settings.Panel.ACTION_INTERNET_CONNECTIVITY:
-                if (Flags.launchInternetDetails()) {
-                    break;
-                }
-                if (!QsDetailedView.isEnabled() || !mShadeModeInteractor.isDualShade()) {
-                    mMainHandler.post(() -> mInternetDialogManager.create(true,
-                            mAccessPoints.canConfigMobileData(), mAccessPoints.canConfigWifi(),
-                            null /* view */));
-                    break;
-                }
             default:
                 int subId = intent.getIntExtra(SubscriptionManager.EXTRA_SUBSCRIPTION_INDEX,
                         INVALID_SUBSCRIPTION_ID);

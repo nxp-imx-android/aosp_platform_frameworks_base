@@ -31,6 +31,7 @@ java_defaults {
         "androidx.test.ext.junit",
         "androidx.test.rules",
         "androidx.test.runner",
+        "flag-junit",
         "mockito-target-extended-minus-junit4",
         "modules-utils-extended-mockito-rule",
         "statsdprotolite",
@@ -90,6 +91,7 @@ android_test {
     ],
     static_libs: [
         "services.core",
+        "android.security.flags-aconfig-java",
     ],
     test_suites: ["general-tests"],
     // The tests cannot load the system's private native libraries, so we

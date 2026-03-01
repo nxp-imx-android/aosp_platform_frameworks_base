@@ -532,8 +532,8 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             sceneInteractor.showOverlay(Overlays.QuickSettingsShade, "test")
             assertThat(currentOverlays).isNotEmpty()
 
-            // WHEN a touch event occurs outside the shade window
-            underTest.onEmptySpaceMotionEvent(MotionEvent.obtain(0, 0, ACTION_OUTSIDE, 0f, 0f, 0))
+            // WHEN a touch event occurs outside the shade window and status bar
+            underTest.onEmptySpaceMotionEvent(MotionEvent.obtain(0, 0, ACTION_OUTSIDE, 0f, 200f, 0))
 
             // THEN the overlay is hidden
             assertThat(currentOverlays).isEmpty()

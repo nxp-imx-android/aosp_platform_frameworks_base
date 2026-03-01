@@ -182,9 +182,17 @@ public class AppBindingService extends Binder {
     }
 
 
+    /**
+     * Dispatches an event without a timeout (fire-and-forget).
+     */
     public void dispatchAppServiceEvent(
-            Class<? extends AppServiceFinder<?, ?>> finderClass,
-            int userId, Consumer<AppServiceConnection> action) {
+            Class<? extends AppServiceFinder> finderClass,
+            int userId,
+            Consumer<AppServiceConnection> action) {
+        if (Flags.enableTimeoutInDispatchAppServiceEvent()) {
+            dispatchAppServiceEvent(finderClass, userId, action, 0);
+            return;
+        }
         List<AppServiceConnection> serviceConnections = new ArrayList<>();
         synchronized (mLock) {
             for (int i = 0; i < mApps.size(); i++) {
@@ -197,6 +205,51 @@ public class AppBindingService extends Binder {
         }
         for (AppServiceConnection conn: serviceConnections) {
             conn.addCallback(action);
+            conn.bind();
+        }
+    }
+
+    /**
+     * Dispatches an event when the connection is established or a timeout is reached.
+     *
+     * <p><b>Note:</b> Callers must verify the connection state within the {@code action}
+     * callback to ensure the service is ready for use.
+     *
+     * @param finderClass   The class type used to filter and identify target services.
+     * @param userId        The user ID for which the services should be retrieved.
+     * @param action        The callback to be executed; receives {@code null} if no service
+     *                      is found, or an unbound connection upon timeout.
+     * @param timeoutMillis The maximum duration (in milliseconds) to wait for a
+     *                      successful binding before triggering the callback regardless.
+     */
+    public void dispatchAppServiceEvent(
+            Class<? extends AppServiceFinder> finderClass,
+            int userId,
+            Consumer<AppServiceConnection> action,
+            long timeoutMillis) {
+        if (!Flags.enableTimeoutInDispatchAppServiceEvent()) {
+            return;
+        }
+        List<AppServiceConnection> serviceConnections = new ArrayList<>();
+        synchronized (mLock) {
+            for (int i = 0; i < mApps.size(); i++) {
+                final AppServiceFinder app = mApps.get(i);
+                if (app.getClass() != finderClass) {
+                    continue;
+                }
+                serviceConnections.addAll(getConnectionsLocked(userId, app));
+            }
+        }
+
+        if (serviceConnections.isEmpty()) {
+            mHandler.post(() -> {
+                action.accept(null);
+            });
+            return;
+        }
+
+        for (AppServiceConnection conn: serviceConnections) {
+            conn.addCallback(action, timeoutMillis);
             conn.bind();
         }
     }
