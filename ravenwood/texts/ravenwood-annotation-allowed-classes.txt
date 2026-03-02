@@ -675,6 +675,7 @@ com.android.internal.os.ProcStatsUtil
 com.android.internal.os.RuntimeInit
 com.android.internal.os.SomeArgs
 com.android.internal.os.StoragedUidIoStatsReader
+com.android.internal.os.ZygoteArguments
 com.android.internal.pm.pkg.component.AconfigFlags
 com.android.internal.pm.pkg.parsing.ParsingPackageUtils
 com.android.internal.power.EnergyConsumerStats

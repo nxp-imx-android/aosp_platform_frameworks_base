@@ -5343,6 +5343,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                         autofillOptions,
                         contentCaptureOptions,
                         app.getDisabledCompatChanges(),
+                        app.getEnabledCompatChanges(),
                         app.getLoggableCompatChanges(),
                         app.isLogChangeChecksToStatsD(),
                         serializedSystemFontMap,

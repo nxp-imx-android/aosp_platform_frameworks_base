@@ -84,6 +84,7 @@ interface IZygoteProcess {
                                      int zygotePolicyFlags,
                                      boolean isTopApp,
                                      @Nullable long[] disabledCompatChanges,
+                                     @Nullable long[] enabledCompatChanges,
                                      boolean useDeliQueue,
                                      @Nullable Map<String, Pair<String, Long>>
                                              pkgDataInfoMap,

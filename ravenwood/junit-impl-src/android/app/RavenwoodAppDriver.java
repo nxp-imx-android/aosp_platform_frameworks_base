@@ -15,6 +15,9 @@
  */
 package android.app;
 
+import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+
 import android.annotation.NonNull;
 import android.app.ActivityThread.AppBindData;
 import android.content.ContentProvider;
@@ -37,6 +40,9 @@ import android.util.Log;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.compat.CompatibilityChangeInfo;
+import com.android.internal.compat.CompatibilityRules;
+import com.android.internal.ravenwood.RavenwoodHelperBridge.CompatIdsForTest;
 import com.android.ravenwood.common.SneakyThrow;
 import com.android.server.compat.PlatformCompat;
 
@@ -204,6 +210,20 @@ public final class RavenwoodAppDriver {
         // Due to the `AppCompatCallbacks.install(new long[0], new long[0] ...` call in
         // SystemServer.
 
+        // Register test rules.
+        CompatibilityRules.initRulesForTest(
+                new CompatibilityChangeInfo(CompatIdsForTest.TEST_COMPAT_ID_1,
+                        "TEST_COMPAT_ID_1", -1, -1, false, false, false, "", false),
+                new CompatibilityChangeInfo(CompatIdsForTest.TEST_COMPAT_ID_2,
+                        "TEST_COMPAT_ID_2", -1, -1, true, false, false, "", false),
+                new CompatibilityChangeInfo(CompatIdsForTest.TEST_COMPAT_ID_3,
+                        "TEST_COMPAT_ID_3", -1, S, false, false, false, "", false),
+                new CompatibilityChangeInfo(CompatIdsForTest.TEST_COMPAT_ID_4,
+                        "TEST_COMPAT_ID_4", -1, UPSIDE_DOWN_CAKE, false, false, false, "", false),
+                new CompatibilityChangeInfo(CompatIdsForTest.TEST_COMPAT_ID_5,
+                        "TEST_COMPAT_ID_5", -1, -1, false, false, false, "", false)
+        );
+
         var env = RavenwoodEnvironment.getInstance();
 
         // Compat framework only uses the package name and the target SDK level.
@@ -221,9 +241,11 @@ public final class RavenwoodAppDriver {
 
         sAllKnownCompatIds = platformCompat.getAllChangeIds();
         var disabledChanges = platformCompat.getDisabledChanges(appInfo);
+        var enabledChanges = platformCompat.getEnabledChanges(appInfo);
         var loggableChanges = platformCompat.getLoggableChanges(appInfo);
 
-        AppCompatCallbacks.install(disabledChanges, loggableChanges, false);
+        AppCompatCallbacks.install(disabledChanges, enabledChanges, loggableChanges, false,
+                appInfo.targetSdkVersion);
 
         Log.i(TAG, "CompatChanges initialized");
     }

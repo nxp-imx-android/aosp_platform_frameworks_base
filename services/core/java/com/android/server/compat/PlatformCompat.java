@@ -453,6 +453,16 @@ public class PlatformCompat extends IPlatformCompat.Stub {
     }
 
     /**
+     * Retrieves the set of enabled changes for a given app (overrides).
+     *
+     * @param appInfo The app in question
+     * @return A sorted long array of change IDs.
+     */
+    public long[] getEnabledChanges(ApplicationInfo appInfo) {
+        return mCompatConfig.getEnabledChanges(appInfo);
+    }
+
+    /**
      * Retrieves whether the DeliQueue implementation of MessageQueue is enabled.
      */
     public boolean getUseDeliQueue(ApplicationInfo appInfo) {

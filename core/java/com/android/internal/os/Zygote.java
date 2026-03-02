@@ -900,6 +900,7 @@ public final class Zygote {
 
             return ZygoteInit.zygoteInit(args.mTargetSdkVersion,
                                          args.mDisabledCompatChanges,
+                                         args.mEnabledCompatChanges,
                                          args.mRemainingArgs,
                                          null /* classLoader */);
         } finally {

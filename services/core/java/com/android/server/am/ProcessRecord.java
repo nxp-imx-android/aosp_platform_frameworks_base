@@ -252,6 +252,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     private long[] mDisabledCompatChanges;
 
     /**
+     * Set of enabled compat changes for the process (overrides).
+     */
+    @GuardedBy("mService")
+    private long[] mEnabledCompatChanges;
+
+    /**
      * Set of compat changes for the process that are intended to be logged to logcat.
      */
     @GuardedBy("mService")
@@ -950,6 +956,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     }
 
     @GuardedBy("mService")
+    @Nullable
+    long[] getEnabledCompatChanges() {
+        return mEnabledCompatChanges;
+    }
+
+    @GuardedBy("mService")
     long[] getLoggableCompatChanges() {
         return mLoggableCompatChanges;
     }
@@ -962,6 +974,11 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     @GuardedBy("mService")
     void setDisabledCompatChanges(long[] disabledCompatChanges) {
         mDisabledCompatChanges = disabledCompatChanges;
+    }
+
+    @GuardedBy("mService")
+    void setEnabledCompatChanges(@Nullable long[] enabledCompatChanges) {
+        mEnabledCompatChanges = enabledCompatChanges;
     }
 
     @GuardedBy("mService")
