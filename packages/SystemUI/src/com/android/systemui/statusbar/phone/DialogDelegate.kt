@@ -44,6 +44,9 @@ interface DialogDelegate<T : Dialog> {
     /** Called after [Dialog.onStop] is called. */
     fun onStop(dialog: T) {}
 
+    /** Called before [Dialog.dismiss] is called. */
+    fun beforeDismiss(dialog: T) {}
+
     /** Called after [Dialog.onWindowFocusChanged] is called. */
     fun onWindowFocusChanged(dialog: T, hasFocus: Boolean) {}
 

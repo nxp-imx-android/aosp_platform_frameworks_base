@@ -557,6 +557,12 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         }
     }
 
+    @Override
+    public void dismiss() {
+        mDelegate.beforeDismiss(this);
+        super.dismiss();
+    }
+
     /** Dismisses the dialog without animation. */
     public void dismissWithoutAnimation() {
         mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations();
