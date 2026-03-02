@@ -48,7 +48,6 @@ import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.advanceTimeBy
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -269,6 +268,34 @@ class DreamStartableTest : SysuiTestCase() {
 
             // THEN we should be on the dream scene
             assertThat(currentScene).isEqualTo(Scenes.Dream)
+        }
+
+    @EnableSceneContainer
+    @Test
+    fun snapsToHomeWhenBouncerShowing() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            // GIVEN the device is dreaming and locked and bouncer is showing over the dream
+            sceneInteractor.changeScene(Scenes.Lockscreen, "starting on lockscreen")
+            fakeDeviceEntryRepository.deviceUnlockStatus.value =
+                DeviceUnlockStatus(isUnlocked = false, deviceUnlockSource = null)
+            keyguardRepository.setDreaming(true)
+            advanceTimeBy(DREAMING_DELAY_MS)
+            sceneInteractor.showOverlay(Overlays.Bouncer, "show bouncer over dream")
+
+            // The bouncer should be showing over the dream
+            assertThat(currentScene).isEqualTo(Scenes.Dream)
+            assertThat(currentOverlays).containsExactly(Overlays.Bouncer)
+
+            // Stop dreaming.
+            keyguardRepository.setDreaming(false)
+            advanceTimeBy(DREAMING_DELAY_MS)
+
+            // Verify that the UI has returned to the lockscreen and bouncer is still showing
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).containsExactly(Overlays.Bouncer)
         }
 
     @EnableSceneContainer
