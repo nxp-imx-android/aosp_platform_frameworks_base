@@ -61,6 +61,7 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -81,6 +82,7 @@ import android.util.ArraySet;
 import android.util.Pair;
 import android.view.Surface;
 import android.view.SurfaceControl;
+import android.window.ActivityTransitionInfo;
 import android.window.IRemoteTransition;
 import android.window.IRemoteTransitionFinishedCallback;
 import android.window.IWindowContainerToken;
@@ -1840,6 +1842,20 @@ public class ShellTransitionTests extends ShellTestCase {
 
         // Thus it falls through to the default handler (in this case).
         assertEquals(1, mDefaultHandler.activeCount());
+    }
+
+    @Test
+    public void testNoCropActivity() {
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(new ChangeBuilder(WindowContainerToken.createProxy("test"),
+                        TRANSIT_TO_FRONT)
+                        .setActivityTransitionInfo(mock(ActivityTransitionInfo.class))
+                        .build())
+                .build();
+        SurfaceControl.Transaction startT = mock(StubTransaction.class);
+        SurfaceControl.Transaction finishT = mock(StubTransaction.class);
+        Transitions.setupStartState(info, startT, finishT);
+        verify(startT, never()).setWindowCrop(any(), anyInt(), anyInt());
     }
 
     class TestTransitionHandler implements Transitions.TransitionHandler {
