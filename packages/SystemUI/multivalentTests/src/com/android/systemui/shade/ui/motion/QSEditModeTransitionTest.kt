@@ -61,7 +61,6 @@ import com.android.systemui.statusbar.notification.stack.ui.view.notificationScr
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
@@ -183,8 +182,7 @@ class QSEditModeTransitionTest : SysuiTestCase() {
                                 }
                             ) {
                                 underTest.removeTile(btTileSpec)
-                                // TODO replace with awaitIdle(b/480861333)
-                                awaitDelay(200.milliseconds)
+                                awaitIdle()
                             }
                         ) {
                             val node =
@@ -221,8 +219,7 @@ class QSEditModeTransitionTest : SysuiTestCase() {
                                 }
                             ) {
                                 underTest.addTile(btTileSpec, 0)
-                                // TODO replace with awaitIdle(b/480861333)
-                                awaitDelay(450.milliseconds)
+                                awaitIdle()
                             }
                         ) {
                             val node =
@@ -259,8 +256,7 @@ class QSEditModeTransitionTest : SysuiTestCase() {
                                 }
                             ) {
                                 underTest.addTile(btTileSpec, 0)
-                                // TODO replace with awaitIdle(b/480861333)
-                                awaitDelay(300.milliseconds)
+                                awaitIdle()
                             }
                         ) {
                             feature(

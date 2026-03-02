@@ -560,12 +560,8 @@ private fun ContentScope.BesideUserSwitcherLayout(
                     }
                 }
                 .testTag("BesideUserSwitcherLayout")
-                .motionTestValues {
-                    swapAnimationEnd exportAs BouncerMotionTestKeys.swapAnimationEnd
-                }
                 .padding(padding)
     ) {
-        LaunchedEffect(isSwapped) { swapAnimationEnd = false }
         val animatedOffset by
             animateFloatAsState(
                 targetValue =
@@ -584,9 +580,7 @@ private fun ContentScope.BesideUserSwitcherLayout(
                         -1f
                     },
                 label = "offset",
-            ) {
-                swapAnimationEnd = true
-            }
+            )
 
         fun Modifier.swappable(inverted: Boolean = false): Modifier {
             return graphicsLayer {
@@ -1300,7 +1294,6 @@ object BouncerMotionTestKeys {
     val bouncerActionButtonAlpha = MotionTestValueKey<Float>("bouncerContentActionBtnAlpha")
     val bouncerActionButtonTranslationY =
         MotionTestValueKey<Float>("bouncerContentActionBtnTranslationY")
-    val swapAnimationEnd = MotionTestValueKey<Boolean>("swapAnimationEnd")
     val bouncerContentAlpha = MotionTestValueKey<Float>("bouncerContentAlpha")
 }
 

@@ -45,7 +45,6 @@ import com.android.systemui.qs.panels.ui.viewmodel.BounceableTileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.testKosmos
-import kotlin.time.Duration.Companion.milliseconds
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -171,7 +170,7 @@ class TileBounceMotionTest : SysuiTestCase() {
                 ComposeRecordingSpec(
                     MotionControl {
                         performTouchInputAsync(onNode()) { click() }
-                        awaitDelay(500.milliseconds)
+                        awaitIdle()
                     }
                 ) {
                     for (tile in tiles) {
@@ -198,7 +197,7 @@ class TileBounceMotionTest : SysuiTestCase() {
                 ComposeRecordingSpec(
                     MotionControl {
                         performTouchInputAsync(onNode()) { click() }
-                        awaitDelay(500.milliseconds)
+                        awaitIdle()
                     }
                 ) {
                     feature(

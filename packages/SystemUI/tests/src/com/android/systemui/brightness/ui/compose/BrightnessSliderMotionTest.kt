@@ -37,17 +37,12 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.policy.PolicyRestriction
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.joinAll
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
-import platform.test.motion.compose.MotionControlScope
 import platform.test.motion.compose.feature
-import platform.test.motion.compose.motionTestValueOfNode
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.motion.compose.values.MotionTestValueKey
@@ -88,31 +83,21 @@ class BrightnessSliderMotionTest : SysuiTestCase() {
     }
 
     @Test
-    @Ignore("Enable in next CL again, using awaitIdle")
     fun iconAlphaChanges() {
         motionTestRule.runTest(timeout = 30.seconds) {
             val motion =
                 recordMotion(
                     content = { BrightnessSliderUnderTest(0) },
                     ComposeRecordingSpec(
-                        MotionControl(delayReadyToPlay = { awaitCondition { !isAnimating } }) {
+                        MotionControl(delayReadyToPlay = { awaitIdle() }) {
                             coroutineScope {
-                                val gesture = async {
-                                    performTouchInputAsync(
-                                        onNode(hasTestTag("com.android.systemui:id/slider"))
-                                    ) {
-                                        swipeRight(
-                                            startX = left,
-                                            endX = right,
-                                            durationMillis = 500,
-                                        )
-                                    }
+                                performTouchInputAsync(
+                                    onNode(hasTestTag("com.android.systemui:id/slider"))
+                                ) {
+                                    swipeRight(startX = left, endX = right, durationMillis = 500)
                                 }
-                                val animationEnd = async {
-                                    awaitCondition { isAnimating }
-                                    awaitCondition { !isAnimating }
-                                }
-                                joinAll(gesture, animationEnd)
+
+                                awaitIdle()
                             }
                         }
                     ) {
@@ -125,9 +110,6 @@ class BrightnessSliderMotionTest : SysuiTestCase() {
     }
 
     private companion object {
-
-        val MotionControlScope.isAnimating: Boolean
-            get() = motionTestValueOfNode(BrightnessSliderMotionTestKeys.AnimatingIcon)
 
         fun TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.featureFloat(
             motionTestValueKey: MotionTestValueKey<Float>
