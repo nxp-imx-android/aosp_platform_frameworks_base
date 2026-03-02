@@ -123,7 +123,6 @@ import kotlinx.coroutines.flow.Flow
 
 object Shade {
     object Elements {
-        val ShadeElement = ElementKey("ShadeElement")
         val ShadeHeader = ElementKey("ShadeHeader")
         val BackgroundScrim =
             ElementKey("ShadeBackgroundScrim", contentPicker = LowestZIndexContentPicker)
@@ -189,7 +188,6 @@ constructor(
             }
         val animatedBlurRadiusPx: Float by
             animateFloatAsState(targetValue = targetBlur, label = "Shade-blurRadius")
-        modifier.element(Shade.Elements.ShadeElement)
         ShadeScene(
             notificationStackScrollView.get(),
             viewModel = viewModel,
