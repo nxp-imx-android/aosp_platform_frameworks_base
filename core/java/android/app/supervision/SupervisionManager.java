@@ -82,7 +82,7 @@ public class SupervisionManager {
                     @Override
                     public void onPolicyChanged(Policy policy) {
                         if (Flags.enableSupervisionManagerPolicyApis()) {
-                            onPolicyChanged(policy);
+                            SupervisionListener.this.onPolicyChanged(policy);
                         }
                     }
                 };
