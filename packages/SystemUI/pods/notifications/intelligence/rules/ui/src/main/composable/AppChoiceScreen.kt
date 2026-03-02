@@ -20,10 +20,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.ui.res.stringResource
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
+import com.android.systemui.res.R
 
 /** Renders a fullscreen page to select 1 or more apps matching a search string. */
 @Composable
@@ -44,7 +46,7 @@ fun AppChoiceScreen(viewState: RulesScreenViewState.EditField.Apps, onDismissReq
         }
 
     EditScreen(
-        title = "Apps [TK]",
+        title = stringResource(R.string.notification_rules_field_app),
         initialSelection = initialSelection,
         onSelectionSaved = { viewState.onAppsSaved(it) },
         onDismissRequest = onDismissRequest,

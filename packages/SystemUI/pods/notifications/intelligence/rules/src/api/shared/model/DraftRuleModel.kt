@@ -67,10 +67,10 @@ public data class DraftRuleModel(
 
 /** Represents various actions that a rule can apply to a notification. */
 public enum class ActionModel {
+    /** Highlight and also alert the user, disregarding DND & other modes. */
+    HighlightAndAlert,
     /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT]. */
     Highlight,
-    /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_DEFAULT]. */
-    Default,
     /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_LOW]. */
     Silence,
     /** See [android.app.NotificationRule.Action.PRIMARY_ACTION_BUNDLE]. */
