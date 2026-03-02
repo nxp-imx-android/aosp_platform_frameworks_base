@@ -64,6 +64,7 @@ import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.MotionControlFn
 import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
 import platform.test.motion.compose.feature
+import platform.test.motion.compose.fetchAllSemanticsNodesMaybeCached
 import platform.test.motion.compose.hasMotionTestValue
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
@@ -361,13 +362,10 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
                 },
                 recordBefore = false,
                 recordAfter = false,
-                captureScreenshots = true,
                 timeSeriesCapture = {
                     on({
-                        it.onAllNodes(isElement(TestElements.Foo))
-                            .fetchSemanticsNodes()
-                            .filter { it.layoutInfo.isPlaced }
-                            .firstOrNull()
+                        it.fetchAllSemanticsNodesMaybeCached(isElement(TestElements.Foo))
+                            .firstOrNull { it.layoutInfo.isPlaced }
                     }) {
                         feature(FeatureCaptures.elementOffset)
                         feature(ComposeFeatureCaptures.positionInRoot)
