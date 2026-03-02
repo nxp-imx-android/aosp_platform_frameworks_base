@@ -173,7 +173,7 @@ constructor(
                                 WindowInsetsSides.Top + WindowInsetsSides.Horizontal
                             )
                         )
-                        .padding(horizontal = 30.dp),
+                        .padding(horizontal = 16.dp),
             ) {
                 TransientSurface(
                     transient = viewModel.isTransient,
