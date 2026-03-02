@@ -875,7 +875,6 @@ android_app {
         "--extra-packages",
         "com.android.systemui",
     ],
-    dont_merge_manifests: true,
     platform_apis: true,
     system_ext_specific: true,
     certificate: "platform",
