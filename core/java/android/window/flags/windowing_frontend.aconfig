@@ -428,6 +428,13 @@ flag {
 }
 
 flag {
+    name: "perfect_edge"
+    namespace: "windowing_frontend"
+    description: "Make the app window match the window decoration during fluid resizing."
+    bug: "475362867"
+}
+
+flag {
     name: "refine_ancestor_search_and_bounds"
     namespace: "windowing_frontend"
     description: "Limit the animation bounds for close transition, and do not let other child participants affect final root of a transition."
