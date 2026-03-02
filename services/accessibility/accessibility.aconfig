@@ -203,16 +203,6 @@ flag {
 }
 
 flag {
-    name: "release_a11y_lock_before_input_filter_call"
-    namespace: "accessibility"
-    description: "Releases the AccessibilityManagerService lock before calling into AccessibilityInputFilter to prevent deadlocks with the Input system."
-    bug: "465546957"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "reset_motion_event_sources_on_denied_permission"
     namespace: "accessibility"
     description: "Resets MotionEventSources when the ACCESSIBILITY_MOTION_EVENT_OBSERVING permission is denied to prevent screen freezes."
