@@ -15,6 +15,7 @@ java_defaults {
     name: "FrameworksMockingServicesTests-jni-defaults",
     jni_libs: [
         "libmockingservicestestjni",
+        "libbpf",
     ],
 }
 

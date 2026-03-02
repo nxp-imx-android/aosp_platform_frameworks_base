@@ -6,6 +6,7 @@ java_defaults {
     name: "FrameworksServicesTests-jni-defaults",
     jni_libs: [
         "libservicestestjni",
+        "libbpf",
     ],
 }
 
