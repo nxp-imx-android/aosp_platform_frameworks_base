@@ -102,8 +102,6 @@ fun CredentialPinView(
                     false
                 },
     ) {
-        PinDisplay(pinText = pinText)
-
         Text(
             text = if (error.isNotEmpty()) error else " ",
             style = MaterialTheme.typography.bodyMedium,
@@ -111,6 +109,8 @@ fun CredentialPinView(
                 MaterialTheme.colorScheme.error.copy(alpha = if (error.isNotEmpty()) 1f else 0f),
             modifier = Modifier.padding(bottom = 16.dp),
         )
+
+        PinDisplay(pinText = pinText, modifier = Modifier.padding(bottom = 16.dp))
 
         CredentialPinPad(
             onDigitClick = { digit ->

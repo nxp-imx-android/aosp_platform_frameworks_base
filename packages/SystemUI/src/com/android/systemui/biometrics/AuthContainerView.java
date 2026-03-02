@@ -809,6 +809,7 @@ public class AuthContainerView extends LinearLayout
         lp.setFitInsetsTypes(lp.getFitInsetsTypes() & ~WindowInsets.Type.ime()
                 & ~WindowInsets.Type.systemBars());
         lp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+        lp.softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
         lp.setTitle("BiometricPrompt");
         lp.accessibilityTitle = isCredentialView ? " " : title;
         lp.dimAmount = BACKGROUND_DIM_AMOUNT;
