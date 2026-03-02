@@ -26,9 +26,9 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.assistant.domain.interactor.AssistantIconInteractor
 import com.android.systemui.statusbar.quickactions.assistant.shared.model.AssistantIconSharedModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
+import com.android.systemui.statusbar.quickactions.shared.model.ChipContent
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
@@ -39,10 +39,10 @@ constructor(assistantIconInteractor: AssistantIconInteractor) :
     StatusBarPopupChipViewModel, ExclusiveActivatable() {
     private val hydrator: Hydrator = Hydrator("AssistantIconViewModel.hydrator")
 
-    override val chip: QuickActionChipUiState by
+    override val chip: QuickActionChipModel by
         hydrator.hydratedStateOf(
             traceName = "AssistantIcon",
-            initialValue = QuickActionChipUiState.Hidden(QuickActionChipId.AssistantIcon),
+            initialValue = QuickActionChipModel.Hidden(QuickActionChipId.AssistantIcon),
             source =
                 assistantIconInteractor.assistantIconSharedModel.map {
                     it.toLaunchChipModel { context ->
@@ -63,14 +63,14 @@ constructor(assistantIconInteractor: AssistantIconInteractor) :
 
 fun AssistantIconSharedModel.toLaunchChipModel(
     startAssistant: (Context?) -> Unit
-): QuickActionChipUiState {
+): QuickActionChipModel {
     // Hide the icon if assistInfo is null or is not the configured package.
     return if (assistInfo == null || !isStatusBarAssistantPackage) {
-        QuickActionChipUiState.Hidden(QuickActionChipId.AssistantIcon)
+        QuickActionChipModel.Hidden(QuickActionChipId.AssistantIcon)
     } else {
         // TODO(b/440281094): update with a proper description.
 
-        QuickActionChipUiState.LaunchChip(
+        QuickActionChipModel.LaunchChip(
             chipId = QuickActionChipId.AssistantIcon,
             chipContent =
                 ChipContent.IconOnly(

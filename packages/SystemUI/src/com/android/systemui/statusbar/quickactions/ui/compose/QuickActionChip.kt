@@ -58,12 +58,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.common.shared.model.ContentDescription
-import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
+import com.android.systemui.statusbar.quickactions.shared.model.ChipContent
+import com.android.systemui.statusbar.quickactions.shared.model.ChipIcon
 
 /**
  * A clickable chip that can show an anchored popup containing relevant system controls. The chip

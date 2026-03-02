@@ -30,9 +30,9 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.assistant.domain.interactor.fakeAssistantIconInteractor
 import com.android.systemui.statusbar.quickactions.assistant.shared.model.AssistantIconSharedModel
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
+import com.android.systemui.statusbar.quickactions.shared.model.ChipContent
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
@@ -103,19 +103,19 @@ class AssistantIconViewModelTest : SysuiTestCase() {
     }
 }
 
-private fun QuickActionChipUiState.assertIsHidden(): QuickActionChipUiState.Hidden {
+private fun QuickActionChipModel.assertIsHidden(): QuickActionChipModel.Hidden {
     assertThat(this.chipId).isEqualTo(QuickActionChipId.AssistantIcon)
-    assertThat(this).isInstanceOf(QuickActionChipUiState.Hidden::class.java)
-    return this as QuickActionChipUiState.Hidden
+    assertThat(this).isInstanceOf(QuickActionChipModel.Hidden::class.java)
+    return this as QuickActionChipModel.Hidden
 }
 
-private fun QuickActionChipUiState.assertIsShown(): QuickActionChipUiState.LaunchChip {
+private fun QuickActionChipModel.assertIsShown(): QuickActionChipModel.LaunchChip {
     assertThat(this.chipId).isEqualTo(QuickActionChipId.AssistantIcon)
-    assertThat(this).isInstanceOf(QuickActionChipUiState.LaunchChip::class.java)
-    return this as QuickActionChipUiState.LaunchChip
+    assertThat(this).isInstanceOf(QuickActionChipModel.LaunchChip::class.java)
+    return this as QuickActionChipModel.LaunchChip
 }
 
-private fun QuickActionChipUiState.LaunchChip.verifyIcon(res: Int) {
+private fun QuickActionChipModel.LaunchChip.verifyIcon(res: Int) {
     assertThat(this.chipContent)
         .isEqualTo(ChipContent.IconOnly(Icon.Resource(resId = res, contentDescription = null)))
 }
