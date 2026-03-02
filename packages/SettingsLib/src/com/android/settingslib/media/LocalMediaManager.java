@@ -30,6 +30,7 @@ import android.media.RoutingChangeInfo;
 import android.media.RoutingSessionInfo;
 import android.media.SuggestedDeviceInfo;
 import android.os.Build;
+import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -288,6 +289,13 @@ public class LocalMediaManager implements BluetoothCallback {
      */
     public MissingPermissionsInfo getMissingPermissionsInfo() {
         return mInfoMediaManager.getMissingPermissionsInfo();
+    }
+
+    /**
+     * Get the {@link UserHandle} of the user on which the app to control is running.
+     */
+    public UserHandle getUserHandle() {
+        return mInfoMediaManager.getUserHandle();
     }
 
     /**

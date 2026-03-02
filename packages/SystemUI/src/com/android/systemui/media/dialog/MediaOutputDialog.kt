@@ -415,22 +415,13 @@ class MediaOutputDialog(
         mContext.resources.configuration.screenHeightDp <= SMALL_SCREEN_HEIGHT_DP
 
     private fun refreshWarningSection() {
-        val intent = mMediaSwitchingController.getMissingPermissionsResolveIntent()
-        if (intent == null) {
-            mWarningSection.visibility = View.GONE
+        if (mMediaSwitchingController.getMissingPermissionsResolveIntent() == null) {
+            mWarningSection.visibility = View.GONE;
             return
         }
         mWarningSection.visibility = View.VISIBLE
         mWarningFixButton.setOnClickListener {
-            dismiss()
-            try {
-                mContext.startActivity(intent)
-            } catch (_: ActivityNotFoundException) {
-                // Checks for the intent to match an activity in the calling app are done at
-                // registration time, but in theory the app could be uninstalled just before this
-                // code runs.
-                Log.e(TAG, "No activity found to handle intent $intent")
-            }
+            mMediaSwitchingController.tryToLaunchMissingPermissionsResolveIntent()
         }
     }
 
