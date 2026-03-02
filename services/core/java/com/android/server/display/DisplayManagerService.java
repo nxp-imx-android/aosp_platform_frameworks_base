@@ -57,6 +57,7 @@ import static android.os.Build.HW_TIMEOUT_MULTIPLIER;
 import static android.os.IServiceManager.DUMP_FLAG_PRIORITY_CRITICAL;
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.Process.ROOT_UID;
+import static android.os.UserHandle.isApp;
 import static android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS;
 import static android.provider.Settings.Secure.INCLUDE_DEFAULT_DISPLAY_IN_TOPOLOGY;
 import static android.provider.Settings.Secure.MIRROR_BUILT_IN_DISPLAY;
@@ -1512,7 +1513,7 @@ public final class DisplayManagerService extends SystemService {
             return;
         }
 
-        if (CompatChanges.isChangeEnabled(
+        if (isApp(callingUid) && CompatChanges.isChangeEnabled(
                 ActivityInfo.MASK_PRESENTATION_FLAGS_ON_INTERNAL_DISPLAYS, callingUid)) {
             info.flags &= ~Display.FLAG_PRESENTATION;
         }
