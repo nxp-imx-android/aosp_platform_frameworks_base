@@ -33,6 +33,11 @@ interface DreamSwipeDelegate {
     /** Called during the gesture to report the raw X translation and threshold. */
     fun onSwipeProgress(dx: Float, swipeThreshold: Float)
 
-    /** Called when the touch stream ends, indicating whether the swipe threshold was met. */
-    fun onSwipeEnded(committed: Boolean)
+    /**
+     * Called when the touch stream ends.
+     *
+     * @param committed Whether the swipe threshold was met.
+     * @param velocityX The horizontal velocity of the swipe in pixels per second.
+     */
+    fun onSwipeEnded(committed: Boolean, velocityX: Float)
 }

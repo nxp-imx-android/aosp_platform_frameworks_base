@@ -27,7 +27,7 @@ class FakeDreamSwipeDelegate : DreamSwipeDelegate {
 
     val swipeStartedCalls = mutableListOf<SwipeStartedEvent>()
     val swipeProgressCalls = mutableListOf<ProgressEvent>()
-    val swipeEndedCalls = mutableListOf<Boolean>()
+    val swipeEndedCalls = mutableListOf<SwipeEndedEvent>()
 
     override fun onSwipeStarted(isFromLeft: Boolean, startY: Float): Boolean {
         swipeStartedCalls.add(SwipeStartedEvent(isFromLeft, startY))
@@ -38,8 +38,8 @@ class FakeDreamSwipeDelegate : DreamSwipeDelegate {
         swipeProgressCalls.add(ProgressEvent(dx, swipeThreshold))
     }
 
-    override fun onSwipeEnded(committed: Boolean) {
-        swipeEndedCalls.add(committed)
+    override fun onSwipeEnded(committed: Boolean, velocityX: Float) {
+        swipeEndedCalls.add(SwipeEndedEvent(committed, velocityX))
     }
 
     /** Clears all recorded history. */
@@ -52,6 +52,8 @@ class FakeDreamSwipeDelegate : DreamSwipeDelegate {
     data class ProgressEvent(val dx: Float, val swipeThreshold: Float)
 
     data class SwipeStartedEvent(val isFromLeft: Boolean, val startY: Float)
+
+    data class SwipeEndedEvent(val committed: Boolean, val velocityX: Float)
 }
 
 val DreamSwipeDelegate.fake: FakeDreamSwipeDelegate
