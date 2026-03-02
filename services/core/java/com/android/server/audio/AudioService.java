@@ -991,7 +991,8 @@ public class AudioService extends IAudioService.Stub
                 "media_audio.value_audio_playback_hardening_strict_would_restrict";
         // oneway
         @Override
-        public void playbackHardeningEvent(int uid, byte type, boolean bypassed) {
+        public void playbackHardeningEvent(int uid, byte type, boolean bypassed, byte reason,
+                int usage) {
             if (Binder.getCallingUid() != Process.AUDIOSERVER_UID) {
                 return;
             }
@@ -1007,7 +1008,9 @@ public class AudioService extends IAudioService.Stub
                     + (bypassed ? "would be " : "")
                     + "muted for "
                     + getPackageNameForUid(uid) + " (" + uid + "), "
-                    + "level: " + (type == HardeningType.PARTIAL ? "partial" : "full");
+                    + "level: " + (type == HardeningType.PARTIAL ? "partial" : "full")
+                    + ", reason: " + reason
+                    + ", usage: " + AudioAttributes.usageToString(usage);
 
             AudioService.this.mHardeningLogger.enqueueAndSlog(msg,
                     bypassed ? EventLogger.Event.ALOGI : EventLogger.Event.ALOGW, TAG);

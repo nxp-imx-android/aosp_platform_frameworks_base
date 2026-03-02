@@ -18,19 +18,21 @@ package com.android.server.audio;
 
 import static android.Manifest.permission.ACCESS_ULTRASOUND;
 import static android.Manifest.permission.BLUETOOTH_CONNECT;
+import static android.Manifest.permission.BYPASS_CONCURRENT_RECORD_AUDIO_RESTRICTION;
 import static android.Manifest.permission.CALL_AUDIO_INTERCEPTION;
 import static android.Manifest.permission.CAPTURE_AUDIO_HOTWORD;
 import static android.Manifest.permission.CAPTURE_AUDIO_OUTPUT;
 import static android.Manifest.permission.CAPTURE_MEDIA_OUTPUT;
 import static android.Manifest.permission.CAPTURE_TUNER_AUDIO_INPUT;
 import static android.Manifest.permission.CAPTURE_VOICE_COMMUNICATION_OUTPUT;
-import static android.Manifest.permission.BYPASS_CONCURRENT_RECORD_AUDIO_RESTRICTION;
 import static android.Manifest.permission.MODIFY_AUDIO_ROUTING;
 import static android.Manifest.permission.MODIFY_AUDIO_SETTINGS;
 import static android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED;
 import static android.Manifest.permission.MODIFY_DEFAULT_AUDIO_EFFECTS;
 import static android.Manifest.permission.MODIFY_PHONE_STATE;
 import static android.Manifest.permission.RECORD_AUDIO;
+import static android.Manifest.permission.SCHEDULE_EXACT_ALARM;
+import static android.Manifest.permission.USE_EXACT_ALARM;
 import static android.Manifest.permission.WRITE_SECURE_SETTINGS;
 
 import android.annotation.Nullable;
@@ -94,6 +96,8 @@ public class AudioServerPermissionProvider {
                 BYPASS_CONCURRENT_RECORD_AUDIO_RESTRICTION;
         MONITORED_PERMS[PermissionEnum.MODIFY_AUDIO_SETTINGS_PRIVILEGED] =
                 MODIFY_AUDIO_SETTINGS_PRIVILEGED;
+       MONITORED_PERMS[PermissionEnum.USE_EXACT_ALARM] = USE_EXACT_ALARM;
+       MONITORED_PERMS[PermissionEnum.SCHEDULE_EXACT_ALARM] = SCHEDULE_EXACT_ALARM;
     }
 
     private final Object mLock = new Object();
