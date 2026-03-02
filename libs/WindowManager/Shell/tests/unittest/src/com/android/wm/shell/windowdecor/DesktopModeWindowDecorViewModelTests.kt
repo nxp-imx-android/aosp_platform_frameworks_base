@@ -15,6 +15,7 @@
 
 package com.android.wm.shell.windowdecor
 
+import android.app.ActivityManager
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
@@ -782,6 +783,70 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         onTaskOpening(task)
         verify(mockAppHandleEducationController, never())
             .setAppHandleEducationTooltipCallbacks(openHandleMenuCallbackCaptor.capture(), any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_HANDLE_EDUCATION)
+    fun testDecor_opensHandleMenu_failsNumberOfInstancesCheckWithOneInstance() {
+        val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
+        task.baseIntent = Intent()
+        task.baseIntent.component = ComponentName.createRelative(context, ".Activity1")
+        val decor = setUpMockDecorationForTask(task)
+        val handleMenuController = mock<HandleMenuController>()
+        whenever(decor.handleMenuController).thenReturn(handleMenuController)
+
+        val recentTask = ActivityManager.RecentTaskInfo()
+        recentTask.taskId = task.taskId
+        recentTask.baseIntent = task.baseIntent
+
+        onTaskOpening(task)
+
+        val openHandleMenuCallbackCaptor = argumentCaptor<(Int) -> Unit>()
+        verify(mockAppHandleEducationController, times(1))
+            .setAppHandleEducationTooltipCallbacks(openHandleMenuCallbackCaptor.capture(), any())
+
+        whenever(mockActivityTaskManager.getRecentTasks(any(), any(), any()))
+            .thenReturn(listOf(recentTask))
+
+        openHandleMenuCallbackCaptor.lastValue.invoke(task.taskId)
+        bgExecutor.flushAll()
+        testShellExecutor.flushAll()
+
+        verify(handleMenuController).createHandleMenu(false)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_APP_HANDLE_EDUCATION)
+    fun testDecor_opensHandleMenu_passesNumberOfInstancesCheckWithTwoInstances() {
+        val task = createTask(windowingMode = WINDOWING_MODE_FREEFORM)
+        task.baseIntent = Intent()
+        task.baseIntent.component = ComponentName.createRelative(context, ".Activity1")
+        val decor = setUpMockDecorationForTask(task)
+        val handleMenuController = mock<HandleMenuController>()
+        whenever(decor.handleMenuController).thenReturn(handleMenuController)
+
+        val recentTask1 = ActivityManager.RecentTaskInfo()
+        recentTask1.taskId = task.taskId
+        recentTask1.baseIntent = task.baseIntent
+        val recentTask2 = ActivityManager.RecentTaskInfo()
+        recentTask2.taskId = task.taskId + 1
+        recentTask2.baseIntent = Intent()
+        recentTask2.baseIntent.component = ComponentName.createRelative(context, ".Activity2")
+
+        onTaskOpening(task)
+
+        val openHandleMenuCallbackCaptor = argumentCaptor<(Int) -> Unit>()
+        verify(mockAppHandleEducationController, times(1))
+            .setAppHandleEducationTooltipCallbacks(openHandleMenuCallbackCaptor.capture(), any())
+
+        whenever(mockActivityTaskManager.getRecentTasks(any(), any(), any()))
+            .thenReturn(listOf(recentTask1, recentTask2))
+
+        openHandleMenuCallbackCaptor.lastValue.invoke(task.taskId)
+        bgExecutor.flushAll()
+        testShellExecutor.flushAll()
+
+        verify(handleMenuController).createHandleMenu(true)
     }
 
     @Test

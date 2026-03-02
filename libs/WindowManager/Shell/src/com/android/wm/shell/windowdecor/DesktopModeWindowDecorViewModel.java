@@ -35,7 +35,7 @@ import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.Indica
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION;
-import static com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer.MANAGE_WINDOWS_MINIMUM_INSTANCES;
+import static com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer.MANAGE_WINDOWS_MINIMUM_ADDITIONAL_INSTANCES;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED;
@@ -810,7 +810,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             mMainExecutor.execute(() -> {
                 if (decoration.getHandleMenuController() == null) return;
                 decoration.getHandleMenuController().createHandleMenu(
-                        numOfInstances >= MANAGE_WINDOWS_MINIMUM_INSTANCES);
+                        numOfInstances >= MANAGE_WINDOWS_MINIMUM_ADDITIONAL_INSTANCES);
             });
         });
     }
@@ -2026,27 +2026,24 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private int checkNumberOfOtherInstances(@NonNull RunningTaskInfo info) {
         // TODO(b/336289597): Rather than returning number of instances, return a list of valid
         //  instances, then refer to the list's size and reuse the list for Manage Windows menu.
-        final IActivityTaskManager activityTaskManager = ActivityTaskManager.getService();
-        try {
-            // TODO(b/389184897): Move the following into a helper method of
-            //  RecentsTasksController, similar to #findTaskInBackground.
-            final String packageName = ComponentUtils.getPackageName(info);
-            return activityTaskManager.getRecentTasks(Integer.MAX_VALUE,
-                    ActivityManager.RECENT_WITH_EXCLUDED,
-                    info.userId).getList().stream().filter(
-                    recentTaskInfo -> {
-                        if (recentTaskInfo.taskId == info.taskId) {
-                            return false;
-                        }
-                        final String recentTaskPackageName =
-                                ComponentUtils.getPackageName(recentTaskInfo);
-                        return packageName != null
-                                && packageName.equals(recentTaskPackageName);
+        // TODO(b/389184897): Move the following into a helper method of
+        //  RecentsTasksController, similar to #findTaskInBackground.
+        final String packageName = ComponentUtils.getPackageName(info);
+        return mActivityTaskManager.getRecentTasks(
+                Integer.MAX_VALUE,
+                ActivityManager.RECENT_WITH_EXCLUDED,
+                info.userId
+        ).stream().filter(
+                recentTaskInfo -> {
+                    if (recentTaskInfo.taskId == info.taskId) {
+                        return false;
                     }
-            ).toList().size();
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
+                    final String recentTaskPackageName =
+                            ComponentUtils.getPackageName(recentTaskInfo);
+                    return packageName != null
+                            && packageName.equals(recentTaskPackageName);
+                }
+        ).toList().size();
     }
 
     static class InputMonitorFactory {
