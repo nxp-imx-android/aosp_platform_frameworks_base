@@ -16,7 +16,9 @@
 
 package com.android.wm.shell.scenarios
 
+import android.app.ActivityOptions
 import android.app.Instrumentation
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.hardware.display.DisplayManager
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
@@ -74,10 +76,10 @@ abstract class SettingsConnectedDisplayTestBase {
         val desktopState = DesktopState.fromContext(instrumentation.context)
         assumeTrue(desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY))
 
-        settingsApp.enterDesktopMode(wmHelper, device)
-        // Window should be maximized to ensure all components are visible
-        settingsApp.maximizeAppWithDragToTopDragZone(wmHelper, device)
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        // Start with fullscreen to ensure all components are visible
+        val options = ActivityOptions.makeBasic()
+        options.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN)
+        settingsApp.launchViaIntent(wmHelper, options = options)
 
         val displayId = connectedDisplayRule.setupTestDisplay()
         wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
