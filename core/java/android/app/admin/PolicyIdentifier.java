@@ -72,7 +72,8 @@ public final class PolicyIdentifier<T> {
      * Create an instance of PolicyIdentifier. Should only be used to create the static definitions
      * below.
      *
-     * @hide
+     * <b>This API is only public for testing purposes. Real applications should only use the static
+     * instances defined below.
      */
     public PolicyIdentifier(@NonNull String id) {
         this.mId = id;
