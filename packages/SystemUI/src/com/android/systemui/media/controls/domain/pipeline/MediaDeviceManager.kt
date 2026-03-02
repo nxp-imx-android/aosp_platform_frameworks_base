@@ -35,7 +35,6 @@ import com.android.settingslib.media.MediaDevice
 import com.android.settingslib.media.PhoneMediaDevice
 import com.android.settingslib.media.SuggestedDeviceManager
 import com.android.settingslib.media.SuggestedDeviceState
-import com.android.settingslib.media.flags.Flags
 import com.android.systemui.Flags.enableSuggestedDeviceUi
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -242,9 +241,6 @@ constructor(
             bgExecutor.execute {
                 if (!started) {
                     localMediaManager.registerCallback(this)
-                    if (!Flags.removeUnnecessaryRouteScanning()) {
-                        localMediaManager.startScan()
-                    }
                     muteAwaitConnectionManager.startListening()
                     playbackType = controller?.playbackInfo?.playbackType ?: PLAYBACK_TYPE_UNKNOWN
                     playbackVolumeControlId = controller?.playbackInfo?.volumeControlId
@@ -284,9 +280,6 @@ constructor(
                 if (started) {
                     started = false
                     controller?.unregisterCallback(this)
-                    if (!Flags.removeUnnecessaryRouteScanning()) {
-                        localMediaManager.stopScan()
-                    }
                     localMediaManager.unregisterCallback(this)
                     suggestedDeviceManager.removeListener(this)
                     suggestedDeviceManager.cancelAllRequests()
