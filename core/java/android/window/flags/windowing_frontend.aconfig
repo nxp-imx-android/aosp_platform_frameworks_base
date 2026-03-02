@@ -137,16 +137,6 @@ flag {
 }
 
 flag {
-  name: "default_animator_single_transaction2"
-  namespace: "windowing_frontend"
-  description: "Reduce binder transaction to SF if there are multiple default animations"
-  bug: "456665218"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "show_app_handle_large_screens"
   namespace: "windowing_frontend"
   description: "Show the app handle and the app menu also on large screens that don't enable desktop mode"
