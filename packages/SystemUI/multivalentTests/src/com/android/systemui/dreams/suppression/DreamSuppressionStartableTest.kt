@@ -18,10 +18,8 @@ package com.android.systemui.dreams.suppression
 
 import android.os.PowerManager
 import android.os.powerManager
-import android.platform.test.annotations.DisableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_DISABLE_DREAM_SUPPRESSION
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dreams.suppression.data.repository.fakeActivityRecognitionRepository
 import com.android.systemui.dreams.suppression.shared.model.DreamSuppression
@@ -41,7 +39,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
 
-@DisableFlags(FLAG_DISABLE_DREAM_SUPPRESSION)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DreamSuppressionStartableTest : SysuiTestCase() {

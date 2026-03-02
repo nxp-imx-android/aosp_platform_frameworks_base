@@ -334,16 +334,6 @@ flag {
 }
 
 flag {
-    name: "disable_dream_suppression"
-    namespace: "systemui"
-    description: "Disable suppression of dream when device is in a vehicle."
-    bug: "457463098"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "disable_screen_off_low_light_behavior"
     namespace: "systemui"
     description: "Makes the screen off low light behavior do nothing"
