@@ -301,6 +301,16 @@ flag {
 }
 
 flag {
+  name: "set_self_visibility_only_once"
+  namespace: "input_method"
+  description: "Fix setMyImeVisibilityLocked calling setImeVisibility on the client twice instead of just once"
+  bug: "469307036"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "ime_switcher_menu_systemui_style_update"
   namespace: "input_method"
   description: "Update styling and layout of the IME Switcher Menu implemented in SystemUi"

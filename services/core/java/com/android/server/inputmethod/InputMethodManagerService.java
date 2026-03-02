@@ -5111,31 +5111,34 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         }
     }
 
+    @VisibleForTesting
     @BinderThread
     @GuardedBy("ImfLock.class")
-    private void hideMySoftInputLocked(@NonNull ImeTracker.Token statsToken,
-            @NonNull UserData userData) {
-        if (userData.mCurClient != null) {
-            userData.mCurClient.mClient.setImeVisibility(false, statsToken);
-            // TODO(b/322992891) we will loose the flags here: Deprecate IMM.HideFlags
-            setImeVisibilityOnFocusedWindowClient(false, userData, statsToken);
-        } else {
-            ImeTracker.forLogging().onFailed(statsToken,
-                    ImeTracker.PHASE_SERVER_SET_VISIBILITY_ON_FOCUSED_WINDOW);
+    void setMyImeVisibilityLocked(
+            boolean visible, @NonNull ImeTracker.Token statsToken, @NonNull UserData userData) {
+        if (userData.mImeBindingState.mFocusedWindowClient != null
+                && userData.mImeBindingState.mFocusedWindowClient != userData.mCurClient) {
+            Slog.e(
+                    TAG,
+                    "Clients differ in setMyImeVisibilityLocked; visible: "
+                            + visible
+                            + ", mCurClient: "
+                            + userData.mCurClient
+                            + ", mFocusedWindowClient: "
+                            + userData.mImeBindingState.mFocusedWindowClient);
         }
-    }
 
-    @BinderThread
-    @GuardedBy("ImfLock.class")
-    private void showMySoftInputLocked(@NonNull ImeTracker.Token statsToken,
-            @NonNull UserData userData) {
+        if (Flags.setSelfVisibilityOnlyOnce()) {
+            setImeVisibilityOnFocusedWindowClient(visible, userData, statsToken);
+            return;
+        }
+
         if (userData.mCurClient != null) {
-            userData.mCurClient.mClient.setImeVisibility(true, statsToken);
-            // TODO(b/322992891) we will loose the flags here: Deprecate IMM.ShowFlags
-            setImeVisibilityOnFocusedWindowClient(true, userData, statsToken);
+            userData.mCurClient.mClient.setImeVisibility(visible, statsToken);
+            setImeVisibilityOnFocusedWindowClient(visible, userData, statsToken);
         } else {
-            ImeTracker.forLogging().onFailed(statsToken,
-                    ImeTracker.PHASE_SERVER_SET_VISIBILITY_ON_FOCUSED_WINDOW);
+            ImeTracker.forLogging()
+                    .onFailed(statsToken, ImeTracker.PHASE_SERVER_SET_VISIBILITY_ON_FOCUSED_WINDOW);
         }
     }
 
@@ -6874,7 +6877,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMMS.hideMySoftInput");
                     final long ident = Binder.clearCallingIdentity();
                     try {
-                        mImms.hideMySoftInputLocked(statsToken, mUserData);
+                        mImms.setMyImeVisibilityLocked(false, statsToken, mUserData);
                         typedFuture.complete(null);
                     } finally {
                         Binder.restoreCallingIdentity(ident);
@@ -6904,7 +6907,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMMS.showMySoftInput");
                     final long ident = Binder.clearCallingIdentity();
                     try {
-                        mImms.showMySoftInputLocked(statsToken, mUserData);
+                        mImms.setMyImeVisibilityLocked(true, statsToken, mUserData);
                         typedFuture.complete(null);
                     } finally {
                         Binder.restoreCallingIdentity(ident);
