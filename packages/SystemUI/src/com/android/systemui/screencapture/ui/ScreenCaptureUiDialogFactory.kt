@@ -59,7 +59,7 @@ class ScreenCaptureUiDialogFactory
 @Inject
 constructor(
     @Application private val appContext: Context,
-    private val dialogViewModel: ScreenCaptureUiDialogViewModel,
+    private val dialogViewModelFactory: ScreenCaptureUiDialogViewModel.Factory,
     private val viewModelFactory: ScreenCaptureUiViewModel.Factory,
     private val componentBuilders:
         Map<
@@ -72,6 +72,7 @@ constructor(
 ) {
 
     fun create(display: Display, type: ScreenCaptureType): SystemUIDialog {
+        val dialogViewModel = dialogViewModelFactory.create()
         val visibleState = MutableTransitionState(true)
         return dialogFactory
             .create(

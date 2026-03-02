@@ -20,10 +20,16 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.screencapture.domain.interactor.screenCaptureOverlayStateInteractor
 import com.android.systemui.screencapture.domain.interactor.screenCaptureUiInteractor
 
-val Kosmos.screenCaptureUiDialogViewModel by
+val Kosmos.screenCaptureUiDialogViewModelFactory by
     Kosmos.Fixture {
-        ScreenCaptureUiDialogViewModel(
-            interactor = screenCaptureUiInteractor,
-            overlayInteractor = screenCaptureOverlayStateInteractor,
-        )
+        object : ScreenCaptureUiDialogViewModel.Factory {
+            override fun create(): ScreenCaptureUiDialogViewModel =
+                ScreenCaptureUiDialogViewModel(
+                    interactor = screenCaptureUiInteractor,
+                    overlayInteractor = screenCaptureOverlayStateInteractor,
+                )
+        }
     }
+
+val Kosmos.screenCaptureUiDialogViewModel by
+    Kosmos.Fixture { screenCaptureUiDialogViewModelFactory.create() }

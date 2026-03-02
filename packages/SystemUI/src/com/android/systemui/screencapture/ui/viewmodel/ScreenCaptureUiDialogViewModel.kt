@@ -22,13 +22,14 @@ import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureOverlayStateInteractor
 import com.android.systemui.screencapture.domain.interactor.ScreenCaptureUiInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialog
-import javax.inject.Inject
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 class ScreenCaptureUiDialogViewModel
-@Inject
+@AssistedInject
 constructor(
     interactor: ScreenCaptureUiInteractor,
     overlayInteractor: ScreenCaptureOverlayStateInteractor,
@@ -53,5 +54,10 @@ constructor(
         if (!cancelOnTouchOutside) return false
         dialog.dismiss()
         return true
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(): ScreenCaptureUiDialogViewModel
     }
 }
