@@ -103,7 +103,7 @@ class GeneratedType<T : Any> constructor(
     override fun getDescription(context: Context): String =
         resolveString(context, descriptionRes, description)
 
-    override fun getOptions(context: Context) = lambda(GeneratedTypeContext(context)).map{
+    override suspend fun getOptions(context: Context) = lambda(GeneratedTypeContext(context)).map{
         it.value to it.description
     }
 

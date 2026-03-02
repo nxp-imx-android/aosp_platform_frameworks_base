@@ -64,7 +64,7 @@ class CustomEnum<T, E> constructor (
     /** Returns all entries. */
     fun getEntries(): List<E> = entries.toList()
 
-    override fun getOptions(context: Context) = entries.map { entry ->
+    override suspend fun getOptions(context: Context) = entries.map { entry ->
         val purposeString = when (entry) {
             is EnumApiWithString<*> -> entry.purpose
             is EnumApiWithRes<*> -> context.getString(entry.purpose)

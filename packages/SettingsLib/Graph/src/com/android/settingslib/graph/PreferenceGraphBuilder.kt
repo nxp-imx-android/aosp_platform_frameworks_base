@@ -84,6 +84,7 @@ import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 private const val TAG = "PreferenceGraphBuilder"
@@ -877,27 +878,29 @@ private fun ApiType<*>.toProto(
         setType()
 
         if (this@toProto is FiniteOptionsType<*>) {
-            this@toProto.getOptions(context).forEach {
-                addPossibleValues(
-                    possibleValueProto {
-                        value = preferenceValueProto {
-                            when (this@toProto.getType()) {
-                                Int::class.java,
-                                Int::class.javaObjectType -> intValue = it.first as Int
-                                Boolean::class.java,
-                                Boolean::class.javaObjectType -> booleanValue = it.first as Boolean
-                                Float::class.java,
-                                Float::class.javaObjectType -> floatValue = it.first as Float
-                                Long::class.java,
-                                Long::class.javaObjectType -> longValue = it.first as Long
-                                String::class.java,
-                                String::class.javaObjectType -> stringValue = it.first as String
-                                else -> error("Error: Unsupported type ${this@toProto.getType()}")
+            runBlocking {
+                this@toProto.getOptions(context).forEach {
+                    addPossibleValues(
+                        possibleValueProto {
+                            value = preferenceValueProto {
+                                when (this@toProto.getType()) {
+                                    Int::class.java,
+                                    Int::class.javaObjectType -> intValue = it.first as Int
+                                    Boolean::class.java,
+                                    Boolean::class.javaObjectType -> booleanValue = it.first as Boolean
+                                    Float::class.java,
+                                    Float::class.javaObjectType -> floatValue = it.first as Float
+                                    Long::class.java,
+                                    Long::class.javaObjectType -> longValue = it.first as Long
+                                    String::class.java,
+                                    String::class.javaObjectType -> stringValue = it.first as String
+                                    else -> error("Error: Unsupported type ${this@toProto.getType()}")
+                                }
                             }
+                            description = it.second
                         }
-                        description = it.second
-                    }
-                )
+                    )
+                }
             }
         }
     }

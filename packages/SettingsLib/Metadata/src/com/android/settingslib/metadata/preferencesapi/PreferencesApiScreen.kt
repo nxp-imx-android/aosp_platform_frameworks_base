@@ -56,7 +56,17 @@ import kotlin.reflect.KClass
  * Interface for preference screens that provide parameters in a non-static method.
  */
 interface ProvidesParametersNonStatically {
-    fun getAllPossibleParameters(context: Context): Flow<ValidatedKeyParameters>
+    suspend fun getAllPossibleParameters(context: Context): Flow<ValidatedKeyParameters>
+
+    /**
+    * Synchronous version of [getAllPossibleParameters] for Java.
+    *
+    * This should go away soon once we support suspending calls throughout.
+    */
+    // TODO(469317113): Remove this once suspending calls are supported.
+    fun getAllPossibleParametersSync(context: Context) = runBlocking {
+        getAllPossibleParameters(context)
+    }
 }
 
 /**
@@ -293,7 +303,7 @@ abstract class PreferencesApiScreen private constructor(
     private lateinit var screenParameters: ValidatedKeyParameters
     private var prepareScreenExtras: ((ValidatedKeyParameters, Bundle) -> Unit)? = null
     private var prepareSpaRoute: ((ValidatedKeyParameters) -> String)? = null
-    private var allPossibleParameters: ((Context) -> Collection<ValidatedKeyParameters>) = { emptyList() }
+    private var allPossibleParameters: suspend ((Context) -> Collection<ValidatedKeyParameters>) = { emptyList() }
 
     val preferencesPermissions = mutableListOf<String>()
 
@@ -401,7 +411,7 @@ abstract class PreferencesApiScreen private constructor(
      * @param context The application context.
      * @return A [Flow] emitting all possible [ValidatedKeyParameters].
      */
-    override fun getAllPossibleParameters(context: Context) = allPossibleParameters(context).asFlow()
+    override suspend fun getAllPossibleParameters(context: Context) = allPossibleParameters(context).asFlow()
 
     /**
      * Returns the SPA route for this screen, generating it dynamically if parameters are present.

@@ -193,7 +193,9 @@ class PreferenceMetadataTest {
         override val screenPreconditions: PreconditionsConfig? = null,
         override val preconditions: PreconditionsConfig? = null,
         override val get: GetConfig<String> = GetConfig(execute = { "val" }),
-        override val set: SetConfig<String>? = null
+        override val set: SetConfig<String>? = null,
+        override val getParameters: () -> ValidatedKeyParameters? = { null },
+        override val getParametersSchema: () -> KeyParametersSchema? = { null },
     ) : ApiPreference<String>(null, PreferenceTarget.DEVICE) {
         override val type = AnyString
         override val valueType = String::class.java

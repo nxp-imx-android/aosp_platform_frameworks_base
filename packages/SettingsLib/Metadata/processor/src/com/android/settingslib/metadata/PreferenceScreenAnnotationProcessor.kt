@@ -284,7 +284,7 @@ class PreferenceScreenAnnotationProcessor : AbstractProcessor() {
                     it.write(" @Override public Flow keyParameters(Context context) {\n")
                     if (providesParametersNonStatically) {
                         it.write("   $klass instance = new $klass();\n")
-                        it.write("   return instance.getAllPossibleParameters(context);\n")
+                        it.write("   return instance.getAllPossibleParametersSync(context);\n")
                     } else {
                         it.write(" return $klass.keyParameters(")
                         if (keyParametersHasContextParameter) it.write("context")

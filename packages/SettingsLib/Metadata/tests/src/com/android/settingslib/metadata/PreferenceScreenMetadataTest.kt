@@ -22,6 +22,7 @@ import android.platform.test.flag.junit.SetFlagsRule
 import androidx.fragment.app.Fragment
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.settingslib.metadata.preferencesapi.types.AnyString
 import com.android.settingslib.metadata.test.R
 import com.android.settingslib.metadata.PreferenceScreenMetadata.Companion.EXTRA_FRAGMENT_ARG_KEY
 import com.android.settingslib.metadata.PreferenceScreenMetadata.Companion.EXTRA_SCREEN_ARGS
@@ -141,7 +142,7 @@ class PreferenceScreenMetadataTest {
     @Test
     fun isContainer_isEntryPoint_parameterizedScreen_flagEnabled() {
         setCatalystUseKeyParameters(true)
-        val schema = KeyParametersSchema { parameter("id", R.string.required_param_purpose) }
+        val schema = KeyParametersSchema { parameter("id", R.string.required_param_purpose, type = AnyString) }
         val keyParams = schema.prepare("id" to "0")
         val innerScreen =
             object : ScreenWithKeyParams("Screen2", keyParams) {
