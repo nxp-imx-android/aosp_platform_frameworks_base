@@ -61,6 +61,7 @@ abstract class ClickAndFocus() : TestScenarioBase() {
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle()
+            .withAppTransitionIdle(externalDisplayId)
             .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
             .add(ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId))
             .waitForAndVerify()
@@ -71,6 +72,7 @@ abstract class ClickAndFocus() : TestScenarioBase() {
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle()
+            .withAppTransitionIdle(externalDisplayId)
             .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
             .add(
                 ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId)
