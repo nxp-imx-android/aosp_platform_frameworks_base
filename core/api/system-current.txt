@@ -3422,16 +3422,19 @@ package android.app.supervision {
   @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public final class PackageUsagePolicy extends android.app.supervision.Policy {
     method public int describeContents();
     method @NonNull public String getPackageName();
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_package_usage_apis") @Nullable public java.time.Duration getTimeLimit();
     method public int getType();
     field @NonNull public static final android.os.Parcelable.Creator<android.app.supervision.PackageUsagePolicy> CREATOR;
     field public static final int TYPE_ALLOWED = 0; // 0x0
     field public static final int TYPE_BLOCKED = 1; // 0x1
+    field @FlaggedApi("android.app.supervision.flags.enable_supervision_package_usage_apis") public static final int TYPE_TIME_LIMIT = 2; // 0x2
   }
 
   @FlaggedApi("android.app.supervision.flags.enable_supervision_manager_policy_apis") public static final class PackageUsagePolicy.Builder extends android.app.supervision.Policy.Builder<android.app.supervision.PackageUsagePolicy,android.app.supervision.PackageUsagePolicy.Builder> {
     ctor public PackageUsagePolicy.Builder(@NonNull String, int);
     ctor public PackageUsagePolicy.Builder(@NonNull android.app.supervision.PackageUsagePolicy);
     method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setPackageName(@NonNull String);
+    method @FlaggedApi("android.app.supervision.flags.enable_supervision_package_usage_apis") @NonNull public android.app.supervision.PackageUsagePolicy.Builder setTimeLimit(@Nullable java.time.Duration);
     method @NonNull public android.app.supervision.PackageUsagePolicy.Builder setType(int);
   }
 

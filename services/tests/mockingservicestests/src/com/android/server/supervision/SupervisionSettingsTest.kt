@@ -37,6 +37,7 @@ import java.io.DataOutputStream
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.time.Duration
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -224,36 +225,26 @@ class SupervisionSettingsTest {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS)
     fun saveAndGetSupervisionPolicies_storesAndRetrievesPoliciesCorrectly() {
-        // set up user data with a single policy
-        mSupervisionSettings
-            .getUserData(1)
-            .changeUserData(
-                true,
-                null,
-                true,
-                null,
-                true,
-                ArraySet<String>(),
-                listOf(TEST_PACKAGE_POLICY, TEST_PACKAGE_POLICY_2),
-            )
+        val policies = mutableListOf(TEST_PACKAGE_POLICY, TEST_PACKAGE_POLICY_2)
 
-        // save user data, update with empty policies and load user data
-        mSupervisionSettings.saveUserData()
-        mSupervisionSettings.getUserData(1).changeUserData(false, null, false, null, false)
-        mSupervisionSettings.loadUserData()
+        savePoliciesAndVerifyLoadPolicies(policies)
+    }
 
-        // check if policy was loaded correctly
-        mSupervisionSettings
-            .getUserData(1)
-            .checkUserData(
-                true,
-                null,
-                true,
-                null,
-                true,
-                ArraySet<String>(),
-                listOf(TEST_PACKAGE_POLICY, TEST_PACKAGE_POLICY_2),
+    @Test
+    @RequiresFlagsEnabled(
+        Flags.FLAG_ENABLE_SUPERVISION_MANAGER_POLICY_APIS,
+        Flags.FLAG_ENABLE_SUPERVISION_PACKAGE_USAGE_APIS,
+    )
+    fun saveAndGetSupervisionPolicies_storesAndRetrievesPoliciesCorrectly_withTimeLimitPolicy() {
+        val policies =
+            mutableListOf(
+                TEST_PACKAGE_POLICY,
+                TEST_PACKAGE_POLICY_2,
+                PackageUsagePolicy.Builder("test.package3", PackageUsagePolicy.TYPE_TIME_LIMIT)
+                    .setTimeLimit(Duration.ofMinutes(10))
+                    .build(),
             )
+        savePoliciesAndVerifyLoadPolicies(policies)
     }
 
     @Test
@@ -290,6 +281,26 @@ class SupervisionSettingsTest {
             Xml.copy(xmlIn, xmlOut)
             xmlOut.flush()
         }
+    }
+
+    private fun savePoliciesAndVerifyLoadPolicies(
+        policies: List<Policy>,
+        expectedStoredPolicies: List<Policy> = policies,
+    ) {
+        // set up user data with policies
+        mSupervisionSettings
+            .getUserData(1)
+            .changeUserData(true, null, true, null, true, ArraySet<String>(), policies)
+
+        // save user data, update with empty policies and load user data
+        mSupervisionSettings.saveUserData()
+        mSupervisionSettings.getUserData(1).changeUserData(false, null, false, null, false)
+        mSupervisionSettings.loadUserData()
+
+        // check if policy was loaded correctly
+        mSupervisionSettings
+            .getUserData(1)
+            .checkUserData(true, null, true, null, true, ArraySet<String>(), expectedStoredPolicies)
     }
 
     private companion object {

@@ -218,3 +218,11 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
  }
+
+flag {
+  name: "enable_supervision_package_usage_apis"
+  is_exported: true
+  namespace: "supervision"
+  description: "Enables the package usage APIs in Supervision Service"
+  bug: "482399702"
+}
