@@ -16,14 +16,24 @@
 
 package com.android.systemui.communal.domain.preconditions
 
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.UserHandle
+import android.service.dreams.DreamService
+import com.android.systemui.common.domain.interactor.PackageChangeInteractor
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.power.data.repository.PowerRepository
+import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.statusbar.pipeline.shared.data.repository.ConnectivityRepository
 import com.android.systemui.statusbar.policy.DeviceProvisionedController
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -31,6 +41,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -46,11 +60,16 @@ interface CommonSetupPreconditions {
 class CommonSetupPreconditionsImpl
 @Inject
 constructor(
+    @Application private val context: Context,
     private val deviceProvisionedController: DeviceProvisionedController,
+    private val packageChangeInteractor: PackageChangeInteractor,
+    private val selectedUserInteractor: SelectedUserInteractor,
+    private val userContextProvider: UserContextProvider,
     keyguardInteractor: KeyguardInteractor,
     connectivityRepository: ConnectivityRepository,
     powerRepository: PowerRepository,
     @Background private val bgScope: CoroutineScope,
+    @Background private val bgDispatcher: CoroutineDispatcher,
 ) : CommonSetupPreconditions {
 
     /**
@@ -83,12 +102,33 @@ constructor(
         deviceProvisionedController.isDeviceProvisioned &&
             deviceProvisionedController.isCurrentUserSetup
 
+    /** Emits true if at least [MIN_DREAM_COUNT] dreams are available. */
+    private val areSufficientDreamsInstalled: Flow<Boolean> =
+        merge(
+                packageChangeInteractor.packageChanged(UserHandle.CURRENT).map { Unit },
+                selectedUserInteractor.selectedUser.map { Unit },
+            )
+            .onStart { emit(Unit) }
+            .map { areDreamsAvailable() }
+            .flowOn(bgDispatcher)
+
+    private fun areDreamsAvailable(): Boolean {
+        val userContext = userContextProvider.createCurrentUserContext(context)
+        val dreamServices =
+            userContext.packageManager.queryIntentServices(
+                Intent(DreamService.SERVICE_INTERFACE),
+                PackageManager.MATCH_DEFAULT_ONLY,
+            )
+        return dreamServices.size >= MIN_DREAM_COUNT
+    }
+
     private fun conditionsMet(
         deviceReady: Boolean,
         validated: Boolean,
         dreaming: Boolean,
         interactive: Boolean,
-    ): Boolean = deviceReady && validated && !dreaming && interactive
+        sufficientDreamsInstalled: Boolean,
+    ): Boolean = deviceReady && validated && !dreaming && interactive && sufficientDreamsInstalled
 
     /**
      * Emits true if all common preconditions are met:
@@ -96,6 +136,7 @@ constructor(
      * 2. Network connection is validated (internet access available).
      * 3. Device is NOT currently dreaming (to avoid interrupting an active dream).
      * 4. Device is interactive (screen is on).
+     * 5. At least [MIN_DREAM_COUNT] dreams are installed.
      *
      * This flow is compatible with the lockscreen and "User Locked" states. It specifically gates
      * the dream setup flow and remains false if the device is already dreaming to prevent redundant
@@ -109,12 +150,19 @@ constructor(
                 },
                 keyguardInteractor.isDreaming,
                 powerRepository.isInteractive,
-            ) { deviceReady, defaultConnections, isDreaming, isInteractive ->
+                areSufficientDreamsInstalled,
+            ) {
+                deviceReady,
+                defaultConnections,
+                isDreaming,
+                isInteractive,
+                sufficientDreamsInstalled ->
                 conditionsMet(
                     deviceReady,
                     defaultConnections.isValidated,
                     isDreaming,
                     isInteractive,
+                    sufficientDreamsInstalled,
                 )
             }
             .distinctUntilChanged()
@@ -127,6 +175,11 @@ constructor(
                         connectivityRepository.defaultConnections.value.isValidated,
                         keyguardInteractor.isDreaming.value,
                         powerRepository.isInteractive.value,
+                        areDreamsAvailable(),
                     ),
             )
+
+    companion object {
+        private const val MIN_DREAM_COUNT = 4
+    }
 }
