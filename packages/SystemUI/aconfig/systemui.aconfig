@@ -1740,6 +1740,17 @@ flag {
 }
 
 flag {
+    name: "status_bar_screen_decor_touch_handling_fix"
+    namespace: "systemui"
+    description: "Re-enable touch capture for ScreenDecorations so that privacy dot views can "
+        "be announced by accessibility."
+    bug: "423676187"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "status_bar_show_icons_in_secure_camera"
     namespace: "systemui"
     description: "Show status bar icons in secure camera if user swipes down from top of screen"
