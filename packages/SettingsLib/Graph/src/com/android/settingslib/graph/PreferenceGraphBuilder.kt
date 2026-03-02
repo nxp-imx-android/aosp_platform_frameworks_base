@@ -600,7 +600,7 @@ fun PreferenceMetadata.toProto(
     valueDescriptors: MutableMap<String, PreferenceValueDescriptorProto>? = null,
 ) = preferenceProto {
     val metadata = this@toProto
-    key = metadata.bindingKey
+    key = metadata.key
     if (flags.includeMetadata()) {
         metadata.getTitleTextProto(context, isRoot)?.let { title = it }
         if (metadata.summary != 0) {
@@ -689,7 +689,7 @@ fun PreferenceMetadata.toProto(
     ) {
         val storage = metadata.storage(context)
         value = preferenceValueProto {
-            val key = metadata.bindingKey
+            val key = metadata.key
             when (metadata.valueType) {
                 Int::class.java,
                 Int::class.javaObjectType -> storage.getInt(key)?.let { intValue = it }
