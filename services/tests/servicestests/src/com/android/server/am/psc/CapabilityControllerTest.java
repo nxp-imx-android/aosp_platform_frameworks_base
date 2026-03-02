@@ -261,7 +261,9 @@ public class CapabilityControllerTest {
                 PROCESS_STATE_TOP,
         };
         for (final @ProcessState int state : states) {
-            final TestProcessNode node = new TestProcessNode.Builder().withProcState(state).build();
+            final TestProcessNode node = new TestProcessNode.Builder()
+                    .withCurProcState(state)
+                    .build();
             final ProcessEdge edge = new ProcessEdge(node);
 
             assertEquals(PROCESS_CAPABILITY_ALL, edge.evaluateCapabilityFilter());
@@ -273,7 +275,7 @@ public class CapabilityControllerTest {
     @Test
     public void testEvaluateProcStatePolicy_BtopNoInstrumentation_GrantsBfsl() {
         final TestProcessNode node = new TestProcessNode.Builder()
-                .withProcState(PROCESS_STATE_BOUND_TOP)
+                .withCurProcState(PROCESS_STATE_BOUND_TOP)
                 .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
@@ -283,7 +285,7 @@ public class CapabilityControllerTest {
     @Test
     public void testEvaluateProcStatePolicy_BtopWithInstrumentation_GrantsInstrDefaults() {
         final TestProcessNode node = new TestProcessNode.Builder()
-                .withProcState(PROCESS_STATE_BOUND_TOP)
+                .withCurProcState(PROCESS_STATE_BOUND_TOP)
                 .withHasActiveInstrumentation(true)
                 .build();
         final ProcessEdge edge = new ProcessEdge(node);
@@ -295,7 +297,7 @@ public class CapabilityControllerTest {
     @Test
     public void testEvaluateProcStatePolicy_FgsWithInstrumentation_GrantsInstrDefaults() {
         final TestProcessNode node = new TestProcessNode.Builder()
-                .withProcState(PROCESS_STATE_FOREGROUND_SERVICE)
+                .withCurProcState(PROCESS_STATE_FOREGROUND_SERVICE)
                 .withHasActiveInstrumentation(true)
                 .build();
         final ProcessEdge edge = new ProcessEdge(node);
@@ -319,7 +321,9 @@ public class CapabilityControllerTest {
                 PROCESS_STATE_BOUND_FOREGROUND_SERVICE,
         };
         for (final @ProcessState int state : states) {
-            final TestProcessNode node = new TestProcessNode.Builder().withProcState(state).build();
+            final TestProcessNode node = new TestProcessNode.Builder()
+                    .withCurProcState(state)
+                    .build();
             final ProcessEdge edge = new ProcessEdge(node);
 
             FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(networkCapabilities);
@@ -327,7 +331,7 @@ public class CapabilityControllerTest {
 
         // Network capabilities should not be granted for other states.
         final TestProcessNode node = new TestProcessNode.Builder()
-                .withProcState(PROCESS_STATE_IMPORTANT_FOREGROUND)
+                .withCurProcState(PROCESS_STATE_IMPORTANT_FOREGROUND)
                 .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
@@ -406,7 +410,7 @@ public class CapabilityControllerTest {
         final TestProcessNode node = new TestProcessNode.Builder()
                 .addService(service)
                 .withHasForegroundServices(false)
-                .withProcState(PROCESS_STATE_SERVICE)
+                .withCurProcState(PROCESS_STATE_SERVICE)
                 .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
@@ -523,11 +527,11 @@ public class CapabilityControllerTest {
     public void testUpdate_BfslRestriction() {
         final TestProcessNode node1 = new TestProcessNode.Builder()
                 // BFSL allowed.
-                .withProcState(PROCESS_STATE_BOUND_FOREGROUND_SERVICE)
+                .withCurProcState(PROCESS_STATE_BOUND_FOREGROUND_SERVICE)
                 .build();
         final TestProcessNode node2 = new TestProcessNode.Builder()
                 // IMPF (6) > BFGS (5), thus BFSL is not allowed on this node.
-                .withProcState(PROCESS_STATE_IMPORTANT_FOREGROUND)
+                .withCurProcState(PROCESS_STATE_IMPORTANT_FOREGROUND)
                 .build();
         final TestEdge edge1 = createTestEdge(new TestSystemNode(), node1, PROCESS_CAPABILITY_ALL);
         final TestEdge edge2 = createTestEdge(new TestSystemNode(), node2, PROCESS_CAPABILITY_ALL);

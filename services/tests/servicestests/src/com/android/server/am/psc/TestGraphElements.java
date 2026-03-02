@@ -54,7 +54,7 @@ final class TestGraphElements {
         private final boolean mIsReceivingBroadcast;
         private final boolean mHasIntrinsicImplicitCpuTime;
         private final int mMaxAdj;
-        private final @ProcessState int mProcState;
+        private final @ProcessState int mCurProcState;
         private final ArrayList<TestServiceRecord> mServices;
         private final ArrayList<GraphEdge> mIncomingEdges = new ArrayList<>();
         private final ArrayList<GraphEdge> mOutgoingEdges = new ArrayList<>();
@@ -64,7 +64,7 @@ final class TestGraphElements {
                 boolean cachedCompatChangeCameraMicrophoneCapability, boolean isCurAllowListed,
                 boolean hasForegroundActivities, boolean hasExecutingServices,
                 boolean isReceivingBroadcast, boolean hasIntrinsicImplicitCpuTime, int maxAdj,
-                @ProcessState int procState, ArrayList<TestServiceRecord> services) {
+                @ProcessState int curProcState, ArrayList<TestServiceRecord> services) {
             super(mock(ProcessRecordInternal.class));
             mIsProcessRunning = isProcessRunning;
             mHasActiveInstrumentation = hasActiveInstrumentation;
@@ -78,7 +78,7 @@ final class TestGraphElements {
             mIsReceivingBroadcast = isReceivingBroadcast;
             mHasIntrinsicImplicitCpuTime = hasIntrinsicImplicitCpuTime;
             mMaxAdj = maxAdj;
-            mProcState = procState;
+            mCurProcState = curProcState;
             mServices = services;
         }
 
@@ -157,8 +157,8 @@ final class TestGraphElements {
 
         @Override
         @ProcessState
-        int getProcState() {
-            return mProcState;
+        int getCurProcState() {
+            return mCurProcState;
         }
 
         @Override
@@ -194,7 +194,7 @@ final class TestGraphElements {
             private boolean mIsReceivingBroadcast = false;
             private boolean mHasIntrinsicImplicitCpuTime = false;
             private int mMaxAdj = UNKNOWN_ADJ;
-            private @ProcessState int mProcState = PROCESS_STATE_UNKNOWN;
+            private @ProcessState int mCurProcState = PROCESS_STATE_UNKNOWN;
             private final ArrayList<TestServiceRecord> mServices = new ArrayList<>();
 
             Builder withProcessRunning(boolean isProcessRunning) {
@@ -252,8 +252,8 @@ final class TestGraphElements {
                 return this;
             }
 
-            Builder withProcState(@ProcessState int procState) {
-                mProcState = procState;
+            Builder withCurProcState(@ProcessState int procState) {
+                mCurProcState = procState;
                 return this;
             }
 
@@ -267,7 +267,7 @@ final class TestGraphElements {
                         mHasForegroundServices, mHasNonShortForegroundServices,
                         mCachedCompatChangeCameraMicrophoneCapability, mIsCurAllowListed,
                         mHasForegroundActivities, mHasExecutingServices, mIsReceivingBroadcast,
-                        mHasIntrinsicImplicitCpuTime, mMaxAdj, mProcState, mServices);
+                        mHasIntrinsicImplicitCpuTime, mMaxAdj, mCurProcState, mServices);
             }
         }
     }

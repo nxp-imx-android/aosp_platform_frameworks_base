@@ -167,7 +167,7 @@ final class CapabilityController {
     // LINT.IfChange(evaluateProcStatePolicy)
     private static @ProcessCapability int evaluateProcStatePolicy(@NonNull ProcessEdge edge) {
         final ProcessNode node = edge.getTarget();
-        final @ProcessState int procState = node.getProcState();
+        final @ProcessState int procState = node.getCurProcState();
         final @ProcessCapability int networkCapabilities =
                 NetworkPolicyManager.getDefaultProcessNetworkCapabilities(procState);
         final boolean hasActiveInstrumentation = node.hasActiveInstrumentation();
@@ -342,7 +342,7 @@ final class CapabilityController {
 
     /** Revokes BFSL in the given {@code node} if its procState is worse than BFGS. */
     private static void revokeBfslCapability(@NonNull ProcessNode node) {
-        if (node.getProcState() > PROCESS_STATE_BOUND_FOREGROUND_SERVICE) {
+        if (node.getCurProcState() > PROCESS_STATE_BOUND_FOREGROUND_SERVICE) {
             node.setCapability(node.getCapability() & ~PROCESS_CAPABILITY_BFSL);
         }
     }
