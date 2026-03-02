@@ -33,7 +33,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.compose.ui.platform.ComposeView;
 
 import com.android.app.displaylib.PerDisplayRepository;
-import com.android.systemui.Flags;
+
 import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOnDream;
 import com.android.systemui.ambient.statusbar.ui.binder.AmbientStatusBarViewBinder;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
@@ -435,12 +435,10 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
     private void onPrivacyItemsChanged(@NonNull List<PrivacyItem> privacyItems) {
         updateLocationStatusIcon(privacyItems.stream()
                 .anyMatch(item -> item.getPrivacyType() == PrivacyType.TYPE_LOCATION));
-        if (Flags.dreamPrivacyIndicator()) {
-            updateMicPrivacyStatusIcon(privacyItems.stream()
-                    .anyMatch(item -> item.getPrivacyType() == PrivacyType.TYPE_MICROPHONE));
-            updateCameraPrivacyStatusIcon(privacyItems.stream()
-                    .anyMatch(item -> item.getPrivacyType() == PrivacyType.TYPE_CAMERA));
-        }
+        updateMicPrivacyStatusIcon(privacyItems.stream()
+                .anyMatch(item -> item.getPrivacyType() == PrivacyType.TYPE_MICROPHONE));
+        updateCameraPrivacyStatusIcon(privacyItems.stream()
+                .anyMatch(item -> item.getPrivacyType() == PrivacyType.TYPE_CAMERA));
     }
 
     private void onStatusBarItemsChanged(List<StatusBarItem> newItems) {
