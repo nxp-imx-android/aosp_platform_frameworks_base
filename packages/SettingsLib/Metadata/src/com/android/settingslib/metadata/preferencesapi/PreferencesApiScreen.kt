@@ -267,6 +267,9 @@ abstract class PreferencesApiScreen private constructor(
     var screenPreconditions: PreconditionsConfig? = null
     var screenTags: List<String>? = null
 
+    override val keyParametersSchema: KeyParametersSchema?
+        get() = parametersSchema
+
     override val keyParameters: ValidatedKeyParameters?
         get() = if (::screenParameters.isInitialized) screenParameters else super.keyParameters
 
@@ -372,6 +375,7 @@ abstract class PreferencesApiScreen private constructor(
             appliesTo,
             screenPermissions,
             screenPreconditions,
+            { keyParametersSchema },
             { keyParameters },
         )
         builder.lambda()

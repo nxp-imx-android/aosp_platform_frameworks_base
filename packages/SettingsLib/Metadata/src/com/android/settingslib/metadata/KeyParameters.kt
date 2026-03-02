@@ -336,6 +336,11 @@ class KeyParametersSchema private constructor(
     fun prepareEmpty() = prepare(emptyMap())
 
     /**
+     * Returns the map of parameter definitions.
+     */
+    fun getParameters(): Map<String, ParameterDefinition> = schema
+
+    /**
      * Checks if a parameter key is defined in this schema.
      */
     fun containsKey(key: String): Boolean = schema.containsKey(key)

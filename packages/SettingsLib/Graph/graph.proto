@@ -143,6 +143,10 @@ message PreferenceProto {
   repeated string set_preconditions = 23;
   // True if the preference supports setting values in any circumstances.
   optional bool writable = 24;
+  // Schema for the key-value parameters, as a string.
+  optional KeyParametersSchemaProto parameters_schema = 25;
+  // A map of string to string representing the parameters
+  optional KeyParametersProto key_parameters = 26;
 }
 
 message PossibleValueProto {
@@ -201,7 +205,7 @@ message PreferenceValueDescriptorProto {
 
   // Schema for the key-value parameters, as a string. This will only be present
   // when the value descriptor is parameterized.
-  optional string parameters_schema = 9;
+  optional KeyParametersSchemaProto parameters_schema = 9;
   optional KeyParametersProto parameters = 10;
 }
 
@@ -273,4 +277,14 @@ message BundleProto {
 // Proto of KeyParameters
 message KeyParametersProto {
   map<string, string> values = 1;
+}
+
+// Proto of KeyParametersSchema
+message KeyParametersSchemaProto {
+  map<string, ParameterDefinitionProto> parameters = 1;
+}
+
+message ParameterDefinitionProto {
+  optional string purpose = 1;
+  optional bool required = 2;
 }

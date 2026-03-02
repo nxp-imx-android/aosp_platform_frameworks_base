@@ -36,6 +36,8 @@ import com.android.settingslib.graph.PreferenceGetterFlags.forceIncludeAllScreen
 import com.android.settingslib.graph.PreferenceGetterFlags.includeMetadata
 import com.android.settingslib.graph.PreferenceGetterFlags.includeValue
 import com.android.settingslib.graph.PreferenceGetterFlags.includeValueDescriptor
+import com.android.settingslib.graph.proto.KeyParametersSchemaProto
+import com.android.settingslib.graph.proto.ParameterDefinitionProto
 import com.android.settingslib.graph.proto.PreferenceGraphProto
 import com.android.settingslib.graph.proto.PreferenceGroupProto
 import com.android.settingslib.graph.proto.PreferenceProto
@@ -46,6 +48,7 @@ import com.android.settingslib.graph.proto.TextProto
 import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.IntRangeValuePreference
+import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PersistentPreference
 import com.android.settingslib.metadata.KEY_PACKAGE_NAME
 import com.android.settingslib.metadata.PreferenceAvailabilityProvider
@@ -278,7 +281,8 @@ private constructor(
             }
             if (includeParameters) {
                 if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
-                    factory.keyParameters(context).collect { screen.addKeyParameters(it.toProto()) }
+                    factory.keyParameters(context).collect {
+                        screen.addKeyParameters(it.toProto()) }
                 } else {
                     factory.parameters(context).collect { screen.addParameters(it.toProto()) }
                 }
@@ -636,6 +640,17 @@ fun PreferenceMetadata.toProto(
         } else {
             metadata.intent(context)?.let { actionTarget = it.toActionTarget(context) }
         }
+
+        if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
+            if (metadata is PreferenceScreenMetadata) {
+                metadata.keyParametersSchema?.let { parametersSchema = it.toProto(context) }
+                metadata.keyParameters?.let { keyParameters = it.toProto() }
+            } else if (metadata is ApiPreference<*>) {
+                metadata.getParametersSchema()?.let { parametersSchema = it.toProto(context) }
+                metadata.getParameters()?.let { keyParameters = it.toProto() }
+            }
+        }
+
         val launchTarget = if (screenMetadata != metadata) metadata else null
         screenMetadata.getLaunchIntent(context, launchTarget)?.let { launchIntent = it.toProto() }
         for (tag in metadata.tags(context)) addTags(tag)
@@ -727,7 +742,7 @@ fun PreferenceMetadata.toProto(
             if (metadata is ApiPreference<*>) {
                 description = metadata.type.getDescription(context)
                 metadata.type.getParametersSchema()?.let {
-                    parametersSchema = it.toJsonString(context)
+                    parametersSchema = it.toProto(context)
                 }
                 metadata.type.getParameters()?.let { parameters = it.toProto() }
             }
@@ -847,6 +862,20 @@ private fun Intent.toActionTarget(context: Context): ActionTarget {
         setClassName(context, component!!.className)
     }
     return actionTargetProto { intent = toProto() }
+}
+
+private fun KeyParametersSchema.toProto(context: Context): KeyParametersSchemaProto {
+    val builder = KeyParametersSchemaProto.newBuilder()
+    getParameters().forEach { (name, definition) ->
+        val schemaMap = definition.toParameterSchemaMap(context)
+        val purpose = schemaMap[KeyParametersSchema.ParameterDefinition.PURPOSE_KEY] as? String
+        val required =
+            schemaMap[KeyParametersSchema.ParameterDefinition.REQUIRED_KEY] as? Boolean ?: false
+        val paramProto = ParameterDefinitionProto.newBuilder().setRequired(required)
+        purpose?.let { paramProto.setPurpose(it) }
+        builder.putParameters(name, paramProto.build())
+    }
+    return builder.build()
 }
 
 @SuppressLint("AppBundleLocaleChanges")

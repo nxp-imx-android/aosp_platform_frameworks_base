@@ -33,8 +33,18 @@ import com.android.settingslib.metadata.preferencesapi.types.AnyInt
 import com.android.settingslib.metadata.preferenceHierarchy
 import com.android.settingslib.metadata.preferencesapi.category.Category
 import com.google.common.truth.Truth.assertThat
+import com.android.settingslib.graph.PreferenceGetterFlags
+import com.android.settingslib.metadata.CatalystFlagProvider
+import com.android.settingslib.metadata.CatalystFlagProviderFactory
+import com.android.settingslib.metadata.KeyParametersSchema
+import com.android.settingslib.metadata.preferencesapi.ApiPreference
+import com.android.settingslib.metadata.preferencesapi.GetConfig
+import com.android.settingslib.metadata.preferencesapi.PreconditionsConfig
+import com.android.settingslib.metadata.preferencesapi.SetConfig
+import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget
 import kotlinx.coroutines.CoroutineScope
 import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -44,6 +54,13 @@ import org.robolectric.shadows.ShadowBuild
 class PreferenceGraphBuilderTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
+
+    private lateinit var originalProvider: CatalystFlagProvider
+
+    @Before
+    fun setUp() {
+        originalProvider = CatalystFlagProviderFactory.getInstance()
+    }
 
     private open class TestPreference(
         override val sensitivityLevel: Int,
@@ -65,6 +82,32 @@ class PreferenceGraphBuilderTest {
     @After
     fun tearDown() {
         ShadowBuild.reset()
+        CatalystFlagProviderFactory.setProvider(originalProvider)
+    }
+
+    private fun setCatalystUseKeyParameters(value: Boolean) {
+        CatalystFlagProviderFactory.setProvider(object : CatalystFlagProvider {
+            override fun catalystUseKeyParameters() = value
+        })
+    }
+
+    private open class TestApiPreference(
+        override val key: String = "key",
+        override val purpose: Int = 0,
+        override val screenPreconditions: PreconditionsConfig? = null,
+        override val preconditions: PreconditionsConfig? = null,
+        override val get: GetConfig<Int> = GetConfig(execute = { 42 }),
+        override val set: SetConfig<Int>? = null,
+        val parametersSchema: KeyParametersSchema? = null,
+        val parameters: ValidatedKeyParameters? = null
+    ) : ApiPreference<Int>(null, PreferenceTarget.DEVICE) {
+        override val type = AnyInt
+        override val valueType = Int::class.javaObjectType
+        override val permissions: Permissions? = null
+        override val screenPermissions: Permissions? = null
+        override val getScreenParameters: () -> ValidatedKeyParameters? = { null }
+        override val getParametersSchema: () -> KeyParametersSchema? = { parametersSchema }
+        override val getParameters: () -> ValidatedKeyParameters? = { parameters }
     }
 
     @Test
@@ -347,6 +390,54 @@ class PreferenceGraphBuilderTest {
         val proto = preference.toProto(context, 0, 0, screenMetadata, false, PreferenceGetterFlags.METADATA)
 
         assertThat(proto.writable).isFalse()
+    }
+
+    @Test
+    fun toProto_apiPreference_includesKeyParametersAndSchema() {
+        setCatalystUseKeyParameters(true)
+        val schema = KeyParametersSchema {
+            parameter("test_param", "test_purpose", required = true)
+        }
+        val params = schema.prepare("test_param" to "value")
+
+        val preference = TestApiPreference(
+            parametersSchema = schema,
+            parameters = params
+        )
+
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, PreferenceGetterFlags.METADATA)
+
+        assertThat(proto.hasParametersSchema()).isTrue()
+        assertThat(proto.hasKeyParameters()).isTrue()
+        assertThat(proto.keyParameters.valuesMap).containsEntry("test_param", "value")
+    }
+
+    @Test
+    fun toProto_preferenceScreenMetadata_includesKeyParametersAndSchema() {
+        setCatalystUseKeyParameters(true)
+        val schema = KeyParametersSchema {
+            parameter("test_param", "test_purpose", required = true)
+        }
+        val params = schema.prepare("test_param" to "value")
+        val screenMetadataWithParams = object : PreferenceScreenMetadata {
+            override val bindingKey: String = "screen_key"
+            override val key: String = "screen_key"
+            override val purpose: Int = 0
+            override fun fragmentClass(): Class<out Fragment>? = null
+            override val keyParametersSchema: KeyParametersSchema = schema
+            override val keyParameters: ValidatedKeyParameters = params
+
+            override fun getPreferenceHierarchy(
+                context: Context,
+                coroutineScope: CoroutineScope
+            ): PreferenceHierarchy = preferenceHierarchy(context) {}
+        }
+
+        val proto = screenMetadataWithParams.toProto(context, 0, 0, screenMetadata, false, PreferenceGetterFlags.METADATA)
+
+        assertThat(proto.hasParametersSchema()).isTrue()
+        assertThat(proto.hasKeyParameters()).isTrue()
+        assertThat(proto.keyParameters.valuesMap).containsEntry("test_param", "value")
     }
 
     companion object {
