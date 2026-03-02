@@ -88,6 +88,7 @@ import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.process.processWrapper
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.settings.userTracker
 import com.android.systemui.shade.shadeController
 import com.android.systemui.statusbar.notificationShadeDepthController
@@ -208,6 +209,7 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
                 { communalSettingsInteractor },
                 mock<WindowManagerOcclusionManager>(),
                 Optional.of(mock<UiLatencyStatsManager>()),
+                { kosmos.sceneInteractor },
             )
         }
 
