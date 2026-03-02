@@ -183,16 +183,6 @@ flag {
 }
 
 flag {
-    namespace: "windowing_sdk"
-    name: "use_caller_token_in_launcher_apps"
-    description: "Pass caller's activity token in LauncherApps to fix task property inheritance (e.g. launcher shortcut move bubbled task to fullscreen)"
-    bug: "389810202"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "large_screen_experiences_app_compat"
     name: "defer_resume_end_before_ensure_activity_configuration_bugfix"
     description: "End defer resume before ensureActivityConfiguration()."
