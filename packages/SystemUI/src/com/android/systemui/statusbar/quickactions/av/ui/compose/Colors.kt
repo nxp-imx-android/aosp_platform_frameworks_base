@@ -37,8 +37,8 @@ fun itemColors(isEnabled: Boolean): ListItemColors {
         ListItemDefaults.colors()
             .copy(
                 containerColor = colorScheme.surfaceContainer,
-                headlineColor = colorScheme.onSurfaceVariant,
-                leadingIconColor = colorScheme.onSurfaceVariant,
+                headlineColor = colorScheme.onSurface,
+                leadingIconColor = colorScheme.onSurface,
                 supportingTextColor = colorScheme.onSurfaceVariant,
             )
     }
