@@ -44,6 +44,7 @@ import android.window.ITrustedPresentationListener;
 import android.window.TrustedPresentationThresholds;
 import android.window.WindowInfosListener;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.server.LocalServices;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
@@ -59,8 +60,29 @@ import java.util.Optional;
  */
 public class TrustedPresentationListenerController {
 
+    interface WindowInfosListenerProvider {
+        WindowInfosListener get();
+    }
+
+    private final WindowInfosListenerProvider mWindowInfosListenerProvider;
+    public TrustedPresentationListenerController() {
+        mWindowInfosListenerProvider = () -> new WindowInfosListener() {
+            @Override
+            public void onWindowInfosChanged(InputWindowHandle[] windowHandles,
+                    WindowInfosListener.DisplayInfo[] displayInfos) {
+                TrustedPresentationListenerController.this.onWindowInfosChanged(windowHandles,
+                        displayInfos);
+            }
+        };
+    }
+
+    @VisibleForTesting
+    TrustedPresentationListenerController(WindowInfosListenerProvider provider) {
+        mWindowInfosListenerProvider = provider;
+    }
+
     // Should only be accessed by the posting to the handler
-    private class Listeners {
+    class Listeners {
         private final class ListenerDeathRecipient implements IBinder.DeathRecipient {
             IBinder mListenerBinder;
             int mInstances;
@@ -229,39 +251,42 @@ public class TrustedPresentationListenerController {
                         }
                     }
                 }
-                pw.println(
-                        innerPrefix + "  window=" + windowToken + " name=" + windowName);
+                pw.print(innerPrefix + "  window=" + windowToken + " name=" + windowName);
                 final var listeners = mRegisteredListeners.mWindowToListeners.valueAt(i);
                 for (int j = 0; j < listeners.size(); j++) {
                     final var listener = listeners.get(j);
-                    pw.println(innerPrefix + innerPrefix
-                            + "  listener=" + listener.mListener.asBinder()
+                    pw.print(" listener=" + listener.mListener.asBinder()
                             + " id=" + listener.mId
                             + " thresholds=" + listener.mThresholds);
-                    pw.println(innerPrefix + innerPrefix + "    lastComputedState="
-                            + listener.mLastComputedTrustedPresentationState);
-                    pw.println(innerPrefix + innerPrefix + "    lastReportedState="
-                            + listener.mLastReportedTrustedPresentationState);
-                    pw.println(innerPrefix + innerPrefix + "    lastAlpha=" + listener.mLastAlpha);
-                    pw.println(innerPrefix + innerPrefix + "    lastFractionRendered="
-                            + listener.mLastFractionRendered);
+                    pw.print(" state(current=" + listener.mLastComputedTrustedPresentationState
+                            + " reported=" + listener.mLastReportedTrustedPresentationState + ")");
+                    pw.println(" alpha=" + listener.mLastAlpha
+                            + " fraction=" + listener.mLastFractionRendered);
                 }
             }
             pw.println(innerPrefix + "Window Infos:");
             if (mLastWindowHandles != null && mLastWindowHandles.first != null) {
                 for (int k = 0; k < mLastWindowHandles.first.length; ++k) {
                     InputWindowHandle handle = mLastWindowHandles.first[k];
-                    pw.println(innerPrefix + innerPrefix + "name=" + handle.name);
-                    pw.println(innerPrefix + innerPrefix + "  displayId=" + handle.displayId);
-                    pw.println(innerPrefix + innerPrefix + "  token=" + handle.getWindowToken());
-                    pw.println(innerPrefix + innerPrefix + "  frame=" + handle.frame);
-                    pw.println(innerPrefix + innerPrefix + "  alpha=" + handle.alpha);
-                    pw.println(innerPrefix + innerPrefix + "  canOcclude="
-                            + handle.canOccludePresentation);
-                    pw.println(innerPrefix + innerPrefix + "  layoutParamsType="
-                            + handle.layoutParamsType);
-                    pw.println(innerPrefix + innerPrefix + "  layoutParamsFlags="
-                            + handle.layoutParamsFlags);
+                    pw.print(innerPrefix + innerPrefix + "name=" + handle.name);
+                    pw.print(" displayId=" + handle.displayId);
+                    pw.print(" token=" + handle.getWindowToken());
+                    pw.print(" frame=" + handle.frame);
+                    pw.print(" alpha=" + handle.alpha);
+                    pw.print(" canOcclude=" + handle.canOccludePresentation);
+                    pw.print(" type=" + handle.layoutParamsType);
+                    pw.println(" flags=" + handle.layoutParamsFlags);
+                }
+            } else {
+                pw.println(innerPrefix + innerPrefix + "none");
+            }
+            pw.println(innerPrefix + "Display Infos:");
+            if (mLastWindowHandles != null && mLastWindowHandles.second != null) {
+                for (int k = 0; k < mLastWindowHandles.second.length; ++k) {
+                    WindowInfosListener.DisplayInfo handle = mLastWindowHandles.second[k];
+                    pw.print(innerPrefix + innerPrefix + "displayId=" + handle.mDisplayId);
+                    pw.print(" logicalSize=" + handle.mLogicalSize);
+                    pw.println(" transform=" + handle.mTransform);
                 }
             } else {
                 pw.println(innerPrefix + innerPrefix + "none");
@@ -269,18 +294,18 @@ public class TrustedPresentationListenerController {
         }, 0 /* timeout */);
     }
 
+    @VisibleForTesting
+    void onWindowInfosChanged(InputWindowHandle[] windowHandles,
+            WindowInfosListener.DisplayInfo[] displayInfos) {
+        mHandler.post(() -> computeTpl(new Pair<>(windowHandles, displayInfos)));
+    }
+
     private void registerWindowInfosListener() {
         if (mWindowInfosListener != null) {
             return;
         }
 
-        mWindowInfosListener = new WindowInfosListener() {
-            @Override
-            public void onWindowInfosChanged(InputWindowHandle[] windowHandles,
-                    DisplayInfo[] displayInfos) {
-                mHandler.post(() -> computeTpl(new Pair<>(windowHandles, displayInfos)));
-            }
-        };
+        mWindowInfosListener = mWindowInfosListenerProvider.get();
         mLastWindowHandles = mWindowInfosListener.register();
     }
 
