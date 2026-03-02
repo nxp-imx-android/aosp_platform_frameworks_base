@@ -71,7 +71,9 @@ import android.view.Display;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
+import com.android.server.appop.AppOpsManagerLocal;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.pm.UserManagerInternal;
@@ -111,6 +113,8 @@ public class ComputerControlSessionProcessorTest {
             new ComputerControlSessionParams.Builder()
                     .setName(ComputerControlSessionImplTest.class.getSimpleName())
                     .setTargetPackageNames(List.of(TARGET_PACKAGE))
+                    .setTargetExtensionVersion(
+                            ComputerControlSessionProcessor.MIN_EXTENSION_VERSION_FOR_ANDROID_17)
                     .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                     .build();
 
@@ -123,6 +127,8 @@ public class ComputerControlSessionProcessorTest {
     private KeyguardManager mKeyguardManager;
     @Mock
     private AppOpsManager mAppOpsManager;
+    @Mock
+    private AppOpsManagerLocal mAppOpsManagerLocal;
     @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
@@ -182,6 +188,9 @@ public class ComputerControlSessionProcessorTest {
         LocalServices.removeServiceForTest(InputManagerInternal.class);
         LocalServices.addService(InputManagerInternal.class, mInputManagerInternal);
 
+        LocalManagerRegistry.removeManagerForTesting(AppOpsManagerLocal.class);
+        LocalManagerRegistry.addManager(AppOpsManagerLocal.class, mAppOpsManagerLocal);
+
         Context context = spy(new ContextWrapper(
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
         doReturn(context).when(context).createContextAsUser(any(UserHandle.class), anyInt());
@@ -202,6 +211,7 @@ public class ComputerControlSessionProcessorTest {
 
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
                 .thenReturn(AppOpsManager.MODE_ALLOWED);
+        when(mAppOpsManagerLocal.isUidInForeground(anyInt())).thenReturn(true);
 
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any()))
                 .thenReturn(mVirtualDevice);
@@ -291,6 +301,17 @@ public class ComputerControlSessionProcessorTest {
                 mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
 
         verify(mComputerControlSessionCallback)
+                .onSessionCreationFailed(ComputerControlSession.ERROR_PERMISSION_DENIED);
+    }
+
+    @Test
+    public void callerNotInForeground_sessionNotCreated() throws Exception {
+        when(mAppOpsManagerLocal.isUidInForeground(ATTRIBUTION_SOURCE.getUid())).thenReturn(false);
+
+        mProcessor.processNewSessionRequest(
+                mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
+
+        verify(mComputerControlSessionCallback, timeout(CALLBACK_TIMEOUT_MS))
                 .onSessionCreationFailed(ComputerControlSession.ERROR_PERMISSION_DENIED);
     }
 
