@@ -151,8 +151,8 @@ class PreAuthInfo {
 
         final List<BiometricSensor> eligibleSensors = new ArrayList<>();
         List<Pair<BiometricSensor, Integer>> ineligibleSensors = new ArrayList<>();
-        final boolean isCallerComputerControlled = virtualDeviceManagerInternal
-                .isComputerControlDisplay(promptInfo.getDisplayId());
+        final boolean isCallerComputerControlled = virtualDeviceManagerInternal != null
+                && virtualDeviceManagerInternal.isComputerControlDisplay(promptInfo.getDisplayId());
 
         if (biometricRequested) {
             for (BiometricSensor sensor : sensors) {
