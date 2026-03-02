@@ -425,13 +425,10 @@ public class ScreenMediaRecorder {
      * Returns the required {@code Size} of the thumbnail.
      */
     private Size getRequiredThumbnailSize() {
-        boolean isLowRam = ActivityManager.isLowRamDeviceStatic();
-        int thumbnailIconHeight = mContext.getResources().getDimensionPixelSize(isLowRam
-                ? R.dimen.notification_big_picture_max_height_low_ram
-                : R.dimen.notification_big_picture_max_height);
-        int thumbnailIconWidth = mContext.getResources().getDimensionPixelSize(isLowRam
-                ? R.dimen.notification_big_picture_max_width_low_ram
-                : R.dimen.notification_big_picture_max_width);
+        int thumbnailIconHeight = mContext.getResources().getDimensionPixelSize(
+                R.dimen.notification_big_picture_max_height);
+        int thumbnailIconWidth = mContext.getResources().getDimensionPixelSize(
+                R.dimen.notification_big_picture_max_width);
         return new Size(thumbnailIconWidth, thumbnailIconHeight);
     }
 

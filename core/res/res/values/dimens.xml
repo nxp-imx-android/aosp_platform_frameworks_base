@@ -896,14 +896,19 @@
 
     <!-- The maximum size of the small notification icon. -->
     <dimen name="notification_small_icon_size">48dp</dimen>
-    <!-- The maximum height of any image in a remote view. This is applied to all images in custom remoteviews. This value is determined by the maximum notification height -->
-    <dimen name="notification_custom_view_max_image_height">284dp</dimen>
-    <!-- The maximum height of any image in a remote view. This is applied to all images in custom remoteviews. This value is determined a maximum notification width -->
-    <dimen name="notification_custom_view_max_image_width">450dp</dimen>
-    <!-- The maximum height of a big picture in a notification. The images will be reduced to that height in case they are bigger. This value is determined by the maximum notification height -->
+    <!-- The maximum height of any image in a collapsed remote view. This value is determined by the maximum notification height -->
+    <dimen name="notification_collapsed_custom_view_max_image_height">48dp</dimen>
+    <!-- The maximum height of any image in a collapsed remote view. This value is determined by the maximum notification height -->
+    <dimen name="notification_hun_custom_view_max_image_height">96dp</dimen>
+    <!-- The maximum height of any image in a collapsed remote view. This value is determined by the maximum notification height -->
+    <dimen name="notification_expanded_custom_view_max_image_height">318dp</dimen>
+    <!-- The maximum width of any image in a  remote view. This value is determined a maximum notification width -->
+    <dimen name="notification_custom_view_max_image_width">320dp</dimen>
+    <dimen name="notification_bubble_size">60dp</dimen>
+    <!-- The maximum height of a big picture in a notification. This value is determined by the maximum notification height ~ notification_max_height - notification_2025_header_height -->
     <dimen name="notification_big_picture_max_height">284dp</dimen>
     <!-- The maximum width of a big picture in a notification. The images will be reduced to that width in case they are bigger. This value is determined by the standard panel size -->
-    <dimen name="notification_big_picture_max_width">416dp</dimen>
+    <dimen name="notification_big_picture_max_width">320dp</dimen>
     <!-- The size of the right icon -->
     <dimen name="notification_right_icon_size">48dp</dimen>
     <!-- The margin between the right icon and the content. (2025 redesign version) -->
@@ -944,22 +949,6 @@
     <!-- The inset of the notification progress bar points drawn as rects -->
     <dimen name="notification_progress_points_inset">0dp</dimen>
 
-    <!-- The maximum size of the small notification icon on low memory devices. -->
-    <dimen name="notification_small_icon_size_low_ram">@dimen/notification_small_icon_size</dimen>
-    <!-- The maximum height of any image in a remote view. This is applied to all images in custom remoteviews. -->
-    <dimen name="notification_custom_view_max_image_height_low_ram">208dp</dimen>
-    <!-- The maximum height of any image in a remote view. This is applied to all images in custom remoteviews. -->
-    <dimen name="notification_custom_view_max_image_width_low_ram">294dp</dimen>
-    <!-- The maximum height of a big picture in a notification. The images will be reduced to that height in case they are bigger. -->
-    <dimen name="notification_big_picture_max_height_low_ram">208dp</dimen>
-    <!-- The maximum width of a big picture in a notification. The images will be reduced to that width in case they are bigger. -->
-    <dimen name="notification_big_picture_max_width_low_ram">294dp</dimen>
-    <!-- The size of the right icon image when on low ram -->
-    <dimen name="notification_right_icon_size_low_ram">@dimen/notification_right_icon_size</dimen>
-    <!-- The maximum size of Person avatar image in MessagingStyle notifications.
-     This is bigger than displayed because listeners can use it for other displays
-     e.g. wearables. -->
-    <dimen name="notification_person_icon_max_size_low_ram">96dp</dimen>
     <!-- The maximum size of the grayscale icon -->
     <dimen name="notification_grayscale_icon_max_size">256dp</dimen>
 

@@ -8926,36 +8926,20 @@ public class Notification implements Parcelable
         if (extras.getBoolean(EXTRA_REDUCED_IMAGES)) {
             return;
         }
-        boolean isLowRam = ActivityManager.isLowRamDeviceStatic();
+        Resources resources = context.getResources();
 
-        if (mSmallIcon != null
-                // Only bitmap icons can be downscaled.
-                && (mSmallIcon.getType() == Icon.TYPE_BITMAP
-                        || mSmallIcon.getType() == Icon.TYPE_ADAPTIVE_BITMAP)) {
-            Resources resources = context.getResources();
-            int maxSize = resources.getDimensionPixelSize(
-                    isLowRam ? R.dimen.notification_small_icon_size_low_ram
-                            : R.dimen.notification_small_icon_size);
+        if (mSmallIcon != null) {
+            int maxSize = resources.getDimensionPixelSize(R.dimen.notification_small_icon_size);
             mSmallIcon.scaleDownIfNecessary(maxSize, maxSize);
         }
 
-        if (mBridgedNotificationMetadata != null
-                // Only bitmap icons can be downscaled.
-                && (mBridgedNotificationMetadata.getAppIcon().getType() == Icon.TYPE_BITMAP
-                        || mBridgedNotificationMetadata.getAppIcon().getType()
-                        == Icon.TYPE_ADAPTIVE_BITMAP)) {
-            Resources resources = context.getResources();
-            int maxSize = resources.getDimensionPixelSize(
-                    isLowRam ? R.dimen.notification_small_icon_size_low_ram
-                            : R.dimen.notification_small_icon_size);
+        if (mBridgedNotificationMetadata != null) {
+            int maxSize = resources.getDimensionPixelSize(R.dimen.notification_small_icon_size);
             mBridgedNotificationMetadata.getAppIcon().scaleDownIfNecessary(maxSize, maxSize);
         }
 
         if (mLargeIcon != null || largeIcon != null) {
-            Resources resources = context.getResources();
-            int maxSize = resources.getDimensionPixelSize(isLowRam
-                    ? R.dimen.notification_right_icon_size_low_ram
-                    : R.dimen.notification_right_icon_size);
+            int maxSize = resources.getDimensionPixelSize(R.dimen.notification_right_icon_size);
             if (mLargeIcon != null) {
                 mLargeIcon.scaleDownIfNecessary(maxSize, maxSize);
             }
@@ -8963,24 +8947,44 @@ public class Notification implements Parcelable
                 largeIcon = Icon.scaleDownIfNecessary(largeIcon, maxSize, maxSize);
             }
         }
-        reduceImageSizesForRemoteView(contentView, context, isLowRam);
-        reduceImageSizesForRemoteView(headsUpContentView, context, isLowRam);
-        reduceImageSizesForRemoteView(bigContentView, context, isLowRam);
-        extras.putBoolean(EXTRA_REDUCED_IMAGES, true);
-    }
-
-    private void reduceImageSizesForRemoteView(RemoteViews remoteView, Context context,
-            boolean isLowRam) {
-        if (remoteView != null) {
-            Resources resources = context.getResources();
-            int maxWidth = resources.getDimensionPixelSize(isLowRam
-                    ? R.dimen.notification_custom_view_max_image_width_low_ram
-                    : R.dimen.notification_custom_view_max_image_width);
-            int maxHeight = resources.getDimensionPixelSize(isLowRam
-                    ? R.dimen.notification_custom_view_max_image_height_low_ram
-                    : R.dimen.notification_custom_view_max_image_height);
-            remoteView.reduceImageSizes(maxWidth, maxHeight);
+        if (contentView != null) {
+            int maxWidth = resources.getDimensionPixelSize(
+                    R.dimen.notification_custom_view_max_image_width);
+            int maxHeight = resources.getDimensionPixelSize(
+                    R.dimen.notification_collapsed_custom_view_max_image_height);
+            contentView.reduceImageSizes(maxWidth, maxHeight);
         }
+        if (headsUpContentView != null) {
+            int maxWidth = resources.getDimensionPixelSize(
+                    R.dimen.notification_custom_view_max_image_width);
+            int maxHeight = resources.getDimensionPixelSize(
+                    R.dimen.notification_hun_custom_view_max_image_height);
+            headsUpContentView.reduceImageSizes(maxWidth, maxHeight);
+        }
+        if (bigContentView != null) {
+            int maxWidth = resources.getDimensionPixelSize(
+                    R.dimen.notification_custom_view_max_image_width);
+            int maxHeight = resources.getDimensionPixelSize(
+                    R.dimen.notification_expanded_custom_view_max_image_height);
+            bigContentView.reduceImageSizes(maxWidth, maxHeight);
+        }
+        if (mBubbleMetadata != null) {
+            int bubbleSize = resources.getDimensionPixelSize(
+                    R.dimen.notification_bubble_size);
+            if (mBubbleMetadata.mIcon != null) {
+                mBubbleMetadata.mIcon.scaleDownIfNecessary(bubbleSize, bubbleSize);
+            }
+        }
+        int smallIconSize = resources.getDimensionPixelSize(
+                R.dimen.notification_small_icon_size);
+        if (actions != null) {
+            for (Action action : actions) {
+                if (action.mIcon != null) {
+                    action.mIcon.scaleDownIfNecessary(smallIconSize, smallIconSize);
+                }
+            }
+        }
+        extras.putBoolean(EXTRA_REDUCED_IMAGES, true);
     }
 
     /**
@@ -9530,8 +9534,7 @@ public class Notification implements Parcelable
          *
          * @hide
          */
-        public void reduceImageSizes(Context context) {
-        }
+        protected void reduceImageSizes(Context context) {}
 
         /**
          * Validate that this style was properly composed. This is called at build time.
@@ -9711,22 +9714,17 @@ public class Notification implements Parcelable
          */
         @Override
         public void reduceImageSizes(Context context) {
-            super.reduceImageSizes(context);
             Resources resources = context.getResources();
-            boolean isLowRam = ActivityManager.isLowRamDeviceStatic();
             if (mPictureIcon != null) {
-                int maxPictureHeight = resources.getDimensionPixelSize(isLowRam
-                        ? R.dimen.notification_big_picture_max_height_low_ram
-                        : R.dimen.notification_big_picture_max_height);
-                int maxPictureWidth = resources.getDimensionPixelSize(isLowRam
-                        ? R.dimen.notification_big_picture_max_width_low_ram
-                        : R.dimen.notification_big_picture_max_width);
+                int maxPictureHeight = resources.getDimensionPixelSize(
+                        R.dimen.notification_big_picture_max_height);
+                int maxPictureWidth = resources.getDimensionPixelSize(
+                        R.dimen.notification_big_picture_max_width);
                 mPictureIcon.scaleDownIfNecessary(maxPictureWidth, maxPictureHeight);
             }
             if (mBigLargeIcon != null) {
-                int rightIconSize = resources.getDimensionPixelSize(isLowRam
-                        ? R.dimen.notification_right_icon_size_low_ram
-                        : R.dimen.notification_right_icon_size);
+                int rightIconSize = resources.getDimensionPixelSize(
+                        R.dimen.notification_right_icon_size);
                 mBigLargeIcon.scaleDownIfNecessary(rightIconSize, rightIconSize);
             }
         }
@@ -9980,6 +9978,14 @@ public class Notification implements Parcelable
             super.restoreFromExtras(extras);
 
             mBigText = extras.getCharSequence(EXTRA_BIG_TEXT);
+        }
+
+        /**
+         * @hide
+         */
+        @Override
+        public void reduceImageSizes(Context context) {
+            // no images
         }
 
         /**
@@ -10910,19 +10916,15 @@ public class Notification implements Parcelable
          */
         @Override
         public void reduceImageSizes(Context context) {
-            super.reduceImageSizes(context);
             Resources resources = context.getResources();
-            boolean isLowRam = ActivityManager.isLowRamDeviceStatic();
             if (mShortcutIcon != null) {
                 int maxSize = resources.getDimensionPixelSize(
-                        isLowRam ? R.dimen.notification_small_icon_size_low_ram
-                                : R.dimen.notification_small_icon_size);
+                        R.dimen.notification_person_icon_max_size);
                 mShortcutIcon.scaleDownIfNecessary(maxSize, maxSize);
             }
 
             int maxAvatarSize = resources.getDimensionPixelSize(
-                    isLowRam ? R.dimen.notification_person_icon_max_size_low_ram
-                            : R.dimen.notification_person_icon_max_size);
+                    R.dimen.notification_person_icon_max_size);
             if (mUser != null && mUser.getIcon() != null) {
                 mUser.getIcon().scaleDownIfNecessary(maxAvatarSize, maxAvatarSize);
             }
@@ -11381,6 +11383,14 @@ public class Notification implements Parcelable
         /**
          * @hide
          */
+        @Override
+        public void reduceImageSizes(Context context) {
+            // no images
+        }
+
+        /**
+         * @hide
+         */
         public RemoteViews makeExpandedContentView() {
             StandardTemplateParams p = mBuilder.mParams.reset()
                     .viewType(StandardTemplateParams.VIEW_TYPE_EXPANDED)
@@ -11667,6 +11677,14 @@ public class Notification implements Parcelable
             if (mDeviceIntent != null) {
                 extras.putParcelable(EXTRA_MEDIA_REMOTE_INTENT, mDeviceIntent);
             }
+        }
+
+        /**
+         * @hide
+         */
+        @Override
+        public void reduceImageSizes(Context context) {
+            // no images
         }
 
         /**
@@ -12045,13 +12063,15 @@ public class Notification implements Parcelable
          */
         @Override
         public void reduceImageSizes(Context context) {
-            super.reduceImageSizes(context);
             if (mVerificationIcon != null) {
                 int rightIconSize = context.getResources().getDimensionPixelSize(
-                        ActivityManager.isLowRamDeviceStatic()
-                                ? R.dimen.notification_right_icon_size_low_ram
-                                : R.dimen.notification_right_icon_size);
+                        R.dimen.notification_right_icon_size);
                 mVerificationIcon.scaleDownIfNecessary(rightIconSize, rightIconSize);
+            }
+            if (mPerson.getIcon() != null) {
+                int leftIconSize = context.getResources().getDimensionPixelSize(
+                        R.dimen.notification_person_icon_max_size);
+                mPerson.getIcon().scaleDownIfNecessary(leftIconSize, leftIconSize);
             }
         }
 
@@ -12544,6 +12564,14 @@ public class Notification implements Parcelable
             }
 
             mCriticalMetric = extras.getInt(EXTRA_METRICS_CRITICAL_INDEX, CRITICAL_METRIC_DEFAULT);
+        }
+
+        /**
+         * @hide
+         */
+        @Override
+        public void reduceImageSizes(Context context) {
+            // no images
         }
 
         /** @hide */
@@ -14417,8 +14445,6 @@ public class Notification implements Parcelable
          */
         @Override
         public void reduceImageSizes(Context context) {
-            super.reduceImageSizes(context);
-
             final Resources resources = context.getResources();
 
             int progressIconSize =
@@ -15104,6 +15130,14 @@ public class Notification implements Parcelable
         /**
          * @hide
          */
+        @Override
+        public void reduceImageSizes(Context context) {
+            // no images
+        }
+
+        /**
+         * @hide
+         */
         public boolean displayCustomViewInline() {
             return true;
         }
@@ -15235,6 +15269,14 @@ public class Notification implements Parcelable
     public static class DecoratedMediaCustomViewStyle extends MediaStyle {
 
         public DecoratedMediaCustomViewStyle() {
+        }
+
+        /**
+         * @hide
+         */
+        @Override
+        public void reduceImageSizes(Context context) {
+            // no images
         }
 
         /**
