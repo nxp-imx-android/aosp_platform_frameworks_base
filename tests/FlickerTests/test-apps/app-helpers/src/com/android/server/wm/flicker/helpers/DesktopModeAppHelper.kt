@@ -396,12 +396,13 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         wmHelper: WindowManagerStateHelper,
         device: UiDevice
     ): UiObject2? {
+        val window = wmHelper.getWindow(innerHelper) ?: error("Unable to find the window\n")
         if (
-            wmHelper.getWindow(innerHelper)?.windowingMode !=
-            WindowingMode.WINDOWING_MODE_FREEFORM.value
+            window.windowingMode != WindowingMode.WINDOWING_MODE_FREEFORM.value
         ) error("expected a freeform window with caption but window is not in freeform mode")
+        val displayId = window.displayId
         val captions =
-            device.wait(Until.findObjects(caption), TIMEOUT.toMillis())
+            device.wait(Until.findObjects(caption.displayId(displayId)), TIMEOUT.toMillis())
                 ?: error("Unable to find view $caption\n")
 
         return captions.find {
