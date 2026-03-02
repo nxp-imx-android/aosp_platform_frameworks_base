@@ -268,3 +268,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_auto_sim_pin_ui"
+    namespace: "security"
+    description: "Enables the user interface for automatic management of SIM PIN"
+    bug: "481248675"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
