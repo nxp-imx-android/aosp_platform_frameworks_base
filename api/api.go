@@ -223,7 +223,7 @@ func createMergedTxt(ctx android.LoadHookContext, txt MergedTxtDefinition, expor
 	metalavaCmd := "$(location metalava)"
 	// Silence reflection warnings. See b/168689341
 	metalavaCmd += " -J--add-opens=java.base/java.util=ALL-UNNAMED "
-	metalavaCmd += " --quiet merge-signatures --format=v2 "
+	metalavaCmd += " --quiet merge-signatures --format=2.0 "
 
 	filename := txt.TxtFilename
 	if txt.Scope != "public" {
