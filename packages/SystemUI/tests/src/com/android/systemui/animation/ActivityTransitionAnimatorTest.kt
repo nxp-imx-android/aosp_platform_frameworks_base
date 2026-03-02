@@ -805,6 +805,84 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
 
     @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
     @Test
+    fun originTransitionOnTransitionConsumedCancelsTheAnimation_afterStarting() {
+        kosmos.runTest {
+            val cookie = ActivityTransitionAnimator.TransitionCookie("testCookie")
+            val controllerWithCookie =
+                object : DelegateTransitionAnimatorController(createController()) {
+                    override val transitionCookie = cookie
+                }
+            val token = mock<IBinder>()
+            val info = mock<TransitionInfo>()
+            val change = listOf(createChange(mock<SurfaceControl>(), cookie, forLaunch = true))
+            whenever(info.changes).thenReturn(change)
+            val startTransaction = mock<SurfaceControl.Transaction>()
+            var finished = false
+            val finishCallback = finishedCallback { finished = true }
+
+            val transition =
+                activityTransitionAnimator.createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                )
+            whenever(listener.onTransitionAnimationStart()).thenAnswer {
+                transition.onTransitionConsumed(token, false /* aborted */)
+                true
+            }
+            whenever(listener.onTransitionAnimationCancelled()).thenAnswer {
+                finished = true
+                true
+            }
+
+            transition.startAnimation(token, info, startTransaction, finishCallback)
+
+            // Need this to make sure that the animation runs until the end before the checks.
+            while (!finished) continue
+            waitForIdleSync()
+            verify(listener).onTransitionAnimationStart()
+            verify(listener).onTransitionAnimationCancelled()
+            verify(listener).onTransitionAnimationEnd(any())
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
+    fun originTransitionOnTransitionConsumedCancelsTheAnimation_beforeStarting() {
+        kosmos.runTest {
+            val cookie = ActivityTransitionAnimator.TransitionCookie("testCookie")
+            val controllerWithCookie =
+                object : DelegateTransitionAnimatorController(createController()) {
+                    override val transitionCookie = cookie
+                }
+            val token = mock<IBinder>()
+            var finished = false
+
+            val transition =
+                activityTransitionAnimator.createOriginTransition(
+                    controllerWithCookie,
+                    testScope,
+                    isDialogLaunch = false,
+                    transitionHelper = transitionHelper,
+                )
+            whenever(listener.onTransitionAnimationCancelled()).thenAnswer {
+                finished = true
+                true
+            }
+
+            transition.onTransitionConsumed(token, false /* aborted */)
+
+            while (!finished) continue
+            waitForIdleSync()
+            verify(listener).onTransitionAnimationCancelled()
+            verify(listener, never()).onTransitionAnimationStart()
+            verify(listener, never()).onTransitionAnimationEnd(any())
+        }
+    }
+
+    @EnableFlags(Flags.FLAG_ANIMATION_LIBRARY_SHELL_MIGRATION)
+    @Test
     fun originTransitionCleansUpReferencesAfterRunning_whenEphemeral() {
         kosmos.runTest {
             val cookie = ActivityTransitionAnimator.TransitionCookie("testCookie")
@@ -1290,10 +1368,11 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                     TRANSIT_CLOSE
                 }
 
-            taskInfo = RunningTaskInfo().apply {
-                launchCookies = arrayListOf(cookie)
-                parentTaskId = INVALID_TASK_ID
-            }
+            taskInfo =
+                RunningTaskInfo().apply {
+                    launchCookies = arrayListOf(cookie)
+                    parentTaskId = INVALID_TASK_ID
+                }
             backgroundColor = Color.Green.value.toInt()
             setEndAbsBounds(Rect(0, 0, 200, 200))
         }
