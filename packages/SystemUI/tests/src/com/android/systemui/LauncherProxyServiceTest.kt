@@ -37,7 +37,7 @@ import com.android.systemui.LauncherProxyService.ACTION_QUICKSTEP
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.data.repository.displayRepository
-import com.android.systemui.dump.DumpManager
+import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.keyguard.ui.view.InWindowLauncherUnlockAnimationManager
@@ -115,7 +115,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private lateinit var subject: LauncherProxyService
-    @Mock private val dumpManager = DumpManager()
+    private val dumpManager = kosmos.dumpManager
     @Mock private lateinit var processWrapper: ProcessWrapper
     private val displayTracker = FakeDisplayTracker(mContext)
     private val fakeSystemClock = FakeSystemClock()
