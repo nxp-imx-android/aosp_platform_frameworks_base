@@ -38,12 +38,13 @@ import android.service.messaging.AlternativeMessageTransportService;
 import android.service.messaging.AlternativeMessageTransportServiceWrapper;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.LongSparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.telephony.SmsApplication;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -61,6 +62,7 @@ public final class MessageUpgradeWorker {
     private static final String TAG = MessageUpgradeWorker.class.getSimpleName();
     private static final String AUTHORITY_SMS = "sms";
     private static final String AUTHORITY_MMS = "mms";
+    private static final int MAX_PENDING_INTENTS = 50;
     private static final boolean IS_DEBUG = false;
     private final ScheduledExecutorService mScheduler =
             Executors.newSingleThreadScheduledExecutor();
@@ -78,12 +80,12 @@ public final class MessageUpgradeWorker {
         }
     };
 
-    private final LongSparseArray<List<PendingIntent>> mSmsPendingSentIntents =
-            new LongSparseArray<>();
-    private final LongSparseArray<List<PendingIntent>> mSmsPendingDeliveryIntents =
-            new LongSparseArray<>();
-    private final LongSparseArray<List<PendingIntent>> mMmsPendingSentIntents =
-            new LongSparseArray<>();
+    private final PendingIntentCache mSmsPendingSentIntents =
+            new PendingIntentCache(MAX_PENDING_INTENTS);
+    private final PendingIntentCache mSmsPendingDeliveryIntents =
+            new PendingIntentCache(MAX_PENDING_INTENTS);
+    private final PendingIntentCache mMmsPendingSentIntents =
+            new PendingIntentCache(MAX_PENDING_INTENTS);
 
     private final AlternativeMessageTransportServiceWrapper mServiceWrapper;
 
@@ -378,7 +380,7 @@ public final class MessageUpgradeWorker {
     }
 
     private List<PendingIntent> getUpgradedMessagePendingIntents(
-            LongSparseArray<List<PendingIntent>> pendingIntents,
+            PendingIntentCache pendingIntents,
             long messageId) {
         synchronized (mMessageUpgradeLock) {
             return pendingIntents.get(messageId);
@@ -386,7 +388,7 @@ public final class MessageUpgradeWorker {
     }
 
     private void discardUpgradedMessagePendingIntents(
-            LongSparseArray<List<PendingIntent>> pendingIntents,
+            PendingIntentCache pendingIntents,
             long messageId) {
         synchronized (mMessageUpgradeLock) {
             pendingIntents.remove(messageId);
@@ -449,5 +451,19 @@ public final class MessageUpgradeWorker {
             case AUTHORITY_MMS -> MessageType.MMS;
             default -> MessageType.UNKNOWN;
         };
+    }
+
+    private static class PendingIntentCache extends LinkedHashMap<Long, List<PendingIntent>> {
+        private final int mMaxSize;
+
+        PendingIntentCache(int maxSize) {
+            super(maxSize + 1, 1.0f, false);
+            this.mMaxSize = maxSize;
+        }
+
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Long, List<PendingIntent>> eldest) {
+            return (size() > mMaxSize);
+        }
     }
 }
