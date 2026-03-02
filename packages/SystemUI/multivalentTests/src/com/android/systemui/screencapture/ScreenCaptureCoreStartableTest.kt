@@ -26,6 +26,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.display.data.repository.display
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -90,6 +91,8 @@ class ScreenCaptureCoreStartableTest : SysuiTestCase() {
                 activityStarter = activityStarter,
                 screenCaptureRecordFeaturesInteractor = screenCaptureRecordFeaturesInteractor,
                 screenCaptureTracingInteractor = screenCaptureTracingInteractor,
+                broadcastDispatcher = broadcastDispatcher,
+                screenCaptureUiReceiver = screenCaptureUiReceiver,
             )
         }
     }
