@@ -380,3 +380,16 @@ key PERIOD {
     base:                               '.'
     shift:                              ':'
 }
+
+### NUMPAD
+
+key NUMPAD_DOT {
+    label:                              ','
+    base:                               fallback FORWARD_DEL
+    numlock:                            ','
+}
+
+key NUMPAD_COMMA {
+    label:                              '.'
+    base:                               '.'
+}
