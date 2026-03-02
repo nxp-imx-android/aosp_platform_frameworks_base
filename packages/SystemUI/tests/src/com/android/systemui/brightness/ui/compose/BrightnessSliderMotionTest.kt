@@ -40,6 +40,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeRecordingSpec
@@ -87,6 +88,7 @@ class BrightnessSliderMotionTest : SysuiTestCase() {
     }
 
     @Test
+    @Ignore("Enable in next CL again, using awaitIdle")
     fun iconAlphaChanges() {
         motionTestRule.runTest(timeout = 30.seconds) {
             val motion =

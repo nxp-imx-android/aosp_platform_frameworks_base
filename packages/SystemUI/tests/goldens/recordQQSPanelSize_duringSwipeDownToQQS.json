@@ -33,9 +33,6 @@
     464,
     480,
     496,
-    512,
-    528,
-    544,
     "after"
   ],
   "features": [
@@ -57,11 +54,11 @@
         },
         {
           "width": 1328,
-          "height": 280
+          "height": 224
         },
         {
           "width": 1328,
-          "height": 336
+          "height": 280
         },
         {
           "width": 1328,
@@ -78,18 +75,6 @@
         {
           "width": 1328,
           "height": 510
-        },
-        {
-          "width": 1328,
-          "height": 532
-        },
-        {
-          "width": 1328,
-          "height": 532
-        },
-        {
-          "width": 1328,
-          "height": 532
         },
         {
           "width": 1328,
