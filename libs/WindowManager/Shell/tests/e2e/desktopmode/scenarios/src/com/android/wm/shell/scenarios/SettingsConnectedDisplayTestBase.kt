@@ -30,6 +30,7 @@ import android.tools.Rotation
 import android.tools.device.apphelpers.SettingsHelper
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.Display.INVALID_DISPLAY
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
@@ -47,7 +48,12 @@ import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
-import platform.test.desktop.SimulatedConnectedDisplayTestRule
+import platform.test.desktop.DisplayDevice
+import platform.test.desktop.DisplayPeripheral
+import platform.test.desktop.DisplaySize
+import platform.test.desktop.Peripheral
+import platform.test.desktop.PeripheralDeviceTestRule
+import platform.test.desktop.PeripheralType
 
 /** Base test class for connected display settings CUJ. */
 @Ignore("Base Test Class")
@@ -56,7 +62,10 @@ import platform.test.desktop.SimulatedConnectedDisplayTestRule
     FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
     FLAG_SHOW_TABBED_CONNECTED_DISPLAY_SETTING,
 )
-abstract class SettingsConnectedDisplayTestBase {
+abstract class SettingsConnectedDisplayTestBase(
+    private val peripheralRequest: Peripheral =
+        DisplayPeripheral(PeripheralType.SIMULATED, DisplaySize.SIZE_1080P)
+) {
 
     val instrumentation: Instrumentation = getInstrumentation()
     val tapl = LauncherInstrumentation()
@@ -64,11 +73,12 @@ abstract class SettingsConnectedDisplayTestBase {
     val device = UiDevice.getInstance(instrumentation)
     val settingsApp = DesktopModeAppHelper(SettingsHelper(instrumentation))
     val displayManager = instrumentation.context.getSystemService(DisplayManager::class.java)
+    var addedDisplayId: Int = INVALID_DISPLAY
 
     @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
     @get:Rule(order = 1)
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_0)
-    @get:Rule(order = 2) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    @get:Rule(order = 2) val peripheralDeviceRule = PeripheralDeviceTestRule()
     @get:Rule(order = 3)
     val screenRecordRule = ScreenRecordRule(/* keepTestLevelRecordingOnSuccess= */ false)
 
@@ -82,9 +92,15 @@ abstract class SettingsConnectedDisplayTestBase {
         options.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN)
         settingsApp.launchViaIntent(wmHelper, options = options)
 
-        val displayId = connectedDisplayRule.setupTestDisplay()
-        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
-        openExternalDisplayPage(displayId)
+        val response = peripheralDeviceRule.requestPeripherals(peripheralRequest)
+
+        val displayDevice =
+            response.devices.filterIsInstance<DisplayDevice>().firstOrNull()
+                ?: error("Failed to connect simulated display peripheral")
+        addedDisplayId = displayDevice.displayId
+
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(addedDisplayId).waitForAndVerify()
+        openExternalDisplayPage(addedDisplayId)
     }
 
     @After

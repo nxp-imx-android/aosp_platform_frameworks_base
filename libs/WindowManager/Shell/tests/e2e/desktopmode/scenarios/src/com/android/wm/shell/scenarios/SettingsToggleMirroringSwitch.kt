@@ -33,12 +33,11 @@ abstract class SettingsToggleMirroringSwitch : SettingsConnectedDisplayTestBase(
         Settings.Secure.putInt(instrumentation.context.contentResolver, MIRROR_SETTING, 0)
         selectDisplay(DEFAULT_DISPLAY)
 
-        val displayId = connectedDisplayRule.addedDisplays.first()
         getMirroringPreference().click()
 
         // As display is just mirroring the main display, the display itself doesn't have UI
         // components
-        wmHelper.StateSyncBuilder().withEmptyDisplay(displayId).waitForAndVerify()
+        wmHelper.StateSyncBuilder().withEmptyDisplay(addedDisplayId).waitForAndVerify()
     }
 
     @Test
@@ -46,11 +45,10 @@ abstract class SettingsToggleMirroringSwitch : SettingsConnectedDisplayTestBase(
         Settings.Secure.putInt(instrumentation.context.contentResolver, MIRROR_SETTING, 1)
         selectDisplay(DEFAULT_DISPLAY)
 
-        val displayId = connectedDisplayRule.addedDisplays.first()
         getMirroringPreference().click()
 
         // Once display stops mirroring, Desktop UI components should be visible again
-        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
+        wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(addedDisplayId).waitForAndVerify()
     }
 
     @After
