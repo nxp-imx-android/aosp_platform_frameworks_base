@@ -48,6 +48,11 @@ fun TransitionBuilder.toNotificationsShadeTransition(
         enabled = enableSharedElements,
         elevateInContent = Overlays.NotificationsShade,
     )
+    sharedElement(Notifications.Elements.StackPlaceholder, enabled = enableSharedElements)
+    sharedElement(
+        Notifications.Elements.HeadsUpNotificationPlaceholder,
+        enabled = enableSharedElements,
+    )
 
     verticalContainerReveal(NotificationsShade.Elements.Panel, shadeExpansionMotion, revealHaptics)
 
