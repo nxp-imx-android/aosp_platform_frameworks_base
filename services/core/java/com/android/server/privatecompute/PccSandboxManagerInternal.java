@@ -566,8 +566,6 @@ public final class PccSandboxManagerInternal implements OnRoleHoldersChangedList
             @ActivityManagerService.AssociationType int associationType, @Nullable Bundle extras) {
         Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER,
                 "PccSandboxManagerInternal#validateAssociationAllowed");
-        Slog.d(TAG, "AllowAssociation validation for callerUid :" + callerUid
-                + " and callerPackage :" + callerPackage);
         try {
             // Self-association is allowed.
             if (callerUid == targetUid) {
