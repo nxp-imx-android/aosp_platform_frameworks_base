@@ -1194,6 +1194,13 @@ flag {
 }
 
 flag {
+    name: "secure_content_failure_ui"
+    namespace: "lse_desktop_experience"
+    description: "When secure content is blocked on a display, show a UI explaining what happened."
+    bug: "380280860"
+}
+
+flag {
     name: "show_desktop_experience_dev_option"
     namespace: "lse_desktop_experience"
     description: "Replace the freeform windowing dev options with a desktop experience one."
