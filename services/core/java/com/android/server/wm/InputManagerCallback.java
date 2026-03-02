@@ -123,13 +123,19 @@ final class InputManagerCallback implements InputManagerService.WindowManagerCal
         mService.mAnrController.notifyWindowResponsive(token, pid);
     }
 
+    /**
+     * Notifies the window manager about an application that is about to ANR because it has
+     * no focused window.
+     *
+     * Called by the InputManager.
+     */
     @Override
-    public void warnNoFocusedWindowAnr(
+    public void notifyPreNoFocusedWindowAnr(
             @NonNull InputApplicationHandle inputApplicationHandle,
             int eventId,
             long elapsedDurationMs,
             long timeoutDurationMs) {
-        mService.mAnrController.notifyAppUnresponsiveWarning(
+        mService.mAnrController.notifyPreAppUnresponsive(
                 inputApplicationHandle, eventId, elapsedDurationMs, timeoutDurationMs);
     }
 
