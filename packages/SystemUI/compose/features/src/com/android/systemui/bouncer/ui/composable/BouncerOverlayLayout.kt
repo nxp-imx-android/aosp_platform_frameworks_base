@@ -19,6 +19,8 @@ package com.android.systemui.bouncer.ui.composable
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.Composable
 import androidx.window.core.layout.WindowSizeClass
+import com.android.compose.layout.ContainerLayout
+import com.android.compose.windowsizeclass.AdditionalHeightBreakpoints
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.systemui.Flags
 
@@ -32,12 +34,16 @@ fun calculateLayout(isOneHandedModeSupported: Boolean): BouncerOverlayLayout {
     return calculateLayoutInternal(LocalWindowSizeClass.current, isOneHandedModeSupported)
 }
 
+/**
+ * Returns the [ContainerLayout] that should be used by Bouncer's `containerize` modifier or null if
+ * the modifier should not be applied.
+ */
 @Composable
-fun shouldBeContainerized(): Boolean {
+fun calculateContainerLayout(): ContainerLayout? {
     if (!Flags.containerizeBouncerOnLargeScreens() && !Flags.containerizeBouncerOnLargeScreens2()) {
-        return false
+        return null
     }
-    return shouldBeContainerizedInternal(LocalWindowSizeClass.current)
+    return calculateContainerLayoutInternal(LocalWindowSizeClass.current)
 }
 
 /** Enumerates all known adaptive layout configurations. */
@@ -55,6 +61,36 @@ enum class BouncerOverlayLayout {
 /**
  * Internal version of `calculateLayout` in the System UI Compose library, extracted here to allow
  * for testing that's not dependent on Compose.
+ *
+ * Layout calculation is visualized by the table below. The matching order is indicated by the
+ * numbers in parentheses. `isAtLeastBreakpoint` matches all equal or larger size classes (those
+ * below and to the right of the breakpoint in the table). Consequently, size classes must be
+ * matched starting from the largest and moving toward the smallest.
+ *
+ * If a container layout is applied, it's marked as HORIZONTAL or VERTICAL.
+ *
+ * ```
+ * +-------------+----------+----------+------------+------------+--------------+
+ * |             |                        Width Size Class                       |
+ * +-------------+----------+----------+------------+------------+--------------+
+ * |   Height    | Compact  | Medium   | Expanded   | Large      | Extra-large  |
+ * | Size Class  |          | (600 dp) | (840 dp)   | (1200 dp)  | (1600 dp)    |
+ * +------------(6)---------+----------+------------+------------+--------------+
+ * | Compact     | SPLIT    | SPLIT    | SPLIT      | SPLIT      | SPLIT        |
+ * +------------(5)---------+---------(3)-----------+------------+--------------+
+ * | Medium      | STANDARD | STANDARD | BESIDE     | BESIDE     | BESIDE       |
+ * | (480 dp)    |          |          |            |            |              |
+ * +-------------+---------(4)---------+------------+------------+--------------+
+ * | Expanded    | STANDARD | BELOW    | BESIDE     | BESIDE     | BESIDE       |
+ * | (900 dp)    |          |          |            |            | (HORIZONTAL) |
+ * +-------------+----------+----------+------------+------------+--------------+
+ * | Large       | STANDARD | BELOW    | BESIDE     | BESIDE     | BESIDE       |
+ * | (1200 dp)   |          |          |            |            | (HORIZONTAL) |
+ * +-------------+----------+---------(2)-----------+-----------(1)-------------+
+ * | Extra-large | STANDARD | BELOW    | BELOW      | BELOW      | BESIDE       |
+ * | (1600 dp)   |          |          | (VERTICAL) | (VERTICAL) | (HORIZONTAL) |
+ * +-------------+----------+----------+------------+------------+--------------+
+ * ```
  */
 @VisibleForTesting
 fun calculateLayoutInternal(
@@ -63,6 +99,14 @@ fun calculateLayoutInternal(
 ): BouncerOverlayLayout {
     with(windowSizeClass) {
         return when {
+            isAtLeastBreakpoint(
+                WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND,
+                AdditionalHeightBreakpoints.HEIGHT_DP_EXTRA_LARGE_LOWER_BOUND,
+            ) -> BouncerOverlayLayout.BESIDE_USER_SWITCHER
+            isAtLeastBreakpoint(
+                WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND,
+                AdditionalHeightBreakpoints.HEIGHT_DP_EXTRA_LARGE_LOWER_BOUND,
+            ) -> BouncerOverlayLayout.BELOW_USER_SWITCHER
             isAtLeastBreakpoint(
                 WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND,
                 WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND,
@@ -79,10 +123,23 @@ fun calculateLayoutInternal(
     }
 }
 
+/**
+ * Internal version of `calculateContainerLayout` in the System UI Compose library, extracted here
+ * to allow for testing that's not dependent on Compose.
+ *
+ * See [calculateLayoutInternal] for the layout table.
+ */
 @VisibleForTesting
-fun shouldBeContainerizedInternal(windowSizeClass: WindowSizeClass): Boolean {
-    return windowSizeClass.isAtLeastBreakpoint(
-        WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND,
-        WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND,
-    )
+fun calculateContainerLayoutInternal(windowSizeClass: WindowSizeClass): ContainerLayout? {
+    return when {
+        windowSizeClass.isAtLeastBreakpoint(
+            WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND,
+            WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND,
+        ) -> ContainerLayout.HORIZONTAL
+        windowSizeClass.isAtLeastBreakpoint(
+            WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND,
+            AdditionalHeightBreakpoints.HEIGHT_DP_EXTRA_LARGE_LOWER_BOUND,
+        ) -> ContainerLayout.VERTICAL
+        else -> null
+    }
 }

@@ -36,7 +36,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.DpSize
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
@@ -109,7 +108,8 @@ private fun ContentScope.BouncerOverlay(
     val backgroundColor = viewModel.backgroundColor
 
     DisposableEffect(Unit) { onDispose { viewModel.onUiDestroyed() } }
-    val isContainerized = shouldBeContainerized()
+    val containerLayout = calculateContainerLayout()
+    val isContainerized = containerLayout != null
     val navigationBarsWindowInsets = WindowInsets.navigationBars
     Box(
         modifier
@@ -128,7 +128,7 @@ private fun ContentScope.BouncerOverlay(
         Box(
             Modifier.then(
                     if (isContainerized) {
-                        Modifier.containerize(containerConfig())
+                        Modifier.containerize(containerConfig(), containerLayout)
                     } else {
                         Modifier.fillMaxSize()
                     }
@@ -178,18 +178,11 @@ private fun Background(modifier: Modifier, color: Color, isContainerized: Boolea
 
 @Composable
 private fun containerConfig(): ContainerConfig {
-    val sizePercentage =
-        LocalContext.current.resources.getFloat(R.dimen.bouncer_container_size_percentage)
-    val minSize =
-        DpSize(
-            dimensionResource(R.dimen.bouncer_container_min_width),
-            dimensionResource(R.dimen.bouncer_container_min_height),
-        )
-
-    val maxSize =
-        DpSize(
-            dimensionResource(R.dimen.bouncer_container_max_width),
-            dimensionResource(R.dimen.bouncer_container_max_height),
-        )
-    return ContainerConfig(sizePercentage, minSize, maxSize)
+    val sizeFraction =
+        LocalContext.current.resources.getFloat(R.dimen.bouncer_container_size_fraction)
+    val minLongEdge = dimensionResource(R.dimen.bouncer_container_min_long_edge)
+    val minShortEdge = dimensionResource(R.dimen.bouncer_container_min_short_edge)
+    val maxLongEdge = dimensionResource(R.dimen.bouncer_container_max_long_edge)
+    val maxShortEdge = dimensionResource(R.dimen.bouncer_container_max_short_edge)
+    return ContainerConfig(sizeFraction, minLongEdge, minShortEdge, maxLongEdge, maxShortEdge)
 }
