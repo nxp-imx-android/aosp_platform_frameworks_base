@@ -28,6 +28,7 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_ANIMATION_DELEGATE;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.wm.shell.common.split.SplitScreenUtils.getNewParentTokenForStage;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_10_90;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
@@ -35,6 +36,7 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_9
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_MAIN;
 import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_SIDE;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_APP_DOES_NOT_SUPPORT_MULTIWINDOW;
+import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_APP_FINISHED;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DRAG_DIVIDER;
 import static com.android.wm.shell.splitscreen.SplitTestUtils.createMockSurface;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_SPLIT_SCREEN_PAIR_OPEN;
@@ -65,6 +67,7 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.IActivityTaskManager;
 import android.app.IApplicationThread;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -126,6 +129,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /** Tests for {@link StageCoordinator} */
 @SmallTest
@@ -148,6 +152,7 @@ public class SplitTransitionTests extends ShellTestCase {
     @Mock private WindowDecorViewModel mWindowDecorViewModel;
     @Mock private SplitState mSplitState;
     @Mock private ShellExecutor mMainExecutor;
+    @Mock private ShellExecutor mAnimExecutor;
     @Mock private Handler mMainHandler;
     @Mock private LaunchAdjacentController mLaunchAdjacentController;
     @Mock private DefaultMixedHandler mMixedHandler;
@@ -162,6 +167,7 @@ public class SplitTransitionTests extends ShellTestCase {
     private StageTaskListener mSideStage;
     private StageCoordinator mStageCoordinator;
     private SplitScreenTransitions mSplitScreenTransitions;
+    private SplitTransitionAnimations mSplitTransitionAnimations;
     private final DisplayAreaInfo mDisplayAreaInfo =
             new DisplayAreaInfo(new MockToken("DisplayAreaInfo").token(), DEFAULT_DISPLAY, 0);
     private final DisplayAreaInfo mSecondaryDisplayAreaInfo =
@@ -178,9 +184,8 @@ public class SplitTransitionTests extends ShellTestCase {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         mDesktopState = new FakeDesktopState();
-        final ShellExecutor mockExecutor = mock(ShellExecutor.class);
-        doReturn(mockExecutor).when(mTransitions).getMainExecutor();
-        doReturn(mockExecutor).when(mTransitions).getAnimExecutor();
+        doReturn(mMainExecutor).when(mTransitions).getMainExecutor();
+        doReturn(mAnimExecutor).when(mTransitions).getAnimExecutor();
         doReturn(mock(SurfaceControl.Transaction.class)).when(mTransactionPool).acquire();
         doReturn(mock(WindowContainerToken.class))
                 .when(mRootDisplayAreaOrganizer).getDisplayTokenForDisplay(anyInt());
@@ -211,6 +216,8 @@ public class SplitTransitionTests extends ShellTestCase {
 
         mStageCoordinator.setMixedHandler(mMixedHandler);
         mSplitScreenTransitions = mStageCoordinator.getSplitTransitions();
+        mSplitTransitionAnimations = mSplitScreenTransitions.getSplitTransitionAnimations();
+        spyOn(mSplitTransitionAnimations);
         doAnswer((Answer<IBinder>) invocation -> {
             mLastStartedTransitionWCT = invocation.getArgument(1);
             return mock(IBinder.class);
@@ -686,6 +693,64 @@ public class SplitTransitionTests extends ShellTestCase {
         // focus
         verify(mActivityTaskManager, times(1))
                 .setFocusedTask(mSideChild.getTaskId());
+    }
+
+    @Test
+    @UiThreadTest
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_SPLIT_DISMISS_ANIMATION)
+    public void testPlayDismissAnimation_invoked() {
+        enterSplit();
+
+        // Simulate dismissing the Left (Main) stage
+        TransitionInfo info = new TransitionInfoBuilder(TRANSIT_CLOSE, 0)
+                // Closing task (Left/Main)
+                .addChange(TRANSIT_TO_BACK, mMainChild)
+                // Expanding task (Right/Side)
+                .addChange(createChange(TRANSIT_CHANGE, mSideChild))
+                // ...rest
+                .addChange(TRANSIT_TO_BACK, mMainStage.mRootTaskInfo)
+                .addChange(TRANSIT_TO_BACK, mSideStage.mRootTaskInfo)
+                .addChange(TRANSIT_TO_BACK, mStageCoordinator.mSplitRootTaskInfo)
+                .build();
+
+        // Add snapshot to the expanding change
+        info.getChanges().get(1).setSnapshot(createMockSurface(), 0f);
+        info.getChanges().get(1).setStartAbsBounds(new Rect(100, 0, 200, 200));
+        info.getChanges().get(1).setEndAbsBounds(new Rect(0, 0, 200, 200));
+        info.getChanges().get(1).setLastParent(mSideStage.mRootTaskInfo.token);
+
+        // Closing change bounds
+        info.getChanges().get(0).setStartAbsBounds(new Rect(0, 0, 100, 200));
+        info.getChanges().get(0).setLastParent(mMainStage.mRootTaskInfo.token);
+
+        IBinder transition = mSplitScreenTransitions.startDismissTransition(
+                new WindowContainerTransaction(), mStageCoordinator,
+                EXIT_REASON_APP_FINISHED, STAGE_TYPE_SIDE);
+
+        org.mockito.Mockito.clearInvocations(mAnimExecutor);
+
+        boolean accepted = mStageCoordinator.startAnimation(transition, info,
+                mock(SurfaceControl.Transaction.class),
+                mock(SurfaceControl.Transaction.class),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        assertTrue("Dismiss animation should be accepted", accepted);
+
+        // Verify invocation + 2 animations started (one for closing, one for expanding)
+        verify(mSplitTransitionAnimations, times(2)).buildDismissAnimation(any(),
+                any(), eq(mStageCoordinator), any());
+        verify(mAnimExecutor, times(2)).execute(any());
+
+        // check animator created for expanding surface
+        assertNotNull("Dismiss animation should be played for expanding surface",
+                mSplitTransitionAnimations.buildDismissAnimation(info.getChanges().get(1),
+                        mock(SurfaceControl.Transaction.class), mStageCoordinator,
+                        mock(Consumer.class)));
+        // check animator created for closing surface
+        assertNotNull("Dismiss animation should be played for closing surface",
+                mSplitTransitionAnimations.buildDismissAnimation(info.getChanges().get(0),
+                        mock(SurfaceControl.Transaction.class), mStageCoordinator,
+                        mock(Consumer.class)));
     }
 
     private TransitionInfo createEnterPairInfo() {
