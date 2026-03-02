@@ -322,10 +322,7 @@ public class Process {
     /**
      * Defines the start of a range of UIDs going from this number to
      * {@link #LAST_PCC_UID} that are reserved for assigning to
-     * processes that need to run in a PCC sandbox.
-     *
-     * Note that there are no GIDs associated with these processes; storage
-     * attribution for them will be done using project IDs.
+     * processes that need to run in a Private Compute Core (PCC) sandbox.
      * @hide
      */
     public static final int FIRST_PCC_UID = 30000;
@@ -335,6 +332,13 @@ public class Process {
      * @hide
      */
     public static final int LAST_PCC_UID = 39999;
+
+    /**
+     * Defines the start of range of GIDs for the cache directory of Private Compute Core (PCC)
+     * sandbox storage.
+     * @hide
+     */
+    public static final int FIRST_PCC_CACHE_GID = 60000;
 
     /**
      * First uid used for fully isolated sandboxed processes spawned from an app zygote
