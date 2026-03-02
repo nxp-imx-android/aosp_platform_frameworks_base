@@ -5,7 +5,6 @@ import android.database.ContentObserver
 import android.provider.Settings
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags.hsuQsChanges
-import com.android.systemui.Flags.qsDeleteUninstalledTileService
 import com.android.systemui.common.coroutine.ConflatedCallbackFlow
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -171,9 +170,7 @@ constructor(
     }
 
     suspend fun onPackageRemoved(packageName: String) {
-        if (qsDeleteUninstalledTileService()) {
-            changeEvents.emit(PackageRemoved(packageName))
-        }
+        changeEvents.emit(PackageRemoved(packageName))
     }
 
     private fun parseTileSpecs(fromSettings: List<TileSpec>, user: Int): List<TileSpec> {

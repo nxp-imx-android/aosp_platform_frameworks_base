@@ -19,7 +19,6 @@ package com.android.systemui.qs.pipeline.data.repository
 import android.content.ComponentName
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import com.android.systemui.Flags.qsDeleteUninstalledTileService
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.settings.UserFileManager
 import javax.inject.Inject
@@ -90,18 +89,14 @@ constructor(private val userFileManager: UserFileManager) : CustomTileAddedRepos
     }
 
     override fun removeTilesForPackage(packageName: String, userId: Int) {
-        if (qsDeleteUninstalledTileService()) {
-            val sharedPreferences = getSharedPreferences(userId)
-            val tilesInFile =
-                sharedPreferences.all.filter { it.key.contains("/") && it.value is Boolean }.keys
-            val packageTiles =
-                tilesInFile
-                    .mapNotNull { ComponentName.unflattenFromString(it) }
-                    .filter { it.packageName == packageName }
-            sharedPreferences.edit {
-                packageTiles.forEach { putBoolean(it.flattenToString(), false) }
-            }
-        }
+        val sharedPreferences = getSharedPreferences(userId)
+        val tilesInFile =
+            sharedPreferences.all.filter { it.key.contains("/") && it.value is Boolean }.keys
+        val packageTiles =
+            tilesInFile
+                .mapNotNull { ComponentName.unflattenFromString(it) }
+                .filter { it.packageName == packageName }
+        sharedPreferences.edit { packageTiles.forEach { putBoolean(it.flattenToString(), false) } }
     }
 
     private fun getSharedPreferences(userId: Int): SharedPreferences {
