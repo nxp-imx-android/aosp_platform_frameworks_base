@@ -287,4 +287,5 @@ message KeyParametersSchemaProto {
 message ParameterDefinitionProto {
   optional string purpose = 1;
   optional bool required = 2;
+  optional PreferenceValueDescriptorProto value_descriptor = 3;
 }

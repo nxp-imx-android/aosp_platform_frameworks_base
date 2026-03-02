@@ -122,7 +122,7 @@ class ParameterizationConfig {
      */
     internal fun buildSchema(): KeyParametersSchema = KeyParametersSchema {
         parameters.values.map {
-            parameter(name = it.name, purpose = it.purpose, required = it.required)
+            parameter(name = it.name, purpose = it.purpose, required = it.required, type = it.type)
         }
     }
 }

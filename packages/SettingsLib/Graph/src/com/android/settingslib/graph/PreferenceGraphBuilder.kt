@@ -72,6 +72,7 @@ import com.android.settingslib.metadata.isPreferenceIndexable
 import com.android.settingslib.metadata.isUiOnlyPreference
 import com.android.settingslib.metadata.preferencesapi.ApiPreference
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
+import com.android.settingslib.metadata.preferencesapi.types.ApiType
 import com.android.settingslib.metadata.preferencesapi.types.FiniteOptionsType
 import com.android.settingslib.metadata.preferencesapi.types.IntInRange
 import com.android.settingslib.preference.PreferenceScreenCreator
@@ -277,7 +278,8 @@ private constructor(
             screen.root = preferenceGroupProto { preference = preferenceProto { key = screenKey } }
             screen.parameterized = true
             if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
-                screen.parametersSchema = factory.parametersSchema.toProto(context)
+                screen.parametersSchema =
+                    factory.parametersSchema.toProto(context, valueDescriptors)
             }
             if (includeParameters) {
                 if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
@@ -397,7 +399,7 @@ private constructor(
             PreferenceScreenProto.newBuilder().also {
                 it.parameterized = true
                 PreferenceScreenRegistry.getScreenParametersSchema(key)?.let { schema ->
-                    it.parametersSchema = schema.toProto(context)
+                    it.parametersSchema = schema.toProto(context, valueDescriptors)
                 }
             }
 
@@ -643,10 +645,14 @@ fun PreferenceMetadata.toProto(
 
         if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             if (metadata is PreferenceScreenMetadata) {
-                metadata.keyParametersSchema?.let { parametersSchema = it.toProto(context) }
+                metadata.keyParametersSchema?.let {
+                    parametersSchema = it.toProto(context, valueDescriptors)
+                }
                 metadata.keyParameters?.let { keyParameters = it.toProto() }
             } else if (metadata is ApiPreference<*>) {
-                metadata.getParametersSchema()?.let { parametersSchema = it.toProto(context) }
+                metadata.getParametersSchema()?.let {
+                    parametersSchema = it.toProto(context, valueDescriptors)
+                }
                 metadata.getParameters()?.let { keyParameters = it.toProto() }
             }
         }
@@ -700,92 +706,35 @@ fun PreferenceMetadata.toProto(
         }
     }
     if (flags.includeValueDescriptor()) {
-        val descriptorKey = if (metadata is ApiPreference<*>) metadata.type.getKey() else null
-
-        fun PreferenceValueDescriptorProto.Builder.setType() {
-            if (metadata is IntRangeValuePreference) {
-                rangeValue = rangeValueProto {
-                    min = metadata.getMinValue(context)
-                    max = metadata.getMaxValue(context)
-                    step = metadata.getIncrementStep(context)
-                }
-            }
-            if (metadata is ApiPreference<*> && metadata.type is IntInRange) {
-                val type = metadata.type as IntInRange
-                rangeValue = rangeValueProto {
-                    type.min?.let { min = it }
-                    type.max?.let { max = it }
-                    type.step.let { step = it }
-                }
-            }
-            when (metadata.valueType) {
-                Int::class.java,
-                Int::class.javaObjectType -> {
-                    if (!hasRangeValue()) {
-                        rangeValue = rangeValueProto {}
+        if (metadata is ApiPreference<*>) {
+            valueDescriptor = metadata.type.toProto(context, valueDescriptors)
+        } else {
+            valueDescriptor = preferenceValueDescriptorProto {
+                if (metadata is IntRangeValuePreference) {
+                    rangeValue = rangeValueProto {
+                        min = metadata.getMinValue(context)
+                        max = metadata.getMaxValue(context)
+                        step = metadata.getIncrementStep(context)
                     }
                 }
-                Boolean::class.java,
-                Boolean::class.javaObjectType -> booleanType = true
-                Float::class.java,
-                Float::class.javaObjectType -> floatType = true
-                Long::class.java,
-                Long::class.javaObjectType -> longType = true
-                String::class.java,
-                String::class.javaObjectType -> stringType = true
-                else -> error("Error: Unsupported type ${metadata.valueType}")
-            }
-        }
-
-        fun createFullDescriptor() = preferenceValueDescriptorProto {
-            if (descriptorKey != null) valueDescriptorKey = descriptorKey
-            if (metadata is ApiPreference<*>) {
-                description = metadata.type.getDescription(context)
-                metadata.type.getParametersSchema()?.let {
-                    parametersSchema = it.toProto(context)
-                }
-                metadata.type.getParameters()?.let { parameters = it.toProto() }
-            }
-
-            setType()
-
-            if (metadata is ApiPreference<*> && metadata.type is FiniteOptionsType<*>) {
-                (metadata.type as FiniteOptionsType<*>).getOptions(context).forEach {
-                    addPossibleValues(
-                        possibleValueProto {
-                            value = preferenceValueProto {
-                                when (metadata.valueType) {
-                                    Int::class.java,
-                                    Int::class.javaObjectType -> intValue = it.first as Int
-                                    Boolean::class.java,
-                                    Boolean::class.javaObjectType ->
-                                        booleanValue = it.first as Boolean
-                                    Float::class.java,
-                                    Float::class.javaObjectType ->
-                                        floatValue = it.first as Float
-                                    Long::class.java,
-                                    Long::class.javaObjectType -> longValue = it.first as Long
-                                    String::class.java,
-                                    String::class.javaObjectType ->
-                                        stringValue = it.first as String
-                                    else -> error("Error: Unsupported type ${metadata.valueType}")
-                                }
-                            }
-                            description = it.second
+                when (metadata.valueType) {
+                    Int::class.java,
+                    Int::class.javaObjectType -> {
+                        if (!hasRangeValue()) {
+                            rangeValue = rangeValueProto {}
                         }
-                    )
+                    }
+                    Boolean::class.java,
+                    Boolean::class.javaObjectType -> booleanType = true
+                    Float::class.java,
+                    Float::class.javaObjectType -> floatType = true
+                    Long::class.java,
+                    Long::class.javaObjectType -> longType = true
+                    String::class.java,
+                    String::class.javaObjectType -> stringType = true
+                    else -> error("Error: Unsupported type ${metadata.valueType}")
                 }
             }
-        }
-
-        if (descriptorKey != null && valueDescriptors != null) {
-            valueDescriptors.getOrPut(descriptorKey) { createFullDescriptor() }
-            valueDescriptor = preferenceValueDescriptorProto {
-                valueDescriptorKey = descriptorKey
-                setType()
-            }
-        } else {
-            valueDescriptor = createFullDescriptor()
         }
     }
 }
@@ -864,7 +813,10 @@ private fun Intent.toActionTarget(context: Context): ActionTarget {
     return actionTargetProto { intent = toProto() }
 }
 
-private fun KeyParametersSchema.toProto(context: Context): KeyParametersSchemaProto {
+private fun KeyParametersSchema.toProto(
+    context: Context,
+    valueDescriptors: MutableMap<String, PreferenceValueDescriptorProto>? = null,
+): KeyParametersSchemaProto {
     val builder = KeyParametersSchemaProto.newBuilder()
     getParameters().forEach { (name, definition) ->
         val schemaMap = definition.toParameterSchemaMap(context)
@@ -873,9 +825,92 @@ private fun KeyParametersSchema.toProto(context: Context): KeyParametersSchemaPr
             schemaMap[KeyParametersSchema.ParameterDefinition.REQUIRED_KEY] as? Boolean ?: false
         val paramProto = ParameterDefinitionProto.newBuilder().setRequired(required)
         purpose?.let { paramProto.setPurpose(it) }
+
+        paramProto.setValueDescriptor(definition.type.toProto(context, valueDescriptors))
+
         builder.putParameters(name, paramProto.build())
     }
     return builder.build()
+}
+
+private fun ApiType<*>.toProto(
+    context: Context,
+    valueDescriptors: MutableMap<String, PreferenceValueDescriptorProto>?,
+): PreferenceValueDescriptorProto {
+    val descriptorKey = getKey()
+
+    fun PreferenceValueDescriptorProto.Builder.setType() {
+        if (this@toProto is IntInRange) {
+            rangeValue = rangeValueProto {
+                this@toProto.min?.let { min = it }
+                this@toProto.max?.let { max = it }
+                this@toProto.step.let { step = it }
+            }
+        }
+        when (val valueType = this@toProto.getType()) {
+            Int::class.java,
+            Int::class.javaObjectType -> {
+                if (!hasRangeValue()) {
+                    rangeValue = rangeValueProto {}
+                }
+            }
+            Boolean::class.java,
+            Boolean::class.javaObjectType -> booleanType = true
+            Float::class.java,
+            Float::class.javaObjectType -> floatType = true
+            Long::class.java,
+            Long::class.javaObjectType -> longType = true
+            String::class.java,
+            String::class.javaObjectType -> stringType = true
+            else -> error("Error: Unsupported type $valueType")
+        }
+    }
+
+    fun createFullDescriptor() = preferenceValueDescriptorProto {
+        valueDescriptorKey = descriptorKey
+        description = this@toProto.getDescription(context)
+        this@toProto.getParametersSchema()?.let {
+            parametersSchema = it.toProto(context, valueDescriptors)
+        }
+        this@toProto.getParameters()?.let { parameters = it.toProto() }
+
+        setType()
+
+        if (this@toProto is FiniteOptionsType<*>) {
+            this@toProto.getOptions(context).forEach {
+                addPossibleValues(
+                    possibleValueProto {
+                        value = preferenceValueProto {
+                            when (this@toProto.getType()) {
+                                Int::class.java,
+                                Int::class.javaObjectType -> intValue = it.first as Int
+                                Boolean::class.java,
+                                Boolean::class.javaObjectType -> booleanValue = it.first as Boolean
+                                Float::class.java,
+                                Float::class.javaObjectType -> floatValue = it.first as Float
+                                Long::class.java,
+                                Long::class.javaObjectType -> longValue = it.first as Long
+                                String::class.java,
+                                String::class.javaObjectType -> stringValue = it.first as String
+                                else -> error("Error: Unsupported type ${this@toProto.getType()}")
+                            }
+                        }
+                        description = it.second
+                    }
+                )
+            }
+        }
+    }
+
+    if (valueDescriptors != null) {
+        valueDescriptors.getOrPut(descriptorKey) { createFullDescriptor() }
+        return preferenceValueDescriptorProto {
+            valueDescriptorKey = descriptorKey
+            setType()
+        }
+    } else {
+        return createFullDescriptor()
+    }
 }
 
 @SuppressLint("AppBundleLocaleChanges")

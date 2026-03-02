@@ -32,6 +32,7 @@ import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.types.AnyInt
 import com.android.settingslib.metadata.preferenceHierarchy
 import com.android.settingslib.metadata.preferencesapi.category.Category
+import com.android.settingslib.metadata.preferencesapi.types.AnyString
 import com.google.common.truth.Truth.assertThat
 import com.android.settingslib.graph.PreferenceGetterFlags
 import com.android.settingslib.metadata.CatalystFlagProvider
@@ -396,7 +397,7 @@ class PreferenceGraphBuilderTest {
     fun toProto_apiPreference_includesKeyParametersAndSchema() {
         setCatalystUseKeyParameters(true)
         val schema = KeyParametersSchema {
-            parameter("test_param", "test_purpose", required = true)
+            parameter("test_param", "test_purpose", required = true, type = AnyString)
         }
         val params = schema.prepare("test_param" to "value")
 
@@ -416,7 +417,7 @@ class PreferenceGraphBuilderTest {
     fun toProto_preferenceScreenMetadata_includesKeyParametersAndSchema() {
         setCatalystUseKeyParameters(true)
         val schema = KeyParametersSchema {
-            parameter("test_param", "test_purpose", required = true)
+            parameter("test_param", "test_purpose", required = true, type = AnyString)
         }
         val params = schema.prepare("test_param" to "value")
         val screenMetadataWithParams = object : PreferenceScreenMetadata {
@@ -438,6 +439,58 @@ class PreferenceGraphBuilderTest {
         assertThat(proto.hasParametersSchema()).isTrue()
         assertThat(proto.hasKeyParameters()).isTrue()
         assertThat(proto.keyParameters.valuesMap).containsEntry("test_param", "value")
+    }
+
+    @Test
+    fun toProto_apiPreference_includesValueDescriptorInSchema() {
+        setCatalystUseKeyParameters(true)
+        val schema = KeyParametersSchema {
+            parameter("test_param", "test_purpose", required = true, type = AnyInt)
+        }
+        val params = schema.prepare("test_param" to "value")
+
+        val preference = TestApiPreference(
+            parametersSchema = schema,
+            parameters = params
+        )
+
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, PreferenceGetterFlags.METADATA)
+
+        assertThat(proto.hasParametersSchema()).isTrue()
+        assertThat(proto.parametersSchema.parametersMap).containsKey("test_param")
+        val paramProto = proto.parametersSchema.parametersMap["test_param"]!!
+        assertThat(paramProto.hasValueDescriptor()).isTrue()
+        assertThat(paramProto.valueDescriptor.hasRangeValue()).isTrue()
+    }
+
+    @Test
+    fun toProto_preferenceScreenMetadata_includesValueDescriptorInSchema() {
+        setCatalystUseKeyParameters(true)
+        val schema = KeyParametersSchema {
+            parameter("test_param", "test_purpose", required = true, type = AnyInt)
+        }
+        val params = schema.prepare("test_param" to "value")
+        val screenMetadataWithParams = object : PreferenceScreenMetadata {
+            override val bindingKey: String = "screen_key"
+            override val key: String = "screen_key"
+            override val purpose: Int = 0
+            override fun fragmentClass(): Class<out Fragment>? = null
+            override val keyParametersSchema: KeyParametersSchema = schema
+            override val keyParameters: ValidatedKeyParameters = params
+
+            override fun getPreferenceHierarchy(
+                context: Context,
+                coroutineScope: CoroutineScope
+            ): PreferenceHierarchy = preferenceHierarchy(context) {}
+        }
+
+        val proto = screenMetadataWithParams.toProto(context, 0, 0, screenMetadata, false, PreferenceGetterFlags.METADATA)
+
+        assertThat(proto.hasParametersSchema()).isTrue()
+        assertThat(proto.parametersSchema.parametersMap).containsKey("test_param")
+        val paramProto = proto.parametersSchema.parametersMap["test_param"]!!
+        assertThat(paramProto.hasValueDescriptor()).isTrue()
+        assertThat(paramProto.valueDescriptor.hasRangeValue()).isTrue()
     }
 
     companion object {

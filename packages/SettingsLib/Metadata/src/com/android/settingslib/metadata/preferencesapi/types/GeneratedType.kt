@@ -90,7 +90,7 @@ class GeneratedType<T : Any> constructor(
     }
 
     override fun getParametersSchema() = KeyParametersSchema.Builder()
-        .parameter("unit", "The unit of measurement (if any) such as dB or milliseconds.")
+        .parameter("unit", "The unit of measurement (if any) such as dB or milliseconds.", type = AnyString)
         .build()
 
     override fun getParameters() = getParametersSchema().prepare(buildMap {

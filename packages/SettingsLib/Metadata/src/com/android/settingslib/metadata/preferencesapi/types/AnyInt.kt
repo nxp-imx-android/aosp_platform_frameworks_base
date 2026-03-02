@@ -27,7 +27,7 @@ import com.android.settingslib.metadata.ValidatedKeyParameters
 sealed class AnyInt(private val unitOfMeasurement: String? = null): ApiType<Int> {
 
     override fun getParametersSchema() = KeyParametersSchema.Builder()
-        .parameter("unit", "The unit of measurement (if any) such as dB or milliseconds.")
+        .parameter("unit", "The unit of measurement (if any) such as dB or milliseconds.", type = AnyString)
         .build()
 
     override fun getParameters() = getParametersSchema().prepare(buildMap {
