@@ -60,7 +60,6 @@ import android.widget.Spinner;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.keyguard.KeyguardViewController;
 import com.android.settingslib.bluetooth.BluetoothEventManager;
 import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.bluetooth.CachedBluetoothDeviceManager;
@@ -74,18 +73,15 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.bluetooth.qsdialog.DeviceItem;
 import com.android.systemui.bluetooth.qsdialog.DeviceItemType;
-import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
-import com.android.systemui.dump.DumpManager;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.qs.shared.QSSettingsPackageRepository;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.domain.interactor.FakeShadeDialogContextInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
-import com.android.systemui.statusbar.phone.SystemUIDialogManager;
 import com.android.systemui.util.concurrency.FakeExecutor;
 import com.android.systemui.util.time.FakeSystemClock;
-import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
 import org.junit.After;
 import org.junit.Before;
@@ -124,15 +120,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
             new FakeShadeDialogContextInteractor(mContext);
 
     @Mock
-    private DumpManager mDumpManager;
-    @Mock
-    private KeyguardViewController mKeyguardViewController;
-    @Mock
-    private SysUIStateDisplaysInteractor mSysUIStateDisplaysInteractor;
-    @Mock
     private DialogTransitionAnimator mDialogTransitionAnimator;
-    @Mock
-    private WindowRootViewBlurInteractor mBlurInteractor;
     @Mock
     private ActivityStarter mActivityStarter;
     @Mock
@@ -173,7 +161,6 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     private Drawable mDrawable;
 
     private SystemUIDialog mDialog;
-    private SystemUIDialogManager mSystemUIDialogManager;
     private SystemUIDialog.Factory mDialogFactory;
     private HearingDevicesDialogDelegate mDialogDelegate;
     private TestableLooper mTestableLooper;
@@ -181,8 +168,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     @Before
     public void setUp() throws Exception {
         mTestableLooper = TestableLooper.get(this);
-        mSystemUIDialogManager = new SystemUIDialogManager(mDumpManager, mKeyguardViewController,
-                mSysUIStateDisplaysInteractor);
+        KosmosJavaAdapter kosmos = new KosmosJavaAdapter(this);
+        mDialogFactory = kosmos.getSystemUIDialogDotFactory();
         when(mLocalBluetoothManager.getBluetoothAdapter()).thenReturn(mLocalBluetoothAdapter);
         when(mLocalBluetoothManager.getProfileManager()).thenReturn(mProfileManager);
         when(mProfileManager.getHapClientProfile()).thenReturn(mHapClientProfile);
@@ -443,13 +430,6 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     }
 
     private void setUpDeviceDialog(boolean showPairNewDevice) {
-        mDialogFactory = new SystemUIDialog.Factory(
-                mContext,
-                mSystemUIDialogManager,
-                getFakeBroadcastDispatcher(),
-                mDialogTransitionAnimator,
-                mBlurInteractor
-        );
         mDialogDelegate = new HearingDevicesDialogDelegate(
                 showPairNewDevice,
                 TEST_LAUNCH_SOURCE_ID,
