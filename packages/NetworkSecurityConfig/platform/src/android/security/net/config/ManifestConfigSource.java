@@ -22,8 +22,8 @@ import static android.security.Flags.deprecateUsesCleartextTraffic2;
 import android.annotation.FlaggedApi;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
-import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.Overridable;
+import android.compat.annotation.Disabled;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
@@ -48,7 +48,7 @@ public class ManifestConfigSource implements ConfigSource {
      * cleartext traffic via their Network Security Config.
      */
     @ChangeId
-    @EnabledAfter(targetSdkVersion = Build.VERSION_CODES.CINNAMON_BUN)
+    @Disabled
     static final long DEPRECATE_USES_CLEARTEXT_TRAFFIC = 415007211L;
 
     public ManifestConfigSource(Context context) {
