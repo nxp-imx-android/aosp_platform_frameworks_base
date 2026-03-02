@@ -15,9 +15,11 @@
  */
 package com.android.server.testutils;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.matchesPattern;
+
 import android.os.Message;
 import android.os.TestLooperManager;
-import android.test.MoreAsserts;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -49,7 +51,8 @@ public class TestUtils {
                     + " but caught " + e.getClass().getName(),
                     expectedExceptionType.isAssignableFrom(e.getClass()));
             if (expectedExceptionMessageRegex != null) {
-                MoreAsserts.assertContainsRegex(expectedExceptionMessageRegex, e.getMessage());
+                assertThat(e.getMessage(),
+                        matchesPattern(".*" + expectedExceptionMessageRegex + ".*"));
             }
             return; // Pass.
         }
