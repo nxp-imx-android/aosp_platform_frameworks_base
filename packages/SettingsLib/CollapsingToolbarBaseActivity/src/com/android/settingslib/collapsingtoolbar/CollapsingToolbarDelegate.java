@@ -594,7 +594,7 @@ public class CollapsingToolbarDelegate {
         }
         final CoordinatorLayout.LayoutParams params =
                 (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
-        final AppBarLayout.Behavior behavior = new AppBarLayout.Behavior();
+        final AppBarLayout.Behavior behavior = new IgnoreNonTouchScrollBehavior();
         behavior.setDragCallback(
                 new AppBarLayout.Behavior.DragCallback() {
                     @Override
