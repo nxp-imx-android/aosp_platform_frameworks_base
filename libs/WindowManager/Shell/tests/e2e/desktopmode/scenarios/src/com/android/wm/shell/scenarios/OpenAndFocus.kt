@@ -59,6 +59,7 @@ abstract class OpenAndFocus() : TestScenarioBase() {
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle()
+            .withAppTransitionIdle(displayId)
             .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
             .add(ConditionsFactory.isWindowVisible(testAppInExternalDisplay, displayId))
             .waitForAndVerify()
@@ -69,6 +70,7 @@ abstract class OpenAndFocus() : TestScenarioBase() {
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle()
+            .withAppTransitionIdle(displayId)
             .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
             .add(ConditionsFactory.isWindowVisible(testAppInExternalDisplay, displayId).negate())
             .waitForAndVerify()
