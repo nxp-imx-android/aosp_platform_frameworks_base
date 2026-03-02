@@ -22,6 +22,7 @@ import static java.util.Objects.requireNonNull;
 
 import android.annotation.ElapsedRealtimeLong;
 import android.annotation.NonNull;
+import android.app.Flags;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
@@ -48,6 +49,7 @@ import java.time.InstantSource;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.IllegalFormatException;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.LongSupplier;
 
@@ -384,6 +386,91 @@ public class Chronometer extends TextView {
     }
 
     private synchronized void updateText(long now) {
+        if (!Flags.metricValueAlternativeStrings()) {
+            updateTextLegacy(now);
+            return;
+        }
+
+        updateBaseTimeIfSystemClockChanged();
+        mNow = now;
+
+        // LINT.IfChange
+        // Use 499 to ensure countdown chronometers round down. (e.g. 999ms shows 00:00).
+        long seconds = Math.round((mCountDown ? mBase - now - 499 : now - mBase) / 1000f);
+        // LINT.ThenChange(/packages/SystemUI/src/com/android/systemui/statusbar/chips/ui/viewmodel/ChronometerState.kt)
+
+        ArrayList<String> texts = secondsToString(seconds);
+        if (mFormat != null) {
+            texts.replaceAll(this::applyFormat);
+        }
+
+        setChronometerText(texts);
+    }
+
+    private ArrayList<String> secondsToString(long seconds) {
+        boolean negative = false;
+        if (seconds < 0) {
+            seconds = -seconds;
+            negative = true;
+        }
+
+        ArrayList<String> texts = new ArrayList<>();
+        if (mLowFrequency) {
+            if (mUseAdaptiveFormat && negative && seconds < 60) {
+                texts.add(ChronometerLowFrequencyFormat.formatAdaptiveNegativeLessThanOneMinute());
+            } else {
+                Duration duration = Duration.ofSeconds(seconds);
+                texts.addAll(
+                        ChronometerLowFrequencyFormat.formatVariants(duration, mUseAdaptiveFormat));
+                if (negative) {
+                    texts.replaceAll(t -> getResources().getString(R.string.negative_duration, t));
+                }
+            }
+        } else {
+            if (mUseAdaptiveFormat) {
+                Duration duration = Duration.ofSeconds(seconds);
+                texts.addAll(ChronometerAdaptiveFormat.formatVariants(duration));
+            } else {
+                texts.add(DateUtils.formatElapsedTime(mRecycle, seconds));
+            }
+            if (negative) {
+                texts.replaceAll(t -> getResources().getString(R.string.negative_duration, t));
+            }
+        }
+        return texts;
+    }
+
+    private synchronized String applyFormat(String timeString) {
+        if (mFormat == null) {
+            return timeString;
+        }
+
+        Locale loc = Locale.getDefault();
+        if (mFormatter == null || !loc.equals(mFormatterLocale)) {
+            mFormatterLocale = loc;
+            mFormatter = new Formatter(mFormatBuilder, loc);
+        }
+        mFormatBuilder.setLength(0);
+        mFormatterArgs[0] = timeString;
+        try {
+            mFormatter.format(mFormat, mFormatterArgs);
+            return mFormatBuilder.toString();
+        } catch (IllegalFormatException ex) {
+            if (!mLogged) {
+                Log.w(TAG, "Illegal format string: " + mFormat);
+                mLogged = true;
+            }
+            return timeString;
+        }
+    }
+
+    /** @hide */
+    protected void setChronometerText(List<String> textVariants) {
+        setText(textVariants.get(0));
+    }
+
+    // TODO: b/465178366 - Delete when inlining metric_value_alternative_strings
+    private synchronized void updateTextLegacy(long now) {
         updateBaseTimeIfSystemClockChanged();
         mNow = now;
 
@@ -417,7 +504,6 @@ public class Chronometer extends TextView {
                 text = getResources().getString(R.string.negative_duration, text);
             }
         }
-
 
         if (mFormat != null) {
             Locale loc = Locale.getDefault();
