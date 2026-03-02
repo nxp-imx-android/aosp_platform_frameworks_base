@@ -47,13 +47,24 @@ public final class AppFunctionPackageMetadata implements AbstractAppFunctionMeta
             };
 
     /**
+     * The schema type for the package-level metadata used by AppFunction documents.
+     *
+     * @hide
+     */
+    public static final String SCHEMA_TYPE = "AppFunctionPackageData";
+
+    /**
      * Property key within {@link #getMetadataDocument} that contains a list of top-level package
      * documents.
      */
     public static final String PROPERTY_TOP_LEVEL_DOCUMENTS = "topLevelMetadataDocuments";
 
-    /** Property name for the XML tag that defines the value of {@link #getPackageName}. */
-    static final String PROPERTY_PACKAGE_NAME =
+    /**
+     * Property name for the XML tag that defines the value of {@link #getPackageName}.
+     *
+     * @hide
+     */
+    public static final String PROPERTY_PACKAGE_NAME =
             AppFunctionStaticMetadataHelper.PROPERTY_PACKAGE_NAME;
 
     @NonNull private final String mPackageName;

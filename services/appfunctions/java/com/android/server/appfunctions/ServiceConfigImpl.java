@@ -27,7 +27,7 @@ public class ServiceConfigImpl implements ServiceConfig {
 
     static final String DEVICE_CONFIG_PROPERTY_SEARCH_APP_FUNCTION_PAGE_SIZE =
             "search_app_function_page_size";
-    static final int DEFAULT_SEARCH_APP_FUNCTION_PAGE_SIZE = 100;
+    static final int DEFAULT_SEARCH_APP_FUNCTION_PAGE_SIZE = 20;
     private static final Range<Integer> VALID_PAGE_SIZE_RANGE =
             new Range<>(MIN_PAGE_SIZE, MAX_PAGE_SIZE);
 
