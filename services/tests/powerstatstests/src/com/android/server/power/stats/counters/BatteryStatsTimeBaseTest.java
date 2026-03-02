@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.power.stats;
+package com.android.server.power.stats.counters;
 
 import android.os.BatteryStats;
 import android.os.Parcel;
@@ -36,7 +36,7 @@ import java.io.StringWriter;
 public class BatteryStatsTimeBaseTest extends TestCase {
     private static final String TAG = "BatteryStatsTimeBaseTest";
 
-    static class TestTimeBase extends BatteryStatsImpl.TimeBase {
+    static class TestTimeBase extends TimeBase {
 
         public void populate(long uptime, long realtime, boolean running, long pastUptime,
                 long uptimeStart, long pastRealtime, long realtimeStart,
@@ -82,9 +82,9 @@ public class BatteryStatsTimeBaseTest extends TestCase {
         Assert.assertEquals(10000, tb.getRealtimeStart());
 
         // Create some observers
-        BatteryStatsImpl.TimeBaseObs observer1 = Mockito.mock(BatteryStatsImpl.TimeBaseObs.class);
-        BatteryStatsImpl.TimeBaseObs observer2 = Mockito.mock(BatteryStatsImpl.TimeBaseObs.class);
-        BatteryStatsImpl.TimeBaseObs observer3 = Mockito.mock(BatteryStatsImpl.TimeBaseObs.class);
+        TimeBaseObs observer1 = Mockito.mock(TimeBaseObs.class);
+        TimeBaseObs observer2 = Mockito.mock(TimeBaseObs.class);
+        TimeBaseObs observer3 = Mockito.mock(TimeBaseObs.class);
 
         // Add them
         tb.add(observer1);
@@ -223,7 +223,8 @@ public class BatteryStatsTimeBaseTest extends TestCase {
         tb2.readFromParcel(parcel);
 
         // Running is not preserved across parceling
-        tb2.verify(100, 200, false, 300+666-400, 400, 500+6666-600, 600, 700, 800);
+        tb2.verify(
+                100, 200, false, 300 + 666 - 400, 400, 500 + 6666 - 600, 600, 700, 800);
     }
 
     /**
@@ -280,7 +281,7 @@ public class BatteryStatsTimeBaseTest extends TestCase {
 
         tb.populate(100, 200, true, 300, 400, 500, 600, 50, 60);
 
-        Assert.assertEquals(100+300+666-400,
+        Assert.assertEquals(100 + 300 + 666 - 400,
                 tb.computeUptime(666, BatteryStats.STATS_SINCE_CHARGED));
     }
 
@@ -293,7 +294,7 @@ public class BatteryStatsTimeBaseTest extends TestCase {
 
         tb.populate(100, 200, true, 300, 400, 500, 600, 50, 60);
 
-        Assert.assertEquals(200+500+6666-600,
+        Assert.assertEquals(200 + 500 + 6666 - 600,
                 tb.computeRealtime(6666, BatteryStats.STATS_SINCE_CHARGED));
     }
 
@@ -314,13 +315,16 @@ public class BatteryStatsTimeBaseTest extends TestCase {
         pw.close();
 
         // note the spaces at the ends of the lines which come from formatTimeMs.
-        final String CORRECT = "+++++ mRunning=true\n"
-                + "+++++ mUptime=0ms \n"
-                + "+++++ mRealtime=0ms \n"
-                + "+++++ mPastUptime=0ms mUptimeStart=0ms mUnpluggedUptime=0ms \n"
-                + "+++++ mPastRealtime=0ms mRealtimeStart=0ms mUnpluggedRealtime=0ms \n";
+        final String correct =
+            """
+            +++++ mRunning=true
+            +++++ mUptime=0ms\s
+            +++++ mRealtime=0ms\s
+            +++++ mPastUptime=0ms mUptimeStart=0ms mUnpluggedUptime=0ms\s
+            +++++ mPastRealtime=0ms mRealtimeStart=0ms mUnpluggedRealtime=0ms\s
+            """;
 
-        Assert.assertEquals(CORRECT, sw.toString());
+        Assert.assertEquals(correct, sw.toString());
     }
 
 }
