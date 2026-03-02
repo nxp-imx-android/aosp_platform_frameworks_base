@@ -454,8 +454,13 @@ class ExpandableNotificationRowBuilder(
         }
         mBindPipelineEntryListener.onEntryInit(entry)
         mBindPipeline.manageRow(entry, row)
+
         mBindStage.getStageParams(entry).requireContentViews(extraInflationFlags)
         inflateAndWait(entry)
+
+        if (entry.sbn.notification.isRecentlyAudiblyAlerted) {
+            row.setLastAudiblyAlertedMs(System.currentTimeMillis())
+        }
         return row
     }
 
@@ -480,6 +485,7 @@ class ExpandableNotificationRowBuilder(
         private const val INFLATION_FLAGS = FLAG_CONTENT_VIEW_ALL
         private const val IS_CONVERSATION_FLAG = "test.isConversation"
         private const val IS_IMPORTANT_CONVERSATION_FLAG = "test.isImportantConversation"
+        private const val IS_RECENTLY_AUDIBLY_ALERTED_FLAG = "test.isRecentlyAudiblyAlerted"
 
         private val Notification.isConversationStyleNotification
             get() = extras.getBoolean(IS_CONVERSATION_FLAG, false)
@@ -487,7 +493,14 @@ class ExpandableNotificationRowBuilder(
         private val Notification.isImportantConversation
             get() = extras.getBoolean(IS_IMPORTANT_CONVERSATION_FLAG, false)
 
+        private val Notification.isRecentlyAudiblyAlerted
+            get() = extras.getBoolean(IS_RECENTLY_AUDIBLY_ALERTED_FLAG, false)
+
         private val STUB_ONLY = Mockito.withSettings().stubOnly()
+
+        fun markAsRecentlyAudiblyAlerted(builder: Notification.Builder) {
+            builder.addExtras(bundleOf(IS_RECENTLY_AUDIBLY_ALERTED_FLAG to true))
+        }
 
         fun markAsConversation(builder: Notification.Builder, isImportant: Boolean = false) {
             builder.addExtras(
