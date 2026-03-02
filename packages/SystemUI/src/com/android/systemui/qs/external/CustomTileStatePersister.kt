@@ -23,7 +23,6 @@ import android.service.quicksettings.Tile
 import android.util.Log
 import androidx.core.content.edit
 import com.android.internal.annotations.VisibleForTesting
-import com.android.systemui.Flags.qsDeleteUninstalledTileService
 import com.android.systemui.dagger.qualifiers.Application
 import javax.inject.Inject
 import org.json.JSONException
@@ -118,16 +117,14 @@ class CustomTileStatePersisterImpl @Inject constructor(@Application context: Con
     }
 
     override fun removeStateForPackageAndUser(packageName: String, user: Int) {
-        if (qsDeleteUninstalledTileService()) {
-            sharedPreferences.edit {
-                sharedPreferences.all.keys
-                    .filter { stringKey ->
-                        TileServiceKey.fromStringKey(stringKey).let {
-                            it.componentName.packageName == packageName && it.user == user
-                        }
+        sharedPreferences.edit {
+            sharedPreferences.all.keys
+                .filter { stringKey ->
+                    TileServiceKey.fromStringKey(stringKey).let {
+                        it.componentName.packageName == packageName && it.user == user
                     }
-                    .forEach { remove(it.toString()) }
-            }
+                }
+                .forEach { remove(it.toString()) }
         }
     }
 }

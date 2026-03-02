@@ -18,10 +18,8 @@ package com.android.systemui.qs.pipeline.data.repository
 
 import android.content.ComponentName
 import android.content.SharedPreferences
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_QS_DELETE_UNINSTALLED_TILE_SERVICE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.settings.UserFileManager
 import com.android.systemui.util.FakeSharedPreferences
@@ -141,7 +139,6 @@ class CustomTileAddedSharedPreferencesRepositoryTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_QS_DELETE_UNINSTALLED_TILE_SERVICE)
     fun removeAllFromPackage_multipleTiles_allDeleted() {
         val userId = 10
         val sharedPrefs = FakeSharedPreferences()

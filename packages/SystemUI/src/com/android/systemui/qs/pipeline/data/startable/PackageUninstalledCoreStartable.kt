@@ -19,7 +19,6 @@ package com.android.systemui.qs.pipeline.data.startable
 import android.os.UserHandle
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags.qsDeleteUninstalledTileService
 import com.android.systemui.common.data.repository.PackageChangeRepository
 import com.android.systemui.common.shared.model.PackageChangeModel
 import com.android.systemui.dagger.SysUISingleton
@@ -42,19 +41,17 @@ constructor(
     @param:Background private val backgroundApplicationScope: CoroutineScope,
 ) : CoreStartable {
     override fun start() {
-        if (qsDeleteUninstalledTileService()) {
-            backgroundApplicationScope.launchTraced("PackageUninstalledCoreStartable") {
-                packageChangeRepository
-                    .packageChanged(UserHandle.ALL)
-                    .filterIsInstance<PackageChangeModel.Uninstalled>()
-                    .collect {
-                        val packageName = it.packageName
-                        val userId = UserHandle.getUserId(it.packageUid)
-                        tileSpecRepository.removePackage(packageName, userId)
-                        customTileStatePersister.removeStateForPackageAndUser(packageName, userId)
-                        customTileAddedRepository.removeTilesForPackage(packageName, userId)
-                    }
-            }
+        backgroundApplicationScope.launchTraced("PackageUninstalledCoreStartable") {
+            packageChangeRepository
+                .packageChanged(UserHandle.ALL)
+                .filterIsInstance<PackageChangeModel.Uninstalled>()
+                .collect {
+                    val packageName = it.packageName
+                    val userId = UserHandle.getUserId(it.packageUid)
+                    tileSpecRepository.removePackage(packageName, userId)
+                    customTileStatePersister.removeStateForPackageAndUser(packageName, userId)
+                    customTileAddedRepository.removeTilesForPackage(packageName, userId)
+                }
         }
     }
 }

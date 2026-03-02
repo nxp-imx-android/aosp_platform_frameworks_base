@@ -1298,16 +1298,6 @@ flag {
 }
 
 flag {
-    name: "qs_delete_uninstalled_tile_service"
-    namespace: "systemui"
-    description: "When a TileService package is uninstalled, remove the tile completely and all associated data."
-    bug: "362234193"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "qs_edit_mode_focus_fixes"
     namespace: "systemui"
     description: "Various fixes for the focus states of the quick settings edit mode"
