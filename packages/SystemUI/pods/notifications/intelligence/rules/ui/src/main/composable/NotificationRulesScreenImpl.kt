@@ -33,12 +33,13 @@ class NotificationRulesScreenImpl @Inject constructor() : NotificationRulesScree
         viewModelFactory: NotificationRulesScreenViewModel.Factory,
         editViewModelFactory: NotificationRuleEditViewModel.Factory,
         dismissRulesScreen: () -> Unit,
+        startingBackStack: List<RulesScreenViewState>,
         modifier: Modifier,
     ) {
         // TODO: b/486844997 - When the new platform drop for androidx.compose.animation is in, this
         // can be replaced by the navigation3 library, which will also support back gestures.
         val backStack = remember {
-            mutableStateListOf<RulesScreenViewState>(RulesScreenViewState.CurrentRules)
+            mutableStateListOf<RulesScreenViewState>().apply { addAll(startingBackStack) }
         }
         val screenViewModel =
             rememberViewModel("NotificationRulesScreen") { viewModelFactory.create(backStack) }
