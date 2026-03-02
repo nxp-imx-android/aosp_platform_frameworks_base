@@ -124,7 +124,10 @@ public class BrightnessDialog extends ComponentActivity {
         ComposeView composeView = new ComposeView(this);
         ComposeDialogComposableProvider.INSTANCE.setComposableBrightness(
                 composeView,
-                new ComposableProvider(mBrightnessSliderViewModelFactory)
+                new ComposableProvider(
+                        mBrightnessSliderViewModelFactory,
+                        mIsExpandedAudioTileDetailsEnabled)
+
         );
         composeView.setId(R.id.brightness_dialog_slider);
         setContentView(composeView);
@@ -149,7 +152,8 @@ public class BrightnessDialog extends ComponentActivity {
         if (brightnessDialogOnSystemUser()) {
             window.addPrivateFlags(WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS);
         }
-        if (getResources().getBoolean(R.bool.config_endSideBrightnessDialog)) {
+
+        if (mIsExpandedAudioTileDetailsEnabled) {
             window.setGravity(Gravity.TOP | Gravity.END);
         } else {
             window.setGravity(Gravity.TOP | Gravity.START);
@@ -177,10 +181,17 @@ public class BrightnessDialog extends ComponentActivity {
         lp.bottomMargin = margin;
         lp.leftMargin = margin;
         lp.rightMargin = margin;
-        int padding = getResources().getDimensionPixelSize(
-                R.dimen.rounded_slider_background_padding
-        );
-        container.setPadding(padding, padding, padding, padding);
+        if (mIsExpandedAudioTileDetailsEnabled) {
+            int padding = getResources().getDimensionPixelSize(
+                    R.dimen.rounded_slider_horizontal_padding
+            );
+            container.setPadding(padding, 0, padding, 0);
+        } else {
+            int padding = getResources().getDimensionPixelSize(
+                    R.dimen.rounded_slider_background_padding
+            );
+            container.setPadding(padding, padding, padding, padding);
+        }
         // If in multi-window or freeform, increase the top margin so the brightness dialog
         // doesn't get cut off.
         final int windowingMode = configuration.windowConfiguration.getWindowingMode();
@@ -189,15 +200,34 @@ public class BrightnessDialog extends ComponentActivity {
             lp.topMargin += 50;
         }
 
-        int orientation = configuration.orientation;
-        int windowWidth = getWindowAvailableWidth();
+        /*
+          If ExpandedAudioDetailedView is enabled, then we need to set some dimensions manually.
+          This aligns the slider size and positioning with the volume dialog
+          1. Dialog width at 364dpn
+          2. End margin at 24dp
+          3. Top margin at 0dp
+         */
+        if (mIsExpandedAudioTileDetailsEnabled) {
+            lp.width = getResources().getDimensionPixelSize(
+                    R.dimen.brightness_dialog_expanded_width
+            );
 
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            boolean shouldBeFullWidth = getIntent()
-                    .getBooleanExtra(EXTRA_BRIGHTNESS_DIALOG_IS_FULL_WIDTH, false);
-            lp.width = shouldBeFullWidth ? windowWidth : windowWidth / 2;
-        } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            lp.width = windowWidth;
+            lp.setMarginEnd(getResources().getDimensionPixelSize(
+                    R.dimen.brightness_dialog_margin_end));
+
+            lp.topMargin = getResources().getDimensionPixelSize(
+                    R.dimen.brightness_dialog_margin_top);
+        } else {
+            int orientation = configuration.orientation;
+            int windowWidth = getWindowAvailableWidth();
+
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                boolean shouldBeFullWidth = getIntent()
+                        .getBooleanExtra(EXTRA_BRIGHTNESS_DIALOG_IS_FULL_WIDTH, false);
+                lp.width = shouldBeFullWidth ? windowWidth : windowWidth / 2;
+            } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                lp.width = windowWidth;
+            }
         }
 
         container.setLayoutParams(lp);
