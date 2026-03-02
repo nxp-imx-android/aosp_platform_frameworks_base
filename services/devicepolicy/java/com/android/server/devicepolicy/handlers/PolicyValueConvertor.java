@@ -23,6 +23,7 @@ import android.app.admin.LongPolicyValue;
 import android.app.admin.PolicyValue;
 import android.app.admin.StringPolicyValue;
 import android.app.admin.metadata.EnumPolicyMetadata;
+import android.app.admin.metadata.IntegerPolicyMetadata;
 import android.app.admin.metadata.ListPolicyMetadata;
 import android.app.admin.metadata.LongPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
@@ -84,6 +85,7 @@ public abstract class PolicyValueConvertor<T> {
         return (PolicyValueConvertor<T>)
                 switch (metadata) {
                     case EnumPolicyMetadata e -> INTEGER_POLICY_VALUE_CONVERTOR;
+                    case IntegerPolicyMetadata i -> INTEGER_POLICY_VALUE_CONVERTOR;
                     case StringPolicyMetadata e -> STRING_POLICY_VALUE_CONVERTOR;
                     case LongPolicyMetadata e -> LONG_POLICY_VALUE_CONVERTOR;
                     case ListPolicyMetadata l -> getListInstance(l);

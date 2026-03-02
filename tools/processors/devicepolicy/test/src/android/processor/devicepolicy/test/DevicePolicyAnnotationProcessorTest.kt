@@ -789,4 +789,32 @@ class DevicePolicyAnnotationProcessorTest {
         assertThat(compilation)
             .hadErrorContaining("mostRestrictive must also contain: ENUM_ENTRY_LAST")
     }
+
+    @Test
+    fun test_minGreaterThanMax_failsToCompile() {
+        val policyIdentifier = buildPolicyIdentifier(
+            """
+            /**
+             * min cannot be > max.
+             */
+            @IntegerPolicyDefinition(
+                    minValue = 101,
+                    maxValue = 100,
+                    base = @PolicyDefinition(
+                            allowedScopes = { POLICY_SCOPE_USER },
+                            affectedResource = RESOURCE_DEVICE_WIDE,
+                            $ALLOWED_DPC_TYPES_SNIPPET
+                    )
+            )
+            public static final PolicyIdentifier<Integer> MIN_GREATER_MAX =
+                new PolicyIdentifier<>("MIN_GREATER_MAX");
+            """.trimIndent()
+        )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).failed()
+        assertThat(compilation).hadErrorContaining("minValue cannot be larger than maxValue")
+    }
 }
