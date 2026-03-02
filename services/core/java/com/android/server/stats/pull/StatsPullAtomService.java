@@ -183,6 +183,7 @@ import android.security.metrics.KeysPerUid;
 import android.security.metrics.Keystore2AtomWithOverflow;
 import android.security.metrics.KeystoreAtom;
 import android.security.metrics.KeystoreAtomPayload;
+import android.security.metrics.OperationLatency;
 import android.security.metrics.RkpErrorStats;
 import android.security.metrics.StorageStats;
 import android.stats.storage.StorageEnums;
@@ -864,6 +865,7 @@ public class StatsPullAtomService extends SystemService {
                     case FrameworkStatsLog.KEYSTORE2_KEYS_PER_UID:
                     case FrameworkStatsLog.KEYSTORE2_KEY_CREATION_PER_UID:
                     case FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_PER_UID:
+                    case FrameworkStatsLog.KEYSTORE2_OPERATION_LATENCY:
                         return pullKeystoreAtoms(atomTag, data);
                     case FrameworkStatsLog.ACCESSIBILITY_SHORTCUT_STATS:
                         return pullAccessibilityShortcutStatsLocked(data);
@@ -4846,7 +4848,8 @@ public class StatsPullAtomService extends SystemService {
         if (ENABLE_KEYSTORE_PER_UID_PULLER) {
             for (int tag : new int[] {
                     FrameworkStatsLog.KEYSTORE2_KEY_CREATION_PER_UID,
-                    FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_PER_UID
+                    FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_PER_UID,
+                    FrameworkStatsLog.KEYSTORE2_OPERATION_LATENCY
             }) {
                 mStatsManager.setPullAtomCallback(
                         tag,
@@ -5064,6 +5067,22 @@ public class StatsPullAtomService extends SystemService {
         return StatsManager.PULL_SUCCESS;
     }
 
+    int parseKeystoreOperationLatency(KeystoreAtom[] atoms,
+            List<StatsEvent> pulledData) {
+        if (Arrays.stream(atoms).anyMatch(
+                atom -> atom.payload.getTag() != KeystoreAtomPayload.operationLatency)) {
+            return StatsManager.PULL_SKIP;
+        }
+        for (KeystoreAtom atomWrapper : atoms) {
+            OperationLatency atom = atomWrapper.payload.getOperationLatency();
+            pulledData.add(FrameworkStatsLog.buildStatsEvent(
+                    FrameworkStatsLog.KEYSTORE2_OPERATION_LATENCY, atom.operation_type,
+                    atom.algorithm, atom.key_size, atom.ec_curve, atom.security_level,
+                    atom.is_success, atom.latency_ms, atomWrapper.count));
+        }
+        return StatsManager.PULL_SUCCESS;
+    }
+
     int pullKeystoreAtoms(int atomTag, List<StatsEvent> pulledData) {
         IKeystoreMetrics keystoreMetricsService = getIKeystoreMetricsService();
         if (keystoreMetricsService == null) {
@@ -5098,6 +5117,8 @@ public class StatsPullAtomService extends SystemService {
                     return parseKeystoreKeyCreationPerUid(atoms, pulledData);
                 case FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_PER_UID:
                     return parseKeystoreKeyOperationPerUid(atoms, pulledData);
+                case FrameworkStatsLog.KEYSTORE2_OPERATION_LATENCY:
+                    return parseKeystoreOperationLatency(atoms, pulledData);
                 default:
                     Slog.w(TAG, "Unsupported keystore atom: " + atomTag);
                     return StatsManager.PULL_SKIP;
