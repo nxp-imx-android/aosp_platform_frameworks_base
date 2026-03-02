@@ -23,6 +23,7 @@
     <string name="int_in_range_type_description_from">An integer greater than or equal to %1$d, with step %2$d.</string>
     <string name="int_in_range_type_description_to">An integer less than or equal to %1$d, with step %2$d.</string>
     <string name="int_in_range_type_description_between">An integer in a given range [%1$d, %2$d], with step %3$d.</string>
+    <string name="time_of_day_type_description">A time of day defined by the 24-hour format HH:mm.</string>
     <string name="sim_slot_id_type_description">A valid SIM slot ID.</string>
     <string name="subscription_id_type_description">A valid subscription ID.</string>
     <string name="wifi_ssid_type_description">The SSID of a Wi-Fi network.</string>
