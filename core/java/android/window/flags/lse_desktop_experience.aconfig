@@ -1254,4 +1254,14 @@ flag {
     }
 }
 
+flag {
+    name: "update_desktop_scrim_when_move_task_to_front_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes the issue that desktop scrim effect not get updated when task moves to front."
+    bug: "483868832"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
 # go/keep-sorted end
