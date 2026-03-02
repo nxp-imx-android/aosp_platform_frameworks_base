@@ -7966,8 +7966,8 @@
     <integer name="config_tvWatchdogUidIoUsageSummaryTopCount">20</integer>
 
     <!-- The minimum number of total bytes written to disk by the system required to
-         report the stats on TV watchdog I/O usage summary atom pull. Currently 100 MiB. -->
-    <integer name="config_tvWatchdogIoUsageSummaryMinSystemTotalWrittenBytes">104857600</integer>
+         report the stats on TV watchdog I/O usage summary atom pull. Currently 1 GiB. -->
+    <integer name="config_tvWatchdogIoUsageSummaryMinSystemTotalWrittenBytes">1073741824</integer>
 
     <!-- The number of days past until the current day considered by TV watchdog to
          reset the killable state of a package back to KILLABLE_STATE_YES if the package
@@ -7979,8 +7979,8 @@
     <integer name="config_tvWatchdogRecurringOverusePeriodInDays">30</integer>
 
     <!-- The number of overuses a package has to exceed for TV watchdog to attribute
-         recurring overuse. -->
-    <integer name="config_tvWatchdogRecurringOveruseTimes">3</integer>
+         recurring overuse. Allow many recurring overuses (effectively disabling kill logic). -->
+    <integer name="config_tvWatchdogRecurringOveruseTimes">100</integer>
 
      <!-- Whether to enable app launch blur -->
     <bool name="config_enableAppLaunchBlur">true</bool>

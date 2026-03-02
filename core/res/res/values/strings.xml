@@ -7276,7 +7276,7 @@
     <!-- TvWatchdogService notification related messages -->
     <string name="tv_watchdog_notification_channel_name">System Resource Alerts</string>
     <string name="tv_watchdog_notification_title">Resource Overuse</string>
-    <string name="tv_watchdog_notification_content">"App '<xliff:g id="app_name">%1$s</xliff:g>' is using too many resources."</string>
+    <string name="tv_watchdog_notification_content">"App '<xliff:g id="app_name">%1$s</xliff:g>' has been disabled due to excessive resource use. You can re-enable it from the Apps menu in Settings."</string>
 
     <!-- Supervision strings -->
     <string name="supervision_blocked_app_title">Update from your parent</string>
