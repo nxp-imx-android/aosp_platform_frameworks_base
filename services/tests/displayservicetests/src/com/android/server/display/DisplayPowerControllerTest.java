@@ -76,6 +76,7 @@ import android.provider.Settings;
 import android.testing.TestableContext;
 import android.util.FloatProperty;
 import android.util.SparseArray;
+import android.util.Spline;
 import android.view.Display;
 import android.view.DisplayInfo;
 
@@ -147,6 +148,8 @@ public final class DisplayPowerControllerTest {
     private static final long BRIGHTNESS_RAMP_DECREASE_MAX = 2000;
     private static final long BRIGHTNESS_RAMP_INCREASE_MAX_IDLE = 3000;
     private static final long BRIGHTNESS_RAMP_DECREASE_MAX_IDLE = 4000;
+    private static final float BRIGHTENING_RAMP_GAMMA = 0.234f;
+    private static final float DARKENING_RAMP_GAMMA = 0.123f;
 
     private OffsettableClock mClock;
     private TestLooper mTestLooper;
@@ -179,6 +182,10 @@ public final class DisplayPowerControllerTest {
     private DisplayManagerInternal.DisplayOffloadSession mDisplayOffloadSession;
     @Mock
     private IBatteryStats mMockBatteryStats;
+    @Mock
+    private Spline mLuxDeltaToRampIncreaseMaxMillis;
+    @Mock
+    private Spline mLuxDeltaToRampDecreaseMaxMillis;
     @Captor
     private ArgumentCaptor<SensorEventListener> mSensorEventListenerCaptor;
 
@@ -402,9 +409,10 @@ public final class DisplayPowerControllerTest {
         when(mHolder.brightnessSetting.getBrightness()).thenReturn(leadBrightness);
         listener.onBrightnessChanged(leadBrightness);
         advanceTime(1); // Send messages, run updatePowerState
-        verify(mHolder.animator).animateTo(eq(leadBrightness), anyFloat(), anyFloat(), eq(false));
+        verify(mHolder.animator).animateTo(eq(leadBrightness), anyFloat(), anyFloat(), eq(false),
+                anyFloat());
         verify(followerDpc.animator).animateTo(eq(followerBrightness), anyFloat(),
-                anyFloat(), eq(false));
+                anyFloat(), eq(false), anyFloat());
 
         clearInvocations(mHolder.animator, followerDpc.animator);
 
@@ -418,9 +426,9 @@ public final class DisplayPowerControllerTest {
         listener.onBrightnessChanged(brightness);
         advanceTime(1); // Send messages, run updatePowerState
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         verify(followerDpc.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
     }
 
     @Test
@@ -450,9 +458,9 @@ public final class DisplayPowerControllerTest {
         listener.onBrightnessChanged(brightness);
         advanceTime(1); // Send messages, run updatePowerState
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         verify(followerDpc.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
     }
 
     @Test
@@ -480,9 +488,9 @@ public final class DisplayPowerControllerTest {
         listener.onBrightnessChanged(brightness);
         advanceTime(1); // Send messages, run updatePowerState
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         verify(followerDpc.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
     }
 
     @Test
@@ -512,9 +520,9 @@ public final class DisplayPowerControllerTest {
         listener.onBrightnessChanged(brightness);
         advanceTime(1); // Send messages, run updatePowerState
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         verify(followerDpc.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
     }
 
     @Test
@@ -556,10 +564,10 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.animator).animateTo(eq(leadBrightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         verify(followerDpc.hbmController).onAmbientLuxChange(ambientLux);
         verify(followerDpc.animator).animateTo(eq(followerBrightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
 
         when(mHolder.displayPowerState.getScreenBrightness()).thenReturn(leadBrightness);
         when(followerDpc.displayPowerState.getScreenBrightness()).thenReturn(followerBrightness);
@@ -590,10 +598,10 @@ public final class DisplayPowerControllerTest {
 
         // The second time, the animation rate should be slow
         verify(mHolder.animator).animateTo(eq(leadBrightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_SLOW_DECREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_SLOW_DECREASE), eq(false), anyFloat());
         verify(followerDpc.hbmController).onAmbientLuxChange(ambientLux);
         verify(followerDpc.animator).animateTo(eq(followerBrightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_SLOW_DECREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_SLOW_DECREASE), eq(false), anyFloat());
     }
 
     @Test
@@ -627,7 +635,7 @@ public final class DisplayPowerControllerTest {
         followerListener.onBrightnessChanged(initialFollowerBrightness);
         advanceTime(1);
         verify(followerDpc.animator).animateTo(eq(initialFollowerBrightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
 
         when(followerDpc.displayPowerState.getScreenBrightness())
                 .thenReturn(initialFollowerBrightness);
@@ -648,11 +656,11 @@ public final class DisplayPowerControllerTest {
         listener.onBrightnessChanged(brightness);
         advanceTime(1); // Send messages, run updatePowerState
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         verify(followerDpc.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         verify(secondFollowerDpc.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
 
         when(mHolder.displayPowerState.getScreenBrightness()).thenReturn(brightness);
         when(followerDpc.displayPowerState.getScreenBrightness()).thenReturn(brightness);
@@ -663,7 +671,7 @@ public final class DisplayPowerControllerTest {
         mHolder.dpc.removeDisplayBrightnessFollower(followerDpc.dpc);
         advanceTime(1);
         verify(followerDpc.animator).animateTo(eq(initialFollowerBrightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_DECREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_DECREASE), eq(false), anyFloat());
 
         when(followerDpc.displayPowerState.getScreenBrightness())
                 .thenReturn(initialFollowerBrightness);
@@ -681,11 +689,11 @@ public final class DisplayPowerControllerTest {
         listener.onBrightnessChanged(brightness);
         advanceTime(1); // Send messages, run updatePowerState
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         verify(followerDpc.animator, never()).animateTo(anyFloat(), anyFloat(), anyFloat(),
-                anyBoolean());
+                anyBoolean(), anyFloat());
         verify(secondFollowerDpc.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
     }
 
     @Test
@@ -728,9 +736,9 @@ public final class DisplayPowerControllerTest {
         secondFollowerListener.onBrightnessChanged(initialFollowerBrightness);
         advanceTime(1);
         verify(followerHolder.animator).animateTo(eq(initialFollowerBrightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         verify(secondFollowerHolder.animator).animateTo(eq(initialFollowerBrightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
 
         when(followerHolder.displayPowerState.getScreenBrightness())
                 .thenReturn(initialFollowerBrightness);
@@ -753,11 +761,11 @@ public final class DisplayPowerControllerTest {
         listener.onBrightnessChanged(brightness);
         advanceTime(1); // Send messages, run updatePowerState
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         verify(followerHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         verify(secondFollowerHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
 
         when(mHolder.displayPowerState.getScreenBrightness()).thenReturn(brightness);
         when(followerHolder.displayPowerState.getScreenBrightness()).thenReturn(brightness);
@@ -768,9 +776,9 @@ public final class DisplayPowerControllerTest {
         mHolder.dpc.stop();
         advanceTime(1);
         verify(followerHolder.animator).animateTo(eq(initialFollowerBrightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_DECREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_DECREASE), eq(false), anyFloat());
         verify(secondFollowerHolder.animator).animateTo(eq(initialFollowerBrightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_DECREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_DECREASE), eq(false), anyFloat());
         clearInvocations(followerHolder.animator, secondFollowerHolder.animator);
     }
 
@@ -792,7 +800,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.animator).animateTo(eq(sdrBrightness), eq(sdrBrightness),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
 
         when(mHolder.displayPowerState.getScreenBrightness()).thenReturn(sdrBrightness);
         when(mHolder.displayPowerState.getSdrScreenBrightness()).thenReturn(sdrBrightness);
@@ -806,7 +814,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.animator).animateTo(eq(hdrBrightness), eq(sdrBrightness),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
     }
 
     @Test
@@ -832,7 +840,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.animator).animateTo(eq(hdrBrightness), eq(sdrBrightness),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
 
         when(mHolder.displayPowerState.getScreenBrightness()).thenReturn(hdrBrightness);
         when(mHolder.displayPowerState.getSdrScreenBrightness()).thenReturn(sdrBrightness);
@@ -845,7 +853,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.animator).animateTo(eq(sdrBrightness), eq(sdrBrightness),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_DECREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_DECREASE), eq(false), anyFloat());
     }
 
     @Test
@@ -896,7 +904,8 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof AutoBrightnessFallbackStrategy);
-        verify(mHolder.animator).animateTo(eq(brightness), anyFloat(), anyFloat(), eq(false));
+        verify(mHolder.animator).animateTo(eq(brightness), anyFloat(), anyFloat(), eq(false),
+                anyFloat());
     }
 
     @Test
@@ -925,7 +934,8 @@ public final class DisplayPowerControllerTest {
         mHolder.dpc.updateBrightness();
         advanceTime(1); // Run updatePowerState
 
-        verify(mHolder.animator).animateTo(eq(brightness), anyFloat(), anyFloat(), eq(false));
+        verify(mHolder.animator).animateTo(eq(brightness), anyFloat(), anyFloat(), eq(false),
+                anyFloat());
         assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof AutoBrightnessFallbackStrategy);
     }
 
@@ -961,7 +971,8 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof AutoBrightnessFallbackStrategy);
-        verify(mHolder.animator).animateTo(eq(brightness), anyFloat(), anyFloat(), eq(false));
+        verify(mHolder.animator).animateTo(eq(brightness), anyFloat(), anyFloat(), eq(false),
+                anyFloat());
     }
 
     @Test
@@ -1028,6 +1039,11 @@ public final class DisplayPowerControllerTest {
         Settings.System.putInt(mContext.getContentResolver(),
                 Settings.System.SCREEN_BRIGHTNESS_MODE,
                 Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC);
+        float brightness = 0.12f;
+        float luxDelta = 200;
+        when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(any()))
+                .thenReturn(brightness);
+        when(mHolder.automaticBrightnessController.getLuxDelta()).thenReturn(luxDelta);
 
         DisplayPowerRequest dpr = new DisplayPowerRequest();
         dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
@@ -1045,6 +1061,8 @@ public final class DisplayPowerControllerTest {
         );
         verify(mHolder.hbmController)
                 .setAutoBrightnessEnabled(AutomaticBrightnessController.AUTO_BRIGHTNESS_ENABLED);
+        verify(mHolder.animator).animateTo(eq(brightness), anyFloat(), anyFloat(), eq(false),
+                eq(luxDelta));
     }
 
     @Test
@@ -1322,7 +1340,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
         assertTrue(mHolder.dpc.getLastSelectedStrategy() instanceof FallbackBrightnessStrategy);
         verify(mHolder.animator, times(2)).animateTo(eq(newBrightness),
-                anyFloat(), anyFloat(), eq(false));
+                anyFloat(), anyFloat(), eq(false), anyFloat());
     }
 
     @Test
@@ -1438,7 +1456,8 @@ public final class DisplayPowerControllerTest {
         verify(mHolder.automaticBrightnessController).switchMode(AUTO_BRIGHTNESS_MODE_IDLE,
                 /* sendUpdate= */ true);
         verify(mHolder.animator).setAnimationTimeLimits(BRIGHTNESS_RAMP_INCREASE_MAX_IDLE,
-                BRIGHTNESS_RAMP_DECREASE_MAX_IDLE);
+                BRIGHTNESS_RAMP_DECREASE_MAX_IDLE, mLuxDeltaToRampIncreaseMaxMillis,
+                mLuxDeltaToRampDecreaseMaxMillis);
         verify(mDisplayWhiteBalanceControllerMock).setStrongModeEnabled(true);
     }
 
@@ -1459,7 +1478,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
 
         when(mHolder.displayPowerState.getScreenBrightness()).thenReturn(brightness);
         brightness = 0.05f;
@@ -1471,7 +1490,7 @@ public final class DisplayPowerControllerTest {
 
         // The second time, the animation rate should be slow
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_SLOW_DECREASE_IDLE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_SLOW_DECREASE_IDLE), eq(false), anyFloat());
 
         brightness = 0.9f;
         when(mHolder.automaticBrightnessController.getAutomaticScreenBrightness(
@@ -1481,7 +1500,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
         // The third time, the animation rate should be slow
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_SLOW_INCREASE_IDLE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_SLOW_INCREASE_IDLE), eq(false), anyFloat());
     }
 
     @Test
@@ -1504,7 +1523,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.animator, atLeastOnce()).animateTo(anyFloat(), anyFloat(),
-                eq(transitionRate), anyBoolean());
+                eq(transitionRate), anyBoolean(), anyFloat());
     }
 
     @Test
@@ -1529,9 +1548,9 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.animator, atLeastOnce()).animateTo(anyFloat(), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_DECREASE), anyBoolean());
+                eq(BRIGHTNESS_RAMP_RATE_FAST_DECREASE), anyBoolean(), anyFloat());
         verify(mHolder.animator, never()).animateTo(anyFloat(), anyFloat(),
-                eq(transitionRate), anyBoolean());
+                eq(transitionRate), anyBoolean(), anyFloat());
     }
 
     @Test
@@ -1550,7 +1569,9 @@ public final class DisplayPowerControllerTest {
         setUpDisplay(DISPLAY_ID, "new_unique_id", mHolder.display, mock(DisplayDevice.class),
                 mHolder.config, /* isEnabled= */ true);
         verify(mHolder.animator).setAnimationTimeLimits(BRIGHTNESS_RAMP_INCREASE_MAX,
-                BRIGHTNESS_RAMP_DECREASE_MAX);
+                BRIGHTNESS_RAMP_DECREASE_MAX, mLuxDeltaToRampIncreaseMaxMillis,
+                mLuxDeltaToRampDecreaseMaxMillis);
+        verify(mHolder.animator).setRampGammaValues(BRIGHTENING_RAMP_GAMMA, DARKENING_RAMP_GAMMA);
 
         // switch to idle mode
         mHolder.dpc.setAutomaticScreenBrightnessMode(AUTO_BRIGHTNESS_MODE_IDLE);
@@ -1558,7 +1579,8 @@ public final class DisplayPowerControllerTest {
 
         // A second time, when switching to idle mode.
         verify(mHolder.animator).setAnimationTimeLimits(BRIGHTNESS_RAMP_INCREASE_MAX_IDLE,
-                BRIGHTNESS_RAMP_DECREASE_MAX_IDLE);
+                BRIGHTNESS_RAMP_DECREASE_MAX_IDLE, mLuxDeltaToRampIncreaseMaxMillis,
+                mLuxDeltaToRampDecreaseMaxMillis);
     }
 
     @Test
@@ -1583,7 +1605,8 @@ public final class DisplayPowerControllerTest {
         // Process the MSG_SWITCH_AUTOBRIGHTNESS_MODE event
         advanceTime(1);
         verify(mHolder.animator).setAnimationTimeLimits(BRIGHTNESS_RAMP_INCREASE_MAX_IDLE,
-                BRIGHTNESS_RAMP_DECREASE_MAX_IDLE);
+                BRIGHTNESS_RAMP_DECREASE_MAX_IDLE, mLuxDeltaToRampIncreaseMaxMillis,
+                mLuxDeltaToRampDecreaseMaxMillis);
     }
 
     @Test
@@ -1715,7 +1738,7 @@ public final class DisplayPowerControllerTest {
         // Brightness should not be set if screen on blocked
         verify(mHolder.animator, never()).animateTo(/* linearFirstTarget= */ anyFloat(),
                 /* linearSecondTarget= */ anyFloat(), /* rate= */ anyFloat(),
-                /* ignoreAnimationLimits= */ anyBoolean());
+                /* ignoreAnimationLimits= */ anyBoolean(), anyFloat());
     }
 
     @Test
@@ -1752,7 +1775,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Send messages, run updatePowerState
 
         verify(mHolder.animator).animateTo(eq(brightness), /* linearSecondTarget= */ anyFloat(),
-                /* rate= */ eq(0f), /* ignoreAnimationLimits= */ eq(false));
+                /* rate= */ eq(0f), /* ignoreAnimationLimits= */ eq(false), anyFloat());
     }
 
     @Test
@@ -1865,7 +1888,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         assertEquals(BrightnessReason.REASON_OFFLOAD, mHolder.dpc.mBrightnessReason.getReason());
     }
 
@@ -1888,7 +1911,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         assertEquals(BrightnessReason.REASON_OFFLOAD, mHolder.dpc.mBrightnessReason.getReason());
 
         clearInvocations(mHolder.animator);
@@ -1903,7 +1926,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1); // Run updatePowerState
 
         verify(mHolder.animator).animateTo(eq(brightness), anyFloat(),
-                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false));
+                eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE), eq(false), anyFloat());
         assertEquals(BrightnessReason.REASON_AUTOMATIC, mHolder.dpc.mBrightnessReason.getReason());
     }
 
@@ -2151,7 +2174,7 @@ public final class DisplayPowerControllerTest {
 
         verify(mHolder.animator).animateTo(eq(brightness * DOZE_SCALE_FACTOR),
                 /* linearSecondTarget= */ anyFloat(), /* rate= */ anyFloat(),
-                /* ignoreAnimationLimits= */ anyBoolean());
+                /* ignoreAnimationLimits= */ anyBoolean(), anyFloat());
         assertEquals(brightness * DOZE_SCALE_FACTOR, mHolder.dpc.getDozeBrightnessForOffload(),
                 /* delta= */ 0);
         // This brightness shouldn't be stored in the setting
@@ -2186,7 +2209,7 @@ public final class DisplayPowerControllerTest {
 
         verify(mHolder.animator).animateTo(eq(brightness * DOZE_SCALE_FACTOR),
                 /* linearSecondTarget= */ anyFloat(), /* rate= */ anyFloat(),
-                /* ignoreAnimationLimits= */ anyBoolean());
+                /* ignoreAnimationLimits= */ anyBoolean(), anyFloat());
         assertEquals(brightness * DOZE_SCALE_FACTOR, mHolder.dpc.getDozeBrightnessForOffload(),
                 /* delta= */ 0);
         // This brightness shouldn't be stored in the setting
@@ -2225,7 +2248,7 @@ public final class DisplayPowerControllerTest {
 
         verify(mHolder.animator).animateTo(eq(brightness * DOZE_SCALE_FACTOR),
                 /* linearSecondTarget= */ anyFloat(), /* rate= */ anyFloat(),
-                /* ignoreAnimationLimits= */ anyBoolean());
+                /* ignoreAnimationLimits= */ anyBoolean(), anyFloat());
     }
 
     @Test
@@ -2259,7 +2282,7 @@ public final class DisplayPowerControllerTest {
 
         verify(mHolder.animator).animateTo(eq(brightness),
                 /* linearSecondTarget= */ anyFloat(), /* rate= */ anyFloat(),
-                /* ignoreAnimationLimits= */ anyBoolean());
+                /* ignoreAnimationLimits= */ anyBoolean(), anyFloat());
     }
 
     @Test
@@ -2291,7 +2314,7 @@ public final class DisplayPowerControllerTest {
 
         verify(mHolder.animator).animateTo(eq(brightness * DOZE_SCALE_FACTOR),
                 /* linearSecondTarget= */ anyFloat(), /* rate= */ anyFloat(),
-                /* ignoreAnimationLimits= */ anyBoolean());
+                /* ignoreAnimationLimits= */ anyBoolean(), anyFloat());
         assertEquals(brightness * DOZE_SCALE_FACTOR, mHolder.dpc.getDozeBrightnessForOffload(),
                 /* delta= */ 0);
     }
@@ -2315,7 +2338,7 @@ public final class DisplayPowerControllerTest {
 
         verify(mHolder.animator).animateTo(eq(DEFAULT_DOZE_BRIGHTNESS),
                 /* linearSecondTarget= */ anyFloat(), eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE),
-                eq(false));
+                eq(false), anyFloat());
         // This brightness shouldn't be stored in the setting
         verify(mHolder.brightnessSetting, never()).setBrightness(DEFAULT_DOZE_BRIGHTNESS);
 
@@ -2329,7 +2352,7 @@ public final class DisplayPowerControllerTest {
 
         verify(mHolder.animator).animateTo(eq(DEFAULT_DOZE_BRIGHTNESS / 2),
                 /* linearSecondTarget= */ anyFloat(), eq(BRIGHTNESS_RAMP_RATE_FAST_INCREASE),
-                eq(false));
+                eq(false), anyFloat());
     }
 
     @Test
@@ -2354,7 +2377,7 @@ public final class DisplayPowerControllerTest {
 
         verify(mHolder.animator, never()).animateTo(eq(DEFAULT_DOZE_BRIGHTNESS),
                 /* linearSecondTarget= */ anyFloat(), /* rate= */ anyFloat(),
-                /* ignoreAnimationLimits= */ anyBoolean());
+                /* ignoreAnimationLimits= */ anyBoolean(), anyFloat());
     }
 
     @Test
@@ -2482,7 +2505,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1);  // Run updatePowerState
 
         verify(mHolder.animator).animateTo(eq(OVERRIDE_BRIGHTNESS), anyFloat(), anyFloat(),
-                eq(false));
+                eq(false), anyFloat());
     }
 
     @Test
@@ -2500,7 +2523,7 @@ public final class DisplayPowerControllerTest {
         advanceTime(1);  // Process the WM brightness override request
 
         verify(mHolder.animator).animateTo(eq(OVERRIDE_BRIGHTNESS), anyFloat(), anyFloat(),
-                eq(false));
+                eq(false), anyFloat());
     }
 
     @Test
@@ -2630,6 +2653,14 @@ public final class DisplayPowerControllerTest {
                 .thenReturn(BRIGHTNESS_RAMP_INCREASE_MAX_IDLE);
         when(displayDeviceConfigMock.getBrightnessRampDecreaseMaxIdleMillis())
                 .thenReturn(BRIGHTNESS_RAMP_DECREASE_MAX_IDLE);
+        when(displayDeviceConfigMock.getLuxDeltaToRampIncreaseMaxMillis()).thenReturn(
+                mLuxDeltaToRampIncreaseMaxMillis);
+        when(displayDeviceConfigMock.getLuxDeltaToRampDecreaseMaxMillis()).thenReturn(
+                mLuxDeltaToRampDecreaseMaxMillis);
+        when(displayDeviceConfigMock.getAutoBrightnessBrighteningRampGamma()).thenReturn(
+                BRIGHTENING_RAMP_GAMMA);
+        when(displayDeviceConfigMock.getAutoBrightnessDarkeningRampGamma()).thenReturn(
+                DARKENING_RAMP_GAMMA);
 
         final HysteresisLevels hysteresisLevels = mock(HysteresisLevels.class);
         when(displayDeviceConfigMock.getAmbientBrightnessHysteresis()).thenReturn(hysteresisLevels);
