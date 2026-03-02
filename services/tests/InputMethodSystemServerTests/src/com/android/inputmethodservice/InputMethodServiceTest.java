@@ -1048,7 +1048,7 @@ public class InputMethodServiceTest {
             container.scroll(Direction.UP, SCROLL_TOP_PERCENT);
             final String buttonResId =
                     mFlagsValueProvider.getBoolean(Flags.FLAG_IME_SWITCHER_MENU_SYSTEMUI)
-                            ? "button1" : "android:id/button1";
+                            ? "settings_button" : "android:id/button1";
             final var languageSettingsButtonUiObject = container.scrollUntil(Direction.DOWN,
                     Until.findObject(By.res(buttonResId)));
             assertNotNull("Language settings button should be found",
@@ -1110,7 +1110,7 @@ public class InputMethodServiceTest {
             container.scroll(Direction.UP, SCROLL_TOP_PERCENT);
             final String buttonResId =
                     mFlagsValueProvider.getBoolean(Flags.FLAG_IME_SWITCHER_MENU_SYSTEMUI)
-                            ? "button1" : "android:id/button1";
+                            ? "settings_button" : "android:id/button1";
             final boolean hasButton = container.scrollUntil(Direction.DOWN,
                     Until.hasObject(By.res(buttonResId)));
             assertFalse("Language settings button should not be found", hasButton);
@@ -1154,7 +1154,7 @@ public class InputMethodServiceTest {
             container.scroll(Direction.UP, SCROLL_TOP_PERCENT);
             final String buttonResId =
                     mFlagsValueProvider.getBoolean(Flags.FLAG_IME_SWITCHER_MENU_SYSTEMUI)
-                            ? "button1" : "android:id/button1";
+                            ? "settings_button" : "android:id/button1";
             final boolean hasButton = container.scrollUntil(Direction.DOWN,
                     Until.hasObject(By.res(buttonResId)));
             assertFalse("Language settings button should not be found", hasButton);
