@@ -2100,7 +2100,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 }
             }
             if (handleTopActivityLaunchingInDifferentOrientation(
-                    topCandidate, r, true /* checkOpening */)) {
+                    topCandidate, r, true /* checkOpening */, ROTATION_UNDEFINED)) {
                 // Display orientation should be deferred until the top fixed rotation is finished.
                 return false;
             }
@@ -2238,8 +2238,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     boolean handleTopActivityLaunchingInDifferentOrientation(@NonNull ActivityRecord r,
-            boolean checkOpening) {
-        return handleTopActivityLaunchingInDifferentOrientation(r, r, checkOpening);
+            boolean checkOpening, int knownRotation) {
+        return handleTopActivityLaunchingInDifferentOrientation(r, r, checkOpening, knownRotation);
     }
 
     /**
@@ -2252,10 +2252,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      *                       "behind" orientation.
      * @param checkOpening Whether to check if the activity is animating by transition. Set to
      *                     {@code true} if the caller is not sure whether the activity is launching.
+     * @param knownRotation The rotation to apply. Usually ROTATION_UNDEFINED to calculate it from
+     *                      {@code orientationSrc}, unless a specific rotation (e.g. from a task
+     *                      snapshot) is already known.
      * @return {@code true} if the fixed rotation is started.
      */
     private boolean handleTopActivityLaunchingInDifferentOrientation(@NonNull ActivityRecord r,
-            @NonNull ActivityRecord orientationSrc, boolean checkOpening) {
+            @NonNull ActivityRecord orientationSrc, boolean checkOpening, int knownRotation) {
         if (!WindowManagerService.ENABLE_FIXED_ROTATION_TRANSFORM) {
             return false;
         }
@@ -2306,7 +2309,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // animation is not running (it may be swiping to home).
             return false;
         }
-        final int rotation = rotationForActivityInDifferentOrientation(orientationSrc);
+        final int rotation = knownRotation == ROTATION_UNDEFINED
+                ? rotationForActivityInDifferentOrientation(orientationSrc)
+                : knownRotation;
         if (rotation == ROTATION_UNDEFINED) {
             // The display rotation won't be changed by current top activity. The client side
             // adjustments of previous rotated activity should be cleared earlier. Otherwise if

@@ -64,6 +64,16 @@ flag {
 }
 
 flag {
+  name: "use_snapshot_fixed_rotation"
+  namespace: "windowing_frontend"
+  description: "Use known rotation of snapshot to apply fixed rotation"
+  bug: "488963381"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "avoid_intermediate_destroying_state"
   namespace: "windowing_frontend"
   description: "Prevent intermediate destroying state from affecting visibility"
