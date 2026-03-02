@@ -22,12 +22,12 @@ import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.VelocityTracker
-import com.android.internal.policy.GestureNavigationSettingsObserver
 import com.android.systemui.ambient.touch.TouchHandler
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dreams.DreamOverlayContainerView
+import com.android.systemui.navigationbar.gestural.GestureNavigationSettingsObserverFactory
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.statusbar.VibratorHelper
@@ -45,6 +45,7 @@ constructor(
     private val userContextProvider: UserContextProvider,
     private val vibratorHelper: VibratorHelper,
     private val logger: DreamTouchHandlerLogger,
+    gestureNavigationSettingsObserverFactory: GestureNavigationSettingsObserverFactory,
 ) : TouchHandler {
 
     private var edgeWidthLeft: Float = 0f
@@ -52,7 +53,7 @@ constructor(
     private var velocityTracker: VelocityTracker? = null
 
     private val gestureNavigationSettingsObserver =
-        GestureNavigationSettingsObserver(
+        gestureNavigationSettingsObserverFactory.create(
             mainHandler,
             backgroundHandler,
             context,
