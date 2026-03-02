@@ -24,7 +24,6 @@ import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.AnimatorSet
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.Flags.fixDotNotVisibleRace
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.privacy.PrivacyItem
@@ -177,13 +176,8 @@ constructor(
         Assert.isMainThread()
 
         val priorityCondition =
-            if (fixDotNotVisibleRace()) {
-                (event.priority >= (scheduledEvent.value?.priority ?: -1)) &&
-                    (event.priority >= (currentlyDisplayedEvent?.priority ?: -1))
-            } else {
-                (event.priority > (scheduledEvent.value?.priority ?: -1)) &&
-                    (event.priority > (currentlyDisplayedEvent?.priority ?: -1))
-            }
+            (event.priority >= (scheduledEvent.value?.priority ?: -1)) &&
+                (event.priority >= (currentlyDisplayedEvent?.priority ?: -1))
 
         // Ignore any updates until the system is up and running. However, for important events that
         // request to be force visible (like privacy), ignore whether it's too early.
@@ -225,7 +219,7 @@ constructor(
     override fun removePersistentDot() {
         Assert.isMainThread()
 
-        if (fixDotNotVisibleRace() && _animationState.value == AnimationQueued) {
+        if (_animationState.value == AnimationQueued) {
             // If we're in the queued state, it means an event has been scheduled but the
             // debounce period hasn't passed yet. If we're removing the dot, it's because the
             // event that triggered the animation is no longer active, so we should just cancel
