@@ -66,6 +66,7 @@ import com.android.settingslib.metadata.PreferenceSummaryProvider
 import com.android.settingslib.metadata.PreferenceTitleProvider
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel.Companion.DEEP_LINK_ONLY
+import com.android.settingslib.metadata.SensitivityLevel.Companion.REQUIRES_CONFIRMATION
 import com.android.settingslib.metadata.SensitivityLevel.Companion.DO_NOT_EXPOSE
 import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.getPreferenceIcon
@@ -790,6 +791,7 @@ fun <T> PersistentPreference<T>.evalWritePermit(
     return when {
         // High sensitivity is strictly disallowed.
         sensitivityLevel == DEEP_LINK_ONLY -> ReadWritePermit.DISALLOW
+        sensitivityLevel == REQUIRES_CONFIRMATION -> ReadWritePermit.DISALLOW
 
         // Unknown sensitivity is disallowed, unless we are on a debuggable build
         // and the caller holds the WRITE_SECURE_SETTINGS permission.
