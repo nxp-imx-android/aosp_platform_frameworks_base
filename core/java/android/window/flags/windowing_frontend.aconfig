@@ -84,16 +84,6 @@ flag {
 }
 
 flag {
-  name: "refactor_dimmer_crop"
-  namespace: "windowing_frontend"
-  description: "Reuse existing logic and fix corner issue"
-  bug: "435301249"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "remove_legacy_orientation_report"
   namespace: "windowing_frontend"
   description: "Remove legacy task letterbox logic"
