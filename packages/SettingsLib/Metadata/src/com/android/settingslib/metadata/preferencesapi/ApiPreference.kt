@@ -130,56 +130,44 @@ class ValuePreconditionsConfig<V : Any> private constructor(
         resolveString(context, descriptionRes, description)
 }
 
-/** Configuration of the [ApiPreference] set operation's warning. */
-sealed interface WarningConfig<V : Any> {
-    @get:StringRes
-    val warningRes: Int?
-    val warning: String?
+/**
+ * Configuration of the [ApiPreference] set operation's warning. If preconditions are defined,
+ * warning is triggered based on them.
+ */
+class WarningConfig<V : Any> private constructor(
+    @StringRes val warningRes: Int?,
+    val warning: String?,
+    val preconditions: PreconditionsConfig?,
+    val valuePreconditions: ValuePreconditionsConfig<V>?,
+) {
+    init {
+        require(warningRes != null || warning != null)
+    }
+
+    constructor(
+        @StringRes warning: Int,
+        preconditions: PreconditionsConfig? = null,
+        valuePreconditions: ValuePreconditionsConfig<V>? = null,
+    ) : this(
+        warningRes = warning,
+        warning = null,
+        preconditions = preconditions,
+        valuePreconditions = valuePreconditions
+    )
+
+    constructor(
+        warning: String,
+        preconditions: PreconditionsConfig? = null,
+        valuePreconditions: ValuePreconditionsConfig<V>? = null,
+    ) : this(
+        warningRes = null,
+        warning = warning,
+        preconditions = preconditions,
+        valuePreconditions = valuePreconditions
+    )
 
     /** Get the warning message as a string using the provided context. */
     fun getWarning(context: Context): String = resolveString(context, warningRes, warning)
-}
-
-/** A [WarningConfig] that triggers based on [PreconditionsConfig]. */
-class PreconditionsWarningConfig<V : Any> private constructor(
-    val preconditions: PreconditionsConfig,
-    @StringRes override val warningRes: Int?,
-    override val warning: String?,
-) : WarningConfig<V> {
-    init {
-        require(warningRes != null || warning != null)
-    }
-
-    constructor(
-        preconditions: PreconditionsConfig,
-        @StringRes warning: Int,
-    ) : this(preconditions, warningRes = warning, warning = null)
-
-    constructor(
-        preconditions: PreconditionsConfig,
-        warning: String,
-    ) : this(preconditions, warningRes = null, warning = warning)
-}
-
-/** A [WarningConfig] that triggers based on [ValuePreconditionsConfig]. */
-class ValuePreconditionsWarningConfig<V : Any> private constructor(
-    val valuePreconditions: ValuePreconditionsConfig<V>,
-    @StringRes override val warningRes: Int?,
-    override val warning: String?,
-) : WarningConfig<V> {
-    init {
-        require(warningRes != null || warning != null)
-    }
-
-    constructor(
-        valuePreconditions: ValuePreconditionsConfig<V>,
-        @StringRes warning: Int,
-    ) : this(valuePreconditions, warningRes = warning, warning = null)
-
-    constructor(
-        valuePreconditions: ValuePreconditionsConfig<V>,
-        warning: String,
-    ) : this(valuePreconditions, warningRes = null, warning = warning)
 }
 
 /** Configuration of the [ApiPreference] set. */
@@ -407,7 +395,19 @@ abstract class ApiPreference<V : Any>(
 }
 
 /**
- * Warning configuration builder for an [ApiPreference] set operation.
+ * Warning configuration builder for an [ApiPreference] set operation. The warning message can be
+ * triggered in two ways:
+ * * always triggered if using just a warning message;
+ * * conditionally triggered by using preconditions or value preconditions before the warning
+ * message.
+ *
+ * ```
+ * warning {
+ *     warn("Foo warning")
+ * }
+ * ```
+ *
+ * or
  *
  * ```
  * warning {
@@ -501,8 +501,8 @@ class WarningConfigBuilder<V : Any> {
     }
 
     /**
-     * Sets the warning message as a string resource to display when preconditions or value
-     * preconditions are [Allowed].
+     * Sets the warning message as a string resource to display when triggered before setting a
+     * value.
      */
     fun warn(@StringRes message: Int) {
         if (warning != null || warningRes != null) {
@@ -511,10 +511,7 @@ class WarningConfigBuilder<V : Any> {
         warningRes = message
     }
 
-    /**
-     * Sets the warning message as a string to display when preconditions or value preconditions
-     * are [Allowed].
-     */
+    /** Sets the warning message as a string to display when triggered before setting a value. */
     fun warn(message: String) {
         if (warning != null || warningRes != null) {
             error(getExceptionMessageMultipleDefines("warn"))
@@ -523,29 +520,14 @@ class WarningConfigBuilder<V : Any> {
     }
 
     internal fun build(): WarningConfig<V> {
-        if (warning == null && warningRes == null) {
-            error("warning 'warn' block is required")
-        }
-
         return when {
-            preconditionsConfig != null ->
-                if (warning != null) {
-                    PreconditionsWarningConfig(preconditionsConfig!!, warning!!)
-                } else {
-                    PreconditionsWarningConfig(preconditionsConfig!!, warningRes!!)
-                }
+            warning != null ->
+                WarningConfig(warning = warning!!, preconditions = preconditionsConfig, valuePreconditions = valuePreconditionsConfig)
 
-            valuePreconditionsConfig != null ->
-                if (warning != null) {
-                    ValuePreconditionsWarningConfig(valuePreconditionsConfig!!, warning!!)
-                } else {
-                    ValuePreconditionsWarningConfig(valuePreconditionsConfig!!, warningRes!!)
-                }
+            warningRes != null ->
+                WarningConfig(warning = warningRes!!, preconditions = preconditionsConfig, valuePreconditions = valuePreconditionsConfig)
 
-            else ->
-                error(
-                    "Exactly one of warning 'preconditions' or 'valuePreconditions' block is required"
-                )
+            else -> error("warning 'warn' block is required")
         }
     }
 }
@@ -786,10 +768,7 @@ class SetConfigBuilder<V : Any>(private val type: ApiType<V>) {
         valuePreconditionsConfig = config
     }
 
-    /**
-     * Defines a warning to be triggered before setting the value if certain preconditions or value
-     * preconditions are [Allowed].
-     */
+    /** Defines a warning to be triggered before setting the value. */
     fun warning(lambda: WarningConfigBuilder<V>.() -> Unit) {
         if (warningConfig != null) {
             error(getExceptionMessageMultipleDefines("warning"))
