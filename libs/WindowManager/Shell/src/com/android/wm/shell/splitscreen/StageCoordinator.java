@@ -469,7 +469,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         mPackageUpdateController = packageUpdateController;
 
         final TaskPropertiesRequest taskProperties = new TaskPropertiesRequest()
-                .setForceOpaque(com.android.window.flags.Flags.enableForceOpaque());
+                .setForceOpaque(true);
         final TaskCreationParams params = new TaskCreationParams.Builder()
                 .setName("SplitRoot")
                 .setDisplayId(displayId)

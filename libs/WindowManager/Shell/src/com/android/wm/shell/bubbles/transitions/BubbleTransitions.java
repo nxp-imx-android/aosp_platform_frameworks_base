@@ -1287,9 +1287,6 @@ public class BubbleTransitions {
                 @NonNull SurfaceControl.Transaction finishT,
                 @NonNull IBinder mergeTarget,
                 @NonNull Transitions.TransitionFinishCallback finishCallback) {
-            if (!com.android.window.flags.Flags.enableForceOpaque()) {
-                return;
-            }
             if (info.getType() != TRANSIT_SPLIT_DISMISS) {
                 return;
             }
