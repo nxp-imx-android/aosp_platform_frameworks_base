@@ -86,7 +86,8 @@ public class AppCompatEmbeddingRuleController {
                     context.getResources().getString(R.string.config_virtual_gamepad_activity_name),
                     defaultMinSize(context),
                     context.getPackageName(),
-                    context.getUserId());
+                    context.getUserId(),
+                    context.getApplicationInfo().uid);
             if (rule != null) {
                 rules.add(rule);
             }
@@ -100,7 +101,7 @@ public class AppCompatEmbeddingRuleController {
     @Nullable
     public static EmbeddingRule createVirtualGamepadOverrideRule(
             @NonNull String packageName, @NonNull String activityName, int minSizePx,
-            @NonNull String selfPackageName, int userId) {
+            @NonNull String selfPackageName, int userId, int uid) {
         if (packageName.isEmpty() || activityName.isEmpty()) {
             return null;
         }
@@ -108,6 +109,7 @@ public class AppCompatEmbeddingRuleController {
         final Intent placeholderIntent = new Intent();
         placeholderIntent.setClassName(packageName, activityName);
         placeholderIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, selfPackageName);
+        placeholderIntent.putExtra(Intent.EXTRA_UID, uid);
 
         final SplitAttributes defaultAttributes = new SplitAttributes.Builder()
                 .setLayoutDirection(SplitAttributes.LayoutDirection.TOP_TO_BOTTOM)
