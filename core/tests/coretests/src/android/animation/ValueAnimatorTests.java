@@ -1335,11 +1335,6 @@ public class ValueAnimatorTests {
         }
 
         @Override
-        public long getFrameTime() {
-            return SystemClock.uptimeMillis();
-        }
-
-        @Override
         public long getFrameDelay() {
             return mFrameDelay;
         }

@@ -242,11 +242,6 @@ public class SurfaceAnimationRunnerTest {
         }
 
         @Override
-        public long getFrameTime() {
-            return 0;
-        }
-
-        @Override
         public long getFrameDelay() {
             return 0;
         }
