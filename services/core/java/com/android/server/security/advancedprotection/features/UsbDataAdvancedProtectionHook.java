@@ -65,6 +65,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.SystemProperties;
 import android.os.UserHandle;
@@ -96,7 +98,6 @@ import java.util.Set;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -177,7 +178,6 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                     R.string.usb_apm_usb_plugged_in_when_locked_data_notification_text);
 
     private final Object mLastUsbPortStatusLock = new Object();
-    private final ReentrantLock mDisableLock = new ReentrantLock();
     private final Context mContext;
 
     private AtomicBoolean mApmRequestedUsbDataStatus = new AtomicBoolean(false);
@@ -185,7 +185,8 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     // mode until the USB connection is removed.
     private AtomicBoolean mLastUsbKnownConnectionIncludesCarMode = new AtomicBoolean(false);
 
-    private HandlerThread mHandlerThread = new HandlerThread("UsbDataAdvancedProtectionHook");
+    private HandlerThread mHandlerThread =
+            new HandlerThread("UsbDataAdvancedProtectionHook", Process.THREAD_PRIORITY_BACKGROUND);
     // We use handlers for tasks that may need to be updated by broadcasts events.
     private Handler mDelayedDisableHandler;
     private Handler mDelayedNotificationHandler;
@@ -196,6 +197,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private BroadcastReceiver mUsbProtectionBroadcastReceiver;
     private KeyguardManager mKeyguardManager;
     private NotificationManager mNotificationManager;
+    private PowerManager.WakeLock mWakeLock;
     private NotificationChannel mNotificationChannel;
     private AdvancedProtectionService mAdvancedProtectionService;
     private ExecutorService mKeyguardListenerExecutor = Executors.newSingleThreadExecutor();
@@ -226,14 +228,18 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             return;
         }
         mHandlerThread.start();
-        if(Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
+        if (Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
             mDelayedDisableHandler = new Handler(mHandlerThread.getLooper());
             mDelayedNotificationHandler = new Handler(mHandlerThread.getLooper());
+            PowerManager powerManager =
+                    Objects.requireNonNull(mContext.getSystemService(PowerManager.class));
+            mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+            mWakeLock.setReferenceCounted(false); // Concurrency is handled by the handler
         } else {
             mDelayedDisableHandler = new Handler(Looper.getMainLooper());
             mDelayedNotificationHandler = new Handler(Looper.getMainLooper());
         }
-        if(Flags.aapmFeatureUsbDataProtectionErrorReporting()) {
+        if (Flags.aapmFeatureUsbDataProtectionErrorReporting()) {
             mBugReportHelper = new UsbDataBugReportHelper(mContext);
         }
         mUsbManager = Objects.requireNonNull(mContext.getSystemService(UsbManager.class));
@@ -266,6 +272,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             AtomicBoolean apmRequestedUsbDataStatus,
             UiModeManager uiModeManager,
             UsbDataBugReportHelper bugReportHelper,
+            PowerManager.WakeLock wakeLock,
             boolean canSetUsbDataSignal,
             boolean afterFirstUnlock) {
         super(context, false);
@@ -280,6 +287,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         mDelayedDisableHandler = delayDisableHandler;
         mUiModeManager = uiModeManager;
         mBugReportHelper = bugReportHelper;
+        mWakeLock = wakeLock;
         mCanSetUsbDataSignal = canSetUsbDataSignal;
         mIsAfterFirstUnlock = afterFirstUnlock;
         mUserManager = userManager;
@@ -317,10 +325,11 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         }
 
         Slog.i(TAG, "onAdvancedProtectionChanged: " + enabled);
-        if(Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
-            mDelayedDisableHandler.post(() -> {
-                handleAdvancedProtectionChanged(enabled);
-            });
+        if (Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
+            mDelayedDisableHandler.post(
+                    () -> {
+                        handleAdvancedProtectionChanged(enabled);
+                    });
         } else {
             handleAdvancedProtectionChanged(enabled);
         }
@@ -385,14 +394,13 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                                     + " retrieve port status");
                                     return;
                                 }
-                                if(Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
+                                if (Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
                                     synchronized (mLastUsbPortStatusLock) {
                                         mLastUsbPortStatus = portStatus;
                                     }
                                 } else {
                                     mLastUsbPortStatus = portStatus;
                                 }
-
 
                                 if (Build.IS_DEBUGGABLE) {
                                     dumpUsbDevices();
@@ -446,10 +454,11 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                             // having
                             // request dropped due to USB stack not being ready.
                             else if (ACTION_LOCKED_BOOT_COMPLETED.equals(intent.getAction())) {
-                                if(Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
-                                    mDelayedDisableHandler.post(() -> {
-                                        setUsbDataSignalIfPossible(false);
-                                    });
+                                if (Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
+                                    mDelayedDisableHandler.post(
+                                            () -> {
+                                                setUsbDataSignalIfPossible(false);
+                                            });
                                 } else {
                                     setUsbDataSignalIfPossible(false);
                                 }
@@ -508,7 +517,8 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                             boolean taskPosted =
                                     mDelayedNotificationHandler.postDelayed(
                                             () -> {
-                                                if(Flags.aapmFeatureUsbDataProtectionDelayDisableAutoOnly()) {
+                                                if (Flags
+                                                .aapmFeatureUsbDataProtectionDelayDisableAutoOnly()) {
                                                     synchronized (mLastUsbPortStatusLock) {
                                                         determineUsbChargeStateAndSendNotification(
                                                                 mLastUsbPortStatus);
@@ -768,7 +778,9 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
 
     private boolean setUsbDataSignalIfPossible(boolean status) {
         boolean successfullySetUsbDataSignal = false;
-        mDisableLock.lock();
+        if (Flags.aapmFeatureUsbDataProtectionDelayRetry() && mWakeLock != null) {
+            mWakeLock.acquire();
+        }
         try {
             /*
              * We check if there is already an existing USB connection and skip the USB
@@ -815,12 +827,14 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 // Given this is a security focused feature where functionality is critical over
                 // slight additional resource costs, we opted to move towards a delay that
                 // is more deterministic.
-                if(Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
+                if (Flags.aapmFeatureUsbDataProtectionDelayRetry()) {
                     try {
                         Thread.sleep(USB_DATA_CHANGE_RETRY_DELAY_MILLIS);
                     } catch (InterruptedException e) {
-                        Slog.e(TAG,
-                                "InterruptedException thrown when waiting for USB change state", e);
+                        Slog.e(
+                                TAG,
+                                "InterruptedException thrown when waiting for USB change state",
+                                e);
                     }
                 }
             }
@@ -849,7 +863,11 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 clearExistingNotification();
             }
         } finally {
-            mDisableLock.unlock();
+            if (Flags.aapmFeatureUsbDataProtectionDelayRetry()
+                    && mWakeLock != null
+                    && mWakeLock.isHeld()) {
+                mWakeLock.release();
+            }
         }
         return successfullySetUsbDataSignal;
     }
@@ -946,12 +964,12 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                     }
                 };
         mUiModeManager.addOnProjectionStateChangedListener(
-            // We don't track PROJECTION_TYPE_NONE because if the current USB connection is Auto
-            // capable, we should assume it can switch back to PROJECTION_TYPE_AUTOMOTIVE
-            // anytime. We reset value upon USB disconnect instead
-            UiModeManager.PROJECTION_TYPE_AUTOMOTIVE,
-            mHandlerThread.getThreadExecutor(),
-            projectionModeListener);
+                // We don't track PROJECTION_TYPE_NONE because if the current USB connection is Auto
+                // capable, we should assume it can switch back to PROJECTION_TYPE_AUTOMOTIVE
+                // anytime. We reset value upon USB disconnect instead
+                UiModeManager.PROJECTION_TYPE_AUTOMOTIVE,
+                mHandlerThread.getThreadExecutor(),
+                projectionModeListener);
         Slog.d(TAG, "Registered projection mode listener");
     }
 
