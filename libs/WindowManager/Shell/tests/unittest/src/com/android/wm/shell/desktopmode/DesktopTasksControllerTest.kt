@@ -8486,6 +8486,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .getOrCreateVisualIndicator(
                 eq(task),
                 eq(mockSurface),
+                eq(DEFAULT_DISPLAY),
                 eq(DesktopModeVisualIndicator.DragStartState.FROM_FREEFORM),
             )
         whenever(
@@ -8507,7 +8508,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         verify(visualIndicatorUpdateScheduler)
             .schedule(
-                eq(task.displayId),
+                eq(DEFAULT_DISPLAY),
                 eq(indicatorType),
                 eq(inputX),
                 eq(inputY),
