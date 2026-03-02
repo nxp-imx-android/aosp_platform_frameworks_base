@@ -15,6 +15,7 @@
  */
 package com.android.systemui.locationbutton.data.repository
 
+import android.app.permissionui.LocationButtonSession
 import android.content.res.Configuration
 import androidx.compose.ui.graphics.Color
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -127,6 +128,7 @@ class LocationButtonRepositoryTest : SysuiTestCase() {
             textColor = Color.White,
             configuration = Configuration(),
             density = 1.0f,
+            textType = LocationButtonSession.TEXT_TYPE_NONE,
         )
     }
 }

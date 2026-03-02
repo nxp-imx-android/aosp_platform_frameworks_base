@@ -54,6 +54,7 @@ constructor(
             textResId = textResId,
             textColor = textColor,
             configuration = configuration,
+            validationFlags = validationFlags,
         )
     }
 }

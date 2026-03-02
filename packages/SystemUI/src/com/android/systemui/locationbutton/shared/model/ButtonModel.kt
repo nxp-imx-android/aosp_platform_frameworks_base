@@ -36,4 +36,6 @@ data class ButtonModel(
     val textColor: Color,
     val configuration: Configuration,
     val density: Float,
+    val textType: Int,
+    val validationFlags: Int = 0,
 )
