@@ -37,8 +37,8 @@ message PreferenceScreenProto {
   // Available parameters of the parameterized screen.
   // Deprecated: Use key_parameters instead. See b/447555338 for details.
   repeated BundleProto parameters = 6 [deprecated = true];
-  // Schema for the key-value parameters, as a string.
-  optional string parameters_schema = 7;
+  // Schema for the key-value parameters.
+  optional KeyParametersSchemaProto parameters_schema = 7;
   // Available type-safe parameters of the parameterized screen
   repeated KeyParametersProto key_parameters = 8;
 }
