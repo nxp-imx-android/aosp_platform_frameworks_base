@@ -17,12 +17,21 @@
 package com.android.settingslib.metadata.preferencesapi.types
 
 import android.content.Context
+import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.R
 
 /** Any int in the given range, along the given step. */
-class IntInRange(val min: Int?, val max: Int?, val step: Int = 1): ApiType<Int> {
+class IntInRange(val min: Int?, val max: Int?, val step: Int = 1, private val unitOfMeasurement: String? = null): ApiType<Int> {
 
     override fun getType(): Class<Int> = Int::class.java
+
+    override fun getParametersSchema() = KeyParametersSchema.Builder()
+        .parameter("unit", "The unit of measurement (if any) such as dB or milliseconds.")
+        .build()
+
+    override fun getParameters() = getParametersSchema().prepare(buildMap {
+        unitOfMeasurement?.let { put("unit", it) }
+    })
 
     init {
         require(min != null || max != null)
