@@ -629,7 +629,8 @@ class MemoryLimiter implements AutoCloseable {
             }
 
             final long meg = 1024 * 1024;
-            dumpLine(pw, formatSimple("enabled low=%dMB high=%dMB ignored=%s",
+            dumpLine(pw, formatSimple("enabled monitoring=%s low=%dMB high=%dMB ignored=%s",
+                            mInjector.isMonitoringEnabled(),
                             mMemoryNotVisible / meg, mMemoryVisible / meg, ignoredUid()));
             if (stats != null) {
                 // Format the output.  Use the line splits provided by the native layer but put
