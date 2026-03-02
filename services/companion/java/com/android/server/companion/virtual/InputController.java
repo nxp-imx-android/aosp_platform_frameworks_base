@@ -50,7 +50,6 @@ import com.android.server.input.InputManagerInternal;
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Objects;
 
 /** Controls virtual input devices, including device lifecycle and event dispatch. */
 final class InputController {
@@ -93,7 +92,6 @@ final class InputController {
 
     IVirtualDpad createDpad(@NonNull IBinder token, @NonNull VirtualDpadConfig config)
             throws RemoteException {
-        checkUniqueInputDeviceName(config.getInputDeviceName());
         IVirtualDpad device = mInputManagerInternal.createVirtualDpad(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_dpad_created_count",
                 mAttributionSource.getUid());
@@ -103,7 +101,6 @@ final class InputController {
 
     IVirtualKeyboard createKeyboard(@NonNull IBinder token, @NonNull VirtualKeyboardConfig config)
             throws RemoteException {
-        checkUniqueInputDeviceName(config.getInputDeviceName());
         IVirtualKeyboard device = mInputManagerInternal.createVirtualKeyboard(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_keyboard_created_count",
                 mAttributionSource.getUid());
@@ -113,7 +110,6 @@ final class InputController {
 
     IVirtualMouse createMouse(@NonNull IBinder token, @NonNull VirtualMouseConfig config)
             throws RemoteException {
-        checkUniqueInputDeviceName(config.getInputDeviceName());
         IVirtualMouse device = mInputManagerInternal.createVirtualMouse(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_mouse_created_count",
                 mAttributionSource.getUid());
@@ -123,7 +119,6 @@ final class InputController {
 
     IVirtualTouchscreen createTouchscreen(@NonNull IBinder token,
             @NonNull VirtualTouchscreenConfig config) throws RemoteException {
-        checkUniqueInputDeviceName(config.getInputDeviceName());
         IVirtualTouchscreen device = mInputManagerInternal.createVirtualTouchscreen(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_touchscreen_created_count",
                 mAttributionSource.getUid());
@@ -133,7 +128,6 @@ final class InputController {
 
     IVirtualNavigationTouchpad createNavigationTouchpad(@NonNull IBinder token,
             @NonNull VirtualNavigationTouchpadConfig config) throws RemoteException {
-        checkUniqueInputDeviceName(config.getInputDeviceName());
         IVirtualNavigationTouchpad device =
                 mInputManagerInternal.createVirtualNavigationTouchpad(token, config);
         Counter.logIncrementWithUid(
@@ -145,7 +139,6 @@ final class InputController {
 
     IVirtualStylus createStylus(@NonNull IBinder token, @NonNull VirtualStylusConfig config)
             throws RemoteException {
-        checkUniqueInputDeviceName(config.getInputDeviceName());
         IVirtualStylus device = mInputManagerInternal.createVirtualStylus(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_stylus_created_count",
                 mAttributionSource.getUid());
@@ -155,7 +148,6 @@ final class InputController {
 
     IVirtualRotaryEncoder createRotaryEncoder(@NonNull IBinder token,
             @NonNull VirtualRotaryEncoderConfig config) throws RemoteException {
-        checkUniqueInputDeviceName(config.getInputDeviceName());
         IVirtualRotaryEncoder device =
                 mInputManagerInternal.createVirtualRotaryEncoder(token, config);
         Counter.logIncrementWithUid("virtual_devices.value_virtual_rotary_created_count",
@@ -185,18 +177,6 @@ final class InputController {
             fout.println(indent + "InputController: " + mInputDevices.size() + " input devices");
             for (int i = 0; i < mInputDevices.size(); ++i) {
                 fout.println(indent + indent + mInputDevices.valueAt(i));
-            }
-        }
-    }
-
-    private void checkUniqueInputDeviceName(@NonNull String name) {
-        synchronized (mLock) {
-            for (int i = 0; i < mInputDevices.size(); ++i) {
-                if (Objects.equals(
-                        mInputDevices.valueAt(i).getConfig().getInputDeviceName(), name)) {
-                    throw new IllegalArgumentException(
-                            "Virtual input device name already in use: " + name);
-                }
             }
         }
     }
@@ -255,14 +235,9 @@ final class InputController {
         private final int mDeviceId;
         private final VirtualInputDeviceConfig mConfig;
 
-        VirtualInputDevice(int deviceId, @NonNull VirtualInputDeviceConfig config) {
+        VirtualInputDevice(int deviceId, VirtualInputDeviceConfig config) {
             mDeviceId = deviceId;
             mConfig = config;
-        }
-
-        @NonNull
-        VirtualInputDeviceConfig getConfig() {
-            return mConfig;
         }
 
         @Override
