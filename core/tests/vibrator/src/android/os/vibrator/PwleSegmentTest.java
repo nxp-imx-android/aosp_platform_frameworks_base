@@ -23,6 +23,7 @@ import static org.testng.Assert.assertThrows;
 
 import android.hardware.vibrator.IVibrator;
 import android.os.Parcel;
+import android.os.VibrationEffect;
 import android.os.VibratorInfo;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -121,5 +122,61 @@ public class PwleSegmentTest {
         PwleSegment segment = new PwleSegment(0.2f, 0.8f, 50, 150, 20);
         assertThat(segment.scale(0.5f)).isEqualTo(new PwleSegment(0.1f, 0.4f, 50, 150, 20));
         assertThat(segment.applyAdaptiveScale(1f)).isSameInstanceAs(segment);
+        assertThat(segment.applyAdaptiveScale(0.5f))
+                .isEqualTo(new PwleSegment(0.1f, 0.4f, 50, 150, 20));
+        assertThat(segment.applyAdaptiveScale(1.5f)) // Should constrain to 1.0
+                .isEqualTo(new PwleSegment(0.3f, 1f, 50, 150, 20));
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
+    public void testResolve() {
+        PwleSegment segment = new PwleSegment(0.1f, 0.2f, 50f, 100f, 10);
+        assertThat(segment.resolve(100)).isSameInstanceAs(segment);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
+    public void testApplyEffectStrength() {
+        PwleSegment segment = new PwleSegment(0.1f, 0.2f, 50f, 100f, 10);
+        assertThat(segment.applyEffectStrength(VibrationEffect.EFFECT_STRENGTH_STRONG))
+                .isSameInstanceAs(segment);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
+    public void testToString() {
+        PwleSegment segment = new PwleSegment(0.1f, 0.2f, 50f, 100f, 10);
+        String str = segment.toString();
+        assertThat(str).contains("0.1");
+        assertThat(str).contains("0.2");
+        assertThat(str).contains("50.0");
+        assertThat(str).contains("100.0");
+        assertThat(str).contains("10");
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_NORMALIZED_PWLE_EFFECTS})
+    public void testEquals() {
+        PwleSegment segment = new PwleSegment(0.1f, 0.2f, 50f, 100f, 10, 200);
+        assertThat(segment).isEqualTo(new PwleSegment(0.1f, 0.2f, 50f, 100f, 10, 200));
+        assertThat(segment).isNotEqualTo(new PwleSegment(0.2f, 0.2f, 50f, 100f, 10, 200));
+        assertThat(segment).isNotEqualTo(new PwleSegment(0.1f, 0.3f, 50f, 100f, 10, 200));
+        assertThat(segment).isNotEqualTo(new PwleSegment(0.1f, 0.2f, 60f, 100f, 10, 200));
+        assertThat(segment).isNotEqualTo(new PwleSegment(0.1f, 0.2f, 50f, 110f, 10, 200));
+        assertThat(segment).isNotEqualTo(new PwleSegment(0.1f, 0.2f, 50f, 100f, 20, 200));
+        assertThat(segment.applyStartTime(100)).isNotEqualTo(segment);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_NORMALIZED_PWLE_EFFECTS})
+    public void testApplyStartTime() {
+        PwleSegment segment = new PwleSegment(0.1f, 0.2f, 50f, 100f, 10);
+        assertThat(segment.getStartTimeMillis()).isEqualTo(-1);
+        PwleSegment newSegment = segment.applyStartTime(100);
+        assertThat(newSegment).isNotSameInstanceAs(segment);
+        assertThat(newSegment.getStartTimeMillis()).isEqualTo(100);
+        assertThat(newSegment.getDuration()).isEqualTo(10);
+    }
+
 }

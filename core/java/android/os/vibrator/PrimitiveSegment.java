@@ -65,6 +65,7 @@ public final class PrimitiveSegment extends VibrationEffectSegment {
 
     /** @hide */
     public PrimitiveSegment(int id, float scale, int delay, int delayType) {
+        super(/* startTimeMillis= */ -1);
         mPrimitiveId = id;
         mScale = scale;
         mDelay = delay;
@@ -152,6 +153,14 @@ public final class PrimitiveSegment extends VibrationEffectSegment {
     }
 
     /** @hide */
+    @NonNull
+    @Override
+    public PrimitiveSegment applyStartTime(long startTimeMillis) {
+        throw new UnsupportedOperationException(
+                "PrimitiveSegment does not support applying start time.");
+    }
+
+    /** @hide */
     @Override
     public void validate() {
         Preconditions.checkArgumentInRange(mPrimitiveId, VibrationEffect.Composition.PRIMITIVE_NOOP,
@@ -177,8 +186,7 @@ public final class PrimitiveSegment extends VibrationEffectSegment {
 
     @Override
     public String toString() {
-        return "Primitive{"
-                + "primitive=" + VibrationEffect.Composition.primitiveToString(mPrimitiveId)
+        return "Primitive{primitive=" + VibrationEffect.Composition.primitiveToString(mPrimitiveId)
                 + ", scale=" + mScale
                 + ", delay=" + mDelay
                 + ", delayType=" + VibrationEffect.Composition.delayTypeToString(mDelayType)

@@ -20,8 +20,10 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertSame;
 import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import static org.testng.Assert.assertThrows;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.hardware.vibrator.IVibrator;
 import android.os.Parcel;
@@ -224,6 +226,48 @@ public class PrimitiveSegmentTest {
                 VibrationEffect.Composition.PRIMITIVE_THUD, 1, 10).isHapticFeedbackCandidate());
         assertTrue(new PrimitiveSegment(
                 VibrationEffect.Composition.PRIMITIVE_SPIN, 1, 10).isHapticFeedbackCandidate());
+    }
+
+    @Test
+    public void testToString() {
+        PrimitiveSegment segment = new PrimitiveSegment(
+                VibrationEffect.Composition.PRIMITIVE_CLICK, 1, 10);
+        String str = segment.toString();
+        assertThat(str).contains("CLICK");
+        assertThat(str).contains("1.0");
+        assertThat(str).contains("10");
+    }
+
+    @Test
+    public void testEquals() {
+        PrimitiveSegment segment = new PrimitiveSegment(
+                VibrationEffect.Composition.PRIMITIVE_CLICK, 1, 10);
+        assertThat(segment).isEqualTo(new PrimitiveSegment(
+                VibrationEffect.Composition.PRIMITIVE_CLICK, 1, 10));
+        assertThat(segment).isNotEqualTo(new PrimitiveSegment(
+                VibrationEffect.Composition.PRIMITIVE_THUD, 1, 10));
+        assertThat(segment).isNotEqualTo(new PrimitiveSegment(
+                VibrationEffect.Composition.PRIMITIVE_CLICK, 0.5f, 10));
+        assertThat(segment).isNotEqualTo(new PrimitiveSegment(
+                VibrationEffect.Composition.PRIMITIVE_CLICK, 1, 20));
+        assertThat(segment).isNotEqualTo(new PrimitiveSegment(
+                VibrationEffect.Composition.PRIMITIVE_CLICK, 1, 10,
+                VibrationEffect.Composition.DELAY_TYPE_RELATIVE_START_OFFSET));
+    }
+
+    @Test
+    public void testApplyStartTime() {
+        PrimitiveSegment segment = new PrimitiveSegment(
+                VibrationEffect.Composition.PRIMITIVE_CLICK, 1, 10,
+                VibrationEffect.Composition.DELAY_TYPE_RELATIVE_START_OFFSET);
+        assertThat(segment.getStartTimeMillis()).isEqualTo(-1);
+
+        try {
+            segment.applyStartTime(100);
+            fail("PrimitiveSegment does not support applying start time.");
+        } catch (UnsupportedOperationException e) {
+            // Expected.
+        }
     }
 
     private static PrimitiveSegment createSegment(int primitiveId) {
