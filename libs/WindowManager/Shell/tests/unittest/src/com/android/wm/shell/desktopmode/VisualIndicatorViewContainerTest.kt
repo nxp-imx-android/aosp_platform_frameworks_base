@@ -173,6 +173,28 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
     }
 
     @Test
+    fun testTransitionIndicator_nullDisplayLayout_doesNotAnimate() {
+        // setupSpyViewContainer creates the view and sets a mock background
+        val viewContainer = setupSpyViewContainer()
+        // Override setup to return null for display layout
+        whenever(displayController.getDisplayLayout(anyInt())).thenReturn(null)
+
+        viewContainer.transitionIndicator(
+            taskInfo,
+            displayController,
+            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
+            DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR,
+        )
+        desktopExecutor.flushAll()
+
+        // Verify that no animation starts. An animation would change the background bounds.
+        // Since the background is a mock, we can verify that setBounds is never called.
+        // The only interaction with mockBackground during setup is findDrawableByLayerId,
+        // so verifying no *other* interactions is a robust way to check for no animation.
+        verify(mockBackground, never()).bounds = any()
+    }
+
+    @Test
     fun testFadeInBoundsCalculation() {
         val spyIndicator = setupSpyViewContainer()
         val animator =
