@@ -207,9 +207,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 .addCallback(mStateListener,
                         SysuiStatusBarStateController.RANK_STATUS_BAR_WINDOW_CONTROLLER);
         configurationController.addCallback(this);
-        if (android.multiuser.Flags.useAllCpusDuringUserSwitch()) {
-            userTracker.addCallback(mUserTrackerCallback, mainExecutor);
-        }
+        userTracker.addCallback(mUserTrackerCallback, mainExecutor);
         float desiredPreferredRefreshRate = context.getResources()
                 .getInteger(R.integer.config_keyguardRefreshRate);
         float actualPreferredRefreshRate = -1;
