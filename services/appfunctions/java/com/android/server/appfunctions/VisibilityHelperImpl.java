@@ -19,8 +19,8 @@ package com.android.server.appfunctions;
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionActivityState;
+import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.flags.Flags;
@@ -29,9 +29,12 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
+import android.util.ArrayMap;
 import android.util.ArraySet;
-import java.util.ArrayList;
 
+import com.android.internal.annotations.GuardedBy;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -42,6 +45,12 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
 
     @NonNull private final PackageManagerInternal mPmInternal;
 
+    private final Object mVisibilityCacheLock = new Object();
+
+    @GuardedBy("mVisibilityCacheLock")
+    private final ArrayMap<CallerIdentity, ArraySet<String>> mIdentityToVisiblePackages =
+            new ArrayMap<>();
+
     public VisibilityHelperImpl(
             @NonNull Context context, @NonNull PackageManagerInternal packageManagerInternal) {
         mContext = Objects.requireNonNull(context);
@@ -49,12 +58,12 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
     }
 
     @Override
-    public boolean isAppFunctionVisible(
-            @NonNull AppFunctionName appFunctionName,
+    public boolean isPackageVisible(
+            @NonNull String targetPackage,
             @NonNull String callingPackage,
             int callingUid,
             int callingPid) {
-        if (callingPackage.equals(appFunctionName.getPackageName())) {
+        if (callingPackage.equals(targetPackage)) {
             return true;
         }
 
@@ -63,7 +72,45 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
             if (!hasPermissionsToQueryRuntimeMetadata(callingUid, callingPid)) {
                 return false;
             }
-            return mPmInternal.canQueryPackage(callingUid, appFunctionName.getPackageName());
+            return mPmInternal.canQueryPackage(callingUid, targetPackage);
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    @NonNull
+    @Override
+    public Set<String> filterVisiblePackages(
+            @NonNull Set<String> packagesToFilter, @NonNull CallerIdentity callerIdentity) {
+        Objects.requireNonNull(callerIdentity);
+        Objects.requireNonNull(packagesToFilter);
+
+        final long token = Binder.clearCallingIdentity();
+        try {
+            if (hasPermissionsToQueryRuntimeMetadata(
+                    callerIdentity.getCallingUid(), callerIdentity.getCallingPid())) {
+                if (mContext.checkPermission(
+                                Manifest.permission.QUERY_ALL_PACKAGES,
+                                callerIdentity.getCallingPid(),
+                                callerIdentity.getCallingUid())
+                        == PackageManager.PERMISSION_GRANTED) {
+                    return new ArraySet<>(packagesToFilter);
+                } else {
+                    Set<String> allVisiblePackages =
+                            updateAndGetCachedVisiblePackages(callerIdentity);
+                    Set<String> filteredPackages = new ArraySet<>();
+                    for (String pkg : packagesToFilter) {
+                        if (allVisiblePackages.contains(pkg)) {
+                            filteredPackages.add(pkg);
+                        }
+                    }
+                    return filteredPackages;
+                }
+            }
+            if (packagesToFilter.contains(callerIdentity.getCallingPackageName())) {
+                return Set.of(callerIdentity.getCallingPackageName());
+            }
+            return Set.of();
         } finally {
             Binder.restoreCallingIdentity(token);
         }
@@ -72,41 +119,73 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
     @NonNull
     @Override
     public Set<AppFunctionName> filterVisibleAppFunctions(
-            @NonNull Set<AppFunctionName> functionNames,
-            @NonNull String callingPackageName,
-            int callingUid,
-            int callingPid) {
+            @NonNull Set<AppFunctionName> functionNames, @NonNull CallerIdentity callerIdentity) {
         Objects.requireNonNull(functionNames);
-        Objects.requireNonNull(callingPackageName);
+        Objects.requireNonNull(callerIdentity);
 
         final long token = Binder.clearCallingIdentity();
         try {
-            if (hasPermissionsToQueryRuntimeMetadata(callingUid, callingPid)) {
+            if (hasPermissionsToQueryRuntimeMetadata(
+                    callerIdentity.getCallingUid(), callerIdentity.getCallingPid())) {
                 if (mContext.checkPermission(
-                                Manifest.permission.QUERY_ALL_PACKAGES, callingPid, callingUid)
+                                Manifest.permission.QUERY_ALL_PACKAGES,
+                                callerIdentity.getCallingPid(),
+                                callerIdentity.getCallingUid())
                         == PackageManager.PERMISSION_GRANTED) {
                     return new ArraySet<>(functionNames);
                 } else {
-                    Set<AppFunctionName> visibleFunctionNames = new ArraySet<>();
+                    Set<String> allVisiblePackages =
+                            updateAndGetCachedVisiblePackages(callerIdentity);
+                    Set<AppFunctionName> filteredFunctions = new ArraySet<>();
                     for (AppFunctionName functionName : functionNames) {
-                        if (mPmInternal.canQueryPackage(
-                                callingUid, functionName.getPackageName())) {
-                            visibleFunctionNames.add(functionName);
+                        if (allVisiblePackages.contains(functionName.getPackageName())) {
+                            filteredFunctions.add(functionName);
                         }
                     }
-                    return visibleFunctionNames;
+                    return filteredFunctions;
                 }
             }
 
             Set<AppFunctionName> selfFunctionNames = new ArraySet<>();
             for (AppFunctionName functionName : functionNames) {
-                if (functionName.getPackageName().equals(callingPackageName)) {
+                if (functionName.getPackageName().equals(callerIdentity.getCallingPackageName())) {
                     selfFunctionNames.add(functionName);
                 }
             }
             return selfFunctionNames;
         } finally {
             Binder.restoreCallingIdentity(token);
+        }
+    }
+
+    private Set<String> updateAndGetCachedVisiblePackages(@NonNull CallerIdentity callerIdentity) {
+        Set<String> cachedVisiblePackages;
+
+        synchronized (mVisibilityCacheLock) {
+            if (!mIdentityToVisiblePackages.containsKey(callerIdentity)) {
+                mIdentityToVisiblePackages.put(callerIdentity, new ArraySet<>());
+            }
+            cachedVisiblePackages = mIdentityToVisiblePackages.get(callerIdentity);
+
+            if (cachedVisiblePackages == null) {
+                return Set.of(); // Impossible
+            }
+            // Incrementally update the cache with newly visible packages.
+            // We intentionally do not remove packages that have become invisible since visibility
+            // loss implies uninstallation, and we require these cache entries to successfully
+            // notify all relevant observers of the uninstallation.
+            cachedVisiblePackages.addAll(
+                    getVisiblePackages(
+                            callerIdentity.getCallingUid(),
+                            callerIdentity.getUserHandle().getIdentifier()));
+            return Set.copyOf(cachedVisiblePackages);
+        }
+    }
+
+    @Override
+    public void cleanupVisibilityCache(@NonNull CallerIdentity callerIdentity) {
+        synchronized (mVisibilityCacheLock) {
+            mIdentityToVisiblePackages.remove(callerIdentity);
         }
     }
 
@@ -166,6 +245,7 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
     }
 
     @Override
+    @NonNull
     public List<AppFunctionActivityState> filterVisibleAppFunctionActivityStates(
             @NonNull List<AppFunctionActivityState> appFunctionActivityStates,
             @NonNull String callingPackageName,
@@ -184,11 +264,13 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
                 continue;
             }
             // All the function names from the same activity must come from the same package.
-            if (appFunctionActivityState.getFunctionNames().valueAt(0).getPackageName()
+            if (appFunctionActivityState
+                    .getFunctionNames()
+                    .valueAt(0)
+                    .getPackageName()
                     .equals(callingPackageName)) {
                 visibleAppFunctionActivityStates.add(appFunctionActivityState);
             }
-
         }
         return visibleAppFunctionActivityStates;
     }

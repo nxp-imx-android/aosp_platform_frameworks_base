@@ -50,8 +50,8 @@ import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.AppFunctionStateList;
 import android.app.appfunctions.AppFunctionStaticMetadataHelper;
 import android.app.appfunctions.AppFunctionUriGrant;
-import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest;
+import android.app.appfunctions.ExecuteAppFunctionRequest;
 import android.app.appfunctions.ExecuteAppFunctionResponse;
 import android.app.appfunctions.IAppFunctionExecutor;
 import android.app.appfunctions.IAppFunctionManager;
@@ -110,7 +110,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
 import com.android.internal.infra.AndroidFuture;
-import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.server.IoThread;
 import com.android.server.SystemService.TargetUser;
@@ -241,7 +240,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mDynamicAppFunctionRegistry = Objects.requireNonNull(dynamicAppFunctionRegistry);
         mAppFunctionMetadataReader = Objects.requireNonNull(appFunctionMetadataReader);
         mAppFunctionMetadataObserver =
-                new AppFunctionMetadataObserver(context, appFunctionMetadataReader, serviceConfig);
+                new AppFunctionMetadataObserver(
+                        context, appFunctionMetadataReader, serviceConfig, visibilityHelper);
         mAppInteractionService = appInteractionService;
         mVisibilityHelper = Objects.requireNonNull(visibilityHelper);
         mActivityTaskManagerInternal = Objects.requireNonNull(activityTaskManagerInternal);
@@ -279,8 +279,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         } catch (IOException e) {
             Slog.e(
                     TAG,
-                    "Failed to create request/response logger for user "
-                            + user.getUserIdentifier(),
+                    "Failed to create request/response logger for user " + user.getUserIdentifier(),
                     e);
         }
 
@@ -460,8 +459,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                     validateExecuteAppFunctionRequestTargetScope(
                                             requestInternal.getClientRequest(),
                                             targetPackageName,
-                                            targetUser
-                                    );
+                                            targetUser);
                                 } catch (AppFunctionNotFoundException e) {
                                     return AndroidFuture.failedFuture(e);
                                 }
@@ -526,9 +524,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     /**
      * Validates the target scope of the execute app function request. If the function is a
-     * SCOPE_GLOBAL function, the request must not have an AppFunctionActivityId. If the function
-     * is a SCOPE_ACTIVITY function, the request must have an AppFunctionActivityId and the
-     * function must be registered for the given AppFunctionActivityId.
+     * SCOPE_GLOBAL function, the request must not have an AppFunctionActivityId. If the function is
+     * a SCOPE_ACTIVITY function, the request must have an AppFunctionActivityId and the function
+     * must be registered for the given AppFunctionActivityId.
      *
      * @param executeRequest The execute app function request.
      * @param targetPackageName The target package name of the app function.
@@ -680,9 +678,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                     Set<AppFunctionName> visibleAppFunctionNames =
                             mVisibilityHelper.filterVisibleAppFunctions(
                                     Set.copyOf(appFunctionNames),
-                                    callingPackageName,
-                                    callingUid,
-                                    callingPid);
+                                    new CallerIdentity(
+                                            callingPackageName,
+                                            targetUser,
+                                            callingUid,
+                                            callingPid));
 
                     FutureGlobalSearchSession futureGlobalSearchSession =
                             new FutureGlobalSearchSession(
@@ -891,23 +891,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 /* callingPackageName= */ aidlSearchSpec.getCallingPackageName());
 
         UserHandle targetUser = UserHandle.of(aidlSearchSpec.getTargetUserId());
-
-        // TODO(b/438413081): Instead of applying visibility filter before observing,
-        //  apply changes to observed packages/functions at runtime.
-        AppFunctionSearchSpec filteredSearchSpec =
-                mVisibilityHelper.applyVisiblePackageFilter(aidlSearchSpec, callingUid, callingPid);
-
-        if (filteredSearchSpec == null) {
-            return;
-        }
-
+        CallerIdentity callerIdentity =
+                new CallerIdentity(
+                        aidlSearchSpec.getCallingPackageName(), targetUser, callingUid, callingPid);
         mAppFunctionMetadataObserver.registerClientAppCallback(
-                targetUser,
-                new AppFunctionAidlSearchSpec(
-                        aidlSearchSpec.getCallingPackageName(),
-                        filteredSearchSpec,
-                        aidlSearchSpec.getTargetUserId()),
-                observeAppFunctionsCallback);
+                callerIdentity, observeAppFunctionsCallback);
     }
 
     @Override
@@ -930,8 +918,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 /* callingPid= */ callingPid,
                 /* callingPackageName= */ callingPackage);
 
+        CallerIdentity callerIdentity =
+                new CallerIdentity(callingPackage, userHandle, callingUid, callingPid);
         mAppFunctionMetadataObserver.unregisterClientAppCallback(
-                userHandle, observeAppFunctionsCallback);
+                callerIdentity, observeAppFunctionsCallback);
     }
 
     @Override
@@ -968,11 +958,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             return;
         }
 
-        if (!mVisibilityHelper.isAppFunctionVisible(
-                new AppFunctionName(targetPackage, functionIdentifier),
-                callingPackage,
-                callingUid,
-                callingPid)) {
+        if (!mVisibilityHelper.isPackageVisible(
+                targetPackage, callingPackage, callingUid, callingPid)) {
             try {
                 callback.onError(
                         new ParcelableException(
@@ -1144,17 +1131,19 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         List<RegistrationScopeId> scopeIds = new ArrayList<>();
         RegistrationScopeId passedScopeId =
-            (activityToken != null)
-                    ? new RegistrationScopeId(getAppFunctionActivityId(activityToken))
-                    : RegistrationScopeId.GLOBAL_SCOPE;
+                (activityToken != null)
+                        ? new RegistrationScopeId(getAppFunctionActivityId(activityToken))
+                        : RegistrationScopeId.GLOBAL_SCOPE;
         for (String functionIdentifier : functionIdentifiers) {
-            @AppFunctionMetadata.AppFunctionType int functionType =
+            @AppFunctionMetadata.AppFunctionType
+            int functionType =
                     mAppFunctionMetadataReader.getAppFunctionType(
                             packageName, functionIdentifier, callingUserHandle);
             if (functionType != AppFunctionMetadata.APP_FUNCTION_TYPE_DYNAMIC_ACTIVITY
                     && functionType != AppFunctionMetadata.APP_FUNCTION_TYPE_DYNAMIC_GLOBAL) {
                 throw new IllegalArgumentException(
-                        "Unable to register AppFunction " + functionIdentifier
+                        "Unable to register AppFunction "
+                                + functionIdentifier
                                 + ". Ensure this function is declared in the XML resource"
                                 + " referenced by the property within the <application> tag of your"
                                 + " AndroidManifest.xml.");
@@ -1402,8 +1391,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (isDynamicFunction) {
             throw new IllegalArgumentException(
                     "setAppFunctionEnabled is not supported for runtime-registered functions. Use"
-                        + " AppFunctionManager.registerAppFunction and"
-                        + " AppFunctionRegistration.unregister instead.");
+                            + " AppFunctionManager.registerAppFunction and"
+                            + " AppFunctionRegistration.unregister instead.");
         }
         AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(userHandle);
 

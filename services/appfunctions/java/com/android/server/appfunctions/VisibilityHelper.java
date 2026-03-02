@@ -18,10 +18,10 @@ package com.android.server.appfunctions;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.appfunctions.AppFunctionActivityState;
 import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
-import android.app.appfunctions.AppFunctionActivityState;
 
 import java.util.List;
 import java.util.Set;
@@ -43,18 +43,23 @@ public interface VisibilityHelper {
      * Filters the {@code functionNames} to only return the visible ones.
      *
      * @param functionNames The list of {@link AppFunctionName}.
-     * @param callingPackageName The calling package name.
-     * @param callingUid The calling uid.
-     * @param callingPid The calling pid.
+     * @param callerIdentity The caller's identifier.
      * @return The list of {@link AppFunctionName} that the caller has visibility with.
      */
     @NonNull
     Set<AppFunctionName> filterVisibleAppFunctions(
-            @NonNull Set<AppFunctionName> functionNames,
-            @NonNull String callingPackageName,
-            int callingUid,
-            int callingPid);
+            @NonNull Set<AppFunctionName> functionNames, @NonNull CallerIdentity callerIdentity);
 
+    /**
+     * Filters the {@code packagesToFilter} to only return the visible ones.
+     *
+     * @param packagesToFilter The list of {@link AppFunctionName}.
+     * @param callerIdentity The caller's identifier.
+     * @return The list of package names that the caller has visibility with.
+     */
+    @NonNull
+    Set<String> filterVisiblePackages(
+            @NonNull Set<String> packagesToFilter, @NonNull CallerIdentity callerIdentity);
 
     /**
      * Filters the {@code appFunctionActivityStates} to only return the visible ones.
@@ -73,17 +78,25 @@ public interface VisibilityHelper {
             int callingPid);
 
     /**
-     * Checks if {@code appFunctionName} is visible from {@code callingPackage}.
+     * Checks if {@code targetPackage} is visible from {@code callingPackage}.
      *
-     * @param appFunctionName The target {@link AppFunctionName}.
+     * @param targetPackage The target package name.
      * @param callingPackage The calling package name.
      * @param callingUid The calling uid.
      * @param callingPid The calling pid.
      * @return True if visible. False otherwise.
      */
-    boolean isAppFunctionVisible(
-            @NonNull AppFunctionName appFunctionName,
+    boolean isPackageVisible(
+            @NonNull String targetPackage,
             @NonNull String callingPackage,
             int callingUid,
             int callingPid);
+
+    /**
+     * Cleans up the visibility cache for the given {@link
+     * com.android.server.appfunctions.reader.CallerIdentity}.
+     */
+    // TODO(b/478851326): Move the cache to router level so that visibility helper can stay
+    // stateless.
+    void cleanupVisibilityCache(@NonNull CallerIdentity callerIdentity);
 }

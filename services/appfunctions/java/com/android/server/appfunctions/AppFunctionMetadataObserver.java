@@ -20,7 +20,6 @@ import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_E
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.NonNull;
-import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionName;
 import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
@@ -37,7 +36,6 @@ import com.android.server.SystemService;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Executors;
 
 /**
  * Manages AppSearch observer registrations and notification routing for all users.
@@ -58,16 +56,19 @@ public class AppFunctionMetadataObserver {
 
     @NonNull private final AppFunctionMetadataReader mAppFunctionMetadataReader;
     @NonNull private final ServiceConfig mServiceConfig;
+    @NonNull private final VisibilityHelper mVisibilityHelper;
 
     @NonNull private final Context mContext;
 
     AppFunctionMetadataObserver(
             @NonNull Context context,
             @NonNull AppFunctionMetadataReader appFunctionMetadataReader,
-            @NonNull ServiceConfig serviceConfig) {
+            @NonNull ServiceConfig serviceConfig,
+            @NonNull VisibilityHelper visibilityHelper) {
         mAppFunctionMetadataReader = Objects.requireNonNull(appFunctionMetadataReader);
         mContext = Objects.requireNonNull(context);
         mServiceConfig = Objects.requireNonNull(serviceConfig);
+        mVisibilityHelper = Objects.requireNonNull(visibilityHelper);
     }
 
     /** Registers a new {@link AppFunctionMetadataObserver} for {@code targetUser}. */
@@ -87,7 +88,7 @@ public class AppFunctionMetadataObserver {
                 new FutureGlobalSearchSession(perUserAppSearchManager, THREAD_POOL_EXECUTOR);
 
         InternalObserverCallbackRouter userCallbackRouter =
-                new InternalObserverCallbackRouter(mServiceConfig);
+                new InternalObserverCallbackRouter(mServiceConfig, mVisibilityHelper);
         AppFunctionMetadataObserverCallback2 observerCallback =
                 new AppFunctionMetadataObserverCallback2(
                         mPerUserMetadataSyncAdapter,
@@ -135,38 +136,37 @@ public class AppFunctionMetadataObserver {
      * functions matching the {@link AppFunctionSearchSpec} for a specific user.
      */
     void registerClientAppCallback(
-            @NonNull UserHandle userHandle,
-            @NonNull AppFunctionAidlSearchSpec searchSpec,
+            @NonNull CallerIdentity callerIdentity,
             @NonNull IObserveAppFunctionChangesCallback proxyCallback)
             throws RemoteException {
-        requireNonNull(userHandle);
-        requireNonNull(searchSpec);
+        requireNonNull(callerIdentity);
         requireNonNull(proxyCallback);
 
         InternalObserverCallbackRouter router;
         synchronized (mRoutersLock) {
-            router = mInternalCallbackRouters.get(userHandle.getIdentifier());
+            router = mInternalCallbackRouters.get(callerIdentity.getUserHandle().getIdentifier());
         }
         if (router != null) {
-            router.addCallback(proxyCallback, searchSpec);
+            router.addCallback(proxyCallback, callerIdentity);
         } else {
             throw new IllegalStateException(
-                    "Unable to register callback for user " + userHandle.toString());
+                    "Unable to register callback for user "
+                            + callerIdentity.getUserHandle().toString());
         }
     }
 
     void unregisterClientAppCallback(
-            @NonNull UserHandle userHandle,
+            @NonNull CallerIdentity callerIdentity,
             @NonNull IObserveAppFunctionChangesCallback proxyCallback) {
-        requireNonNull(userHandle);
+        requireNonNull(callerIdentity);
         requireNonNull(proxyCallback);
 
         InternalObserverCallbackRouter router;
         synchronized (mRoutersLock) {
-            router = mInternalCallbackRouters.get(userHandle.getIdentifier());
+            router = mInternalCallbackRouters.get(callerIdentity.getUserHandle().getIdentifier());
         }
         if (router != null) {
-            router.removeCallback(proxyCallback);
+            router.removeCallback(proxyCallback, callerIdentity);
         }
     }
 

@@ -15,9 +15,7 @@
  */
 package com.android.server.appfunctions
 
-import android.app.appfunctions.AppFunctionAidlSearchSpec
 import android.app.appfunctions.AppFunctionName
-import android.app.appfunctions.AppFunctionSearchSpec
 import android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB
 import android.app.appfunctions.AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_NAMESPACE
 import android.app.appfunctions.AppFunctionStaticMetadataHelper.STATIC_SCHEMA_TYPE
@@ -27,22 +25,23 @@ import android.app.appsearch.observer.DocumentChangeInfo
 import android.app.appsearch.observer.SchemaChangeInfo
 import android.os.Binder
 import android.os.IBinder
+import android.os.UserHandle
 import android.platform.test.annotations.RequiresFlagsEnabled
 import com.google.common.truth.Truth.assertThat
-import com.google.common.util.concurrent.MoreExecutors
-import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 @RunWith(JUnit4::class)
 class InternalObserverCallbackRouterTest {
-    private val testExecutorService = MoreExecutors.newDirectExecutorService()
     private val mockServiceConfig: ServiceConfig = mock()
+    private val mockVisibilityHelper: VisibilityHelper = mock()
 
     private fun createRouter(
         debounceExecutor: ScheduledExecutorService,
@@ -56,18 +55,26 @@ class InternalObserverCallbackRouterTest {
             .thenReturn(enabledStateDebounceMs)
         whenever(mockServiceConfig.getAppFunctionEnabledStateChangeMaxDebounceMilliseconds())
             .thenReturn(enabledStateMaxDebounceMs)
+        // Return packages without filtering.
+        whenever(mockVisibilityHelper.filterVisiblePackages(any(), any())).thenAnswer { invocation
+            ->
+            invocation.getArgument<Set<String>>(0)
+        }
+        // Return app functions without filtering.
+        whenever(mockVisibilityHelper.filterVisibleAppFunctions(any(), any())).thenAnswer {
+            invocation ->
+            invocation.getArgument<Set<AppFunctionName>>(0)
+        }
 
         return if (debounceExecutor is FakeScheduledExecutorService) {
             InternalObserverCallbackRouter(
                 mockServiceConfig,
+                mockVisibilityHelper,
                 debounceExecutor,
-                InternalObserverCallbackRouter.TimeSource { debounceExecutor.clockTimeNanos }
+                InternalObserverCallbackRouter.TimeSource { debounceExecutor.clockTimeNanos },
             )
         } else {
-            InternalObserverCallbackRouter(
-                mockServiceConfig,
-                debounceExecutor,
-            )
+            InternalObserverCallbackRouter(mockServiceConfig, mockVisibilityHelper)
         }
     }
 
@@ -85,12 +92,12 @@ class InternalObserverCallbackRouterTest {
             SchemaChangeInfo(
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
-                setOf("$STATIC_SCHEMA_TYPE-testPackage1", "$STATIC_SCHEMA_TYPE-testPackage2"),
+                setOf("$STATIC_SCHEMA_TYPE-$PKG_1", "$STATIC_SCHEMA_TYPE-$PKG_2"),
             )
         )
 
         fakeDebounceExecutor.fastForwardTime(101L)
-        val expectedPackages = listOf("testPackage1", "testPackage2")
+        val expectedPackages = listOf(PKG_1, PKG_2)
         assertThat(callback1.changedPackageNames).containsExactlyElementsIn(expectedPackages)
         assertThat(callback2.changedPackageNames).containsExactlyElementsIn(expectedPackages)
     }
@@ -108,7 +115,7 @@ class InternalObserverCallbackRouterTest {
             SchemaChangeInfo(
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
-                setOf("$STATIC_SCHEMA_TYPE-testPackage1"),
+                setOf("$STATIC_SCHEMA_TYPE-$PKG_1"),
             )
         )
 
@@ -121,13 +128,13 @@ class InternalObserverCallbackRouterTest {
             SchemaChangeInfo(
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
-                setOf("$STATIC_SCHEMA_TYPE-testPackage1"),
+                setOf("$STATIC_SCHEMA_TYPE-$PKG_1"),
             )
         )
 
         // Fast forward time beyond debounce duration
         fakeDebounceExecutor.fastForwardTime(101L)
-        assertThat(callback1.changedPackageNames).containsExactly("testPackage1")
+        assertThat(callback1.changedPackageNames).containsExactly(PKG_1)
 
         // Reset and check that it was only called once
         callback1.changedPackageNames = null
@@ -148,7 +155,7 @@ class InternalObserverCallbackRouterTest {
             SchemaChangeInfo(
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
-                setOf("$STATIC_SCHEMA_TYPE-testPackage1"),
+                setOf("$STATIC_SCHEMA_TYPE-$PKG_1"),
             )
         )
 
@@ -161,14 +168,13 @@ class InternalObserverCallbackRouterTest {
             SchemaChangeInfo(
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
-                setOf("$STATIC_SCHEMA_TYPE-testPackage2"),
+                setOf("$STATIC_SCHEMA_TYPE-$PKG_2"),
             )
         )
 
         // Fast forward time beyond debounce duration
         fakeDebounceExecutor.fastForwardTime(101L)
-        assertThat(callback1.changedPackageNames)
-            .containsExactlyElementsIn(listOf("testPackage1", "testPackage2"))
+        assertThat(callback1.changedPackageNames).containsExactlyElementsIn(listOf(PKG_1, PKG_2))
 
         // Reset and check that it was only called once
         callback1.changedPackageNames = null
@@ -193,8 +199,8 @@ class InternalObserverCallbackRouterTest {
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
                 APP_FUNCTION_STATIC_NAMESPACE,
-                "$STATIC_SCHEMA_TYPE-testPackage1",
-                setOf("testPackage1/id1"),
+                "$STATIC_SCHEMA_TYPE-$PKG_1",
+                setOf("$PKG_1/id1"),
             )
         )
         callbacksRouter.onDocumentChanged(
@@ -202,13 +208,13 @@ class InternalObserverCallbackRouterTest {
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
                 APP_FUNCTION_STATIC_NAMESPACE,
-                "$STATIC_SCHEMA_TYPE-testPackage2",
-                setOf("testPackage2/id2"),
+                "$STATIC_SCHEMA_TYPE-$PKG_2",
+                setOf("$PKG_2/id2"),
             )
         )
 
         fakeDebounceExecutor.fastForwardTime(101L)
-        val expectedPackages = listOf("testPackage1", "testPackage2")
+        val expectedPackages = listOf(PKG_1, PKG_2)
         assertThat(callback1.changedPackageNames).containsExactlyElementsIn(expectedPackages)
         assertThat(callback2.changedPackageNames).containsExactlyElementsIn(expectedPackages)
         assertThat(callback3.changedPackageNames).containsExactlyElementsIn(expectedPackages)
@@ -228,7 +234,7 @@ class InternalObserverCallbackRouterTest {
                 APP_FUNCTION_STATIC_METADATA_DB,
                 APP_FUNCTION_STATIC_NAMESPACE,
                 STATIC_SCHEMA_TYPE,
-                setOf("testPackage1/", "testPackage1", ""),
+                setOf("$PKG_1/", PKG_1, ""),
             )
         )
 
@@ -250,8 +256,8 @@ class InternalObserverCallbackRouterTest {
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
                 APP_FUNCTION_STATIC_NAMESPACE,
-                "$STATIC_SCHEMA_TYPE-testPackage1",
-                setOf("testPackage1/id1"),
+                "$STATIC_SCHEMA_TYPE-$PKG_1",
+                setOf("$PKG_1/id1"),
             )
         )
 
@@ -265,14 +271,14 @@ class InternalObserverCallbackRouterTest {
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
                 APP_FUNCTION_STATIC_NAMESPACE,
-                "$STATIC_SCHEMA_TYPE-testPackage1",
-                setOf("testPackage1/id2"),
+                "$STATIC_SCHEMA_TYPE-$PKG_1",
+                setOf("$PKG_1/id2"),
             )
         )
 
         // Fast forward time beyond debounce duration
         fakeDebounceExecutor.fastForwardTime(101L)
-        assertThat(callback1.changedPackageNames).containsExactly("testPackage1")
+        assertThat(callback1.changedPackageNames).containsExactly(PKG_1)
 
         // Reset and check that it was only called once
         callback1.changedPackageNames = null
@@ -294,8 +300,8 @@ class InternalObserverCallbackRouterTest {
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
                 APP_FUNCTION_STATIC_NAMESPACE,
-                "$STATIC_SCHEMA_TYPE-testPackage1",
-                setOf("testPackage1/id1"),
+                "$STATIC_SCHEMA_TYPE-$PKG_1",
+                setOf("$PKG_1/id1"),
             )
         )
 
@@ -309,15 +315,14 @@ class InternalObserverCallbackRouterTest {
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
                 APP_FUNCTION_STATIC_NAMESPACE,
-                "$STATIC_SCHEMA_TYPE-testPackage2",
-                setOf("testPackage2/id2"),
+                "$STATIC_SCHEMA_TYPE-$PKG_2",
+                setOf("$PKG_2/id2"),
             )
         )
 
         // Fast forward time beyond debounce duration
         fakeDebounceExecutor.fastForwardTime(101L)
-        assertThat(callback1.changedPackageNames)
-            .containsExactlyElementsIn(listOf("testPackage1", "testPackage2"))
+        assertThat(callback1.changedPackageNames).containsExactlyElementsIn(listOf(PKG_1, PKG_2))
 
         // Reset and check that it was only called once
         callback1.changedPackageNames = null
@@ -338,7 +343,7 @@ class InternalObserverCallbackRouterTest {
             SchemaChangeInfo(
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
-                setOf("$STATIC_SCHEMA_TYPE-testPackage1"),
+                setOf("$STATIC_SCHEMA_TYPE-$PKG_1"),
             )
         )
 
@@ -352,15 +357,14 @@ class InternalObserverCallbackRouterTest {
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
                 APP_FUNCTION_STATIC_NAMESPACE,
-                "$STATIC_SCHEMA_TYPE-testPackage2",
-                setOf("testPackage2/id2"),
+                "$STATIC_SCHEMA_TYPE-$PKG_2",
+                setOf("$PKG_2/id2"),
             )
         )
 
         // Fast forward time beyond debounce duration
         fakeDebounceExecutor.fastForwardTime(101L)
-        assertThat(callback1.changedPackageNames)
-            .containsExactlyElementsIn(listOf("testPackage1", "testPackage2"))
+        assertThat(callback1.changedPackageNames).containsExactlyElementsIn(listOf(PKG_1, PKG_2))
 
         // Reset and check that it was only called once
         callback1.changedPackageNames = null
@@ -383,12 +387,12 @@ class InternalObserverCallbackRouterTest {
             SchemaChangeInfo(
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
-                setOf("$STATIC_SCHEMA_TYPE-testPackage1"),
+                setOf("$STATIC_SCHEMA_TYPE-$PKG_1"),
             )
         )
         fakeDebounceExecutor.fastForwardTime(101L)
         assertThat(callback1.changedPackageNames).isNull()
-        assertThat(callback2.changedPackageNames).containsExactly("testPackage1")
+        assertThat(callback2.changedPackageNames).containsExactly(PKG_1)
 
         // Reset for next check
         callback2.changedPackageNames = null
@@ -398,13 +402,13 @@ class InternalObserverCallbackRouterTest {
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
                 APP_FUNCTION_STATIC_NAMESPACE,
-                "$STATIC_SCHEMA_TYPE-testPackage1",
-                setOf("testPackage1/id1"),
+                "$STATIC_SCHEMA_TYPE-$PKG_1",
+                setOf("$PKG_1/id1"),
             )
         )
         fakeDebounceExecutor.fastForwardTime(101L)
         assertThat(callback1.changedPackageNames).isNull()
-        assertThat(callback2.changedPackageNames).containsExactly("testPackage1")
+        assertThat(callback2.changedPackageNames).containsExactly(PKG_1)
     }
 
     @Test
@@ -412,8 +416,7 @@ class InternalObserverCallbackRouterTest {
         val callback1 = TestInternalCallback()
         val fakeDebounceExecutor = FakeScheduledExecutorService()
 
-        val callbacksRouter =
-            createRouter(fakeDebounceExecutor, metadataDebounceMs = 0)
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 0)
         callbacksRouter.addCallback(callback1)
 
         callbacksRouter.shutDown()
@@ -422,7 +425,7 @@ class InternalObserverCallbackRouterTest {
             SchemaChangeInfo(
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
-                setOf("$STATIC_SCHEMA_TYPE-testPackage1"),
+                setOf("$STATIC_SCHEMA_TYPE-$PKG_1"),
             )
         )
         callbacksRouter.onDocumentChanged(
@@ -430,13 +433,11 @@ class InternalObserverCallbackRouterTest {
                 "android",
                 APP_FUNCTION_STATIC_METADATA_DB,
                 APP_FUNCTION_STATIC_NAMESPACE,
-                "$STATIC_SCHEMA_TYPE-testPackage1",
-                setOf("testPackage1/id1"),
+                "$STATIC_SCHEMA_TYPE-$PKG_1",
+                setOf("$PKG_1/id1"),
             )
         )
-        callbacksRouter.onEnabledStatesChanged(
-            setOf(AppFunctionName("testPackage1", "id1"))
-        )
+        callbacksRouter.onEnabledStatesChanged(setOf(AppFunctionName(PKG_1, "id1")))
 
         assertThat(callback1.changedPackageNames).isNull()
         assertThat(callback1.stateChangedFunctionNames).isNull()
@@ -452,18 +453,12 @@ class InternalObserverCallbackRouterTest {
         callbacksRouter.addCallback(callback1)
         callbacksRouter.addCallback(callback2)
 
-        val changedFunctions =
-            setOf(
-                AppFunctionName("testPackage1", "id1"),
-                AppFunctionName("testPackage2", "id2"),
-            )
+        val changedFunctions = setOf(AppFunctionName(PKG_1, "id1"), AppFunctionName(PKG_2, "id2"))
         callbacksRouter.onEnabledStatesChanged(changedFunctions)
         fakeExecutor.fastForwardTime(1)
 
-        assertThat(callback1.stateChangedFunctionNames)
-            .containsExactlyElementsIn(changedFunctions)
-        assertThat(callback2.stateChangedFunctionNames)
-            .containsExactlyElementsIn(changedFunctions)
+        assertThat(callback1.stateChangedFunctionNames).containsExactlyElementsIn(changedFunctions)
+        assertThat(callback2.stateChangedFunctionNames).containsExactlyElementsIn(changedFunctions)
     }
 
     @Test
@@ -479,8 +474,8 @@ class InternalObserverCallbackRouterTest {
             )
         callbacksRouter.addCallback(callback1)
 
-        val changedFunctions1 = setOf(AppFunctionName("testPackage1", "id1"))
-        val changedFunctions2 = setOf(AppFunctionName("testPackage1", "id2"))
+        val changedFunctions1 = setOf(AppFunctionName(PKG_1, "id1"))
+        val changedFunctions2 = setOf(AppFunctionName(PKG_1, "id2"))
 
         // First change
         callbacksRouter.onEnabledStatesChanged(changedFunctions1)
@@ -498,11 +493,7 @@ class InternalObserverCallbackRouterTest {
 
         // Fast forward time beyond new debounce duration
         fakeExecutor.fastForwardTime(50L)
-        val expectedFunctions =
-            setOf(
-                AppFunctionName("testPackage1", "id1"),
-                AppFunctionName("testPackage1", "id2"),
-            )
+        val expectedFunctions = setOf(AppFunctionName(PKG_1, "id1"), AppFunctionName(PKG_1, "id2"))
         assertThat(callback1.stateChangedFunctionNames).containsExactlyElementsIn(expectedFunctions)
     }
 
@@ -519,9 +510,9 @@ class InternalObserverCallbackRouterTest {
             )
         callbacksRouter.addCallback(callback1)
 
-        val changedFunctions1 = setOf(AppFunctionName("testPackage1", "id1"))
-        val changedFunctions2 = setOf(AppFunctionName("testPackage1", "id2"))
-        val changedFunctions3 = setOf(AppFunctionName("testPackage1", "id3"))
+        val changedFunctions1 = setOf(AppFunctionName(PKG_1, "id1"))
+        val changedFunctions2 = setOf(AppFunctionName(PKG_1, "id2"))
+        val changedFunctions3 = setOf(AppFunctionName(PKG_1, "id3"))
 
         // First change. Deadline at 200ms.
         callbacksRouter.onEnabledStatesChanged(changedFunctions1)
@@ -544,24 +535,138 @@ class InternalObserverCallbackRouterTest {
 
         val expectedFunctions =
             setOf(
-                AppFunctionName("testPackage1", "id1"),
-                AppFunctionName("testPackage1", "id2"),
-                AppFunctionName("testPackage1", "id3"),
+                AppFunctionName(PKG_1, "id1"),
+                AppFunctionName(PKG_1, "id2"),
+                AppFunctionName(PKG_1, "id3"),
             )
         assertThat(callback1.stateChangedFunctionNames).containsExactlyElementsIn(expectedFunctions)
+    }
+
+    @Test
+    fun onSchemaChanged_filtersInvisiblePackages() {
+        val fakeDebounceExecutor = FakeScheduledExecutorService()
+        val callback1 = TestInternalCallback()
+        val callback2 = TestInternalCallback()
+
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 0)
+
+        val callerId1 = CallerIdentity("caller1", UserHandle.of(0), 1001, 1001)
+        callbacksRouter.addCallback(callback1, callerId1)
+        whenever(mockVisibilityHelper.filterVisiblePackages(eq(ALL_PACKAGES), eq(callerId1)))
+            .thenReturn(setOf(PKG_1))
+
+        val callerId2 = CallerIdentity("caller2", UserHandle.of(0), 1002, 1002)
+        callbacksRouter.addCallback(callback2, callerId2)
+        whenever(mockVisibilityHelper.filterVisiblePackages(eq(ALL_PACKAGES), eq(callerId2)))
+            .thenReturn(setOf(PKG_2))
+
+        callbacksRouter.onSchemaChanged(
+            SchemaChangeInfo(
+                "android",
+                APP_FUNCTION_STATIC_METADATA_DB,
+                setOf("$STATIC_SCHEMA_TYPE-$PKG_1", "$STATIC_SCHEMA_TYPE-$PKG_2"),
+            )
+        )
+
+        fakeDebounceExecutor.fastForwardTime(1L)
+        assertThat(callback1.changedPackageNames).containsExactly(PKG_1)
+        assertThat(callback2.changedPackageNames).containsExactly(PKG_2)
+    }
+
+    @Test
+    fun onDocumentChanged_filtersInvisiblePackages() {
+        val fakeDebounceExecutor = FakeScheduledExecutorService()
+        val callback1 = TestInternalCallback()
+        val callback2 = TestInternalCallback()
+
+        val callbacksRouter = createRouter(fakeDebounceExecutor, metadataDebounceMs = 0)
+
+        val callerId1 = CallerIdentity("caller1", UserHandle.of(0), 1001, 1001)
+        callbacksRouter.addCallback(callback1, callerId1)
+        whenever(mockVisibilityHelper.filterVisiblePackages(eq(setOf(PKG_1)), eq(callerId1)))
+            .thenReturn(setOf(PKG_1))
+        whenever(mockVisibilityHelper.filterVisiblePackages(eq(setOf(PKG_2)), eq(callerId1)))
+            .thenReturn(emptySet())
+
+        val callerId2 = CallerIdentity("caller2", UserHandle.of(0), 1002, 1002)
+        callbacksRouter.addCallback(callback2, callerId2)
+        whenever(mockVisibilityHelper.filterVisiblePackages(eq(setOf(PKG_1)), eq(callerId2)))
+            .thenReturn(emptySet())
+        whenever(mockVisibilityHelper.filterVisiblePackages(eq(setOf(PKG_2)), eq(callerId2)))
+            .thenReturn(setOf(PKG_2))
+
+        callbacksRouter.onDocumentChanged(
+            DocumentChangeInfo(
+                "android",
+                APP_FUNCTION_STATIC_METADATA_DB,
+                APP_FUNCTION_STATIC_NAMESPACE,
+                "$STATIC_SCHEMA_TYPE-$PKG_1",
+                setOf("$PKG_1/id1"),
+            )
+        )
+        fakeDebounceExecutor.fastForwardTime(1L)
+        assertThat(callback1.changedPackageNames).containsExactly(PKG_1)
+        assertThat(callback2.changedPackageNames).isNull()
+
+        callback1.reset()
+        callback2.reset()
+        callbacksRouter.onDocumentChanged(
+            DocumentChangeInfo(
+                "android",
+                APP_FUNCTION_STATIC_METADATA_DB,
+                APP_FUNCTION_STATIC_NAMESPACE,
+                "$STATIC_SCHEMA_TYPE-$PKG_2",
+                setOf("$PKG_2/id2"),
+            )
+        )
+        fakeDebounceExecutor.fastForwardTime(1L)
+        assertThat(callback1.changedPackageNames).isNull()
+        assertThat(callback2.changedPackageNames).containsExactly(PKG_2)
+    }
+
+    @Test
+    fun onEnabledStatesChanged_filtersInvisibleFunctions() {
+        val fakeExecutor = FakeScheduledExecutorService()
+        val callback1 = TestInternalCallback()
+        val callback2 = TestInternalCallback()
+
+        val callbacksRouter = createRouter(fakeExecutor, enabledStateDebounceMs = 0)
+
+        val callerId1 = CallerIdentity("caller1", UserHandle.of(0), 1001, 1001)
+        callbacksRouter.addCallback(callback1, callerId1)
+        val callerId2 = CallerIdentity("caller2", UserHandle.of(0), 1002, 1002)
+        callbacksRouter.addCallback(callback2, callerId2)
+
+        val func1 = AppFunctionName(PKG_1, "id1")
+        val func2 = AppFunctionName(PKG_2, "id2")
+        val changedFunctions = setOf(func1, func2)
+
+        whenever(
+                mockVisibilityHelper.filterVisibleAppFunctions(eq(changedFunctions), eq(callerId1))
+            )
+            .thenReturn(setOf(func1))
+        whenever(
+                mockVisibilityHelper.filterVisibleAppFunctions(eq(changedFunctions), eq(callerId2))
+            )
+            .thenReturn(setOf(func2))
+
+        callbacksRouter.onEnabledStatesChanged(changedFunctions)
+        fakeExecutor.fastForwardTime(1L)
+
+        assertThat(callback1.stateChangedFunctionNames).containsExactly(func1)
+        assertThat(callback2.stateChangedFunctionNames).containsExactly(func2)
     }
 
     private fun InternalObserverCallbackRouter.addCallback(
         callback: IObserveAppFunctionChangesCallback
     ) {
-        addCallback(
-            callback,
-            AppFunctionAidlSearchSpec(
-                "testPackage",
-                mock<AppFunctionSearchSpec>(),
-                0
-            )
-        )
+        addCallback(callback, CallerIdentity("testPackage", UserHandle.of(0), 0, 0))
+    }
+
+    private fun InternalObserverCallbackRouter.removeCallback(
+        callback: IObserveAppFunctionChangesCallback
+    ) {
+        removeCallback(callback, CallerIdentity("testPackage", UserHandle.of(0), 0, 0))
     }
 
     class TestInternalCallback : IObserveAppFunctionChangesCallback {
@@ -581,8 +686,19 @@ class InternalObserverCallbackRouterTest {
             return binder
         }
 
+        fun reset() {
+            changedPackageNames = null
+            stateChangedFunctionNames = null
+        }
+
         companion object {
             var binderId = 1
         }
+    }
+
+    companion object {
+        private const val PKG_1 = "testPackage1"
+        private const val PKG_2 = "testPackage2"
+        private val ALL_PACKAGES = setOf(PKG_1, PKG_2)
     }
 }
