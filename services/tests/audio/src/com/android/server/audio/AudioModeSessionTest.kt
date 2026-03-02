@@ -19,14 +19,16 @@ package com.android.server.audio
 import android.content.AttributionSource
 import android.media.AudioDeviceAttributes.ROLE_OUTPUT
 import android.media.AudioDeviceInfo
-import android.media.AudioDevicePort
-import android.media.AudioSystem
+import android.media.AudioDeviceInfo.TYPE_BLE_HEADSET
 import android.media.AudioDeviceInfo.TYPE_BLUETOOTH_SCO
 import android.media.AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
 import android.media.AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+import android.media.AudioDeviceInfo.TYPE_USB_HEADSET
 import android.media.AudioDeviceInfo.TYPE_WIRED_HEADSET
+import android.media.AudioDevicePort
 import android.media.AudioManager
 import android.media.AudioManager.MODE_IN_COMMUNICATION
+import android.media.AudioSystem
 import android.media.AudioManager.MODE_NORMAL
 import android.media.AudioManager.MODE_RINGTONE
 import android.media.AudioModeSession.ROUTING_RESULT_PREEMPTED
@@ -39,17 +41,20 @@ import android.os.IBinder
 import android.platform.test.annotations.Presubmit
 import android.platform.test.ravenwood.RavenwoodRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.anyInt
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
 @Presubmit
@@ -68,13 +73,25 @@ class AudioModeSessionTest {
     private val mWiredHeadset: AudioDeviceInfo = AudioDeviceInfo(
         AudioDevicePort.createForTesting(AudioSystem.DEVICE_OUT_WIRED_HEADSET, "", "headset_address")
     )
-    private val mBtSco: AudioDeviceInfo = AudioDeviceInfo(
+    private val mScoHeadset: AudioDeviceInfo = AudioDeviceInfo(
         AudioDevicePort.createForTesting(AudioSystem.DEVICE_OUT_BLUETOOTH_SCO, "", "sco_address")
+    )
+
+    private val mUsbHeadset: AudioDeviceInfo = AudioDeviceInfo(
+        AudioDevicePort.createForTesting(AudioSystem.DEVICE_OUT_USB_HEADSET, "", "usb_address")
+    )
+
+    private val mBleHeadset: AudioDeviceInfo = AudioDeviceInfo(
+        AudioDevicePort.createForTesting(AudioSystem.DEVICE_OUT_BLE_HEADSET, "", "ble_address")
+    )
+
+    private val mHearingAid: AudioDeviceInfo = AudioDeviceInfo(
+        AudioDevicePort.createForTesting(AudioSystem.DEVICE_OUT_HEARING_AID, "", "ha_address")
     )
 
     private val mAttributionSource = AttributionSource(1000, 1234, "com.test", null)
     private val mAudioService: AudioService = mock {
-        on { requestAudioFocusForModeSession(any(), any(), any(), any(), any()) } doReturn
+        on { requestAudioFocusForModeSession(any(), any(), any(), anyInt(), any()) } doReturn
             AudioManager.AUDIOFOCUS_REQUEST_GRANTED
     }
     private val mCallbackBinder: IBinder = mock()
@@ -87,7 +104,7 @@ class AudioModeSessionTest {
         AudioModeSessionRequest().apply {
             attributionSource = mAttributionSource.asState()
             mode = MODE_IN_COMMUNICATION
-            isDisplayActiveUseCase = true
+            isDisplayActiveUseCase = false
             noFocusModes = intArrayOf()
         }
 
@@ -96,6 +113,16 @@ class AudioModeSessionTest {
     ): AudioModeSession {
         return AudioModeSession(mAudioService, mDeviceBroker, request, mCallback, { it.run() })
     }
+
+    private fun createRoute(device: AudioDeviceInfo) =
+        IAudioModeSession.Route().apply {
+            output =
+                DeviceIdentity().apply {
+                    type = device.type
+                    role = ROLE_OUTPUT
+                    address = device.address
+                }
+        }
 
     @Test
     fun createSession_initializesState() {
@@ -154,173 +181,149 @@ class AudioModeSessionTest {
         val devices = listOf(mSpeaker)
         session.onAvailableDevicesChanged(devices)
 
-        val captor = org.mockito.kotlin.argumentCaptor<List<IAudioModeSession.Route>>()
+        val captor = argumentCaptor<List<IAudioModeSession.Route>>()
         verify(mCallback).onAvailableRoutesChanged(captor.capture())
         val routes = captor.firstValue
-        assert(routes.isNotEmpty())
-        assert(matchesRoute(mSpeaker, routes[0]))
+        assertThat(routes).isNotEmpty()
+        val outputDevice = routes[0].output
+        assertThat(outputDevice.type).isEqualTo(mSpeaker.type)
+        assertThat(outputDevice.address).isEqualTo(mSpeaker.address)
     }
 
     @Test
     fun setRequestedRoute_success_async() {
-        val session = createSession()
-        val devices = listOf(mSpeaker)
+        val request = createDefaultRequest().apply { isDisplayActiveUseCase = false }
+        val session = createSession(request)
+        val devices = listOf(mSpeaker, mEarpiece)
         session.onAvailableDevicesChanged(devices)
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mEarpiece), eq(true), any()
+        )
+        session.onCommunicationDeviceChanged(mEarpiece)
 
-        val route =
-            IAudioModeSession.Route().apply {
-                output =
-                    DeviceIdentity().apply {
-                        type = mSpeaker.type
-                        role = ROLE_OUTPUT
-                        address = mSpeaker.address
-                    }
-            }
+        val route = createRoute(mSpeaker)
         val requestId = session.setRequestedRoute(route)
-        assert(requestId != 0)
+        assertThat(requestId).isNotEqualTo(0)
 
         verify(mDeviceBroker)
             .setCommunicationDevice(
                 any(),
                 any(),
-                argThat { device -> matchesRoute(device, route) },
+                eq(mSpeaker),
                 eq(true),
                 any(),
             )
 
         session.onCommunicationDeviceChanged(mSpeaker)
 
-        verify(mCallback).onRoutingResult(eq(requestId), eq(route), eq(ROUTING_RESULT_SUCCESSFUL))
+        verify(mCallback).onRoutingResult(requestId, route, ROUTING_RESULT_SUCCESSFUL)
     }
 
     @Test
     fun setRequestedRoute_preempts_pending() {
         val session = createSession()
-        val devices = listOf(mSpeaker, mWiredHeadset)
+        val devices = listOf(mSpeaker, mWiredHeadset, mScoHeadset)
         session.onAvailableDevicesChanged(devices)
 
-        val speakerRoute =
-            IAudioModeSession.Route().apply {
-                output =
-                    DeviceIdentity().apply {
-                        type = mSpeaker.type
-                        role = ROLE_OUTPUT
-                        address = mSpeaker.address
-                    }
-            }
+        val speakerRoute = createRoute(mSpeaker)
         val speakerRequestId = session.setRequestedRoute(speakerRoute)
         verify(mDeviceBroker)
             .setCommunicationDevice(
                 any(),
                 any(),
-                argThat { device -> matchesRoute(device, speakerRoute) },
+                eq(mSpeaker),
                 eq(true),
                 any(),
             )
 
-        clearInvocations(mDeviceBroker)
-        val headsetRoute =
-            IAudioModeSession.Route().apply {
-                output =
-                    DeviceIdentity().apply {
-                        type = mWiredHeadset.type
-                        role = ROLE_OUTPUT
-                        address = mWiredHeadset.address
-                    }
-            }
+        val headsetRoute = createRoute(mWiredHeadset)
         val headsetRequestId = session.setRequestedRoute(headsetRoute)
 
         verify(mCallback)
-            .onRoutingResult(eq(speakerRequestId), eq(speakerRoute), eq(ROUTING_RESULT_PREEMPTED))
+            .onRoutingResult(speakerRequestId, speakerRoute, ROUTING_RESULT_PREEMPTED)
 
         verify(mDeviceBroker)
             .setCommunicationDevice(
                 any(),
                 any(),
-                argThat { device -> matchesRoute(device, headsetRoute) },
+                eq(mWiredHeadset),
                 eq(true),
                 any(),
             )
 
         session.onCommunicationDeviceChanged(mWiredHeadset)
         verify(mCallback)
-            .onRoutingResult(eq(headsetRequestId), eq(headsetRoute), eq(ROUTING_RESULT_SUCCESSFUL))
+            .onRoutingResult(headsetRequestId, headsetRoute, ROUTING_RESULT_SUCCESSFUL)
     }
 
     @Test
-    fun preemptClientRoute_notifies_and_updates() {
+    fun preemptClientRoute_notifiesAndUpdates() {
         val session = createSession()
-        val devices = listOf(mSpeaker)
+        val devices = listOf(mSpeaker, mEarpiece, mWiredHeadset)
         session.onAvailableDevicesChanged(devices)
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mWiredHeadset), eq(true), any()
+        )
 
-        val speakerRoute =
-            IAudioModeSession.Route().apply {
-                output =
-                    DeviceIdentity().apply {
-                        type = mSpeaker.type
-                        role = ROLE_OUTPUT
-                        address = mSpeaker.address
-                    }
-            }
+        val speakerRoute = createRoute(mSpeaker)
         session.preemptClientRoute(speakerRoute)
 
+        val captor = argumentCaptor<Int>()
         verify(mCallback)
             .onExternalRequestedRouteChanged(
-                argThat { route -> route.output.type == TYPE_BUILTIN_SPEAKER },
-                any(),
+                eq(speakerRoute),
+                captor.capture(),
             )
+        val requestId = captor.firstValue
 
         verify(mDeviceBroker)
             .setCommunicationDevice(
                 any(),
                 any(),
-                argThat { device -> matchesRoute(device, speakerRoute) },
+                eq(mSpeaker),
                 eq(true),
                 any(),
             )
+        session.onCommunicationDeviceChanged(mSpeaker)
+        verify(mCallback).onRoutingResult(requestId, speakerRoute, ROUTING_RESULT_SUCCESSFUL)
     }
 
     @Test
     fun onAvailableDevicesChanged_removesUnavailableRequestedRoute() {
         val session = createSession()
-        // Start with Speaker and Headset available
-        val devices = listOf(mSpeaker, mWiredHeadset)
+        val devices = listOf(mSpeaker, mWiredHeadset, mScoHeadset)
         session.onAvailableDevicesChanged(devices)
 
         // Request Headset
-        val route =
-            IAudioModeSession.Route().apply {
-                output =
-                    DeviceIdentity().apply {
-                        type = mWiredHeadset.type
-                        role = ROLE_OUTPUT
-                        address = mWiredHeadset.address
-                    }
-            }
-        val requestId = session.setRequestedRoute(route)
-        assert(requestId != 0)
+        val wiredRoute = createRoute(mWiredHeadset)
+        val requestId = session.setRequestedRoute(wiredRoute)
+        assertThat(requestId).isNotEqualTo(0);
 
         verify(mDeviceBroker)
             .setCommunicationDevice(
                 any(),
                 any(),
-                argThat { device -> matchesRoute(device, route) },
+                eq(mWiredHeadset),
                 eq(true),
                 any(),
             )
 
         session.onCommunicationDeviceChanged(mWiredHeadset)
-        verify(mCallback).onRoutingResult(eq(requestId), eq(route), eq(ROUTING_RESULT_SUCCESSFUL))
+        verify(mCallback).onRoutingResult(requestId, wiredRoute, ROUTING_RESULT_SUCCESSFUL)
 
         clearInvocations(mDeviceBroker)
+        session.onAvailableDevicesChanged(listOf(mSpeaker, mScoHeadset))
 
-        // Headset becomes unavailable (only Speaker remains)
-        val newDevices = listOf(mSpeaker)
-        session.onAvailableDevicesChanged(newDevices)
+        val captor = argumentCaptor<Int>()
+        verify(mCallback).onExternalRequestedRouteChanged(eq(null), captor.capture())
+        val externalRequestId = captor.lastValue
 
-        verify(mCallback).onExternalRequestedRouteChanged(eq(null), any())
-        // Verify that the requested route is cleared (set to null)
-        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), any())
+        // Verify that the requested route is cleared (set to null), so we fall to default
+        verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(mScoHeadset), eq(true), any())
+
+        session.onCommunicationDeviceChanged(mScoHeadset)
+        val scoRoute = createRoute(mScoHeadset)
+        verify(mCallback).onRoutingResult(externalRequestId, scoRoute, ROUTING_RESULT_SUCCESSFUL)
     }
 
     @Test
@@ -343,24 +346,16 @@ class AudioModeSessionTest {
     @Test
     fun setClientPaused_false_resumes() {
         val session = createSession()
-        val devices = listOf(mSpeaker)
+        val devices = listOf(mSpeaker, mEarpiece)
         session.onAvailableDevicesChanged(devices)
 
-        val route =
-            IAudioModeSession.Route().apply {
-                output =
-                    DeviceIdentity().apply {
-                        type = mSpeaker.type
-                        role = ROLE_OUTPUT
-                        address = mSpeaker.address
-                    }
-            }
-        session.setRequestedRoute(route)
+        val speakerRoute = createRoute(mSpeaker)
+        session.setRequestedRoute(speakerRoute)
         verify(mDeviceBroker)
             .setCommunicationDevice(
                 any(),
                 any(),
-                argThat { device -> matchesRoute(device, route) },
+                eq(mSpeaker),
                 eq(true),
                 any(),
             )
@@ -369,8 +364,6 @@ class AudioModeSessionTest {
 
         session.setClientPaused(true)
         verify(mDeviceBroker).setCommunicationDevice(any(), any(), eq(null), eq(true), any())
-        clearInvocations(mDeviceBroker)
-        clearInvocations(mAudioService)
 
         session.setClientPaused(false)
         inOrderService.verify(mAudioService)
@@ -395,7 +388,7 @@ class AudioModeSessionTest {
     }
 
     @Test
-    fun serverPause_releasesControl() {
+    fun pause_releasesControl() {
         val session = createSession()
         val inOrderService = inOrder(mAudioService)
         // Pause from server side (e.g. higher priority session active)
@@ -414,21 +407,14 @@ class AudioModeSessionTest {
     }
 
     @Test
-    fun serverResume_restoresControl() {
+    fun resume_restoresControl() {
         val session = createSession()
         // Setup initial state
         val devices = listOf(mSpeaker)
         session.onAvailableDevicesChanged(devices)
+        clearInvocations(mDeviceBroker, mCallback)
 
-        val route =
-            IAudioModeSession.Route().apply {
-                output =
-                    DeviceIdentity().apply {
-                        type = mSpeaker.type
-                        role = ROLE_OUTPUT
-                        address = mSpeaker.address
-                    }
-            }
+        val route = createRoute(mSpeaker)
         session.setRequestedRoute(route)
         val inOrderService = inOrder(mAudioService)
 
@@ -464,30 +450,22 @@ class AudioModeSessionTest {
     @Test
     fun onCommunicationDeviceChanged_ignores_mismatch() {
         val session = createSession()
-        val devices = listOf(mSpeaker, mWiredHeadset)
+        val devices = listOf(mSpeaker, mWiredHeadset, mScoHeadset, mEarpiece)
         session.onAvailableDevicesChanged(devices)
 
-        val speakerRoute =
-            IAudioModeSession.Route().apply {
-                output =
-                    DeviceIdentity().apply {
-                        type = mSpeaker.type
-                        role = ROLE_OUTPUT
-                        address = mSpeaker.address
-                    }
-            }
+        val speakerRoute = createRoute(mSpeaker)
         val speakerRequestId = session.setRequestedRoute(speakerRoute)
 
-        // Report a different device change (e.g. system switched to headset unexpectedly or for
+        // Report a different device change (e.g. system switched to earpiece unexpectedly or for
         // another reason)
-        session.onCommunicationDeviceChanged(mWiredHeadset)
+        session.onCommunicationDeviceChanged(mEarpiece)
 
-        verify(mCallback, never()).onRoutingResult(any(), any(), any())
+        verify(mCallback, never()).onRoutingResult(eq(speakerRequestId), any(), any())
 
         // Now report the correct device
         session.onCommunicationDeviceChanged(mSpeaker)
         verify(mCallback)
-            .onRoutingResult(eq(speakerRequestId), eq(speakerRoute), eq(ROUTING_RESULT_SUCCESSFUL))
+            .onRoutingResult(speakerRequestId, speakerRoute, ROUTING_RESULT_SUCCESSFUL)
     }
 
     @Test
@@ -498,19 +476,19 @@ class AudioModeSessionTest {
         session.onAvailableDevicesChanged(devices)
 
         // Request: Wired Headset (Not available)
-        val route =
-            IAudioModeSession.Route().apply {
-                output =
-                    DeviceIdentity().apply {
-                        type = mWiredHeadset.type
-                        role = ROLE_OUTPUT
-                        address = mWiredHeadset.address
-                    }
-            }
+        val route = createRoute(mWiredHeadset)
         val requestId = session.setRequestedRoute(route)
-        assert(requestId != 0)
+        assertThat(requestId).isNotEqualTo(0)
 
-        // TODO
+        // Should not apply communication device since it's unavailable
+        verify(mDeviceBroker, never()).setCommunicationDevice(
+            any(),
+            any(),
+            eq(mWiredHeadset),
+            eq(true),
+            any(),
+        )
+        // TODO: callback
     }
 
     @Test
@@ -544,7 +522,8 @@ class AudioModeSessionTest {
         // Start in IN_COMMUNICATION (default, gains focus)
         val request = createDefaultRequest().apply { noFocusModes = intArrayOf(MODE_NORMAL) }
         val session = createSession(request)
-        verify(mAudioService)
+        val inOrderService = inOrder(mAudioService)
+        inOrderService.verify(mAudioService)
             .requestAudioFocusForModeSession(
                 eq(mAttributionSource),
                 eq(mCallbackBinder),
@@ -553,11 +532,9 @@ class AudioModeSessionTest {
                 any(),
             )
 
-        clearInvocations(mAudioService)
-
         // Switch to NORMAL (configured as no-focus)
         session.setMode(MODE_NORMAL)
-        verify(mAudioService)
+        inOrderService.verify(mAudioService)
             .abandonAudioFocusForModeSession(
                 eq(mAttributionSource),
                 eq(mCallbackBinder),
@@ -566,6 +543,264 @@ class AudioModeSessionTest {
             )
     }
 
-    private fun matchesRoute(device: AudioDeviceInfo?, route: IAudioModeSession.Route) =
-        device != null && device.type == route.output.type && device.address == route.output.address
+    @Test
+    fun defaultRouting_prioritization_Sco() {
+        val request = createDefaultRequest().apply { isDisplayActiveUseCase = true }
+        val session = createSession(request)
+
+        session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece, mWiredHeadset, mBleHeadset, mScoHeadset))
+
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mScoHeadset), eq(true), any()
+        )
+    }
+
+    @Test
+    fun defaultRouting_prioritization_Le() {
+        val session = createSession()
+
+        session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece, mWiredHeadset, mBleHeadset))
+
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mBleHeadset), eq(true), any()
+        )
+    }
+
+    @Test
+    fun defaultRouting_prioritization_Wired() {
+        val session = createSession()
+
+        session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece, mWiredHeadset))
+
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mWiredHeadset), eq(true), any()
+        )
+    }
+
+    @Test
+    fun defaultRouting_prioritization_HearingAid() {
+        val session = createSession()
+
+        session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece, mHearingAid))
+
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mHearingAid), eq(true), any()
+        )
+    }
+
+    @Test
+    fun defaultRouting_preferredDeviceOverride() {
+        val customDeviceBroker: AudioDeviceBroker = mock {
+            on { preferredCommunicationDevice } doReturn mSpeaker
+        }
+        val session = AudioModeSession(mAudioService, customDeviceBroker, createDefaultRequest(), mCallback, { it.run() })
+
+        session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece, mHearingAid))
+
+        // speaker is prioritized by the external pref
+        verify(customDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mSpeaker), eq(true), any()
+        )
+
+        // Add SCO headset (priority 30). It should beat the external preference
+        session.onAvailableDevicesChanged(listOf(mScoHeadset, mHearingAid, mWiredHeadset))
+        verify(customDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mScoHeadset), eq(true), any()
+        )
+    }
+
+    @Test
+    fun createSession_displayActive_defaultsToSpeaker() {
+        val request = createDefaultRequest().apply { isDisplayActiveUseCase = true }
+        val session = createSession(request)
+
+        session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece))
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mSpeaker), eq(true), any()
+        )
+
+        session.onCommunicationDeviceChanged(mSpeaker)
+
+        val speakerRoute = createRoute(mSpeaker)
+        verify(mCallback).onRoutingResult(
+            any(), eq(speakerRoute), eq(ROUTING_RESULT_SUCCESSFUL)
+        )
+    }
+
+    @Test
+    fun createSession_displayInactive_defaultsToEarpiece() {
+        val request = createDefaultRequest().apply { isDisplayActiveUseCase = false }
+        val session = createSession(request)
+
+        session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece))
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mEarpiece), eq(true), any()
+        )
+
+        session.onCommunicationDeviceChanged(mEarpiece)
+
+        val earpieceRoute = createRoute(mEarpiece)
+        verify(mCallback).onRoutingResult(
+            any(), eq(earpieceRoute), eq(ROUTING_RESULT_SUCCESSFUL)
+        )
+    }
+
+    @Test
+    fun createSession_displayInactive_noEarpiece_defaultsToSpeaker() {
+        val request = createDefaultRequest().apply { isDisplayActiveUseCase = false }
+        val session = createSession(request)
+
+        // Display inactive prefers earpiece, but we only have speaker available.
+        session.onAvailableDevicesChanged(listOf(mSpeaker))
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mSpeaker), eq(true), any()
+        )
+    }
+
+    @Test
+    fun setDisplayActiveUseCase_updatesDefaultRouteAndDispatchesResult() {
+        val request = createDefaultRequest().apply { isDisplayActiveUseCase = false }
+        val session = createSession(request)
+
+        // Default is Earpiece
+        session.onAvailableDevicesChanged(listOf(mSpeaker, mEarpiece))
+        session.onCommunicationDeviceChanged(mEarpiece)
+        val earpieceRoute = createRoute(mEarpiece)
+        verify(mCallback).onRoutingResult(any(), eq(earpieceRoute), eq(ROUTING_RESULT_SUCCESSFUL))
+
+        // Set display active to true, should switch to Speaker
+        session.setDisplayActiveUseCase(true)
+
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mSpeaker), eq(true), any()
+        )
+
+        // Simulate broker confirming the device
+        session.onCommunicationDeviceChanged(mSpeaker)
+
+        val speakerRoute = createRoute(mSpeaker)
+        verify(mCallback).onRoutingResult(any(), eq(speakerRoute), eq(ROUTING_RESULT_SUCCESSFUL))
+    }
+
+    @Test
+    fun preemptClientRoute_null_appliesDefaultRouting() {
+        val session = createSession()
+        val devices = listOf(mScoHeadset, mBleHeadset, mSpeaker, mEarpiece)
+        session.onAvailableDevicesChanged(devices)
+
+        val requestId = session.setRequestedRoute(createRoute(mBleHeadset))
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mBleHeadset), eq(true), any()
+        )
+        session.onCommunicationDeviceChanged(mBleHeadset)
+
+        val bleRoute = createRoute(mBleHeadset)
+        verify(mCallback).onRoutingResult(
+            any(), eq(bleRoute), eq(ROUTING_RESULT_SUCCESSFUL)
+        )
+
+        clearInvocations(mDeviceBroker)
+
+        session.preemptClientRoute(null)
+
+        val defaultRoute = createRoute(mScoHeadset)
+
+        val captor = argumentCaptor<Int>()
+        verify(mCallback).onExternalRequestedRouteChanged(eq(null), captor.capture())
+        val externalRequestId = captor.lastValue
+
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mScoHeadset), eq(true), any()
+        )
+
+        session.onCommunicationDeviceChanged(mScoHeadset)
+
+        // the routing callback result is the *actual* route
+        verify(mCallback).onRoutingResult(
+            externalRequestId, defaultRoute, ROUTING_RESULT_SUCCESSFUL
+        )
+    }
+
+    @Test
+    fun defaultRoutePending_preemptedBySetRequestedRoute() {
+        val request = createDefaultRequest().apply { isDisplayActiveUseCase = false }
+        val session = createSession(request)
+
+        // Start the default routing
+        session.onAvailableDevicesChanged(listOf(mEarpiece, mSpeaker))
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mEarpiece), eq(true), any()
+        )
+
+        val earpieceRoute = createRoute(mEarpiece)
+
+        // Before onCommunicationDeviceChanged, client requests speaker
+        val speakerRoute = createRoute(mSpeaker)
+        val requestId = session.setRequestedRoute(speakerRoute)
+
+        verify(mCallback).onRoutingResult(any(), eq(earpieceRoute), eq(ROUTING_RESULT_PREEMPTED))
+
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mSpeaker), eq(true), any()
+        )
+
+        // Success callback for the explicit request
+        session.onCommunicationDeviceChanged(mSpeaker)
+        verify(mCallback).onRoutingResult(eq(requestId), eq(speakerRoute), eq(ROUTING_RESULT_SUCCESSFUL))
+    }
+
+    @Test
+    fun onAvailableDevicesChanged_higherPriorityDeviceAvailable_updatesDefaultRoute() {
+        val request = createDefaultRequest().apply { isDisplayActiveUseCase = true }
+        val session = createSession(request)
+
+        // Start with speaker
+        session.onAvailableDevicesChanged(listOf(mSpeaker))
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mSpeaker), eq(true), any()
+        )
+        session.onCommunicationDeviceChanged(mSpeaker)
+
+        val speakerRoute = createRoute(mSpeaker)
+        verify(mCallback).onRoutingResult(any(), eq(speakerRoute), eq(ROUTING_RESULT_SUCCESSFUL))
+
+        // Connect SCO
+        session.onAvailableDevicesChanged(listOf(mSpeaker, mScoHeadset))
+
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mScoHeadset), eq(true), any()
+        )
+
+        session.onCommunicationDeviceChanged(mScoHeadset)
+        val scoRoute = createRoute(mScoHeadset)
+        verify(mCallback).onRoutingResult(any(), eq(scoRoute), eq(ROUTING_RESULT_SUCCESSFUL))
+    }
+
+    @Test
+    fun onAvailableDevicesChanged_activeDeviceUnavailable_updatesDefaultRoute() {
+        val request = createDefaultRequest().apply { isDisplayActiveUseCase = true }
+        val session = createSession(request)
+
+        // Start with speaker and SCO
+        session.onAvailableDevicesChanged(listOf(mSpeaker, mScoHeadset))
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mScoHeadset), eq(true), any()
+        )
+
+        session.onCommunicationDeviceChanged(mScoHeadset)
+        val scoRoute = createRoute(mScoHeadset)
+        verify(mCallback).onRoutingResult(any(), eq(scoRoute), eq(ROUTING_RESULT_SUCCESSFUL))
+
+
+        // Disconnect SCO
+        session.onAvailableDevicesChanged(listOf(mSpeaker))
+
+        verify(mDeviceBroker).setCommunicationDevice(
+            any(), any(), eq(mSpeaker), eq(true), any()
+        )
+
+        session.onCommunicationDeviceChanged(mSpeaker)
+        val speakerRoute = createRoute(mSpeaker)
+        verify(mCallback).onRoutingResult(any(), eq(speakerRoute), eq(ROUTING_RESULT_SUCCESSFUL))
+    }
 }

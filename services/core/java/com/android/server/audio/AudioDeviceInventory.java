@@ -1539,6 +1539,12 @@ public class AudioDeviceInventory {
                     strategy, AudioSystem.DEVICE_ROLE_PREFERRED, true /*internal */);
     }
 
+    /*package*/ List<AudioDeviceAttributes> getExternalPreferredDevicesForStrategy(int strategy) {
+        synchronized (mDevicesLock) {
+            return mPreferredDevices.getOrDefault(strategy, new ArrayList<>());
+        }
+    }
+
     /*package*/ List<AudioDeviceAttributes> getPreferredDevicesForStrategy(int strategy) {
         synchronized (mDevicesLock) {
             try (SafeCloseable ignored = ClearCallingIdentityContext.create()) {
