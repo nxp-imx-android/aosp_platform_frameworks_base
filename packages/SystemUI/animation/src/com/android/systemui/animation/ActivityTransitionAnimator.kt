@@ -61,7 +61,6 @@ import androidx.annotation.UiThread
 import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.ScreenDecorationsUtils
-import com.android.systemui.Flags.animationLibraryAtomicListeners
 import com.android.systemui.Flags.animationLibraryShellMigration
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.LONG_TRANSITION_TIMEOUT
 import com.android.systemui.animation.ActivityTransitionAnimator.Companion.TRANSITION_TIMEOUT
@@ -242,35 +241,19 @@ constructor(
     private val lifecycleListener =
         object : Listener {
             override fun onTransitionAnimationStart() {
-                if (animationLibraryAtomicListeners()) {
-                    listenersLock.withLock {
-                        LinkedHashSet(listeners).forEach { it.onTransitionAnimationStart() }
-                    }
-                } else {
+                listenersLock.withLock {
                     LinkedHashSet(listeners).forEach { it.onTransitionAnimationStart() }
                 }
             }
 
             override fun onTransitionAnimationEnd(transaction: SurfaceControl.Transaction) {
-                if (animationLibraryAtomicListeners()) {
-                    listenersLock.withLock {
-                        LinkedHashSet(listeners).forEach {
-                            it.onTransitionAnimationEnd(transaction)
-                        }
-                    }
-                } else {
+                listenersLock.withLock {
                     LinkedHashSet(listeners).forEach { it.onTransitionAnimationEnd(transaction) }
                 }
             }
 
             override fun onTransitionAnimationProgress(linearProgress: Float) {
-                if (animationLibraryAtomicListeners()) {
-                    listenersLock.withLock {
-                        LinkedHashSet(listeners).forEach {
-                            it.onTransitionAnimationProgress(linearProgress)
-                        }
-                    }
-                } else {
+                listenersLock.withLock {
                     LinkedHashSet(listeners).forEach {
                         it.onTransitionAnimationProgress(linearProgress)
                     }
@@ -278,11 +261,7 @@ constructor(
             }
 
             override fun onTransitionAnimationCancelled() {
-                if (animationLibraryAtomicListeners()) {
-                    listenersLock.withLock {
-                        LinkedHashSet(listeners).forEach { it.onTransitionAnimationCancelled() }
-                    }
-                } else {
+                listenersLock.withLock {
                     LinkedHashSet(listeners).forEach { it.onTransitionAnimationCancelled() }
                 }
             }
@@ -882,20 +861,12 @@ constructor(
 
     /** Add a [Listener] that can listen to transition animations. */
     fun addListener(listener: Listener) {
-        if (animationLibraryAtomicListeners()) {
-            listenersLock.withLock { listeners.add(listener) }
-        } else {
-            listeners.add(listener)
-        }
+        listenersLock.withLock { listeners.add(listener) }
     }
 
     /** Remove a [Listener]. */
     fun removeListener(listener: Listener) {
-        if (animationLibraryAtomicListeners()) {
-            listenersLock.withLock { listeners.remove(listener) }
-        } else {
-            listeners.remove(listener)
-        }
+        listenersLock.withLock { listeners.remove(listener) }
     }
 
     /**
