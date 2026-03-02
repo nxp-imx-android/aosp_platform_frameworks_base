@@ -32,10 +32,10 @@ import com.android.systemui.flags.SystemPropertiesHelper
 import com.android.systemui.keyguard.domain.interactor.BiometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
-import com.android.systemui.keyguard.domain.interactor.LockAfterScreenTimeoutInteractor
+import com.android.systemui.keyguard.domain.interactor.LockAfterDelayInteractor
 import com.android.systemui.keyguard.domain.interactor.TrustInteractor
 import com.android.systemui.keyguard.shared.model.AuthenticationFlags
-import com.android.systemui.keyguard.shared.model.LockAfterScreenTimeoutTimerState
+import com.android.systemui.keyguard.shared.model.LockAfterDelayTimerState
 import com.android.systemui.keyguard.shared.model.toDeviceUnlockSource
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.log.table.TableLogBuffer
@@ -89,7 +89,7 @@ constructor(
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
     biometricUnlockInteractor: BiometricUnlockInteractor,
     private val keyguardEnabledInteractor: KeyguardEnabledInteractor,
-    private val lockAfterScreenTimeoutInteractor: LockAfterScreenTimeoutInteractor,
+    private val lockAfterDelayInteractor: LockAfterDelayInteractor,
 ) : ExclusiveActivatable() {
     private val faceEnrolledAndEnabled = biometricSettingsInteractor.isFaceAuthEnrolledAndEnabled
     private val fingerprintEnrolledAndEnabled =
@@ -403,14 +403,14 @@ constructor(
                                         emptyFlow<LockEvent>()
                                     }
                                 },
-                            lockAfterScreenTimeoutInteractor.lockAfterScreenTimeoutState
-                                .flatMapLatestConflated { state ->
-                                    if (state == LockAfterScreenTimeoutTimerState.ELAPSED) {
-                                        flowOf(LockImmediately("lock screen timeout elapsed"))
-                                    } else {
-                                        emptyFlow<LockEvent>()
-                                    }
-                                },
+                            lockAfterDelayInteractor.lockAfterDelayState.flatMapLatestConflated {
+                                state ->
+                                if (state == LockAfterDelayTimerState.ELAPSED) {
+                                    flowOf(LockImmediately("lock screen timeout elapsed"))
+                                } else {
+                                    emptyFlow<LockEvent>()
+                                }
+                            },
                         )
                     }
                 },
@@ -433,7 +433,7 @@ constructor(
             }
 
             is ExpectLockWithDelay -> {
-                if (lockAfterScreenTimeoutInteractor.delayLockIsImmediate()) {
+                if (lockAfterDelayInteractor.delayLockIsImmediate()) {
                     Log.i(TAG, "lock timeout is 0, so locking immediately due to \"$debugReason\"")
                     repository.deviceUnlockStatus.value = DeviceUnlockStatus(false, null)
                 } else {

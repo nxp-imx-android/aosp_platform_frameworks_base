@@ -36,7 +36,7 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
-import com.android.systemui.keyguard.shared.model.LockAfterScreenTimeoutTimerState
+import com.android.systemui.keyguard.shared.model.LockAfterDelayTimerState
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
@@ -66,7 +66,7 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
-class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
+class LockAfterDelayInteractorTest : SysuiTestCase() {
 
     private var registeredBroadcastReceiver: BroadcastReceiver? = null
     private var registeredIntentFilter: IntentFilter? = null
@@ -86,7 +86,7 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
                 .setExactAndAllowWhileIdle(eq(AlarmManager.ELAPSED_REALTIME_WAKEUP), any(), any())
         }
     private val testScope = kosmos.testScope
-    private val underTest by lazy { kosmos.lockAfterScreenTimeoutInteractor }
+    private val underTest by lazy { kosmos.lockAfterDelayInteractor }
     private val fakeSettings = kosmos.fakeSettings
     private val systemClock = kosmos.systemClock
 
@@ -110,12 +110,12 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
     @Test
     fun test_lockTimerIrrelevant_onSleepButton() =
         testScope.runTest {
-            val state by collectValues(underTest.lockAfterScreenTimeoutState)
+            val state by collectValues(underTest.lockAfterDelayState)
 
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE // Default.
+                        LockAfterDelayTimerState.INACTIVE // Default.
                     )
                 )
 
@@ -124,18 +124,18 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertThat(state).isEqualTo(listOf(LockAfterScreenTimeoutTimerState.INACTIVE))
+            assertThat(state).isEqualTo(listOf(LockAfterDelayTimerState.INACTIVE))
         }
 
     @Test
     fun test_lockTimerIrrelevant_onLidSwitch() =
         testScope.runTest {
-            val state by collectValues(underTest.lockAfterScreenTimeoutState)
+            val state by collectValues(underTest.lockAfterDelayState)
 
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE // Default.
+                        LockAfterDelayTimerState.INACTIVE // Default.
                     )
                 )
 
@@ -144,18 +144,18 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertThat(state).isEqualTo(listOf(LockAfterScreenTimeoutTimerState.INACTIVE))
+            assertThat(state).isEqualTo(listOf(LockAfterDelayTimerState.INACTIVE))
         }
 
     @Test
     fun test_lockTimerIrrelevant_onPowerButton_ifPowerButtonLocksImmediately() =
         testScope.runTest {
-            val state by collectValues(underTest.lockAfterScreenTimeoutState)
+            val state by collectValues(underTest.lockAfterDelayState)
 
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE // Default.
+                        LockAfterDelayTimerState.INACTIVE // Default.
                     )
                 )
 
@@ -167,21 +167,21 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertThat(state).isEqualTo(listOf(LockAfterScreenTimeoutTimerState.INACTIVE))
+            assertThat(state).isEqualTo(listOf(LockAfterDelayTimerState.INACTIVE))
         }
 
     @Test
     fun test_lockTimerActiveAndElapses_onPowerButton_ifPowerButtonDoesNotLockImmediately() =
         testScope.runTest {
             val user = kosmos.fakeUserRepository.asMainUser()
-            val state by collectValues(underTest.lockAfterScreenTimeoutState)
+            val state by collectValues(underTest.lockAfterDelayState)
 
             captureBroadcastReceiver()
 
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE // Default.
+                        LockAfterDelayTimerState.INACTIVE // Default.
                     )
                 )
 
@@ -206,14 +206,14 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
     fun test_lockTimerActiveAndElapses_onScreenTimeout() =
         testScope.runTest {
             val user = kosmos.fakeUserRepository.asMainUser()
-            val state by collectValues(underTest.lockAfterScreenTimeoutState)
+            val state by collectValues(underTest.lockAfterDelayState)
 
             captureBroadcastReceiver()
 
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE // Default.
+                        LockAfterDelayTimerState.INACTIVE // Default.
                     )
                 )
 
@@ -237,14 +237,14 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
         testScope.runTest {
             kosmos.powerInteractor.setAwakeForTest(reason = PowerManager.WAKE_REASON_POWER_BUTTON)
             val user = kosmos.fakeUserRepository.asMainUser()
-            val state by collectValues(underTest.lockAfterScreenTimeoutState)
+            val state by collectValues(underTest.lockAfterDelayState)
 
             captureBroadcastReceiver()
 
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE // Default.
+                        LockAfterDelayTimerState.INACTIVE // Default.
                     )
                 )
 
@@ -267,14 +267,14 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
                 sleepReason = PowerManager.GO_TO_SLEEP_REASON_LID_SWITCH
             )
             val user = kosmos.fakeUserRepository.asMainUser()
-            val state by collectValues(underTest.lockAfterScreenTimeoutState)
+            val state by collectValues(underTest.lockAfterDelayState)
 
             captureBroadcastReceiver()
 
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE // Default.
+                        LockAfterDelayTimerState.INACTIVE // Default.
                     )
                 )
 
@@ -288,11 +288,11 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             startDreaming()
 
             // The device was not awake when dreaming started -> no change.
-            assertThat(state).isEqualTo(listOf(LockAfterScreenTimeoutTimerState.INACTIVE))
+            assertThat(state).isEqualTo(listOf(LockAfterDelayTimerState.INACTIVE))
 
             stopDreaming()
 
-            assertThat(state).isEqualTo(listOf(LockAfterScreenTimeoutTimerState.INACTIVE))
+            assertThat(state).isEqualTo(listOf(LockAfterDelayTimerState.INACTIVE))
         }
 
     @Test
@@ -300,11 +300,11 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
         testScope.runTest {
             kosmos.powerInteractor.setAwakeForTest(reason = PowerManager.WAKE_REASON_POWER_BUTTON)
             val user = kosmos.fakeUserRepository.asMainUser()
-            val state by collectValues(underTest.lockAfterScreenTimeoutState)
+            val state by collectValues(underTest.lockAfterDelayState)
 
             captureBroadcastReceiver()
 
-            assertThat(state).isEqualTo(listOf(LockAfterScreenTimeoutTimerState.INACTIVE))
+            assertThat(state).isEqualTo(listOf(LockAfterDelayTimerState.INACTIVE))
 
             fakeSettings.putIntForUser(
                 Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
@@ -317,10 +317,7 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
 
             assertThat(state)
                 .isEqualTo(
-                    listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                    )
+                    listOf(LockAfterDelayTimerState.INACTIVE, LockAfterDelayTimerState.RUNNING)
                 )
 
             verifyAlarmManagerCallCount(1)
@@ -331,9 +328,9 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
+                        LockAfterDelayTimerState.INACTIVE,
+                        LockAfterDelayTimerState.RUNNING,
+                        LockAfterDelayTimerState.INACTIVE,
                     )
                 )
 
@@ -347,9 +344,9 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
+                        LockAfterDelayTimerState.INACTIVE,
+                        LockAfterDelayTimerState.RUNNING,
+                        LockAfterDelayTimerState.INACTIVE,
                     )
                 )
         }
@@ -358,14 +355,14 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
     fun test_lockTimerCanceled_onScreenTimeoutThenAwake() =
         testScope.runTest {
             val user = kosmos.fakeUserRepository.asMainUser()
-            val state by collectValues(underTest.lockAfterScreenTimeoutState)
+            val state by collectValues(underTest.lockAfterDelayState)
 
             captureBroadcastReceiver()
 
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE // Default.
+                        LockAfterDelayTimerState.INACTIVE // Default.
                     )
                 )
 
@@ -383,10 +380,7 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
 
             assertThat(state)
                 .isEqualTo(
-                    listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                    )
+                    listOf(LockAfterDelayTimerState.INACTIVE, LockAfterDelayTimerState.RUNNING)
                 )
 
             verify(kosmos.alarmManager)
@@ -401,9 +395,9 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
+                        LockAfterDelayTimerState.INACTIVE,
+                        LockAfterDelayTimerState.RUNNING,
+                        LockAfterDelayTimerState.INACTIVE,
                     )
                 )
 
@@ -417,9 +411,9 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
+                        LockAfterDelayTimerState.INACTIVE,
+                        LockAfterDelayTimerState.RUNNING,
+                        LockAfterDelayTimerState.INACTIVE,
                     )
                 )
         }
@@ -428,14 +422,14 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
     fun test_lockTimerCanceledAndRestarted() =
         testScope.runTest {
             val user = kosmos.fakeUserRepository.asMainUser()
-            val state by collectValues(underTest.lockAfterScreenTimeoutState)
+            val state by collectValues(underTest.lockAfterDelayState)
 
             captureBroadcastReceiver()
 
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE // Default.
+                        LockAfterDelayTimerState.INACTIVE // Default.
                     )
                 )
 
@@ -454,10 +448,7 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
 
             assertThat(state)
                 .isEqualTo(
-                    listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                    )
+                    listOf(LockAfterDelayTimerState.INACTIVE, LockAfterDelayTimerState.RUNNING)
                 )
 
             verifyAlarmManagerCallCount(1)
@@ -470,9 +461,9 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
+                        LockAfterDelayTimerState.INACTIVE,
+                        LockAfterDelayTimerState.RUNNING,
+                        LockAfterDelayTimerState.INACTIVE,
                     )
                 )
 
@@ -485,10 +476,10 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
+                        LockAfterDelayTimerState.INACTIVE,
+                        LockAfterDelayTimerState.RUNNING,
+                        LockAfterDelayTimerState.INACTIVE,
+                        LockAfterDelayTimerState.RUNNING,
                     )
                 )
 
@@ -505,10 +496,10 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
+                        LockAfterDelayTimerState.INACTIVE,
+                        LockAfterDelayTimerState.RUNNING,
+                        LockAfterDelayTimerState.INACTIVE,
+                        LockAfterDelayTimerState.RUNNING,
                     )
                 )
 
@@ -521,11 +512,11 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
             assertThat(state)
                 .isEqualTo(
                     listOf(
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                        LockAfterScreenTimeoutTimerState.INACTIVE,
-                        LockAfterScreenTimeoutTimerState.RUNNING,
-                        LockAfterScreenTimeoutTimerState.ELAPSED,
+                        LockAfterDelayTimerState.INACTIVE,
+                        LockAfterDelayTimerState.RUNNING,
+                        LockAfterDelayTimerState.INACTIVE,
+                        LockAfterDelayTimerState.RUNNING,
+                        LockAfterDelayTimerState.ELAPSED,
                     )
                 )
         }
@@ -662,9 +653,9 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
     }
 
     private suspend fun TestScope.verifyActiveLockTimerEntered() {
-        val curState by collectLastValue(underTest.lockAfterScreenTimeoutState)
+        val curState by collectLastValue(underTest.lockAfterDelayState)
 
-        assertThat(curState).isEqualTo(LockAfterScreenTimeoutTimerState.RUNNING)
+        assertThat(curState).isEqualTo(LockAfterDelayTimerState.RUNNING)
 
         val curTime = systemClock.elapsedRealtime()
         val triggerAtTime = lastAlarmManagerTriggerAtTime()
@@ -684,7 +675,7 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
         broadcastReceiver.onReceive(kosmos.mockedContext, alarmIntent)
         runCurrent()
 
-        assertThat(curState).isEqualTo(LockAfterScreenTimeoutTimerState.ELAPSED)
+        assertThat(curState).isEqualTo(LockAfterDelayTimerState.ELAPSED)
     }
 
     private fun TestScope.startDreaming() {
@@ -701,7 +692,7 @@ class LockAfterScreenTimeoutInteractorTest : SysuiTestCase() {
     data class AlarmManagerCall(val triggerAtTime: Long, val pendingIntent: PendingIntent)
 
     companion object {
-        private val TAG = "LockAfterScreenTimeoutInteractorTest"
+        private val TAG = "LockAfterDelayInteractorTest"
         private val TEST_SCREEN_OFF_TIMEOUT_MS = 10000
     }
 }

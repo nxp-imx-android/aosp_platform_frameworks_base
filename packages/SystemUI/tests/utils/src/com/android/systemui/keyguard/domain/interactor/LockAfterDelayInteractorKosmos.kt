@@ -28,9 +28,9 @@ import com.android.systemui.util.settings.data.repository.userAwareSecureSetting
 import com.android.systemui.util.settings.data.repository.userAwareSystemSettingsRepository
 import com.android.systemui.util.time.systemClock
 
-val Kosmos.lockAfterScreenTimeoutInteractor: LockAfterScreenTimeoutInteractor by
+val Kosmos.lockAfterDelayInteractor: LockAfterDelayInteractor by
     Kosmos.Fixture {
-        LockAfterScreenTimeoutInteractor(
+        LockAfterDelayInteractor(
             applicationCoroutineScope,
             mockedContext,
             fakePendingIntentCreator,

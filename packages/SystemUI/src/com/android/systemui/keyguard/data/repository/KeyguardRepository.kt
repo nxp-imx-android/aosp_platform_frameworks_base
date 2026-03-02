@@ -41,7 +41,7 @@ import com.android.systemui.keyguard.shared.model.DismissAction
 import com.android.systemui.keyguard.shared.model.DozeStateModel
 import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.keyguard.shared.model.KeyguardDone
-import com.android.systemui.keyguard.shared.model.LockAfterScreenTimeoutTimerState
+import com.android.systemui.keyguard.shared.model.LockAfterDelayTimerState
 import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.res.R
@@ -231,8 +231,8 @@ interface KeyguardRepository {
     /** Last camera launch detection event */
     val onCameraLaunchDetected: MutableStateFlow<CameraLaunchSourceModel>
 
-    /** The state of the "lock after screen timeout timer" */
-    val lockAfterScreenTimeoutState: MutableStateFlow<LockAfterScreenTimeoutTimerState>
+    /** The state of the "lock after delay timer" */
+    val lockAfterDelayState: MutableStateFlow<LockAfterDelayTimerState>
 
     /**
      * Emits after the keyguard is done animating away.
@@ -363,8 +363,7 @@ constructor(
 
     override val onCameraLaunchDetected = MutableStateFlow(CameraLaunchSourceModel())
 
-    override val lockAfterScreenTimeoutState =
-        MutableStateFlow(LockAfterScreenTimeoutTimerState.INACTIVE)
+    override val lockAfterDelayState = MutableStateFlow(LockAfterDelayTimerState.INACTIVE)
 
     override val panelAlpha: MutableStateFlow<Float> = MutableStateFlow(1f)
     override val zoomOut: MutableStateFlow<Float> = MutableStateFlow(0f)
