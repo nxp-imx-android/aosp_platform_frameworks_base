@@ -51,6 +51,9 @@ interface PreferenceScreenMetadata : PreferenceGroup {
     val arguments: Bundle?
         get() = null
 
+    val keyParametersSchema: KeyParametersSchema?
+        get() = null
+
     val keyParameters: ValidatedKeyParameters?
         get() = null
 

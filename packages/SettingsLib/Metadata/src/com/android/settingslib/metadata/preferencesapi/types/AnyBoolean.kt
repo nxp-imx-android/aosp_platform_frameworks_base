@@ -25,6 +25,6 @@ object AnyBoolean : FiniteOptionsType<Boolean>
     override fun getType(): Class<Boolean> = Boolean::class.java
     override fun getDescription(context: Context): String =
         context.getString(R.string.any_boolean_type_description)
-    override fun getOptions(context: Context) = listOf(false to "False", true to "True")
+    override suspend fun getOptions(context: Context) = listOf(false to "False", true to "True")
     override fun getKey(): String = "AnyBoolean"
 }

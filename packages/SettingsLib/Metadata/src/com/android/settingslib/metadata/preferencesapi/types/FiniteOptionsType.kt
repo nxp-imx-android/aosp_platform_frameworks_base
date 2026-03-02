@@ -27,5 +27,5 @@ interface FiniteOptionsType<V> : ApiType<V> {
      * Returns all the values a preference with this type could have, together with their
      * description.
      */
-    fun getOptions(context: Context): List<Pair<V, String>>
+    suspend fun getOptions(context: Context): List<Pair<V, String>>
 }

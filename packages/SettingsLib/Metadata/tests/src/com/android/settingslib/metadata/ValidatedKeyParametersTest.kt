@@ -20,6 +20,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.settingslib.metadata.preferencesapi.types.AnyString
 import com.android.settingslib.metadata.test.R
 import com.google.common.truth.Truth.assertThat
 import org.json.JSONObject
@@ -31,20 +32,20 @@ import org.junit.runner.RunWith
 class ValidatedKeyParametersTest {
 
     private val testSchema = KeyParametersSchema {
-        parameter("required_param", R.string.required_param_purpose, required = true)
-        parameter("optional_param", R.string.optional_param_purpose)
+        parameter("required_param", R.string.required_param_purpose, required = true, type = AnyString)
+        parameter("optional_param", R.string.optional_param_purpose, type = AnyString)
     }
 
     private val optionalSchema = KeyParametersSchema {
-        parameter("optional_param", R.string.optional_param_purpose)
+        parameter("optional_param", R.string.optional_param_purpose, type = AnyString)
     }
 
     @Test
     fun schemaBuilder_duplicateParameter_throwsException() {
         val exception = assertThrows(IllegalArgumentException::class.java) {
             KeyParametersSchema {
-                parameter("param1", R.string.parameter_purpose1)
-                parameter("param1", R.string.parameter_purpose2)
+                parameter("param1", R.string.parameter_purpose1, type = AnyString)
+                parameter("param1", R.string.parameter_purpose2, type = AnyString)
             }
         }
         assertThat(exception.message).isEqualTo("Parameter 'param1' is already defined.")
@@ -260,7 +261,9 @@ class ValidatedKeyParametersTest {
 
     @Test
     fun prepareFromString_valueContainingEquals_succeeds() {
-        val schema = KeyParametersSchema { parameter("url", R.string.parameter_purpose1, required = true) }
+        val schema = KeyParametersSchema {
+            parameter("url", R.string.parameter_purpose1, required = true, type = AnyString)
+        }
         val params = schema.prepare("[url=http://example.com?a=1&b=2]")
         assertThat(params.get("url")).isEqualTo("http://example.com?a=1&b=2")
     }
@@ -423,18 +426,9 @@ class ValidatedKeyParametersTest {
     }
 
     @Test
-    fun withAppPackageName_addsParameterToSchema() {
-        val schema = KeyParametersSchema {
-            withAppPackageName()
-        }
-        assertThat(schema.containsKey(KEY_PACKAGE_NAME)).isTrue()
-        assertThat(schema.isRequiredParameter(KEY_PACKAGE_NAME)).isTrue()
-    }
-
-    @Test
     fun prepareForApp_createsCorrectParameters() {
         val schema = KeyParametersSchema {
-            withAppPackageName()
+            parameter(KEY_PACKAGE_NAME, R.string.parameter_pkg_purpose, required = true, type = AnyString)
         }
         val params = schema.prepareForApp("com.example.app")
         assertThat(params[KEY_PACKAGE_NAME]).isEqualTo("com.example.app")
@@ -443,7 +437,7 @@ class ValidatedKeyParametersTest {
     @Test
     fun getPackageName_returnsCorrectValue() {
         val schema = KeyParametersSchema {
-            withAppPackageName()
+            parameter(KEY_PACKAGE_NAME, R.string.parameter_pkg_purpose, required = true, type = AnyString)
         }
         val params = schema.prepareForApp("com.example.app")
         assertThat(params.packageName).isEqualTo("com.example.app")
