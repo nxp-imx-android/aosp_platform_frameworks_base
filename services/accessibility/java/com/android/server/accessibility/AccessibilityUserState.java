@@ -934,24 +934,23 @@ public class AccessibilityUserState {
     }
 
     /**
-     * Checks if a given accessibility service or feature component is permitted to be a shortcut
-     * target,
+     * Checks if a given accessibility service or feature component is permitted for this user.
      *
      * @param name   The flattened ComponentName string of the service or feature.
-     * @return true if the service/feature is permitted as a shortcut target, false otherwise.
+     * @return true if the service/feature is permitted, false otherwise.
      */
-    public boolean isShortcutTargetPermittedLocked(String name) {
-        return isShortcutTargetPermittedLocked(name, mPermittedAccessibilityServices);
+    public boolean isAccessibilityFeaturePermittedLocked(String name) {
+        return isAccessibilityFeaturePermittedLocked(name, mPermittedAccessibilityServices);
     }
 
     /**
-     * Returns whether the shortcut target is permitted for this user.
+     * Returns whether the accessibility feature is permitted for this user.
      *
-     * @param name The name of the shortcut target.
+     * @param name The name of the accessibility feature.
      * @param permittedPackageNameSet The set of permitted package names.
-     * @return true if the shortcut target is permitted, false otherwise.
+     * @return true if the accessibility feature is permitted, false otherwise.
      */
-    public boolean isShortcutTargetPermittedLocked(String name,
+    public boolean isAccessibilityFeaturePermittedLocked(String name,
             Set<String> permittedPackageNameSet) {
         BuiltInCheckResult checkResult = checkIsBuiltInFeature(name);
         if (checkResult == BuiltInCheckResult.VALID) {

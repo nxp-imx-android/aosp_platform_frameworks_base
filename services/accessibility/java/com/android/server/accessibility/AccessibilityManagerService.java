@@ -1401,7 +1401,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         int count = 0;
         final Set<String> targets = userState.getShortcutTargetsLocked(ALL);
         for (String target : targets) {
-            if (!userState.isShortcutTargetPermittedLocked(target, finalAllowedPackages)) {
+            if (!userState.isAccessibilityFeaturePermittedLocked(target, finalAllowedPackages)) {
                 count++;
             }
         }
@@ -3403,7 +3403,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             if (userState.mEnabledServices.contains(componentName)
                     && !mUiAutomationManager.suppressingAccessibilityServicesLocked()) {
                 // Skip the enabling service disallowed by device admin policy.
-                if (!userState.isShortcutTargetPermittedLocked(componentName.flattenToString())) {
+                if (!userState.isAccessibilityFeaturePermittedLocked(
+                        componentName.flattenToString())) {
                     Slog.d(LOG_TAG, "Skipping enabling service disallowed by device admin policy: "
                             + componentName);
                     disableAccessibilityServiceLocked(componentName, userState.mUserId);
@@ -4289,7 +4290,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 name -> !userState.isShortcutTargetInstalledLocked(name));
         if (android.security.Flags.extendAapmToA11yServices()) {
             currentTargets.removeIf(
-                    name -> !userState.isShortcutTargetPermittedLocked(name));
+                    name -> !userState.isAccessibilityFeaturePermittedLocked(name));
         }
         if (shortcutType == QUICK_SETTINGS) {
             // Add the target if the a11y service is enabled and the tile exist in QS panel
@@ -5579,7 +5580,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     public boolean isAccessibilityServiceTargetAllowed(AccessibilityServiceInfo info, int userId) {
         synchronized (mLock) {
             final AccessibilityUserState userState = getUserStateLocked(userId);
-            return userState.isShortcutTargetPermittedLocked(
+            return userState.isAccessibilityFeaturePermittedLocked(
                     info.getComponentName().flattenToString());
         }
     }
