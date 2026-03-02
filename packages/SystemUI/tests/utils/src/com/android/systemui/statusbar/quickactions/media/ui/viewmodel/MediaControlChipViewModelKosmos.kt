@@ -22,7 +22,7 @@ import com.android.systemui.media.controls.ui.view.qsMediaHost
 import com.android.systemui.media.remedia.ui.viewmodel.factory.mediaViewModelFactory
 import com.android.systemui.statusbar.quickactions.media.domain.interactor.mediaControlChipInteractor
 
-private val Kosmos.mediaControlPopupViewModelFactory by
+val Kosmos.mediaControlPopupViewModelFactory by
     Kosmos.Fixture {
         object : MediaControlPopupViewModel.Factory {
             override fun create() =
@@ -33,6 +33,13 @@ private val Kosmos.mediaControlPopupViewModelFactory by
         }
     }
 
+val Kosmos.mediaControlChipViewModelFactory by
+    Kosmos.Fixture {
+        object : MediaControlChipViewModel.Factory {
+            override fun create(): MediaControlChipViewModel = mediaControlChipViewModel
+        }
+    }
+
 private val Kosmos.mediaControlChipViewModel: MediaControlChipViewModel by
     Kosmos.Fixture {
         MediaControlChipViewModel(
@@ -40,11 +47,4 @@ private val Kosmos.mediaControlChipViewModel: MediaControlChipViewModel by
             mediaControlChipInteractor = mediaControlChipInteractor,
             popupViewModelFactory = mediaControlPopupViewModelFactory,
         )
-    }
-
-val Kosmos.mediaControlChipViewModelFactory by
-    Kosmos.Fixture {
-        object : MediaControlChipViewModel.Factory {
-            override fun create(): MediaControlChipViewModel = mediaControlChipViewModel
-        }
     }
