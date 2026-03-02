@@ -58,6 +58,7 @@ import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutPa
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.PREFERRED_REFRESH_RATE;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.PRIVATE_FLAGS;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.PROVIDED_INSETS;
+import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.RENDERING_HINTS;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.ROTATION_ANIMATION;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.SCREEN_BRIGHTNESS;
 import static android.internal.perfetto.protos.Windowlayoutparams.WindowLayoutParamsProto.SOFT_INPUT_MODE;
@@ -6208,6 +6209,7 @@ public interface WindowManager extends ViewManager {
                     }
                 }
             }
+            proto.write(RENDERING_HINTS, renderingHints);
             proto.end(token);
         }
 
