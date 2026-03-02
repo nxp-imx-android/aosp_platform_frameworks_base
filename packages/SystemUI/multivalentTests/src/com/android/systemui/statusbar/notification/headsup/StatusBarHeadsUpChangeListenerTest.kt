@@ -17,7 +17,6 @@ package com.android.systemui.statusbar.notification.headsup
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
@@ -75,7 +74,6 @@ class StatusBarHeadsUpChangeListenerTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
-    @EnableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
     fun onHeadsUpPinnedModeChanged_isPinned_setsStatusBarForcedVisibleOnCurrentDisplay() =
         kosmos.runTest {
             fakeShadeDisplaysRepository.setDisplayId(MAIN_TEST_DISPLAY_ID)
@@ -92,7 +90,6 @@ class StatusBarHeadsUpChangeListenerTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
-    @EnableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
     fun onDisplayChange_hunPinned_setsStatusBarForcedVisibleOnNewDisplay() =
         kosmos.runTest {
             whenever(mockHeadsUpManager.hasPinnedHeadsUp()).thenReturn(true)
@@ -110,7 +107,6 @@ class StatusBarHeadsUpChangeListenerTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
-    @EnableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
     fun onDisplayChange_hunPinned_setsStatusBarNotForcedVisibleOnPreviousDisplay() =
         kosmos.runTest {
             whenever(mockHeadsUpManager.hasPinnedHeadsUp()).thenReturn(true)
@@ -143,7 +139,7 @@ class StatusBarHeadsUpChangeListenerTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
+    @EnableFlags(Flags.FLAG_SCENE_CONTAINER)
     fun onHeadsUpPinnedModeChanged_isNotPinned_sceneContainerFlagOn_doesNotSetStatusBarForcedVisible() =
         kosmos.runTest {
             fakeShadeDisplaysRepository.setDisplayId(MAIN_TEST_DISPLAY_ID)
@@ -159,39 +155,7 @@ class StatusBarHeadsUpChangeListenerTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
-    fun onHeadsUpPinnedModeChanged_isPinned_displayAwareFlagOff_setsStatusBarForcedVisibleOnDefaultDisplay() =
-        kosmos.runTest {
-            fakeShadeDisplaysRepository.setDisplayId(SECONDARY_TEST_DISPLAY_ID)
-
-            underTest.onHeadsUpPinnedModeChanged(true)
-
-            assertThat(
-                    fakeStatusBarWindowControllerStore.forDisplay(DEFAULT_DISPLAY).isForcedVisible
-                )
-                .isTrue()
-        }
-
-    @Test
-    @DisableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
-    fun onHeadsUpPinnedModeChanged_isNotPinned_displayAwareFlagOff_setsStatusBarNotForcedVisibleOnDefaultDisplay() =
-        kosmos.runTest {
-            whenever(keyguardBypassController.bypassEnabled).thenReturn(true)
-            fakeStatusBarStateController.state = StatusBarState.KEYGUARD
-            fakeShadeDisplaysRepository.setDisplayId(SECONDARY_TEST_DISPLAY_ID)
-            underTest.onHeadsUpPinnedModeChanged(true)
-
-            underTest.onHeadsUpPinnedModeChanged(false)
-
-            assertThat(
-                    fakeStatusBarWindowControllerStore.forDisplay(DEFAULT_DISPLAY).isForcedVisible
-                )
-                .isFalse()
-        }
-
-    @Test
     @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
-    @EnableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
     fun onHeadsUpPinnedModeChanged_isNotPinned_setsStatusBarNotForcedVisibleOnCurrentDisplay() =
         kosmos.runTest {
             whenever(keyguardBypassController.bypassEnabled).thenReturn(true)
@@ -211,7 +175,6 @@ class StatusBarHeadsUpChangeListenerTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
-    @EnableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
     fun onDisplayChange_noHunPinned_oldDisplayRemainsForcedVisible() =
         kosmos.runTest {
             whenever(mockHeadsUpManager.hasPinnedHeadsUp()).thenReturn(false)
@@ -230,7 +193,6 @@ class StatusBarHeadsUpChangeListenerTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_SCENE_CONTAINER)
-    @EnableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
     fun onDisplayChange_noHunPinned_newDisplayRemainsNotForcedVisible() =
         kosmos.runTest {
             whenever(mockHeadsUpManager.hasPinnedHeadsUp()).thenReturn(false)

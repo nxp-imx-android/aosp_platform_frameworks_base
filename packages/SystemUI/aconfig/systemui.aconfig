@@ -354,16 +354,6 @@ flag {
 }
 
 flag {
-  name: "display_aware_shade_controller_impl"
-  namespace: "systemui"
-  description: "Make ShadeControllerImpl display aware"
-  bug: "444658034"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "do_not_use_immediate_coroutine_dispatcher"
     namespace: "systemui"
     description: "Uses the Main coroutine dispatcher (not immediate) when enabled"

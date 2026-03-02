@@ -16,15 +16,12 @@
 
 package com.android.systemui.shade
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Display
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.statusbar.IStatusBarService
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.assist.AssistManager
 import com.android.systemui.flags.DisableSceneContainer
@@ -140,7 +137,6 @@ class ShadeControllerImplTest : SysuiTestCase() {
                 statusBarWindowControllerStore,
                 deviceProvisionedController,
                 notificationShadeWindowController,
-                0,
                 Lazy { nswvc },
                 Lazy { npvc },
                 Lazy { assistManager },
@@ -232,8 +228,7 @@ class ShadeControllerImplTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
-    fun makeExpandedVisible_flagEnabled_recomputesDisableFlags_onCorrectDisplay() {
+    fun makeExpandedVisible_recomputesDisableFlags_onCorrectDisplay() {
         whenever(commandQueue.panelsEnabled()).thenReturn(true)
         // GIVEN a non-default displayId
         val displayId = 123
@@ -247,23 +242,7 @@ class ShadeControllerImplTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
-    fun makeExpandedVisible_flagDisabled_recomputesDisableFlags_onDefaultDisplay() {
-        whenever(commandQueue.panelsEnabled()).thenReturn(true)
-        // GIVEN a non-default displayId in the interactor
-        val displayId = 123
-        kosmos.fakeShadeDisplaysRepository.setDisplayId(displayId)
-
-        // WHEN makeExpandedVisible is called
-        underTest.makeExpandedVisible(false)
-
-        // THEN recomputeDisableFlags is called with the default displayId
-        verify(commandQueue).recomputeDisableFlags(eq(Display.DEFAULT_DISPLAY), anyBoolean())
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
-    fun makeExpandedInvisible_flagEnabled_recomputesDisableFlags_onCorrectDisplay() {
+    fun makeExpandedInvisible_recomputesDisableFlags_onCorrectDisplay() {
         Mockito.reset(commandQueue)
         // GIVEN a non-default displayId
         val displayId = 123
@@ -279,26 +258,6 @@ class ShadeControllerImplTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
-    fun makeExpandedInvisible_flagDisabled_recomputesDisableFlags_onDefaultDisplay() {
-        Mockito.reset(commandQueue)
-        whenever(commandQueue.panelsEnabled()).thenReturn(true)
-        // GIVEN a non-default displayId in the interactor
-        val displayId = 123
-        kosmos.fakeShadeDisplaysRepository.setDisplayId(displayId)
-        // GIVEN the shade is expanded
-        underTest.makeExpandedVisible(true)
-
-        // WHEN makeExpandedInvisible is called
-        underTest.makeExpandedInvisible()
-
-        // THEN recomputeDisableFlags is called with the default displayId
-        verify(commandQueue, times(2))
-            .recomputeDisableFlags(eq(Display.DEFAULT_DISPLAY), anyBoolean())
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_DISPLAY_AWARE_SHADE_CONTROLLER_IMPL)
     fun makeExpandedInvisible_clearsStatusBarForcedVisibleState_onCurrentDisplayId() {
         val externalDisplayId = 2
         kosmos.fakeShadeDisplaysRepository.setDisplayId(externalDisplayId)

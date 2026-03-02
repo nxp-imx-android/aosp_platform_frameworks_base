@@ -468,7 +468,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                     mStatusBarWindowControllerStore,
                     mDeviceProvisionedController,
                     mNotificationShadeWindowController,
-                    0,
                     () -> mNotificationShadeWindowViewController,
                     () -> mNotificationPanelViewController,
                     () -> mAssistManager,
