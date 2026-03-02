@@ -480,17 +480,21 @@ final class OverlayDisplayAdapter extends DisplayAdapter {
         }
 
         @Override
-        public void setUserPreferredDisplayModeLocked(Display.Mode mode) {
+        public boolean setUserPreferredDisplayModeLocked(Display.Mode mode) {
             if (mode == null) {
-                return;
+                return false;
             }
             int modeId = mode.getModeId();
             if (getModeArrayIndex(modeId) == -1) {
                 Slog.w(TAG, "Attempted to set an unsupported user preferred display mode: " + mode);
-                return;
+                return false;
+            }
+            if (mUserPreferredModeId == modeId) {
+                return false;
             }
             mUserPreferredModeId = modeId;
             setDisplayMode(modeId);
+            return true;
         }
 
         @Override

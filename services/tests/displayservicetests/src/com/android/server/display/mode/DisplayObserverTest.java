@@ -50,6 +50,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.internal.R;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.internal.util.test.FakeSettingsProviderRule;
+import com.android.server.display.ModeRequestManager;
 import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.sensors.SensorManagerInternal;
 
@@ -111,6 +112,7 @@ public class DisplayObserverTest {
     private Handler mHandler;
     private DisplayManager.DisplayListener mObserver;
     @Mock private DisplayManagerFlags mDisplayManagerFlags;
+    @Mock private ModeRequestManager mModeRequestManagerMock;
     @Mock private DisplayModeDirector.DisplayDeviceConfigProvider mDisplayDeviceConfigProvider;
     private int mExternalDisplayUserPreferredModeId = INVALID_MODE_ID;
     private int mInternalDisplayUserPreferredModeId = INVALID_MODE_ID;
@@ -504,7 +506,8 @@ public class DisplayObserverTest {
                         mHandler,
                         mInjector,
                         mDisplayManagerFlags,
-                        mDisplayDeviceConfigProvider);
+                        mDisplayDeviceConfigProvider,
+                        mModeRequestManagerMock);
         mDmd.start(null);
         assertThat(mObserver).isNotNull();
     }

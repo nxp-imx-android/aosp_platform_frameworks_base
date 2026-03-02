@@ -240,11 +240,29 @@ abstract class DisplayDevice {
             DisplayModeDirector.DesiredDisplayModeSpecs displayModeSpecs) {}
 
     /**
+     * Sets the display mode specs.
+     * If the method is called with isInBatch set to true, applyBatchDisplayModeUpdatesLocked must
+     * be called to apply the changes.
+     *
+     * @param isInBatch - true if the display in question is a part of a batched request and the
+     *                  message on the spec setting should be delayed until the batch is complete,
+     *                  false if the message should be sent immediately
+     */
+    public void setDesiredDisplayModeSpecsLocked(
+            DisplayModeDirector.DesiredDisplayModeSpecs displayModeSpecs, boolean isInBatch) {
+        setDesiredDisplayModeSpecsLocked(displayModeSpecs);
+    }
+
+
+    /**
      * Sets the user preferred display mode. Removes the user preferred display mode and sets
      * default display mode as the mode chosen by HAL, if 'mode' is null
-     * Returns true if the mode set by user is supported by the display.
+     * Returns true if the mode set by user is a valid supported mode by the device, and it
+     * changes the current display mode.
      */
-    public void setUserPreferredDisplayModeLocked(Display.Mode mode) { }
+    public boolean setUserPreferredDisplayModeLocked(Display.Mode mode) {
+        return false;
+    }
 
     /**
      * Returns the user preferred display mode.
