@@ -7643,15 +7643,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 .apply();
     }
 
-    // LINT.IfChange(isTaskMoveAllowedOnDisplay)
-    boolean isTaskMoveAllowedOnDisplay() {
-        // Keep the WindowContainer's subtypes we are traversing here in sync with
-        // WindowContainer#canHoldSelfMovableTasks.
-        return forAllTaskDisplayAreas(TaskDisplayArea::getIsTaskMoveAllowed)
-                || forAllRootTasks(Task::getIsTaskMoveAllowed);
-    }
-    // LINT.ThenChange(WindowContainer.java:canHoldSelfMovableTasks)
-
     /**
      * Sets the user engagement mode for this display.
      * @param engagementMode A bitmask of engagement mode flags.

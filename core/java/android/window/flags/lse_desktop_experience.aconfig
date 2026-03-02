@@ -708,14 +708,6 @@ flag {
 }
 
 flag {
-    name: "enable_is_task_move_allowed_on_display_api"
-    namespace: "lse_desktop_experience"
-    description: "Enables the API to allow browsers to learn task-move-allowed states of displays."
-    bug: "400407139"
-    is_exported: true
-}
-
-flag {
     name: "enable_launcher_handle_go_home_keyboard_shortcut"
     namespace: "lse_desktop_experience"
     description: "Enables handling the go home keyboard shortcut on the Launcher side."

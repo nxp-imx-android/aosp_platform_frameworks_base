@@ -258,7 +258,6 @@ class RootTaskDesksOrganizer(
         val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
         if (!skipReorder) wct.reorder(root.token, /* onTop= */ true)
         updateLaunchRoot(wct, deskId, enabled = true)
-        updateTaskMoveAllowed(wct, deskId, allowed = true)
         if (Flags.reparentDeskLeafTasksIfRelaunched()) {
             wct.setReparentLeafTaskIfRelaunch(root.token, /* reparentLeafTaskIfRelaunch */ false)
         }
@@ -287,7 +286,6 @@ class RootTaskDesksOrganizer(
         }
         if (!skipReorder) wct.reorder(root.taskInfo.token, /* onTop= */ false)
         updateLaunchRoot(wct, deskId, enabled = false)
-        updateTaskMoveAllowed(wct, deskId, allowed = false)
         if (Flags.reparentDeskLeafTasksIfRelaunched()) {
             wct.setReparentLeafTaskIfRelaunch(root.token, /* reparentLeafTaskIfRelaunch */ true)
         }
@@ -319,29 +317,6 @@ class RootTaskDesksOrganizer(
                 /* activityTypes= */ null,
             )
         }
-    }
-
-    private fun updateTaskMoveAllowed(
-        wct: WindowContainerTransaction,
-        deskId: Int,
-        allowed: Boolean,
-    ) {
-        val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
-        if (root.isTaskMoveAllowed == allowed) {
-            logD(
-                "updateTaskMoveAllowed desk=%d Task move allowed already set to allowed=%b",
-                deskId,
-                allowed,
-            )
-            return
-        }
-        root.isTaskMoveAllowed = allowed
-        logD(
-            "updateTaskMoveAllowed changing desk=%d Task move allowed to allowed=%b",
-            deskId,
-            allowed,
-        )
-        wct.setIsTaskMoveAllowed(root.taskInfo.token, allowed)
     }
 
     override fun moveTaskToDesk(

@@ -568,14 +568,6 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 }
             )
             .isTrue()
-        assertThat(
-                wct.changes.any { change ->
-                    change.key == desk.deskRoot.token.asBinder() &&
-                        (change.value.changeMask and Change.CHANGE_IS_TASK_MOVE_ALLOWED != 0) &&
-                        change.value.isTaskMoveAllowed
-                }
-            )
-            .isTrue()
     }
 
     @Test
@@ -841,24 +833,6 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                         hop.container == desk.deskRoot.taskInfo.token.asBinder() &&
                         hop.windowingModes == null &&
                         hop.activityTypes == null
-                }
-            )
-            .isTrue()
-    }
-
-    @Test
-    fun deactivateDesk_unsetsTaskMoveAllowed() = runTest {
-        val wct = WindowContainerTransaction()
-        val desk = createDeskSuspending()
-        organizer.activateDesk(wct, desk.deskRoot.deskId)
-
-        organizer.deactivateDesk(wct, desk.deskRoot.deskId)
-
-        assertThat(
-                wct.changes.any { change ->
-                    change.key == desk.deskRoot.token.asBinder() &&
-                        (change.value.changeMask and Change.CHANGE_IS_TASK_MOVE_ALLOWED != 0) &&
-                        !change.value.isTaskMoveAllowed
                 }
             )
             .isTrue()

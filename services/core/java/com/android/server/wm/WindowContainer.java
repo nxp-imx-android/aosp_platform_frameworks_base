@@ -43,6 +43,7 @@ import static android.os.UserHandle.USER_NULL;
 import static android.view.SurfaceControl.Transaction;
 import static android.view.WindowInsets.Type.InsetsType;
 import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
+
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SYNC_ENGINE;
@@ -3825,12 +3826,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return mFullscreenRequestAllowMode;
     }
 
-    // LINT.IfChange(canHoldSelfMovableTasks)
     boolean canHoldSelfMovableTasks() {
-        // Is a TaskDisplayArea or a root Task.
-        // Keep these types in sync with types we are traversing in
-        // DisplayContent#isTaskMoveAllowedOnDisplay.
-        return (asTaskDisplayArea() != null) || (asTask() != null && asTask().isRootTask());
+        return asTaskDisplayArea() != null;
     }
-    // LINT.ThenChange(DisplayContent.java:isTaskMoveAllowedOnDisplay)
 }
