@@ -50,7 +50,7 @@ class BooleanProcessor(processingEnv: ProcessingEnvironment) :
         val booleanDefinition =
             element.getAnnotation(BooleanPolicyDefinition::class.java)
                 ?: throw IllegalStateException(
-                    "Processor should only be called on elements with @BooleanPolicyMetadata"
+                    "Processor should only be called on elements with @BooleanPolicyDefinition"
                 )
 
         if (!processingEnv.typeUtils.isSameType(policyType(element), booleanType)) {

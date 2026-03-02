@@ -50,7 +50,7 @@ class StringProcessor(processingEnv: ProcessingEnvironment) :
         val stringDefinition =
             element.getAnnotation(StringPolicyDefinition::class.java)
                 ?: throw IllegalStateException(
-                    "Processor should only be called on elements with @StringPolicyMetadata"
+                    "Processor should only be called on elements with @StringPolicyDefinition"
                 )
 
         if (!processingEnv.typeUtils.isSameType(policyType(element), stringType)) {

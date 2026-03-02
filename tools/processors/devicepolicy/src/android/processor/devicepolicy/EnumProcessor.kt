@@ -96,7 +96,7 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
         val enumPolicyAnnotation =
             element.getAnnotation(EnumPolicyDefinition::class.java)
                 ?: throw IllegalStateException(
-                    "Processor should only be called on elements with @EnumPolicyMetadata"
+                    "Processor should only be called on elements with @EnumPolicyDefinition"
                 )
 
         if (!processingEnv.typeUtils.isSameType(policyType(element), integerType)) {
