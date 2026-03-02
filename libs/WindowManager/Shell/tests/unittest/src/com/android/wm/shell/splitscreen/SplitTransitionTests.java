@@ -606,7 +606,6 @@ public class SplitTransitionTests extends ShellTestCase {
 
     @Test
     @UiThreadTest
-    @EnableFlags(com.android.window.flags.Flags.FLAG_EXIT_SPLIT_ON_DISPLAY_MOVE_BUGFIX)
     public void testDismissFromDisplayMove() {
         enterSplit();
         mSplitScreenTransitions.mPendingEnter.mFinishedCallback.onFinished(

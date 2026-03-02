@@ -242,16 +242,6 @@ flag {
 }
 
 flag {
-    name: "exit_split_on_display_move_bugfix"
-    namespace: "windowing_frontend"
-    description: "Exit split to remaining task when one task moves to another display"
-    bug: "460447267"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "aod_transition"
     namespace: "windowing_frontend"
     description: "Support to show lock wallpaper in aod state"
