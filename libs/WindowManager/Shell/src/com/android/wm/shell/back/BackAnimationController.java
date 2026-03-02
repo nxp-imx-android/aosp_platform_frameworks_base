@@ -542,36 +542,30 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         if (keyAction == MotionEvent.ACTION_DOWN) {
             if (!mBackGestureStarted) {
                 if (swipeEdge == EDGE_NONE) {
-                    if (!com.android.window.flags.Flags.simulateTouchDisplayFromNavigationBack()) {
-                        // start animation immediately for non-gestural sources (without ACTION_MOVE
-                        // events)
-                        startGestureWithNoEdge();
+                    // Simulate inject key event to system server.
+                    boolean deferBackAfterTransition = false;
+                    try {
+                        deferBackAfterTransition =
+                                mActivityTaskManager.simulateTouchDisplay(displayId);
+                    } catch (RemoteException remoteException) {
+                        Log.e(TAG, "Failed to simulateBackInject", remoteException);
+                    }
+                    if (deferBackAfterTransition) {
+                        // simulateTouchDisplay will trigger a display change transition.
+                        // To prevent the upcoming transition from being blocked on the Shell's
+                        // main thread, post the onGestureStart event to the next run cycle
+                        // after transition is idle.
+                        mNonGestureHandlers.add(new NonGestureStartHandler());
+                        mShellExecutor.executeDelayed(() -> {
+                            final NonGestureStartHandler next = mNonGestureHandlers.poll();
+                            if (next != null) {
+                                mTransitions.runOnIdle(next);
+                            }
+                        }, 0);
                     } else {
-                        // Simulate inject key event to system server.
-                        boolean deferBackAfterTransition = false;
-                        try {
-                            deferBackAfterTransition =
-                                    mActivityTaskManager.simulateTouchDisplay(displayId);
-                        } catch (RemoteException remoteException) {
-                            Log.e(TAG, "Failed to simulateBackInject", remoteException);
-                        }
-                        if (deferBackAfterTransition) {
-                            // simulateTouchDisplay will trigger a display change transition.
-                            // To prevent the upcoming transition from being blocked on the Shell's
-                            // main thread, post the onGestureStart event to the next run cycle
-                            // after transition is idle.
-                            mNonGestureHandlers.add(new NonGestureStartHandler());
-                            mShellExecutor.executeDelayed(() -> {
-                                final NonGestureStartHandler next = mNonGestureHandlers.poll();
-                                if (next != null) {
-                                    mTransitions.runOnIdle(next);
-                                }
-                            }, 0);
-                        } else {
-                            // No display order change or active transition to interrupt; starting
-                            // back animation immediately.
-                            startGestureWithNoEdge();
-                        }
+                        // No display order change or active transition to interrupt; starting
+                        // back animation immediately.
+                        startGestureWithNoEdge();
                     }
                 } else {
                     mShouldStartOnNextMoveEvent = true;
