@@ -33,6 +33,12 @@ public interface NotificationRulesScreenViewModel : Activatable {
     /** The screen currently being displayed. */
     public val currentScreen: RulesScreenViewState
 
+    /**
+     * Transforms [rule] into a readable string. Because this is a read-only view, individual fields
+     * are more visually prominent but not clickable.
+     */
+    public fun buildRuleText(rule: RuleModel): String
+
     /** Creates a new rule and adds it to the list of saved rules. */
     public fun createRule(newRule: RuleModel)
 

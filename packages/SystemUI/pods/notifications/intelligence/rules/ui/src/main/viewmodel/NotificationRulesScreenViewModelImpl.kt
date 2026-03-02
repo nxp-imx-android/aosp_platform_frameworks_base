@@ -19,9 +19,9 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.NotificationRulesInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import dagger.assisted.Assisted
 
 class NotificationRulesScreenViewModelImpl
 @AssistedInject
@@ -37,6 +37,10 @@ constructor(
 
     override fun createRule(newRule: RuleModel) {
         interactor.createRule(newRule)
+    }
+
+    override fun buildRuleText(rule: RuleModel): String {
+        return buildReadOnlyRuleText(rule)
     }
 
     @AssistedFactory

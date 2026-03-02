@@ -87,7 +87,11 @@ fun CurrentRulesScreen(
 
         viewModel.rules.forEach { rule ->
             item(rule.toString()) {
-                CurrentRule(rule = rule, onNavigateToEditScreen = onNavigateToEditScreen)
+                CurrentRule(
+                    rule = rule,
+                    screenViewModel = viewModel,
+                    onNavigateToEditScreen = onNavigateToEditScreen,
+                )
             }
         }
 
@@ -112,7 +116,11 @@ fun CurrentRulesScreen(
 }
 
 @Composable
-private fun CurrentRule(rule: RuleModel, onNavigateToEditScreen: (DraftRuleModel) -> Unit) {
+private fun CurrentRule(
+    screenViewModel: NotificationRulesScreenViewModel,
+    rule: RuleModel,
+    onNavigateToEditScreen: (DraftRuleModel) -> Unit,
+) {
     var isExpanded by remember { mutableStateOf(false) }
 
     Column(
@@ -127,7 +135,7 @@ private fun CurrentRule(rule: RuleModel, onNavigateToEditScreen: (DraftRuleModel
     ) {
         ReadOnlyAction(rule.action)
         Text(
-            text = rule.toText(),
+            text = screenViewModel.buildRuleText(rule),
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.bodyMedium,
         )
@@ -138,26 +146,4 @@ private fun CurrentRule(rule: RuleModel, onNavigateToEditScreen: (DraftRuleModel
             }
         }
     }
-}
-
-private fun RuleModel.toText(): String {
-    // TODO: b/478225883 - Internationalize this string when design is ready.
-    // TODO: b/478225883 - Re-use text rendering from edit screen.
-    val contactsList = filter.contacts?.contacts
-    val contactsString =
-        if (contactsList != null) {
-            " from ${contactsList.joinToString { it.name }} [TK]"
-        } else {
-            ""
-        }
-
-    val includedAppsList = filter.includedApps?.apps
-    val includedAppsString =
-        if (includedAppsList != null) {
-            " from ${includedAppsList.joinToString { it.label }} [TK]"
-        } else {
-            ""
-        }
-
-    return "Notifications$contactsString$includedAppsString [TK]"
 }
