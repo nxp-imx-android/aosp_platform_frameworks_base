@@ -107,16 +107,18 @@ class DesksTransitionObserver(
     fun onTransitionMerged(merged: IBinder, playing: IBinder) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         deskTransitions.remove(merged)?.let { transitions ->
-            deskTransitions[playing] =
-                transitions
-                    .map { deskTransition -> deskTransition.copyWithToken(token = playing) }
-                    .toMutableSet()
+            val existingTransitions = deskTransitions[playing] ?: mutableSetOf()
+            existingTransitions.addAll(
+                transitions.map { deskTransition -> deskTransition.copyWithToken(token = playing) }
+            )
+            deskTransitions[playing] = existingTransitions
         }
         runningDesksTransitions.remove(merged)?.let { transitions ->
-            runningDesksTransitions[playing] =
-                transitions
-                    .map { deskTransition -> deskTransition.copyWithToken(token = playing) }
-                    .toMutableSet()
+            val existingTransitions = runningDesksTransitions[playing] ?: mutableSetOf()
+            existingTransitions.addAll(
+                transitions.map { deskTransition -> deskTransition.copyWithToken(token = playing) }
+            )
+            runningDesksTransitions[playing] = existingTransitions
         }
     }
 
