@@ -19,8 +19,8 @@ package com.android.server.privatecompute;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-import com.android.internal.annotations.VisibleForTesting;
 import android.os.PersistableBundle;
+import com.android.internal.annotations.VisibleForTesting;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;

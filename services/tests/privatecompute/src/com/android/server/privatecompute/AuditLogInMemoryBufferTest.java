@@ -48,9 +48,11 @@ public class AuditLogInMemoryBufferTest {
 
     private static final int MAX_SIZE_KILOBYTES = 10 * 1024; // 10 MB
 
-    @Rule(order = 0) public final MockitoRule mockito = MockitoJUnit.rule();
+    @Rule(order = 0)
+    public final MockitoRule mockito = MockitoJUnit.rule();
 
-    @Rule(order = 1) public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
+    @Rule(order = 1)
+    public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
 
     @Mock private Injector mInjector;
 
