@@ -658,29 +658,29 @@ class KeyguardUnlockAnimationControllerTest : SysuiTestCase() {
 
     companion object {
         private fun createSurface(leash: SurfaceControl): AnimatedSurface {
-            return AnimatedSurface(
-                leash,
-                null /* startState */,
-                WindowAnimationState().apply { bounds = RectF() } /* endState */,
-                0 /* backgroundColor */,
-                false /* isTranslucent */,
-                null /* taskInfo */,
-                AnimatedSurface.Mode.OTHER,
-                Rect() /* screenSpaceBounds */,
-                Rect() /* localBounds */,
-                Point() /* position */,
-                0 /* rotationChange */,
-                WindowConfiguration() /* windowConfiguration */,
-                -1 /* taskId */,
-                INVALID_WINDOW_TYPE /* windowType */,
-                null /* startLeash */,
-                Rect() /* startBounds */,
-                Rect() /* contentInsets */,
-                false /* willShowImeOnTarget */,
-                true /* isNotInRecents */,
-                false /* allowEnterPip */,
-                -1, /* order */
-            )
+            return AnimatedSurface().apply {
+                this.leash = leash
+                this.startLeash = null
+                this.startState = null
+                this.endState = WindowAnimationState().apply { bounds = RectF() }
+                this.backgroundColor = 0
+                this.isTranslucent = false
+                this.taskInfo = null
+                this.mode = AnimatedSurface.Mode.OTHER
+                this.screenSpaceBounds = Rect()
+                this.localBounds = Rect()
+                this.startBounds = Rect()
+                this.contentInsets = Rect()
+                this.position = Point()
+                this.rotationChange = 0
+                this.windowConfiguration = WindowConfiguration()
+                this.taskId = -1
+                this.windowType = INVALID_WINDOW_TYPE
+                this.willShowImeOnTarget = false
+                this.isNotInRecents = true
+                this.allowEnterPip = false
+                this.order = -1
+            }
         }
     }
 }

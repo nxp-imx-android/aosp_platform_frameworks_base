@@ -189,6 +189,7 @@ import com.android.systemui.wallpapers.data.repository.WallpaperRepository;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.keyguard.KeyguardTransitions;
 import com.android.wm.shell.shared.compat.AnimatedSurface;
+import com.android.wm.shell.shared.compat.AnimatedSurfaceUtils;
 import com.android.wm.shell.shared.compat.SurfaceTransition;
 
 import dagger.Lazy;
@@ -3557,18 +3558,21 @@ public class KeyguardViewMediator implements CoreStartable,
                 // Filter out any closing apps, such as the dream.
                 AnimatedSurface[] openingApps = params.getApps();
                 if (dismissDreamOnKeyguardDismiss()) {
-                    openingApps = Arrays.stream(params.getApps()).filter(AnimatedSurface::isOpening)
+                    openingApps = Arrays.stream(params.getApps())
+                            .filter(AnimatedSurfaceUtils::isOpening)
                             .toArray(AnimatedSurface[]::new);
                 }
 
                 // Pass the surface and metadata to the unlock animation controller.
                 AnimatedSurface[] openingWallpapers =
                         Arrays.stream(Objects.requireNonNull(params.getWallpapers()))
-                                .filter(AnimatedSurface::isOpening).toArray(AnimatedSurface[]::new);
+                                .filter(AnimatedSurfaceUtils::isOpening)
+                                .toArray(AnimatedSurface[]::new);
 
                 AnimatedSurface[] closingWallpapers =
                         Arrays.stream(Objects.requireNonNull(params.getWallpapers()))
-                                .filter(AnimatedSurface::isClosing).toArray(AnimatedSurface[]::new);
+                                .filter(AnimatedSurfaceUtils::isClosing)
+                                .toArray(AnimatedSurface[]::new);
 
                 mKeyguardUnlockAnimationControllerLazy.get()
                         .notifyStartSurfaceBehindRemoteAnimation(

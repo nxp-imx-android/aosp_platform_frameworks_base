@@ -216,17 +216,17 @@ public class SurfaceTransition {
             this.finishedCallbackCompat = finishedCallbackCompat;
 
             if (appsCompat != null) {
-                this.mApps = Arrays.stream(appsCompat).map(AnimatedSurface::from)
+                this.mApps = Arrays.stream(appsCompat).map(AnimatedSurfaceUtils::from)
                         .toArray(AnimatedSurface[]::new);
             }
 
             if (wallpapersCompat != null) {
-                this.mWallpapers = Arrays.stream(wallpapersCompat).map(AnimatedSurface::from)
+                this.mWallpapers = Arrays.stream(wallpapersCompat).map(AnimatedSurfaceUtils::from)
                         .toArray(AnimatedSurface[]::new);
             }
 
             if (nonAppsCompat != null) {
-                this.mNonApps = Arrays.stream(nonAppsCompat).map(AnimatedSurface::from)
+                this.mNonApps = Arrays.stream(nonAppsCompat).map(AnimatedSurfaceUtils::from)
                         .toArray(AnimatedSurface[]::new);
             }
         }
@@ -326,13 +326,13 @@ public class SurfaceTransition {
                 for (int i = 0; i < info.getChanges().size(); i++) {
                     TransitionInfo.Change change = info.getChanges().get(i);
                     if (leafTaskFilter.test(change)) {
-                        apps.add(AnimatedSurface.from(change, numChanges - i));
+                        apps.add(AnimatedSurfaceUtils.from(change, numChanges - i));
                     }
                     if (TransitionUtil.isWallpaper(change)) {
-                        wallpapers.add(AnimatedSurface.from(change, numChanges - i));
+                        wallpapers.add(AnimatedSurfaceUtils.from(change, numChanges - i));
                     }
                     if (TransitionUtil.isNonApp(change)) {
-                        nonApps.add(AnimatedSurface.from(change, numChanges - i));
+                        nonApps.add(AnimatedSurfaceUtils.from(change, numChanges - i));
                     }
                 }
                 this.mApps = apps.toArray(AnimatedSurface[]::new);
