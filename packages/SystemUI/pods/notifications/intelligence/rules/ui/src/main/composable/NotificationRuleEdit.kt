@@ -31,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +42,7 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.Contac
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RuleDisplayModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.TextStyles
 import com.android.systemui.res.R
@@ -63,18 +65,31 @@ fun NotificationRuleEdit(
     onExitEditField: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val resources = LocalResources.current
+
     val addFieldOptions: List<RulesScreenViewState.EditField> =
         buildAddFieldOptions(viewModel, onExitEditField = onExitEditField)
     var isAddFieldDialogShowing by remember { mutableStateOf(false) }
 
     val textStyles = rememberTextStyles()
-    val text =
-        remember(viewModel, viewModel.rule, onEnterEditField, onExitEditField, textStyles) {
+    val ruleDisplay: RuleDisplayModel =
+        remember(
+            viewModel,
+            viewModel.rule,
+            onEnterEditField,
+            onExitEditField,
+            textStyles,
+            resources,
+        ) {
             viewModel.buildRuleText(
                 onEnterEditField = onEnterEditField,
                 onExitEditField = onExitEditField,
-                textStyles = textStyles,
+                resources = resources,
             )
+        }
+    val text =
+        remember(ruleDisplay.textChunks, textStyles) {
+            buildAnnotatedString(ruleDisplay.textChunks, textStyles)
         }
 
     BackHandler(enabled = true, onBack = onDismissRuleEditScreen)

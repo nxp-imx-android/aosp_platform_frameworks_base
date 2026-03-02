@@ -16,11 +16,7 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withLink
+import android.content.res.Resources
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
@@ -36,82 +32,73 @@ internal fun buildEditableRuleText(
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
     onAppsSaved: (List<AppModel>) -> Unit,
     onContactsSaved: (List<ContactModel>) -> Unit,
-    textStyles: TextStyles,
-): AnnotatedString {
-    return buildAnnotatedString {
-        append("Notifications [TK]")
-
+    resources: Resources,
+): RuleDisplayModel {
+    val appsText: SingleFieldTextModel? =
         viewModel.rule.includedApps?.let {
-            append(" from [TK]")
-            createIncludedAppsText(
+            createEditableIncludedAppsText(
                 selectedIncludedApps = it,
                 viewModel = viewModel,
                 onEnterEditField = onEnterEditField,
                 onAppsSaved = onAppsSaved,
-                textStyles = textStyles,
+                resources = resources,
             )
         }
 
+    val contactsText: SingleFieldTextModel? =
         viewModel.rule.contacts?.let {
-            append(" from [TK]")
-            createContactsText(
+            createEditableContactsText(
                 selectedContacts = it,
                 viewModel = viewModel,
                 onEnterEditField = onEnterEditField,
                 onContactsSaved = onContactsSaved,
-                textStyles = textStyles,
+                resources = resources,
             )
         }
-    }
+
+    return buildRuleText(appsText = appsText, contactsText = contactsText)
 }
 
-/** Creates annotated text for the included apps filter field. */
-private fun AnnotatedString.Builder.createIncludedAppsText(
+/** Creates text representation for the included apps filter field. */
+private fun createEditableIncludedAppsText(
     selectedIncludedApps: RuleValue<IncludedAppsModel>,
     viewModel: NotificationRuleEditViewModel,
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
-    onAppsSaved: ((List<AppModel>) -> Unit),
-    textStyles: TextStyles,
-) {
-    val text =
-        when (selectedIncludedApps) {
-            is RuleValue.Specified -> {
-                val apps = selectedIncludedApps.value.apps
-                check(apps.isNotEmpty()) { "IncludedAppsModel.apps must be non-empty" }
-                val first = apps[0].label
-                if (apps.size > 1) {
-                    "$first +${apps.size - 1} more [TK]"
-                } else {
-                    first
-                }
-            }
-            is RuleValue.Ambiguous -> {
-                selectedIncludedApps.placeholderText
-            }
+    onAppsSaved: (List<AppModel>) -> Unit,
+    resources: Resources,
+): SingleFieldTextModel {
+    val onClick = {
+        onEnterEditField(
+            RulesScreenViewState.EditField.Apps(viewModel = viewModel, onAppsSaved = onAppsSaved)
+        )
+    }
+
+    val items =
+        if (selectedIncludedApps is RuleValue.Specified<IncludedAppsModel>) {
+            selectedIncludedApps.value.apps
+        } else {
+            emptyList()
         }
-    clickableText(
-        text = text,
-        isAmbiguous = selectedIncludedApps is RuleValue.Ambiguous,
-        onClick = {
-            onEnterEditField(
-                RulesScreenViewState.EditField.Apps(
-                    viewModel = viewModel,
-                    onAppsSaved = onAppsSaved,
-                )
-            )
-        },
-        textStyles = textStyles,
+
+    return createFieldText(
+        FieldDataModel(
+            currentValue = selectedIncludedApps,
+            items = items,
+            label = { it.label },
+            onClick = onClick,
+        ),
+        resources = resources,
     )
 }
 
-/** Creates annotated text for the contacts filter field. */
-private fun AnnotatedString.Builder.createContactsText(
+/** Creates text representation for the contacts filter field. */
+private fun createEditableContactsText(
     selectedContacts: RuleValue<ContactsModel>,
     viewModel: NotificationRuleEditViewModel,
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
     onContactsSaved: (List<ContactModel>) -> Unit,
-    textStyles: TextStyles,
-) {
+    resources: Resources,
+): SingleFieldTextModel {
     val onClick: () -> Unit = {
         onEnterEditField(
             RulesScreenViewState.EditField.Contacts(
@@ -120,61 +107,61 @@ private fun AnnotatedString.Builder.createContactsText(
             )
         )
     }
-    when (selectedContacts) {
-        is RuleValue.Specified -> {
-            val contacts = selectedContacts.value.contacts
-            check(contacts.isNotEmpty()) { "ContactsModel.contacts must be non-empty" }
 
-            val first = contacts[0].name
-            val text =
-                if (contacts.size > 1) {
-                    "$first +${contacts.size - 1} more [TK]"
-                } else {
-                    first
-                }
+    val items =
+        if (selectedContacts is RuleValue.Specified<ContactsModel>) {
+            selectedContacts.value.contacts
+        } else {
+            emptyList()
+        }
 
-            clickableText(
-                text = text,
-                isAmbiguous = false,
+    return createFieldText(
+        fieldData =
+            FieldDataModel(
+                currentValue = selectedContacts,
+                items = items,
+                label = { it.displayLabel },
                 onClick = onClick,
-                textStyles = textStyles,
+            ),
+        resources = resources,
+    )
+}
+
+/** Creates text representation for a single field. */
+private fun <T, R> createFieldText(
+    fieldData: FieldDataModel<T, R>,
+    resources: Resources,
+): SingleFieldTextModel {
+    return when (fieldData.currentValue) {
+        is RuleValue.Specified -> {
+            createMultiItemText(
+                items = fieldData.items,
+                label = fieldData.label,
+                onClick = fieldData.onClick,
+                resources = resources,
             )
         }
         is RuleValue.Ambiguous -> {
-            clickableText(
-                text = selectedContacts.placeholderText,
-                isAmbiguous = true,
-                onClick = onClick,
-                textStyles = textStyles,
+            createAmbiguousText(
+                placeholderText = fieldData.currentValue.placeholderText,
+                onClick = fieldData.onClick,
+                resources = resources,
             )
         }
     }
 }
 
 /**
- * Renders the given text as a clickable element.
+ * Represents a field in a rule, like [RuleModel.filter.includedApps] or
+ * [RuleModel.filter.contacts].
  *
- * @param isAmbiguous true if the text represents an underspecified value. See
- *   [RuleValue.Ambiguous].
+ * Type T: The type for an individual item in the filter, like [ContactModel].
+ *
+ * Type R: The type of the field as a whole, like [ContactsModel].
  */
-private fun AnnotatedString.Builder.clickableText(
-    text: String,
-    isAmbiguous: Boolean,
-    onClick: () -> Unit,
-    textStyles: TextStyles,
-) {
-    withLink(
-        LinkAnnotation.Clickable(
-            tag = text,
-            styles =
-                TextLinkStyles(
-                    style =
-                        if (isAmbiguous) textStyles.ambiguousValueSpanStyle
-                        else textStyles.specifiedValueSpanStyle
-                ),
-            linkInteractionListener = { onClick.invoke() },
-        )
-    ) {
-        append(text)
-    }
-}
+private data class FieldDataModel<T, R>(
+    val currentValue: RuleValue<R>,
+    val items: List<T>,
+    val label: (T) -> String,
+    val onClick: () -> Unit,
+)

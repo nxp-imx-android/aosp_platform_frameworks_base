@@ -2713,6 +2713,14 @@
     <!-- Title for a page where users can add or remove apps that will be affected by a notification rule. [CHAR LIMIT=30]-->
     <string name="notification_rules_field_app" translatable="false">App</string>
 
+    <!-- Text explaining that the notification rule applies to a single item. For example, "from Phone" explains that the rule applies to just notifications from the 'Phone' app.
+     The "valueField" annotation specifies that 'Phone' is the item value. When the user taps on 'Phone', they will be able to change which items(s) are selected. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_from_single_item" translatable="false">\u0020from <annotation valueField="true"><xliff:g id="item">^1</xliff:g></annotation></string>
+
+    <!-- Text explaining that the notification rule applies to multiple items. For example, "from Phone +3 more" explains that the rule applies to the 'Phone' app and 3 additional apps.
+         The "valueField" annotation specifies that 'Phone +3 more' has the item values. When the user taps on 'Phone +3 more', they will be able to change which items(s) are selected. [CHAR LIMIT=NONE] -->
+    <string name="notification_rules_from_multi_items" translatable="false">\u0020from <annotation valueField="true"><xliff:g id="firstItem">^1</xliff:g> +<xliff:g id="number">^2</xliff:g> more</annotation></string>
+
     <!-- Text for a button letting users edit a particular notification rule. [CHAR LIMIT=30]-->
     <string name="notification_rules_edit" translatable="false">Edit</string>
     <!-- Search box placeholder text for notification rules [CHAR LIMIT=NONE]-->

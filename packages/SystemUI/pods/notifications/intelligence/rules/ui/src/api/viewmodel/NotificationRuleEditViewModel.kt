@@ -19,9 +19,9 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 import android.annotation.Px
 import android.content.ContentResolver
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.net.Uri
-import androidx.compose.ui.text.AnnotatedString
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
@@ -41,8 +41,8 @@ public interface NotificationRuleEditViewModel {
     public fun buildRuleText(
         onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
         onExitEditField: () -> Unit,
-        textStyles: TextStyles,
-    ): AnnotatedString
+        resources: Resources,
+    ): RuleDisplayModel
 
     /** Saves a new set of apps to the draft rule. */
     public fun onAppsSaved(newApps: List<AppModel>, onExitEditField: () -> Unit)

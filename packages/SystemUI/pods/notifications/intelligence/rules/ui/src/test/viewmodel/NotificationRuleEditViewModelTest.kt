@@ -16,9 +16,8 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.content.applicationContext
 import android.graphics.drawable.Drawable
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.core.net.toUri
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -43,13 +42,6 @@ import org.mockito.kotlin.mock
 class NotificationRuleEditViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
 
-    private val textStyles =
-        TextStyles(
-            defaultStyle = TextStyle.Default,
-            specifiedValueSpanStyle = SpanStyle(),
-            ambiguousValueSpanStyle = SpanStyle(),
-        )
-
     val Kosmos.underTest by Kosmos.Fixture { notificationRuleEditViewModelFactory }
 
     @Test
@@ -68,10 +60,12 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                 underTest.buildRuleText(
                     onEnterEditField = {},
                     onExitEditField = {},
-                    textStyles = textStyles,
+                    resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.text).contains("Notifications")
+            assertThat(ruleDisplay.textChunks).hasSize(1)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
         }
 
     @Test
@@ -98,15 +92,20 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                 underTest.buildRuleText(
                     onEnterEditField = { lastEnteredEditField = it },
                     onExitEditField = {},
-                    textStyles = textStyles,
+                    resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.text).matches("Notifications .*from .*Meowth.*")
+            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
 
-            val linkAnnotations = ruleDisplay.getLinkAnnotations(0, ruleDisplay.text.length)
-            assertThat(linkAnnotations).hasSize(1)
-            val link = linkAnnotations[0].item
-            link.linkInteractionListener?.onClick(link)
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(clickableChunk.text).isEqualTo("Meowth")
+            assertThat(clickableChunk.isAmbiguous).isFalse()
+
+            clickableChunk.onClick()
             assertThat(lastEnteredEditField)
                 .isInstanceOf(RulesScreenViewState.EditField.Contacts::class.java)
         }
@@ -129,15 +128,20 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                 underTest.buildRuleText(
                     onEnterEditField = { lastEnteredEditField = it },
                     onExitEditField = {},
-                    textStyles = textStyles,
+                    resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.text).matches("Notifications .*from .*who is it?.*")
+            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
 
-            val linkAnnotations = ruleDisplay.getLinkAnnotations(0, ruleDisplay.text.length)
-            assertThat(linkAnnotations).hasSize(1)
-            val link = linkAnnotations[0].item
-            link.linkInteractionListener?.onClick(link)
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(clickableChunk.text).isEqualTo("who is it?")
+            assertThat(clickableChunk.isAmbiguous).isTrue()
+
+            clickableChunk.onClick()
             assertThat(lastEnteredEditField)
                 .isInstanceOf(RulesScreenViewState.EditField.Contacts::class.java)
         }
@@ -167,15 +171,20 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                 underTest.buildRuleText(
                     onEnterEditField = { lastEnteredEditField = it },
                     onExitEditField = {},
-                    textStyles = textStyles,
+                    resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.text).matches("Notifications .*from .*Chat the Cat.*")
+            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
 
-            val linkAnnotations = ruleDisplay.getLinkAnnotations(0, ruleDisplay.text.length)
-            assertThat(linkAnnotations).hasSize(1)
-            val link = linkAnnotations[0].item
-            link.linkInteractionListener?.onClick(link)
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(clickableChunk.text).isEqualTo("Chat the Cat")
+            assertThat(clickableChunk.isAmbiguous).isFalse()
+
+            clickableChunk.onClick()
             assertThat(lastEnteredEditField)
                 .isInstanceOf(RulesScreenViewState.EditField.Apps::class.java)
         }
@@ -202,10 +211,18 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                 underTest.buildRuleText(
                     onEnterEditField = {},
                     onExitEditField = {},
-                    textStyles = textStyles,
+                    resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.text).matches("Notifications .*from .*Mom Cell \\+1 more.*")
+            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(clickableChunk.text).isEqualTo("Mom Cell +1 more")
+            assertThat(clickableChunk.isAmbiguous).isFalse()
         }
 
     @Test
@@ -234,11 +251,18 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                 underTest.buildRuleText(
                     onEnterEditField = {},
                     onExitEditField = {},
-                    textStyles = textStyles,
+                    resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.text)
-                .matches("Notifications .*from .*Puzzle the Cat \\+2 more.*")
+            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(clickableChunk.text).isEqualTo("Puzzle the Cat +2 more")
+            assertThat(clickableChunk.isAmbiguous).isFalse()
         }
 
     @Test
@@ -273,11 +297,24 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                 underTest.buildRuleText(
                     onEnterEditField = {},
                     onExitEditField = {},
-                    textStyles = textStyles,
+                    resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.text)
-                .matches("Notifications .*from .*Puzzle the Cat \\+2 more.*from .*Mom Cell.*")
+            assertThat(ruleDisplay.textChunks).hasSize(5)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunkApps = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(clickableChunkApps.text).isEqualTo("Puzzle the Cat +2 more")
+            assertThat(clickableChunkApps.isAmbiguous).isFalse()
+
+            assertThat(ruleDisplay.textChunks[3]).isEqualTo(TextChunk.BasicText(" from "))
+            assertThat(ruleDisplay.textChunks[4]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunkContacts = ruleDisplay.textChunks[4] as TextChunk.ClickableText
+            assertThat(clickableChunkContacts.text).isEqualTo("Mom Cell")
+            assertThat(clickableChunkContacts.isAmbiguous).isFalse()
         }
 
     @Test

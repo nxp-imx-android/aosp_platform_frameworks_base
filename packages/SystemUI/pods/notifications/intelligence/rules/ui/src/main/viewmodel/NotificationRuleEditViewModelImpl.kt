@@ -19,12 +19,12 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 import android.annotation.Px
 import android.content.ContentResolver
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.AnnotatedString
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.ContactsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.InstalledAppsInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
@@ -51,14 +51,14 @@ constructor(
     override fun buildRuleText(
         onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
         onExitEditField: () -> Unit,
-        textStyles: TextStyles,
-    ): AnnotatedString {
+        resources: Resources,
+    ): RuleDisplayModel {
         return buildEditableRuleText(
             this,
             onEnterEditField,
             onAppsSaved = { onAppsSaved(it, onExitEditField) },
             onContactsSaved = { onContactsSaved(it, onExitEditField) },
-            textStyles,
+            resources = resources,
         )
     }
 
