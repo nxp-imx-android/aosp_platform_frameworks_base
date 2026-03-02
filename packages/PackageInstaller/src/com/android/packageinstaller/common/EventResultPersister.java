@@ -132,6 +132,8 @@ public class EventResultPersister {
      *
      * @return The value of the attribute
      */
+    // TypedXmlPullParser is not available to this target due to API/variant mismatch
+    @SuppressWarnings("AndroidFrameworkEfficientXml")
     private static int readIntAttribute(@NonNull XmlPullParser parser, @NonNull String name) {
         return Integer.parseInt(parser.getAttributeValue(null, name));
     }
@@ -158,6 +160,8 @@ public class EventResultPersister {
         mCounter = GENERATE_NEW_ID + 1;
 
         try (FileInputStream stream = mResultsFile.openRead()) {
+            // TypedXmlPullParser is not available to this target due to API/variant mismatch
+            @SuppressWarnings("AndroidFrameworkEfficientXml")
             XmlPullParser parser = Xml.newPullParser();
             parser.setInput(stream, StandardCharsets.UTF_8.name());
 
@@ -252,6 +256,8 @@ public class EventResultPersister {
     /**
      * Persist current state. The persistence might be delayed.
      */
+    // TypedXmlSerializer is not available to this target due to API/variant mismatch
+    @SuppressWarnings("AndroidFrameworkEfficientXml")
     private void writeState() {
         synchronized (mLock) {
             mIsPersistingStateValid = false;
@@ -274,6 +280,9 @@ public class EventResultPersister {
                         FileOutputStream stream = null;
                         try {
                             stream = mResultsFile.startWrite();
+                            // TypedXmlSerializer is not available to this target due to API/variant
+                            // mismatch
+                            @SuppressWarnings("AndroidFrameworkEfficientXml")
                             XmlSerializer serializer = Xml.newSerializer();
                             serializer.setOutput(stream, StandardCharsets.UTF_8.name());
                             serializer.startDocument(null, true);

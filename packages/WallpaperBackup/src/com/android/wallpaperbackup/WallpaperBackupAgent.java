@@ -1152,7 +1152,7 @@ public class WallpaperBackupAgent extends BackupAgent {
     private Rect parseCropHint(File wallpaperInfo, String sectionTag) {
         Rect cropHint = new Rect();
         try (FileInputStream stream = new FileInputStream(wallpaperInfo)) {
-            XmlPullParser parser = Xml.resolvePullParser(stream);
+            TypedXmlPullParser parser = Xml.resolvePullParser(stream);
 
             int type;
             do {
@@ -1179,7 +1179,7 @@ public class WallpaperBackupAgent extends BackupAgent {
     private SparseArray<Rect> parseCropHints(File wallpaperInfo, String sectionTag) {
         SparseArray<Rect> cropHints = new SparseArray<>();
         try (FileInputStream stream = new FileInputStream(wallpaperInfo)) {
-            XmlPullParser parser = Xml.resolvePullParser(stream);
+            TypedXmlPullParser parser = Xml.resolvePullParser(stream);
             int type;
             do {
                 type = parser.next();
@@ -1281,9 +1281,8 @@ public class WallpaperBackupAgent extends BackupAgent {
         return description;
     }
 
-    private int getAttributeInt(XmlPullParser parser, String name, int defValue) {
-        final String value = parser.getAttributeValue(null, name);
-        return (value == null) ? defValue : Integer.parseInt(value);
+    private int getAttributeInt(TypedXmlPullParser parser, String name, int defValue) {
+        return parser.getAttributeInt(null, name, defValue);
     }
 
     @VisibleForTesting
