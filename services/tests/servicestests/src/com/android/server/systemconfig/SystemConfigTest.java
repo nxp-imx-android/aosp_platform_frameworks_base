@@ -41,7 +41,7 @@ import android.util.Xml;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
-import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
+import com.android.internal.pm.pkg.component.AconfigFlags;
 import com.android.server.SystemConfig;
 
 import org.junit.Before;
@@ -103,7 +103,7 @@ public class SystemConfigTest {
         mSysConfig = new SystemConfigTestClass();
         mFooJar = createTempFile(
                 mTemporaryFolder.getRoot().getCanonicalFile(), "foo.jar", "JAR");
-        ParsingPackageUtils.getAconfigFlags().addFlagValuesForTesting(FLAG_VALUES);
+        AconfigFlags.getInstance().addFlagValuesForTesting(FLAG_VALUES);
     }
 
     /**
