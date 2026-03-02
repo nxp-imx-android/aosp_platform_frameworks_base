@@ -7403,26 +7403,6 @@ final class ActivityRecord extends WindowToken {
         mDisplayContent.getDisplayRotation().onSetRequestedOrientation();
     }
 
-    /*
-     * Called from {@link RootWindowContainer#ensureVisibilityAndConfig} to make sure the
-     * orientation is updated before the app becomes visible.
-     */
-    void reportDescendantOrientationChangeIfNeeded() {
-        if (com.android.window.flags.Flags.removeLegacyOrientationReport()) {
-            return;
-        }
-        // Orientation request is exposed only when we're visible. Therefore visibility change
-        // will change requested orientation. Notify upward the hierarchy ladder to adjust
-        // configuration. This is important to cases where activities with incompatible
-        // orientations launch, or user goes back from an activity of bi-orientation to an
-        // activity with specified orientation.
-        if (onDescendantOrientationChanged(this)) {
-            // WM Shell can show additional UI elements, e.g. a restart button for size compat mode
-            // so ensure that WM Shell is called when an activity becomes visible.
-            task.dispatchTaskInfoChangedIfNeeded(/* force= */ true);
-        }
-    }
-
     /**
      * Ignores the activity orientation request if the App is fixed-orientation portrait and has
      * ActivityEmbedding enabled and is currently running on large screen display. Or the display

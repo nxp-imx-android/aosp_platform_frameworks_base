@@ -84,16 +84,6 @@ flag {
 }
 
 flag {
-  name: "remove_legacy_orientation_report"
-  namespace: "windowing_frontend"
-  description: "Remove legacy task letterbox logic"
-  bug: "464110049"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "deprecate_make_task_launch_behind"
   namespace: "windowing_frontend"
   description: "Deprecate ActivityOptions#makeTaskLaunchBehind"
