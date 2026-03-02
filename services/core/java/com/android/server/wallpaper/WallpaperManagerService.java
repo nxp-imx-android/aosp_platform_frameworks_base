@@ -84,7 +84,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.DisplayListener;
-import android.multiuser.Flags;
+
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.FileObserver;
@@ -1884,23 +1884,15 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                         postponeWallpaperChangeNotificationOnUnlockUser()
                                 ? wrapReplyToNotifyWallpaperChanged(systemWallpaper, reply)
                                 : reply;
-                if (Flags.reorderWallpaperDuringUserSwitch()) {
-                    detachWallpaperLocked(mLastLockWallpaper);
-                    detachWallpaperLocked(mLastWallpaper);
-                    if (lockWallpaper == systemWallpaper) {
-                        switchWallpaper(systemWallpaper, systemReply);
-                    } else {
-                        KeyguardManager km = mContext.getSystemService(KeyguardManager.class);
-                        boolean isDeviceSecure = km != null && km.isDeviceSecure(userId);
-                        switchWallpaper(
-                                isDeviceSecure ? lockWallpaper : systemWallpaper, systemReply);
-                        switchWallpaper(isDeviceSecure ? systemWallpaper : lockWallpaper, null);
-                    }
-                } else {
-                    if (lockWallpaper != systemWallpaper) {
-                        switchWallpaper(lockWallpaper, null);
-                    }
+                detachWallpaperLocked(mLastLockWallpaper);
+                detachWallpaperLocked(mLastWallpaper);
+                if (lockWallpaper == systemWallpaper) {
                     switchWallpaper(systemWallpaper, systemReply);
+                } else {
+                    KeyguardManager km = mContext.getSystemService(KeyguardManager.class);
+                    boolean isDeviceSecure = km != null && km.isDeviceSecure(userId);
+                    switchWallpaper(isDeviceSecure ? lockWallpaper : systemWallpaper, systemReply);
+                    switchWallpaper(isDeviceSecure ? systemWallpaper : lockWallpaper, null);
                 }
                 mInitialUserSwitch = false;
             }
