@@ -29,7 +29,7 @@ java_defaults {
         javacflags: [
             // We're less worried about performance in app code
             "-Xep:AndroidFrameworkEfficientCollections:OFF",
-            "-Xep:AndroidFrameworkEfficientParcelable:OFF",
+            "-Xep:AndroidFrameworkEfficientParcelable:ERROR",
             "-Xep:AndroidFrameworkEfficientStrings:OFF",
             "-Xep:AndroidFrameworkEfficientXml:OFF",
         ],

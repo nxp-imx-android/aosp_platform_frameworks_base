@@ -671,13 +671,13 @@ public class CropView extends View {
          */
         private SavedState(Parcel in) {
             super(in);
-            mCrop = in.readParcelable(ClassLoader.getSystemClassLoader());
+            mCrop = in.readTypedObject(RectF.CREATOR);
         }
 
         @Override
         public void writeToParcel(Parcel out, int flags) {
             super.writeToParcel(out, flags);
-            out.writeParcelable(mCrop, 0);
+            out.writeTypedObject(mCrop, flags);
         }
 
         public static final Parcelable.Creator<SavedState> CREATOR = new Parcelable.Creator<>() {
