@@ -706,6 +706,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"ചാർജ് ചെയ്യുമ്പോൾ നിങ്ങളുടെ പ്രിയപ്പെട്ട വിജറ്റുകളും സ്‌ക്രീൻ സേവറുകളും ആക്‌സസ് ചെയ്യുക."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"തുടങ്ങാം"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"ചാർജ് ചെയ്യുമ്പോൾ നിങ്ങളുടെ പ്രിയപ്പെട്ട സ്ക്രീൻ സേവറുകൾ കാണിക്കുക"</string>
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"ഡ്രീം തിരഞ്ഞെടുക്കുക"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"സ്ക്രീൻ സേവർ തിരഞ്ഞെടുക്കുക"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"<xliff:g id="DREAM_NAME">%1$s</xliff:g> എഡിറ്റ് ചെയ്യുക"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"<xliff:g id="APP_NAME">%1$s</xliff:g> എന്നതിലേക്ക് പോകുക"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"കൂടുതൽ സ്ക്രീൻ സേവറുകൾ"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"ഡ്രീം സെലക്ഷൻ മെനു തുറക്കുക"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"ഉപയോക്താവ് മാറുക"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"പുൾഡൗൺ മെനു"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"ഈ സെഷനിലെ എല്ലാ ആപ്പുകളും ഡാറ്റയും ഇല്ലാതാക്കും."</string>
@@ -1042,7 +1048,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# മണിക്കൂർ}=2{# മണിക്കൂർ}other{# മണിക്കൂർ}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# മിനിറ്റ്}other{# മിനിറ്റ്}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ഡിമോഷൻ മെനു തുറക്കാൻ"</string>
-    <string name="notification_rules_activity_title" msgid="3580318899872813414">"അറിയിപ്പ് നയങ്ങൾ"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"ബാറ്ററി സേവർ"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"ബട്ടൺ <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"ഹോം"</string>
@@ -1101,6 +1106,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"ക്രമീകരണം തുറക്കുക"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ഡിജിറ്റൽ അസിസ്‌റ്റന്റ് തുറക്കുക"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"സന്ദർഭോചിത തിരയൽ"</string>
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"സന്ദർഭോചിത കഴ്‌സർ"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ലോക്ക് സ്‌ക്രീൻ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"ഒരു കുറിപ്പെടുക്കുക"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"മൾട്ടിടാസ്‌കിംഗ്"</string>
@@ -1223,6 +1229,10 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"<xliff:g id="ID_1">%s</xliff:g> ക്രമീകരണം തുറക്കുക."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"ദ്രുത ക്രമീകരണത്തിന്റെ ക്രമം എഡിറ്റ് ചെയ്യുക."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"പവർ മെനു"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"പേജ് <xliff:g id="ID_1">%1$d</xliff:g> / <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> ഓണാക്കണോ?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_4">^4</xliff:g> ഉപയോഗിക്കാനുള്ള കീബോർഡ് കുറുക്കുവഴികൾ <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ആണ്. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1596,6 +1606,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"ചിത്രത്തിന്റെ പ്രിവ്യൂ"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"എഡിറ്റ് ചെയ്യുക"</string>
     <string name="add" msgid="81036585205287996">"ചേർക്കുക"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"ഉപയോക്താക്കളെ മാനേജ് ചെയ്യുക"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"സ്പ്ലിറ്റ് സ്ക്രീനിലേക്ക് വലിച്ചിടുന്നതിനെ ഈ അറിയിപ്പ് പിന്തുണയ്ക്കുന്നില്ല"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"ലൊക്കേഷൻ സജീവമാണ്"</string>

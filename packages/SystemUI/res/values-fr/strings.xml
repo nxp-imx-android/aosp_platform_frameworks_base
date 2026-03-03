@@ -248,10 +248,8 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Caméra avant"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"sélectionner"</string>
-    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
-    <skip />
-    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
-    <skip />
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"Menu développé"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"Menu réduit"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Arrêter le partage"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Le partage d\'écran est activé. Utilisez l\'indicateur de confidentialité pour arrêter le partage."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Partage de l\'écran…"</string>
@@ -325,7 +323,7 @@
     <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"La vérification de l\'identité est activée et ne peut confirmer votre identité qu\'à l\'aide de votre empreinte digitale ou de votre visage. %1$s"</string>
     <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"Évaluation des risques…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Indisponible"</string>
-    <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Utiliser un code"</string>
+    <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Utiliser le code"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Utiliser un schéma"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Utiliser un mot de passe"</string>
     <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"Saisir votre code"</string>
@@ -708,6 +706,18 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Accédez à vos widgets et économiseurs d\'écran préférés lorsque l\'appareil est en charge."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"C\'est parti"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Afficher vos économiseurs d\'écran préférés pendant la recharge"</string>
+    <!-- no translation found for dream_switcher_select_dream_title (2784437029616150736) -->
+    <skip />
+    <!-- no translation found for dream_switcher_choose_screensaver (3073471555365511227) -->
+    <skip />
+    <!-- no translation found for dream_switcher_edit_button_text (2152516873780618659) -->
+    <skip />
+    <!-- no translation found for dream_switcher_go_to_app_button_text (6043693674135654080) -->
+    <skip />
+    <!-- no translation found for dream_switcher_more_screensavers (6672017768044989604) -->
+    <skip />
+    <!-- no translation found for dreams_switcher_accessibility_action (2910870945341642369) -->
+    <skip />
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Changer d\'utilisateur"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"menu déroulant"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Toutes les applications et les données de cette session seront supprimées."</string>
@@ -1044,8 +1054,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# heure}=2{# heures}one{# heure}many{# heures}other{# heures}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minute}one{# minute}many{# minutes}other{# minutes}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"pour ouvrir le menu de rétrogradation"</string>
-    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
-    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Économiseur de batterie"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Bouton <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Accueil"</string>
@@ -1093,7 +1101,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Afficher les notifications"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Afficher les Réglages rapides"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Prendre une capture d\'écran"</string>
-    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Faire une capture d\'écran partielle"</string>
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Prendre une capture d\'écran partielle"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Afficher les raccourcis"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Retour"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Accéder à l\'écran d\'accueil"</string>
@@ -1104,6 +1112,8 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Ouvrir les paramètres"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Ouvrir l\'assistant numérique"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"Recherche contextuelle"</string>
+    <!-- no translation found for group_system_access_contextual_cursor (200587108400598774) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Verrouiller l\'écran"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Créer une note"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitâche"</string>
@@ -1226,6 +1236,10 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Ouvrir les paramètres <xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Modifier l\'ordre des Réglages rapides."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu Marche/Arrêt"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> sur <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Activer <xliff:g id="ID_1">%1$s</xliff:g> ?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"Le raccourci clavier <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> permet d\'utiliser <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1599,6 +1613,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Aperçu de l\'image"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"modifier"</string>
     <string name="add" msgid="81036585205287996">"Ajouter"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"Gérer utilisateurs"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Impossible de faire glisser cette notification vers l\'écran partagé"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"Position active"</string>
@@ -1854,10 +1870,10 @@
     <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"+ <xliff:g id="COUNT">%1$d</xliff:g> autre(s)"</string>
     <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"Caméra en cours d\'utilisation"</string>
     <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"Micro en cours d\'utilisation"</string>
-    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"Caméra et micro utilisés"</string>
+    <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"Caméra et micro en cours d\'utilisation"</string>
     <string name="av_camera_portrait_touch_up" msgid="5191856296212427203">"Retouche portrait"</string>
     <string name="av_mic_label" msgid="5427348054144789879">"Micro"</string>
-    <string name="av_camera_label" msgid="7719772172590702343">"Appareil photo"</string>
+    <string name="av_camera_label" msgid="7719772172590702343">"Caméra"</string>
     <string name="av_camera_blur_drill_in_title" msgid="2250600375798981511">"Flou d\'arrière-plan"</string>
     <string name="av_camera_blur_off" msgid="3170334995799202022">"Désactivé"</string>
     <string name="av_camera_blur_light" msgid="5666055368940059418">"Léger"</string>

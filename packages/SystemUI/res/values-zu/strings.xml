@@ -252,10 +252,8 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Ikhamera engaphambili"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"khetha"</string>
-    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
-    <skip />
-    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
-    <skip />
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"Imenyu inwetshiwe"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"Imenyu igoqiwe"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Misa ukwabelana"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Ukwabelana kwesikrini kuvuliwe. Sebenzisa isikhombisi sobumfihlo ukuze uqede ukwabelana."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Yabelana ngesikrini"</string>
@@ -712,6 +710,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Finyelela amawijethi akho ayintandokazi nezigcinisikrini ngenkathi ushaja."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Asihambe"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Bonisa izigcini zesikrini zakho eziyintandokazi ngenkathi ishaja"</string>
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"Khetha Iphupho"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"Khetha isigcini sesikrini"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"Hlela i-<xliff:g id="DREAM_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"Iya ku-<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"Izigcini zesikrini ezengeziwe"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"Vula imenyu yokukhetha iphupho"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Shintsha umsebenzisi"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"imenyu yokudonsela phansi"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Wonke ama-app nedatha kulesi sikhathi azosuswa."</string>
@@ -1048,8 +1052,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{ihora elingu-#}=2{amahora angu-#}one{amahora angu-#}other{amahora angu-#}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{umzuzu ongu-#}one{imizuzu engu-#}other{imizuzu engu-#}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ukuze uvule imenyu yokwehlisa esikhundleni"</string>
-    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
-    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Isilondolozi sebhethri"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Inkinobho <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Ekhaya"</string>
@@ -1108,6 +1110,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Vula amasethingi"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Vula umsizi odijithali"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"Ukusesha Ngomongo"</string>
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"Icursor Yomongo"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Khiya isikrini"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Thatha inothi"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Ukwenza imisebenzi eminingi"</string>
@@ -1230,6 +1233,10 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Vula izilungiselelo ze-<xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Hlela i-oda Lamasethingi Asheshayo."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Imenyu yamandla"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Ikhasi <xliff:g id="ID_1">%1$d</xliff:g> kwangu-<xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Vula i-<xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"Le sithonjana <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon"></annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> yisinqamuleli sekhibhodi sokusebenzisa i-<xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1603,6 +1610,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Ukubuka kuqala kwesithombe"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"hlela"</string>
     <string name="add" msgid="81036585205287996">"Faka"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"Phatha abasebenzisi"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Lesi saziso asikusekeli ukuhudulela ekuhlukaniseni isikrini."</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"Indawo iyasebenza"</string>

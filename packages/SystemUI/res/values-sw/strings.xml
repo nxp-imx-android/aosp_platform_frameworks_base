@@ -248,10 +248,8 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Kamera ya mbele"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"chagua"</string>
-    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
-    <skip />
-    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
-    <skip />
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"Menyu imepanuliwa"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"Menyu imekunjwa"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Acha kuonyesha skrini"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Kipengele cha kuonyesha skrini kimewashwa. Tumia kiashiria cha faragha ili uache kuonyesha."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Inaruhusu ufikiaji kwenye skrini"</string>
@@ -324,7 +322,7 @@
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"Pata maelezo zaidi kuhusu kipengele cha Kuthibitisha Utambulisho"</string>
     <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"Kipengele cha Kuthibitisha Utambulisho kimewashwa na kinaweza tu kuthibitisha utambulisho wako kwa kutumia alama ya kidole au uso wako. %1$s"</string>
     <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"Inatathmini hatari…"</string>
-    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Hazipatikani"</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Haipatikani"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Tumia PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Tumia mchoro"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Tumia nenosiri"</string>
@@ -708,6 +706,18 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Fikia wijeti unazopenda na taswira za skrini wakati unachaji."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Anza"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Onyesha taswira za skrini uzipendazo wakati wa kuchaji"</string>
+    <!-- no translation found for dream_switcher_select_dream_title (2784437029616150736) -->
+    <skip />
+    <!-- no translation found for dream_switcher_choose_screensaver (3073471555365511227) -->
+    <skip />
+    <!-- no translation found for dream_switcher_edit_button_text (2152516873780618659) -->
+    <skip />
+    <!-- no translation found for dream_switcher_go_to_app_button_text (6043693674135654080) -->
+    <skip />
+    <!-- no translation found for dream_switcher_more_screensavers (6672017768044989604) -->
+    <skip />
+    <!-- no translation found for dreams_switcher_accessibility_action (2910870945341642369) -->
+    <skip />
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Badili mtumiaji"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"menyu ya kuvuta chini"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Data na programu zote katika kipindi hiki zitafutwa."</string>
@@ -1044,8 +1054,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{Saa #}=2{Saa #}other{Saa #}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{Dakika #}other{Dakika #}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ili kufungua menyu ya kushusha hadhi"</string>
-    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
-    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Kiokoa Betri"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Kitufe cha <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Mwanzo"</string>
@@ -1104,6 +1112,8 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Fungua mipangilio"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Fungua kiratibu dijitali"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"Kutafuta katika Muktadha"</string>
+    <!-- no translation found for group_system_access_contextual_cursor (200587108400598774) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Funga skrini"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Andika dokezo"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Majukumu mengi"</string>
@@ -1226,6 +1236,10 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Fungua mipangilio ya <xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Badilisha mpangilio wa Mipangilio ya Haraka."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menyu ya kuzima/kuwasha"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Ukurasa wa <xliff:g id="ID_1">%1$d</xliff:g> kati ya <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Ungependa kuwasha <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612"><annotation id="action_key_icon">"Aikoni"</annotation>" ya <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ndio mikato ya kibodi ya kutumia <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1599,6 +1613,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Onyesho la kukagua picha"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"ubadilishe"</string>
     <string name="add" msgid="81036585205287996">"Weka"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"Dhibiti watumiaji"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Arifa hii haitumii utaratibu wa kuburuta ili kugawa skrini"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"Inatumia data ya mahali ulipo"</string>

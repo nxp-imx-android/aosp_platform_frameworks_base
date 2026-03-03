@@ -706,6 +706,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Aceda aos seus widgets e proteções de ecrã favoritos durante o carregamento."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Começar"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Mostre as suas proteções de ecrã favoritas durante o carregamento"</string>
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"Selecione o sonho"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"Escolha uma proteção de ecrã"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"Editar <xliff:g id="DREAM_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"Aceder à app <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"Mais proteções de ecrã"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"Abrir menu de seleção do sonho"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Mudar utilizador"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"menu pendente"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Todas as apps e dados desta sessão serão eliminados."</string>
@@ -1042,7 +1048,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# hora}=2{# horas}many{# horas}other{# horas}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minuto}many{# minutos}other{# minutos}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"para abrir o menu de despromoção"</string>
-    <string name="notification_rules_activity_title" msgid="3580318899872813414">"Regras de notificação"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Poupança de bateria"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Botão <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Início"</string>
@@ -1101,6 +1106,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Abrir definições"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Abrir assistente digital"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"Pesquisa contextual"</string>
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"Cursor contextual"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Ecrã de bloqueio"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Tirar notas"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Execução de várias tarefas em simultâneo"</string>
@@ -1223,6 +1229,10 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Abrir as definições de <xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Editar ordem das Definições rápidas."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu ligar/desligar"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Página <xliff:g id="ID_1">%1$d</xliff:g> de <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Ativar a <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ícone"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> é o atalho de teclado para usar o <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1596,6 +1606,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Pré-visualização da imagem"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"editar"</string>
     <string name="add" msgid="81036585205287996">"Adicionar"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"Gerir utilizadores"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Esta notificação não pode ser arrastada para o ecrã dividido"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"Localização ativa"</string>
@@ -1848,7 +1860,7 @@
     <string name="sensor_activity_manage_access_button" msgid="1275701280501357102">"Gerir acesso"</string>
     <string name="sensor_activity_close_app_button" msgid="6907314738150753330">"Fechar app"</string>
     <string name="sensor_activity_back_button_cd" msgid="6894532284650291222">"Anterior"</string>
-    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"E mais <xliff:g id="COUNT">%1$d</xliff:g>"</string>
+    <string name="privacy_chip_apps_using_sensor_suffix" msgid="527247786536767096">"e mais <xliff:g id="COUNT">%1$d</xliff:g>"</string>
     <string name="privacy_chip_camera_in_use" msgid="5163494654848590528">"Câmara em utilização"</string>
     <string name="privacy_chip_mic_in_use" msgid="1586091297556363367">"Microfone em utilização"</string>
     <string name="privacy_chip_camera_mic_in_use" msgid="5179267787210197484">"Câmara e microfone em utilização"</string>
