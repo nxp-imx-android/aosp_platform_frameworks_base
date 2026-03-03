@@ -53,6 +53,7 @@ import android.tools.traces.component.IComponentNameMatcher
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DisplayInfo
+import android.view.KeyEvent
 import androidx.test.filters.RequiresDevice
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
@@ -61,6 +62,7 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.launcher3.tapl.TestHelpers
+import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.settings.flags.Flags as SettingsFlags
 import com.android.window.flags.Flags
 import com.android.wm.shell.flicker.utils.SplitScreenUtils.withSplitScreenComplete
@@ -359,9 +361,12 @@ class ConnectedDisplayCujSmokeTests {
         waitForSysUiObjectForTheApp(clockApp, FULLSCREEN_BUTTON_RES_ID).click()
         verifyActivityState(clockApp, WINDOWING_MODE_FULLSCREEN, externalDisplayId, visible = true)
 
-        // Enter desktop via app handle.
-        openAppHandleMenuForFullscreenApp(externalDisplayId)
-        waitForSysUiObjectForTheApp(clockApp, DESKTOP_BUTTON_RES_ID).click()
+        // Enter desktop via keyboard shortcut.
+        val keyEventHelper = KeyEventHelper(instrumentation)
+        keyEventHelper.press(
+            KeyEvent.KEYCODE_DPAD_DOWN,
+            KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON,
+        )
         verifyActivityState(clockApp, WINDOWING_MODE_FREEFORM, externalDisplayId, visible = true)
 
         // Enter split screen via layout menu.
@@ -681,11 +686,6 @@ class ConnectedDisplayCujSmokeTests {
     fun openMaximizeMenu(componentMatcher: IComponentNameMatcher) =
         waitForSysUiObjectForTheApp(componentMatcher, MAXIMIZE_WINDOW_RES_ID).longClick()
 
-    fun openAppHandleMenuForFullscreenApp(displayId: Int) {
-        val selector = By.res(SYSTEMUI_PACKAGE, STATUS_BAR_CONTAINER_RES_ID).displayId(displayId)
-        DeviceHelpers.waitForObj(selector, timeout = UIAUTOMATOR_TIMEOUT).click()
-    }
-
     fun assertOverviewDesktopItemVisible(displayId: Int) =
         By.res(TestHelpers.getOverviewPackageName(), TASK_VIEW_DESKTOP_RES_ID)
             .displayId(displayId)
@@ -808,7 +808,6 @@ class ConnectedDisplayCujSmokeTests {
 
     private companion object {
         const val TASKBAR_RES_ID = "taskbar_view"
-        const val STATUS_BAR_CONTAINER_RES_ID = "status_bar_container"
         const val OPEN_MENU_BUTTON_RES_ID = "open_menu_button"
         const val FULLSCREEN_BUTTON_RES_ID = "fullscreen_button"
         const val SPLIT_SCREEN_BUTTON_RES_ID = "split_screen_button"
