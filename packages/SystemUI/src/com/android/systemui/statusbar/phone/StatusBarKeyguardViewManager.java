@@ -863,7 +863,7 @@ public class StatusBarKeyguardViewManager implements RemoteInputController.Callb
             if (SceneContainerFlag.isEnabled()) {
                 mSceneInteractorLazy.get().showOverlay(
                         Overlays.Bouncer,
-                        "primary bouncer requested"
+                        "SBKVM.showPrimaryBouncer, reason: " + reason
                 );
             } else {
                 mPrimaryBouncerInteractor.show(scrimmed, reason);
