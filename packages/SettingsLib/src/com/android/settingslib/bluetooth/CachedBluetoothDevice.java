@@ -2648,13 +2648,11 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         } catch (RuntimeException e) {
             Log.w(TAG, "Fail to check isAndroidAuto for " + this);
         }
-        if (Flags.enableAndroidAutoCheckByUiModeManager()) {
-            UiModeManager uiModeManager = mContext.getSystemService(UiModeManager.class);
-            int projectionType = uiModeManager.getActiveProjectionTypes();
-            Log.d(TAG, "Check isAndroidAuto, android auto projection type = " + projectionType);
-            if (projectionType == UiModeManager.PROJECTION_TYPE_AUTOMOTIVE) {
-                return true;
-            }
+        UiModeManager uiModeManager = mContext.getSystemService(UiModeManager.class);
+        int projectionType = uiModeManager.getActiveProjectionTypes();
+        Log.d(TAG, "Check isAndroidAuto, android auto projection type = " + projectionType);
+        if (projectionType == UiModeManager.PROJECTION_TYPE_AUTOMOTIVE) {
+            return true;
         }
         return false;
     }
