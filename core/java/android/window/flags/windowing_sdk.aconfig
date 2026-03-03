@@ -212,3 +212,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "quick_bubble_switch"
+    description: "Fix the animation when doing quick bubble switch"
+    bug: "488433153"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

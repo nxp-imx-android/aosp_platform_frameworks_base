@@ -28,6 +28,7 @@ import android.window.TransitionInfo
 import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.MockToken
 import com.android.window.flags.Flags.FLAG_ENABLE_BUBBLE_ROOT_TASK
+import com.android.window.flags.Flags.FLAG_QUICK_BUBBLE_SWITCH
 import com.android.window.flags.Flags.FLAG_VISIBILITY_MANAGEMENT_IN_BUBBLE_ROOT
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTaskOrganizer
@@ -203,6 +204,50 @@ class BubbleHelperImplTest : ShellTestCase() {
             }
 
         assertThat(bubbleHelper.getEnterBubbleTask(info)).isEqualTo(bubble2)
+    }
+
+    @EnableFlags(FLAG_ENABLE_BUBBLE_ROOT_TASK, FLAG_QUICK_BUBBLE_SWITCH)
+    @Test
+    fun getEnterBubbleTask_filterForReparentToBubbleRootTask() {
+        bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 123)
+
+        // Changing of existing Bubble
+        val taskInfo0 =
+            ActivityManager.RunningTaskInfo().apply {
+                token = MockToken().token()
+                configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
+                parentTaskId = 123
+                isAppBubble = true
+            }
+        val bubble0 =
+            TransitionInfo.Change(taskInfo0.token, mock()).apply {
+                taskInfo = taskInfo0
+                mode = WindowManager.TRANSIT_CHANGE
+            }
+
+        // Changing to reparent to Bubble
+        val taskInfo1 =
+            ActivityManager.RunningTaskInfo().apply {
+                token = MockToken().token()
+                configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
+                parentTaskId = 123
+                isAppBubble = true
+            }
+        val bubble1 =
+            TransitionInfo.Change(taskInfo1.token, mock()).apply {
+                taskInfo = taskInfo1
+                lastParent = MockToken.token()
+                mode = WindowManager.TRANSIT_CHANGE
+            }
+
+        val info =
+            TransitionInfo(WindowManager.TRANSIT_CHANGE, 0).apply {
+                addChange(bubble0)
+                addChange(bubble1)
+                addRoot(TransitionInfo.Root(0, mock(), 0, 0))
+            }
+
+        assertThat(bubbleHelper.getEnterBubbleTask(info)).isEqualTo(bubble1)
     }
 
     @Test
