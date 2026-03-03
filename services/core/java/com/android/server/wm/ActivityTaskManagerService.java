@@ -331,7 +331,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * System service for managing activities and their containers (task, displays,... ).
@@ -4640,73 +4639,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         // Don't call this while holding the lock as this operation might hit the disk.
         return mWindowManager.mTaskSnapshotController.getSnapshotFromDisk(taskId,
                 task.mUserId,  isLowResolution, usage);
-    }
-
-    @Override
-    public TaskSnapshot getTaskSnapshot(int taskId, boolean isLowResolution) {
-        mAmInternal.enforceCallingPermission(READ_FRAME_BUFFER, "getTaskSnapshot()");
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            if (com.android.window.flags.Flags.cleanUpTaskSnapshotLegacyMethods()) {
-                Slog.w(TAG, "IActivityTaskManager#getTaskSnapshot is deprecated.");
-                return null;
-            }
-            final Task task;
-            synchronized (mGlobalLock) {
-                task = mRootWindowContainer.anyTaskForId(taskId,
-                        MATCH_ATTACHED_TASK_OR_RECENT_TASKS);
-                if (task == null) {
-                    Slog.w(TAG, "getTaskSnapshot: taskId=" + taskId + " not found");
-                    return null;
-                }
-                final int retrieveFlag = TaskSnapshotManager.convertRetrieveFlag(
-                        isLowResolution);
-                final TaskSnapshot snapshot = mWindowManager.mTaskSnapshotController.getSnapshot(
-                        taskId, retrieveFlag, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-                if (snapshot != null) {
-                    return snapshot;
-                }
-            }
-            // Don't call this while holding the lock as this operation might hit the disk.
-            return mWindowManager.mTaskSnapshotController.getSnapshotFromDisk(taskId,
-                    task.mUserId, isLowResolution, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-    }
-
-    @Override
-    public TaskSnapshot takeTaskSnapshot(int taskId, boolean updateCache) {
-        mAmInternal.enforceCallingPermission(READ_FRAME_BUFFER, "takeTaskSnapshot()");
-        final long ident = Binder.clearCallingIdentity();
-        try {
-            if (com.android.window.flags.Flags.cleanUpTaskSnapshotLegacyMethods()) {
-                Slog.w(TAG, "IActivityTaskManager#takeTaskSnapshot is deprecated.");
-                return null;
-            }
-            final Supplier<TaskSnapshot> supplier;
-            synchronized (mGlobalLock) {
-                final Task task = mRootWindowContainer.anyTaskForId(taskId,
-                        MATCH_ATTACHED_TASK_OR_RECENT_TASKS);
-                if (task == null || !task.isVisible()) {
-                    Slog.w(TAG, "takeTaskSnapshot: taskId=" + taskId + " not found or not visible");
-                    return null;
-                }
-                // Note that if updateCache is true, ActivityRecord#shouldUseAppThemeSnapshot will
-                // be used to decide whether the task is allowed to be captured because that may
-                // be retrieved by recents. While if updateCache is false, the real snapshot will
-                // always be taken and the snapshot won't be put into SnapshotPersister.
-                if (updateCache) {
-                    supplier = mWindowManager.mTaskSnapshotController.getRecordSnapshotSupplier(
-                            task, TaskSnapshot.REFERENCE_WRITE_TO_PARCEL);
-                } else {
-                    return mWindowManager.mTaskSnapshotController.snapshot(task);
-                }
-            }
-            return supplier != null ? supplier.get() : null;
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
     }
 
     /** Return the user id of the last resumed activity. */
