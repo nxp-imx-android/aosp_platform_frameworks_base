@@ -221,3 +221,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "virtual_camera_lower_resource_cost"
+    namespace: "virtual_devices"
+    description: "Lower the resource cost of virtual cameras"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+    bug: "487291564"
+}
