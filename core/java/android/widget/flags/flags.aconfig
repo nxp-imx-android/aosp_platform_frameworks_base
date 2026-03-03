@@ -34,3 +34,10 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "always_show_action_mode_on_selection"
+  namespace: "text"
+  description: "Show the ActionMode selection toolbar upon selection even with mouse or keyboard"
+  bug: "460552626"
+}
