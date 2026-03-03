@@ -97,6 +97,7 @@ import java.util.Set;
 public class ComputerControlSessionProcessorTest {
 
     private static final int CALLBACK_TIMEOUT_MS = 1_000;
+    private static final int SESSION_CLOSE_TIMEOUT_MS = 100;
     private static final String TARGET_PACKAGE = "com.android.foo";
     private static final String ANOTHER_TARGET_PACKAGE = "com.android.bar";
     private static final int CALLING_USER_ID = UserHandle.USER_SYSTEM;
@@ -542,6 +543,7 @@ public class ComputerControlSessionProcessorTest {
         assertTrue(mProcessor.isComputerControlDisplay(VIRTUAL_DISPLAY_ID));
 
         mSessionArgumentCaptor.getValue().close();
+        verify(mVirtualDevice, timeout(SESSION_CLOSE_TIMEOUT_MS)).close();
         assertFalse(mProcessor.isComputerControlDisplay(VIRTUAL_DISPLAY_ID));
     }
 
@@ -594,6 +596,7 @@ public class ComputerControlSessionProcessorTest {
         mSessionArgumentCaptor.getValue().close();
 
         // Assert session is no longer found after closing.
+        verify(mVirtualDevice, timeout(SESSION_CLOSE_TIMEOUT_MS)).close();
         assertFalse(mProcessor.isComputerControlSession(DEVICE_ID));
     }
 
@@ -612,9 +615,8 @@ public class ComputerControlSessionProcessorTest {
         mProcessor.closeSessionByUserIntent(DEVICE_ID);
 
         // Verify the session is closed and removed.
+        verify(mVirtualDevice, timeout(SESSION_CLOSE_TIMEOUT_MS)).close();
         assertFalse(mProcessor.isComputerControlSession(DEVICE_ID));
-        // Also verify the underlying virtual device is closed.
-        verify(mVirtualDevice).close();
     }
 
     @Test

@@ -66,7 +66,7 @@ public class SessionLifecycleTest {
     @Before
     public void setUp() {
         mMockitoSession = MockitoAnnotations.openMocks(this);
-        mLifecycle = new SessionLifecycle(mLocalCallback);
+        mLifecycle = new SessionLifecycle(Runnable::run, mLocalCallback);
     }
 
     @After
