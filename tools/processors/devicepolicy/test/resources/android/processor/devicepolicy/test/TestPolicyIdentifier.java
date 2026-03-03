@@ -71,13 +71,13 @@ public final class PolicyIdentifier<T> {
             new PolicyIdentifier<>("SIMPLE_BOOLEAN_POLICY");
 
     /** First entry */
-    public static final int ENUM_ENTRY_1 = 0;
+    public static final int ENUM_ENTRY_1 = 1;
 
     /** Second entry */
-    public static final int ENUM_ENTRY_2 = 1;
+    public static final int ENUM_ENTRY_2 = 2;
 
     /** Third entry */
-    public static final int ENUM_ENTRY_3 = 2;
+    public static final int ENUM_ENTRY_3 = 3;
 
     /**
      * Enum for {@link SIMPLE_ENUM_POLICY}

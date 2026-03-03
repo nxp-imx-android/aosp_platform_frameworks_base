@@ -32,7 +32,7 @@ policy_metadata {
   documentation: "Test policy 2 "
   type_specific_metadata {
     enum_metadata {
-      default_value: 1
+      default_value: 2
       int_def_name: "android.app.admin.PolicyIdentifier.SimpleEnumPolicyEnum"
       documentation: "Enum for {@link SIMPLE_ENUM_POLICY}\n\n@hide"
       values {
@@ -41,6 +41,7 @@ policy_metadata {
           class_name: "PolicyIdentifier"
           package_name: "android.app.admin"
         }
+        int_value: 1
         documentation: "First entry "
       }
       values {
@@ -49,7 +50,7 @@ policy_metadata {
           class_name: "PolicyIdentifier"
           package_name: "android.app.admin"
         }
-        int_value: 1
+        int_value: 2
         documentation: "Second entry "
       }
       values {
@@ -58,7 +59,7 @@ policy_metadata {
           class_name: "PolicyIdentifier"
           package_name: "android.app.admin"
         }
-        int_value: 2
+        int_value: 3
         documentation: "Third entry "
       }
       resolution_mechanism {
@@ -85,7 +86,7 @@ policy_metadata {
   documentation: "Enum policy with mostRestrictive resolution mechanism. "
   type_specific_metadata {
     enum_metadata {
-      default_value: 1
+      default_value: 2
       int_def_name: "android.app.admin.PolicyIdentifier.SimpleEnumPolicyEnum"
       documentation: "Enum for {@link SIMPLE_ENUM_POLICY}\n\n@hide"
       values {
@@ -94,6 +95,7 @@ policy_metadata {
           class_name: "PolicyIdentifier"
           package_name: "android.app.admin"
         }
+        int_value: 1
         documentation: "First entry "
       }
       values {
@@ -102,7 +104,7 @@ policy_metadata {
           class_name: "PolicyIdentifier"
           package_name: "android.app.admin"
         }
-        int_value: 1
+        int_value: 2
         documentation: "Second entry "
       }
       values {
@@ -111,14 +113,14 @@ policy_metadata {
           class_name: "PolicyIdentifier"
           package_name: "android.app.admin"
         }
-        int_value: 2
+        int_value: 3
         documentation: "Third entry "
       }
       resolution_mechanism {
         most_restrictive {
-          most_to_least_restrictive: 0
           most_to_least_restrictive: 1
           most_to_least_restrictive: 2
+          most_to_least_restrictive: 3
         }
       }
     }
