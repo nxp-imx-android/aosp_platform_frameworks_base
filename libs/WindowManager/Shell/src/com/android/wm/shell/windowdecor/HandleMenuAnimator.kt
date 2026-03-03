@@ -262,11 +262,20 @@ class HandleMenuAnimator(
         val handleWidthDelta: Float = targetWidth - handleWidth
         val handleHeightDelta = targetHeight - handleHeight
 
+        if (expand) {
+            // Use alpha instead of toggling visibility during expansion to prevent extra relayout.
+            handleMenu.alpha = 0f
+            handleMenu.isVisible = true
+        }
         showMenuAnimation.addUpdateListener { animator ->
             val progress: Float = animator.animatedValue as Float
             val showHandle: Boolean = (progress <= WIDTH_SWAP_FRACTION)
             handleView.isVisible = showHandle
-            handleMenu.isVisible = !showHandle
+            if (expand) {
+                handleMenu.alpha = if (showHandle) 0f else 1f
+            } else {
+                handleMenu.isVisible = !showHandle
+            }
             if (showHandle) {
                 val handleAnimationProgress: Float = progress / WIDTH_SWAP_FRACTION
                 val heightIncrement = handleHeightDelta * handleAnimationProgress
