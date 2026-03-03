@@ -276,6 +276,7 @@ interface INotificationManager
 
     int[] getAllowedClassificationTypes();
     void setAssistantClassificationTypeState(int type, boolean enabled);
+    void setAssistantClassificationTypeStateForUser(int userId, int type, boolean enabled);
     String[] getAdjustmentDeniedPackages(int userId, String key);
     boolean isAdjustmentSupportedForPackage(int userId, String key, String pkg);
     void setAdjustmentSupportedForPackage(int userId, String key, String pkg, boolean enabled);
@@ -283,4 +284,5 @@ interface INotificationManager
 
     NotificationRule addNotificationRule(int userId, in NotificationRule rule, int position);
     ParceledListSlice getNotificationRules(in INotificationListener token, int userId);
+    NotificationRule getNotificationRule(int userId, int ruleId);
 }
