@@ -4092,7 +4092,7 @@ final class InstallPackageHelper {
         if ((scanParams.scanFlags & SCAN_AS_SYSTEM) == 0
                 && errorCode != PackageManager.INSTALL_SUCCEEDED) {
             logCriticalInfo(Log.WARN,
-                    "Deleting invalid package at " + result.scanFile);
+                    "Deleting invalid package at " + result.scanFile + " (" + errorMsg + ")");
             mRemovePackageHelper.removeCodePath(result.scanFile);
         }
     }
