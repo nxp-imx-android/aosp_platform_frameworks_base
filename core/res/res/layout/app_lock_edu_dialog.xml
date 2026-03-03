@@ -48,7 +48,7 @@
                 android:layout_gravity="center_horizontal"
                 android:contentDescription="@null"
                 android:tint="@color/materialColorPrimary"
-                android:layout_marginBottom="@dimen/app_lock_margin"/>
+                android:layout_marginBottom="@dimen/app_lock_margin_medium"/>
 
             <TextView
                 android:id="@+id/app_lock_edu_dialog_title"
@@ -59,7 +59,7 @@
                 android:lineHeight="@dimen/app_lock_line_height_large"
                 android:gravity="center"
                 android:textColor="@color/materialColorOnSurface"
-                android:layout_marginBottom="@dimen/app_lock_margin"/>
+                android:layout_marginBottom="@dimen/app_lock_margin_medium"/>
 
             <TextView
                 android:id="@+id/app_lock_edu_dialog_desc"
@@ -76,7 +76,7 @@
                 android:text="@string/app_lock_edu_dialog_info_header"
                 android:textAppearance="@style/TextAppearance.DeviceDefault.AppLock.InfoHeader"
                 android:textColor="@color/materialColorOnSurfaceVariant"
-                android:layout_marginBottom="@dimen/app_lock_margin"/>
+                android:layout_marginBottom="@dimen/app_lock_margin_medium"/>
 
             <LinearLayout style="@style/AppLockInfoItemStyle">
 
@@ -162,7 +162,7 @@
             android:paddingTop="@dimen/app_lock_button_padding"
             android:paddingBottom="@dimen/app_lock_button_padding"
             android:minHeight="@dimen/app_lock_edu_button_min_height"
-            android:layout_marginBottom="@dimen/app_lock_margin"
+            android:layout_marginBottom="@dimen/app_lock_margin_medium"
             android:elevation="0dp"
             android:stateListAnimator="@null"
             android:text="@string/app_lock_edu_dialog_button_lock"

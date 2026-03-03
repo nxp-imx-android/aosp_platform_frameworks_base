@@ -41,7 +41,7 @@
             android:layout_gravity="center_horizontal"
             android:contentDescription="@null"
             android:tint="?android:attr/textColorPrimary"
-            android:layout_marginBottom="@dimen/app_lock_margin"/>
+            android:layout_marginBottom="@dimen/app_lock_margin_medium"/>
 
         <TextView
             android:id="@+id/app_lock_permission_review_dialog_title"
@@ -52,7 +52,7 @@
             android:paddingStart="@dimen/app_lock_padding_extra_large"
             android:paddingEnd="@dimen/app_lock_padding_extra_large"
             android:gravity="center"
-            android:layout_marginBottom="@dimen/app_lock_margin"/>
+            android:layout_marginBottom="@dimen/app_lock_margin_medium"/>
 
         <TextView
             android:id="@+id/app_lock_permission_review_dialog_subtitle"

@@ -19,7 +19,7 @@
     <item>
         <shape android:shape="rectangle">
             <stroke android:width="@dimen/emphasized_button_stroke_width"
-                    android:color="@color/materialColorPrimary" />
+                    android:color="@color/materialColorOutlineVariant" />
             <corners android:radius="@dimen/app_lock_pill_radius" />
         </shape>
     </item>

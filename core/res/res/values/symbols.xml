@@ -3692,6 +3692,8 @@
   <java-symbol type="drawable" name="app_lock_scrollbar_handle" />
 
   <java-symbol type="id" name="app_lock_activity_layout" />
+  <java-symbol type="id" name="app_lock_add_screen_lock_bottom_sheet_divider" />
+  <java-symbol type="id" name="app_lock_add_screen_lock_scroll_view" />
   <java-symbol type="id" name="app_lock_dialog_add_screen_lock_button" />
   <java-symbol type="id" name="app_lock_dialog_cancel_button" />
   <java-symbol type="id" name="app_lock_dialog_message" />
