@@ -175,8 +175,11 @@ public final class TransitionInfo implements Parcelable {
     /** This change represents that the task has changes always on top state. */
     public static final int FLAG_ALWAYS_ON_TOP = 1 << 24;
 
+    /** This change represents that the task has changes always on top state. */
+    public static final int FLAG_CHANGED_INTERACTIVE = 1 << 25;
+
     /** The first unused bit. This can be used by remotes to attach custom flags to this change. */
-    public static final int FLAG_FIRST_CUSTOM = 1 << 25;
+    public static final int FLAG_FIRST_CUSTOM = 1 << 26;
 
     /** The change belongs to a window that won't contain activities. */
     public static final int FLAGS_IS_NON_APP_WINDOW =
@@ -213,6 +216,7 @@ public final class TransitionInfo implements Parcelable {
             FLAG_CONFIG_AT_END,
             FLAG_IS_TASK_DISPLAY_AREA,
             FLAG_ALWAYS_ON_TOP,
+            FLAG_CHANGED_INTERACTIVE,
             FLAG_FIRST_CUSTOM
     })
     public @interface ChangeFlags {}
@@ -551,6 +555,9 @@ public final class TransitionInfo implements Parcelable {
         }
         if ((flags & FLAG_ALWAYS_ON_TOP) != 0) {
             sb.append(sb.length() == 0 ? "" : "|").append("FLAG_ALWAYS_ON_TOP");
+        }
+        if ((flags & FLAG_CHANGED_INTERACTIVE) != 0) {
+            sb.append(sb.length() == 0 ? "" : "|").append("FLAG_CHANGED_INTERACTIVE");
         }
         return sb.toString();
     }

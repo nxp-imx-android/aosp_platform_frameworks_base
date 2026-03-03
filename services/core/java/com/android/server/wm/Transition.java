@@ -53,6 +53,7 @@ import static android.window.TaskFragmentAnimationParams.DEFAULT_ANIMATION_BACKG
 import static android.window.TransitionInfo.AnimationOptions;
 import static android.window.TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION;
 import static android.window.TransitionInfo.FLAG_ALWAYS_ON_TOP;
+import static android.window.TransitionInfo.FLAG_CHANGED_INTERACTIVE;
 import static android.window.TransitionInfo.FLAG_CONFIG_AT_END;
 import static android.window.TransitionInfo.FLAG_DISPLAY_HAS_ALERT_WINDOWS;
 import static android.window.TransitionInfo.FLAG_FILLS_TASK;
@@ -4204,6 +4205,9 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 }
                 if (!mIsAlwaysOnTop && task.isAlwaysOnTop()) {
                     flags |= FLAG_ALWAYS_ON_TOP;
+                }
+                if (mIsInteractive != isInteractive()) {
+                    flags |= FLAG_CHANGED_INTERACTIVE;
                 }
             }
             Task parentTask = null;
