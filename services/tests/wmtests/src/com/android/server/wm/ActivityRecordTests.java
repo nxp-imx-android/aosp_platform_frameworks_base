@@ -2778,6 +2778,33 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertTrue(appWindow.mResizeReported);
     }
 
+    @SetupWindows(addWindows = W_ACTIVITY)
+    @Test
+    @EnableFlags({Flags.FLAG_CAMERA_COMPAT_UPDATE_TREATMENT_ON_ROTATION})
+    public void testDeviceRotated_notifiesCameraCompat() {
+        final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
+                /* isCameraRunning */ true, WINDOWING_MODE_FULLSCREEN);
+        final DisplayRotation displayRotation = mDisplayContent.getDisplayRotation();
+        spyOn(displayRotation);
+        // Set initial rotation.
+        performRotation(displayRotation, Surface.ROTATION_0);
+        final AppCompatCameraPolicy cameraPolicy = AppCompatCameraPolicy
+                .getAppCompatCameraPolicy(activity);
+        spyOn(cameraPolicy.mSimReqOrientationPolicy);
+
+        final WindowManager.LayoutParams attrs = new WindowManager.LayoutParams(
+                TYPE_BASE_APPLICATION);
+        attrs.setTitle("RotationByPolicy");
+        final TestWindowState appWindow = createWindowState(attrs, activity);
+        activity.addWindow(appWindow);
+        spyOn(appWindow);
+
+        // Rotate the display.
+        performRotation(displayRotation, Surface.ROTATION_90);
+        verify(cameraPolicy.mSimReqOrientationPolicy).onDisplayRotationChanged(activity,
+                Surface.ROTATION_90);
+    }
+
     private void performRotation(DisplayRotation spiedRotation, int rotationToReport) {
         doReturn(rotationToReport).when(spiedRotation).rotationForOrientation(anyInt(), anyInt());
         mWm.updateRotation(false, false);

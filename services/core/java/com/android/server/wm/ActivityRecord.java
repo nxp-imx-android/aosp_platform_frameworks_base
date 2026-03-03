@@ -304,6 +304,7 @@ import android.view.DisplayInfo;
 import android.view.InputApplicationHandle;
 import android.view.RemoteAnimationAdapter;
 import android.view.RemoteAnimationDefinition;
+import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
 import android.view.WindowInsets;
@@ -8274,6 +8275,7 @@ final class ActivityRecord extends WindowToken {
 
         final boolean wasInPictureInPicture = inPinnedWindowingMode();
         final DisplayContent display = mDisplayContent;
+        final int oldDisplayRotation = getWindowConfiguration().getDisplayRotation();
         final int activityType = getActivityType();
         if (wasInPictureInPicture && attachedToProcess() && display != null) {
             // If the PIP activity is changing to fullscreen with display orientation change, the
@@ -8321,6 +8323,10 @@ final class ActivityRecord extends WindowToken {
         if (display == null) {
             return;
         }
+
+        notifyCameraCompatPolicyRotationChangedIfNeeded(oldDisplayRotation, newParentConfig
+                .windowConfiguration.getDisplayRotation());
+
         if (mVisibleRequested) {
             // It may toggle the UI for user to restart the size compatibility mode activity.
             display.handleActivitySizeCompatModeIfNeeded(this);
@@ -8403,6 +8409,17 @@ final class ActivityRecord extends WindowToken {
 
     boolean isConfigurationDispatchPaused() {
         return mPauseConfigurationDispatchCount > 0;
+    }
+
+    private void notifyCameraCompatPolicyRotationChangedIfNeeded(
+            @Surface.Rotation int oldDisplayRotation,
+            @Surface.Rotation int newDisplayRotation) {
+        if (Flags.cameraCompatUpdateTreatmentOnRotation()
+                && oldDisplayRotation != ROTATION_UNDEFINED
+                && newDisplayRotation != ROTATION_UNDEFINED
+                && oldDisplayRotation != newDisplayRotation) {
+            AppCompatCameraPolicy.onDisplayRotationChanged(this, newDisplayRotation);
+        }
     }
 
     /**
