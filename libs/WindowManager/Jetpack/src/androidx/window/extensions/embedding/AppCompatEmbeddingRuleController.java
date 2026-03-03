@@ -100,7 +100,8 @@ public class AppCompatEmbeddingRuleController {
                 (androidx.window.extensions.core.util.function.Predicate<Activity>)
                         activity -> activity.getResources().getConfiguration().touchscreen
                                 == TOUCHSCREEN_FINGER
-                                && isVirtualGamepadEnabled(selfPackageName, userId),
+                                && isVirtualGamepadEnabled(selfPackageName, userId)
+                                && !activity.isInMultiWindowMode(),
                 intent -> true,
                 parentMetrics -> parentMetrics.getBounds().height() >= minSizePx
                         && parentMetrics.getBounds().width() >= minSizePx)
