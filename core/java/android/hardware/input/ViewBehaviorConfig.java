@@ -25,6 +25,8 @@ import android.os.Parcelable;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 
+import java.util.Objects;
+
 /**
  * Configurations to specify the {@link InputDevice.ViewBehavior} for a virtual input device.
  *
@@ -90,6 +92,20 @@ public final class ViewBehaviorConfig implements Parcelable {
                 + "mPrimaryDirectionalMotionAxis=" + mPrimaryDirectionalMotionAxis
                 + ", mShouldSmoothScroll=" + mShouldSmoothScroll
                 + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ViewBehaviorConfig that)) {
+            return false;
+        }
+        return mPrimaryDirectionalMotionAxis == that.mPrimaryDirectionalMotionAxis
+                && mShouldSmoothScroll == that.mShouldSmoothScroll;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mPrimaryDirectionalMotionAxis, mShouldSmoothScroll);
     }
 
     @NonNull
