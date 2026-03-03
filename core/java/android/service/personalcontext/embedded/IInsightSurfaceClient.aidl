@@ -31,4 +31,5 @@ interface IInsightSurfaceClient {
     oneway void onSurfaceUpdated(in SurfaceControlViewHost.SurfacePackage surfacePackage);
     oneway void onReceiveInsight(in ContextInsightWrapper insight);
     oneway void onSizeChanged(in int width, in int height);
+    oneway void onVisualizationError(int errorCode);
 }

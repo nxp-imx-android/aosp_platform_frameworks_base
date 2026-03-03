@@ -16,6 +16,8 @@
 
 package android.service.personalcontext.embedded;
 
+import static android.service.personalcontext.embedded.InsightSurfaceSessionException.ERROR_FAILED_TO_CREATE_SESSION;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -289,5 +291,13 @@ public class InsightSurfaceClientTest {
 
         verify(mPersonalContextManager).publishInsightSurfaceHints(
                 eq(hints), any(InsightSurfaceClientInfo.class));
+    }
+
+    @Test
+    public void testVisualizationErrorCallsOnError() {
+        mClient.register(Runnable::run, mClientCallbacks);
+        mClient.publishHints(Set.of(mock(ContextHint.class)));
+        mClient.getClientInfo().onVisualizationError(ERROR_FAILED_TO_CREATE_SESSION);
+        verify(mClientCallbacks).onError(any());
     }
 }

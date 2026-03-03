@@ -306,6 +306,20 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     }
 
     /**
+     * Called when there has been a visualization error, such as no visualization was produced.
+     *
+     * @hide
+     */
+    public void onVisualizationError(@InsightSurfaceSessionException.ClientError int errorCode) {
+        try {
+            mClient.onVisualizationError(errorCode);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error calling onVisualizationError", e);
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Sends the given {@link ContextInsight} to the client. This is used to egress data from the
      * embedded surface to the client (e.g. the user has tapped a button in the embedded surface,
      * resulting in data being sent to the embedding client based on the state of the embedded
