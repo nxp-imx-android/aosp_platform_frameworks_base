@@ -285,7 +285,7 @@ public final class FileOperationResult implements Parcelable {
             mSource = request.getSource();
             mTarget = request.getTarget();
             mStatus = STATUS_UNKNOWN;
-            mErrorCode = ERROR_UNKNOWN;
+            mErrorCode = ERROR_NONE;
         }
 
         /** @hide */
