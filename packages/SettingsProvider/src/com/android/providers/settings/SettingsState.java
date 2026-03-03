@@ -1152,7 +1152,7 @@ public class SettingsState {
                         if (writeSingleSetting(
                                 mVersion,
                                 serializer,
-                                Long.toString(setting.getId()),
+                                setting.getId(),
                                 setting.getName(),
                                 setting.getValue(), setting.getDefaultValue(),
                                 setting.getPackageName(),
@@ -1267,12 +1267,11 @@ public class SettingsState {
         }
     }
 
-    static boolean writeSingleSetting(int version, TypedXmlSerializer serializer, String id,
+    static boolean writeSingleSetting(int version, TypedXmlSerializer serializer, long id,
             String name, String value, String defaultValue, String packageName,
             String tag, boolean defaultSysSet, boolean isValuePreservedInRestore)
             throws IOException {
-        if (id == null || isBinary(id) || name == null || isBinary(name)
-                || packageName == null || isBinary(packageName)) {
+        if (name == null || isBinary(name) || packageName == null || isBinary(packageName)) {
             if (DEBUG_PERSISTENCE) {
                 Slog.w(LOG_TAG, "Invalid arguments for writeSingleSetting: version=" + version
                         + ", id=" + id + ", name=" + name + ", value=" + value
@@ -1283,7 +1282,7 @@ public class SettingsState {
             return false;
         }
         serializer.startTag(null, TAG_SETTING);
-        serializer.attribute(null, ATTR_ID, id);
+        serializer.attributeLong(null, ATTR_ID, id);
         serializer.attribute(null, ATTR_NAME, name);
         setValueAttribute(ATTR_VALUE, ATTR_VALUE_BASE64,
                 version, serializer, value);
@@ -1548,7 +1547,7 @@ public class SettingsState {
 
             String tagName = parser.getName();
             if (tagName.equals(TAG_SETTING)) {
-                String id = parser.getAttributeValue(null, ATTR_ID);
+                long id = parser.getAttributeLong(null, ATTR_ID);
                 String name = parser.getAttributeValue(null, ATTR_NAME);
                 String value = getValueAttribute(parser, ATTR_VALUE, ATTR_VALUE_BASE64);
                 String packageName = parser.getAttributeValue(null, ATTR_PACKAGE);
@@ -1575,7 +1574,7 @@ public class SettingsState {
                 }
 
                 mSettings.put(name, new Setting(name, value, defaultValue, packageName, tag,
-                        fromSystem, Long.valueOf(id), isPreservedInRestore));
+                        fromSystem, id, isPreservedInRestore));
 
                 if (DEBUG_PERSISTENCE) {
                     Slog.i(LOG_TAG, "[RESTORED] " + name + "=" + value);
