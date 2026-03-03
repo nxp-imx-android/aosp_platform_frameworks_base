@@ -91,12 +91,4 @@ public interface VisibilityHelper {
             @NonNull String callingPackage,
             int callingUid,
             int callingPid);
-
-    /**
-     * Cleans up the visibility cache for the given {@link
-     * com.android.server.appfunctions.reader.CallerIdentity}.
-     */
-    // TODO(b/478851326): Move the cache to router level so that visibility helper can stay
-    // stateless.
-    void cleanupVisibilityCache(@NonNull CallerIdentity callerIdentity);
 }

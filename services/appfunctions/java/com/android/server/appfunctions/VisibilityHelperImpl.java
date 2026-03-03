@@ -29,10 +29,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
-import android.util.ArrayMap;
 import android.util.ArraySet;
-
-import com.android.internal.annotations.GuardedBy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,12 +41,6 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
     @NonNull private final Context mContext;
 
     @NonNull private final PackageManagerInternal mPmInternal;
-
-    private final Object mVisibilityCacheLock = new Object();
-
-    @GuardedBy("mVisibilityCacheLock")
-    private final ArrayMap<CallerIdentity, ArraySet<String>> mIdentityToVisiblePackages =
-            new ArrayMap<>();
 
     public VisibilityHelperImpl(
             @NonNull Context context, @NonNull PackageManagerInternal packageManagerInternal) {
@@ -96,8 +87,7 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
                         == PackageManager.PERMISSION_GRANTED) {
                     return new ArraySet<>(packagesToFilter);
                 } else {
-                    Set<String> allVisiblePackages =
-                            updateAndGetCachedVisiblePackages(callerIdentity);
+                    Set<String> allVisiblePackages = getVisiblePackages(callerIdentity);
                     Set<String> filteredPackages = new ArraySet<>();
                     for (String pkg : packagesToFilter) {
                         if (allVisiblePackages.contains(pkg)) {
@@ -134,8 +124,7 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
                         == PackageManager.PERMISSION_GRANTED) {
                     return new ArraySet<>(functionNames);
                 } else {
-                    Set<String> allVisiblePackages =
-                            updateAndGetCachedVisiblePackages(callerIdentity);
+                    Set<String> allVisiblePackages = getVisiblePackages(callerIdentity);
                     Set<AppFunctionName> filteredFunctions = new ArraySet<>();
                     for (AppFunctionName functionName : functionNames) {
                         if (allVisiblePackages.contains(functionName.getPackageName())) {
@@ -155,37 +144,6 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
             return selfFunctionNames;
         } finally {
             Binder.restoreCallingIdentity(token);
-        }
-    }
-
-    private Set<String> updateAndGetCachedVisiblePackages(@NonNull CallerIdentity callerIdentity) {
-        Set<String> cachedVisiblePackages;
-
-        synchronized (mVisibilityCacheLock) {
-            if (!mIdentityToVisiblePackages.containsKey(callerIdentity)) {
-                mIdentityToVisiblePackages.put(callerIdentity, new ArraySet<>());
-            }
-            cachedVisiblePackages = mIdentityToVisiblePackages.get(callerIdentity);
-
-            if (cachedVisiblePackages == null) {
-                return Set.of(); // Impossible
-            }
-            // Incrementally update the cache with newly visible packages.
-            // We intentionally do not remove packages that have become invisible since visibility
-            // loss implies uninstallation, and we require these cache entries to successfully
-            // notify all relevant observers of the uninstallation.
-            cachedVisiblePackages.addAll(
-                    getVisiblePackages(
-                            callerIdentity.getCallingUid(),
-                            callerIdentity.getUserHandle().getIdentifier()));
-            return Set.copyOf(cachedVisiblePackages);
-        }
-    }
-
-    @Override
-    public void cleanupVisibilityCache(@NonNull CallerIdentity callerIdentity) {
-        synchronized (mVisibilityCacheLock) {
-            mIdentityToVisiblePackages.remove(callerIdentity);
         }
     }
 
@@ -326,6 +284,12 @@ public final class VisibilityHelperImpl implements VisibilityHelper {
             }
         }
         return updatedFunctionNames;
+    }
+
+    @NonNull
+    private Set<String> getVisiblePackages(@NonNull CallerIdentity callerIdentity) {
+        return getVisiblePackages(
+                callerIdentity.getCallingUid(), callerIdentity.getUserHandle().getIdentifier());
     }
 
     @NonNull
