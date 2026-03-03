@@ -2490,7 +2490,7 @@ public class UsageStatsService extends SystemService implements
             final UsageEvents events = queryEventsHelper(UserHandle.getCallingUserId(), beginTime,
                     endTime, callingPackage, /* eventTypeFilter= */ EmptyArray.INT,
                     /* pkgNameFilter= */ null);
-            if (events != null && Flags.addQueryEventMetrics()) {
+            if (events != null) {
                 FrameworkStatsLog.write(FrameworkStatsLog.APP_USAGE_QUERY_EVENT_STATS,
                         Binder.getCallingUid(), events.getEventCount(),
                         /* timespan= */ (endTime - beginTime));
@@ -2523,7 +2523,7 @@ public class UsageStatsService extends SystemService implements
             final UsageEvents events = queryEventsHelper(userId, query.getBeginTimeMillis(),
                     query.getEndTimeMillis(), callingPackage, query.getEventTypes(),
                     /* pkgNameFilter= */ new ArraySet<>(query.getPackageNames()));
-            if (events != null && Flags.addQueryEventMetrics()) {
+            if (events != null) {
                 FrameworkStatsLog.write(FrameworkStatsLog.APP_USAGE_QUERY_EVENT_STATS,
                         Binder.getCallingUid(), events.getEventCount(),
                         /* timespan= */ (query.getEndTimeMillis() - query.getBeginTimeMillis()));
@@ -2545,7 +2545,7 @@ public class UsageStatsService extends SystemService implements
             try {
                 final UsageEvents events = UsageStatsService.this.queryEventsForPackage(
                         callingUserId, beginTime, endTime, callingPackage, includeTaskRoot);
-                if (events != null && Flags.addQueryEventMetrics()) {
+                if (events != null) {
                     FrameworkStatsLog.write(FrameworkStatsLog.APP_USAGE_QUERY_EVENT_STATS,
                             callingUid, events.getEventCount(),
                             /* timespan= */ (endTime - beginTime));

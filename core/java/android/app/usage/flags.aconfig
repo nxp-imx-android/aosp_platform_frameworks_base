@@ -42,16 +42,6 @@ flag {
 }
 
 flag {
-    name: "add_query_event_metrics"
-    namespace: "backstage_power"
-    description: "Feature flag for newly added metrics for queryEvent API"
-    bug: "456060668"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "add_report_event_metrics"
     namespace: "backstage_power"
     description: "Feature flag for newly added metrics for reportEvent API"
