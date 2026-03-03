@@ -61,6 +61,10 @@ public class ProtectedPackages {
 
     @Nullable
     @GuardedBy("this")
+    private SparseArray<String> mDevicePolicyControllerPackages;
+
+    @Nullable
+    @GuardedBy("this")
     private final String mDeviceProvisioningPackage;
 
     @Nullable
@@ -86,7 +90,16 @@ public class ProtectedPackages {
                 : profileOwnerPackages.clone();
     }
 
-    /** Sets packages protected by a device or profile owner. */
+    /**
+     * Sets the DPC packages. A DPC can be device owner, profile owner or device controller.
+     */
+    public synchronized void setDevicePolicyControllerPackages(
+            @Nullable SparseArray<String> devicePolicyControllerPackages) {
+        mDevicePolicyControllerPackages = (devicePolicyControllerPackages == null) ? null
+                : devicePolicyControllerPackages.clone();
+    }
+
+    /** Sets packages protected by a device or profile owner or an admin. */
     public synchronized void setOwnerProtectedPackages(
             @UserIdInt int userId, @Nullable List<String> packageNames) {
         if (packageNames == null) {
@@ -96,6 +109,28 @@ public class ProtectedPackages {
         }
     }
 
+    private synchronized boolean isDevicePolicyManagementPackage(int userId, String packageName) {
+        if (packageName == null) {
+            return false;
+        }
+        if (mDevicePolicyControllerPackages == null) {
+            return false;
+        }
+        return packageName.equals(getDevicePolicyControllerPackage(userId));
+    }
+
+    /**
+     * Returns the DPC package name for the given user if it exists, otherwise returns null. A
+     * DPC can be profile owner, device owner, device controller. For a given user, there can only
+     * one DPC package exist.
+     */
+    @Nullable
+    public synchronized String getDevicePolicyControllerPackage(int userId) {
+        if (mDevicePolicyControllerPackages == null) {
+            return null;
+        }
+        return mDevicePolicyControllerPackages.get(userId);
+    }
 
     private synchronized boolean hasDeviceOwnerOrProfileOwner(int userId, String packageName) {
         if (packageName == null) {
@@ -134,6 +169,9 @@ public class ProtectedPackages {
     private synchronized boolean isProtectedPackage(@UserIdInt int userId, String packageName) {
         if (packageName == null) {
             return false;
+        }
+        if (isDevicePolicyManagementPackage(userId, packageName)) {
+            return true;
         }
         if (packageName.equals(mDeviceProvisioningPackage)
                 || isOwnerProtectedPackage(userId, packageName)) {
