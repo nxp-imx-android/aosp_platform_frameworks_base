@@ -82,7 +82,6 @@ import android.view.WindowManagerPolicyConstants.PointerEventListener;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
-import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.wm.utils.OptPropFactory;
 
@@ -240,7 +239,7 @@ class RecentTasks {
             int displayId = ev.getDisplayId();
             int x = (int) ev.getX();
             int y = (int) ev.getY();
-            mService.mH.post(PooledLambda.obtainRunnable((nonArg) -> {
+            mService.mH.post(() -> {
                 synchronized (mService.mGlobalLock) {
                     final RootWindowContainer rac = mService.mRootWindowContainer;
                     final DisplayContent dc = rac.getDisplayContent(displayId).mDisplayContent;
@@ -270,7 +269,7 @@ class RecentTasks {
                         resetFreezeTaskListReordering(topTask);
                     }
                 }
-            }, null).recycleOnUse());
+            });
         }
     };
 
