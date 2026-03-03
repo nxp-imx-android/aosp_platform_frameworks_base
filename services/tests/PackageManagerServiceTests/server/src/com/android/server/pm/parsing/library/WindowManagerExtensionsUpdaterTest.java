@@ -25,6 +25,7 @@ import static org.junit.Assume.assumeTrue;
 
 import android.app.compat.CompatChanges;
 import android.app.compat.PackageOverride;
+import android.content.pm.PackageManager;
 import android.platform.test.annotations.Presubmit;
 import android.view.WindowManager;
 
@@ -89,6 +90,21 @@ public class WindowManagerExtensionsUpdaterTest extends PackageSharedLibraryUpda
         setAppCompatFlag(true /* enabled */);
 
         // Library not added when there is no wm extensions.
+        assertExtensionsNotAdded(mPackage);
+    }
+
+    @Test
+    public void testUpdatePackage_optOutProperty() {
+        assumeTrue(WindowManager.HAS_WINDOW_EXTENSIONS_ON_DEVICE);
+        setAppCompatFlag(true /* enabled */);
+
+        // Opt-out with property
+        ((PackageImpl) mPackage).addProperty(
+                new PackageManager.Property(
+                        WindowManager.PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE,
+                        false /* value */, PACKAGE_NAME, null /* className */));
+
+        // Library not added when the app opted out via property.
         assertExtensionsNotAdded(mPackage);
     }
 
