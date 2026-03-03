@@ -3350,9 +3350,7 @@ public final class CameraManager {
                 // needed for the service to pick up the new permission state.
                 boolean listenerPermissionChanged = false;
                 if (hasOpenCloseListenerPermission != mHasOpenCloseListenerPermission) {
-                    if (Flags.resetListenerAfterAdoptShellPermission()) {
-                        listenerPermissionChanged = true;
-                    }
+                    listenerPermissionChanged = true;
                     mHasOpenCloseListenerPermission = hasOpenCloseListenerPermission;
                 }
                 connectCameraServiceLocked(listenerPermissionChanged);
