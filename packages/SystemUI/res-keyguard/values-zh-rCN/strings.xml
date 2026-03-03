@@ -91,7 +91,7 @@
     <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"已尝试过该密码，请换一个试试。"</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"绘错解锁图案的尝试次数太多"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"输错密码的尝试次数太多"</string>
-    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"输错密码的次数太多\n如需了解详情，请访问 <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"输错数字密码的次数太多\n如需了解详情，请访问 <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"绘错解锁图案的次数太多\n如需了解详情，请访问 <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"输错密码的次数太多\n如需了解详情，请访问 <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{请在 # 秒后重试。}other{请在 # 秒后重试。}}"</string>

@@ -95,7 +95,7 @@
     <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"잘못된 패턴을 너무 많이 시도했습니다.\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g>에서 자세히 알아보세요."</string>
     <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"잘못된 비밀번호를 너무 많이 시도했습니다.\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g>에서 자세히 알아보세요."</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{#초 후에 다시 시도하세요}other{#초 후에 다시 시도하세요}}"</string>
-    <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{#초 후에 다시 시도해 보세요.}other{#초 후에 다시 시도해 보세요.}}"</string>
+    <string name="kg_too_many_failed_attempts_countdown_seconds" msgid="5869847493314053274">"{count,plural, =1{#초 후에 다시 시도하세요}other{#초 후에 다시 시도하세요}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_minutes" msgid="6688071439818994316">"{count,plural, =1{#분 후에 다시 시도하세요}other{#분 후에 다시 시도하세요}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_hours" msgid="4895375498917738857">"{count,plural, =1{#시간 후에 다시 시도해 보세요.}other{#시간 후에 다시 시도해 보세요.}}"</string>
     <string name="kg_too_many_failed_attempts_countdown_days" msgid="5427787465019979593">"{count,plural, =1{#일 후에 다시 시도해 보세요.}other{#일 후에 다시 시도해 보세요.}}"</string>
