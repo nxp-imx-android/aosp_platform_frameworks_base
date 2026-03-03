@@ -123,6 +123,55 @@ policy_metadata {
 }
 policy_metadata {
   identifier {
+    field_name: "EASTER_EGGS"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "Integer"
+    package_name: "java.lang"
+  }
+  documentation: "Policy that controls whether the user is allowed to access various Easter egg games across\nthe system (for instance, in settings)."
+  type_specific_metadata {
+    enum_metadata {
+      default_value: 2
+      int_def_name: "android.app.admin.PolicyIdentifier.EasterEggsValue"
+      documentation: "Possible values {@link EASTER_EGGS}\n\n@hide"
+      values {
+        field_name {
+          field_name: "EASTER_EGGS_DISALLOWED"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 1
+        documentation: "Easter eggs are disallowed. "
+      }
+      values {
+        field_name {
+          field_name: "EASTER_EGGS_ALLOWED"
+          class_name: "PolicyIdentifier"
+          package_name: "android.app.admin"
+        }
+        int_value: 2
+        documentation: "Easter eggs are allowed. "
+      }
+      resolution_mechanism {
+        custom: true
+      }
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  allowed_scopes: POLICY_SCOPE_DEVICE
+  affected_resource: RESOURCE_PER_USER
+  required_permission: "android.permission.MANAGE_DEVICE_POLICY_FUN"
+  required_cross_user_permission: "android.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS"
+  allowed_dpc_types: DPC_TYPE_DEVICE_OWNER
+  allowed_dpc_types: DPC_TYPE_PROFILE_OWNER_ON_USER0
+  allowed_dpc_types: DPC_TYPE_UNAFFILIATED_FULL_USER_PROFILE_OWNER
+  allowed_dpc_types: DPC_TYPE_AFFILIATED_FULL_USER_PROFILE_OWNER
+}
+policy_metadata {
+  identifier {
     field_name: "LOCKSCREEN_MESSAGE"
     class_name: "PolicyIdentifier"
     package_name: "android.app.admin"
@@ -150,10 +199,10 @@ policy_metadata {
     package_name: "android.app.admin"
   }
   type {
-    class_name: "List"
+    class_name: "List<java.lang.String>"
     package_name: "java.util"
   }
-  documentation: "Policy that sets the list of packages that are enforced as content restriction role holders.\nThis allows admins to designate specific apps responsible for filtering and monitoring\ncontent for the user.\n<p>\nIf the value is {@code null}, the admin's enforcement is cleared, and the system\nre-evaluates the role holders based on other active policies.\n<p>\nDesignation as a content restriction app is a privileged state that allows\nthe package to perform sensitive filtering actions."
+  documentation: "Policy that sets the list of packages as the holders of the {@link\nandroid.app.role.RoleManager#ROLE_CONTENT_RESTRICTION} role.\n\n<p>If the value is {@code null}, any previously set role holder set through this policy will\nbe removed."
   type_specific_metadata {
     list_metadata {
       string_metadata {

@@ -673,3 +673,11 @@ flag {
   description: "Update the methods that push the device/profile owner packages to system services to use more generic names."
   bug: "481619042"
 }
+
+flag {
+  name: "policy_streamlining_easter_eggs"
+  namespace: "enterprise"
+  description: "Redirect addUserRestriction/getUserRestriction for DISALLOW_FUN to the generic set/getPolicy APIs."
+  bug: "444381084"
+  is_exported: true
+}

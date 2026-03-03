@@ -160,6 +160,14 @@ public class PolicyDefinitionFactory {
                             .setEnforcerCallback(PolicyEnforcerCallbacks::setContentRestrictionApps)
                             .build();
                 });
+        addFactory(
+                PolicyIdentifier.EASTER_EGGS,
+                builder -> {
+                    // This (pre-existing) enum policy is stored as a boolean inside DPE, so return
+                    // null here and pass the pre-existing PolicyDefinition into the constructor
+                    // of `EnumStoredAsBooleanPolicyHandler`.
+                    return null;
+                });
     }
 
     public static Map<PolicyIdentifier<?>, PolicyDefinition<?>> buildAll() {
