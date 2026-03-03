@@ -515,6 +515,10 @@ class AppCompatActivityRobot {
         display.onRequestedOverrideConfigurationChanged(c);
     }
 
+    void makeDisplayLargeScreen() {
+        WindowTestsBase.makeDisplayLargeScreen(mDisplayContent);
+    }
+
     void assertTrueOnActivity(int fromTop, Predicate<ActivityRecord> predicate) {
         mActivityStack.applyTo(fromTop, (activity) -> {
             Assert.assertTrue(predicate.test(activity));
