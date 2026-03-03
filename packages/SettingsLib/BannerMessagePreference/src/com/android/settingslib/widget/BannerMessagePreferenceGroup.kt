@@ -20,6 +20,8 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.os.Handler
 import android.os.Looper
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.PathInterpolator
@@ -365,6 +367,28 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
         return removePreference(preference, true)
     }
 
+    override fun onSaveInstanceState(): Parcelable {
+        val superState = super.onSaveInstanceState()
+
+        val myState = SavedState(superState)
+        myState.isActiveExpanded = activeSection.isExpanded
+        myState.isDismissedExpanded = dismissedSection.isExpanded
+        return myState
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state == null || state !is SavedState) {
+            super.onRestoreInstanceState(state)
+            return
+        }
+
+        super.onRestoreInstanceState(state.superState)
+        activeSection.isExpanded = state.isActiveExpanded
+        dismissedSection.isExpanded = state.isDismissedExpanded
+
+        refreshUi()
+    }
+
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
 
@@ -372,6 +396,10 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             parentRecyclerView = getParentRecyclerView(holder.itemView)
         }
 
+        refreshUi()
+    }
+
+    private fun refreshUi() {
         maybeCreateExpandCollapsePreference()
         updateVisibilities()
 
@@ -606,6 +634,37 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             1f
         )
         return durationScale > 0f
+    }
+
+    private class SavedState : Preference.BaseSavedState {
+        var isActiveExpanded: Boolean = false
+        var isDismissedExpanded: Boolean = false
+
+        constructor(source: Parcel) : super(source) {
+            isActiveExpanded = source.readInt() == 1
+            isDismissedExpanded = source.readInt() == 1
+        }
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        override fun writeToParcel(dest: Parcel, flags: Int) {
+            super.writeToParcel(dest, flags)
+            dest.writeInt(if (isActiveExpanded) 1 else 0)
+            dest.writeInt(if (isDismissedExpanded) 1 else 0)
+        }
+
+        companion object {
+            @JvmField
+            val CREATOR = object : Parcelable.Creator<SavedState> {
+                override fun createFromParcel(source: Parcel): SavedState {
+                    return SavedState(source)
+                }
+
+                override fun newArray(size: Int): Array<SavedState?> {
+                    return arrayOfNulls(size)
+                }
+            }
+        }
     }
 
     companion object {
