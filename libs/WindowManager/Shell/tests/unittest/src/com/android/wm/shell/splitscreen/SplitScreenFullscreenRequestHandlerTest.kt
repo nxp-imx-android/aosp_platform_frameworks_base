@@ -204,7 +204,7 @@ class SplitScreenFullscreenRequestHandlerTest : ShellTestCase() {
         whenever(stageCoordinator.isSplitActive).thenReturn(true)
         whenever(stageCoordinator.isSplitScreenVisible).thenReturn(true)
         whenever(stageCoordinator.isTaskOnSplitDisplay(task)).thenReturn(true)
-        whenever(stageCoordinator.getStageOfTask(task.taskId)).thenReturn(stageOfTask)
+        whenever(stageCoordinator.getCurrentStageTypeOfTask(task.taskId)).thenReturn(stageOfTask)
         whenever(stageCoordinator.getSplitPosition(task.taskId)).thenReturn(splitPosition)
         // Other task.
         val oppositePosition =

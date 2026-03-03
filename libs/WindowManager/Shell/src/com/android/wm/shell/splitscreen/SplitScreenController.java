@@ -411,12 +411,12 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
 
     /** Check task is under split or not by taskId. */
     public boolean isTaskInSplitScreen(int taskId) {
-        return mStageCoordinator.getStageOfTask(taskId) != STAGE_TYPE_UNDEFINED;
+        return mStageCoordinator.getCurrentStageTypeOfTask(taskId) != STAGE_TYPE_UNDEFINED;
     }
 
     /** Get the split stage of task is under it. */
     public @StageType int getStageOfTask(int taskId) {
-        return mStageCoordinator.getStageOfTask(taskId);
+        return mStageCoordinator.getCurrentStageTypeOfTask(taskId);
     }
 
     /**

@@ -933,7 +933,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     public void testAddExitForBubblesIfNeeded_splitVisible_hasStageToTop() {
         when(mStageCoordinator.isSplitActive()).thenReturn(true);
         when(mStageCoordinator.isSplitScreenVisible()).thenReturn(true);
-        doReturn(STAGE_TYPE_MAIN).when(mStageCoordinator).getStageOfTask(anyInt());
+        doReturn(STAGE_TYPE_MAIN).when(mStageCoordinator).getCurrentStageTypeOfTask(anyInt());
 
         android.window.TransitionRequestInfo request =
                 mock(android.window.TransitionRequestInfo.class);
@@ -951,7 +951,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     public void testAddExitForBubblesIfNeeded_splitNotVisible_noStageToTop() {
         when(mStageCoordinator.isSplitActive()).thenReturn(true);
         when(mStageCoordinator.isSplitScreenVisible()).thenReturn(false);
-        doReturn(STAGE_TYPE_MAIN).when(mStageCoordinator).getStageOfTask(anyInt());
+        doReturn(STAGE_TYPE_MAIN).when(mStageCoordinator).getCurrentStageTypeOfTask(anyInt());
 
         android.window.TransitionRequestInfo request =
                 mock(android.window.TransitionRequestInfo.class);
