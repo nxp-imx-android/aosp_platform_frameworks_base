@@ -22,7 +22,6 @@ import android.tools.NavBar.MODE_GESTURAL
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.StaticShortcutsAppHelper
 import com.android.window.flags.Flags.FLAG_TRACK_LAUNCH_ORIGINATOR
-import com.android.window.flags.Flags.FLAG_USE_CALLER_TOKEN_IN_LAUNCHER_APPS
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.Utils.testSetupRule
 import com.android.wm.shell.flicker.bubbles.testcase.AppOpenInFullscreenTestCases
@@ -56,11 +55,7 @@ import org.junit.runners.MethodSorters
  * - [BubbleExitTestCases]: Verifies the bubble exits.
  * - [AppOpenInFullscreenTestCases]: Verifies the test app is fullscreen.
  */
-@RequiresFlagsEnabled(
-    FLAG_ENABLE_CREATE_ANY_BUBBLE,
-    FLAG_TRACK_LAUNCH_ORIGINATOR,
-    FLAG_USE_CALLER_TOKEN_IN_LAUNCHER_APPS,
-)
+@RequiresFlagsEnabled(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_TRACK_LAUNCH_ORIGINATOR)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit

@@ -24,7 +24,6 @@ import android.os.IBinder
 import android.os.UserHandle
 import android.os.UserManager
 import android.platform.test.annotations.Presubmit
-import com.android.window.flags.Flags.useCallerTokenInLauncherApps
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -32,7 +31,6 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
-import org.mockito.ArgumentMatchers.isNull
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
@@ -73,7 +71,7 @@ class LauncherAppsTest {
         )
 
         verify(service).startActivityAsUser(
-            if (useCallerTokenInLauncherApps()) eq(token) else isNull(),
+            eq(token) /* callingActivityToken */,
             any() /* caller */,
             eq(TEST_PACKAGE_NAME),
             any() /* callingFeatureId */,
@@ -95,7 +93,7 @@ class LauncherAppsTest {
         )
 
         verify(service).startSessionDetailsActivityAsUser(
-            if (useCallerTokenInLauncherApps()) eq(token) else isNull(),
+            eq(token) /* callingActivityToken */,
             any() /* caller */,
             eq(TEST_PACKAGE_NAME),
             any() /* callingFeatureId */,
@@ -116,7 +114,7 @@ class LauncherAppsTest {
         )
 
         verify(service).showAppDetailsAsUser(
-            if (useCallerTokenInLauncherApps()) eq(token) else isNull(),
+            eq(token) /* callingActivityToken */,
             any() /* caller */,
             eq(TEST_PACKAGE_NAME),
             any() /* callingFeatureId */,
@@ -153,7 +151,7 @@ class LauncherAppsTest {
         )
 
         verify(service).startShortcut(
-            if (useCallerTokenInLauncherApps()) eq(token) else isNull(),
+            eq(token) /* callingActivityToken */,
             eq(TEST_PACKAGE_NAME),
             eq(TEST_PACKAGE_NAME),
             any() /* featureId */,
