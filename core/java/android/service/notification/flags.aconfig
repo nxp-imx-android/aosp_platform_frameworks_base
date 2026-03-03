@@ -108,6 +108,13 @@ flag {
   bug: "416305811"
 }
 
+flag {
+  name: "notification_remoteview_bitmap_offloading"
+  namespace: "systemui"
+  description: "Enables offloading Bitmaps in RemoteViews to disk"
+  bug: "488984571"
+}
+
 # Start: API flags
 
 flag {
