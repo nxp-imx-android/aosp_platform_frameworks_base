@@ -2520,6 +2520,22 @@ public class TaskTests extends WindowTestsBase {
         verify(activity.app).onTaskPackageUpdateHandled(task);
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_APP_RESTART_AFTER_UPDATE)
+    public void testContinuePackageUpdate_noProcess_doesNotCallHandled() {
+        final Task task = getTestTask();
+        final ActivityRecord activity = task.getTopMostActivity();
+        task.mHandlePackageUpdate = true;
+        final WindowProcessController mockApp = mock(WindowProcessController.class);
+        activity.app = mockApp;
+        // Detach process from activity.
+        activity.app = null;
+
+        task.continuePackageUpdate();
+
+        verify(mockApp, never()).onTaskPackageUpdateHandled(task);
+    }
+
     @DisableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
     @Test
     public void testRealActivityAppLockEnabled_appLockFlagIsOff_appLockEnabled_disabled() {
