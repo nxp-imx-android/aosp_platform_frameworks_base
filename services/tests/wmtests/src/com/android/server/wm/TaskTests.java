@@ -2674,7 +2674,6 @@ public class TaskTests extends WindowTestsBase {
         assertTrue(task.disableAppCompatRoundedCorners());
     }
 
-    @EnableFlags(Flags.FLAG_IMPROVE_OCCLUSION_CALCULATION)
     @Test
     public void testFillTestInfo_isActivityStackTransparent_withTransparentEmbeddedActivity() {
         final Task task = createTask(mDisplayContent);

@@ -3504,13 +3504,9 @@ class Task extends TaskFragment {
         info.isTopActivityNoDisplay = top != null && top.isNoDisplay();
         info.isSleeping = shouldSleepActivities();
         info.isTopActivityTransparent = top != null && !top.fillsParent();
-        if (Flags.improveOcclusionCalculation()) {
-            info.isActivityStackTransparent = !mAtmService.mVisibilityHelper.isOpaque(topTask,
-                    null /* starting */, true /* ignoringKeyguard */,
-                    false /* ignoringInvisibleActivity */, true /* ignoringFinishing */);
-        } else {
-            info.isActivityStackTransparent = !topTask.forAllActivities(r -> (r.occludesParent()));
-        }
+        info.isActivityStackTransparent = !mAtmService.mVisibilityHelper.isOpaque(topTask,
+                null /* starting */, true /* ignoringKeyguard */,
+                false /* ignoringInvisibleActivity */, true /* ignoringFinishing */);
         info.lastNonFullscreenBounds = topTask.mLastNonFullscreenBounds;
         info.leafTaskBoundsFromOptions = mLeafTaskBoundsFromOptions;
         final WindowState windowState = top != null
