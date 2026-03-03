@@ -142,9 +142,14 @@ class DesktopModeImpl(
         mainExecutor.execute { desktopFirstListenerManager.get().unregisterListener(listener) }
     }
 
-    // TODO: b/467282605 post this to the main thread
     override fun isDisplayInDesktopMode(displayId: Int) =
-        desktopTasksController.getOrNull()?.isDisplayInDesktopMode(displayId) ?: false
+        mainExecutor.executeBlockingForResult(
+            {
+                desktopTasksController.getOrNull()?.isDisplayInDesktopMode(displayId)
+                    ?: false
+            },
+            Boolean::class.javaObjectType,
+        ) ?: false
 
     companion object {
         private const val TAG = "DesktopModeImpl"
