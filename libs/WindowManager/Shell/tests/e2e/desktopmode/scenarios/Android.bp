@@ -87,6 +87,7 @@ test_module_config {
         "com.android.wm.shell.functional.externaldisplay.ScaleDensityForExternalDisplayTest",
         "com.android.wm.shell.functional.externaldisplay.SettingsToggleMirroringSwitchTest",
         "com.android.wm.shell.functional.externaldisplay.SettingsUpdateRotationTest",
+        "com.android.wm.shell.functional.externaldisplay.SettingsUpdateResolutionRefreshRateTest",
         "com.android.wm.shell.functional.externaldisplay.focus.ClickAndFocusTest",
         "com.android.wm.shell.functional.externaldisplay.focus.CloseAndKeepFocusTest",
         "com.android.wm.shell.functional.externaldisplay.focus.DragAndKeepFocusTest",
@@ -287,6 +288,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.externaldisplay.SettingsUpdateRotationTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-externaldisplay-SettingsUpdateResolutionRefreshRateTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.externaldisplay.SettingsUpdateResolutionRefreshRateTest"],
 }
 
 test_module_config {
