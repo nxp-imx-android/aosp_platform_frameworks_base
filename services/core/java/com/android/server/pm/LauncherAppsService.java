@@ -1195,8 +1195,8 @@ public class LauncherAppsService extends SystemService {
             final long ident = Binder.clearCallingIdentity();
             try {
                 final ApplicationInfo info = mPackageManagerInternal.getApplicationInfo(packageName,
-                        flags | getAppLockInfoFlag(callingPid, callingUid), callingUid,
-                        user.getIdentifier());
+                        Integer.toUnsignedLong(flags) | getAppLockInfoFlag(callingPid, callingUid),
+                        callingUid, user.getIdentifier());
                 return info;
             } finally {
                 Binder.restoreCallingIdentity(ident);
