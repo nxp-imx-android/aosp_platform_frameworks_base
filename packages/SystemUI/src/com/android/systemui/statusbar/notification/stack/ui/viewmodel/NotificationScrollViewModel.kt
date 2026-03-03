@@ -28,7 +28,6 @@ import com.android.compose.animation.scene.ObservableTransitionState.Transition.
 import com.android.compose.animation.scene.ObservableTransitionState.Transition.OverlayTransition
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
-import com.android.systemui.bouncer.domain.interactor.BouncerInteractor
 import com.android.systemui.brightness.domain.interactor.BrightnessMirrorShowingInteractor
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -85,7 +84,6 @@ constructor(
     brightnessMirrorShowingInteractorLazy: Lazy<BrightnessMirrorShowingInteractor>,
     private val shadeInteractor: ShadeInteractor,
     shadeModeInteractor: ShadeModeInteractor,
-    bouncerInteractor: BouncerInteractor,
     private val remoteInputInteractor: RemoteInputInteractor,
     headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     sceneInteractor: SceneInteractor,
@@ -348,7 +346,8 @@ constructor(
     val alphaForLockscreenFadeIn = stackAppearanceInteractor.alphaForLockscreenFadeIn
 
     /** Whether the current scene is lockscreen */
-    val isCurrentSceneLockscreen = sceneInteractor.currentScene.map { it == Scenes.Lockscreen }.distinctUntilChanged()
+    val isCurrentSceneLockscreen =
+        sceneInteractor.currentScene.map { it == Scenes.Lockscreen }.distinctUntilChanged()
 
     val allowScrimClipping: Flow<Boolean> =
         shadeModeInteractor.shadeMode
