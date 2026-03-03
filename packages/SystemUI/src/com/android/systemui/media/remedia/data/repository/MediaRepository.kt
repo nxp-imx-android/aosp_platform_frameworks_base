@@ -268,7 +268,7 @@ constructor(
     }
 
     private fun MediaData.canBeRemoved(): Boolean {
-        return isPlaying == false || (isClearable && !active)
+        return isPlaying?.let { !it } ?: isClearable && !active
     }
 
     @GuardedBy("mediaMutex")
