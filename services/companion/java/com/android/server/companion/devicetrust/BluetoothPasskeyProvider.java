@@ -145,8 +145,11 @@ public class BluetoothPasskeyProvider implements PskProvider {
         MacAddress address = MacAddress.fromString(device.getAddress());
         int pairingVariant = intent.getIntExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, -1);
         int pairingKey = intent.getIntExtra(BluetoothDevice.EXTRA_PAIRING_KEY, -1);
+        int algorithm = com.android.bluetooth.flags.Flags.providePairingAlgo()
+                ? intent.getIntExtra(BluetoothDevice.EXTRA_PAIRING_ALGORITHM, -1)
+                : -1;
 
-        if (!isAcceptablePairingVariant(pairingVariant)) {
+        if (!isAcceptablePairingVariant(pairingVariant, algorithm)) {
             Slog.w(TAG, "Pairing variant for device: " + device.getAnonymizedAddress()
                     + " cannot be used for trusted devices verification.");
             return;
@@ -171,11 +174,27 @@ public class BluetoothPasskeyProvider implements PskProvider {
         }
     }
 
-    private boolean isAcceptablePairingVariant(int pairingVariant) {
-        return switch (pairingVariant) {
-            case BluetoothDevice.PAIRING_VARIANT_PASSKEY,
-                 BluetoothDevice.PAIRING_VARIANT_PASSKEY_CONFIRMATION,
-                 BluetoothDevice.PAIRING_VARIANT_DISPLAY_PASSKEY -> true;
+    private boolean isAcceptablePairingVariant(int pairingVariant, int algorithm) {
+        // If the pairing algorithm flag is not enabled, only allow the restrictive pairing variants
+        if (algorithm == -1) {
+            return pairingVariant == BluetoothDevice.PAIRING_VARIANT_PASSKEY
+                    || pairingVariant == BluetoothDevice.PAIRING_VARIANT_PASSKEY_CONFIRMATION
+                    || pairingVariant == BluetoothDevice.PAIRING_VARIANT_DISPLAY_PASSKEY;
+        }
+
+        if (pairingVariant == BluetoothDevice.PAIRING_VARIANT_CONSENT) {
+            return false;
+        }
+
+        if (pairingVariant == BluetoothDevice.PAIRING_VARIANT_OOB_CONSENT) {
+            return true;
+        }
+
+        return switch (algorithm) {
+            case BluetoothDevice.PAIRING_ALGORITHM_BREDR_SSP,
+                 BluetoothDevice.PAIRING_ALGORITHM_SC -> true;
+            case BluetoothDevice.PAIRING_ALGORITHM_LE_LEGACY,
+                 BluetoothDevice.PAIRING_ALGORITHM_BREDR_LEGACY -> false;
             default -> false;
         };
     }
