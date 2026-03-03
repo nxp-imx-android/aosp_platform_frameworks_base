@@ -2696,8 +2696,8 @@
     <string name="notification_rules_activity_title" translatable="false">Notification Rules</string>
     <!-- Title for a page where users can create a new notification rule. [CHAR LIMIT=NONE]-->
     <string name="notification_rules_create_new_title" translatable="false">Create New</string>
-    <!-- Title for a button that will let users create a new notification rule. [CHAR LIMIT=NONE]-->
-    <string name="notification_rules_create_new_rule" translatable="false">Create new rule</string>
+    <!-- Title for a button that will let users move to the next step of creating a new notification rule. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_next" translatable="false">Next</string>
 
     <!-- Notifications with this action will be highlighted in the list and will alert the user via sound and/or vibration if enabled. [CHAR LIMIT=NONE]-->
     <string name="notification_rules_action_highlight_and_alert" translatable="false">Highlight &amp; Alert</string>

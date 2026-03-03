@@ -22,6 +22,8 @@ import com.android.systemui.notifications.intelligence.rules.ui.composable.Notif
 import com.android.systemui.notifications.intelligence.rules.ui.composable.NotificationRulesScreenImpl
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModelImpl
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleFreeformTextCreationViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleFreeformTextCreationViewModelImpl
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesParentViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesParentViewModelImpl
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
@@ -47,6 +49,11 @@ interface NotificationRulesUiModule {
     public fun bindEditViewModelFactory(
         impl: NotificationRuleEditViewModelImpl.Factory
     ): NotificationRuleEditViewModel.Factory
+
+    @Binds
+    public fun bindFreeformViewModelFactory(
+        impl: NotificationRuleFreeformTextCreationViewModelImpl.Factory
+    ): NotificationRuleFreeformTextCreationViewModel.Factory
 
     @Binds
     public fun bindNotificationRulesScreen(

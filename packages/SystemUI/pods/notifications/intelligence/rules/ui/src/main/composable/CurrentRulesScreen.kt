@@ -24,15 +24,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,23 +44,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel.Companion.toDraft
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.TextStyles
 import com.android.systemui.res.R
-import kotlinx.coroutines.launch
 
 @Composable
 fun CurrentRulesScreen(
     viewModel: NotificationRulesScreenViewModel,
     onDismissCurrentRulesScreen: () -> Unit,
     onNavigateToEditScreen: (DraftRuleModel) -> Unit,
+    onNavigateToFreeformRuleCreationScreen: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val scope = rememberCoroutineScope()
     val textStyles = rememberTextStyles()
     BackHandler(enabled = true, onBack = onDismissCurrentRulesScreen)
 
@@ -69,6 +70,7 @@ fun CurrentRulesScreen(
             Header(
                 title = stringResource(R.string.notification_rules_activity_title),
                 onDismissRequest = onDismissCurrentRulesScreen,
+                actions = { CreateNewRuleAction(onNavigateToFreeformRuleCreationScreen) },
             )
         }
 
@@ -80,25 +82,6 @@ fun CurrentRulesScreen(
                     textStyles = textStyles,
                     onNavigateToEditScreen = onNavigateToEditScreen,
                 )
-            }
-        }
-
-        item("Create new rule") {
-            Button(
-                onClick = {
-                    scope.launch {
-                        onNavigateToEditScreen(
-                            DraftRuleModel(
-                                isNew = true,
-                                action = ActionModel.Highlight,
-                                contacts = null,
-                                includedApps = null,
-                            )
-                        )
-                    }
-                }
-            ) {
-                Text(stringResource(R.string.notification_rules_create_new_rule))
             }
         }
     }
@@ -155,6 +138,17 @@ private fun rememberTextStyles(): TextStyles {
             defaultStyle = defaultStyle,
             specifiedValueSpanStyle = valueSpanStyle,
             ambiguousValueSpanStyle = valueSpanStyle,
+        )
+    }
+}
+
+/** Renders a '+' button that lets users create a new notification rule using freeform text. */
+@Composable
+private fun CreateNewRuleAction(onNavigateToFreeformRuleCreationScreen: () -> Unit) {
+    IconButton(onClick = onNavigateToFreeformRuleCreationScreen) {
+        Icon(
+            imageVector = Icons.Filled.Add,
+            contentDescription = stringResource(R.string.notification_rules_create_new_title),
         )
     }
 }

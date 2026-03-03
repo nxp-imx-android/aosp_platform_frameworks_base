@@ -37,27 +37,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 import com.android.systemui.res.R
 
 /** Renders the action on [viewModel.rule] as a clickable item. */
 @Composable
 fun EditableAction(
-    viewModel: NotificationRuleEditViewModel,
-    onEnterEditField: ((RulesScreenViewState.EditField) -> Unit),
+    action: ActionModel,
+    onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
+    onActionSaved: (ActionModel) -> Unit,
 ) {
     Action(
-        viewModel.rule.action,
-        onClick = {
-            onEnterEditField(
-                RulesScreenViewState.EditField.Action(
-                    onActionSaved = { newAction ->
-                        viewModel.rule = viewModel.rule.copy(action = newAction)
-                    }
-                )
-            )
-        },
+        action,
+        onClick = { onEnterEditField(RulesScreenViewState.EditField.Action(onActionSaved)) },
     )
 }
 

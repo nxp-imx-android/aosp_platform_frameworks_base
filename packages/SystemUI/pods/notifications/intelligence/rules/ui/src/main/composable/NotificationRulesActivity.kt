@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleFreeformTextCreationViewModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
 import javax.inject.Inject
 
@@ -44,6 +45,7 @@ public class NotificationRulesActivity
 constructor(
     private val viewModelFactory: NotificationRulesScreenViewModel.Factory,
     private val editViewModelFactory: NotificationRuleEditViewModel.Factory,
+    private val freeformTextViewModelFactory: NotificationRuleFreeformTextCreationViewModel.Factory,
     private val notificationRulesScreen: NotificationRulesScreen,
 ) : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +64,7 @@ constructor(
                 notificationRulesScreen.Content(
                     viewModelFactory = viewModelFactory,
                     editViewModelFactory = editViewModelFactory,
+                    freeformTextViewModelFactory = freeformTextViewModelFactory,
                     dismissRulesScreen = { finish() },
                     modifier =
                         Modifier.background(MaterialTheme.colorScheme.background)

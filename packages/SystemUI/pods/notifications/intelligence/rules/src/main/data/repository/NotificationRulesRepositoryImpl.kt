@@ -23,8 +23,10 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import javax.inject.Inject
 
 @SysUISingleton
@@ -42,6 +44,19 @@ class NotificationRulesRepositoryImpl @Inject constructor() : NotificationRulesR
             ),
         )
         private set
+
+    override suspend fun createDraftRuleFromFreeformText(
+        action: ActionModel,
+        text: String,
+    ): DraftRuleModel {
+        // TODO: b/478225883 - Send freeform text for processing.
+        return DraftRuleModel(
+            isNew = true,
+            action = action,
+            contacts = RuleValue.Ambiguous(text),
+            includedApps = null,
+        )
+    }
 
     override fun createRule(newRule: RuleModel) {
         NmContextualDisplayLaunch.expectInNewMode()
