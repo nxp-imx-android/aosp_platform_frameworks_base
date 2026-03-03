@@ -270,6 +270,7 @@ public class NativeApplicationThreadWrapper implements IApplicationThread {
             AutofillOptions autofillOptions,
             ContentCaptureOptions contentCaptureOptions,
             long[] disabledCompatChanges,
+            long[] enabledCompatChanges,
             long[] loggableCompatChanges,
             boolean logChangeChecksToStatsD,
             SharedMemory serializedSystemFontMap,

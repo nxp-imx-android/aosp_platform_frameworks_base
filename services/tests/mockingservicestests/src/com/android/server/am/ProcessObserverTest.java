@@ -215,7 +215,7 @@ public class ProcessObserverTest {
                 anyBoolean(), anyBoolean(), any(),
                 any(), any(), any(),
                 any(), any(),
-                any(), any(), any(), anyBoolean(),
+                any(), any(), any(), any(), anyBoolean(),
                 any(), any(),
                 anyLong(), anyLong());
         final ProcessRecord r = spy(new ProcessRecord(mAms, ai, ai.processName, ai.uid));
@@ -264,7 +264,7 @@ public class ProcessObserverTest {
                 null, null,
                 null,
                 null, null, null,
-                null, null, false, null, null,
+                null, null, null, false, null, null,
                 0, 0);
         return app;
     }

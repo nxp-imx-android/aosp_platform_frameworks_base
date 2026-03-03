@@ -316,6 +316,7 @@ public class ZygoteProcess implements IZygoteProcess {
                                                   int zygotePolicyFlags,
                                                   boolean isTopApp,
                                                   @Nullable long[] disabledCompatChanges,
+                                                  @Nullable long[] enabledCompatChanges,
                                                   boolean useDeliQueue,
                                                   @Nullable Map<String, Pair<String, Long>>
                                                           pkgDataInfoMap,
@@ -336,8 +337,9 @@ public class ZygoteProcess implements IZygoteProcess {
                     runtimeFlags, mountExternal, targetSdkVersion, seInfo,
                     abi, instructionSet, appDataDir, invokeWith, /*startChildZygote=*/ false,
                     packageName, zygotePolicyFlags, isTopApp, disabledCompatChanges,
-                    useDeliQueue, pkgDataInfoMap, allowlistedDataInfoList, bindMountAppsData,
-                    bindMountAppStorageDirs, bindOverrideSysprops, startSeq, zygoteArgs);
+                    enabledCompatChanges, useDeliQueue, pkgDataInfoMap, allowlistedDataInfoList,
+                    bindMountAppsData, bindMountAppStorageDirs, bindOverrideSysprops,
+                    startSeq, zygoteArgs);
         } catch (ZygoteStartFailedEx ex) {
             Log.e(LOG_TAG,
                     "Starting VM process through Zygote failed");
@@ -604,6 +606,7 @@ public class ZygoteProcess implements IZygoteProcess {
                                                       int zygotePolicyFlags,
                                                       boolean isTopApp,
                                                       @Nullable long[] disabledCompatChanges,
+                                                      @Nullable long[] enabledCompatChanges,
                                                       boolean useDeliQueue,
                                                       @Nullable Map<String, Pair<String, Long>>
                                                               pkgDataInfoMap,
@@ -743,6 +746,21 @@ public class ZygoteProcess implements IZygoteProcess {
                     sb.append(',');
                 }
                 sb.append(disabledCompatChanges[i]);
+            }
+
+            argsForZygote.add(sb.toString());
+        }
+
+        if (enabledCompatChanges != null && enabledCompatChanges.length > 0) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("--enabled-compat-changes=");
+
+            int sz = enabledCompatChanges.length;
+            for (int i = 0; i < sz; i++) {
+                if (i != 0) {
+                    sb.append(',');
+                }
+                sb.append(enabledCompatChanges[i]);
             }
 
             argsForZygote.add(sb.toString());
@@ -1280,7 +1298,8 @@ public class ZygoteProcess implements IZygoteProcess {
                     abi, instructionSet, null /* appDataDir */, null /* invokeWith */,
                     true /* startChildZygote */, null /* packageName */,
                     ZYGOTE_POLICY_FLAG_SYSTEM_PROCESS /* zygotePolicyFlags */, false /* isTopApp */,
-                    null /* disabledCompatChanges */, true /* useDeliQueue */,
+                    null /* disabledCompatChanges */, null /* enabledCompatChanges */,
+                    true /* useDeliQueue */,
                     null /* pkgDataInfoMap */, null /* allowlistedDataInfoList */,
                     true /* bindMountAppsData*/, /* bindMountAppStorageDirs */ false,
                     /*bindMountOverrideSysprops */ false, /* startSeq */ 0, extraArgs);

@@ -161,6 +161,7 @@ public class AppZygote {
             @Nullable String packageName,
             boolean isTopApp,
             @Nullable long[] disabledCompatChanges,
+            @Nullable long[] enabledCompatChanges,
             boolean useDeliQueue,
             @Nullable Map<String, Pair<String, Long>>
             pkgDataInfoMap,
@@ -174,7 +175,8 @@ public class AppZygote {
                     targetSdkVersion, seInfo, abi, instructionSet,
                     appDataDir, null, packageName,
                     /*zygotePolicyFlags=*/ ZYGOTE_POLICY_FLAG_EMPTY, isTopApp,
-                    disabledCompatChanges, useDeliQueue, pkgDataInfoMap, allowlistedDataInfoList,
+                    disabledCompatChanges, enabledCompatChanges, useDeliQueue, pkgDataInfoMap,
+                    allowlistedDataInfoList,
                     false, false, false, startSeq,
                     zygoteArgs);
         } catch (RuntimeException e) {
@@ -191,7 +193,8 @@ public class AppZygote {
                 targetSdkVersion, seInfo, abi, instructionSet,
                 appDataDir, null, packageName,
                 /*zygotePolicyFlags=*/ ZYGOTE_POLICY_FLAG_EMPTY, isTopApp,
-                disabledCompatChanges, useDeliQueue, pkgDataInfoMap, allowlistedDataInfoList,
+                disabledCompatChanges, enabledCompatChanges, useDeliQueue, pkgDataInfoMap,
+                allowlistedDataInfoList,
                 false, false, false, startSeq,
                 zygoteArgs);
     }
