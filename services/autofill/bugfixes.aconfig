@@ -179,3 +179,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "destroy_save_ui_before_showing_next_one"
+  namespace: "autofill"
+  description: "Destroy the current showing save dialog before showing the next one to fix device unresponsive issue"
+  bug: "484831460"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
