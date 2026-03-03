@@ -9080,6 +9080,9 @@ package android.app.admin {
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time_zone") public static final int AUTO_TIME_ZONE_ENABLED_UNENFORCED = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_auto_time_zone") public static final int AUTO_TIME_ZONE_USER_CHOICE = 0; // 0x0
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.util.List<java.lang.String>> CONTENT_RESTRICTION_APPS;
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_easter_eggs") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> EASTER_EGGS;
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_easter_eggs") public static final int EASTER_EGGS_ALLOWED = 2; // 0x2
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_easter_eggs") public static final int EASTER_EGGS_DISALLOWED = 1; // 0x1
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.String> LOCKSCREEN_MESSAGE;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> SCREEN_CAPTURE;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") public static final int SCREEN_CAPTURE_ALLOWED = 2; // 0x2
