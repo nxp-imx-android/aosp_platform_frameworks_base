@@ -178,13 +178,6 @@ flag {
 
 
 flag {
-    name: "set_power_mode_during_user_switch"
-    namespace: "multiuser"
-    description: "Set power mode during a user switch."
-    bug: "325249845"
-}
-
-flag {
     name: "stop_previous_user_apps"
     namespace: "multiuser"
     description: "Stop the previous user apps early in a user switch"
