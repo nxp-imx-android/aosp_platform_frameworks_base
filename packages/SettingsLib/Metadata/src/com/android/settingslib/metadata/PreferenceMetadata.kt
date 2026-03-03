@@ -203,6 +203,34 @@ interface PreferenceMetadata {
     fun intent(context: Context): Intent? = null
 }
 
+/**
+ * If this metadata can be exposed to the user
+ */
+fun PreferenceMetadata.isExposureAllowed() : Boolean = listOf(
+    SensitivityLevel.NO_SENSITIVITY,
+    SensitivityLevel.MUST_PROVIDE_UNDO,
+    SensitivityLevel.REQUIRES_CONFIRMATION,
+    SensitivityLevel.DEEP_LINK_ONLY
+).contains(sensitivityLevel)
+
+/**
+ * If this metadata is allowed to have a get value
+ */
+fun PreferenceMetadata.isGetAllowed() : Boolean = listOf(
+    SensitivityLevel.NO_SENSITIVITY,
+    SensitivityLevel.MUST_PROVIDE_UNDO,
+    SensitivityLevel.REQUIRES_CONFIRMATION,
+    SensitivityLevel.DEEP_LINK_ONLY
+).contains(sensitivityLevel)
+
+/**
+ * If this metadata is allowed to have a set value
+ */
+fun PreferenceMetadata.isSetAllowed() : Boolean = listOf(
+    SensitivityLevel.NO_SENSITIVITY,
+    SensitivityLevel.MUST_PROVIDE_UNDO
+).contains(sensitivityLevel)
+
 /** Metadata of preference group. */
 @AnyThread
 interface PreferenceGroup : PreferenceMetadata {
