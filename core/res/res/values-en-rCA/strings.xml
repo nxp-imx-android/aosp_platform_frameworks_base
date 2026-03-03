@@ -554,6 +554,8 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"This app can take pictures and record videos using the camera at any time."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Allow an application or service access to system cameras to take pictures and videos"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"This privileged or system app can take pictures and record videos using a system camera at any time. Requires the android.permission.CAMERA permission to be held by the app as well"</string>
+    <string name="permlab_warmUpCamera" msgid="6135692056406854923">"Allow an application or service to send a warm up signal to the camera sub-system"</string>
+    <string name="permdesc_warmUpCamera" msgid="925343364567764736">"This privileged or system app can send a signal to the camera sub system in order to warm up a camera device to help with performance amongst other benefits"</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Allow an application or service to receive callbacks about camera devices being opened or closed."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"This app can receive callbacks when any camera device is being opened (by what application) or closed."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Allow an application or service to access camera as Headless System User."</string>
