@@ -90,6 +90,7 @@ import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
+import com.android.wm.shell.recents.RecentsTransitionHandler.RecentsMixedHandler;
 import com.android.wm.shell.shared.R;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellCommandHandler;
@@ -811,6 +812,38 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mMainExecutor.flushAll();
 
         verify(mTransitions).startTransition(eq(TRANSIT_END_RECENTS_TRANSITION), any(), any());
+    }
+
+    @Test
+    public void testCancelTransition_disallowFinishingBackToApp() throws Exception {
+        final IResultReceiver finishCallback = mock(IResultReceiver.class);
+        final RecentsMixedHandler handler = mock(RecentsMixedHandler.class);
+        mRecentsTransitionHandler.addMixer(handler);
+
+        // Start the recents transition
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false);
+        mRecentsTransitionHandler.startAnimation(
+                transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+
+        // Simulate a cancel with screenshots (which depends on Launcher to complete the finishing
+        // of the transition)
+        mRecentsTransitionHandler.findController(transition).cancel(true /* toHome */,
+                true /* withScreenshots */, "test");
+        assertNotNull(mRecentsTransitionHandler.findController(transition));
+
+        // Simulate Launcher finishing the transition upon cancel, but with toHome=false
+        // (ie. back to app instead)
+        mRecentsTransitionHandler.findController(transition).finish(false /* toHome */,
+                true /* sendUserLeaveHint */, finishCallback);
+        mMainExecutor.flushAll();
+
+        // Verify we didn't actually finish back to app
+        verify(handler).handleFinishRecents(eq(false), any(), any());
+
+        // Verify we still call Launcher's finish callback
+        verify(finishCallback).send(anyInt(), any());
+        assertNull(mRecentsTransitionHandler.findController(transition));
     }
 
     private void startTransitionAndMergeThenVerifyCanceled(

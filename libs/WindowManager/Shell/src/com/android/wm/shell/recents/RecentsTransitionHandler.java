@@ -490,6 +490,9 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         // This stores the pending finish transaction to merge with the actual finish transaction
         private SurfaceControl.Transaction mPendingFinishTransaction;
 
+        // When we have canceled the transition and are waiting for Launcher to handle & report back
+        private boolean mAwaitingCancelCompletion;
+
         RecentsController(IRecentsAnimationRunner listener, int displayId) {
             mInstanceId = System.identityHashCode(this);
             mDisplayId = displayId;
@@ -566,6 +569,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     ProtoLog.d(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                             "[%d] RecentsController.cancel: waiting for Launcher to finish",
                             mInstanceId);
+                    mAwaitingCancelCompletion = true;
                     setupFinishOnTimeout(mTransition);
                 } else {
                     finishInner(toHome, false /* userLeave */, null /* finishCb */, "cancel");
@@ -661,6 +665,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 mLeashMap = null;
             }
             mFinishTransaction = null;
+            mAwaitingCancelCompletion = false;
             mTaskStates.clear();
             mPausingTasks = null;
             mPausingDeskId = -1;
@@ -1653,6 +1658,25 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 return;
             }
 
+            final SurfaceControl.Transaction t = mFinishTransactionSupplier != null
+                    ? mFinishTransactionSupplier.get()
+                    : new SurfaceControl.Transaction();
+
+            if (mAwaitingCancelCompletion) {
+                ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                        "[%d] RecentsController.finishInner: completing cancel", mInstanceId);
+
+                // Notify the mixers of the pending finish
+                for (int i = 0; i < mMixers.size(); ++i) {
+                    mMixers.get(i).handleFinishRecents(false, null, t);
+                }
+
+                mPendingRunnerFinishCb = runnerFinishCb;
+                mPendingFinishTransaction = t;
+                onFinishInner(null /* wct */);
+                return;
+            }
+
             if (mFinishCB == null || mPendingFinishTransition != null) {
                 Slog.e(TAG, "Duplicate call to finish");
                 if (runnerFinishCb != null) {
@@ -1680,9 +1704,6 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     mInstanceId, toHome, sendUserLeaveHint, mWillFinishToHome, mState,
                     mPausingTasks != null, reason);
 
-            final SurfaceControl.Transaction t = mFinishTransactionSupplier != null
-                    ? mFinishTransactionSupplier.get()
-                    : new SurfaceControl.Transaction();
             final WindowContainerTransaction wct = new WindowContainerTransaction();
 
             // The following code must set this if it is changing anything in core that might affect
