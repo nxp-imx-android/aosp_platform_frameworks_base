@@ -55,6 +55,7 @@ class ClientRegistry {
         mClients.put(clientId, clientInfo);
         mRenderTokensByClientId.put(clientId, renderToken);
         mClientIdsByRenderToken.put(renderToken, clientId);
+        clientInfo.onRegistered();
     }
 
     /**

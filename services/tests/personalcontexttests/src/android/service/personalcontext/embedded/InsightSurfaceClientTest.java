@@ -286,8 +286,9 @@ public class InsightSurfaceClientTest {
         final InsightSurfaceClient client = new InsightSurfaceClient.Builder(mContext).build();
         final Set<ContextHint> hints = Set.of(mock(ContextHint.class));
 
-        client.register(null, mClientCallbacks);
         client.publishHints(hints);
+        client.register(null, mClientCallbacks);
+        client.getClientInfo().onRegistered();
 
         verify(mPersonalContextManager).publishInsightSurfaceHints(
                 eq(hints), any(InsightSurfaceClientInfo.class));
