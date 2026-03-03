@@ -291,8 +291,7 @@ public class SettingsHelper {
                 // Don't write it to setting. Let the broadcast receiver in
                 // AccessibilityManagerService handle restore/merging logic.
                 return;
-            } else if (com.android.graphics.hwui.flags.Flags.highContrastTextSmallTextRect()
-                    && Settings.Secure.ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED.equals(name)) {
+            } else if (Settings.Secure.ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED.equals(name)) {
                 final boolean currentlyEnabled = Settings.Secure.getInt(
                         context.getContentResolver(),
                         Settings.Secure.ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED, 0) == 1;
