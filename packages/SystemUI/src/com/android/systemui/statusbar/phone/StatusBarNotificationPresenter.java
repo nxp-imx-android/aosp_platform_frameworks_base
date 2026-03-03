@@ -30,7 +30,6 @@ import android.service.vr.IVrManager;
 import android.service.vr.IVrStateCallbacks;
 import android.util.Log;
 import android.util.Slog;
-import android.view.View;
 
 import androidx.annotation.NonNull;
 
@@ -43,7 +42,6 @@ import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.res.R;
-import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.shade.NotificationShadeWindowView;
 import com.android.systemui.shade.QuickSettingsController;
 import com.android.systemui.shade.ShadeViewController;
@@ -250,22 +248,13 @@ class StatusBarNotificationPresenter implements NotificationPresenter, CommandQu
         if (nowExpanded) {
             if (mStatusBarStateController.getState() == StatusBarState.KEYGUARD) {
                 mShadeTransitionController.goToLockedShade(row, /* needsQSAnimation = */ true);
-            } else if (clickedEntry.isSensitive().getValue() && isInLockedDownShade()) {
+            } else if (clickedEntry.isSensitive().getValue()
+                        && mShadeTransitionController.isLockdownShade()) {
                 mStatusBarStateController.setLeaveOpenOnKeyguardHide(true);
                 // launch the bouncer if the device is locked
                 mActivityStarter.dismissKeyguardThenExecute(() -> false /* dismissAction */
                         , null /* cancelRunnable */, false /* afterKeyguardGone */);
             }
-        }
-    }
-
-    /** @return true if the Shade is shown over the Lockscreen, and the device is locked */
-    private boolean isInLockedDownShade() {
-        if (SceneContainerFlag.isEnabled()) {
-            return mStatusBarStateController.getState() == StatusBarState.SHADE_LOCKED
-                    && !mDeviceUnlockedInteractor.getDeviceUnlockStatus().getValue().isUnlocked();
-        } else {
-            return mDynamicPrivacyController.isInLockedDownShade();
         }
     }
 
