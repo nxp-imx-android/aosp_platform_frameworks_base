@@ -28,6 +28,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.wm.shell.bubbles.util.BubbleUtils.getEnterBubbleTransaction;
 import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningMode;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR;
@@ -91,9 +92,12 @@ import com.android.wm.shell.taskview.TaskView;
 import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
 import com.android.wm.shell.taskview.TaskViewTransitions;
+import com.android.wm.shell.transition.AnimationPlan;
+import com.android.wm.shell.transition.ITransitionPlanner;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.transition.Transitions.TransitionHandler;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -187,7 +191,7 @@ public class BubbleTransitions {
         for (IBinder cookie : info.getTriggerTask().launchCookies) {
             final TransitionHandler handler = mPendingEnterTransitions.remove(cookie);
             if (handler != null) {
-                ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transferring pending to playing transition for"
+                ProtoLog.d(WM_SHELL_BUBBLES, "Transferring pending to playing transition for"
                         + " cookie=%s", cookie);
                 mPendingEnterTransitions.remove(cookie);
                 mEnterTransitions.put(transition, handler);
@@ -230,18 +234,19 @@ public class BubbleTransitions {
     /**
      * Handles a startTransition request and amend the necessary operations to the given wct.
      */
-    public void handleRequest(@NonNull WindowContainerTransaction wct, @NonNull IBinder transition,
+    @Nullable
+    public Transitions.RequestResult handleRequestOnly(@NonNull WindowContainerTransaction wct,
+            @NonNull IBinder transition,
             @NonNull TransitionRequestInfo request) {
-        if (BubbleFlagHelper.enableRootTaskForBubble()) {
-            final TransitionHandler transitionHandler = mEnterTransitions.get(transition);
-            if (transitionHandler != null) {
-                final Transitions.RequestResult result =
-                        transitionHandler.handleRequestOnly(transition, request);
-                if (result != null) {
-                    wct.merge(result.mWct, true /* transfer */);
-                }
+        final TransitionHandler transitionHandler = mEnterTransitions.get(transition);
+        Transitions.RequestResult result = null;
+        if (BubbleFlagHelper.enableRootTaskForBubble() && transitionHandler != null) {
+            result =  transitionHandler.handleRequestOnly(transition, request);
+            if (result != null) {
+                wct.merge(result.mWct, true /* transfer */);
             }
         }
+        return result;
     }
 
     /** Notifies when the unfold transition has finished. */
@@ -1113,7 +1118,8 @@ public class BubbleTransitions {
      * was not previously visible) or a convert animation (if the task is currently visible).
      */
     @VisibleForTesting
-    class LaunchOrConvertToBubble implements TransitionHandler, BubbleTransition {
+    class LaunchOrConvertToBubble implements TransitionHandler, BubbleTransition,
+            ITransitionPlanner {
         final BubbleExpandedViewTransitionAnimator mExpandedViewAnimator;
         final BubblePositioner mPositioner;
         private final TransitionProgress mTransitionProgress;
@@ -1263,7 +1269,7 @@ public class BubbleTransitions {
         }
 
         @Override
-        public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
+        public Transitions.RequestResult handleRequestOnly(@NonNull IBinder transition,
                 @Nullable TransitionRequestInfo request) {
             if (!BubbleFlagHelper.enableRootTaskForBubble()) {
                 return null;
@@ -1278,7 +1284,11 @@ public class BubbleTransitions {
             wct.setAlwaysOnTop(bubbleRootTask, true);
 
             BubbleLog.d("LaunchOrConvertToBubble.handleRequest(), set root bounds " + bounds);
-            return wct;
+            if (BubbleFlagHelper.isBubbleTransitionPlannerEnabled()) {
+                return new Transitions.RequestResult(wct, Collections.singletonList(this));
+            } else {
+                return new Transitions.RequestResult(wct, this);
+            }
         }
 
         @Override
@@ -1509,6 +1519,20 @@ public class BubbleTransitions {
             }
             mPendingEnterTransitions.remove(mLaunchCookie.binder);
             mEnterTransitions.remove(mPlayingTransition);
+        }
+
+        @Override
+        public void plan(@NonNull AnimationPlan plan, @NonNull TransitionInfo fullInfo,
+                @NonNull IBinder transition, @NonNull TransitionInfo plannableInfo,
+                @NonNull SurfaceControl.Transaction startTransaction) {
+            // TODO(b/483107404) implement animation planning
+            ProtoLog.w(WM_SHELL_BUBBLES, "LaunchOrConvertToBubble.plan()");
+        }
+
+        @NonNull
+        @Override
+        public String getDebugName() {
+            return "LaunchOrConvertToBubble";
         }
     }
 
