@@ -150,7 +150,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     // Not Guarded by lock since this is only accessed in main thread.
     private final SparseArray<PackageMonitor> mPackageMonitors = new SparseArray<>();
 
-    private final AppFunctionAccessServiceInterface mAppFunctionAccessService;
+    @Nullable private final AppFunctionAccessServiceInterface mAppFunctionAccessService;
 
     private final IUriGrantsManager mUriGrantsManager;
 
@@ -178,7 +178,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     public AppFunctionManagerServiceImpl(
             @NonNull Context context,
             @NonNull PackageManagerInternal packageManagerInternal,
-            @NonNull AppFunctionAccessServiceInterface appFunctionAccessServiceInterface,
+            @Nullable AppFunctionAccessServiceInterface appFunctionAccessServiceInterface,
             @NonNull IUriGrantsManager uriGrantsManager,
             @NonNull UriGrantsManagerInternal uriGrantsManagerInternal,
             @NonNull AppFunctionsLoggerWrapper loggerWrapper,
@@ -232,7 +232,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         mServiceConfig = Objects.requireNonNull(serviceConfig);
         mLoggerWrapper = Objects.requireNonNull(loggerWrapper);
         mPackageManagerInternal = Objects.requireNonNull(packageManagerInternal);
-        mAppFunctionAccessService = Objects.requireNonNull(appFunctionAccessServiceInterface);
+        mAppFunctionAccessService = appFunctionAccessServiceInterface;
         mUriGrantsManager = Objects.requireNonNull(uriGrantsManager);
         mUriGrantsManagerInternal = Objects.requireNonNull(uriGrantsManagerInternal);
         mPermissionOwner =
@@ -279,8 +279,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         } catch (IOException e) {
             Slog.e(
                     TAG,
-                    "Failed to create request/response logger for user "
-                            + user.getUserIdentifier(),
+                    "Failed to create request/response logger for user " + user.getUserIdentifier(),
                     e);
         }
 
@@ -297,7 +296,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     /** Called when a the user is starting. */
     public void onUserStarting(@NonNull TargetUser user) {
-        mAppFunctionAccessService.onUserStarting(user.getUserIdentifier());
+        if (accessCheckFlagsEnabled()) {
+            Objects.requireNonNull(mAppFunctionAccessService)
+                    .onUserStarting(user.getUserIdentifier());
+        }
     }
 
     /** Called when the user is stopping. */
@@ -460,8 +462,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                     validateExecuteAppFunctionRequestTargetScope(
                                             requestInternal.getClientRequest(),
                                             targetPackageName,
-                                            targetUser
-                                    );
+                                            targetUser);
                                 } catch (AppFunctionNotFoundException e) {
                                     return AndroidFuture.failedFuture(e);
                                 }
@@ -526,9 +527,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     /**
      * Validates the target scope of the execute app function request. If the function is a
-     * SCOPE_GLOBAL function, the request must not have an AppFunctionActivityId. If the function
-     * is a SCOPE_ACTIVITY function, the request must have an AppFunctionActivityId and the
-     * function must be registered for the given AppFunctionActivityId.
+     * SCOPE_GLOBAL function, the request must not have an AppFunctionActivityId. If the function is
+     * a SCOPE_ACTIVITY function, the request must have an AppFunctionActivityId and the function
+     * must be registered for the given AppFunctionActivityId.
      *
      * @param executeRequest The execute app function request.
      * @param targetPackageName The target package name of the app function.
@@ -1109,8 +1110,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return 0;
         }
-        return mAppFunctionAccessService.getAccessFlags(
-                agentPackageName, agentUserId, targetPackageName, targetUserId);
+        return Objects.requireNonNull(mAppFunctionAccessService)
+                .getAccessFlags(agentPackageName, agentUserId, targetPackageName, targetUserId);
     }
 
     @Override
@@ -1125,8 +1126,14 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return false;
         }
-        return mAppFunctionAccessService.updateAccessFlags(
-                agentPackageName, agentUserId, targetPackageName, targetUserId, flagMask, flags);
+        return Objects.requireNonNull(mAppFunctionAccessService)
+                .updateAccessFlags(
+                        agentPackageName,
+                        agentUserId,
+                        targetPackageName,
+                        targetUserId,
+                        flagMask,
+                        flags);
     }
 
     @Override
@@ -1144,17 +1151,19 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         List<RegistrationScopeId> scopeIds = new ArrayList<>();
         RegistrationScopeId passedScopeId =
-            (activityToken != null)
-                    ? new RegistrationScopeId(getAppFunctionActivityId(activityToken))
-                    : RegistrationScopeId.GLOBAL_SCOPE;
+                (activityToken != null)
+                        ? new RegistrationScopeId(getAppFunctionActivityId(activityToken))
+                        : RegistrationScopeId.GLOBAL_SCOPE;
         for (String functionIdentifier : functionIdentifiers) {
-            @AppFunctionMetadata.AppFunctionType int functionType =
+            @AppFunctionMetadata.AppFunctionType
+            int functionType =
                     mAppFunctionMetadataReader.getAppFunctionType(
                             packageName, functionIdentifier, callingUserHandle);
             if (functionType != AppFunctionMetadata.APP_FUNCTION_TYPE_DYNAMIC_ACTIVITY
                     && functionType != AppFunctionMetadata.APP_FUNCTION_TYPE_DYNAMIC_GLOBAL) {
                 throw new IllegalArgumentException(
-                        "Unable to register AppFunction " + functionIdentifier
+                        "Unable to register AppFunction "
+                                + functionIdentifier
                                 + ". Ensure this function is declared in the XML resource"
                                 + " referenced by the property within the <application> tag of your"
                                 + " AndroidManifest.xml.");
@@ -1206,7 +1215,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return;
         }
-        mAppFunctionAccessService.revokeSelfAccess(targetPackageName);
+        Objects.requireNonNull(mAppFunctionAccessService).revokeSelfAccess(targetPackageName);
     }
 
     @Override
@@ -1216,8 +1225,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return ACCESS_REQUEST_STATE_UNREQUESTABLE;
         }
-        return mAppFunctionAccessService.getAccessRequestState(
-                agentPackageName, agentUserId, targetPackageName, targetUserId);
+        return Objects.requireNonNull(mAppFunctionAccessService)
+                .getAccessRequestState(
+                        agentPackageName, agentUserId, targetPackageName, targetUserId);
     }
 
     @Override
@@ -1225,7 +1235,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return List.of();
         }
-        return mAppFunctionAccessService.getValidAgents(userId);
+        return Objects.requireNonNull(mAppFunctionAccessService).getValidAgents(userId);
     }
 
     @Override
@@ -1233,7 +1243,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return List.of();
         }
-        final List<String> validTargets = mAppFunctionAccessService.getValidTargets(userId);
+        final List<String> validTargets =
+                Objects.requireNonNull(mAppFunctionAccessService).getValidTargets(userId);
         final ArraySet<String> validPermissionOwnerTargets = new ArraySet<>();
 
         final int validTargetSize = validTargets.size();
@@ -1248,13 +1259,21 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     @Override
     public void addOnAccessChangedListener(
             @NonNull IOnAppFunctionAccessChangeListener listener, int userId) {
-        mAppFunctionAccessService.addOnAccessChangedListener(listener, userId);
+        if (!accessCheckFlagsEnabled()) {
+            return;
+        }
+        Objects.requireNonNull(mAppFunctionAccessService)
+                .addOnAccessChangedListener(listener, userId);
     }
 
     @Override
     public void removeOnAccessChangedListener(
             @NonNull IOnAppFunctionAccessChangeListener listener, int userId) {
-        mAppFunctionAccessService.removeOnAccessChangedListener(listener, userId);
+        if (!accessCheckFlagsEnabled()) {
+            return;
+        }
+        Objects.requireNonNull(mAppFunctionAccessService)
+                .removeOnAccessChangedListener(listener, userId);
     }
 
     @Override
