@@ -96,16 +96,6 @@ flag {
 }
 
 flag {
-    namespace: "windowing_sdk"
-    name: "improve_occlusion_calculation"
-    description: "Fix the occlusion calculation that doesn't take care of embedded TaskFragment"
-    bug: "471370182"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "aaos_core_contrib"
     name: "home_activity_always_present"
     description: "Ensure home activity is always present in the system."
