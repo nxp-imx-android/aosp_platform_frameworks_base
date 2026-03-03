@@ -32,6 +32,7 @@ import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.SceneContainerTransitions
 import com.android.systemui.shade.shared.flag.DualShadeFlag
+import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -52,6 +53,7 @@ import dagger.multibindings.IntoMap
             OccludedSceneModule::class,
             QuickSettingsSceneModule::class,
             ShadeSceneModule::class,
+            QuickActionsOverlayModule::class,
             QuickSettingsShadeOverlayModule::class,
             NotificationsShadeOverlayModule::class,
             NotificationsShadeSessionModule::class,
@@ -122,6 +124,7 @@ interface SceneContainerFrameworkModule {
                     listOfNotNull(
                         Overlays.NotificationsShade,
                         Overlays.QuickSettingsShade,
+                        Overlays.QuickActions.takeIf { StatusBarPopupChips.isEnabled },
                         Overlays.Bouncer,
                     ),
                 navigationDistances =
