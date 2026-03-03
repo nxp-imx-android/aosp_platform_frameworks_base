@@ -176,8 +176,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.IVoiceInteractor;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.XmlUtils;
-import com.android.internal.util.function.pooled.PooledLambda;
-import com.android.internal.util.function.pooled.PooledPredicate;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.Watchdog;
@@ -1588,11 +1586,7 @@ class Task extends TaskFragment {
      * Return true if any activities in this task belongs to input uid.
      */
     boolean isUidPresent(int uid) {
-        final PooledPredicate p = PooledLambda.obtainPredicate(
-                ActivityRecord::isUid, PooledLambda.__(ActivityRecord.class), uid);
-        final boolean isUidPresent = getActivity(p) != null;
-        p.recycle();
-        return isUidPresent;
+        return getActivity(r -> r.isUid(uid)) != null;
     }
 
     WindowState topStartingWindow() {
@@ -1892,12 +1886,9 @@ class Task extends TaskFragment {
 
         moveTaskFragmentsToBottomIfNeeded(r, finishCount);
 
-        final PooledPredicate f = PooledLambda.obtainPredicate(
-                (ActivityRecord ar, ActivityRecord boundaryActivity) ->
-                        finishActivityAbove(ar, boundaryActivity, finishCount),
-                PooledLambda.__(ActivityRecord.class), r);
-        forAllActivities(f);
-        f.recycle();
+        forAllActivities(ar -> {
+            return finishActivityAbove(ar, r /* boundaryActivity */, finishCount);
+        }, true /* traverseTopToBottom */);
 
         // Finally, if this is a normal launch mode (that is, not expecting onNewIntent()), then we
         // will finish the current instance of the activity so a new fresh one can be started.
@@ -2092,11 +2083,7 @@ class Task extends TaskFragment {
      * the index within the history at which it's found, or < 0 if not found.
      */
     ActivityRecord findActivityInHistory(ComponentName component, int userId) {
-        final PooledPredicate p = PooledLambda.obtainPredicate(Task::matchesActivityInHistory,
-                PooledLambda.__(ActivityRecord.class), component, userId);
-        final ActivityRecord r = getActivity(p);
-        p.recycle();
-        return r;
+        return getActivity(r -> matchesActivityInHistory(r, component, userId));
     }
 
     private static boolean matchesActivityInHistory(
@@ -2111,11 +2098,9 @@ class Task extends TaskFragment {
         if (root == null) return;
 
         final TaskDescription taskDescription = new TaskDescription();
-        final PooledPredicate f = PooledLambda.obtainPredicate(
-                Task::setTaskDescriptionFromActivityAboveRoot,
-                PooledLambda.__(ActivityRecord.class), root, taskDescription);
-        forAllActivities(f);
-        f.recycle();
+        forAllActivities(r -> {
+            return setTaskDescriptionFromActivityAboveRoot(r, root, taskDescription);
+        }, true /* traverseTopToBottom */);
         taskDescription.setResizeMode(mResizeMode);
         taskDescription.setMinWidth(getMinWidth());
         taskDescription.setMinHeight(getMinHeight());
@@ -3268,11 +3253,7 @@ class Task extends TaskFragment {
      * @return Returns the HistoryRecord of the next activity on the root task.
      */
     ActivityRecord topRunningActivity(IBinder token, int taskId) {
-        final PooledPredicate p = PooledLambda.obtainPredicate(Task::isTopRunning,
-                PooledLambda.__(ActivityRecord.class), taskId, token);
-        final ActivityRecord r = getActivity(p);
-        p.recycle();
-        return r;
+        return getActivity(r -> isTopRunning(r, taskId, token));
     }
 
     private static boolean isTopRunning(ActivityRecord r, int taskId, IBinder notTop) {
@@ -4122,10 +4103,10 @@ class Task extends TaskFragment {
         }
 
         sTmpException = null;
-        final PooledPredicate f = PooledLambda.obtainPredicate(Task::saveActivityToXml,
-                PooledLambda.__(ActivityRecord.class), getBottomMostActivity(), out);
-        forAllActivities(f);
-        f.recycle();
+        final ActivityRecord bottomMostActivity = getBottomMostActivity();
+        forAllActivities(r -> {
+            return saveActivityToXml(r, bottomMostActivity, out);
+        }, true /* traverseTopToBottom */);
         if (sTmpException != null) {
             throw sTmpException;
         }
@@ -5816,11 +5797,9 @@ class Task extends TaskFragment {
             });
         } else {
             // Check if any of the activities are using voice
-            final PooledPredicate f = PooledLambda.obtainPredicate(
-                    Task::finishIfVoiceActivity, PooledLambda.__(ActivityRecord.class),
-                    binder);
-            forAllActivities(f);
-            f.recycle();
+            forAllActivities(r -> {
+                return finishIfVoiceActivity(r, binder);
+            });
         }
     }
 

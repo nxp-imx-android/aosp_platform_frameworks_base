@@ -53,8 +53,6 @@ import android.view.WindowManager;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ArrayUtils;
-import com.android.internal.util.function.pooled.PooledLambda;
-import com.android.internal.util.function.pooled.PooledPredicate;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.LaunchParamsController.LaunchParams;
 
@@ -1605,12 +1603,7 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
             return null;
         }
 
-        final PooledPredicate p = PooledLambda.obtainPredicate(
-                TaskDisplayArea::isHomeActivityForUser, PooledLambda.__(ActivityRecord.class),
-                userId);
-        final ActivityRecord r = rootHomeTask.getActivity(p);
-        p.recycle();
-        return r;
+        return rootHomeTask.getActivity(r -> isHomeActivityForUser(r, userId));
     }
 
     private static boolean isHomeActivityForUser(ActivityRecord r, int userId) {
