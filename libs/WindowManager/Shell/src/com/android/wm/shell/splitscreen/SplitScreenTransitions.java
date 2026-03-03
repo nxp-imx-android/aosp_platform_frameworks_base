@@ -38,8 +38,10 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.graphics.Rect;
 import android.os.IBinder;
 import android.util.ArraySet;
+import android.view.RoundedCorner;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.RemoteTransition;
@@ -633,8 +635,15 @@ class SplitScreenTransitions {
 
     private void startDismissAnimation(@NonNull TransitionInfo.Change change,
             @NonNull SurfaceControl.Transaction t) {
+        Rect topOrLeftBounds = new Rect();
+        Rect bottomOrRightBounds = new Rect();
+        mStageCoordinator.getStageBounds(topOrLeftBounds, bottomOrRightBounds);
+
+        RoundedCorner roundedCorner = mStageCoordinator.getRoundedCorner();
+        float cornerRadius = roundedCorner != null ? roundedCorner.getRadius() : 0f;
+
         Animator animator = mSplitTransitionAnimations.buildDismissAnimation(change, t,
-                mStageCoordinator, (finishedAnimator) -> {
+                topOrLeftBounds, bottomOrRightBounds, cornerRadius, (finishedAnimator) -> {
                     mTransitions.getMainExecutor().execute(() -> {
                         mAnimations.remove(finishedAnimator);
                         onFinish(null /* wct */);
