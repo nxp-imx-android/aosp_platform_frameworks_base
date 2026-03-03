@@ -47,6 +47,7 @@ class ContainerHierarchyController(
         displayController.addDisplayChangingController(this)
     }
 
+    /** @see DisplayChangeController.OnDisplayChangingListener.onDisplayChange */
     override fun onDisplayChange(
         displayId: Int,
         fromRotation: Int,

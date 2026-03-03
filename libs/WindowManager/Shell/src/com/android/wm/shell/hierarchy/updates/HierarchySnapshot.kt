@@ -16,6 +16,7 @@
 package com.android.wm.shell.hierarchy.updates
 
 import com.android.wm.shell.hierarchy.containers.Container
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_CHILDREN
 import java.util.BitSet
 
 val EMPTY_SNAPSHOT = HierarchySnapshot()
@@ -38,6 +39,13 @@ class HierarchyChangeFlags(vararg flags: Int) : BitSet() {
         if (value != other) {
             set(flag)
         }
+    }
+
+    /**
+     * Returns whether the only change is the children.
+     */
+    fun isOnlyChildrenChange(): Boolean {
+        return cardinality() == 1 && this[CHANGED_CHILDREN]
     }
 }
 
@@ -128,8 +136,11 @@ class HierarchySnapshot {
 
         // Changes to a root container
         const val ROOT_CONTAINER_OFFSET = 200
-        const val CHANGED_ROOT_EXAMPLE_SHELL_PROPERTY = ROOT_CONTAINER_OFFSET + 1
-        const val CHANGED_FOCUS = ROOT_CONTAINER_OFFSET + 2
+        const val CHANGED_FOCUS = ROOT_CONTAINER_OFFSET + 1
+        const val CHANGED_USER = ROOT_CONTAINER_OFFSET + 2
+        const val CHANGED_USER_PROFILES = ROOT_CONTAINER_OFFSET + 3
+        const val CHANGED_KEYGUARD = ROOT_CONTAINER_OFFSET + 4
+        const val CHANGED_IS_FOLDED = ROOT_CONTAINER_OFFSET + 5
 
         // Changes to a display container
         const val DISPLAY_CONTAINER_OFFSET = 300

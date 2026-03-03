@@ -34,7 +34,7 @@ class DisplayAreaContainerProperties(
 
     /** @see ContainerProperties.propsToString */
     override fun propsToString(): String {
-        return "featureId=$featureId " + super.propsToString()
+        return "featureId=$featureId | " + super.propsToString()
     }
 
     /** @see ContainerProperties.getTypeName */

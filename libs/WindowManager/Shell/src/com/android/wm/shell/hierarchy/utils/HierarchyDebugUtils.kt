@@ -27,14 +27,18 @@ import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGE
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_CHILDREN
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_FOCUS
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_INSETS
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_IS_FOLDED
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_KEYGUARD
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_MODE
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_PARENT
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_PIP_PARAMS
-import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_ROOT_EXAMPLE_SHELL_PROPERTY
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_ROTATION
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_TASK_DESCRIPTION
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_USER
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_USER_PROFILES
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_VISIBILITY
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_WINDOWING_MODE
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.ROOT_CONTAINER_OFFSET
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_MODES
 
 /**
@@ -124,7 +128,7 @@ class HierarchyDebugUtils {
                 else "$rawPrefix\u2502  "
 
             // Dump current & previous window oinfo
-            if (oldState != null) {
+            if (oldState != null && !changeFlags.isOnlyChildrenChange()) {
                 output += "${prefix}$YELLOW(from)$NONE ${oldState.props}\n"
                 output += "${prefix}$YELLOW  (to)$NONE ${container.props}\n"
             } else {
@@ -221,8 +225,11 @@ class HierarchyDebugUtils {
                         CHANGED_VISIBILITY -> "visibility"
 
                         // Root
-                        CHANGED_ROOT_EXAMPLE_SHELL_PROPERTY -> "example_prop"
                         CHANGED_FOCUS -> "focus"
+                        CHANGED_USER -> "user"
+                        CHANGED_USER_PROFILES -> "userProfiles"
+                        CHANGED_KEYGUARD -> "keyguard"
+                        CHANGED_IS_FOLDED -> "isFolded"
 
                         // Display
                         CHANGED_INSETS -> "insets"

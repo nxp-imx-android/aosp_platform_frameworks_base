@@ -17,7 +17,10 @@ package com.android.wm.shell.hierarchy.updates
 
 import android.app.ActivityManager
 import android.content.ComponentName
+import android.content.pm.UserInfo
 import android.graphics.Rect
+import android.hardware.devicestate.DeviceStateManager
+import android.os.Handler
 import android.os.IBinder
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
@@ -43,6 +46,7 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.Flags.FLAG_ENABLE_SHELL_MODES
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.TestSyncExecutor
 import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.hierarchy.ContainerHierarchy
@@ -51,12 +55,20 @@ import com.android.wm.shell.hierarchy.containers.StubContainer
 import com.android.wm.shell.hierarchy.modes.FormFactorModes
 import com.android.wm.shell.hierarchy.modes.Mode
 import com.android.wm.shell.hierarchy.modes.StubMode
+import com.android.wm.shell.hierarchy.properties.DeviceState
 import com.android.wm.shell.hierarchy.properties.DisplayAreaContainerProperties
 import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
 import com.android.wm.shell.hierarchy.properties.TaskContainerProperties
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_INSETS
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_IS_FOLDED
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_KEYGUARD
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_USER
+import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_USER_PROFILES
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -80,11 +92,14 @@ import org.mockito.kotlin.verify
 @RunWith(AndroidJUnit4::class)
 class HierarchyUpdaterTest : ShellTestCase() {
 
+    private val shellController = mock<ShellController>()
     private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
     private val transitions = mock<Transitions>()
     private val displayInsetsController = mock<DisplayInsetsController>()
+    private val deviceStateManager = mock<DeviceStateManager>()
     private val formFactorModes = mock<FormFactorModes>()
     private val shellInit = mock<ShellInit>()
+    private val testExecutor = TestSyncExecutor()
 
     // Create a test hierarchy
     private val display =
@@ -127,15 +142,25 @@ class HierarchyUpdaterTest : ShellTestCase() {
         child2.mode = child2Mode
     }
 
-    private val updater =
-        HierarchyUpdater(
-            shellTaskOrganizer,
-            transitions,
-            displayInsetsController,
-            hierarchy,
-            formFactorModes,
-            shellInit
-        )
+    private lateinit var updater: HierarchyUpdater
+
+    @Before
+    fun setup() {
+        updater =
+            HierarchyUpdater(
+                context,
+                shellController,
+                shellTaskOrganizer,
+                transitions,
+                displayInsetsController,
+                deviceStateManager,
+                hierarchy,
+                formFactorModes,
+                shellInit,
+                testExecutor,
+                mock<Handler>(),
+            )
+    }
 
     @Test
     fun testOpenTransition() {
@@ -583,9 +608,79 @@ class HierarchyUpdaterTest : ShellTestCase() {
             newInsets
         )
         // Verify that the children modes are updated when the display changes
+        assertGlobalStateChangeReportedToChildrenModes(display, CHANGED_INSETS)
+    }
+
+    @Test
+    fun testUpdateFromUserChange() {
+        val newUserId = 1234
+        // Trigger the update
+        updater.handleUserChanged(newUserId)
+
+        // Verify that the display container props have the latest user
+        assertThat(hierarchy.root.rootProps().userState.currentUserId).isEqualTo(newUserId)
+
+        // Verify that the children modes are updated when the user changes
+        assertGlobalStateChangeReportedToChildrenModes(hierarchy.root, CHANGED_USER)
+    }
+
+    @Test
+    fun testUpdateFromUserProfilesChange() {
+        val profiles = listOf(mock<UserInfo>(), mock<UserInfo>())
+        // Trigger the update
+        updater.handleUserProfilesChanged(profiles)
+
+        // Verify that the display container props have the latest user profiles
+        assertThat(hierarchy.root.rootProps().userState.currentUserProfiles).isEqualTo(profiles)
+
+        // Verify that the children modes are updated when the user profile changes
+        assertGlobalStateChangeReportedToChildrenModes(hierarchy.root, CHANGED_USER_PROFILES)
+    }
+
+    @Test
+    fun testUpdateFromKeyguardChange() {
+        // Trigger the update
+        updater.handleKeyguardVisibilityChanged(DeviceState.KeyguardState.Occluded)
+
+        // Verify that the display container props have the latest keyguard state
+        assertThat(hierarchy.root.rootProps().deviceState.keyguardState)
+            .isEqualTo(DeviceState.KeyguardState.Occluded)
+
+        // Verify that the children modes are updated when the keyguard state changes
+        assertGlobalStateChangeReportedToChildrenModes(hierarchy.root, CHANGED_KEYGUARD)
+    }
+
+    @Test
+    fun testUpdateFromFoldStateChange() {
+        // Trigger the update
+        updater.foldStateListener = mock<DeviceStateManager.FoldStateListener>()
+        updater.foldStateListener.stub {
+            on { folded } doAnswer {
+                true
+            }
+        }
+        updater.handleDeviceStateChanged(mock<android.hardware.devicestate.DeviceState>())
+
+        // Verify that the display container props have the latest folded state
+        assertThat(hierarchy.root.rootProps().deviceState.isFolded).isTrue()
+
+        // Verify that the children modes are updated when the folded state changes
+        assertGlobalStateChangeReportedToChildrenModes(hierarchy.root, CHANGED_IS_FOLDED)
+    }
+
+    /**
+     * Asserts that a global state has changed and that child modes should be notified.
+     */
+    private fun assertGlobalStateChangeReportedToChildrenModes(
+        expectedContainer: Container,
+        expectedChangeFlag: Int,
+    ) {
         assertThat(child1Mode.ancestorsChangedContainers).isNotEmpty()
         assertThat(child1Mode.changedContainers).isEmpty()
         assertThat(child2Mode.ancestorsChangedContainers).isNotEmpty()
         assertThat(child2Mode.changedContainers).isEmpty()
+
+        val expectedContainerChgs = child1Mode.globalStateSnapshot!!.getChanges(expectedContainer)
+        assertThat(expectedContainerChgs[expectedChangeFlag]).isTrue()
     }
 }

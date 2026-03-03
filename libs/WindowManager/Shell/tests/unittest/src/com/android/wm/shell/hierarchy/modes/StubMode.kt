@@ -37,6 +37,7 @@ open class StubMode(
     val changedContainers = mutableListOf<Container>()
     val ancestorsChangedContainers = mutableListOf<Container>()
     val displayChanges = mutableListOf<DisplayContainerProperties>()
+    var globalStateSnapshot: HierarchySnapshot? = null
 
     // The containers to compare againest those provided in the next prepareForAnimation() call
     var expectedPrepareForAnimationContainers: List<Container>? = null
@@ -57,6 +58,7 @@ open class StubMode(
         snapshot: HierarchySnapshot
     ) {
         ancestorsChangedContainers.add(modeContainer)
+        globalStateSnapshot = snapshot
     }
 
     override fun containersChanged(
