@@ -50,13 +50,6 @@ flag {
 }
 
 flag {
-    name: "stop_recognizing_legacy_password_hashes"
-    namespace: "security"
-    description: "Make LockSettingsService stop recognizing legacy password hashes"
-    bug: "442877927"
-}
-
-flag {
     name: "enable_weaver_warmup"
     namespace: "security"
     description: "Enable warm-up of secure element before credential verification"
