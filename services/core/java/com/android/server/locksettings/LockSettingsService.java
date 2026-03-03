@@ -902,36 +902,10 @@ public class LockSettingsService extends ILockSettings.Stub {
             userHandle);
     }
 
-    @VisibleForTesting
-    void onUserStopped(int userId) {
+    private void onUserStopped(int userId) {
         hideEncryptionNotification(new UserHandle(userId));
-
-        if (android.security.Flags.resetAuthFlagsAndMetricsInLockUser()) {
-            // Don't perform any locking actions (e.g. locking CE storage) here, since the user is
-            // not necessarily being locked. These actions happen in lockUser() instead.
-            return;
-        }
-
-        // Normally, CE storage is locked when a user is stopped, and restarting the user requires
-        // strong auth.  Therefore, reset the user's strong auth flags.  The exception is users that
-        // allow delayed locking; under some circumstances, biometric authentication is allowed to
-        // restart such users.  Don't reset the strong auth flags for such users.
-        //
-        // TODO(b/319142556): It might make more sense to reset the strong auth flags when CE
-        // storage is locked, instead of when the user is stopped.  This would ensure the flags get
-        // reset if CE storage is locked later for a user that allows delayed locking.
-        UserProperties userProperties = getUserProperties(userId);
-        if (userProperties != null && userProperties.getAllowStoppingUserWithDelayedLocking()) {
-            return;
-        }
-        int strongAuthRequired = LockPatternUtils.StrongAuthTracker.getDefaultFlags(mContext);
-        requireStrongAuth(strongAuthRequired, userId);
-
-        // Don't keep the password metrics in memory for a stopped user that will require strong
-        // auth to start again, since strong auth will make the password metrics available again.
-        synchronized (this) {
-            mUserPasswordMetrics.remove(userId);
-        }
+        // Don't perform any locking actions (e.g. locking CE storage) here, since the user is not
+        // necessarily being locked. These actions happen in lockUser() instead.
     }
 
     private void onUserStarting(final int userId) {
@@ -3780,27 +3754,13 @@ public class LockSettingsService extends ILockSettings.Stub {
             lockKeystore(userId);
         }
 
-        if (android.security.Flags.resetAuthFlagsAndMetricsInLockUser()) {
-            // Reset the user's strong auth flags.
-            int strongAuthFlags = LockPatternUtils.StrongAuthTracker.getDefaultFlags(mContext);
-            requireStrongAuth(strongAuthFlags, userId);
+        // Reset the user's strong auth flags.
+        int strongAuthFlags = LockPatternUtils.StrongAuthTracker.getDefaultFlags(mContext);
+        requireStrongAuth(strongAuthFlags, userId);
 
-            // Remove the user's password metrics.
-            synchronized (this) {
-                mUserPasswordMetrics.remove(userId);
-            }
-        } else {
-            // Reset the user's strong auth flags, if it wasn't already done by onUserStopped().
-            mHandler.post(
-                    () -> {
-                        UserProperties userProperties = getUserProperties(userId);
-                        if (userProperties != null
-                                && userProperties.getAllowStoppingUserWithDelayedLocking()) {
-                            int strongAuthRequired =
-                                    LockPatternUtils.StrongAuthTracker.getDefaultFlags(mContext);
-                            requireStrongAuth(strongAuthRequired, userId);
-                        }
-                    });
+        // Remove the user's password metrics.
+        synchronized (this) {
+            mUserPasswordMetrics.remove(userId);
         }
     }
 
