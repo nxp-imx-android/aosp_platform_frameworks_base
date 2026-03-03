@@ -53,6 +53,7 @@ import android.view.selectiontoolbar.ShowInfo
 import android.view.selectiontoolbar.ToolbarMenuItem
 import android.view.selectiontoolbar.WidgetInfo
 import android.widget.ArrayAdapter
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -94,7 +95,7 @@ class RemoteSelectionToolbar(
                     "RemoteSelectionToolbar must be created on a looper thread"
                 )
         )
-    private val hostInputToken = showInfo.hostInputToken
+    private val hostInputToken = InputTransferToken(showInfo.hostInputToken)
 
     /* View components */
     private val contentContainer =
@@ -127,7 +128,7 @@ class RemoteSelectionToolbar(
             info.setTouchableInsets(ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION)
         }
     private val contentHolder =
-        FloatingToolbarRoot(context, hostInputToken, transferTouchListener).apply {
+        FrameLayout(context).apply {
             addView(contentContainer)
             addOnAttachStateChangeListener(
                 object : View.OnAttachStateChangeListener {
@@ -285,7 +286,6 @@ class RemoteSelectionToolbar(
         if (surfaceControlViewHost == null) {
             return
         }
-        val root = surfaceControlViewHost!!.view as FloatingToolbarRoot
         contentContainer.getLocationOnScreen(tempCoords)
         val contentLeft = tempCoords[0]
         val contentTop = tempCoords[1]
@@ -295,7 +295,6 @@ class RemoteSelectionToolbar(
             contentLeft + contentContainer.width,
             contentTop + contentContainer.height,
         )
-        root.setContentRect(tempContentRectForRoot)
     }
 
     private fun createWidgetInfo(): WidgetInfo {
@@ -341,7 +340,7 @@ class RemoteSelectionToolbar(
                 SurfaceControlViewHost(
                     context,
                     context.display,
-                    InputTransferToken(hostInputToken),
+                    hostInputToken,
                     "RemoteSelectionToolbar",
                 )
             surfaceControlViewHost!!.setView(contentHolder, popupWidth, popupHeight)
@@ -415,7 +414,6 @@ class RemoteSelectionToolbar(
         if (!immediateHideAnimation.isStarted) {
             delayedHideAnimation.start()
         }
-        contentHolder.setContentRectEmpty()
         state = TOOLBAR_STATE_DISMISSED
     }
 
@@ -427,7 +425,6 @@ class RemoteSelectionToolbar(
         }
         delayedHideAnimation.cancel()
         immediateHideAnimation.start()
-        contentHolder.setContentRectEmpty()
         state = TOOLBAR_STATE_HIDDEN
     }
 
@@ -1352,10 +1349,6 @@ class RemoteSelectionToolbar(
             pw.print(prefix)
             pw.print("overflow size: ")
             pw.println(overflowPanelSize)
-        }
-        if (surfaceControlViewHost != null) {
-            val root = surfaceControlViewHost!!.view as FloatingToolbarRoot
-            root.dump(prefix, pw)
         }
         if (menuItems != null) {
             val menuItemSize = menuItems!!.size
