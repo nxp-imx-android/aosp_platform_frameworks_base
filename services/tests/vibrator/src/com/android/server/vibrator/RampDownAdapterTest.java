@@ -206,23 +206,17 @@ public class RampDownAdapterTest {
     }
 
     @Test
-    public void testStepSegments_withRepeatToLongZeroSegment_splitAndAppendRampDown() {
+    public void testStepSegments_propagatesStartTime() {
+        long startTime = 1234L;
         List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
-                new StepSegment(/* amplitude= */ 0, /* duration= */ 120),
-                new StepSegment(/* amplitude= */ 1, /* duration= */ 30)));
-        List<VibrationEffectSegment> expectedSegments = Arrays.asList(
-                // Split long zero segment to skip part of it.
-                new StepSegment(/* amplitude= */ 0, /* duration= */ 20),
-                new StepSegment(/* amplitude= */ 0, /* duration= */ 100),
-                new StepSegment(/* amplitude= */ 1, /* duration= */ 30),
-                new StepSegment(/* amplitude= */ 0.75f, /* duration= */ 5),
-                new StepSegment(/* amplitude= */ 0.5f, /* duration= */ 5),
-                new StepSegment(/* amplitude= */ 0.25f, /* duration= */ 5),
-                new StepSegment(/* amplitude= */ 0, /* duration= */ 5));
+                new StepSegment(/* amplitude= */ 1, /* duration= */ 10),
+                new StepSegment(/* amplitude= */ 0, /* duration= */ 10, startTime)));
 
-        // Shift repeat index to the right to use append with part of the zero segment.
-        assertEquals(1, mAdapter.adaptToVibrator(EMPTY_VIBRATOR_INFO, segments, 0));
+        mAdapter.adaptToVibrator(EMPTY_VIBRATOR_INFO, segments, -1);
 
-        assertEquals(expectedSegments, segments);
+        assertEquals(3, segments.size());
+        assertEquals(-1, segments.get(0).getStartTimeMillis());
+        assertEquals(startTime, segments.get(1).getStartTimeMillis());
+        assertEquals(-1, segments.get(2).getStartTimeMillis());
     }
 }

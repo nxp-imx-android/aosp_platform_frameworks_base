@@ -84,8 +84,14 @@ final class RampDownAdapter implements VibrationSegmentsAdapter {
             }
 
             long offDuration = segments.get(i).getDuration();
+            long startTimeMillis = segments.get(i).getStartTimeMillis();
             List<VibrationEffectSegment> replacementSegments = createStepsDown(previousAmplitude,
                     offDuration);
+
+            if (startTimeMillis >= 0 && !replacementSegments.isEmpty()) {
+                replacementSegments.set(0,
+                        replacementSegments.get(0).applyStartTime(startTimeMillis));
+            }
 
             int segmentsAdded = replacementSegments.size() - 1;
 
@@ -181,7 +187,8 @@ final class RampDownAdapter implements VibrationSegmentsAdapter {
     private static VibrationEffectSegment updateStepDuration(VibrationEffectSegment segment,
             long newDuration) {
         if (segment instanceof StepSegment step) {
-            return new StepSegment(step.getAmplitude(), (int) newDuration);
+            return new StepSegment(step.getAmplitude(), (int) newDuration,
+                    step.getStartTimeMillis());
         }
         return segment;
     }
