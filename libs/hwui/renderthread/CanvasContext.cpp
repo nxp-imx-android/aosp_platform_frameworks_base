@@ -763,6 +763,7 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
                             mCurrentFrameInfo->get(FrameInfoIndex::Vsync) -
                             mCurrentFrameInfo->get(FrameInfoIndex::IntendedVsync),
                     .dequeueBufferDurationNanos = lastDequeueDuration,
+                    .animationTime = mCurrentFrameInfo->get(FrameInfoIndex::AnimationTime),
             };
             mRenderPipeline->setFrameTimelineInfo(ftl);
         }
