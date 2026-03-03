@@ -24,6 +24,7 @@ import android.app.appsearch.observer.SchemaChangeInfo;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Slog;
 
@@ -60,6 +61,12 @@ class InternalObserverCallbackRouter {
                     maybeCleanupVisibilityCache(deadCallbackIdentity);
                 }
             };
+
+    private final Object mVisibilityCacheLock = new Object();
+
+    @GuardedBy("mVisibilityCacheLock")
+    private final ArrayMap<CallerIdentity, ArraySet<String>> mIdentityToVisiblePackages =
+            new ArrayMap<>();
 
     private final int mMetadataChangeDebounceMs;
     private final long mEnabledStateDebounceMs;
@@ -252,12 +259,13 @@ class InternalObserverCallbackRouter {
                 (callback, cookie) -> {
                     if (cookie instanceof CallerIdentity callerIdentity) {
                         try {
-                            Set<String> filteredPackages =
-                                    mVisibilityHelper.filterVisiblePackages(
+                            Set<String> packagesToNotify =
+                                    filterPackagesToNotify(
                                             changedPackageNames,
                                             Objects.requireNonNull(callerIdentity));
-                            if (!filteredPackages.isEmpty()) {
-                                callback.onPackagesChanged(new ArrayList<>(filteredPackages));
+
+                            if (!packagesToNotify.isEmpty()) {
+                                callback.onPackagesChanged(new ArrayList<>(packagesToNotify));
                             }
                         } catch (RemoteException e) {
                             Slog.e(TAG, "Failed to execute callback#onPackagesChanged.", e);
@@ -274,13 +282,14 @@ class InternalObserverCallbackRouter {
                 (callback, cookie) -> {
                     if (cookie instanceof CallerIdentity callerIdentity) {
                         try {
-                            Set<AppFunctionName> filteredFunctions =
-                                    mVisibilityHelper.filterVisibleAppFunctions(
+                            Set<AppFunctionName> functionsToNotify =
+                                    filterFunctionsToNotify(
                                             changedFunctionNames,
                                             Objects.requireNonNull(callerIdentity));
-                            if (!filteredFunctions.isEmpty()) {
+
+                            if (!functionsToNotify.isEmpty()) {
                                 callback.onAppFunctionStatesChanged(
-                                        new ArrayList<>(filteredFunctions));
+                                        new ArrayList<>(functionsToNotify));
                             }
                         } catch (RemoteException e) {
                             Slog.e(
@@ -310,6 +319,53 @@ class InternalObserverCallbackRouter {
         maybeCleanupVisibilityCache(callerIdentity);
     }
 
+    private Set<String> filterPackagesToNotify(
+            @NonNull Set<String> changedPackageNames, @NonNull CallerIdentity callerIdentity) {
+        Objects.requireNonNull(changedPackageNames);
+        Objects.requireNonNull(callerIdentity);
+        Set<String> visibleChangedPackages =
+                mVisibilityHelper.filterVisiblePackages(changedPackageNames, callerIdentity);
+
+        synchronized (mVisibilityCacheLock) {
+            Set<String> visiblePackagesHistory =
+                    mIdentityToVisiblePackages.computeIfAbsent(
+                            callerIdentity, callerIdentity1 -> new ArraySet<>());
+            // Incrementally update the cache with newly visible packages.
+            // We intentionally do not remove packages that have become invisible since visibility
+            // loss implies uninstallation, and we require these cache entries to successfully
+            // notify all relevant observers of the uninstallation.
+            visiblePackagesHistory.addAll(visibleChangedPackages);
+
+            Set<String> packagesToNotify = new ArraySet<>(changedPackageNames);
+            packagesToNotify.retainAll(visiblePackagesHistory);
+            return packagesToNotify;
+        }
+    }
+
+    private Set<AppFunctionName> filterFunctionsToNotify(
+            @NonNull Set<AppFunctionName> changedFunctionNames,
+            @NonNull CallerIdentity callerIdentity) {
+        Objects.requireNonNull(changedFunctionNames);
+        Objects.requireNonNull(callerIdentity);
+
+        Set<AppFunctionName> visibleChangedFunctions =
+                mVisibilityHelper.filterVisibleAppFunctions(changedFunctionNames, callerIdentity);
+
+        synchronized (mVisibilityCacheLock) {
+            Set<String> visiblePackagesHistory =
+                    mIdentityToVisiblePackages.computeIfAbsent(
+                            callerIdentity, callerIdentity1 -> new ArraySet<>());
+            for (AppFunctionName functionName : visibleChangedFunctions) {
+                visiblePackagesHistory.add(functionName.getPackageName());
+            }
+
+            Set<AppFunctionName> functionsToNotify = new ArraySet<>(changedFunctionNames);
+            functionsToNotify.removeIf(
+                    function -> !visiblePackagesHistory.contains(function.getPackageName()));
+            return functionsToNotify;
+        }
+    }
+
     /** Removes cached visibility list for the given caller identity, if no longer needed. */
     private void maybeCleanupVisibilityCache(@NonNull CallerIdentity identityToRemove) {
 
@@ -326,7 +382,9 @@ class InternalObserverCallbackRouter {
                     } finally {
                         mInternalCallbacks.finishBroadcast();
                     }
-                    mVisibilityHelper.cleanupVisibilityCache(identityToRemove);
+                    synchronized (mVisibilityCacheLock) {
+                        mIdentityToVisiblePackages.remove(identityToRemove);
+                    }
                 };
         try {
             mExecutor.execute(scheduledRunnable);
