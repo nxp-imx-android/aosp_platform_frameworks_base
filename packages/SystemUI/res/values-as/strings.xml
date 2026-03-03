@@ -248,10 +248,8 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"সন্মুখৰ কেমেৰা"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"বাছনি কৰক"</string>
-    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
-    <skip />
-    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
-    <skip />
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"মেনু বিস্তাৰ কৰা হৈছে"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"মেনু সংকোচন কৰা হ’ল"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"শ্বেয়াৰ কৰা বন্ধ কৰক"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"স্ক্ৰীন শ্বেয়াৰ কৰাটো অন আছে। শ্বেয়াৰ কৰাটো বন্ধ কৰিবলৈ গোপনীয়তাৰ সূচক ব্যৱহাৰ কৰক।"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"স্ক্ৰীন শ্বেয়াৰ কৰি থকা হৈছে"</string>
@@ -708,6 +706,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"চাৰ্জ কৰি থাকোঁতে আপোনাৰ প্ৰিয় ৱিজেট আৰু স্ক্ৰীন ছেভাৰসমূহ এক্সেছ কৰক।"</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"আৰম্ভ কৰোঁ আহক"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"চাৰ্জ কৰাৰ সময়ত আপোনাৰ প্ৰিয় স্ক্ৰীনছেভাৰ দেখুৱাওক"</string>
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"ড্ৰীম বাছনি কৰক"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"এটা স্ক্ৰীনছেভাৰ বাছনি কৰক"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"<xliff:g id="DREAM_NAME">%1$s</xliff:g> সম্পাদনা কৰক"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"<xliff:g id="APP_NAME">%1$s</xliff:g>লৈ যাওক"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"অধিক স্ক্ৰীনছেভাৰ"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"ড্ৰীম বাছনি কৰাৰ মেনু খোলক"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"ব্যৱহাৰকাৰী সলনি কৰক"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"পুল-ডাউনৰ মেনু"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"এই ছেশ্বনৰ আটাইবোৰ এপ্ আৰু ডেটা মচা হ\'ব।"</string>
@@ -1044,8 +1048,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ঘণ্টা}=2{# ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# মিনিট}one{# মিনিট}other{# মিনিট}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ডিম’শ্বন মেনু খুলিবলৈ"</string>
-    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
-    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"বেটাৰী সঞ্চয়কাৰী"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g> বুটাম"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"হ\'ম"</string>
@@ -1104,6 +1106,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"ছেটিং খোলক"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ডিজিটেল সহায়ক খোলক"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"প্ৰসংগ-ভিত্তিক সন্ধান"</string>
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"প্ৰাসংগিক কাৰ্ছৰ"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"লক স্ক্ৰীন"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"টোকা লিখক"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"মাল্টিটাস্কিং"</string>
@@ -1226,6 +1229,10 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"<xliff:g id="ID_1">%s</xliff:g>ৰ ছেটিং খোলক।"</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"ক্ষিপ্ৰ ছেটিঙৰ ক্ৰম সম্পাদনা কৰক।"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"পাৱাৰ মেনু"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>ৰ পৃষ্ঠা <xliff:g id="ID_1">%1$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> অন কৰিবনে?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"চিহ্ন"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> হৈছে <xliff:g id="ID_4">^4</xliff:g> ব্যৱহাৰ কৰিবলৈ কীব’ৰ্ডৰ শ্বৰ্টকাট। <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1599,6 +1606,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"প্ৰতিচ্ছবিৰ পূৰ্বদৰ্শন"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"সম্পাদনা কৰক"</string>
     <string name="add" msgid="81036585205287996">"যোগ দিয়ক"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"পৰিচালনা কৰক"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"এই জাননীটোৱে বিভাজিত স্ক্ৰীনলৈ টানি আনি এৰাৰ সুবিধাটো সমৰ্থন নকৰে"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"অৱস্থান সক্ৰিয় হৈ আছে"</string>

@@ -248,10 +248,8 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"กล้องหน้า"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"เลือก"</string>
-    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
-    <skip />
-    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
-    <skip />
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"ขยายเมนูแล้ว"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"ยุบเมนูแล้ว"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"หยุดการแชร์"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"การแชร์หน้าจอเปิดอยู่ ใช้สัญญาณบอกสถานะความเป็นส่วนตัวเพื่อสิ้นสุดการแชร์"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"กำลังแชร์หน้าจอ"</string>
@@ -708,6 +706,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"เข้าถึงวิดเจ็ตและภาพพักหน้าจอโปรดขณะชาร์จ"</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"มาเริ่มกันเลย"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"แสดงภาพพักหน้าจอโปรดขณะชาร์จ"</string>
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"เลือก Dream"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"เลือกภาพพักหน้าจอ"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"แก้ไข <xliff:g id="DREAM_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"ไปที่ <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"ภาพพักหน้าจอเพิ่มเติม"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"เปิดเมนูการเลือก Dream"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"สลับผู้ใช้"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"เมนูแบบเลื่อนลง"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"ระบบจะลบแอปและข้อมูลทั้งหมดในเซสชันนี้"</string>
@@ -1044,8 +1048,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# ชั่วโมง}=2{# ชั่วโมง}other{# ชั่วโมง}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# นาที}other{# นาที}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"เพื่อเปิดเมนูการลดระดับ"</string>
-    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
-    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"โหมดประหยัดแบตเตอรี่"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"ปุ่ม <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1104,6 +1106,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"เปิดการตั้งค่า"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"เปิดผู้ช่วยดิจิทัล"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"ค้นหาตามบริบท"</string>
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"เคอร์เซอร์ตามบริบท"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"ล็อกหน้าจอ"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"จดโน้ต"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"การทํางานหลายอย่างพร้อมกัน"</string>
@@ -1226,6 +1229,10 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"เปิดการตั้งค่า <xliff:g id="ID_1">%s</xliff:g>"</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"แก้ไขลำดับของการตั้งค่าด่วน"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"เมนูเปิด/ปิด"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"หน้า <xliff:g id="ID_1">%1$d</xliff:g> จาก <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"ต้องการเปิด <xliff:g id="ID_1">%1$s</xliff:g> ใช่ไหม"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612"><annotation id="action_key_icon">"ไอคอน"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> คือแป้นพิมพ์ลัดเพื่อใช้ <xliff:g id="ID_4">^4</xliff:g> <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1599,6 +1606,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"ตัวอย่างรูปภาพ"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"แก้ไข"</string>
     <string name="add" msgid="81036585205287996">"เพิ่ม"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"จัดการผู้ใช้"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"การแจ้งเตือนนี้ไม่รองรับการลากเพื่อแยกหน้าจอ"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"ตำแหน่งที่ใช้งานอยู่"</string>
@@ -1866,7 +1875,7 @@
     <string name="av_camera_face_retouch" msgid="45890971969486224">"ปรับแต่งภาพบุคคล"</string>
     <string name="av_camera_framing" msgid="5108462267843042492">"จัดเฟรมกล้อง"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"ไมค์สตูดิโอ"</string>
-    <string name="av_studio_look" msgid="621893522645557619">"ภาพระดับสตูดิโอ"</string>
+    <string name="av_studio_look" msgid="621893522645557619">"ภาพระดับสตูดิ⁠โอ"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d เอฟเฟกต์"</string>
     <string name="av_blur" msgid="405131343487260171">"เบลอ"</string>
     <string name="av_live_captions" msgid="7819416886586903077">"คำบรรยายสด"</string>
