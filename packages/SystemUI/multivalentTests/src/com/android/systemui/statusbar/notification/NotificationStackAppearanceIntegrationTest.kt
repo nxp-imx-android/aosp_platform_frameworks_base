@@ -53,9 +53,7 @@ import org.junit.runner.RunWith
 class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
 
     private val kosmos =
-        testKosmos().apply {
-            fakeFeatureFlagsClassic.apply { set(Flags.FULL_SCREEN_USER_SWITCHER, false) }
-        }
+        testKosmos().apply { fakeFeatureFlagsClassic.set(Flags.FULL_SCREEN_USER_SWITCHER, false) }
 
     @Test
     fun updateBoundsWithSingleShade() =
@@ -115,7 +113,7 @@ class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
     @EnableFlags(FLAG_DUAL_SHADE)
     fun updateBoundsWithDualShade() =
         kosmos.runTest {
-            enableDualShade()
+            enableDualShade(wideLayout = false)
             val radius = MutableStateFlow(32)
             val leftOffset = MutableStateFlow(0)
             val shape by
@@ -130,11 +128,7 @@ class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
             // Then: shape is updated
             assertThat(shape)
                 .isEqualTo(
-                    ShadeScrimShape(
-                        bounds = fullyOpenScrimBounds,
-                        topRadius = 32,
-                        bottomRadius = 32,
-                    )
+                    ShadeScrimShape(bounds = fullyOpenScrimBounds, topRadius = 0, bottomRadius = 32)
                 )
 
             // When: receive new scrim bounds with an offset
@@ -148,7 +142,7 @@ class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
                 .isEqualTo(
                     ShadeScrimShape(
                         bounds = shortScrimBounds.minus(leftOffset = offset),
-                        topRadius = 24,
+                        topRadius = 0,
                         bottomRadius = 24,
                     )
                 )
@@ -199,7 +193,7 @@ class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
                 .isEqualTo(
                     ShadeScrimShape(
                         bounds = fullyOpenScrimBounds.minus(leftOffset = offset),
-                        topRadius = 24,
+                        topRadius = 0,
                         bottomRadius = 24,
                     )
                 )

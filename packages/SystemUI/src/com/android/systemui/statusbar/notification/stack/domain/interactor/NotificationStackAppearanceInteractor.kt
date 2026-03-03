@@ -61,12 +61,19 @@ constructor(
 
     /** The rounding of the notification stack. */
     val shadeScrimRounding: Flow<ShadeScrimRounding> =
-        combine(shadeModeInteractor.shadeMode, isExpandingFromHeadsUp) {
-                shadeMode,
-                isExpandingFromHeadsUp ->
+        combine(
+                shadeModeInteractor.shadeMode,
+                shadeModeInteractor.isFullWidthShade,
+                isExpandingFromHeadsUp,
+            ) { shadeMode, isFullWidthShade, isExpandingFromHeadsUp ->
                 ShadeScrimRounding(
-                    isTopRounded = !(shadeMode == ShadeMode.Split && isExpandingFromHeadsUp),
-                    isBottomRounded = shadeMode != ShadeMode.Single,
+                    isTopRounded =
+                        when (shadeMode) {
+                            is ShadeMode.Single -> true
+                            is ShadeMode.Split -> !isExpandingFromHeadsUp
+                            is ShadeMode.Dual -> !isFullWidthShade
+                        },
+                    isBottomRounded = shadeMode !is ShadeMode.Single,
                 )
             }
             .distinctUntilChanged()
