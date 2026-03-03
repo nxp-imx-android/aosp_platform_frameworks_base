@@ -16,8 +16,6 @@
 
 package com.android.server.pm;
 
-import static com.google.common.truth.Truth.assertWithMessage;
-
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,6 +31,8 @@ import android.util.IndentingPrintWriter;
 
 import com.android.server.testutils.TestHandler;
 
+import com.google.common.truth.Expect;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,6 +44,10 @@ import java.io.IOException;
 import java.io.StringWriter;
 
 public final class MultiuserNonComplianceLoggerTest {
+
+    @Rule
+    public final Expect expect = Expect.create();
+
     @Rule
     public final MockitoRule mocks = MockitoJUnit.rule();
 
@@ -64,7 +68,9 @@ public final class MultiuserNonComplianceLoggerTest {
 
     @Test
     public void testEmptyDump() {
-        assertWithMessage("dump() with no logs")
+        assertPendingMessagesAndFlushHandler(0);
+
+        expect.withMessage("dump() with no logs")
                 .that(dump(mLogger))
                 .isEqualTo("""
                            0 apps called getMainUser()
@@ -94,9 +100,9 @@ public final class MultiuserNonComplianceLoggerTest {
         mLogger.logIsMainUserCall(10001);
         mLogger.logIsMainUserCall(10001);
         mLogger.logIsMainUserCall(10002);
-        mHandler.flush();
+        assertPendingMessagesAndFlushHandler(5);
 
-        assertWithMessage("dump() after logging some main user calls")
+        expect.withMessage("dump() after logging some main user calls")
                 .that(dump(mLogger))
                 .isEqualTo("""
                            1 apps called getMainUser()
@@ -118,9 +124,9 @@ public final class MultiuserNonComplianceLoggerTest {
     @Test
     public void testLogBlockedHsuActivity() {
         mLogger.logBlockedHsuActivity(ComponentName.createRelative("some.pkg", ".SomeActivity"));
-        mHandler.flush();
+        assertPendingMessagesAndFlushHandler(1);
 
-        assertWithMessage("dump() after logging a blocked activity on HSU")
+        expect.withMessage("dump() after logging a blocked activity on HSU")
                 .that(dump(mLogger))
                 .isEqualTo("""
                            0 apps called getMainUser()
@@ -139,9 +145,9 @@ public final class MultiuserNonComplianceLoggerTest {
     @Test
     public void testLogLaunchedHsuActivity() {
         mLogger.logLaunchedHsuActivity(ComponentName.createRelative("some.pkg", ".SomeActivity"));
-        mHandler.flush();
+        assertPendingMessagesAndFlushHandler(1);
 
-        assertWithMessage("dump() after logging a launched activity on HSU")
+        expect.withMessage("dump() after logging a launched activity on HSU")
                 .that(dump(mLogger))
                 .isEqualTo("""
                            0 apps called getMainUser()
@@ -172,9 +178,9 @@ public final class MultiuserNonComplianceLoggerTest {
         when(sbn.getNotification()).thenReturn(notification);
 
         mLogger.logShownHsuNotification(sbn);
-        mHandler.flush();
 
-        assertWithMessage("dump() after logging a notification on HSU")
+        assertPendingMessagesAndFlushHandler(1);
+        expect.withMessage("dump() after logging a notification on HSU")
                 .that(dump(mLogger))
                 .isEqualTo("""
                            0 apps called getMainUser()
@@ -196,9 +202,9 @@ public final class MultiuserNonComplianceLoggerTest {
         mLogger.logBlockedHsuActivity(ComponentName.createRelative("some.pkg", ".SomeActivity"));
         mLogger.logLaunchedHsuActivity(
                 ComponentName.createRelative("some.pkg", ".AwesomeActivity"));
-        mHandler.flush();
 
-        assertWithMessage("dump() after logging blocked and launched activities on HSU")
+        assertPendingMessagesAndFlushHandler(2);
+        expect.withMessage("dump() after logging blocked and launched activities on HSU")
                 .that(dump(mLogger))
                 .isEqualTo("""
                            0 apps called getMainUser()
@@ -219,11 +225,13 @@ public final class MultiuserNonComplianceLoggerTest {
     public void testReset() {
         mLogger.logGetMainUserCall(1000);
         mLogger.logIsMainUserCall(1000);
-        mHandler.flush();
+
+        assertPendingMessagesAndFlushHandler(2);
 
         mLogger.reset();
 
-        assertWithMessage("dump() after reset()")
+        assertPendingMessagesAndFlushHandler(0);
+        expect.withMessage("dump() after reset()")
                 .that(dump(mLogger))
                 .isEqualTo("""
                            0 apps called getMainUser()
@@ -252,5 +260,12 @@ public final class MultiuserNonComplianceLoggerTest {
 
     private void mockPackagesForUid(int uid, @Nullable String[] packages) {
         when(mPackageManager.getPackagesForUid(uid)).thenReturn(packages);
+    }
+
+    private void assertPendingMessagesAndFlushHandler(int expectedNumberOfMessages) {
+        expect.withMessage("number of pending messages on handler")
+                .that(mHandler.getPendingMessages())
+                .hasSize(expectedNumberOfMessages);
+        mHandler.flush();
     }
 }
