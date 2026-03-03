@@ -517,11 +517,15 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
 
         final String name = mConfig.getSessionName();
 
+        // See b/416904263 for context on experimental vs legacy jank classification.
         int totalFramesCount = 0;
         long maxFrameTimeNanos = 0;
         int missedFramesCount = 0;
+        int missedFramesCountLegacy = 0;
         int missedAppFramesCount = 0;
+        int missedAppFramesCountLegacy = 0;
         int missedSfFramesCount = 0;
+        int missedSfFramesCountLegacy = 0;
         int maxSuccessiveMissedFramesCount = 0;
         int successiveMissedFramesCount = 0;
         @RefreshRate int refreshRate = UNKNOWN_REFRESH_RATE;
@@ -537,14 +541,31 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
             }
 
             totalFramesCount++;
+
+            // Count missed frames using the legacy classification for WW data.
             boolean missedFrame = false;
             if ((info.jankTypeLegacy & JANK_APPLICATION) != 0) {
                 Log.w(TAG, "Missed App frame:" + info + ", CUJ=" + name);
-                missedAppFramesCount++;
+                missedAppFramesCountLegacy++;
                 missedFrame = true;
             }
             if ((info.jankTypeLegacy & JANK_COMPOSER) != 0) {
                 Log.w(TAG, "Missed SF frame:" + info + ", CUJ=" + name);
+                missedSfFramesCountLegacy++;
+                missedFrame = true;
+            }
+
+            if (missedFrame) {
+                missedFramesCountLegacy++;
+            }
+
+            // Count missed frames using the experimental classification for trace data.
+            missedFrame = false;
+            if ((info.jankTypeExperimental & JANK_APPLICATION) != 0) {
+                missedAppFramesCount++;
+                missedFrame = true;
+            }
+            if ((info.jankTypeExperimental & JANK_COMPOSER) != 0) {
                 missedSfFramesCount++;
                 missedFrame = true;
             }
@@ -614,10 +635,10 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
                     refreshRate,
                     mConfig.getStatsdInteractionType(),
                     totalFramesCount,
-                    missedFramesCount,
+                    missedFramesCountLegacy,
                     maxFrameTimeNanos, /* will be 0 if mSurfaceOnly == true */
-                    missedSfFramesCount,
-                    missedAppFramesCount,
+                    missedSfFramesCountLegacy,
+                    missedAppFramesCountLegacy,
                     maxSuccessiveMissedFramesCount,
                     totalAnimationTime,
                     totalWeightedJank,
