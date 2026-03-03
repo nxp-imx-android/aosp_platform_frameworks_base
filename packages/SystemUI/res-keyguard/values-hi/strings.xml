@@ -91,7 +91,7 @@
     <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"यह पासवर्ड पहले आज़माया जा चुका है. कोई दूसरा पासवर्ड आज़माएं."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"कई बार गलत पैटर्न ड्रॉ किया जा चुका है"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"कई बार गलत पासवर्ड डाला जा चुका है"</string>
-    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"कई बार गलत पिन डाला गयाPIN\nज़्यादा जानकारी के लिए, <xliff:g id="SHORTLINK">{shortlink}</xliff:g> पर जाएं"</string>
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"कई बार गलत पिन डाला गया\nज़्यादा जानकारी के लिए, <xliff:g id="SHORTLINK">{shortlink}</xliff:g> पर जाएं"</string>
     <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"कई बार गलत पैटर्न ड्रॉ किया गया है\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> पर जाकर ज़्यादा जानें"</string>
     <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"कई बार गलत पासवर्ड डाला गया है\n<xliff:g id="SHORTLINK">{shortlink}</xliff:g> पर जाकर ज़्यादा जानें"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{# सेकंड बाद फिर से कोशिश करें.}one{# सेकंड बाद फिर से कोशिश करें.}other{# सेकंड बाद फिर से कोशिश करें.}}"</string>
