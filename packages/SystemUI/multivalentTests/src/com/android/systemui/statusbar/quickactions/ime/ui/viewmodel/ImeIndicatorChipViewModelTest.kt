@@ -35,8 +35,8 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.SceneHelper.setDeviceEntered
 import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
 import com.android.systemui.statusbar.policy.data.repository.fakeUserSetupRepository
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
+import com.android.systemui.statusbar.quickactions.shared.model.ChipContent
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.testKosmosNew
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
@@ -75,7 +75,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
     fun chip_flagDisabled_isHidden() =
-        kosmos.runTest { assertIs<QuickActionChipUiState.Hidden>(underTest.chip) }
+        kosmos.runTest { assertIs<QuickActionChipModel.Hidden>(underTest.chip) }
 
     @Test
     @EnableFlags(Flags.FLAG_STATUS_BAR_IME_CHIP)
@@ -87,7 +87,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                     InputMethodModel.Subtype(subtypeId = 2, isAuxiliary = false),
                 )
 
-            assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
+            assertIs<QuickActionChipModel.LaunchChip>(underTest.chip)
         }
 
     @Test
@@ -110,7 +110,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                 listOf(subtype, InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false))
             fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
 
-            val chip = assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
+            val chip = assertIs<QuickActionChipModel.LaunchChip>(underTest.chip)
             val content = assertIs<ChipContent.IconOnly>(chip.chipContent)
             val loadedIcon = assertIs<Icon.Loaded>(content.icon)
 
@@ -139,7 +139,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                 listOf(subtype, InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false))
             fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
 
-            val chip = assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
+            val chip = assertIs<QuickActionChipModel.LaunchChip>(underTest.chip)
             val content = assertIs<ChipContent.Text>(chip.chipContent)
 
             assertThat(content.text).isEqualTo("EN")
@@ -160,7 +160,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                 listOf(subtype, InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false))
             fakeInputMethodRepository.setSelectedInputMethodSubtypeId(subtype.subtypeId)
 
-            val chip = assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
+            val chip = assertIs<QuickActionChipModel.LaunchChip>(underTest.chip)
             val content = assertIs<ChipContent.IconOnly>(chip.chipContent)
 
             assertThat(content.icon)
@@ -184,7 +184,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                     InputMethodModel.Subtype(subtypeId = 2, isAuxiliary = false),
                 )
 
-            val chip = assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
+            val chip = assertIs<QuickActionChipModel.LaunchChip>(underTest.chip)
             val content = assertIs<ChipContent.IconOnly>(chip.chipContent)
 
             assertThat(content.icon)
@@ -207,7 +207,7 @@ class ImeIndicatorChipViewModelTest : SysuiTestCase() {
                     InputMethodModel.Subtype(subtypeId = 1, isAuxiliary = false),
                     InputMethodModel.Subtype(subtypeId = 2, isAuxiliary = false),
                 )
-            val chip = assertIs<QuickActionChipUiState.LaunchChip>(underTest.chip)
+            val chip = assertIs<QuickActionChipModel.LaunchChip>(underTest.chip)
 
             chip.onClick(context)
             testScope.runCurrent()

@@ -31,9 +31,9 @@ import com.android.systemui.privacy.PrivacyApplication
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.fakePrivacyChipRepository
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
+import com.android.systemui.statusbar.quickactions.shared.model.ChipIcon
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
@@ -121,43 +121,43 @@ class AvControlsChipViewModelTest() : SysuiTestCase() {
         }
 }
 
-private fun QuickActionChipUiState.verifyHidden(): QuickActionChipUiState.Hidden {
+private fun QuickActionChipModel.verifyHidden(): QuickActionChipModel.Hidden {
     assertThat(this.chipId).isEqualTo(QuickActionChipId.AvControlsIndicator)
-    assertThat(this).isInstanceOf(QuickActionChipUiState.Hidden::class.java)
-    return this as QuickActionChipUiState.Hidden
+    assertThat(this).isInstanceOf(QuickActionChipModel.Hidden::class.java)
+    return this as QuickActionChipModel.Hidden
 }
 
-private fun QuickActionChipUiState.verifyShown(): QuickActionChipUiState.PopupChip {
+private fun QuickActionChipModel.verifyShown(): QuickActionChipModel.PopupChip {
     assertThat(this.chipId).isEqualTo(QuickActionChipId.AvControlsIndicator)
-    assertThat(this).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
-    return this as QuickActionChipUiState.PopupChip
+    assertThat(this).isInstanceOf(QuickActionChipModel.PopupChip::class.java)
+    return this as QuickActionChipModel.PopupChip
 }
 
-private fun QuickActionChipUiState.PopupChip.verifyHasNoContent() {
+private fun QuickActionChipModel.PopupChip.verifyHasNoContent() {
     assertThat(this.chipContent).isEqualTo(null)
 }
 
-private fun QuickActionChipUiState.PopupChip.verifyHasIcon(res: Int) {
+private fun QuickActionChipModel.PopupChip.verifyHasIcon(res: Int) {
     assertThat(this.icons).contains(ChipIcon(Icon.Resource(resId = res, contentDescription = null)))
 }
 
-private fun QuickActionChipUiState.PopupChip.verifyNumberOfIcons(num: Int) {
+private fun QuickActionChipModel.PopupChip.verifyNumberOfIcons(num: Int) {
     assertThat(this.icons.size).isEqualTo(num)
 }
 
-private fun QuickActionChipUiState.PopupChip.verifyIsCameraOnlyChip() {
+private fun QuickActionChipModel.PopupChip.verifyIsCameraOnlyChip() {
     verifyNumberOfIcons(1)
     verifyHasIcon(AvControlsChipViewModel.CAMERA_DRAWABLE)
     verifyHasNoContent()
 }
 
-private fun QuickActionChipUiState.PopupChip.verifyIsMicrophoneOnlyChip() {
+private fun QuickActionChipModel.PopupChip.verifyIsMicrophoneOnlyChip() {
     verifyNumberOfIcons(1)
     verifyHasIcon(AvControlsChipViewModel.MICROPHONE_DRAWABLE)
     verifyHasNoContent()
 }
 
-private fun QuickActionChipUiState.PopupChip.verifyIsCameraAndMicrophoneChip() {
+private fun QuickActionChipModel.PopupChip.verifyIsCameraAndMicrophoneChip() {
     verifyNumberOfIcons(2)
     verifyHasIcon(AvControlsChipViewModel.CAMERA_DRAWABLE)
     verifyHasIcon(AvControlsChipViewModel.MICROPHONE_DRAWABLE)
