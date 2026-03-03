@@ -60,22 +60,8 @@ class DevicePolicyAnnotationProcessorTest {
                     affiliatedFullUserProfileOwner = DISALLOWED)
         """
 
-        val METADATA_FILES_JAVA =
-            setOf(
-                    "BooleanPolicyMetadata",
-                    "EnumPolicyMetadata",
-                    "IntegerPolicyMetadata",
-                    "ListPolicyMetadata",
-                    "LongPolicyMetadata",
-                    "PolicyMetadata",
-                    "ResolutionMechanismMetadata",
-                    "StringPolicyMetadata",
-                )
-                .map { "android/app/admin/metadata/$it.java" }
-                .toSet()
-
         // A set of source files required to compile `POLICY_IDENTIFIER_JAVA`
-        val REQUIRED_SOURCE_FILES = setOf("android/annotation/IntDef.java") + METADATA_FILES_JAVA
+        val REQUIRED_SOURCE_FILES = setOf("android/annotation/IntDef.java")
 
         /** Build path for the output. */
         const val POLICIES_TEXTPROTO_LOCATION = "android/processor/devicepolicy/policies.textproto"
