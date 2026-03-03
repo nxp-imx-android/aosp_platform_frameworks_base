@@ -310,9 +310,11 @@ class DesktopTasksLimiter(
         }
 
         override fun onTransitionFinished(transition: IBinder, aborted: Boolean) {
+            activeTransitionTokensAndTasks.remove(transition)
             pendingTransitionTokensAndTasks.remove(transition)
             activeUnminimizeTransitionTokensAndTasks.remove(transition)
             pendingUnminimizeTransitionTokensAndTasks.remove(transition)
+            pendingTaskLimitTransitionTokens.remove(transition)
         }
     }
 
