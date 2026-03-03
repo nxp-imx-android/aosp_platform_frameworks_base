@@ -106,14 +106,6 @@ flag {
 }
 
 flag {
-    name: "show_policy_transparency_for_system_restrictions"
-    namespace: "multiuser"
-    description: "Show policy transparency dialog when \"Add user\" actions are restricted in COPE."
-    bug: "338226475"
-}
-
-
-flag {
     name: "property_invalidated_cache_bypass_mismatched_uids"
     namespace: "multiuser"
     description: "Bypass the cache when the process UID does not match the binder UID."
