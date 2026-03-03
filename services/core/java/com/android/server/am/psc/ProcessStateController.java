@@ -50,7 +50,6 @@ import com.android.server.am.HostingRecord;
 import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.am.psc.annotation.RequiresEnclosingBatchSession;
-import com.android.server.wm.WindowProcessController;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiConsumer;
@@ -1363,9 +1362,8 @@ public class ProcessStateController {
         /**
          * Set the Top process, also clear the Previous process and demotion reason, if necessary.
          */
-        public void setTopProcessAsync(@Nullable WindowProcessController wpc, boolean clearPrev,
+        public void setTopProcessAsync(@Nullable ProcessRecordInternal top, boolean clearPrev,
                 boolean cancelExpandedShade) {
-            final ProcessRecordInternal top = wpc != null ? wpc.mOwner : null;
             getBatchSession().stage(() -> {
                 mPsc.setTopProcess(top);
                 if (clearPrev) {
@@ -1387,8 +1385,7 @@ public class ProcessStateController {
         /**
          * Set which process is considered the Previous process, if any.
          */
-        public void setPreviousProcessAsync(@Nullable WindowProcessController wpc) {
-            final ProcessRecordInternal prev = wpc != null ? wpc.mOwner : null;
+        public void setPreviousProcessAsync(@Nullable ProcessRecordInternal prev) {
             getBatchSession().stage(() -> mPsc.setPreviousProcess(prev));
         }
 
@@ -1396,8 +1393,7 @@ public class ProcessStateController {
         /**
          * Set which process is considered the Home process, if any.
          */
-        public void setHomeProcessAsync(@Nullable WindowProcessController wpc) {
-            final ProcessRecordInternal home = wpc != null ? wpc.mOwner : null;
+        public void setHomeProcessAsync(@Nullable ProcessRecordInternal home) {
             getBatchSession().stage(() -> mPsc.setHomeProcess(home));
         }
 
@@ -1405,45 +1401,41 @@ public class ProcessStateController {
         /**
          * Set which process is considered the Heavy Weight process, if any.
          */
-        public void setHeavyWeightProcessAsync(@Nullable WindowProcessController wpc) {
-            final ProcessRecordInternal heavy = wpc != null ? wpc.mOwner : null;
+        public void setHeavyWeightProcessAsync(@Nullable ProcessRecordInternal heavy) {
             getBatchSession().stage(() -> mPsc.setHeavyWeightProcess(heavy));
         }
 
         /**
          * Set which process is showing UI while the screen is off, if any.
          */
-        public void setVisibleDozeUiProcessAsync(@Nullable WindowProcessController wpc) {
-            final ProcessRecordInternal dozeUi = wpc != null ? wpc.mOwner : null;
+        public void setVisibleDozeUiProcessAsync(@Nullable ProcessRecordInternal dozeUi) {
             getBatchSession().stage(() -> mPsc.setVisibleDozeUiProcess(dozeUi));
         }
 
         /**
          * Note whether the process has an activity or not.
          */
-        public void setHasActivityAsync(@NonNull WindowProcessController wpc, boolean hasActivity) {
-            final ProcessRecordInternal activity = wpc.mOwner;
-            getBatchSession().stage(() -> mPsc.setHasActivity(activity, hasActivity));
+        public void setHasActivityAsync(@NonNull ProcessRecordInternal proc, boolean hasActivity) {
+            getBatchSession().stage(() -> mPsc.setHasActivity(proc, hasActivity));
         }
 
         /**
-         * Set the Activity State for a process, including the Activity state flags and when a
+         * Set the Activity State for a process, including the Activity state flags and the time
+         * when a perceptible task stopped.
          */
-        public void setActivityStateAsync(@NonNull WindowProcessController wpc, int flags,
+        public void setActivityStateAsync(@NonNull ProcessRecordInternal proc, int flags,
                 long perceptibleStopTimeMs) {
-            final ProcessRecordInternal activity = wpc.mOwner;
             getBatchSession().stage(() -> {
-                mPsc.setActivityStateFlags(activity, flags);
-                mPsc.setPerceptibleTaskStoppedTimeMillis(activity, perceptibleStopTimeMs);
+                mPsc.setActivityStateFlags(proc, flags);
+                mPsc.setPerceptibleTaskStoppedTimeMillis(proc, perceptibleStopTimeMs);
             });
         }
 
         /**
          * Set whether a process has had any recent tasks.
          */
-        public void setHasRecentTasksAsync(@NonNull WindowProcessController wpc,
+        public void setHasRecentTasksAsync(@NonNull ProcessRecordInternal proc,
                 boolean hasRecentTasks) {
-            final ProcessRecordInternal proc = wpc.mOwner;
             getBatchSession().stage(() -> mPsc.setHasRecentTasks(proc, hasRecentTasks));
         }
 
