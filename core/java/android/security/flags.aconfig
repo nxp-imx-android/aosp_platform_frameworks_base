@@ -50,13 +50,6 @@ flag {
 }
 
 flag {
-    name: "reset_auth_flags_and_metrics_in_lock_user"
-    namespace: "security"
-    description: "Make LockSettingsService#lockUser() always handle resetting strong auth flags and removing user password metrics"
-    bug: "319142556"
-}
-
-flag {
     name: "stop_recognizing_legacy_password_hashes"
     namespace: "security"
     description: "Make LockSettingsService stop recognizing legacy password hashes"
