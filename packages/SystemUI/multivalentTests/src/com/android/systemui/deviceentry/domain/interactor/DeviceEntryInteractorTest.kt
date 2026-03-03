@@ -23,7 +23,6 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
-import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
@@ -35,10 +34,8 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Pin
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel.Sim
 import com.android.systemui.biometrics.data.repository.fakeFingerprintPropertyRepository
-import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.bouncer.domain.interactor.alternateBouncerInteractor
-import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.dreams.dreamStartable
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
@@ -56,7 +53,6 @@ import com.android.systemui.keyguard.shared.model.DozeStateModel
 import com.android.systemui.keyguard.shared.model.DozeTransitionModel
 import com.android.systemui.keyguard.shared.model.KeyguardDone
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.WithAnimationOverLockscreen
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
@@ -74,16 +70,13 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
-import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.advanceTimeBy
 import org.junit.Before
 import org.junit.Test
@@ -381,7 +374,6 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
     @Test
     fun attemptDeviceEntry_notLocked_replacesLockscreenWithGoneInTheBackStack() =
         kosmos.runTest {
-            enableSingleShade()
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val backStack by collectLastValue(sceneBackInteractor.backStack)
             switchToScene(Scenes.Lockscreen)
@@ -419,7 +411,6 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
     @Test
     fun attemptDeviceEntry_authMethodNotSecure_replacesLockscreenWithGoneInTheBackStack() =
         kosmos.runTest {
-            enableSingleShade()
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val backStack by collectLastValue(sceneBackInteractor.backStack)
             switchToScene(Scenes.Lockscreen)
@@ -458,7 +449,6 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
     @Test
     fun attemptDeviceEntry_dismissActionAnimates_runsTransitionToGone() =
         kosmos.runTest {
-            enableSingleShade()
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val backStack by collectLastValue(sceneBackInteractor.backStack)
             switchToScene(Scenes.Lockscreen)
@@ -619,7 +609,6 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
     @Test
     fun attemptDeviceEntry_authMethodSwipe_replacesLockscreenWithGoneInTheBackStack() =
         kosmos.runTest {
-            enableSingleShade()
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val backStack by collectLastValue(sceneBackInteractor.backStack)
             switchToScene(Scenes.Lockscreen)
@@ -731,40 +720,6 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
 
             assertThat(isDeviceEntered).isTrue()
             assertThat(isDeviceEnteredDirectly).isFalse()
-            assertThat(currentScene).isEqualTo(Scenes.Shade)
-        }
-
-    @Test
-    @EnableFlags(FLAG_DUAL_SHADE)
-    fun isDeviceEntered_unlockedWhileOnDualShade_emitsTrue() =
-        kosmos.runTest {
-            enableDualShade()
-            val isDeviceEntered by collectLastValue(underTest.isDeviceEntered)
-            val isDeviceEnteredDirectly by collectLastValue(underTest.isDeviceEnteredDirectly)
-            assertThat(isDeviceEntered).isFalse()
-            assertThat(isDeviceEnteredDirectly).isFalse()
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-
-            // Navigate to shade and bouncer:
-            showOverlay(Overlays.NotificationsShade)
-            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
-            // Simulating a "leave it open when the keyguard is hidden" which means the bouncer will
-            // be shown and successful authentication should take the user back to where they are,
-            // the shade overlay.
-            statusBarStateController.setLeaveOpenOnKeyguardHide(true)
-            showOverlay(Overlays.Bouncer)
-            assertThat(currentOverlays).contains(Overlays.Bouncer)
-
-            assertThat(isDeviceEntered).isFalse()
-            assertThat(isDeviceEnteredDirectly).isFalse()
-            // Authenticate with PIN to unlock and dismiss the lockscreen:
-            authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
-
-            assertThat(isDeviceEntered).isTrue()
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
-            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
         }
 
     @Test
@@ -874,228 +829,6 @@ class DeviceEntryInteractorTest : SysuiTestCase() {
 
             assertThat(isUnlocked).isTrue()
             assertThat(currentScene).isEqualTo(Scenes.Gone)
-        }
-
-    @Test
-    fun deviceEntered_extendUnlockMetricLogged() =
-        kosmos.runTest {
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val isDeviceEntered by collectLastValue(underTest.isDeviceEntered)
-
-            // GIVEN secure lockscreen
-            fakeAuthenticationRepository.setAuthenticationMethod(Pattern)
-            switchToScene(Scenes.Lockscreen)
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(isDeviceEntered).isFalse()
-
-            underTest.handleDeviceEntryMetricsLogging()
-
-            // WHEN the user is trusted (ie: extended unlock)
-            //   AND there's an attempt to enter the device
-            fakeTrustRepository.setCurrentUserTrusted(true)
-            underTest.attemptDeviceEntry("test")
-
-            // THEN device is entered
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
-            assertThat(isDeviceEntered).isTrue()
-
-            // THEN metric logged
-            assertThat(uiEventLoggerFake.numLogs()).isAtLeast(1)
-            assertThat(uiEventLoggerFake[uiEventLoggerFake.numLogs() - 1].eventId)
-                .isEqualTo(BouncerUiEvent.BOUNCER_DISMISS_EXTENDED_ACCESS.id)
-        }
-
-    @Test
-    fun handleDeviceUnlockStatusChange_transitionsToGoneWithAnimation_fromShadeBouncer() =
-        kosmos.runTest {
-            enableSingleShade()
-
-            val isUnlocked by
-                collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked })
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-
-            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            switchToScene(Scenes.Lockscreen)
-            assertThat(isUnlocked).isFalse()
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-
-            switchToScene(Scenes.Shade)
-            assertThat(currentScene).isEqualTo(Scenes.Shade)
-            showBouncer()
-            assertThat(currentOverlays).contains(Overlays.Bouncer)
-
-            // Unlock device with a dismiss action that wants to animate over LS.
-            kosmos.keyguardDismissActionInteractor.setDismissAction(
-                DismissAction.RunAfterKeyguardGone(
-                    dismissAction = { KeyguardDone.LATER },
-                    onCancelAction = {},
-                    message = "",
-                    willAnimateOnLockscreen = true,
-                )
-            )
-
-            // Authenticate with PIN to unlock and dismiss the lockscreen:
-            authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
-
-            assertThat(isUnlocked).isTrue()
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
-        }
-
-    @Test
-    fun handleDeviceUnlockStatusChange_transitionsToGoneWithAnimation_fromBouncer() =
-        kosmos.runTest {
-            val isUnlocked by
-                collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked })
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-
-            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            switchToScene(Scenes.Lockscreen)
-            assertThat(isUnlocked).isFalse()
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-
-            showBouncer()
-            assertThat(currentOverlays).contains(Overlays.Bouncer)
-
-            // Unlock device with a dismiss action that wants to animate over LS.
-            kosmos.keyguardDismissActionInteractor.setDismissAction(
-                DismissAction.RunAfterKeyguardGone(
-                    dismissAction = { KeyguardDone.LATER },
-                    onCancelAction = {},
-                    message = "",
-                    willAnimateOnLockscreen = true,
-                )
-            )
-
-            // Authenticate with PIN to unlock and dismiss the lockscreen:
-            authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
-
-            assertThat(isUnlocked).isTrue()
-            assertThat(fakeSceneDataSource.currentSceneTransitionKey)
-                .isEqualTo(WithAnimationOverLockscreen)
-            assertThat(currentScene).isEqualTo(Scenes.Gone)
-        }
-
-    @Test
-    fun handleDeviceUnlockStatusChange_enterDevice_whenUnlockedOnAlternateBouncerOnShadeChange() =
-        kosmos.runTest {
-            enableSingleShade()
-
-            val isUnlocked by
-                collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked })
-            val currentScene by collectLastValue(sceneInteractor.currentScene)
-            val backStack by collectLastValue(sceneBackInteractor.backStack)
-            val isAlternateBouncerVisible by collectLastValue(alternateBouncerInteractor.isVisible)
-            val isAnyShadeFullyExpanded by collectLastValue(shadeInteractor.isAnyFullyExpanded)
-
-            switchToScene(Scenes.Lockscreen)
-            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            assertThat(isUnlocked).isFalse()
-            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(isAlternateBouncerVisible).isFalse()
-
-            // Change to shade.
-            switchToScene(Scenes.Shade)
-            assertThat(isUnlocked).isFalse()
-            assertThat(currentScene).isEqualTo(Scenes.Shade)
-            assertThat(isAnyShadeFullyExpanded).isTrue()
-            assertThat(backStack?.asIterable()?.first()).isEqualTo(Scenes.Lockscreen)
-
-            // Show the alternate bouncer.
-            alternateBouncerInteractor.forceShow()
-            statusBarStateController.setLeaveOpenOnKeyguardHide(true) // leave shade open
-            assertThat(isUnlocked).isFalse()
-            assertThat(currentScene).isEqualTo(Scenes.Shade)
-            assertThat(isAnyShadeFullyExpanded).isTrue()
-            assertThat(backStack?.asIterable()?.first()).isEqualTo(Scenes.Lockscreen)
-            assertThat(isAlternateBouncerVisible).isTrue()
-
-            // Trigger a fingerprint unlock.
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
-                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
-            )
-
-            assertThat(isUnlocked).isTrue()
-            assertThat(isAlternateBouncerVisible).isFalse()
-            assertThat(currentScene).isEqualTo(Scenes.Shade)
-            assertThat(backStack?.asIterable()?.first()).isEqualTo(Scenes.Gone)
-        }
-
-    @Test
-    fun handleDeviceUnlockStatusChange_switchFromCommunalToGone_whenDeviceUnlockedOnPrimaryBouncerChange() =
-        kosmos.runTest {
-            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            switchToScene(Scenes.Communal)
-            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            showBouncer()
-            assertThat(currentSceneKey).isEqualTo(Scenes.Communal)
-            assertThat(currentOverlays).contains(Overlays.Bouncer)
-
-            biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
-                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
-            )
-
-            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
-            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
-        }
-
-    @Test
-    fun handleDeviceUnlockStatusChange_switchFromCommunalToGone_whenUnlockedOnAlternateBouncer() =
-        kosmos.runTest {
-            val alternateBouncerVisible by
-                collectLastValue(keyguardBouncerRepository.alternateBouncerVisible)
-            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
-
-            fakeKeyguardBouncerRepository.setAlternateVisible(true)
-            assertThat(alternateBouncerVisible).isTrue()
-            switchToScene(Scenes.Communal)
-            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-
-            biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
-                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
-            )
-            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
-            assertThat(alternateBouncerVisible).isFalse()
-        }
-
-    @Test
-    fun handleDeviceUnlockStatusChange_switchFromCommunalToGone_whenUnlocked() =
-        kosmos.runTest {
-            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
-            switchToScene(Scenes.Communal)
-            assertThat(currentSceneKey).isEqualTo(Scenes.Communal)
-
-            biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_DISMISS,
-                biometricUnlockSource = BiometricUnlockSource.FINGERPRINT_SENSOR,
-            )
-            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
-        }
-
-    @Test
-    fun handleDeviceUnlockStatusChange_switchToGoneWhenDeviceIsUnlockedAndUserIsOnBouncerWithBypassDisabled() =
-        kosmos.runTest {
-            val currentSceneKey by collectLastValue(sceneInteractor.currentScene)
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-
-            switchToScene(Scenes.Lockscreen)
-            fakeAuthenticationRepository.setAuthenticationMethod(Pin)
-            showBouncer()
-            assertThat(currentSceneKey).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).contains(Overlays.Bouncer)
-
-            // Authenticate using a passive auth method like face auth while bypass is disabled.
-            kosmos.biometricUnlockInteractor.setBiometricUnlockState(
-                unlockStateInt = BiometricUnlockController.MODE_NONE_UNLOCKED,
-                biometricUnlockSource = BiometricUnlockSource.FACE_SENSOR,
-            )
-            assertThat(currentSceneKey).isEqualTo(Scenes.Gone)
-            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
         }
 
     private fun Kosmos.setupSwipeDeviceEntryMethod() {
