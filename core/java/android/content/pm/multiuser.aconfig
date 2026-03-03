@@ -46,12 +46,6 @@ flag {
     bug: "285426179"
 }
 
-flag {
-    name: "use_all_cpus_during_user_switch"
-    namespace: "multiuser"
-    description: "Allow using all cpu cores during a user switch."
-    bug: "308105403"
-}
 
 flag {
     name: "upgrade_user_summary_behaviour"
@@ -191,12 +185,6 @@ flag {
     bug: "321988638"
 }
 
-flag {
-    name: "reorder_wallpaper_during_user_switch"
-    namespace: "multiuser"
-    description: "Reorder loading home and lock screen wallpapers during a user switch."
-    bug: "324911115"
-}
 
 flag {
     name: "set_power_mode_during_user_switch"

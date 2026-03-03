@@ -458,7 +458,7 @@ public class DragAndDropController implements RemoteCallable<DragAndDropControll
     public void onCrossWindowDrop(@NonNull ActivityManager.RunningTaskInfo taskInfo) {
         // Bring the task forward when an item is dropped on it
         final WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.reorder(taskInfo.token, true /* onTop */);
+        wct.reorder(taskInfo.token, true /* onTop */, true /* includingParents */);
         mTransitions.startTransition(WindowManager.TRANSIT_TO_FRONT, wct, null);
     }
 

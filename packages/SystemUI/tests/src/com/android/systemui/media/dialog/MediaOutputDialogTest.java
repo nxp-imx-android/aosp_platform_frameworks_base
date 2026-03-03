@@ -22,10 +22,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -55,7 +53,6 @@ import com.android.systemui.res.R;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -301,9 +298,7 @@ public class MediaOutputDialogTest extends SysuiTestCase {
 
     @Test
     @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
-    public void onWarningFixButtonClick_startsActivity() {
-        mContext = spy(mContext);
-        doNothing().when(mContext).startActivity(any());
+    public void onWarningFixButtonClick_callsController() {
         mMediaOutputDialog = createDialog();
         mMediaOutputDialog.onCreate(new Bundle());
         Intent testIntent = new Intent("test.action.intent");
@@ -312,11 +307,7 @@ public class MediaOutputDialogTest extends SysuiTestCase {
         mMediaOutputDialog.refresh();
         mMediaOutputDialog.mDialogView.requireViewById(R.id.warning_fix_button).performClick();
 
-        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
-        verify(mContext).startActivity(intentCaptor.capture());
-        Intent intent = intentCaptor.getValue();
-        assertThat(intent).isEqualTo(testIntent);
-        assertThat(mMediaOutputDialog.isShowing()).isFalse();
+        verify(mMediaSwitchingController).tryToLaunchMissingPermissionsResolveIntent();
     }
 
     @Test

@@ -21,11 +21,7 @@ import static com.android.internal.util.Preconditions.checkArgument;
 import android.annotation.NonNull;
 import android.app.Flags;
 import android.content.Context;
-import android.text.Layout;
-import android.text.PrecomputedText;
-import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.util.IntArray;
 import android.view.RemotableViewMethod;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -47,13 +43,9 @@ public class NotificationMetricAdaptiveTextView extends NotificationMetricTextVi
 
     private static final int VARIANT_NONE = -1;
 
+    private final NotificationMetricAdaptiveTextHelper mHelper =
+            new NotificationMetricAdaptiveTextHelper();
     private List<CharSequence> mTextVariants;
-
-    // To avoid recomputation, we store the result of calculating the width of the text variants.
-    // If we're measuring the same strings with the same TextPaint (as compared by Params) then
-    // we can just return the previous value.
-    private IntArray mTextVariantsCache;
-    private PrecomputedText.Params mTextVariantsCacheParams;
 
     // Which of the variants is currently displayed, and whether we're currently swapping out one
     // variant from another. This is to optimize calls to setText() and avoid duplicating work.
@@ -98,7 +90,7 @@ public class NotificationMetricAdaptiveTextView extends NotificationMetricTextVi
             return;
         }
         mTextVariants = List.copyOf(textVariants);
-        mTextVariantsCache = new IntArray();
+        mHelper.setTextVariants(textVariants);
         mVariantIndex = VARIANT_NONE;
 
         // Start with preferred text and let the measurement pass handle the swap, if needed.
@@ -110,7 +102,9 @@ public class NotificationMetricAdaptiveTextView extends NotificationMetricTextVi
         if (Flags.metricValueAlternativeStrings() && !mReplacingText) {
             // A "normal" call to setText overwrites previous calls to setTextVariants().
             mTextVariants = null;
-            mTextVariantsCache = new IntArray();
+            if (mHelper != null) {
+                mHelper.setTextVariants(null);
+            }
             mVariantIndex = VARIANT_NONE;
         }
 
@@ -134,58 +128,15 @@ public class NotificationMetricAdaptiveTextView extends NotificationMetricTextVi
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (Flags.metricValueAlternativeStrings()) {
-            maybeChooseAlternativeTextByMeasure(widthMeasureSpec);
+            NotificationMetricAdaptiveTextHelper.Replacement replacement =
+                    mHelper.chooseReplacement(getPaint(), widthMeasureSpec,
+                            getCompoundPaddingLeft() + getCompoundPaddingRight());
+
+            if (replacement != null) {
+                replaceTextBy(replacement.index());
+            }
         }
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    private void maybeChooseAlternativeTextByMeasure(int widthMeasureSpec) {
-        if (mTextVariants == null || mTextVariants.size() < 2) {
-            return; // No alternatives.
-        }
-
-        int specMode = MeasureSpec.getMode(widthMeasureSpec);
-        if (specMode == MeasureSpec.UNSPECIFIED) {
-            // No restrictions? Use preferred.
-            replaceTextBy(0);
-            return;
-        }
-
-        // specMode is EXACTLY or AT_MOST -> Choose most appropriate variant.
-        int specSize = MeasureSpec.getSize(widthMeasureSpec);
-        int availableWidth = specSize - getCompoundPaddingLeft() - getCompoundPaddingRight();
-        if (availableWidth <= 0) {
-            return; // Hmm? Anyway we won't do anything useful by continuing, so give up.
-        }
-
-        // Need to clone TextPaint for later comparison, because it's not immutable and will be
-        // modified by TextView methods that change text dimensions.
-        TextPaint currentPaint = new TextPaint(getPaint());
-        PrecomputedText.Params params = new PrecomputedText.Params.Builder(currentPaint).build();
-        if (mTextVariantsCacheParams == null || !mTextVariantsCacheParams.equals(params)) {
-            mTextVariantsCache = new IntArray();
-            mTextVariantsCacheParams = params;
-        }
-
-        for (int i = 0; i < mTextVariants.size(); i++) {
-            int variantWidth;
-            if (mTextVariantsCache.size() > i) {
-                variantWidth = mTextVariantsCache.get(i);
-            } else {
-                variantWidth = (int) Math.ceil(
-                        Layout.getDesiredWidth(mTextVariants.get(i), currentPaint));
-                mTextVariantsCache.add(variantWidth);
-            }
-
-            if (variantWidth <= availableWidth) {
-                // In order of preference, found one that fits.
-                replaceTextBy(i);
-                return;
-            }
-        }
-
-        // If all the options are too long, fall back to the default.
-        replaceTextBy(0);
     }
 }

@@ -25,7 +25,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -61,7 +60,7 @@ fun ShareContentList(modifier: Modifier = Modifier, viewModel: TargetsViewModel)
     Surface(
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceBright,
-        modifier = modifier.heightIn(min = 24.dp, max = 224.dp).width(286.dp),
+        modifier = modifier.heightIn(min = 48.dp, max = 224.dp),
     ) {
         LazyColumn(
             modifier = Modifier.testTag("ShareContentList"),
@@ -117,12 +116,13 @@ private fun SelectorItem(
         color =
             if (isSelected) MaterialTheme.colorScheme.primary
             else MaterialTheme.colorScheme.surfaceContainer,
+        modifier = Modifier.heightIn(min = 48.dp),
     ) {
         Row(
             modifier =
-                Modifier.clickable(onClick = onItemSelected)
-                    .padding(start = 8.dp, end = 12.dp, top = 8.dp, bottom = 8.dp)
-                    .clearAndSetSemantics { this.contentDescription = itemA11yDescription },
+                Modifier.clickable(onClick = onItemSelected).padding(12.dp).clearAndSetSemantics {
+                    this.contentDescription = itemA11yDescription
+                },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.Start),
         ) {

@@ -64,25 +64,25 @@ public class ChronometerAdaptiveFormat {
     }
 
     /**
-     * Variant of {@link #format(Duration)} that will produce several alternatives for the text
+     * Variant of {@link #format(Duration)} that will produce several variants for the text
      * representation of the duration in different levels of precision. Follows all the rules of
      * {@link #format(Duration)} as they relate to truncation, etc.
      *
      * <p>For example, a duration of 100 seconds will produce "1m 40s" and "1m".
      */
     @NonNull
-    public static List<String> formatAlternatives(@NonNull Duration duration) {
-        ArrayList<String> alternatives = new ArrayList<>();
+    public static List<String> formatVariants(@NonNull Duration duration) {
+        ArrayList<String> variants = new ArrayList<>();
         List<Measure> partsList = toDurationParts(duration);
         MeasureFormat formatter = MeasureFormat.getInstance(Locale.getDefault(),
                 MeasureFormat.FormatWidth.NARROW);
 
         for (int lastPartIndex = partsList.size(); lastPartIndex > 0; lastPartIndex--) {
-            alternatives.add(formatter.formatMeasures(
+            variants.add(formatter.formatMeasures(
                     partsList.subList(0, lastPartIndex).toArray(new Measure[0])));
         }
 
-        return alternatives;
+        return variants;
     }
 
     private static List<Measure> toDurationParts(@NonNull Duration duration) {

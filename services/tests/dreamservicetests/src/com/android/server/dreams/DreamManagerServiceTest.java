@@ -19,9 +19,9 @@ package com.android.server.dreams;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.BatteryManager.EXTRA_CHARGING_STATUS;
 import static android.service.dreams.Flags.FLAG_ALLOW_DREAM_WITH_CHARGE_LIMIT;
+import static android.service.dreams.Flags.FLAG_DREAMS_SWITCHER;
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
 import static android.service.dreams.Flags.FLAG_SYSTEM_DREAM_DEATH_RECIPIENT;
-import static android.service.dreams.Flags.FLAG_DREAMS_SWITCHER;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
@@ -37,7 +37,6 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -53,9 +52,10 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.database.ContentObserver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
+import android.content.pm.UserInfo;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.hardware.health.BatteryChargingState;
 import android.os.BatteryManager;
@@ -67,6 +67,7 @@ import android.os.PowerManager;
 import android.os.PowerManagerInternal;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.os.test.TestLooper;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
@@ -75,22 +76,15 @@ import android.service.dreams.DreamPlaylist;
 import android.service.dreams.IDreamManagerListener;
 import android.testing.TestableContext;
 import android.testing.TestableResources;
-import androidx.test.filters.SmallTest;
-import java.util.Arrays;
-import java.util.Collections;
-import androidx.test.runner.AndroidJUnit4;
-import org.mockito.ArgumentCaptor;
 
-import android.content.pm.PackageManagerInternal;
+import androidx.test.filters.SmallTest;
+import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.SystemService;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
-
-import android.os.Handler;
-import android.os.test.TestLooper;
 
 import org.junit.After;
 import org.junit.Before;
@@ -100,6 +94,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Test class for {@link DreamManagerService}.
@@ -1035,7 +1032,7 @@ public class DreamManagerServiceTest {
                         any(),
                         any(),
                         eq("playlist changed") // Verify the reason string
-                        );
+                );
     }
 
     @Test
@@ -1150,6 +1147,28 @@ public class DreamManagerServiceTest {
         service.registerListener(listener, mCurrentUser.getIdentifier());
         mTestLooper.dispatchAll();
         clearInvocations(listener);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_SWITCHER)
+    public void testOnUserUnlocked_refreshesPlaylist() {
+        final DreamManagerService service = createService();
+        service.onBootPhase(SystemService.PHASE_THIRD_PARTY_APPS_CAN_START);
+        final ComponentName dream = new ComponentName("a", "b");
+
+        // Mock resolver to return a playlist
+        when(mDreamComponentsResolver.getDreamPlaylist(any()))
+                .thenReturn(new DreamPlaylist(
+                        Collections.singletonList(new DreamItem.Builder(dream).build()), 0));
+
+        // Call onUserUnlocked
+        service.onUserUnlocked(
+                new SystemService.TargetUser(
+                        new UserInfo(mCurrentUser.getIdentifier(), "test_user", 0)));
+        mTestLooper.dispatchAll();
+
+        // Verify resolver was called (refresh happened)
+        verify(mDreamComponentsResolver).getDreamPlaylist(any());
     }
 
     private void enableDreaming() {

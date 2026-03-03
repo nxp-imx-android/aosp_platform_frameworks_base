@@ -18,6 +18,7 @@ package com.android.systemui.media.dialog
 import android.app.KeyguardManager
 import android.app.Notification
 import android.app.WallpaperColors
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -432,6 +433,24 @@ constructor(
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             mCallback.dismissDialog()
             startActivity(this, controller)
+        }
+    }
+
+    fun tryToLaunchMissingPermissionsResolveIntent() {
+        getMissingPermissionsResolveIntent()?.apply {
+            mCallback.dismissDialog()
+            try {
+                mContext.startActivityAsUser(this, mLocalMediaManager.userHandle)
+            } catch (_: ActivityNotFoundException) {
+                // Checks for the intent to match an activity in the calling app are done at
+                // registration time, but in theory the app could be uninstalled just before this
+                // code runs.
+                Log.e(
+                    TAG,
+                    "No activity found to handle intent $this on user " +
+                            mLocalMediaManager.userHandle
+                )
+            }
         }
     }
 

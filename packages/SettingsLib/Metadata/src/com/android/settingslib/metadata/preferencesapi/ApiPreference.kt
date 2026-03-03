@@ -22,6 +22,7 @@ import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
 import androidx.annotation.StringRes
+import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.datastore.KeyValueStore
 import com.android.settingslib.datastore.NoOpKeyedObservable
 import com.android.settingslib.datastore.Permissions
@@ -371,6 +372,16 @@ abstract class ApiPreference<V : Any>(
      *  in init block.
      */
     abstract val getScreenParameters: () -> ValidatedKeyParameters?
+
+    /**
+     * A function that returns the key parameters schema for the preference.
+    */
+    abstract val getParametersSchema: () -> KeyParametersSchema?
+
+    /**
+     * A function that returns the validated key parameters for the preference.
+     */
+    abstract val getParameters: () -> ValidatedKeyParameters?
 
     /** Preference's permission on the screen level. */
     abstract val screenPermissions: Permissions?
@@ -854,6 +865,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
     val appliesTo: PreferenceTarget,
     val screenPermissions: Permissions?,
     val screenPreconditions: PreconditionsConfig?,
+    val getScreenParameterSchema: () -> KeyParametersSchema?,
     val getScreenParameters: () -> ValidatedKeyParameters?
 ) {
     private var flagConfig: FlagConfig? = null
@@ -1008,5 +1020,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
         override val purpose: Int = this@ApiPreferenceConfigBuilder.purpose
         override val getScreenParameters: () -> ValidatedKeyParameters? =
             this@ApiPreferenceConfigBuilder.getScreenParameters
+        override val getParametersSchema: () -> KeyParametersSchema? = this@ApiPreferenceConfigBuilder.getScreenParameterSchema
+        override val getParameters: () -> ValidatedKeyParameters? = this@ApiPreferenceConfigBuilder.getScreenParameters
     }
 }

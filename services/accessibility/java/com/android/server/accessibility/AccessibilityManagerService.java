@@ -6756,11 +6756,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         AccessibilityInputFilter inputFilter = null;
         synchronized (mLock) {
             if (mHasInputFilter && mInputFilter != null) {
-                if (Flags.releaseA11yLockBeforeInputFilterCall()) {
-                    inputFilter = mInputFilter;
-                } else {
-                    consumer.accept(mInputFilter);
-                }
+                inputFilter = mInputFilter;
             }
         }
         if (inputFilter != null) {

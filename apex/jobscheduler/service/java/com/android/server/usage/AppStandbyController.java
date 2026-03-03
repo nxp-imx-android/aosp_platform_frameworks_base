@@ -349,8 +349,7 @@ public class AppStandbyController
     /** Minimum time a slice pinned event should keep the bucket elevated. */
     long mSlicePinnedTimeoutMillis = ConstantsObserver.DEFAULT_SLICE_PINNED_TIMEOUT;
     /** The standby bucket that an app will be promoted on a notification-seen event */
-    int mNotificationSeenPromotedBucket =
-            ConstantsObserver.DEFAULT_NOTIFICATION_SEEN_PROMOTED_BUCKET;
+    int mNotificationSeenPromotedBucket = STANDBY_BUCKET_WORKING_SET;
     /**
      * If {@code true}, tell each {@link AppIdleStateChangeListener} to give quota bump for each
      * notification seen event.
@@ -3101,9 +3100,6 @@ public class AppStandbyController
         public static final long DEFAULT_SLICE_PINNED_TIMEOUT =
                 COMPRESS_TIME ? 12 * ONE_MINUTE : 2 * ONE_HOUR;
 
-        public static final int DEFAULT_NOTIFICATION_SEEN_PROMOTED_BUCKET =
-                Flags.removeNotificationSeenElevation()
-                        ? STANDBY_BUCKET_RARE : STANDBY_BUCKET_WORKING_SET;
         public static final boolean DEFAULT_RETAIN_NOTIFICATION_SEEN_IMPACT_FOR_PRE_T_APPS = false;
         public static final boolean DEFAULT_TRIGGER_QUOTA_BUMP_ON_NOTIFICATION_SEEN = false;
         public static final long DEFAULT_SYSTEM_UPDATE_TIMEOUT =
@@ -3138,6 +3134,9 @@ public class AppStandbyController
                 true;
         private static final String DEFAULT_BROADCAST_RESPONSE_EXEMPTED_ROLES = "";
         private static final String DEFAULT_BROADCAST_RESPONSE_EXEMPTED_PERMISSIONS = "";
+        private int mDefaultNotificationSeenPromotedBucket =
+                Flags.removeNotificationSeenElevation()
+                ? STANDBY_BUCKET_RARE : STANDBY_BUCKET_WORKING_SET;
 
         private final TextUtils.SimpleStringSplitter mStringPipeSplitter =
                 new TextUtils.SimpleStringSplitter('|');
@@ -3206,7 +3205,7 @@ public class AppStandbyController
                         case KEY_NOTIFICATION_SEEN_PROMOTED_BUCKET:
                             mNotificationSeenPromotedBucket = properties.getInt(
                                     KEY_NOTIFICATION_SEEN_PROMOTED_BUCKET,
-                                    DEFAULT_NOTIFICATION_SEEN_PROMOTED_BUCKET);
+                                    mDefaultNotificationSeenPromotedBucket);
                             break;
                         case KEY_RETAIN_NOTIFICATION_SEEN_IMPACT_FOR_PRE_T_APPS:
                             mRetainNotificationSeenImpactForPreTApps = properties.getBoolean(

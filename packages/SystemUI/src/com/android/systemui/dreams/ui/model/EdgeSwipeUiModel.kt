@@ -30,6 +30,7 @@ package com.android.systemui.dreams.ui.model
  * @property isCommitted Whether the swipe gesture has passed the threshold to successfully trigger
  *   the dream switch.
  * @property startY The vertical position of the start of the gesture in pixels.
+ * @property releaseVelocityX The horizontal velocity of the gesture in pixels per second.
  * @property targetDream The UI model of the dream that will be switched to if the gesture is
  *   successful.
  */
@@ -39,5 +40,6 @@ data class EdgeSwipeUiModel(
     val isReleasing: Boolean = false,
     val isCommitted: Boolean = false,
     val startY: Float = 0f,
+    val releaseVelocityX: Float = 0f,
     val targetDream: DreamItemUiModel? = null,
 )

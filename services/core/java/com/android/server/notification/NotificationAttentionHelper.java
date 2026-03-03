@@ -270,51 +270,31 @@ public final class NotificationAttentionHelper {
     }
 
     private PolitenessStrategy createPolitenessStrategy() {
-        if (Flags.crossAppPoliteNotifications()) {
-            PolitenessStrategy appStrategy = new StrategyPerApp(
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_T1),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_T2),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_VOLUME1),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_VOLUME2),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_COUNTER_RESET),
-                    record -> {
-                        final String category = record.getNotification().category;
-                        if (Notification.CATEGORY_ALARM.equals(category)
-                                || Notification.CATEGORY_CAR_EMERGENCY.equals(category)
-                                || Notification.CATEGORY_CAR_WARNING.equals(category)) {
-                            return true;
-                        }
-                        return mPackageManager.checkPermission(
-                            permission.RECEIVE_EMERGENCY_BROADCAST,
-                            record.getSbn().getPackageName()) == PERMISSION_GRANTED;
-                    });
+        PolitenessStrategy appStrategy = new StrategyPerApp(
+                mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_T1),
+                mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_T2),
+                mFlagResolver.getIntValue(NotificationFlags.NOTIF_VOLUME1),
+                mFlagResolver.getIntValue(NotificationFlags.NOTIF_VOLUME2),
+                mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_COUNTER_RESET),
+                record -> {
+                    final String category = record.getNotification().category;
+                    if (Notification.CATEGORY_ALARM.equals(category)
+                            || Notification.CATEGORY_CAR_EMERGENCY.equals(category)
+                            || Notification.CATEGORY_CAR_WARNING.equals(category)) {
+                        return true;
+                    }
+                    return mPackageManager.checkPermission(
+                        permission.RECEIVE_EMERGENCY_BROADCAST,
+                        record.getSbn().getPackageName()) == PERMISSION_GRANTED;
+                });
 
-            return new StrategyAvalanche(
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_T1),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_T2),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_VOLUME1),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_VOLUME2),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_AVALANCHE_TIMEOUT),
-                    appStrategy, appStrategy.mExemptionProvider);
-        } else {
-            return new StrategyPerApp(
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_T1),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_T2),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_VOLUME1),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_VOLUME2),
-                    mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_COUNTER_RESET),
-                    record -> {
-                        final String category = record.getNotification().category;
-                        if (Notification.CATEGORY_ALARM.equals(category)
-                                || Notification.CATEGORY_CAR_EMERGENCY.equals(category)
-                                || Notification.CATEGORY_CAR_WARNING.equals(category)) {
-                            return true;
-                        }
-                        return mPackageManager.checkPermission(
-                            permission.RECEIVE_EMERGENCY_BROADCAST,
-                            record.getSbn().getPackageName()) == PERMISSION_GRANTED;
-                    });
-        }
+        return new StrategyAvalanche(
+                mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_T1),
+                mFlagResolver.getIntValue(NotificationFlags.NOTIF_COOLDOWN_T2),
+                mFlagResolver.getIntValue(NotificationFlags.NOTIF_VOLUME1),
+                mFlagResolver.getIntValue(NotificationFlags.NOTIF_VOLUME2),
+                mFlagResolver.getIntValue(NotificationFlags.NOTIF_AVALANCHE_TIMEOUT),
+                appStrategy, appStrategy.mExemptionProvider);
     }
 
     @VisibleForTesting
@@ -356,10 +336,8 @@ public final class NotificationAttentionHelper {
         filter.addAction(Intent.ACTION_USER_REMOVED);
         filter.addAction(Intent.ACTION_USER_SWITCHED);
         filter.addAction(Intent.ACTION_USER_UNLOCKED);
-        if (Flags.crossAppPoliteNotifications()) {
-            for (String avalancheIntent : NOTIFICATION_AVALANCHE_TRIGGER_INTENTS) {
-                filter.addAction(avalancheIntent);
-            }
+        for (String avalancheIntent : NOTIFICATION_AVALANCHE_TRIGGER_INTENTS) {
+            filter.addAction(avalancheIntent);
         }
         mContext.registerReceiverAsUser(mIntentReceiver, UserHandle.ALL, filter, null, null);
 
@@ -1737,27 +1715,25 @@ public final class NotificationAttentionHelper {
                 loadUserSettings();
             }
 
-            if (Flags.crossAppPoliteNotifications()) {
-                if (NOTIFICATION_AVALANCHE_TRIGGER_INTENTS.contains(action)) {
-                    boolean enableAvalancheStrategy = true;
-                    // Some actions must also match extras, ie. airplane mode => disabled
-                    Pair<String, Boolean> expectedExtras =
-                            NOTIFICATION_AVALANCHE_TRIGGER_EXTRAS.get(action);
-                    if (expectedExtras != null) {
-                        enableAvalancheStrategy =
-                                intent.getBooleanExtra(expectedExtras.first, false)
-                                == expectedExtras.second;
-                    }
+            if (NOTIFICATION_AVALANCHE_TRIGGER_INTENTS.contains(action)) {
+                boolean enableAvalancheStrategy = true;
+                // Some actions must also match extras, ie. airplane mode => disabled
+                Pair<String, Boolean> expectedExtras =
+                        NOTIFICATION_AVALANCHE_TRIGGER_EXTRAS.get(action);
+                if (expectedExtras != null) {
+                    enableAvalancheStrategy =
+                            intent.getBooleanExtra(expectedExtras.first, false)
+                            == expectedExtras.second;
+                }
 
-                    if (DEBUG) {
-                        Log.i(TAG, "Avalanche trigger intent received: " + action
-                                + ". Enabling avalanche strategy: " + enableAvalancheStrategy);
-                    }
+                if (DEBUG) {
+                    Log.i(TAG, "Avalanche trigger intent received: " + action
+                            + ". Enabling avalanche strategy: " + enableAvalancheStrategy);
+                }
 
-                    if (enableAvalancheStrategy && mStrategy instanceof StrategyAvalanche) {
-                        ((StrategyAvalanche) mStrategy)
-                                .setTriggerTimeMs(System.currentTimeMillis());
-                    }
+                if (enableAvalancheStrategy && mStrategy instanceof StrategyAvalanche) {
+                    ((StrategyAvalanche) mStrategy)
+                            .setTriggerTimeMs(System.currentTimeMillis());
                 }
             }
         }

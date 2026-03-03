@@ -56,6 +56,7 @@ class ApiPreferenceTest {
             USER(canManage = OWN_USER),
             null,
             null,
+            { null },
             getScreenParameters
         ).apply {
             get { execute { true } }
@@ -80,6 +81,7 @@ class ApiPreferenceTest {
                 USER(canManage = OWN_USER),
                 null,
                 null,
+                { null },
                 getScreenParameters
             ).apply {
                 get { execute { true } }
@@ -109,6 +111,7 @@ class ApiPreferenceTest {
             PreconditionsConfig(
                 R.string.preconditions_description1
             ) { Allowed },
+            { null },
             getScreenParameters
         ).apply {
             get { execute { true } }
@@ -136,6 +139,7 @@ class ApiPreferenceTest {
             USER(canManage = OWN_USER),
             null,
             null,
+            { null },
             getScreenParameters
         ).apply {
             get { execute { true } }
@@ -163,6 +167,7 @@ class ApiPreferenceTest {
             USER(canManage = OWN_USER),
             null,
             null,
+            { null },
             getScreenParameters
         ).apply {
             get { execute { true } }
@@ -190,6 +195,7 @@ class ApiPreferenceTest {
             USER(canManage = OWN_USER),
             null,
             null,
+            { null },
             getScreenParameters
         ).apply {
             get { execute { true } }
@@ -217,6 +223,7 @@ class ApiPreferenceTest {
             USER(canManage = OWN_USER),
             null,
             null,
+            { null },
             getScreenParameters
         ).apply {
             get { execute { true } }
@@ -243,6 +250,7 @@ class ApiPreferenceTest {
             USER(canManage = OWN_USER),
             null,
             null,
+            { null },
             getScreenParameters
         ).apply {
             get { execute { true } }
@@ -269,6 +277,7 @@ class ApiPreferenceTest {
             USER(canManage = OWN_USER),
             null,
             null,
+            { null },
             getScreenParameters
         ).apply {
             get { execute { true } }
@@ -301,6 +310,7 @@ class ApiPreferenceTest {
             USER(canManage = OWN_USER),
             null,
             null,
+            { null },
             getScreenParameters
         ).apply {
             get { execute { true } }
@@ -330,6 +340,7 @@ class ApiPreferenceTest {
             USER(canManage = OWN_USER),
             null,
             null,
+            { null },
             getScreenParameters
         ).apply {
             flag { false }
@@ -384,6 +395,7 @@ class ApiPreferenceTest {
             USER(canManage = OWN_USER),
             null,
             null,
+            { null },
             { null }
         ).apply {
             tags("tag1", "tag2")
@@ -404,6 +416,7 @@ class ApiPreferenceTest {
             USER(canManage = OWN_USER),
             null,
             null,
+            { null },
             { null }
         ).apply {
             get { execute { true } }

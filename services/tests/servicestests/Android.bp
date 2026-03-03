@@ -294,6 +294,7 @@ java_library {
         "utils/**/*.kt",
     ],
     static_libs: [
+        "hamcrest-library",
         "junit",
         "mockito-target-minus-junit4",
         "androidx.annotation_annotation",
@@ -312,6 +313,7 @@ java_library {
         "utils/**/*.kt",
     ],
     static_libs: [
+        "hamcrest-library",
         "services.core.ravenwood",
     ],
     libs: [
@@ -340,6 +342,7 @@ java_library {
         "utils/**/*.kt",
     ],
     static_libs: [
+        "hamcrest-library",
         "junit",
         "mockito-target-extended-minus-junit4",
         "androidx.annotation_annotation",

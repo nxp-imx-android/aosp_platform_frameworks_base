@@ -152,7 +152,7 @@ private fun Header(settingsButtonAction: (() -> Unit)?) {
         val endContentModifier = Modifier.size(HeaderDimensions.ButtonSize)
         if (settingsButtonAction != null) {
             IconButton(
-                modifier = endContentModifier.testTag("button1"),
+                modifier = endContentModifier.testTag("settings_button"),
                 onClick = settingsButtonAction,
             ) {
                 Icon(

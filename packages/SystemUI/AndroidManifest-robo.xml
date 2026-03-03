@@ -23,7 +23,7 @@
     android:sharedUserId="android.uid.system"
     package="com.android.systemui.tests.robo" >
 
-   <application>
+   <application tools:node="replace">
     <activity
         android:name="androidx.activity.ComponentActivity"
         android:exported="true">
@@ -34,4 +34,5 @@
     </activity>
   </application>
 
+  <permission tools:node="removeAll" />
 </manifest>

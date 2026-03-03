@@ -37,16 +37,18 @@ import android.widget.FrameLayout
 import android.window.DesktopExperienceFlags
 import androidx.core.animation.doOnEnd
 import com.android.internal.annotations.VisibleForTesting
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellDesktopThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
-import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.windowdecor.WindowDecoration.SurfaceControlViewHostFactory
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 
@@ -179,9 +181,16 @@ constructor(
     ) {
         if (currentType == newType || isReleased) return
         desktopExecutor.execute {
-            val layout =
-                displayController.getDisplayLayout(taskInfo.displayId)
-                    ?: error("Expected to find DisplayLayout for taskId${taskInfo.taskId}.")
+            val layout = displayController.getDisplayLayout(taskInfo.displayId)
+            if (layout == null) {
+                ProtoLog.w(
+                    WM_SHELL_DESKTOP_MODE,
+                    "%s: null display layout for task=%d",
+                    TAG,
+                    taskInfo.taskId,
+                )
+                return@execute
+            }
             if (currentType == IndicatorType.NO_INDICATOR) {
                 fadeInIndicatorInternal(layout, newType, taskInfo.displayId, snapEventHandler)
             } else if (newType == IndicatorType.NO_INDICATOR) {
@@ -568,8 +577,7 @@ constructor(
                     }
 
                     IndicatorType.TO_DESKTOP_INDICATOR -> {
-                        val adjustmentPercentage =
-                            (1f - DESKTOP_MODE_INITIAL_BOUNDS_SCALE)
+                        val adjustmentPercentage = (1f - DESKTOP_MODE_INITIAL_BOUNDS_SCALE)
                         return Rect(
                             (adjustmentPercentage * desktopStableBounds.width() / 2).toInt(),
                             (adjustmentPercentage * desktopStableBounds.height() / 2).toInt(),
@@ -661,5 +669,9 @@ constructor(
     private fun IndicatorType.isBubbleType(): Boolean {
         return this == IndicatorType.TO_BUBBLE_LEFT_INDICATOR ||
             this == IndicatorType.TO_BUBBLE_RIGHT_INDICATOR
+    }
+
+    companion object {
+        private const val TAG = "VisualIndicatorViewContainer"
     }
 }

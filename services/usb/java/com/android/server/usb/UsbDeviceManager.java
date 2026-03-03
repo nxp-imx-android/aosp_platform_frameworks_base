@@ -1217,10 +1217,6 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
          * from freezing the corresponding process.
          */
         private void updateMtpFunction() {
-            if (!Flags.enableBindToMtpService()) {
-                return;
-            }
-
             boolean mtpEnabled = ((mCurrentFunctions & UsbManager.FUNCTION_MTP) != 0);
             boolean ptpEnabled = ((mCurrentFunctions & UsbManager.FUNCTION_PTP) != 0);
 

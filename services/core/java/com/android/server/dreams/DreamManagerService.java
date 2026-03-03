@@ -16,26 +16,24 @@
 
 package com.android.server.dreams;
 
-import static android.Manifest.permission.BIND_DREAM_SERVICE;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_ASSISTANT;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.os.BatteryManager.EXTRA_CHARGING_STATUS;
-
 import static android.service.dreams.Flags.allowDreamWithChargeLimit;
 import static android.service.dreams.Flags.cleanupDreamSettingsOnUninstall;
 import static android.service.dreams.Flags.dreamHandlesBeingObscured;
+import static android.service.dreams.Flags.dreamsSwitcher;
 import static android.service.dreams.Flags.dreamsV2;
 import static android.service.dreams.Flags.systemDreamDeathRecipient;
-import static android.service.dreams.Flags.dreamsSwitcher;
 
 import static com.android.server.wm.ActivityInterceptorCallback.DREAM_MANAGER_ORDERED_ID;
 
 import android.annotation.EnforcePermission;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
-import android.annotation.UserIdInt;
 import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.IAppTask;
 import android.app.TaskInfo;
@@ -48,9 +46,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManagerInternal;
-import android.content.pm.ServiceInfo;
 import android.database.ContentObserver;
 import android.hardware.display.AmbientDisplayConfiguration;
 import android.hardware.health.BatteryChargingState;
@@ -65,7 +61,6 @@ import android.os.Looper;
 import android.os.PermissionEnforcer;
 import android.os.PowerManager;
 import android.os.PowerManagerInternal;
-import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
@@ -76,10 +71,10 @@ import android.os.UserManager;
 import android.provider.Settings;
 import android.service.dreams.DreamItem;
 import android.service.dreams.DreamManagerInternal;
+import android.service.dreams.DreamPlaylist;
 import android.service.dreams.DreamService;
 import android.service.dreams.IDreamManager;
 import android.service.dreams.IDreamManagerListener;
-import android.service.dreams.DreamPlaylist;
 import android.text.TextUtils;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -104,10 +99,7 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
@@ -214,8 +206,8 @@ public final class DreamManagerService extends SystemService {
             new ActivityInterceptorCallback() {
                 @Nullable
                 @Override
-                public ActivityInterceptResult onInterceptActivityLaunch(@NonNull
-                        ActivityInterceptorInfo info) {
+                public ActivityInterceptResult onInterceptActivityLaunch(
+                        @NonNull ActivityInterceptorInfo info) {
                     return null;
                 }
 
@@ -298,9 +290,9 @@ public final class DreamManagerService extends SystemService {
             if (uri == null
                     || Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_COMPONENTS).equals(uri)
                     || Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_ACTIVE_COMPONENT)
-                            .equals(uri)
+                    .equals(uri)
                     || Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT)
-                            .equals(uri)) {
+                    .equals(uri)) {
                 notifyPlaylistChanged(userId);
             }
         }
@@ -311,7 +303,9 @@ public final class DreamManagerService extends SystemService {
         public void onPackageRemoved(String packageName, int uid) {
             super.onPackageRemoved(packageName, uid);
             final int userId = getChangingUserId();
-            updateDreamOnPackageRemoved(packageName, userId);
+            if (cleanupDreamSettingsOnUninstall()) {
+                updateDreamOnPackageRemoved(packageName, userId);
+            }
             invalidateAndNotify(packageName);
         }
 
@@ -337,6 +331,18 @@ public final class DreamManagerService extends SystemService {
         public void onPackagesUnsuspended(String[] packages) {
             super.onPackagesUnsuspended(packages);
             invalidateAndNotify(packages);
+        }
+
+        @Override
+        public void onPackageAppeared(String packageName, int reason) {
+            super.onPackageAppeared(packageName, reason);
+            invalidateAndNotify(packageName);
+        }
+
+        @Override
+        public void onPackageDisappeared(String packageName, int reason) {
+            super.onPackageDisappeared(packageName, reason);
+            invalidateAndNotify(packageName);
         }
 
         private void invalidateAndNotify(String... packages) {
@@ -558,7 +564,7 @@ public final class DreamManagerService extends SystemService {
     @Override
     public void onUserStarting(@NonNull TargetUser user) {
         super.onUserStarting(user);
-        if (cleanupDreamSettingsOnUninstall()) {
+        if (cleanupDreamSettingsOnUninstall() || dreamsSwitcher()) {
             mHandler.post(() -> {
                 final int userId = user.getUserIdentifier();
                 if (!mPackageMonitors.contains(userId)) {
@@ -580,7 +586,7 @@ public final class DreamManagerService extends SystemService {
             mUserData.remove(userId);
         }
         mDreamPlaylistUpdater.clearCache(userId);
-        if (cleanupDreamSettingsOnUninstall()) {
+        if (cleanupDreamSettingsOnUninstall() || dreamsSwitcher()) {
             mHandler.post(() -> {
                 final PackageMonitor monitor = mPackageMonitors.removeReturnOld(
                         userId);
@@ -588,6 +594,19 @@ public final class DreamManagerService extends SystemService {
                     monitor.unregister();
                 }
             });
+        }
+    }
+
+    @Override
+    public void onUserUnlocked(@NonNull TargetUser user) {
+        super.onUserUnlocked(user);
+        if (dreamsSwitcher()) {
+            final int userId = user.getUserIdentifier();
+            final DreamUserData userData = getOrCreateUserData(userId);
+            if (userData != null) {
+                userData.mMetadataProvider.invalidateCache();
+            }
+            notifyPlaylistChanged(userId, true /* immediate */);
         }
     }
 
@@ -739,7 +758,7 @@ public final class DreamManagerService extends SystemService {
 
     @GuardedBy("mLock")
     private boolean currentDreamCanDozeLocked() {
-      return mCurrentDream != null && mCurrentDream.canDoze;
+        return mCurrentDream != null && mCurrentDream.canDoze;
     }
 
     @VisibleForTesting
@@ -1743,7 +1762,7 @@ public final class DreamManagerService extends SystemService {
                 }
 
                 if (!canLaunchDreamActivity(dreamPackageName, intent.getPackage(),
-                            callingUid)) {
+                        callingUid)) {
                     Slog.e(TAG, "The dream activity can be started only when the device is dreaming"
                             + " and only by the active dream package.");
                     return;

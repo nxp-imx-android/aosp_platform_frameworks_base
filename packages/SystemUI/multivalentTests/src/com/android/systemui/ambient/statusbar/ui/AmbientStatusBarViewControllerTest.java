@@ -36,7 +36,6 @@ import android.app.AlarmManager;
 import android.content.Context;
 import android.content.res.Resources;
 import android.hardware.SensorPrivacyManager;
-import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.view.View;
@@ -46,7 +45,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.app.displaylib.PerDisplayRepository;
-import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.dreams.DreamOverlayNotificationCountProvider;
@@ -219,7 +217,6 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
                 eq(AmbientStatusBarView.STATUS_ICON_LOCATION_ACTIVE), eq(true), any());
     }
 
-    @EnableFlags({Flags.FLAG_DREAM_PRIVACY_INDICATOR})
     @Test
     public void testMicPrivacyIconShownWhenMicActive() {
         mController.onViewAttached();
@@ -235,7 +232,6 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
                 eq(AmbientStatusBarView.STATUS_ICON_MIC_PRIVACY_ON), eq(true), any());
     }
 
-    @EnableFlags({Flags.FLAG_DREAM_PRIVACY_INDICATOR})
     @Test
     public void testCameraPrivacyIconShownWhenCameraActive() {
         mController.onViewAttached();

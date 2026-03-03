@@ -115,7 +115,9 @@ public final class ComputerControlSession implements AutoCloseable {
     public static final int ERROR_DEVICE_LOCKED = 2;
 
     /**
-     * Error code indicating that the user did not approve the creation of a new session.
+     * Error code indicating that the caller does not have permission to create a session, which is
+     * possible if the user did not approve the creation of a new session, or if the caller is not
+     * in foreground.
      */
     public static final int ERROR_PERMISSION_DENIED = 3;
 

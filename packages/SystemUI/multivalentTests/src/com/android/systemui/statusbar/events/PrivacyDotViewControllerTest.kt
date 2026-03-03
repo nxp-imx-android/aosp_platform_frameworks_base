@@ -31,7 +31,6 @@ import android.widget.FrameLayout
 import android.widget.FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY
 import android.widget.ImageView
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_FIX_PRIVACY_INDICATOR_BOTH_DOT_CHIP_VISIBLE_QS
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.backgroundScope
@@ -120,7 +119,6 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
         fun getParams(): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(
                 Flags.FLAG_LOCATION_INDICATORS_ENABLED,
-                FLAG_FIX_PRIVACY_INDICATOR_BOTH_DOT_CHIP_VISIBLE_QS,
                 FLAG_SCENE_CONTAINER,
             )
         }
@@ -425,7 +423,6 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
         }
 
     @Test
-    @EnableFlags(FLAG_FIX_PRIVACY_INDICATOR_BOTH_DOT_CHIP_VISIBLE_QS)
     fun initialize_animationFinished_shadeExpanded_noShow() =
         kosmos.runTest {
             val captor = ArgumentCaptor.forClass(SystemStatusAnimationCallback::class.java)
@@ -453,7 +450,6 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
         }
 
     @Test
-    @EnableFlags(FLAG_FIX_PRIVACY_INDICATOR_BOTH_DOT_CHIP_VISIBLE_QS)
     fun initialize_animationFinished_qsExpanded_noShow() =
         kosmos.runTest {
             val captor = ArgumentCaptor.forClass(SystemStatusAnimationCallback::class.java)
@@ -492,7 +488,6 @@ class PrivacyDotViewControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(FLAG_FIX_PRIVACY_INDICATOR_BOTH_DOT_CHIP_VISIBLE_QS)
     fun statusBarStateListener_onStateChanged_updatesDotState() =
         kosmos.runTest {
             val captor = ArgumentCaptor.forClass(SystemStatusAnimationCallback::class.java)

@@ -2757,6 +2757,25 @@ class DesktopTasksController(
             )
             return null
         }
+        // TODO: b/477848767 - Remember only position if the task is unresizable.
+        if (taskInfo?.isResizeable == false) {
+            logV(
+                "calculateRememberedBounds: Not using remembered bounds for task#%d (%s) because " +
+                    " the task is unresizable.",
+                taskInfo.taskId,
+                packageName,
+            )
+            return null
+        }
+        if (taskInfo?.appCompatTaskInfo?.hasIsExcludeCaptionInsets() == true) {
+            logV(
+                "calculateRememberedBounds: Not using remembered bounds for task#%d (%s) because " +
+                    " the task has isExcludeCaptionInsets.",
+                taskInfo.taskId,
+                packageName,
+            )
+            return null
+        }
         val ratio = repository.getRememberedBoundsRatio(packageName) ?: return null
         logV(
             "calculateRememberedBounds: Use ratio=%s for %s (task#%d)",

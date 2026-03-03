@@ -133,8 +133,16 @@ class AppFunctionMetadataReaderTest {
             }
         val testFutureTopLevelSearchResults =
             object : FutureSearchResults {
+                var pageNumber = 0
                 override fun getNextPage(): AndroidFuture<List<SearchResult?>?> {
-                    return AndroidFuture.completedFuture(listOf(TEST_TOP_LEVEL_SEARCH_RESULT))
+                    return when (pageNumber++) {
+                        0, 1, 2 -> {
+                            AndroidFuture.completedFuture(listOf(TEST_TOP_LEVEL_SEARCH_RESULT))
+                        }
+                        else -> {
+                            AndroidFuture.completedFuture(listOf())
+                        }
+                    }
                 }
 
                 override fun close() {}
@@ -157,7 +165,11 @@ class AppFunctionMetadataReaderTest {
                         STATIC_METADATA_DOCUMENT,
                         AppFunctionPackageMetadata.create(
                             "testPackage",
-                            listOf(TEST_TOP_LEVEL_DOCUMENT),
+                            listOf(
+                                TEST_TOP_LEVEL_DOCUMENT,
+                                TEST_TOP_LEVEL_DOCUMENT,
+                                TEST_TOP_LEVEL_DOCUMENT,
+                            ),
                         ),
                     )
                     .build()
@@ -168,7 +180,11 @@ class AppFunctionMetadataReaderTest {
                         STATIC_METADATA_DOCUMENT_2,
                         AppFunctionPackageMetadata.create(
                             "testPackage",
-                            listOf(TEST_TOP_LEVEL_DOCUMENT),
+                            listOf(
+                                TEST_TOP_LEVEL_DOCUMENT,
+                                TEST_TOP_LEVEL_DOCUMENT,
+                                TEST_TOP_LEVEL_DOCUMENT,
+                            ),
                         ),
                     )
                     .build()
@@ -180,7 +196,6 @@ class AppFunctionMetadataReaderTest {
         val testFutureStaticSearchResults =
             object : FutureSearchResults {
                 var pageNumber = -1
-
                 override fun getNextPage(): AndroidFuture<List<SearchResult?>?> {
                     pageNumber++
                     when (pageNumber) {
@@ -202,8 +217,18 @@ class AppFunctionMetadataReaderTest {
             }
         val testFutureTopLevelSearchResults =
             object : FutureSearchResults {
+                var pageNumber = 0
                 override fun getNextPage(): AndroidFuture<List<SearchResult?>?> {
-                    return AndroidFuture.completedFuture(listOf(TEST_TOP_LEVEL_SEARCH_RESULT))
+                    when (pageNumber++) {
+                        0 -> {
+                            return AndroidFuture.completedFuture(
+                                listOf(TEST_TOP_LEVEL_SEARCH_RESULT)
+                            )
+                        }
+                        else -> {
+                            return AndroidFuture.completedFuture(listOf())
+                        }
+                    }
                 }
 
                 override fun close() {}
@@ -530,6 +555,7 @@ class AppFunctionMetadataReaderTest {
                     "testPackage/testTopLevelDocument",
                     "",
                 )
+                .setPropertyString(PROPERTY_PACKAGE_NAME, "testPackage")
                 .setPropertyString("customTopLevelProperty", "value1")
                 .build()
         val TEST_TOP_LEVEL_SEARCH_RESULT =

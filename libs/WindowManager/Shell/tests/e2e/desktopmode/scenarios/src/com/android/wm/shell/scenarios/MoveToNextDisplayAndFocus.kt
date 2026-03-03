@@ -70,6 +70,7 @@ abstract class MoveToNextDisplayAndFocus() : TestScenarioBase() {
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle()
+            .withAppTransitionIdle(externalDisplayId)
             .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
             .add(ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId))
             .waitForAndVerify()
@@ -80,6 +81,7 @@ abstract class MoveToNextDisplayAndFocus() : TestScenarioBase() {
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle()
+            .withAppTransitionIdle(externalDisplayId)
             .add(ConditionsFactory.isWindowVisible(testAppInMainDisplay, DEFAULT_DISPLAY))
             .add(
                 ConditionsFactory.isWindowVisible(testAppInExternalDisplay, externalDisplayId)

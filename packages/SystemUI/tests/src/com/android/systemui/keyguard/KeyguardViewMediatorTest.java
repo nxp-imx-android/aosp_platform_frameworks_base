@@ -117,6 +117,7 @@ import com.android.systemui.log.SessionTracker;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.process.ProcessWrapper;
 import com.android.systemui.scene.FakeWindowRootViewComponent;
+import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.ui.view.WindowRootView;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.NotificationShadeWindowControllerImpl;
@@ -1872,7 +1873,8 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 mKosmos::getCommunalSceneInteractor,
                 mKosmos::getCommunalSettingsInteractor,
                 mock(WindowManagerOcclusionManager.class),
-                Optional.of(mUiLatencyStatsManager)) {
+                Optional.of(mUiLatencyStatsManager),
+                () -> mock(SceneInteractor.class)) {
 
                     @Override
                     void postAfterTraversal(Runnable runnable) {

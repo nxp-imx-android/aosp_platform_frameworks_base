@@ -117,10 +117,10 @@ static struct {
     jmethodID notifyTouchpadThreeFingerTap;
     jmethodID notifySwitch;
     jmethodID notifyInputChannelBroken;
-    jmethodID warnNoFocusedWindowAnr;
     jmethodID notifyNoFocusedWindowAnr;
     jmethodID notifyWindowUnresponsive;
     jmethodID notifyWindowResponsive;
+    jmethodID notifyPreNoFocusedWindowAnr;
     jmethodID notifyFocusChanged;
     jmethodID notifySensorEvent;
     jmethodID notifySensorAccuracy;
@@ -446,9 +446,9 @@ public:
     void notifyNoFocusedWindowAnr(const std::shared_ptr<InputApplicationHandle>& handle,
                                   int32_t eventId, nsecs_t eventTime,
                                   std::chrono::milliseconds timeoutDuration) override;
-    void warnNoFocusedWindowAnr(const std::shared_ptr<InputApplicationHandle>& handle,
-                                int32_t eventId, std::chrono::milliseconds elapsedDuration,
-                                std::chrono::milliseconds timeoutDuration) override;
+    void notifyPreNoFocusedWindowAnr(const std::shared_ptr<InputApplicationHandle>& handle,
+                                     int32_t eventId, std::chrono::milliseconds elapsedDuration,
+                                     std::chrono::milliseconds timeoutDuration) override;
     void notifyWindowUnresponsive(const sp<IBinder>& token, std::optional<gui::Pid> pid,
                                   const std::string& reason, int32_t eventId, nsecs_t eventTime,
                                   std::chrono::milliseconds timeoutDuration) override;
@@ -1312,11 +1312,11 @@ static jobject getInputApplicationHandleObjLocalRef(
     return handle->getInputApplicationHandleObjLocalRef(env);
 }
 
-void NativeInputManager::warnNoFocusedWindowAnr(
+void NativeInputManager::notifyPreNoFocusedWindowAnr(
         const std::shared_ptr<InputApplicationHandle>& handle, int32_t eventId,
         std::chrono::milliseconds elapsedDuration, std::chrono::milliseconds timeoutDuration) {
 #if DEBUG_INPUT_DISPATCHER_POLICY
-    ALOGD("warnNoFocusedWindowAnr");
+    ALOGD("notifyPreNoFocusedWindowAnr");
 #endif
     ATRACE_CALL();
 
@@ -1325,10 +1325,10 @@ void NativeInputManager::warnNoFocusedWindowAnr(
 
     jobject inputApplicationHandleObj = getInputApplicationHandleObjLocalRef(env, handle);
 
-    env->CallVoidMethod(mServiceObj, gServiceClassInfo.warnNoFocusedWindowAnr,
+    env->CallVoidMethod(mServiceObj, gServiceClassInfo.notifyPreNoFocusedWindowAnr,
                         inputApplicationHandleObj, eventId, elapsedDuration.count(),
                         timeoutDuration.count());
-    checkAndClearExceptionFromCallback(env, "warnNoFocusedWindowAnr");
+    checkAndClearExceptionFromCallback(env, "notifyPreNoFocusedWindowAnr");
 }
 
 void NativeInputManager::notifyNoFocusedWindowAnr(
@@ -3809,8 +3809,8 @@ int register_android_server_InputManager(JNIEnv* env) {
 
     GET_METHOD_ID(gServiceClassInfo.notifyVibratorState, clazz, "notifyVibratorState", "(IZ)V");
 
-    GET_METHOD_ID(gServiceClassInfo.warnNoFocusedWindowAnr, clazz, "warnNoFocusedWindowAnr",
-                  "(Landroid/view/InputApplicationHandle;IJJ)V");
+    GET_METHOD_ID(gServiceClassInfo.notifyPreNoFocusedWindowAnr, clazz,
+                  "notifyPreNoFocusedWindowAnr", "(Landroid/view/InputApplicationHandle;IJJ)V");
 
     GET_METHOD_ID(gServiceClassInfo.notifyNoFocusedWindowAnr, clazz, "notifyNoFocusedWindowAnr",
                   "(Landroid/view/InputApplicationHandle;IJJ)V");

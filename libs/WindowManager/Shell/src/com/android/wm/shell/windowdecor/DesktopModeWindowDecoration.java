@@ -1259,16 +1259,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         relayoutParams.mShouldSetBackground = desktopConfig.shouldSetBackground(taskInfo);
     }
 
-    @Deprecated
-    private static int getCornerRadius(@NonNull Context context, int layoutResId) {
-        if (layoutResId == R.layout.desktop_mode_app_header) {
-            return loadDimensionPixelSize(context.getResources(),
-                    com.android.wm.shell.shared.R.dimen
-                            .desktop_windowing_freeform_rounded_corner_radius);
-        }
-        return INVALID_CORNER_RADIUS;
-    }
-
     private static int getCornerRadiusId(int layoutResId) {
         if (layoutResId == R.layout.desktop_mode_app_header) {
             return com.android.wm.shell.shared.R.dimen

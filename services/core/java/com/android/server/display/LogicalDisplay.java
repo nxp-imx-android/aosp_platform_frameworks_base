@@ -774,6 +774,12 @@ final class LogicalDisplay {
     public void configureDisplayLocked(SurfaceControl.Transaction t,
                                        DisplayDevice device,
                                        boolean isBlanked, Executor executor) {
+        configureDisplayLocked(t, device, isBlanked, executor, false);
+    }
+
+    public void configureDisplayLocked(SurfaceControl.Transaction t,
+                                       DisplayDevice device,
+                                       boolean isBlanked, Executor executor, boolean isInBatch) {
         // Set the layer stack.
         device.setLayerStackLocked(t, isBlanked ? BLANK_LAYER_STACK : mLayerStack, mDisplayId);
         // Also inform whether the device is the same one sent to inputflinger for its layerstack.
@@ -790,12 +796,12 @@ final class LogicalDisplay {
 
         // Set the color mode and allowed display mode.
         if (device == mPrimaryDisplayDevice) {
-            device.setDesiredDisplayModeSpecsLocked(mDesiredDisplayModeSpecs);
+            device.setDesiredDisplayModeSpecsLocked(mDesiredDisplayModeSpecs, isInBatch);
             device.setRequestedColorModeLocked(mRequestedColorMode);
         } else {
             // Reset to default for non primary displays
             device.setDesiredDisplayModeSpecsLocked(
-                    new DisplayModeDirector.DesiredDisplayModeSpecs());
+                    new DisplayModeDirector.DesiredDisplayModeSpecs(), isInBatch);
             device.setRequestedColorModeLocked(0);
         }
 

@@ -49,7 +49,7 @@ class IntegerProcessor(processingEnv: ProcessingEnvironment) :
         val integerDefinition =
             element.getAnnotation(IntegerPolicyDefinition::class.java)
                 ?: throw IllegalStateException(
-                    "Processor should only be called on elements with @IntegerPolicyMetadata"
+                    "Processor should only be called on elements with @IntegerPolicyDefinition"
                 )
 
         val actualType = policyType(element)

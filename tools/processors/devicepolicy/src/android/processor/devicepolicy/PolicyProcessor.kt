@@ -73,7 +73,7 @@ abstract class PolicyProcessor<T : Annotation>(protected val processingEnv: Proc
     }
 
     /**
-     * Process policy metadata into a {@link (TypeSpecificPolicyMetadata, DevicePolicyDefinition)}.
+     * Process policy metadata into a {@link (TypeSpecificPolicyMetadata, PolicyDefinition)}.
      *
      * Errors must be reported using {@link printError} to the user and processing should continue
      * for as long as possible.

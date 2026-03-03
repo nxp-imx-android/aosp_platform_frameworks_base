@@ -401,3 +401,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "bubbles_fix_issues_with_repeated_fold_unfold"
+    namespace: "multitasking"
+    description: "Fixes bubble issues when transitioning between modes due to repeated folding and unfolding"
+    bug: "450107220"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

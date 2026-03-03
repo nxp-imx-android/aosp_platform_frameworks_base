@@ -16,12 +16,15 @@
 
 package com.android.systemui.dreams.touch
 
+import android.content.Context
+import android.os.Handler
 import android.os.fakeExecutorHandler
 import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.policy.GestureNavigationSettingsObserver
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambient.touch.TouchHandler
 import com.android.systemui.dreams.DreamOverlayContainerView
@@ -31,6 +34,7 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.navigationbar.gestural.GestureNavigationSettingsObserverFactory
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.shared.system.InputChannelCompat
@@ -39,6 +43,7 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -71,6 +76,29 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
             mock<UserContextProvider> { on { userContext } doReturn testCase.context }
         }
 
+    private val Kosmos.gestureNavigationSettingsObserver: GestureNavigationSettingsObserver by
+        Kosmos.Fixture {
+            mock {
+                on { getLeftSensitivity(any()) } doReturn EDGE_WIDTH_PX
+                on { getRightSensitivity(any()) } doReturn EDGE_WIDTH_PX
+            }
+        }
+
+    private val Kosmos.gestureNavigationSettingsObserverFactory:
+        GestureNavigationSettingsObserverFactory by
+        Kosmos.Fixture {
+            object : GestureNavigationSettingsObserverFactory {
+                override fun create(
+                    mainHandler: Handler,
+                    bgHandler: Handler,
+                    context: Context,
+                    onSettingsChanged: Runnable,
+                ): GestureNavigationSettingsObserver {
+                    return gestureNavigationSettingsObserver
+                }
+            }
+        }
+
     private val Kosmos.underTest: EdgeSwipeTouchHandler by
         Kosmos.Fixture {
             EdgeSwipeTouchHandler(
@@ -82,6 +110,7 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
                 userContextProvider = userContextProvider,
                 vibratorHelper = vibratorHelper,
                 logger = dreamTouchHandlerLogger,
+                gestureNavigationSettingsObserverFactory = gestureNavigationSettingsObserverFactory,
             )
         }
 
@@ -380,7 +409,7 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
 
             val endedCalls = dreamSwipeDelegate.fake.swipeEndedCalls
             assertThat(endedCalls).hasSize(1)
-            assertThat(endedCalls[0]).isTrue() // Committed
+            assertThat(endedCalls[0].committed).isTrue() // Committed
         }
 
     @Test
@@ -410,7 +439,7 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
 
             val endedCalls = dreamSwipeDelegate.fake.swipeEndedCalls
             assertThat(endedCalls).hasSize(1)
-            assertThat(endedCalls[0]).isFalse() // Not committed
+            assertThat(endedCalls[0].committed).isFalse() // Not committed
         }
 
     @Test
@@ -440,7 +469,7 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
 
             val endedCalls = dreamSwipeDelegate.fake.swipeEndedCalls
             assertThat(endedCalls).hasSize(1)
-            assertThat(endedCalls[0]).isFalse() // Not committed
+            assertThat(endedCalls[0].committed).isFalse() // Not committed
         }
 
     @Test
@@ -464,7 +493,7 @@ class EdgeSwipeTouchHandlerTest : SysuiTestCase() {
 
             val endedCalls = dreamSwipeDelegate.fake.swipeEndedCalls
             assertThat(endedCalls).hasSize(1)
-            assertThat(endedCalls[0]).isFalse() // Not committed (cancelled)
+            assertThat(endedCalls[0].committed).isFalse() // Not committed (cancelled)
         }
 
     private fun createMotionEvent(x: Float, y: Float, action: Int): MotionEvent {

@@ -23,6 +23,8 @@ import static junit.framework.Assert.assertTrue;
 
 import static org.testng.Assert.assertThrows;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import android.hardware.vibrator.IVibrator;
 import android.os.Parcel;
 import android.os.VibrationEffect;
@@ -240,6 +242,34 @@ public class StepSegmentTest {
         // A single step segment duration is not checked here, but contributes to the effect known
         // duration checked in VibrationEffect implementations.
         assertTrue(new StepSegment(0, 5_000).isHapticFeedbackCandidate());
+    }
+
+    @Test
+    public void testToString() {
+        StepSegment segment = new StepSegment(0.5f, 10);
+        String str = segment.toString();
+        assertThat(str).contains("0.5");
+        assertThat(str).contains("10");
+    }
+
+    @Test
+    public void testEquals() {
+        StepSegment segment = new StepSegment(0.5f, 10, 100);
+        assertThat(segment).isEqualTo(new StepSegment(0.5f, 10, 100));
+        assertThat(segment).isNotEqualTo(new StepSegment(0.6f, 10, 100));
+        assertThat(segment).isNotEqualTo(new StepSegment(0.5f, 20, 100));
+        assertThat(segment.applyStartTime(200)).isNotEqualTo(segment);
+    }
+
+    @Test
+    public void testApplyStartTime() {
+        StepSegment segment = new StepSegment(0.5f, 10);
+        assertThat(segment.getStartTimeMillis()).isEqualTo(-1);
+        StepSegment newSegment = segment.applyStartTime(100);
+        assertThat(newSegment).isNotSameInstanceAs(segment);
+        assertThat(newSegment.getStartTimeMillis()).isEqualTo(100);
+        assertThat(newSegment.getAmplitude()).isEqualTo(0.5f);
+        assertThat(newSegment.getDuration()).isEqualTo(10);
     }
 
     private static VibratorInfo createVibInfoForAmplitude(boolean hasAmplitudeControl) {

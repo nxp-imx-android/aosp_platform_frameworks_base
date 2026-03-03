@@ -34,6 +34,7 @@ import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.internal.util.test.FakeSettingsProvider
 import com.android.server.display.DisplayDeviceConfig
+import com.android.server.display.ModeRequestManager
 import com.android.server.display.config.RefreshRateData
 import com.android.server.display.config.SupportedModeData
 import com.android.server.display.config.createRefreshRateData
@@ -114,6 +115,7 @@ class SettingsObserverTest {
     private val mockDisplayDeviceConfigProvider = mock<DisplayDeviceConfigProvider>()
 
     private val testHandler = TestHandler(null)
+    private val mockModeRequestManager = mock<ModeRequestManager>()
 
     @Before
     fun setUp() {
@@ -130,7 +132,8 @@ class SettingsObserverTest {
                 spyContext.contentResolver, Settings.Global.LOW_POWER_MODE, lowPowerModeSetting)
 
         val displayModeDirector = DisplayModeDirector(
-                spyContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+            spyContext, testHandler, mockInjector, mockFlags,
+            mockDisplayDeviceConfigProvider, mockModeRequestManager)
         val ddcByDisplay = SparseArray<DisplayDeviceConfig>()
         whenever(mockDeviceConfig.refreshRateData).thenReturn(testCase.refreshRateData)
         ddcByDisplay.put(Display.DEFAULT_DISPLAY, mockDeviceConfig)
@@ -167,7 +170,8 @@ class SettingsObserverTest {
     @DisableFlags(Flags.FLAG_ENABLE_WORK_DURATIONS)
     fun testSettingsRefreshRates(@TestParameter testCase: SettingsRefreshRateTestCase) {
         val displayModeDirector = DisplayModeDirector(
-            spyContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+            spyContext, testHandler, mockInjector, mockFlags,
+            mockDisplayDeviceConfigProvider, mockModeRequestManager)
 
         val modes = arrayOf(
             Display.Mode(1, 1000, 1000, 60f),
@@ -242,7 +246,8 @@ class SettingsObserverTest {
     fun testSettingsRefreshRates_peakRefreshRateIgnoredForArr() {
         whenever(mockFlags.hasArrSupportFlag()).thenReturn(true)
         val displayModeDirector = DisplayModeDirector(
-            spyContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+            spyContext, testHandler, mockInjector, mockFlags,
+            mockDisplayDeviceConfigProvider, mockModeRequestManager)
         displayModeDirector.injectHasArrSupport(SparseBooleanArray().apply {
             append(Display.DEFAULT_DISPLAY, true)
         })
@@ -279,7 +284,8 @@ class SettingsObserverTest {
             mContext.contentResolver, Settings.Global.LOW_POWER_MODE, 1)
 
         val displayModeDirector = DisplayModeDirector(
-            mContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+            mContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider,
+            mockModeRequestManager)
         val ddcByDisplay = SparseArray<DisplayDeviceConfig>()
         whenever(mockDeviceConfig.refreshRateData).thenReturn(LOW_POWER_REFRESH_RATE_DATA)
         ddcByDisplay.put(0, mockDeviceConfig)
@@ -309,7 +315,8 @@ class SettingsObserverTest {
             mContext.contentResolver, Settings.Global.LOW_POWER_MODE, 1)
 
         val displayModeDirector = DisplayModeDirector(
-            mContext, testHandler, mockInjector, mockFlags, mockDisplayDeviceConfigProvider)
+            mContext, testHandler, mockInjector, mockFlags,
+            mockDisplayDeviceConfigProvider, mockModeRequestManager)
         val ddcByDisplay = SparseArray<DisplayDeviceConfig>()
         whenever(mockDeviceConfig.refreshRateData).thenReturn(LOW_POWER_REFRESH_RATE_DATA)
         ddcByDisplay.put(0, mockDeviceConfig)

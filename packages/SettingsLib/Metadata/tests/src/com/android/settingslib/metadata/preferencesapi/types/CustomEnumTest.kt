@@ -21,6 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.settingslib.metadata.test.R
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertThrows
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,10 +31,8 @@ class CustomEnumTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
 
     /** A mock Integer-based Enum to test generic type <Int>, with string res purposes. */
-    private enum class TestIntEnum(
-        override val asApiValue: Int,
-        override val purpose: Int
-    ) : EnumApiWithRes<Int> {
+    private enum class TestIntEnum(override val asApiValue: Int, override val purpose: Int) :
+        EnumApiWithRes<Int> {
         FIRST(1, R.string.enum_api_purpose_message1),
         SECOND(2, R.string.enum_api_purpose_message2),
         NEGATIVE(-100, R.string.enum_api_purpose_message3),
@@ -49,44 +48,40 @@ class CustomEnumTest {
     }
 
     /** An empty Enum */
-    private enum class EmptyEnum(
-        override val asApiValue: Int,
-        override val purpose: Int = 0
-    ) : EnumApiWithRes<Int>
+    private enum class EmptyEnum(override val asApiValue: Int, override val purpose: Int = 0) :
+        EnumApiWithRes<Int>
 
     /** An incorrect Enum */
-    private enum class IncorrectEnum(
-        override val asApiValue: Int,
-    ) : EnumApi<Int>
+    private enum class IncorrectEnum(override val asApiValue: Int) : EnumApi<Int>
 
     @Test
     fun instantiateCustomEnum_wrongEnumApiInterface_returnsInitError() {
         assertThrows(IllegalArgumentException::class.java) {
-            CustomEnum(
-                IncorrectEnum::class,
-                "Incorrect enum"
-            )
+            CustomEnum(IncorrectEnum::class, "Incorrect enum")
         }
     }
 
     @Test
     fun getOptions_integerEnum_returnCorrectPairValuePurpose() {
-        val customEnumOptions = CustomEnum(
-            TestIntEnum::class,
-            "Test Int enum"
-        ).getOptions(context)
+        val customEnumOptions = runBlocking {
+            CustomEnum(TestIntEnum::class, "Test Int enum").getOptions(context)
+        }
 
-        assertThat(customEnumOptions[0]).isEqualTo(TestIntEnum.FIRST to context.getString(R.string.enum_api_purpose_message1))
-        assertThat(customEnumOptions[1]).isEqualTo(TestIntEnum.SECOND to context.getString(R.string.enum_api_purpose_message2))
-        assertThat(customEnumOptions[2]).isEqualTo(TestIntEnum.NEGATIVE to context.getString(R.string.enum_api_purpose_message3))
+        assertThat(customEnumOptions[0])
+            .isEqualTo(TestIntEnum.FIRST to context.getString(R.string.enum_api_purpose_message1))
+        assertThat(customEnumOptions[1])
+            .isEqualTo(TestIntEnum.SECOND to context.getString(R.string.enum_api_purpose_message2))
+        assertThat(customEnumOptions[2])
+            .isEqualTo(
+                TestIntEnum.NEGATIVE to context.getString(R.string.enum_api_purpose_message3)
+            )
     }
 
     @Test
     fun getOptions_stringEnum_returnCorrectPairValuePurpose() {
-        val customEnumOptions = CustomEnum(
-            TestStringEnum::class,
-            "Test String enum"
-            ).getOptions(context)
+        val customEnumOptions = runBlocking {
+            CustomEnum(TestStringEnum::class, "Test String enum").getOptions(context)
+        }
 
         assertThat(customEnumOptions[0]).isEqualTo(TestStringEnum.ACTIVE to ENUM_PURPOSE_MESSAGE)
         assertThat(customEnumOptions[1]).isEqualTo(TestStringEnum.INACTIVE to ENUM_PURPOSE_MESSAGE2)
@@ -94,10 +89,7 @@ class CustomEnumTest {
 
     @Test
     fun fromApiValue_validInteger_returnCorrectName() {
-        val customEnum = CustomEnum(
-            TestIntEnum::class,
-            "Test Int enum"
-        )
+        val customEnum = CustomEnum(TestIntEnum::class, "Test Int enum")
 
         assertThat(customEnum.fromApiValue(1)).isEqualTo(TestIntEnum.FIRST)
         assertThat(customEnum.fromApiValue(2)).isEqualTo(TestIntEnum.SECOND)
@@ -106,20 +98,14 @@ class CustomEnumTest {
 
     @Test
     fun fromApiValue_invalidInteger_returnNull() {
-        val customEnum = CustomEnum(
-            TestIntEnum::class,
-            "Test Int enum"
-        )
+        val customEnum = CustomEnum(TestIntEnum::class, "Test Int enum")
 
         assertThat(customEnum.fromApiValue(999)).isNull()
     }
 
     @Test
     fun fromApiValue_validString_returnCorrectName() {
-        val customEnum = CustomEnum(
-            TestStringEnum::class,
-            "Test String enum"
-        )
+        val customEnum = CustomEnum(TestStringEnum::class, "Test String enum")
 
         assertThat(customEnum.fromApiValue("active_state")).isEqualTo(TestStringEnum.ACTIVE)
         assertThat(customEnum.fromApiValue("inactive_state")).isEqualTo(TestStringEnum.INACTIVE)
@@ -127,30 +113,21 @@ class CustomEnumTest {
 
     @Test
     fun fromApiValue_invalidString_returnNull() {
-        val customEnum = CustomEnum(
-            TestStringEnum::class,
-            "Test String enum"
-        )
+        val customEnum = CustomEnum(TestStringEnum::class, "Test String enum")
 
         assertThat(customEnum.fromApiValue("weird_state")).isNull()
     }
 
     @Test
     fun fromApiValue_emptyEnum_returnNull() {
-        val customEnum = CustomEnum(
-            EmptyEnum::class,
-            "Empty enum"
-        )
+        val customEnum = CustomEnum(EmptyEnum::class, "Empty enum")
 
         assertThat(customEnum.fromApiValue(1)).isNull()
     }
 
     @Test
     fun getEntries_validEnum_returnAllConstants() {
-        val customEnum = CustomEnum(
-            TestIntEnum::class,
-            "Test Int enum"
-        )
+        val customEnum = CustomEnum(TestIntEnum::class, "Test Int enum")
 
         assertThat(customEnum.getEntries()).apply {
             hasSize(3)
@@ -162,29 +139,20 @@ class CustomEnumTest {
 
     @Test
     fun getEntries_emptyEnum_returnEmptyList() {
-        val customEnum = CustomEnum(
-            EmptyEnum::class,
-            "Empty enum"
-        )
+        val customEnum = CustomEnum(EmptyEnum::class, "Empty enum")
 
         assertThat(customEnum.getEntries()).isEmpty()
     }
 
     @Test
     fun getDescription_stringDescriptionEnum_returnCorrectName() {
-        val customEnum = CustomEnum(
-            TestIntEnum::class,
-            "Test Int enum"
-        )
+        val customEnum = CustomEnum(TestIntEnum::class, "Test Int enum")
         assertThat(customEnum.getDescription(context)).isEqualTo("Test Int enum")
     }
 
     @Test
     fun getDescription_resourceDescriptionEnum_returnCorrectName() {
-        val customEnum = CustomEnum(
-            TestIntEnum::class,
-            R.string.test_int_enum_description
-        )
+        val customEnum = CustomEnum(TestIntEnum::class, R.string.test_int_enum_description)
         assertThat(customEnum.getDescription(context)).isEqualTo("Test Int enum")
     }
 

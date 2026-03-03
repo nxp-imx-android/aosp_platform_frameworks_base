@@ -20,28 +20,33 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.Dp
 
 /**
  * Applies a container layout to a Composable.
  *
- * Sizes the Composable based on the provided [ContainerConfig]. The container size is calculated as
- * a percentage of the incoming constraints, clamped within the bounds specified in
- * [ContainerConfig.sizeBounds].
+ * The container size is calculated as a fraction of the incoming constraints, clamped by min/max
+ * edge constraints defined in [ContainerConfig]. [ContainerLayout] determines if width or height
+ * corresponds to the long or short edge.
  *
  * It's recommended to use [com.android.compose.windowsizeclass.LocalWindowSizeClass] to evaluate if
- * container layout should be applied.
+ * [containerize] modifier should be applied and which [ContainerLayout] should be used.
  *
  * Example usage:
  * ```
- * val isContainerized =
- *     LocalWindowSizeClass.current.isWidthAtLeastBreakpoint(
- *         WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND
- *     )
+ * val widthThreshold = WindowSizeClass.WIDTH_DP_EXTRA_LARGE_LOWER_BOUND
+ * val heightThreshold = AdditionalHeightBreakpoints.HEIGHT_DP_EXTRA_LARGE_LOWER_BOUND
+ * val windowSizeClass = LocalWindowSizeClass.current
+ * val containerLayout: ContainerLayout? =
+ *     when {
+ *         windowSizeClass.isWidthAtLeastBreakpoint(widthThreshold) -> ContainerLayout.HORIZONTAL
+ *         windowSizeClass.isHeightAtLeastBreakpoint(heightThreshold) -> ContainerLayout.VERTICAL
+ *         else -> null
+ *     }
  *
  * Modifier.then(
- *         if (isContainerized) {
- *             Modifier.containerize(containerConfig())
+ *         if (containerLayout != null) {
+ *             Modifier.containerize(containerConfig(), containerLayout)
  *         } else {
  *             Modifier.fillMaxSize()
  *         }
@@ -49,53 +54,110 @@ import androidx.compose.ui.unit.DpSize
  * ```
  *
  * @param config The configuration for calculating the container size.
+ * @param layout The [ContainerLayout] (HORIZONTAL/VERTICAL) to map long/short edges to axes.
  */
-fun Modifier.containerize(config: ContainerConfig) =
+fun Modifier.containerize(config: ContainerConfig, layout: ContainerLayout) =
     this.layout { measurable, constraints ->
-        val placeable = measurable.measure(config.calculateContainerSize(this, constraints))
+        val placeable = measurable.measure(config.calculateContainerSize(this, constraints, layout))
         layout(placeable.width, placeable.height) { placeable.placeRelative(x = 0, y = 0) }
     }
 
 /**
+ * Specifies how to map "long" and "short" edge constraints to width and height.
+ * - [HORIZONTAL]: Width uses long edge constraints, height uses short edge constraints.
+ * - [VERTICAL]: Width uses short edge constraints, height uses long edge constraints.
+ */
+enum class ContainerLayout {
+    HORIZONTAL,
+    VERTICAL,
+}
+
+/**
  * Configuration for the [containerize] modifier.
  *
- * @property sizePercentage The target size as a percentage (0.0 to 1.0) of the parent's
- *   constraints.
- * @property minSize The minimum container size.
- * @property maxSize The maximum container size.
+ * @property sizeFraction The target size as a fraction (0.0 to 1.0) of the parent's constraints.
+ * @property minLongEdge Minimum length for the long edge.
+ * @property minShortEdge Minimum length for the short edge.
+ * @property maxLongEdge Maximum length for the long edge.
+ * @property maxShortEdge Maximum length for the short edge.
  */
-class ContainerConfig(val sizePercentage: Float, val minSize: DpSize, val maxSize: DpSize) {
+class ContainerConfig(
+    val sizeFraction: Float,
+    val minLongEdge: Dp,
+    val minShortEdge: Dp,
+    val maxLongEdge: Dp,
+    val maxShortEdge: Dp,
+) {
     /**
-     * Calculates fixed size [Constraints] for the container.
+     * Calculates the final [Constraints] for the container.
      *
-     * The width and height are calculated as [sizePercentage] of the parent's maxWidth and
-     * maxHeight, respectively. These values are then coerced to be between [minSize] and [maxSize].
-     * The final size is also capped by the incoming [constraints]' maxWidth and maxHeight.
-     *
-     * Note that the final size will be smaller than [minSize] if incoming [constraints] are smaller
-     * than [minSize].
+     * First, the preferred [Constraints] are calculated based on [ContainerConfig],
+     * [ContainerLayout] and display [Density]. Then, a specified fraction of parents' max
+     * constraints is calculated and the value is clamped between the preferred [Constraints].
+     * Finally, the value is capped by parents' max constraints to prevent overflow. Resulting width
+     * and height are used to return a fixed [Constraints].
      *
      * @param density Display [Density].
-     * @param constraints The [Constraints] from the parent layout.
-     * @return The calculated [Constraints] to be applied to the child.
+     * @param constraints The [Constraints] from the parent.
+     * @param layout The [ContainerLayout] to interpret edge constraints.
+     * @return Calculated [Constraints] for the child.
      */
-    fun calculateContainerSize(density: Density, constraints: Constraints): Constraints {
+    fun calculateContainerSize(
+        density: Density,
+        constraints: Constraints,
+        layout: ContainerLayout,
+    ): Constraints {
+        val preferredConstraints = calculatePreferredConstraints(density, layout)
+        val width =
+            minOf(
+                (constraints.maxWidth * sizeFraction)
+                    .toInt()
+                    .coerceIn(preferredConstraints.minWidth, preferredConstraints.maxWidth),
+                constraints.maxWidth,
+            )
+        val height =
+            minOf(
+                (constraints.maxHeight * sizeFraction)
+                    .toInt()
+                    .coerceIn(preferredConstraints.minHeight, preferredConstraints.maxHeight),
+                constraints.maxHeight,
+            )
+        return Constraints.fixed(width, height)
+    }
+
+    /**
+     * Calculates preferred container constraints based on [ContainerConfig], [ContainerLayout] and
+     * display [Density].
+     *
+     * Preferred constraints are calculated by mapping specified min/max short/long edges into
+     * min/max width/height based on [ContainerLayout] orientation (VERTICAL or HORIZONTAL) and
+     * converting [Dp] values to [Px] based on [Density].
+     */
+    private fun calculatePreferredConstraints(
+        density: Density,
+        layout: ContainerLayout,
+    ): Constraints {
         with(density) {
-            val width =
-                minOf(
-                    (constraints.maxWidth * sizePercentage)
-                        .toInt()
-                        .coerceIn(minSize.width.roundToPx(), maxSize.width.roundToPx()),
-                    constraints.maxWidth,
-                )
-            val height =
-                minOf(
-                    (constraints.maxHeight * sizePercentage)
-                        .toInt()
-                        .coerceIn(minSize.height.roundToPx(), maxSize.height.roundToPx()),
-                    constraints.maxHeight,
-                )
-            return Constraints.fixed(width, height)
+            return when (layout) {
+                ContainerLayout.VERTICAL -> {
+                    // When VERTICAL: width is constrained to short edge, height to long edge
+                    Constraints(
+                        minWidth = minShortEdge.roundToPx(),
+                        minHeight = minLongEdge.roundToPx(),
+                        maxWidth = maxShortEdge.roundToPx(),
+                        maxHeight = maxLongEdge.roundToPx(),
+                    )
+                }
+                ContainerLayout.HORIZONTAL -> {
+                    // When HORIZONTAL: width is constrained to long edge, height to short edge
+                    Constraints(
+                        minWidth = minLongEdge.roundToPx(),
+                        minHeight = minShortEdge.roundToPx(),
+                        maxWidth = maxLongEdge.roundToPx(),
+                        maxHeight = maxShortEdge.roundToPx(),
+                    )
+                }
+            }
         }
     }
 }

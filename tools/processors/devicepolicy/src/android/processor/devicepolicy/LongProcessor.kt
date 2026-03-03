@@ -48,7 +48,7 @@ class LongProcessor(processingEnv: ProcessingEnvironment) :
         val longDefinition =
             element.getAnnotation(LongPolicyDefinition::class.java)
                 ?: throw IllegalStateException(
-                    "Processor should only be called on elements with @LongPolicyMetadata"
+                    "Processor should only be called on elements with @LongPolicyDefinition"
                 )
 
         val actualType = policyType(element)

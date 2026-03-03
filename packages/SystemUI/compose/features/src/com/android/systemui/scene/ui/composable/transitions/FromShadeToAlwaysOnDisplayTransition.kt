@@ -32,7 +32,6 @@ fun TransitionBuilder.shadeToAlwaysOnDisplayTransition() {
 
     // Fade out the shade elements first.
     fractionRange(end = 0.15f) {
-        fade(Shade.Elements.ShadeElement)
         fade(Shade.Elements.ShadeHeader)
         fade(Shade.Elements.BackgroundScrim)
         fade(Notifications.Elements.StackPlaceholder)

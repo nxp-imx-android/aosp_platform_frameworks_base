@@ -6136,16 +6136,17 @@ public class DisplayManagerServiceTest {
         }
 
         @Override
-        public void setUserPreferredDisplayModeLocked(Display.Mode preferredMode) {
+        public boolean setUserPreferredDisplayModeLocked(Display.Mode preferredMode) {
             for (Display.Mode mode : mDisplayDeviceInfo.supportedModes) {
                 if (mode.matchesIfValid(
                         preferredMode.getPhysicalWidth(),
                         preferredMode.getPhysicalHeight(),
                         preferredMode.getRefreshRate())) {
                     mPreferredMode = mode;
-                    break;
+                    return true;
                 }
             }
+            return false;
         }
 
         @Override

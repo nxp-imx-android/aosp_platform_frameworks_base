@@ -2137,6 +2137,44 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun getInitialBounds_withRememberedBounds_unresizable_returnsNull() {
+        setUpLandscapeDisplay()
+        val packageName = "com.test.app"
+        val task =
+            setUpFreeformTask().apply {
+                baseActivity = ComponentName(packageName, "")
+                isResizeable = false
+            }
+        val nonRememberedTask = setUpFreeformTask().apply { isResizeable = false }
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+
+        assertThat(controller.getInitialBounds(displayLayout, task, 0))
+            .isEqualTo(controller.getInitialBounds(displayLayout, nonRememberedTask, 0))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
+    fun getInitialBounds_withRememberedBounds_excludeCaptionInsets_returnsNull() {
+        setUpLandscapeDisplay()
+        val packageName = "com.test.app"
+        val task =
+            setUpFreeformTask().apply {
+                baseActivity = ComponentName(packageName, "")
+                appCompatTaskInfo.setIsExcludeCaptionInsets(true)
+            }
+        val nonRememberedTask = setUpFreeformTask()
+        val boundsRatio = RectF(0.1f, 0.2f, 0.8f, 0.9f)
+
+        taskRepository.setRememberedBoundsRatio(packageName, boundsRatio)
+
+        assertThat(controller.getInitialBounds(displayLayout, task, 0))
+            .isEqualTo(controller.getInitialBounds(displayLayout, nonRememberedTask, 0))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS)
     fun rememberedBounds_clearedOnRemoved() {
         val callbackCaptor = argumentCaptor<LauncherApps.Callback>()
         verify(launcherApps).registerCallback(callbackCaptor.capture())

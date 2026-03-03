@@ -18,8 +18,10 @@ package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
+import com.android.systemui.res.R
 
 /** Renders a fullscreen page to select 1 or more contacts matching a search string. */
 @Composable
@@ -38,7 +40,7 @@ fun ContactChoiceScreen(
         }
 
     EditScreen(
-        title = "People [TK]",
+        title = stringResource(R.string.notification_rules_field_people),
         initialSelection = initialSelection,
         onSelectionSaved = { viewState.onContactsSaved(it) },
         onDismissRequest = onDismissRequest,

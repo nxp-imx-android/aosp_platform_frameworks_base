@@ -16,6 +16,7 @@
 
 package com.android.systemui.inputmethod.ui.composable
 
+import android.view.inputmethod.Flags
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
@@ -43,14 +44,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.ui.compose.Icon as SysuiIconComposable
 import com.android.systemui.inputmethod.ui.viewmodel.ImeSwitcherMenuViewModel
@@ -81,21 +83,34 @@ fun ImeSwitcherMenuList(
         }
     }
 
+    val specs: LayoutSpecs =
+        if (useLargeScreenLayout) LayoutSpecsDefaults.largeScreen() else LayoutSpecsDefaults.base()
     // TODO(b/308488505): Add scroll indicators to the LazyColumn once implemented.
-    LazyColumn(
-        state = listState,
-        contentPadding = PaddingValues(top = 8.dp),
-        modifier = Modifier.heightIn(max = 373.dp),
-    ) {
-        itemsIndexed(items, key = { _, item -> "${item.imeId}:${item.subtypeIndex}" }) { index, item
-            ->
-            ImeSwitcherMenuListItem(
-                item,
-                index == viewModel.selectedIndex.intValue,
-                viewModel,
-                dismissAction,
-                useLargeScreenLayout,
-            )
+    if (Flags.imeSwitcherMenuSystemuiStyleUpdate()) {
+        LazyColumn(state = listState, modifier = Modifier.heightIn(max = 373.dp)) {
+            itemsIndexed(items, key = { _, item -> "${item.imeId}:${item.subtypeIndex}" }) {
+                index,
+                item ->
+                ImeSwitcherMenuListItemNew(item, index, items, viewModel, dismissAction, specs)
+            }
+        }
+    } else {
+        LazyColumn(
+            state = listState,
+            contentPadding = PaddingValues(top = 8.dp),
+            modifier = Modifier.heightIn(max = 373.dp),
+        ) {
+            itemsIndexed(items, key = { _, item -> "${item.imeId}:${item.subtypeIndex}" }) {
+                index,
+                item ->
+                ImeSwitcherMenuListItem(
+                    item,
+                    index == viewModel.selectedIndex.intValue,
+                    viewModel,
+                    dismissAction,
+                    specs,
+                )
+            }
         }
     }
 }
@@ -107,7 +122,7 @@ fun ImeSwitcherMenuList(
  * @param isSelected whether this is the currently selected item in the list.
  * @param viewModel the view model to get the data from.
  * @param dismissAction the action to invoke when the UI should be dismissed.
- * @param useLargeScreenLayout whether the UI should use the large screen layout.
+ * @param specs the layout specs to use.
  */
 @Composable
 private fun ImeSwitcherMenuListItem(
@@ -115,7 +130,7 @@ private fun ImeSwitcherMenuListItem(
     isSelected: Boolean,
     viewModel: ImeSwitcherMenuViewModel,
     dismissAction: () -> Unit,
-    useLargeScreenLayout: Boolean,
+    specs: LayoutSpecs,
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         if (item.hasDivider) {
@@ -164,14 +179,14 @@ private fun ImeSwitcherMenuListItem(
                                 viewModel.onImeAndSubtypeSelected(item.imeId, item.subtypeIndex)
                             }
                             dismissAction.invoke()
-                        }
+                        },
                     )
                     .padding(start = 20.dp, end = 24.dp)
                     .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (useLargeScreenLayout) {
-                SubtypeIconOrShortLabel(item, color = selectedColor)
+            if (specs.showSubtypeIconOrShortLabel) {
+                SubtypeIconOrShortLabel(item, selectedColor, specs)
             }
             Column(modifier = Modifier.weight(1f)) {
                 val text = if (item.subtypeName.isNullOrEmpty()) item.imeName else item.subtypeName
@@ -213,20 +228,25 @@ private fun ImeSwitcherMenuListItem(
  *
  * @param item the IME or IME subtype to display.
  * @param color the color of the icon or short label.
+ * @param specs the layout specs to use.
  */
 @Composable
-private fun SubtypeIconOrShortLabel(item: ImeSwitcherMenuViewModel.MenuItem, color: Color) {
-    Row(modifier = Modifier.padding(end = 16.dp)) {
+private fun SubtypeIconOrShortLabel(
+    item: ImeSwitcherMenuViewModel.MenuItem,
+    color: Color,
+    specs: LayoutSpecs,
+) {
+    Row(modifier = Modifier.padding(specs.subtypeIconPadding)) {
         val icon = item.subtypeIcon
         if (icon != null) {
             SysuiIconComposable(
                 icon = icon,
-                modifier = Modifier.size(ListItemDimensions.IconSize).testTag("SubtypeIcon"),
+                modifier = Modifier.size(specs.subtypeIconSize).testTag("SubtypeIcon"),
                 tint = color,
             )
         } else if (!item.subtypeShortLabel.isNullOrEmpty()) {
             Box(
-                modifier = Modifier.size(ListItemDimensions.IconSize),
+                modifier = Modifier.size(specs.subtypeIconSize),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -237,11 +257,189 @@ private fun SubtypeIconOrShortLabel(item: ImeSwitcherMenuViewModel.MenuItem, col
                 )
             }
         } else {
-            Spacer(modifier = Modifier.size(ListItemDimensions.IconSize))
+            Spacer(modifier = Modifier.size(specs.subtypeIconSize))
         }
     }
 }
 
-private object ListItemDimensions {
-    val IconSize = 24.dp
+/**
+ * The UI for a single IME or IME subtype list item. This method provides an updated UI style
+ * compared to {@link ImeSwitcherMenuListItem}.
+ *
+ * @param item the IME or IME subtype to display.
+ * @param index the index of the item in the list.
+ * @param items the list of all items.
+ * @param viewModel the view model to get the data from.
+ * @param dismissAction the action to invoke when the UI should be dismissed.
+ * @param specs the layout specs to use.
+ */
+@Composable
+private fun ImeSwitcherMenuListItemNew(
+    item: ImeSwitcherMenuViewModel.MenuItem,
+    index: Int,
+    items: List<ImeSwitcherMenuViewModel.MenuItem>,
+    viewModel: ImeSwitcherMenuViewModel,
+    dismissAction: () -> Unit,
+    specs: LayoutSpecs,
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (item.hasHeader) {
+            Text(
+                text = item.imeName.toString(),
+                color = MaterialTheme.colorScheme.secondary,
+                style = MaterialTheme.typography.titleSmall,
+                modifier = Modifier.fillMaxWidth().padding(specs.titleRowPadding),
+            )
+        } else if (item.hasDivider) {
+            Spacer(modifier = Modifier.size(specs.itemDividerSize))
+        }
+
+        val isSelected = index == viewModel.selectedIndex.intValue
+        val shape = computeShape(index, items, isSelected, specs)
+        val height = if (isSelected) specs.itemRrowSelectedHeight else specs.itemRowHeight
+        val backgroundColor =
+            if (isSelected) MaterialTheme.colorScheme.secondaryContainer
+            else MaterialTheme.colorScheme.surface
+        val iconAndTextColor =
+            if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
+            else MaterialTheme.colorScheme.onSurface
+        val subtitleColor =
+            if (isSelected) iconAndTextColor else MaterialTheme.colorScheme.onSurfaceVariant
+
+        Row(
+            modifier =
+                Modifier.fillMaxWidth()
+                    .heightIn(min = height)
+                    .padding(specs.itemRowPadding)
+                    .clip(shape)
+                    .background(backgroundColor)
+                    .semantics { this.selected = isSelected }
+                    .clickable(
+                        onClickLabel =
+                            if (isSelected) {
+                                stringResource(R.string.input_method_switcher_dismiss)
+                            } else {
+                                stringResource(R.string.input_method_switcher_select_item)
+                            },
+                        onClick = {
+                            if (!isSelected) {
+                                viewModel.onImeAndSubtypeSelected(item.imeId, item.subtypeIndex)
+                            }
+                            dismissAction.invoke()
+                        },
+                    )
+                    .padding(specs.itemPadding),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (specs.showSubtypeIconOrShortLabel) {
+                SubtypeIconOrShortLabel(item, iconAndTextColor, specs)
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                val text = if (item.subtypeName.isNullOrEmpty()) item.imeName else item.subtypeName
+                Text(
+                    text = text.toString(),
+                    style = specs.itemTitleStyle,
+                    maxLines = 1,
+                    fontWeight = FontWeight.W600,
+                    color = iconAndTextColor,
+                    modifier = if (isSelected) Modifier.basicMarquee(iterations = 1) else Modifier,
+                )
+                if (!item.layoutName.isNullOrEmpty()) {
+                    Text(
+                        text = item.layoutName.toString().uppercase(),
+                        style = specs.itemSubtitleStyle,
+                        maxLines = 1,
+                        color = subtitleColor,
+                        modifier =
+                            if (isSelected) Modifier.basicMarquee(iterations = 1) else Modifier,
+                    )
+                }
+            }
+
+            if (isSelected) {
+                Row(modifier = Modifier.padding(specs.subtypeIconPadding)) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_check),
+                        contentDescription = null, // decorative
+                        tint = iconAndTextColor,
+                        modifier = Modifier.size(specs.subtypeIconSize),
+                    )
+                }
+            }
+        }
+
+        if (index < items.lastIndex && !items[index + 1].hasDivider) {
+            Spacer(modifier = Modifier.size(specs.afterItemSpacerSize))
+        }
+    }
+}
+
+/**
+ * Computes the background shape for the item, following the button group styling.
+ *
+ * @param index the index of the item in the list.
+ * @param items the list of all items.
+ * @param isSelected whether this is the currently selected item in the list.
+ * @param specs the layout specs to use.
+ */
+private fun computeShape(
+    index: Int,
+    items: List<ImeSwitcherMenuViewModel.MenuItem>,
+    isSelected: Boolean,
+    specs: LayoutSpecs,
+): RoundedCornerShape {
+    val topRadius =
+        if (index == 0 || items[index].hasDivider || isSelected) specs.itemBorderRadiusLarge
+        else specs.itemBorderRadiusSmall
+    val bottomRadius =
+        if (index == items.lastIndex || items[index + 1].hasDivider || isSelected)
+            specs.itemBorderRadiusLarge
+        else specs.itemBorderRadiusSmall
+    return RoundedCornerShape(
+        topStart = topRadius,
+        topEnd = topRadius,
+        bottomStart = bottomRadius,
+        bottomEnd = bottomRadius,
+    )
+}
+
+private data class LayoutSpecs(
+    val titleRowPadding: PaddingValues =
+        PaddingValues(top = 20.dp, start = 24.dp, bottom = 8.dp, end = 24.dp),
+    val itemRowHeight: Dp = 56.dp,
+    val itemRrowSelectedHeight: Dp = 64.dp,
+    val itemRowPadding: PaddingValues = PaddingValues(horizontal = 16.dp),
+    val itemPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+    val itemTitleStyle: TextStyle = TextStyle.Default,
+    val itemSubtitleStyle: TextStyle = TextStyle.Default,
+    val afterItemSpacerSize: Dp = 2.dp,
+    val itemBorderRadiusLarge: Dp = 20.dp,
+    val itemBorderRadiusSmall: Dp = 4.dp,
+    val showSubtypeIconOrShortLabel: Boolean = false,
+    val subtypeIconSize: Dp = 24.dp,
+    val subtypeIconPadding: PaddingValues = PaddingValues(16.dp),
+    val itemDividerSize: Dp = 16.dp,
+)
+
+private object LayoutSpecsDefaults {
+    // Defaults for restyled IME list section in the IME Switcher Menu
+    @Composable
+    fun base() =
+        LayoutSpecs(
+            itemTitleStyle = MaterialTheme.typography.titleMedium,
+            itemSubtitleStyle = MaterialTheme.typography.titleSmall,
+        )
+
+    @Composable
+    fun largeScreen() =
+        LayoutSpecs(
+            titleRowPadding = PaddingValues(top = 8.dp, start = 24.dp, bottom = 8.dp, end = 24.dp),
+            itemRowHeight = 52.dp,
+            itemRrowSelectedHeight = 52.dp,
+            itemRowPadding = PaddingValues(horizontal = 14.dp),
+            itemPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp),
+            itemTitleStyle = MaterialTheme.typography.titleSmall,
+            itemSubtitleStyle = MaterialTheme.typography.labelMedium,
+            showSubtypeIconOrShortLabel = true,
+        )
 }

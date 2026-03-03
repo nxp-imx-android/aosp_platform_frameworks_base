@@ -30,9 +30,10 @@ java_library {
     ],
 }
 
-java_library {
+android_library {
     name: "com.android.systemui.notifications.intelligence.rules.ui_main",
     defaults: ["sysui_main"],
+    manifest: "AndroidManifest.xml",
     visibility: [
         "//frameworks/base/packages/SystemUI/pods/bundle/phone",
         "//frameworks/base/packages/SystemUI/notifications/intelligence/rules/ui",
@@ -41,6 +42,7 @@ java_library {
     static_libs: [
         // go/keep-sorted start
         "PlatformComposeCore",
+        "SystemUI-res",
         "SystemUIPluginLib",
         "androidx.activity_activity-compose",
         "androidx.compose.foundation_foundation",

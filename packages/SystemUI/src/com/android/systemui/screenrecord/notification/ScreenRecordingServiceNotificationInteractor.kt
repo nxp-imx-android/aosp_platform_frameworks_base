@@ -26,6 +26,8 @@ import android.media.projection.StopReason
 import android.os.Bundle
 import androidx.media3.common.MimeTypes
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.ScreenCaptureUiReceiver
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureUiParameters
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
 import com.android.systemui.screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity
 import com.android.systemui.screenrecord.RecordingServiceStrings
@@ -112,6 +114,14 @@ constructor(
             .setColor(context.getColor(R.color.GM2_red_700))
             .setOngoing(true)
             .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
+            .setContentIntent(
+                PendingIntent.getBroadcast(
+                    context,
+                    REQUEST_CODE,
+                    ScreenCaptureUiReceiver.showScreenCapture(ScreenCaptureUiParameters.Record()),
+                    PendingIntent.FLAG_IMMUTABLE,
+                )
+            )
             .addAction(stopAction)
             .addExtras(
                 Bundle().apply { putString(Notification.EXTRA_SUBSTITUTE_APP_NAME, strings.title) }

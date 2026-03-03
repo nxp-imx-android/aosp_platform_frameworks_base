@@ -355,7 +355,7 @@ public class PersonalContextManagerService extends SystemService {
     @VisibleForTesting
     void startRefinerWorkflow(
             @UserIdInt int userId,
-            int processId,
+            int callingUid,
             Set<ContextHint> hints,
             Set<RenderToken> renderTokens,
             Set<ContextHint> attributionHints) {
@@ -369,13 +369,13 @@ public class PersonalContextManagerService extends SystemService {
             final Set<PublishedContextHint> signedAttributionHints = new HashSet<>();
             if (attributionHints != null) {
                 for (ContextHint hint : attributionHints) {
-                    signedAttributionHints.add(signHint(hint, processId, emptySet(), emptySet()));
+                    signedAttributionHints.add(signHint(hint, callingUid, emptySet(), emptySet()));
                 }
             }
 
             final Set<PublishedContextHint> signedHints = new HashSet<>();
             for (ContextHint hint : hints) {
-                signedHints.add(signHint(hint, processId, renderTokens, signedAttributionHints));
+                signedHints.add(signHint(hint, callingUid, renderTokens, signedAttributionHints));
             }
 
             RefinerWorkflow.start(
@@ -425,7 +425,6 @@ public class PersonalContextManagerService extends SystemService {
 
     private void registerInsightSurfaceClient(
             int userId,
-            int processId,
             InsightSurfaceClientInfo clientInfo) {
         final UserState userState = getUserStateSynchronized(userId);
         if (userState == null) {
@@ -444,7 +443,7 @@ public class PersonalContextManagerService extends SystemService {
 
     private void publishInsightSurfaceHints(
             int userId,
-            int processId,
+            int callingUid,
             Set<ContextHint> hints,
             InsightSurfaceClientInfo clientInfo) {
         final UserState userState = getUserStateSynchronized(userId);
@@ -460,12 +459,12 @@ public class PersonalContextManagerService extends SystemService {
             return;
         }
 
-        startRefinerWorkflow(userId, processId, hints, Set.of(renderToken), emptySet());
+        startRefinerWorkflow(userId, callingUid, hints, Set.of(renderToken), emptySet());
     }
 
     private void reportEvent(
             int userId,
-            int processId,
+            int callingUid,
             InsightEvent event) {
         final UserState userState = getUserStateSynchronized(userId);
         if (userState == null) {
@@ -483,7 +482,7 @@ public class PersonalContextManagerService extends SystemService {
             return;
         }
 
-        final String packageName = mActivityManager.getPackageNameByPid(processId);
+        final String packageName = mPackageManager.getNameForUid(callingUid);
         refiner.handleEvent(packageName, event);
     }
 
@@ -508,12 +507,12 @@ public class PersonalContextManagerService extends SystemService {
 
     private PublishedContextHint signHint(
             ContextHint hint,
-            int callingPid,
+            int callingUid,
             Set<RenderToken> renderTokens,
             Set<PublishedContextHint> attributionHints)
             throws GeneralSecurityException {
         return new PublishedContextHint.Builder(hint, HINT_SIGNING_KEY)
-                .setOriginatingPackage(mActivityManager.getPackageNameByPid(callingPid))
+                .setOriginatingPackage(mPackageManager.getNameForUid(callingUid))
                 .addRenderTokens(renderTokens)
                 .addAttributionHints(attributionHints)
                 .build();
@@ -645,7 +644,6 @@ public class PersonalContextManagerService extends SystemService {
             }
             verifyUser(userId);
 
-            final int callingPid = Binder.getCallingPid();
             final int callingUid = Binder.getCallingUid();
 
             // TODO(b/450547433): Add security checks.
@@ -661,7 +659,7 @@ public class PersonalContextManagerService extends SystemService {
                         service
                                 .startRefinerWorkflow(
                                         userId,
-                                        callingPid,
+                                        callingUid,
                                         ContextHintWrapper.unwrapInto(hints, new HashSet<>()),
                                         new HashSet<>(
                                                 renderTokens == null ? List.of() : renderTokens),
@@ -705,7 +703,7 @@ public class PersonalContextManagerService extends SystemService {
         @Override
         public PublishedContextHintWrapper signHint(
                 ContextHintWrapper hint, List<ContextHintWrapper> attributionHints) {
-            final int callingPid = Binder.getCallingPid();
+            final int callingUid = Binder.getCallingUid();
 
             return Binder.withCleanCallingIdentity(
                     () -> {
@@ -715,7 +713,7 @@ public class PersonalContextManagerService extends SystemService {
                             for (ContextHintWrapper attributionHint : attributionHints) {
                                 signedAttributionHints.add(getService().signHint(
                                         attributionHint.getContextHint(),
-                                        callingPid,
+                                        callingUid,
                                         emptySet(),
                                         emptySet()));
                             }
@@ -723,7 +721,7 @@ public class PersonalContextManagerService extends SystemService {
 
                         return new PublishedContextHintWrapper(getService().signHint(
                                 hint.getContextHint(),
-                                callingPid,
+                                callingUid,
                                 emptySet(),
                                 signedAttributionHints));
                     });
@@ -741,7 +739,6 @@ public class PersonalContextManagerService extends SystemService {
             }
             verifyUser(userId);
 
-            final int callingPid = Binder.getCallingPid();
             final int callingUid = Binder.getCallingUid();
 
             // TODO(b/450547433): Add security checks.
@@ -756,7 +753,6 @@ public class PersonalContextManagerService extends SystemService {
                         }
                         service.registerInsightSurfaceClient(
                                 userId,
-                                callingPid,
                                 clientInfo);
                     });
         }
@@ -783,7 +779,6 @@ public class PersonalContextManagerService extends SystemService {
                 List<ContextHintWrapper> hints, InsightSurfaceClientInfo clientInfo, int userId) {
             verifyUser(userId);
 
-            final int callingPid = Binder.getCallingPid();
             final int callingUid = Binder.getCallingUid();
 
             // TODO(b/450547433): Add security checks.
@@ -798,7 +793,7 @@ public class PersonalContextManagerService extends SystemService {
                         getService()
                                 .publishInsightSurfaceHints(
                                         userId,
-                                        callingPid,
+                                        callingUid,
                                         ContextHintWrapper.unwrapInto(hints, new HashSet<>()),
                                         clientInfo);
                     }
@@ -810,13 +805,13 @@ public class PersonalContextManagerService extends SystemService {
         public void reportEvent(InsightEvent event, int userId) {
             verifyUser(userId);
 
-            final int callingPid = Binder.getCallingPid();
+            final int callingUid = Binder.getCallingUid();
 
             // TODO(b/450547433): Add security checks.
             Binder.withCleanCallingIdentity(
                     () -> getService().reportEvent(
                             userId,
-                            callingPid,
+                            callingUid,
                             event));
         }
 
@@ -891,7 +886,7 @@ public class PersonalContextManagerService extends SystemService {
 
             startRefinerWorkflow(
                     user.getIdentifier(),
-                    Process.myPid(),
+                    Process.myUid(),
                     Set.of(new NotificationHint.Builder(event).build()),
                     rendererTokens,
                     Collections.emptySet());
@@ -912,7 +907,7 @@ public class PersonalContextManagerService extends SystemService {
 
             startRefinerWorkflow(
                     userId,
-                    Process.myPid(),
+                    Process.myUid(),
                     Set.of(new TextClassificationHint.Builder(request, sessionId).build()),
                     Set.of(userState.textClassificationActionRenderer().mintRenderToken()),
                     Collections.emptySet());
@@ -922,7 +917,7 @@ public class PersonalContextManagerService extends SystemService {
         public void publishTriggeringHint(@NonNull Set<ContextHint> hints,
                 @Nullable Set<RenderToken> renderTokens, int userId) {
             startRefinerWorkflow(
-                    userId, Process.myPid(), hints, renderTokens, Collections.emptySet());
+                    userId, Process.myUid(), hints, renderTokens, Collections.emptySet());
         }
     }
 }

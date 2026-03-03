@@ -63,6 +63,9 @@ constructor(
     private var isLtr: Boolean = true
     private var dreamsState: DreamPlaylistModel = DreamPlaylistModel.EMPTY
 
+    /** Tracks the current active swipe session to prevent race conditions during resets */
+    private var swipeGeneration = 0
+
     override suspend fun onActivated() {
         coroutineScopeTraced("$TAG#onActivated") {
             launch {
@@ -89,6 +92,7 @@ constructor(
             return false
         }
 
+        swipeGeneration++
         swipeProgress = 0f
 
         _uiState.value =
@@ -114,14 +118,24 @@ constructor(
         swipeProgress = (distance.coerceAtLeast(0f) / swipeThreshold).coerceIn(0f, 1.5f)
     }
 
-    override fun onSwipeEnded(committed: Boolean) {
-        _uiState.value = _uiState.value.copy(isReleasing = true, isCommitted = committed)
+    override fun onSwipeEnded(committed: Boolean, velocityX: Float) {
+        // Clamp extreme velocities so the spring animation doesn't overshoot wildly
+        val clampedVelocity = velocityX.coerceIn(-4000f, 4000f)
+
+        _uiState.value =
+            _uiState.value.copy(
+                isReleasing = true,
+                isCommitted = committed,
+                releaseVelocityX = clampedVelocity,
+            )
 
         val targetDream = _uiState.value.targetDream
         if (targetDream == null) {
             Log.w(TAG, "No target dream on swipe end")
             return
         }
+
+        val currentGeneration = swipeGeneration
 
         enqueueOnActivatedScope {
             if (committed) {
@@ -133,8 +147,11 @@ constructor(
                 delay(CANCEL_ANIMATION_DELAY)
             }
 
-            _uiState.value = EdgeSwipeUiModel()
-            swipeProgress = 0f
+            // Only clear state if a new swipe hasn't already started
+            if (swipeGeneration == currentGeneration) {
+                _uiState.value = EdgeSwipeUiModel()
+                swipeProgress = 0f
+            }
         }
     }
 

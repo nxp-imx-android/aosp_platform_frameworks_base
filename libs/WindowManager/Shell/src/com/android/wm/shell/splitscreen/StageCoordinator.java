@@ -469,7 +469,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         mPackageUpdateController = packageUpdateController;
 
         final TaskPropertiesRequest taskProperties = new TaskPropertiesRequest()
-                .setForceOpaque(com.android.window.flags.Flags.enableForceOpaque());
+                .setForceOpaque(true);
         final TaskCreationParams params = new TaskCreationParams.Builder()
                 .setName("SplitRoot")
                 .setDisplayId(displayId)
@@ -3021,7 +3021,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         }, (finishWct, t) -> {
             mSplitLayout.setDividerInteractive(true, false, "onSplitResizeFinish");
             mSplitLayout.populateTouchZones();
-        }, decorManagers);
+        });
 
         if (enableFlexibleTwoAppSplit()) {
             switch (layout.calculateCurrentSnapPosition()) {
@@ -3807,11 +3807,10 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 if (lastStage == null) {
                     // Record task launching fullscreen over split.
                     if (change.getParent() == null
+                            && change.getEndDisplayId() == mDisplayId
                             && !isClosingType(change.getMode())
                             && taskInfo.getWindowingMode() == WINDOWING_MODE_FULLSCREEN
-                            && (!com.android.window.flags.Flags.exitSplitOnDisplayMoveBugfix()
-                                    || (!isHomeOrRecents(taskInfo)
-                                            && change.getEndDisplayId() == mDisplayId))) {
+                            && !isHomeOrRecents(taskInfo)) {
                         record.mContainShowFullscreenChange = true;
                     }
                     continue;

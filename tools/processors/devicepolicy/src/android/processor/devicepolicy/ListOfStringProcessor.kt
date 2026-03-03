@@ -60,7 +60,7 @@ class ListOfStringProcessor(processingEnv: ProcessingEnvironment) :
         val listOfStringDefinition =
             element.getAnnotation(ListOfStringPolicyDefinition::class.java)
                 ?: throw IllegalStateException(
-                    "Processor should only be called on elements with @ListOfStringPolicyMetadata"
+                    "Processor should only be called on elements with @ListOfStringPolicyDefinition"
                 )
 
         if (!processingEnv.typeUtils.isSameType(policyType(element), listOfStringType)) {

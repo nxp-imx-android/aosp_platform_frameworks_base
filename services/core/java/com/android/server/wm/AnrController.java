@@ -134,7 +134,7 @@ class AnrController {
     }
 
     /**
-     * Notify about a potential "No Focused Window" ANR due to slow input dispatching.
+     * Notify about a potential "No Focused Window" ANR before the ANR timeout fires.
      *
      * @param applicationHandle The handle of the application that is potentially unresponsive.
      * @param eventId The ID of the input event that is being slow to process.
@@ -142,31 +142,19 @@ class AnrController {
      *     first sent.
      * @param timeoutDurationMs The total time in milliseconds after which an ANR would be declared.
      */
-    void notifyAppUnresponsiveWarning(
-            @NonNull InputApplicationHandle applicationHandle,
-            int eventId,
-            long elapsedDurationMs,
-            long timeoutDurationMs) {
+    void notifyPreAppUnresponsive(@NonNull InputApplicationHandle applicationHandle, int eventId,
+            long elapsedDurationMs, long timeoutDurationMs) {
+        Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "notifyPreAppUnresponsive()");
+
         final ActivityRecord activity;
         synchronized (mService.mGlobalLock) {
             activity = ActivityRecord.forTokenLocked(applicationHandle.token);
-            if (activity == null) {
-                Slog.e(
-                        TAG_WM,
-                        "Unknown app appToken:"
-                                + applicationHandle.name
-                                + ". Dropping notifyAppUnresponsiveWarning request");
-                return;
-            } else if (activity.mAppStopped) {
-                Slog.d(
-                        TAG_WM,
-                        "App is in stopped state: "
-                                + applicationHandle.name
-                                + ". Dropping notifyAppUnresponsiveWarning request");
+            if (activity == null || activity.mAppStopped) {
+                Slog.d(TAG_WM,
+                        "Dropping notifyPreAppUnresponsive for app=" + applicationHandle.name);
                 return;
             }
         }
-
         if (activity.hasProcess()) {
             mService.mAmInternal.inputDispatchingTimedOutWarning(
                     activity.getUid(),
@@ -175,6 +163,7 @@ class AnrController {
                     elapsedDurationMs,
                     timeoutDurationMs);
         }
+        Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
     }
 
     /**

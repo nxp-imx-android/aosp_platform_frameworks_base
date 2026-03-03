@@ -42,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
@@ -49,6 +50,7 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.DraftR
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel.Companion.toDraft
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
+import com.android.systemui.res.R
 import kotlinx.coroutines.launch
 
 @Composable
@@ -73,11 +75,11 @@ fun CurrentRulesScreen(
                 Button(onClick = onDismissCurrentRulesScreen, modifier = Modifier) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back [TK]",
+                        contentDescription = stringResource(R.string.accessibility_back),
                     )
                 }
                 Text(
-                    text = "Notification Rules [TK]",
+                    text = stringResource(R.string.notification_rules_activity_title),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                     textAlign = TextAlign.Center,
@@ -106,7 +108,7 @@ fun CurrentRulesScreen(
                     }
                 }
             ) {
-                Text("Create new rule [TK]")
+                Text(stringResource(R.string.notification_rules_create_new_rule))
             }
         }
     }
@@ -145,7 +147,9 @@ private fun CurrentRule(rule: RuleModel, onNavigateToEditScreen: (DraftRuleModel
         }
 
         if (isExpanded) {
-            Button(onClick = { onNavigateToEditScreen(rule.toDraft()) }) { Text("Edit [TK]") }
+            Button(onClick = { onNavigateToEditScreen(rule.toDraft()) }) {
+                Text(stringResource(R.string.notification_rules_edit))
+            }
         }
     }
 }

@@ -47,6 +47,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
@@ -208,7 +209,11 @@ fun ContentScope.CollapsedShadeHeader(
                     Modifier.padding(horizontal = horizontalPadding)
                         .layoutId(ShadeHeader.LayoutId.StartContent),
             ) {
-                Clock(onClick = viewModel::onClockClicked, textColor = textColor)
+                Clock(
+                    onClick = viewModel::onClockClicked,
+                    textColor = textColor,
+                    modifier = Modifier.minimumInteractiveComponentSize(),
+                )
                 VariableDayDate(
                     longerDateText = viewModel.longerDateText,
                     shorterDateText = viewModel.shorterDateText,
@@ -310,7 +315,9 @@ fun ContentScope.ExpandedShadeHeader(
                     onClick = viewModel::onClockClicked,
                     scale = 2.57f,
                     textColor = textColor,
-                    modifier = Modifier.sysuiResTag("expanded_header_clock"),
+                    modifier =
+                        Modifier.sysuiResTag("expanded_header_clock")
+                            .minimumInteractiveComponentSize(),
                 )
                 Box(
                     modifier =

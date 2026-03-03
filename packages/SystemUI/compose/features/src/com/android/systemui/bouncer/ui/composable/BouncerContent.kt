@@ -513,7 +513,7 @@ private fun ContentScope.BesideUserSwitcherLayout(
         LocalWindowSizeClass.current.isHeightAtLeastBreakpoint(
             WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND
         )
-    val isContainerized = shouldBeContainerized()
+    val isContainerized = calculateContainerLayout() != null
     val padding =
         when {
             isContainerized -> PaddingValues(vertical = 96.dp)

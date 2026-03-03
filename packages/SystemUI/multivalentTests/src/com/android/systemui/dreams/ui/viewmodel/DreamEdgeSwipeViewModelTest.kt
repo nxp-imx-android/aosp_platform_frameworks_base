@@ -133,6 +133,18 @@ class DreamEdgeSwipeViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun onSwipeStarted_savesStartY() =
+        kosmos.runTest {
+            setLayoutDirection(isLeftToRight = true)
+            setDreamPlaylist(PREVIOUS_DREAM, ACTIVE_DREAM, NEXT_DREAM, activeIndex = 1)
+
+            val expectedStartY = 350f
+            underTest.onSwipeStarted(isFromLeft = true, startY = expectedStartY)
+
+            assertThat(underTest.uiState.startY).isEqualTo(expectedStartY)
+        }
+
+    @Test
     fun onSwipeProgress_updatesProgress() =
         kosmos.runTest {
             setDreamPlaylist(PREVIOUS_DREAM, ACTIVE_DREAM, NEXT_DREAM, activeIndex = 1)
@@ -151,7 +163,7 @@ class DreamEdgeSwipeViewModelTest : SysuiTestCase() {
             setDreamPlaylist(PREVIOUS_DREAM, ACTIVE_DREAM, NEXT_DREAM, activeIndex = 1)
             underTest.onSwipeStarted(isFromLeft = true, startY = 100f) // Target: PREVIOUS_DREAM
 
-            underTest.onSwipeEnded(committed = true)
+            underTest.onSwipeEnded(committed = true, velocityX = 0f)
 
             // Verify Active Dream Switched
             val dreamState by collectLastValue(dreamRepository.dreamState)
@@ -171,7 +183,7 @@ class DreamEdgeSwipeViewModelTest : SysuiTestCase() {
             setDreamPlaylist(PREVIOUS_DREAM, ACTIVE_DREAM, NEXT_DREAM, activeIndex = 1)
             underTest.onSwipeStarted(isFromLeft = true, startY = 100f)
 
-            underTest.onSwipeEnded(committed = false)
+            underTest.onSwipeEnded(committed = false, velocityX = 0f)
 
             assertThat(underTest.uiState.isReleasing).isTrue()
             assertThat(underTest.uiState.isCommitted).isFalse()
@@ -185,6 +197,57 @@ class DreamEdgeSwipeViewModelTest : SysuiTestCase() {
 
             assertThat(underTest.uiState.isVisible).isFalse()
             assertThat(underTest.swipeProgress).isEqualTo(0f)
+        }
+
+    @Test
+    fun onSwipeEnded_clampsReleaseVelocity() =
+        kosmos.runTest {
+            setDreamPlaylist(PREVIOUS_DREAM, ACTIVE_DREAM, NEXT_DREAM, activeIndex = 1)
+
+            // Test exceeding positive maximum (4000f)
+            underTest.onSwipeStarted(isFromLeft = true, startY = 100f)
+            // Use committed = false so the ViewModel delays instead of resetting instantly
+            underTest.onSwipeEnded(committed = false, velocityX = 5000f)
+            assertThat(underTest.uiState.releaseVelocityX).isEqualTo(4000f)
+
+            // Test exceeding negative minimum (-4000f)
+            underTest.onSwipeStarted(isFromLeft = true, startY = 100f)
+            underTest.onSwipeEnded(committed = false, velocityX = -6000f)
+            assertThat(underTest.uiState.releaseVelocityX).isEqualTo(-4000f)
+
+            // Test normal velocity within bounds
+            underTest.onSwipeStarted(isFromLeft = true, startY = 100f)
+            underTest.onSwipeEnded(committed = false, velocityX = 1234f)
+            assertThat(underTest.uiState.releaseVelocityX).isEqualTo(1234f)
+        }
+
+    @Test
+    fun onSwipeEnded_newSwipeStartsBeforeReset_preventsStaleReset() =
+        kosmos.runTest {
+            setDreamPlaylist(PREVIOUS_DREAM, ACTIVE_DREAM, NEXT_DREAM, activeIndex = 1)
+
+            // 1. Start and cancel the first swipe
+            underTest.onSwipeStarted(isFromLeft = true, startY = 100f)
+            underTest.onSwipeEnded(committed = false, velocityX = 0f)
+
+            // At this point, a 250ms delayed reset is enqueued.
+            assertThat(underTest.uiState.isReleasing).isTrue()
+
+            // 2. Start a second swipe BEFORE the 250ms delay finishes
+            advanceTimeBy(100.milliseconds)
+            underTest.onSwipeStarted(isFromLeft = false, startY = 200f)
+
+            // Verify the state now reflects the new swipe
+            assertThat(underTest.uiState.isVisible).isTrue()
+            assertThat(underTest.uiState.isReleasing).isFalse()
+            assertThat(underTest.uiState.startY).isEqualTo(200f)
+
+            // 3. Advance time past the first swipe's 250ms delayed reset window
+            advanceTimeBy(200.milliseconds)
+
+            // 4. Verify the state was NOT wiped out by the stale first swipe's reset block
+            assertThat(underTest.uiState.isVisible).isTrue()
+            assertThat(underTest.uiState.startY).isEqualTo(200f)
         }
 
     private fun Kosmos.setLayoutDirection(isLeftToRight: Boolean) {

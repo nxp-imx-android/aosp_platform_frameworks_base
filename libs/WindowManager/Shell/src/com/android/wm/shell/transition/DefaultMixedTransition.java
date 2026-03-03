@@ -814,10 +814,6 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             return;
         }
 
-        if (!com.android.window.flags.Flags.enableForceOpaque()) {
-            return;
-        }
-
         if (info.getType() != TRANSIT_SPLIT_DISMISS) {
             // Not a split dismiss type animation. Early return.
             return;

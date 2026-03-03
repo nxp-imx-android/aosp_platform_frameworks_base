@@ -21,12 +21,13 @@ import android.os.Handler
 import android.view.GestureDetector
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
-import com.android.internal.policy.GestureNavigationSettingsObserver
+import android.view.VelocityTracker
 import com.android.systemui.ambient.touch.TouchHandler
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dreams.DreamOverlayContainerView
+import com.android.systemui.navigationbar.gestural.GestureNavigationSettingsObserverFactory
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.statusbar.VibratorHelper
@@ -44,13 +45,15 @@ constructor(
     private val userContextProvider: UserContextProvider,
     private val vibratorHelper: VibratorHelper,
     private val logger: DreamTouchHandlerLogger,
+    gestureNavigationSettingsObserverFactory: GestureNavigationSettingsObserverFactory,
 ) : TouchHandler {
 
     private var edgeWidthLeft: Float = 0f
     private var edgeWidthRight: Float = 0f
+    private var velocityTracker: VelocityTracker? = null
 
     private val gestureNavigationSettingsObserver =
-        GestureNavigationSettingsObserver(
+        gestureNavigationSettingsObserverFactory.create(
             mainHandler,
             backgroundHandler,
             context,
@@ -64,6 +67,8 @@ constructor(
 
     override fun onDestroy() {
         gestureNavigationSettingsObserver.unregister()
+        velocityTracker?.recycle()
+        velocityTracker = null
     }
 
     override fun onSessionStart(session: TouchHandler.TouchSession) {
@@ -73,6 +78,7 @@ constructor(
         var swipeThreshold = 0f
         var hapticPerformed = false
         var gestureAccepted = false
+        var activePointerId = MotionEvent.INVALID_POINTER_ID
 
         session.registerGestureListener(
             object : GestureDetector.SimpleOnGestureListener() {
@@ -101,6 +107,7 @@ constructor(
 
                     gestureAccepted = true
                     startX = e.x
+                    activePointerId = e.getPointerId(0)
                     swipeThreshold =
                         if (isLeftEdge) {
                             edgeWidthLeft * 2f
@@ -108,6 +115,11 @@ constructor(
                             edgeWidthRight * 2f
                         }
                     hapticPerformed = false
+
+                    velocityTracker?.recycle()
+                    velocityTracker = VelocityTracker.obtain()
+                    velocityTracker?.addMovement(e)
+
                     logger.logEdgeSwipeDown(e.x, e.y, isLeftEdge, isRightEdge, swipeThreshold)
 
                     return true
@@ -122,6 +134,8 @@ constructor(
                     if (!isLeftEdge && !isRightEdge || !gestureAccepted || e1 == null) {
                         return false
                     }
+
+                    velocityTracker?.addMovement(e2)
 
                     val dx = e2.x - startX
                     swipeDelegate.onSwipeProgress(dx, swipeThreshold)
@@ -148,19 +162,27 @@ constructor(
                 ev is MotionEvent &&
                     (ev.action == MotionEvent.ACTION_UP || ev.action == MotionEvent.ACTION_CANCEL)
             ) {
+                velocityTracker?.addMovement(ev)
                 if ((isLeftEdge || isRightEdge) && gestureAccepted) {
                     val dx = ev.x - startX
                     val distance = if (isLeftEdge) dx else -dx
                     val committed = ev.action == MotionEvent.ACTION_UP && distance > swipeThreshold
 
+                    velocityTracker?.computeCurrentVelocity(1000)
+                    val velocityX = velocityTracker?.getXVelocity(activePointerId) ?: 0f
+
                     logger.logEdgeSwipeEnded(ev.action, dx, committed)
-                    swipeDelegate.onSwipeEnded(committed)
+                    swipeDelegate.onSwipeEnded(committed, velocityX)
 
                     isLeftEdge = false
                     isRightEdge = false
                     hapticPerformed = false
                     gestureAccepted = false
+                    activePointerId = MotionEvent.INVALID_POINTER_ID
                 }
+
+                velocityTracker?.recycle()
+                velocityTracker = null
             }
         }
     }

@@ -84,16 +84,6 @@ flag {
 }
 
 flag {
-  name: "refactor_dimmer_crop"
-  namespace: "windowing_frontend"
-  description: "Reuse existing logic and fix corner issue"
-  bug: "435301249"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "remove_legacy_orientation_report"
   namespace: "windowing_frontend"
   description: "Remove legacy task letterbox logic"
@@ -144,16 +134,6 @@ flag {
   namespace: "windowing_frontend"
   description: "The orientation, aspect ratio, resizability of activity will follow system behavior by default"
   bug: "357141415"
-}
-
-flag {
-  name: "default_animator_single_transaction2"
-  namespace: "windowing_frontend"
-  description: "Reduce binder transaction to SF if there are multiple default animations"
-  bug: "456665218"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -259,16 +239,6 @@ flag {
     namespace: "windowing_frontend"
     description: "Port window-resize animation from legacy to shell"
     bug: "384976265"
-}
-
-flag {
-    name: "exit_split_on_display_move_bugfix"
-    namespace: "windowing_frontend"
-    description: "Exit split to remaining task when one task moves to another display"
-    bug: "460447267"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -445,6 +415,13 @@ flag {
     namespace: "windowing_frontend"
     description: "Improve the performance during fluid resizing."
     bug: "429960813"
+}
+
+flag {
+    name: "perfect_edge"
+    namespace: "windowing_frontend"
+    description: "Make the app window match the window decoration during fluid resizing."
+    bug: "475362867"
 }
 
 flag {

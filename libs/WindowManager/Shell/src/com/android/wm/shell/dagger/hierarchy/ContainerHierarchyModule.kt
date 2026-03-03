@@ -173,6 +173,17 @@ abstract class ContainerHierarchyModule {
             )
         }
 
+        @WMSingleton
+        @Provides
+        fun provideContainerHierarchyDependency(
+            initialHierarchyPopulator: InitialHierarchyPopulator,
+        ): Optional<ContainerHierarchyDependency> {
+            // Depending on InitialHierarchyPopulator (and indirectly HierarchyUpdater) ensures that
+            // we add the root task hook and populate the hierarchy before any other shell component
+            // creates their own root tasks.
+            return Optional.empty()
+        }
+
         //
         // Misc
         //

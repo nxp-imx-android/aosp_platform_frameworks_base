@@ -290,51 +290,25 @@ public class DimmerAnimationHelper {
 
     static void setBounds(@NonNull Dimmer.DimState dim, @NonNull WindowState relativeParent,
             @NonNull SurfaceControl.Transaction t) {
-        if (com.android.window.flags.Flags.refactorDimmerCrop()) {
-            final Rect rotatedBounds =
-                    relativeParent.mToken.getFixedRotationTransformDisplayBounds();
-            if (rotatedBounds != null) {
-                dim.mDimBounds.set(rotatedBounds);
-                // Fixed rotation token fills the display. Unset the crop so that the dim can cover
-                // the entire display when the orientation changes.
-                t.setCrop(dim.mDimSurface, null);
-            } else {
-                final Rect hostBounds = dim.mHostContainer.getBounds();
-                final TaskFragment taskFragment = relativeParent.getTaskFragment();
-                if (taskFragment != null) {
-                    taskFragment.getDimBounds(dim.mDimBounds);
-                } else {
-                    dim.mDimBounds.set(hostBounds);
-                }
-                final Rect dimCrop = relativeParent.mTmpRect;
-                dimCrop.set(dim.mDimBounds);
-                dimCrop.offset(-hostBounds.left, -hostBounds.top);
-                t.setCrop(dim.mDimSurface, dimCrop);
-            }
-            return;
-        }
-        TaskFragment taskFragment = relativeParent.getTaskFragment();
-        Rect taskFragmentBounds = taskFragment != null ? taskFragment.getBounds() : null;
-        Task task = relativeParent.getTask();
-        Rect taskBounds = task != null ? task.getBounds() : null;
-        Rect hostBounds = dim.mHostContainer.getBounds();
-        boolean isEmbedded = taskFragment != null && taskFragment.isEmbedded();
-
-        Rect relativeBounds = new Rect();
-        if (isEmbedded) {
-            // Embedded activities can be dimmed at task or fragment level
-            dim.mDimBounds.set(taskFragment.isDimmingOnParentTask()
-                    ? taskBounds : taskFragmentBounds);
-            relativeBounds.set(dim.mDimBounds);
-            relativeBounds.offset(-taskBounds.left, -taskBounds.top);
+        final Rect rotatedBounds = relativeParent.mToken.getFixedRotationTransformDisplayBounds();
+        if (rotatedBounds != null) {
+            dim.mDimBounds.set(rotatedBounds);
+            // Fixed rotation token fills the display. Unset the crop so that the dim can cover
+            // the entire display when the orientation changes.
+            t.setCrop(dim.mDimSurface, null);
         } else {
-            dim.mDimBounds.set(hostBounds);
-            relativeBounds.set(dim.mDimBounds);
-            relativeBounds.offsetTo(0, 0);
+            final Rect hostBounds = dim.mHostContainer.getBounds();
+            final TaskFragment taskFragment = relativeParent.getTaskFragment();
+            if (taskFragment != null) {
+                taskFragment.getDimBounds(dim.mDimBounds);
+            } else {
+                dim.mDimBounds.set(hostBounds);
+            }
+            final Rect dimCrop = relativeParent.mTmpRect;
+            dimCrop.set(dim.mDimBounds);
+            dimCrop.offset(-hostBounds.left, -hostBounds.top);
+            t.setCrop(dim.mDimSurface, dimCrop);
         }
-
-        t.setWindowCrop(dim.mDimSurface, relativeBounds.width(), relativeBounds.height());
-        t.setPosition(dim.mDimSurface, relativeBounds.left, relativeBounds.top);
     }
 
     void setCurrentState(@NonNull Dimmer.DimState dim, @NonNull SurfaceControl.Transaction t) {
