@@ -397,6 +397,9 @@ class DesktopDisplayEventHandler(
             // create a default desk.
             return false
         }
+        // In some cases, restoreDisplay can occur before the display is regarded as desktop first.
+        // Update here to ensure restored tasks aren't moved to fullscreen.
+        desktopDisplayModeController.updateExternalDisplayWindowingMode(displayId)
         desktopTasksController.restoreDisplay(
             displayId = displayId,
             preservedDisplay = preservedDisplay,
