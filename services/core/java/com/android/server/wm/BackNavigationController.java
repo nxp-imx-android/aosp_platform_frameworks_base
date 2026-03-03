@@ -1699,8 +1699,7 @@ class BackNavigationController {
                                     }
                                 }
                             });
-                if (com.android.window.flags.Flags.deferSnapshotRemovalForPredictiveBackWithIme()
-                        && mRequestedStartingSurfaceId != INVALID_TASK_ID) {
+                if (mRequestedStartingSurfaceId != INVALID_TASK_ID) {
                     mHasImeSurface = snapshot.hasImeSurface();
                 }
             }
