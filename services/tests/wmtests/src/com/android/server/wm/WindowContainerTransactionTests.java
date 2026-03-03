@@ -622,15 +622,28 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         childTask.setBounds(overrideBounds);
         assertEquals(overrideBounds, childTask.getRequestedOverrideBounds());
 
-        // Verifies the override bounds are cleared if the ancestor disallowed.
+        // Disallowed the override bounds from the ancestor.
         WindowContainerTransaction wct = new WindowContainerTransaction();
         wct.setDisallowOverrideBoundsForChildren(parentTask.getTaskInfo().token, true);
         applyTransaction(wct);
-        assertEquals(emptyBounds, childTask.getRequestedOverrideBounds());
 
-        // Verifies the override bounds cannot be set if the ancestor disallowed.
-        childTask.setBounds(overrideBounds);
-        assertEquals(emptyBounds, childTask.getRequestedOverrideBounds());
+        if (Flags.idempotentWctResolution()) {
+            assertEquals(emptyBounds, childTask.getResolvedOverrideBounds());
+            // But the requested override bounds are NOT cleared.
+            assertEquals(overrideBounds, childTask.getRequestedOverrideBounds());
+
+            // Verifies the override bounds can be set even if the ancestor disallowed.
+            overrideBounds.offset(10, 10);
+            childTask.setBounds(overrideBounds);
+            assertEquals(overrideBounds, childTask.getRequestedOverrideBounds());
+            assertEquals(emptyBounds, childTask.getResolvedOverrideBounds());
+        } else {
+            assertEquals(emptyBounds, childTask.getRequestedOverrideBounds());
+
+            // Verifies the override bounds cannot be set if the ancestor disallowed.
+            childTask.setBounds(overrideBounds);
+            assertEquals(emptyBounds, childTask.getRequestedOverrideBounds());
+        }
     }
 
     @Test
@@ -647,15 +660,28 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
         childTask.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         assertEquals(WINDOWING_MODE_MULTI_WINDOW, childTask.getRequestedOverrideWindowingMode());
 
-        // Verifies the override windowing mode are cleared if the ancestor disallowed.
+        // Disallowed the override windowing mode from the ancestor.
         WindowContainerTransaction wct = new WindowContainerTransaction();
         wct.setDisallowOverrideWindowingModeForChildren(parentTask.getTaskInfo().token, true);
         applyTransaction(wct);
-        assertEquals(WINDOWING_MODE_UNDEFINED, childTask.getRequestedOverrideWindowingMode());
 
-        // Verifies the override windowing mode cannot be set if the ancestor disallowed.
-        childTask.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
-        assertEquals(WINDOWING_MODE_UNDEFINED, childTask.getRequestedOverrideWindowingMode());
+        if (Flags.idempotentWctResolution()) {
+            assertEquals(WINDOWING_MODE_FULLSCREEN, childTask.getWindowingMode());
+            // But the requested override windowing mode is NOT cleared.
+            assertEquals(WINDOWING_MODE_MULTI_WINDOW,
+                    childTask.getRequestedOverrideWindowingMode());
+
+            // Verifies the override windowing mode can be set even if the ancestor disallowed.
+            childTask.setWindowingMode(WINDOWING_MODE_FREEFORM);
+            assertEquals(WINDOWING_MODE_FREEFORM, childTask.getRequestedOverrideWindowingMode());
+            assertEquals(WINDOWING_MODE_FULLSCREEN, childTask.getWindowingMode());
+        } else {
+            assertEquals(WINDOWING_MODE_UNDEFINED, childTask.getRequestedOverrideWindowingMode());
+
+            // Verifies the override windowing mode cannot be set if the ancestor disallowed.
+            childTask.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+            assertEquals(WINDOWING_MODE_UNDEFINED, childTask.getRequestedOverrideWindowingMode());
+        }
     }
 
     @Test

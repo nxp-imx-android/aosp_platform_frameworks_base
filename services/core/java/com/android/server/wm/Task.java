@@ -1303,14 +1303,16 @@ class Task extends TaskFragment {
             setInitialBoundsIfNeeded();
         }
 
-        // Clear the override bounds if any ancestor requested to.
-        if (!isOverrideBoundsAllowed()) {
-            setBounds(null);
-        }
+        if (!Flags.idempotentWctResolution()) {
+            // Clear the override bounds if any ancestor requested to.
+            if (!isOverrideBoundsAllowed()) {
+                setBounds(null);
+            }
 
-        // Clear the override windowingMode if any ancestor requested to.
-        if (!isOverrideWindowingModeAllowed()) {
-            setWindowingMode(WINDOWING_MODE_UNDEFINED);
+            // Clear the override windowingMode if any ancestor requested to.
+            if (!isOverrideWindowingModeAllowed()) {
+                setWindowingMode(WINDOWING_MODE_UNDEFINED);
+            }
         }
 
         mRootWindowContainer.updateUIDsPresentOnDisplay();
@@ -3048,9 +3050,11 @@ class Task extends TaskFragment {
             return boundsChange;
         }
 
-        if (!isOverrideBoundsAllowed() && bounds != null && !bounds.isEmpty()) {
-            Slog.w(TAG, "Not allowed to set override bounds " + bounds + " for " + this);
-            return BOUNDS_CHANGE_NONE;
+        if (!Flags.idempotentWctResolution()) {
+            if (!isOverrideBoundsAllowed() && bounds != null && !bounds.isEmpty()) {
+                Slog.w(TAG, "Not allowed to set override bounds " + bounds + " for " + this);
+                return BOUNDS_CHANGE_NONE;
+            }
         }
 
         final int boundsChange = super.setBounds(bounds);
@@ -4854,11 +4858,13 @@ class Task extends TaskFragment {
 
     @Override
     public void setWindowingMode(int windowingMode) {
-        if (!isOverrideWindowingModeAllowed()
-                && windowingMode != WINDOWING_MODE_UNDEFINED) {
-            Slog.w(TAG, "Not allowed to set override windowing mode "
-                    + windowingModeToString(windowingMode) + " for " + this);
-            return;
+        if (!Flags.idempotentWctResolution()) {
+            if (!isOverrideWindowingModeAllowed()
+                    && windowingMode != WINDOWING_MODE_UNDEFINED) {
+                Slog.w(TAG, "Not allowed to set override windowing mode "
+                        + windowingModeToString(windowingMode) + " for " + this);
+                return;
+            }
         }
         // Calling Task#setWindowingMode() for leaf task since this is a specialization of
         // {@link #setWindowingMode(int)} for root task.
@@ -6743,7 +6749,14 @@ class Task extends TaskFragment {
             Slog.w(TAG, "Can only disable child bounds override on tasks created by organizer");
             return BOUNDS_CHANGE_NONE;
         }
+        if (mDisallowOverrideBoundsForChildren == disallowOverrideBoundsForChildren) {
+            return BOUNDS_CHANGE_NONE;
+        }
         mDisallowOverrideBoundsForChildren = disallowOverrideBoundsForChildren;
+
+        if (Flags.idempotentWctResolution()) {
+            return BOUNDS_CHANGE_SIZE;
+        }
 
         final int[] boundsChange = new int[1];
         if (disallowOverrideBoundsForChildren) {
@@ -6772,7 +6785,14 @@ class Task extends TaskFragment {
                     + " organizer");
             return false;
         }
+        if (mDisallowOverrideWindowingModeForChildren == disallowOverrideWindowingModeForChildren) {
+            return false;
+        }
         mDisallowOverrideWindowingModeForChildren = disallowOverrideWindowingModeForChildren;
+
+        if (Flags.idempotentWctResolution()) {
+            return true;
+        }
         if (!disallowOverrideWindowingModeForChildren) {
             return false;
         }
