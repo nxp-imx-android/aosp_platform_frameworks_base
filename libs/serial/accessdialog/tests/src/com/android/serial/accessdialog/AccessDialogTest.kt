@@ -193,10 +193,10 @@ class AccessDialogTest {
 
     companion object {
         @Mock
-        val sPackageManager: PackageManager? = null
+        var sPackageManager: PackageManager? = null
 
         @Mock
-        val sSerialAccessManager: SerialAccessManager? = null
+        var sSerialAccessManager: SerialAccessManager? = null
 
         private const val APP_NAME = "SerialApp"
         private const val APP_PACKAGE_NAME = "com.android.serial.accessdialog.AccessDialogTest"
