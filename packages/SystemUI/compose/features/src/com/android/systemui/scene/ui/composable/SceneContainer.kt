@@ -327,6 +327,10 @@ private fun InternalSceneContainer(
                     userActions = userActionsByContentKey.getOrDefault(overlayKey, emptyMap()),
                     effectFactory = overlayEffectFactory,
                     alwaysCompose = overlay.alwaysCompose,
+                    // The bouncer overlay is special and not rendered here, so avoid adding
+                    // the fullscreen clickable which modals typically introduce. This avoids
+                    // issues with accessibility touch exploration while on the bouncer.
+                    isModal = overlayKey != Overlays.Bouncer,
                 ) {
                     // Activate the overlay.
                     LaunchedEffect(overlay) { overlay.activate() }
