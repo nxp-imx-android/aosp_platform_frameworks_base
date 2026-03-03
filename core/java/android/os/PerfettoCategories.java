@@ -59,6 +59,10 @@ public final class PerfettoCategories {
             new PerfettoTrace.Category("proc_state");
 
     @NonNull
+    public static final PerfettoTrace.Category PROC_STATE_COUNTER_CATEGORY =
+            new PerfettoTrace.Category("proc_state_counter");
+
+    @NonNull
     public static final PerfettoTrace.Category BROADCASTS_CATEGORY =
             new PerfettoTrace.Category("broadcasts");
 
@@ -69,14 +73,17 @@ public final class PerfettoCategories {
     @NonNull
     public static final List<PerfettoTrace.Category> ALL_CATEGORIES =
             Collections.unmodifiableList(Arrays.asList(
-                    MQ_CATEGORY,
+                    // go/keep-sorted start
+                    BIG_LOCKS_CATEGORY,
+                    BROADCASTS_CATEGORY,
+                    CC_CATEGORY,
+                    FREEZER_CATEGORY,
                     GFX_CATEGORY,
                     JOB_SCHEDULER_CATEGORY,
-                    CC_CATEGORY,
-                    BIG_LOCKS_CATEGORY,
+                    MQ_CATEGORY,
                     PROC_STATE_CATEGORY,
-                    BROADCASTS_CATEGORY,
-                    FREEZER_CATEGORY
+                    PROC_STATE_COUNTER_CATEGORY
+                    // go/keep-sorted end
     ));
 
     /**
