@@ -2701,6 +2701,34 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun addTaskToDesk_transientDesk_doesNotRemoveFromOtherDesks() {
+        // Create non-transient desk with task, then transient desk.
+        repo.addDesk(DEFAULT_DISPLAY, deskId = 1)
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 1,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+        repo.addDesk(DEFAULT_DISPLAY, deskId = 2, transientDesk = true)
+
+        // Add task to transient desk.
+        repo.addTaskToDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = 2,
+            taskId = 10,
+            isVisible = true,
+            taskBounds = TEST_TASK_BOUNDS,
+        )
+
+        // Assert desk 1 didn't lose the task and desk 2 successfully added it.
+        assertThat(repo.getFreeformTasksIdsInDeskInZOrder(1)).contains(10)
+        assertThat(repo.getFreeformTasksIdsInDeskInZOrder(2)).contains(10)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeActiveTask_fromTransientDesk_listenersNotUpdated() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
