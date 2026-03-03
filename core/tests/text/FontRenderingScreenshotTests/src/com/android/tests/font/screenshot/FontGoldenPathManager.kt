@@ -20,7 +20,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import platform.test.screenshot.GoldenPathManager
 import platform.test.screenshot.PathConfig
 
-private const val ASSETS_PATH = "frameworks/base/tests/FontRenderingScreenshotTests/assets"
+private const val ASSETS_PATH = "frameworks/base/core/tests/text/FontRenderingScreenshotTests/assets"
 
 /** GoldenPathManager for Font rendering tests. */
 class FontGoldenPathManager() :
