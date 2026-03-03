@@ -342,7 +342,7 @@ public class DividerSnapAlgorithm {
      * From the given position, returns the closest SnapTarget on the left/top side. If there is
      * no such target, return the left/top-most target.
      */
-    private SnapTarget snapToPrev(int position) {
+    public SnapTarget snapToPrev(int position) {
         // Iterate backwards until we reach the first target "smaller" than the given position.
         for (int i = mTargets.size() - 1; i >= 0; i--) {
             SnapTarget currentTarget = mTargets.get(i);
@@ -357,7 +357,7 @@ public class DividerSnapAlgorithm {
      * From the given position, returns the closest SnapTarget on the right/bottom side. If there is
      * no such target, return the right/bottom-most target.
      */
-    private SnapTarget snapToNext(int position) {
+    public SnapTarget snapToNext(int position) {
         // Iterate until we reach the first target "larger" than the given position.
         for (int i = 0; i < mTargets.size(); i++) {
             SnapTarget currentTarget = mTargets.get(i);
