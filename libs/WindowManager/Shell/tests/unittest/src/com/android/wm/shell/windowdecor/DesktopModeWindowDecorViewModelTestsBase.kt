@@ -17,6 +17,7 @@
 package com.android.wm.shell.windowdecor
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.ActivityTaskManager
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
 import android.app.WindowConfiguration.WindowingMode
@@ -191,6 +192,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected val mockFluidTaskResizer = mock<FluidTaskResizer>()
     protected val mockVeiledTaskResizer = mock<VeiledTaskResizer>()
     protected val mockMultiDisplayTaskMover = mock<MultiDisplayTaskMover>()
+    protected val mockActivityTaskManager = mock<ActivityTaskManager>()
 
     private val transactionFactory =
         Supplier<SurfaceControl.Transaction> { SurfaceControl.Transaction() }
@@ -223,6 +225,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         shellInit = ShellInit(testShellExecutor)
         windowDecorByTaskIdSpy.clear()
         spyContext.addMockSystemService(InputManager::class.java, mockInputManager)
+        spyContext.addMockSystemService(ActivityTaskManager::class.java, mockActivityTaskManager)
         desktopModeEventLogger = mock<DesktopModeEventLogger>()
         whenever(mockDesktopUserRepositories.current).thenReturn(mockDesktopRepository)
         whenever(mockDisplayController.getDisplayContext(any())).thenReturn(spyContext)
