@@ -16,12 +16,16 @@
 
 package com.android.wm.shell.pip2.tv;
 
+import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
+
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE;
 
 import android.content.Context;
 import android.graphics.Rect;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
+
+import androidx.annotation.Nullable;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.common.ShellExecutor;
@@ -68,5 +72,31 @@ public class TvPipScheduler {
         wct.setBounds(pipTaskToken, toBounds);
         wct.setCanDropDuringDisplayChange(true);
         mPipTransitionController.startPipBoundsChangeTransition(wct, duration);
+    }
+
+    /**
+     * Schedules remove PiP transition.
+     * @param withFadeout Whether to fade out the PiP window.
+     */
+    public void scheduleRemovePip(boolean withFadeout) {
+        ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
+                "%s: scheduleRemovePip()", TAG);
+        mMainExecutor.execute(() -> {
+            if (!mPipTransitionState.isInPip()) return;
+            mPipTransitionController.startRemoveTransition(getRemovePipTransaction(), withFadeout);
+        });
+    }
+
+    @Nullable
+    private WindowContainerTransaction getRemovePipTransaction() {
+        WindowContainerToken pipTaskToken = mPipTransitionState.getPipTaskToken();
+        if (pipTaskToken == null) {
+            return null;
+        }
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setBounds(pipTaskToken, null);
+        wct.setWindowingMode(pipTaskToken, WINDOWING_MODE_UNDEFINED);
+        wct.reorder(pipTaskToken, false);
+        return wct;
     }
 }
