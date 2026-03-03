@@ -23,7 +23,7 @@
   <string-array name="wifi_status">
     <item msgid="1596683495752107015"></item>
     <item msgid="3288373008277313483">"スキャン中..."</item>
-    <item msgid="6050951078202663628">"接続処理中..."</item>
+    <item msgid="6050951078202663628">"接続中..."</item>
     <item msgid="8356618438494652335">"認証中..."</item>
     <item msgid="2837871868181677206">"IPアドレスを取得中..."</item>
     <item msgid="4613015005934755724">"接続済み"</item>
