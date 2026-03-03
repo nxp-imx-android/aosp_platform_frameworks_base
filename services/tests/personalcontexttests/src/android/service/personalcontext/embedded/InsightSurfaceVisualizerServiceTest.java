@@ -18,8 +18,11 @@ package android.service.personalcontext.embedded;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.Intent;
@@ -34,6 +37,7 @@ import android.service.personalcontext.testutil.FakeExecutor;
 import android.view.Display;
 import android.view.SurfaceControlViewHost;
 import android.view.View;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
@@ -55,6 +59,8 @@ public class InsightSurfaceVisualizerServiceTest {
     @Mock private IVisualizationResult mResult;
     @Mock private Context mContext;
     @Mock private Display mDisplay;
+    @Mock private FrameLayout mRootView;
+    @Mock private SurfaceControlViewHost mSurfaceControlViewHost;
 
     @Mock private IOpCallback mOpCallback;
     private final PublishedContextInsightWrapper mInsight =
@@ -79,8 +85,12 @@ public class InsightSurfaceVisualizerServiceTest {
                 @Override
                 public InsightSurfaceVisualizerService.SurfaceControlViewHostFactory
                         getSurfaceControlViewHostFactory() {
-                    return (context, display, inputTransferToken) ->
-                            mock(SurfaceControlViewHost.class);
+                    return (context, display, inputTransferToken) -> mSurfaceControlViewHost;
+                }
+
+                @Override
+                public FrameLayout createRootView(Context context) {
+                    return mRootView;
                 }
             };
 
@@ -97,11 +107,15 @@ public class InsightSurfaceVisualizerServiceTest {
         }
 
         private final Monitor mMonitor;
-        private final View mView;
+        private View mView;
 
         TestInsightSurfaceVisualizerService(Monitor monitor, Injector injector, View view) {
             super(injector);
             mMonitor = monitor;
+            mView = view;
+        }
+
+        public void setView(View view) {
             mView = view;
         }
 
@@ -129,6 +143,8 @@ public class InsightSurfaceVisualizerServiceTest {
     @Before
     public void setup() {
         MockitoAnnotations.openMocks(this);
+        when(mClientInfo.getId()).thenReturn(UUID.randomUUID());
+        when(mSurfaceControlViewHost.getView()).thenReturn(mRootView);
     }
 
 
@@ -179,10 +195,93 @@ public class InsightSurfaceVisualizerServiceTest {
     }
 
     @Test
+    public void testOnCreateEmbeddedView_nullView_disconnectsClient() throws RemoteException {
+        final TestInsightSurfaceVisualizerService service = createVisualizer(mock(View.class));
+        final IInsightSurfaceVisualizer visualizer = bind(service);
+
+        // First, return a view so that the client becomes connected.
+        visualizer.createVisualizationForClient(
+                mInsight, mClientInfo, mRenderToken, mResult, mOpCallback);
+        mFakeExecutor.runAll();
+
+        // Now return null, so the client can be disconnected.
+        service.setView(null);
+        visualizer.createVisualizationForClient(
+                mInsight, mClientInfo, mRenderToken, mResult, mOpCallback);
+        mFakeExecutor.runAll();
+
+        verify(mClientInfo).onSurfaceReleased(any());
+        verify(mMonitor).onClientDisconnected(mClientInfo);
+    }
+
+    @Test
+    public void testOnCreateEmbeddedView_nonNullView_doesNotDisconnectClient()
+            throws RemoteException {
+        final TestInsightSurfaceVisualizerService service = createVisualizer(mock(View.class));
+        final IInsightSurfaceVisualizer visualizer = bind(service);
+
+        visualizer.createVisualizationForClient(
+                mInsight, mClientInfo, mRenderToken, mResult, mOpCallback);
+        mFakeExecutor.runAll();
+        verify(mMonitor).onCreateEmbeddedView(mClientInfo);
+        mFakeExecutor.runAll();
+        verify(mMonitor, never()).onClientDisconnected(mClientInfo);
+    }
+
+    @Test
+    public void testOnCreateEmbeddedView_callsSurfaceCreated()
+            throws RemoteException {
+        final TestInsightSurfaceVisualizerService service = createVisualizer(mock(View.class));
+        final IInsightSurfaceVisualizer visualizer = bind(service);
+
+        visualizer.createVisualizationForClient(
+                mInsight, mClientInfo, mRenderToken, mResult, mOpCallback);
+        mFakeExecutor.runAll();
+        verify(mClientInfo).onSurfaceCreated(any(), any());
+    }
+
+    @Test
+    public void testOnCreateEmbeddedView_returnsDifferentView_callsSurfaceUpdated()
+            throws RemoteException {
+        final TestInsightSurfaceVisualizerService service = createVisualizer(mock(View.class));
+        final IInsightSurfaceVisualizer visualizer = bind(service);
+
+        visualizer.createVisualizationForClient(
+                mInsight, mClientInfo, mRenderToken, mResult, mOpCallback);
+        mFakeExecutor.runAll();
+        // Calling a second time with a different view will call onSurfaceUpdated again.
+        service.setView(mock(View.class));
+        visualizer.createVisualizationForClient(
+                mInsight, mClientInfo, mRenderToken, mResult, mOpCallback);
+        mFakeExecutor.runAll();
+        verify(mClientInfo).onSurfaceUpdated(any());
+    }
+
+    @Test
+    public void testOnCreateEmbeddedView_returnsSameView_callsSurfaceUpdated()
+            throws RemoteException {
+        final View view = mock(View.class);
+        final TestInsightSurfaceVisualizerService service = createVisualizer(view);
+        final IInsightSurfaceVisualizer visualizer = bind(service);
+
+        // The SurfaceControlViewHost has to return the same view.
+        when(mSurfaceControlViewHost.getView()).thenReturn(view);
+
+        // Calling a second time will return the same view.
+        visualizer.createVisualizationForClient(
+                mInsight, mClientInfo, mRenderToken, mResult, mOpCallback);
+        mFakeExecutor.runAll();
+        visualizer.createVisualizationForClient(
+                mInsight, mClientInfo, mRenderToken, mResult, mOpCallback);
+        mFakeExecutor.runAll();
+        verify(mClientInfo).onSurfaceUpdated(any());
+    }
+
+    @Test
     public void testCallbackOnResult_false() throws RemoteException {
         final TestInsightSurfaceVisualizerService service = createVisualizer();
         // By not passing a View to createVisualizer(), we cause it to call the callback with
-        // "false" (because it has now View to return).
+        // "false" (because it has no View to return).
         final IInsightSurfaceVisualizer visualizer = bind(service);
 
         visualizer.createVisualizationForClient(mInsight, mClientInfo, mRenderToken, mResult,

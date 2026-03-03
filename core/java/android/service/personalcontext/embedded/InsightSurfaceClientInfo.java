@@ -290,6 +290,22 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     }
 
     /**
+     * The given {@link SurfaceControlViewHost.SurfacePackage} has been updated.
+     *
+     * @param surfacePackage the updated {@link SurfaceControlViewHost.SurfacePackage}
+     *
+     * @hide
+     */
+    public void onSurfaceUpdated(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage) {
+        try {
+            mClient.onSurfaceUpdated(surfacePackage);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error updating SurfacePackage", e);
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * The given {@link SurfaceControlViewHost.SurfacePackage} has been released.
      *
      * @param surfacePackage the released {@link SurfaceControlViewHost.SurfacePackage}

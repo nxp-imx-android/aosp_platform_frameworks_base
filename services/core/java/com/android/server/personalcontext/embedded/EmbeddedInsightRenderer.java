@@ -66,6 +66,8 @@ public class EmbeddedInsightRenderer implements Renderer {
      * TODO(b/463464084): Introduce a lifecycle manager to be notified of lifecycle events instead.
      */
     public void onRegistered() {
+        logDebug("registering...");
+
         // The visualizer registry already pushes this work to the executor's thread.
         mVisualizerRegistry.startRegisteringVisualizers();
     }
@@ -154,6 +156,7 @@ public class EmbeddedInsightRenderer implements Renderer {
                 return;
             }
 
+            logDebug("creating visualization for client");
             mVisualizerRegistry.createVisualizationForClient(publishedContextInsight, client,
                     renderToken);
         });
