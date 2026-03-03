@@ -12042,14 +12042,18 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     private void throwCalledFromWrongThreadException() {
-        throw newCalledFromWrongThreadException();
+        throw newCalledFromWrongThreadException(/*withInitStack=*/true);
     }
 
-    private CalledFromWrongThreadException newCalledFromWrongThreadException() {
+    private CalledFromWrongThreadException newCalledFromWrongThreadException(
+            boolean withInitStack) {
         return new CalledFromWrongThreadException(
                 "Only the original thread that created a view hierarchy can touch its views."
-                        + " Expected: " + mThread.getName()
-                        + " Calling: " + Thread.currentThread().getName(), mInitStack);
+                        + " Expected: "
+                        + mThread.getName()
+                        + " Calling: "
+                        + Thread.currentThread().getName(),
+                withInitStack ? mInitStack : null);
     }
 
     /**
@@ -12083,7 +12087,13 @@ public final class ViewRootImpl implements ViewParent,
             // If two or more threads race to log, it's not much of a concern.
             if (!sCalledFromWrongThreadLogged) {
                 sCalledFromWrongThreadLogged = true;
-                final CalledFromWrongThreadException e = newCalledFromWrongThreadException();
+                // We don't want the wtf to treat the proxied `mInitStack` origin Throwable as the
+                // root cause, as that shadows the CalledFromWrongThreadException type when
+                // propagating through the ApplicationErrorReport.
+                final CalledFromWrongThreadException e =
+                        newCalledFromWrongThreadException(/* withInitStack= */ false);
+                // TODO(b/485532725): Consider augmenting the exception message with the mInitStack
+                // Throwable rather than discarding it entirely.
                 Log.wtf(
                         TAG,
                         "Attempt to call method from wrong thread. "

@@ -211,6 +211,7 @@ import static com.android.server.am.psc.Constants.SYSTEM_ADJ;
 import static com.android.server.am.psc.Constants.UNKNOWN_ADJ;
 import static com.android.server.am.psc.Constants.VISIBLE_APP_ADJ;
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME;
+import static com.android.server.feature.flags.Flags.enableWtfExceptionDropboxCarveout;
 import static com.android.server.flags.Flags.disableSystemCompaction;
 import static com.android.server.net.NetworkPolicyManagerInternal.updateBlockedReasonsWithProcState;
 import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
@@ -10416,9 +10417,17 @@ public class ActivityManagerService extends IActivityManager.Stub
             return;
         }
 
+        if (dbox == null) return;
+
         // Exit early if the dropbox isn't configured to accept this report type.
         final String dropboxTag = processClass(process) + "_" + eventType;
-        if (dbox == null || !dbox.isTagEnabled(dropboxTag)) return;
+        if (enableWtfExceptionDropboxCarveout() && crashInfo != null) {
+            // For a subset of errors, we augment the check with the associated exception class
+            // name to allow more granular filtering and control.
+            if (!dbox.isTagEnabled(dropboxTag, crashInfo.exceptionClassName)) return;
+        } else {
+            if (!dbox.isTagEnabled(dropboxTag)) return;
+        }
 
         // Check if we should rate limit and abort early if needed.
         final DropboxRateLimiter.RateLimitResult rateLimitResult =
@@ -10486,12 +10495,23 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (keyguardManager != null) {
             sb.append("Keyguard-Locked: ").append(keyguardManager.isKeyguardLocked()).append("\n");
         }
-        if (crashInfo != null && crashInfo.exceptionHandlerClassName != null
-                && !crashInfo.exceptionHandlerClassName.isEmpty()) {
-            sb.append("Crash-Handler: ").append(crashInfo.exceptionHandlerClassName).append("\n");
-        }
-        if (crashInfo != null && crashInfo.crashTag != null && !crashInfo.crashTag.isEmpty()) {
-            sb.append("Crash-Tag: ").append(crashInfo.crashTag).append("\n");
+        if (crashInfo != null) {
+            if (crashInfo.exceptionHandlerClassName != null
+                    && !crashInfo.exceptionHandlerClassName.isEmpty()) {
+                sb.append("Crash-Handler: ")
+                        .append(crashInfo.exceptionHandlerClassName)
+                        .append("\n");
+            }
+            if (crashInfo.crashTag != null && !crashInfo.crashTag.isEmpty()) {
+                sb.append("Crash-Tag: ").append(crashInfo.crashTag).append("\n");
+            }
+            if (eventType.equals("wtf")
+                    && crashInfo.exceptionClassName != null
+                    && !crashInfo.exceptionClassName.isEmpty()) {
+                // For now, only inject the full exception for wtf-specific signals to simplify any
+                // downstream filtering. See b/481975725.
+                sb.append("Crash-Exception: ").append(crashInfo.exceptionClassName).append("\n");
+            }
         }
         if (loadingProgress != null) {
             sb.append("Loading-Progress: ").append(loadingProgress.floatValue()).append("\n");
