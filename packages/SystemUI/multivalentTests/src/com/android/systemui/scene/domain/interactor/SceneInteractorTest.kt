@@ -35,6 +35,7 @@ import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.scene.data.repository.Idle
@@ -1090,5 +1091,19 @@ class SceneInteractorTest : SysuiTestCase() {
             // Hide a HUN
             underTest.handleEvent(SceneInteractor.Event.HeadsUpNotificationVisibilityChange(false))
             assertThat(underTest.isVisible).isFalse()
+        }
+
+    @Test
+    fun showOverlay_bouncerWhenUnlocked_doesNotShowBouncer() =
+        kosmos.runTest {
+            unlockDevice()
+            underTest.snapToScene(Scenes.Lockscreen, "reason")
+            assertThat(underTest.transitionState.currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
+
+            underTest.showOverlay(Overlays.Bouncer, "reason")
+            runCurrent()
+            assertThat(underTest.transitionState.currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
         }
 }

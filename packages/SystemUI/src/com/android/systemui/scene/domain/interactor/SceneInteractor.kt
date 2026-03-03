@@ -955,12 +955,12 @@ constructor(
                 false
             }
 
-            to == Overlays.Bouncer && currentScene.value == Scenes.Gone -> {
+            to == Overlays.Bouncer && deviceUnlockedInteractor.get().isUnlocked -> {
                 logger.logContentChangeRejection(
                     from = from,
                     to = to,
                     originalChangeReason = loggingReason,
-                    rejectionReason = "Cannot show Bouncer over Gone scene",
+                    rejectionReason = "Cannot show Bouncer when device already unlocked",
                 )
                 false
             }
