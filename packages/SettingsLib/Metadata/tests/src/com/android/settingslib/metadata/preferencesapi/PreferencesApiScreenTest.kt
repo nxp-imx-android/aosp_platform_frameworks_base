@@ -23,6 +23,7 @@ import android.os.UserManager
 import android.provider.Settings
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.settingslib.metadata.SensitivityLevel
 import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen.Companion.PARTIALLY_MIGRATED_PREFIX
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreenTest.Companion.ApiPreconditionsMapper.ALLOWED
@@ -2074,6 +2075,39 @@ class PreferencesApiScreenTest {
             }
 
         assertThat(screen.tags(context)).asList().containsExactly("tag1", "tag2", PreferencesApiScreen.APP_FUNCTION_BATTERY, "api-first")
+    }
+
+    @Test
+    fun createPreferencesApiScreen_withoutSensitivity_hasDefaultNoSensitivity() {
+        val screen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
+                ) {
+            }
+
+        assertThat(screen.sensitivityLevel).isEqualTo(SensitivityLevel.NO_SENSITIVITY)
+    }
+
+    @Test
+    fun createPreferencesApiScreen_withSpecifiedSensitivity_hasSpecifiedSensitivity() {
+        val screen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
+                ) {
+                init {
+                    sensitivityLevel(SensitivityLevel.DO_NOT_EXPOSE)
+                }
+            }
+
+        assertThat(screen.sensitivityLevel).isEqualTo(SensitivityLevel.DO_NOT_EXPOSE)
     }
 
     @Test
