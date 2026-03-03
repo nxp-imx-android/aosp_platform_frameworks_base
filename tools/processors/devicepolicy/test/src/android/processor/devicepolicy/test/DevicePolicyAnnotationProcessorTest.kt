@@ -519,9 +519,9 @@ class DevicePolicyAnnotationProcessorTest {
                 """
                     // The intdef used for the policy values.
                     /** First entry */
-                    public static final int ENUM_ENTRY_1 = 0;
+                    public static final int ENUM_ENTRY_1 = 1;
                     /** Second entry */
-                    public static final int ENUM_ENTRY_2 = 1;
+                    public static final int ENUM_ENTRY_2 = 2;
                     /** Intdef for an enum. */
                     @Retention(RetentionPolicy.SOURCE)
                     @IntDef(
@@ -561,9 +561,9 @@ class DevicePolicyAnnotationProcessorTest {
                 """
                     // The intdef used for the policy values.
                     /** First entry */
-                    public static final int ENUM_ENTRY_1 = 0;
+                    public static final int ENUM_ENTRY_1 = 1;
                     /** Second entry */
-                    public static final int ENUM_ENTRY_2 = 1;
+                    public static final int ENUM_ENTRY_2 = 2;
                     /** Intdef for an enum. */
                     @Retention(RetentionPolicy.SOURCE)
                     @IntDef(
@@ -610,9 +610,9 @@ class DevicePolicyAnnotationProcessorTest {
                 """
                     // The intdef used for the policy values.
                     /** First entry */
-                    public static final int ENUM_ENTRY_FIRST = 0;
+                    public static final int ENUM_ENTRY_FIRST = 1;
                     /** Second entry */
-                    public static final int ENUM_ENTRY_LAST = 1;
+                    public static final int ENUM_ENTRY_LAST = 2;
                     /** Intdef for an enum. */
                     @Retention(RetentionPolicy.SOURCE)
                     @IntDef(
@@ -656,9 +656,9 @@ class DevicePolicyAnnotationProcessorTest {
                 """
                     // The intdef used for the policy values.
                     /** First entry */
-                    public static final int ENUM_ENTRY_FIRST = 0;
+                    public static final int ENUM_ENTRY_FIRST = 1;
                     /** Second entry */
-                    public static final int ENUM_ENTRY_LAST = 1;
+                    public static final int ENUM_ENTRY_LAST = 2;
                     /** Intdef for an enum. */
                     @Retention(RetentionPolicy.SOURCE)
                     @IntDef(
@@ -702,9 +702,9 @@ class DevicePolicyAnnotationProcessorTest {
                 """
                     // The intdef used for the policy values.
                     /** First entry */
-                    public static final int ENUM_ENTRY_FIRST = 0;
+                    public static final int ENUM_ENTRY_FIRST = 1;
                     /** Second entry */
-                    public static final int ENUM_ENTRY_LAST = 1;
+                    public static final int ENUM_ENTRY_LAST = 2;
                     /** Intdef for an enum. */
                     @Retention(RetentionPolicy.SOURCE)
                     @IntDef(
@@ -738,6 +738,117 @@ class DevicePolicyAnnotationProcessorTest {
         )
     }
 
+    @Test
+    fun test_minGreaterThanMax_failsToCompile() {
+        val policyIdentifier =
+            buildPolicyIdentifier(
+                """
+                /**
+                * min cannot be > max.
+                */
+                @IntegerPolicyDefinition(
+                        minValue = 101,
+                        maxValue = 100,
+                        base = @PolicyDefinition(
+                                allowedScopes = { POLICY_SCOPE_USER },
+                                affectedResource = RESOURCE_DEVICE_WIDE,
+                                $ALLOWED_DPC_TYPES_SNIPPET
+                        )
+                )
+                public static final PolicyIdentifier<Integer> MIN_GREATER_MAX =
+                    new PolicyIdentifier<>("MIN_GREATER_MAX");
+            """
+            )
+
+        compileExpectError(
+            policyIdentifier,
+            expectedError = "minValue cannot be larger than maxValue",
+        )
+    }
+
+    @Test
+    fun test_enum_zeroValue_failsToCompile() {
+        val policyIdentifier =
+            buildPolicyIdentifier(
+                """
+                    // The intdef used for the policy values.
+                    /** First entry */
+                    public static final int ENUM_ENTRY_FIRST = 0;
+                    /** Second entry */
+                    public static final int ENUM_ENTRY_LAST = 1;
+                    /** Intdef for an enum. */
+                    @Retention(RetentionPolicy.SOURCE)
+                    @IntDef(
+                            prefix = {"ENUM_ENTRY_"},
+                            value = {ENUM_ENTRY_FIRST, ENUM_ENTRY_LAST})
+                    public @interface EnumIntDef {}
+
+                    /**
+                    * Enum values must not be 0.
+                    */
+                    @EnumPolicyDefinition(
+                            base = @PolicyDefinition(
+                                    allowedScopes = { POLICY_SCOPE_USER },
+                                    affectedResource = RESOURCE_DEVICE_WIDE,
+                                    $ALLOWED_DPC_TYPES_SNIPPET
+                            ),
+                            defaultValue = ENUM_ENTRY_LAST,
+                            intDef = EnumIntDef.class,
+                            resolutionMechanism = @EnumResolutionMechanism(custom = true)
+                    )
+                    public static final PolicyIdentifier<Integer> POLICY_KEY =
+                        new PolicyIdentifier<>("POLICY_KEY");
+                """
+            )
+
+        compileExpectError(
+            policyIdentifier,
+            expectedError =
+                "The Protobuf enum value '0' is reserved for the default *_UNSPECIFIED case (https://google.aip.dev/126) and should not be used for any other enum value. Found in: ENUM_ENTRY_FIRST",
+        )
+    }
+
+    @Test
+    fun test_allowedZeroValue_compiles() {
+        val policyIdentifier =
+            buildPolicyIdentifier(
+                """
+                    // The intdef used for the policy values.
+                    /** First entry */
+                    public static final int AUTO_TIME_USER_CHOICE = 0;
+                    /** Second entry */
+                    public static final int AUTO_TIME_DISABLED = 1;
+                    /** Intdef for an enum. */
+                    @Retention(RetentionPolicy.SOURCE)
+                    @IntDef(
+                            prefix = {"AUTO_TIME_"},
+                            value = {AUTO_TIME_USER_CHOICE, AUTO_TIME_DISABLED})
+                    public @interface AutoTimeValue {}
+
+                    /**
+                    * Enum values can be 0 if allowed.
+                    */
+                    @EnumPolicyDefinition(
+                            base = @PolicyDefinition(
+                                    allowedScopes = { POLICY_SCOPE_USER },
+                                    affectedResource = RESOURCE_DEVICE_WIDE,
+                                    $ALLOWED_DPC_TYPES_SNIPPET
+                            ),
+                            defaultValue = AUTO_TIME_DISABLED,
+                            intDef = AutoTimeValue.class,
+                            resolutionMechanism = @EnumResolutionMechanism(custom = true)
+                    )
+                    public static final PolicyIdentifier<Integer> AUTO_TIME =
+                        new PolicyIdentifier<>("AUTO_TIME");
+                """
+            )
+
+        val compilation: Compilation = mCompiler.compile(policyIdentifier)
+
+        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
+        assertThat(compilation).succeeded()
+    }
+
     private fun compileExpectError(
         vararg files: JavaFileObject,
         expectedError: String,
@@ -757,33 +868,5 @@ class DevicePolicyAnnotationProcessorTest {
             .getOrNull()
             ?.getCharContent(true)
             ?.parseProto(PolicyMetadataList::class)
-    }
-
-    @Test
-    fun test_minGreaterThanMax_failsToCompile() {
-        val policyIdentifier = buildPolicyIdentifier(
-            """
-            /**
-             * min cannot be > max.
-             */
-            @IntegerPolicyDefinition(
-                    minValue = 101,
-                    maxValue = 100,
-                    base = @PolicyDefinition(
-                            allowedScopes = { POLICY_SCOPE_USER },
-                            affectedResource = RESOURCE_DEVICE_WIDE,
-                            $ALLOWED_DPC_TYPES_SNIPPET
-                    )
-            )
-            public static final PolicyIdentifier<Integer> MIN_GREATER_MAX =
-                new PolicyIdentifier<>("MIN_GREATER_MAX");
-            """.trimIndent()
-        )
-
-        val compilation: Compilation = mCompiler.compile(policyIdentifier)
-
-        assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
-        assertThat(compilation).failed()
-        assertThat(compilation).hadErrorContaining("minValue cannot be larger than maxValue")
     }
 }
