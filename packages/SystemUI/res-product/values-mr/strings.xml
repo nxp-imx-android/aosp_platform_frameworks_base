@@ -20,46 +20,36 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="dock_alignment_slow_charging" product="default" msgid="6997633396534416792">"फास्ट चार्ज करण्यासाठी फोन पुन्हा अलाइन करा"</string>
-    <!-- no translation found for dock_alignment_slow_charging (3407039002024253081) -->
-    <skip />
+    <string name="dock_alignment_slow_charging" product="desktop" msgid="3407039002024253081">"फास्ट चार्जिंगसाठी डिव्हाइस पुन्हा अलाइन करा"</string>
     <string name="dock_alignment_not_charging" product="default" msgid="3980752926226749808">"वायरलेस पद्धतीने चार्ज करण्यासाठी फोन पुन्हा अलाइन करा"</string>
-    <!-- no translation found for dock_alignment_not_charging (1650693501464120367) -->
-    <skip />
+    <string name="dock_alignment_not_charging" product="desktop" msgid="1650693501464120367">"वायरलेस पद्धतीने चार्ज करण्यासाठी डिव्हाइस पुन्हा अलाइन करा"</string>
     <string name="inattentive_sleep_warning_message" product="tv" msgid="6844464574089665063">"Android TV डिव्हाइस लवकरच बंद होणार आहे; सुरू ठेवण्यासाठी बटण प्रेस करा."</string>
     <string name="inattentive_sleep_warning_message" product="default" msgid="5693904520452332224">"डिव्हाइस लवकरच बंद होणार आहे; ते सुरू ठेवण्यासाठी प्रेस करा."</string>
     <string name="keyguard_missing_sim_message" product="tablet" msgid="408124574073032188">"टॅबलेटमध्ये सिम नाही."</string>
     <string name="keyguard_missing_sim_message" product="default" msgid="2605468359948247208">"फोनमध्ये सिम नाही."</string>
-    <!-- no translation found for keyguard_missing_sim_message (6678465505993388400) -->
-    <skip />
+    <string name="keyguard_missing_sim_message" product="desktop" msgid="6678465505993388400">"डिव्हाइसमध्ये सिम नाही."</string>
     <string name="kg_invalid_confirm_pin_hint" product="default" msgid="6278551068943958651">"पिन कोड जुळत नाहीत"</string>
     <string name="kg_failed_attempts_almost_at_wipe" product="tablet" msgid="302165994845009232">"तुम्ही टॅबलेट अनलॉक करण्याचा <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, हे टॅबलेट रीसेट केला जाईल, त्यामुळे त्याचा सर्व डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_almost_at_wipe" product="default" msgid="2594813176164266847">"तुम्ही फोन अनलॉक करण्याचा <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, हा फोन रीसेट केला जाईल, त्यामुळे त्याचा सर्व डेटा हटवला जाईल."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_wipe (6414651766868767274) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_wipe" product="desktop" msgid="6414651766868767274">"तुम्ही डिव्हाइस अनलॉक करण्याचा <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, हे डिव्हाइस रीसेट केले जाईल, त्यामुळे त्याचा सर्व डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_now_wiping" product="tablet" msgid="8710104080409538587">"तुम्ही टॅबलेट अनलॉक करण्याचा <xliff:g id="NUMBER">%d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. हे टॅबलेट रीसेट केले जाईल, त्यामुळे त्याचा सर्व डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_now_wiping" product="default" msgid="6381835450014881813">"तुम्ही फोन अनलॉक करण्याचा <xliff:g id="NUMBER">%d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. हा फोन रीसेट केला जाईल, त्यामुळे त्याचा सर्व डेटा हटवला जाईल."</string>
-    <!-- no translation found for kg_failed_attempts_now_wiping (2277485562881116948) -->
-    <skip />
+    <string name="kg_failed_attempts_now_wiping" product="desktop" msgid="2277485562881116948">"तुम्ही डिव्हाइस अनलॉक करण्याचा <xliff:g id="NUMBER">%d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. हा फोन रीसेट केला जाईल, त्यामुळे त्याचा सर्व डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_almost_at_erase_user" product="tablet" msgid="7325071812832605911">"तुम्ही टॅबलेट अनलॉक करण्याचा <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, हा वापरकर्ता काढला जाईल, त्यामुळे सर्व वापरकर्ता डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_almost_at_erase_user" product="default" msgid="8110939900089863103">"तुम्ही फोन अनलॉक करण्याचा <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, हा वापरकर्ता काढला जाईल, त्यामुळे सर्व वापरकर्ता डेटा हटवला जाईल."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_erase_user (6685285863549889535) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_erase_user" product="desktop" msgid="6685285863549889535">"तुम्ही डिव्हाइस अनलॉक करण्याचा <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, हा वापरकर्ता काढला जाईल, त्यामुळे सर्व वापरकर्ता डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_now_erasing_user" product="tablet" msgid="8509811676952707883">"तुम्ही टॅबलेट अनलॉक करण्याचा <xliff:g id="NUMBER">%d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. हा वापरकर्ता काढला जाईल, त्यामुळे सर्व वापरकर्ता डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_now_erasing_user" product="default" msgid="3051962486994265014">"तुम्ही फोन अनलॉक करण्याचा <xliff:g id="NUMBER">%d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. या वापरकर्त्याला काढले जाईल, त्यामुळे सर्व वापरकर्ता डेटा हटवला जाईल."</string>
-    <!-- no translation found for kg_failed_attempts_now_erasing_user (3003054879895735837) -->
-    <skip />
+    <string name="kg_failed_attempts_now_erasing_user" product="desktop" msgid="3003054879895735837">"तुम्ही डिव्हाइस अनलॉक करण्याचा <xliff:g id="NUMBER">%d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. हा वापरकर्ता काढला जाईल, त्यामुळे सर्व वापरकर्ता डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_almost_at_erase_profile" product="tablet" msgid="1049523640263353830">"तुम्ही टॅबलेट अनलॉक करण्याचा <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, ही कार्य प्रोफाइल काढली जाईल, ज्यामुळे सर्व प्रोफाइल डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_almost_at_erase_profile" product="default" msgid="3280816298678433681">"तुम्ही फोन अनलॉक करण्याचा <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, कार्य प्रोफाइल काढले जाईल, त्यामुळे सर्व प्रोफाइल डेटा हटवला जाईल."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_erase_profile (6020310710703619275) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_erase_profile" product="desktop" msgid="6020310710703619275">"तुम्ही डिव्हाइस अनलॉक करण्याचा <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, कार्य प्रोफाइल काढले जाईल, त्यामुळे सर्व प्रोफाइल डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_now_erasing_profile" product="tablet" msgid="4417100487251371559">"तुम्ही टॅबलेट अनलॉक करण्याचा <xliff:g id="NUMBER">%d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. कार्य प्रोफाइल काढली जाईल, त्यामुळे सर्व प्रोफाइल डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_now_erasing_profile" product="default" msgid="4682221342671290678">"तुम्ही फोन अनलॉक करण्याचा <xliff:g id="NUMBER">%d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. कार्य प्रोफाइल काढली जाईल, त्यामुळे सर्व प्रोफाइल डेटा हटवला जाईल."</string>
-    <!-- no translation found for kg_failed_attempts_now_erasing_profile (2786666082798973358) -->
-    <skip />
+    <string name="kg_failed_attempts_now_erasing_profile" product="desktop" msgid="2786666082798973358">"तुम्ही डिव्हाइस अनलॉक करण्याचा <xliff:g id="NUMBER">%d</xliff:g> वेळा चुकीच्या पद्धतीने प्रयत्न केला आहे. कार्य प्रोफाइल काढली जाईल, त्यामुळे सर्व प्रोफाइल डेटा हटवला जाईल."</string>
     <string name="kg_failed_attempts_almost_at_login" product="tablet" msgid="1860049973474855672">"तुम्ही तुमचा अनलॉक पॅटर्न <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीच्या पद्धतीने काढला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, तुम्हाला ईमेल खाते वापरून तुमचा टॅबलेट अनलॉक करण्यास सांगितले जाईल.\n\n <xliff:g id="NUMBER_2">%3$d</xliff:g> सेकंदांमध्ये पुन्हा प्रयत्न करा."</string>
     <string name="kg_failed_attempts_almost_at_login" product="default" msgid="44112553371516141">"तुम्ही तुमचा अनलॉक पॅटर्न <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीच्या पद्धतीने काढला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, तुम्हाला ईमेल खाते वापरून तुमचा फोन अनलॉक करण्यास सांगितले जाईल.\n\n <xliff:g id="NUMBER_2">%3$d</xliff:g> सेकंदांमध्ये पुन्हा प्रयत्न करा."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_login (1821951547429595155) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_login" product="desktop" msgid="1821951547429595155">"तुम्ही तुमचा अनलॉक पॅटर्न <xliff:g id="NUMBER_0">%1$d</xliff:g> वेळा चुकीचा काढला आहे. आणखी <xliff:g id="NUMBER_1">%2$d</xliff:g> अयशस्वी प्रयत्नांनंतर, तुम्हाला ईमेल खाते वापरून तुमचे डिव्हाइस अनलॉक करण्यास सांगितले जाईल.\n\n <xliff:g id="NUMBER_2">%3$d</xliff:g> सेकंदांमध्ये पुन्हा प्रयत्न करा."</string>
     <string name="thermal_shutdown_title" product="default" msgid="8039593017174903505">"खूप गरम झाल्यामुळे फोन बंद झाला"</string>
     <string name="thermal_shutdown_title" product="desktop" msgid="2954206342842856379">"खूप गरम झाल्यामुळे डिव्हाइस बंद झाले"</string>
     <string name="thermal_shutdown_title" product="device" msgid="2954206342842856379">"खूप गरम झाल्यामुळे डिव्हाइस बंद झाले"</string>
@@ -94,16 +84,13 @@
     <string name="global_action_lock_message" product="desktop" msgid="3165224897120346096">"आणखी पर्यायांसाठी तुमचे डिव्हाइस अनलॉक करा"</string>
     <string name="media_transfer_playing_this_device" product="default" msgid="5795784619523545556">"या फोनवर प्ले होत आहे"</string>
     <string name="media_transfer_playing_this_device" product="tablet" msgid="222514408550408633">"या टॅबलेटवर प्ले होत आहे"</string>
-    <!-- no translation found for media_transfer_playing_this_device (3299409636487714269) -->
-    <skip />
+    <string name="media_transfer_playing_this_device" product="desktop" msgid="3299409636487714269">"या डिव्हाइसवर प्ले करत आहे"</string>
     <string name="finder_active" product="default" msgid="2734050945122991747">"तुम्ही हा फोन बंद असतानादेखील Find My Device वापरून तो शोधू शकता"</string>
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"तुम्ही हा टॅबलेट बंद असतानादेखील Find My Device वापरून तो शोधू शकता"</string>
-    <!-- no translation found for finder_active (924749965418452906) -->
-    <skip />
+    <string name="finder_active" product="desktop" msgid="924749965418452906">"हे डिव्हाइस बंद असतानादेखील तुम्ही Find My Device वापरून ते शोधू शकता"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"तुम्ही हा फोन बंद असतानादेखील Find Hub वापरून तो शोधू शकता"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"तुम्ही हा टॅबलेट बंद असतानादेखील Find Hub वापरून तो शोधू शकता"</string>
-    <!-- no translation found for find_hub_active (5324909071852240549) -->
-    <skip />
+    <string name="find_hub_active" product="desktop" msgid="5324909071852240549">"हे डिव्हाइस बंद असतानादेखील तुम्ही Find Hub वापरून ते शोधू शकता"</string>
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"तुमचा फोन चार्ज होत असताना घड्याळ, फोटो किंवा हवामान दाखवा"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"तुमचा टॅबलेट चार्ज होत असताना घड्याळ, फोटो किंवा हवामान दाखवा"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"तुमचे डिव्हाइस चार्ज होत असताना घड्याळ, फोटो किंवा हवामान दाखवा"</string>

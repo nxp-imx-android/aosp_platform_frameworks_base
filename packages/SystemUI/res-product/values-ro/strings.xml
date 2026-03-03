@@ -20,46 +20,36 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="dock_alignment_slow_charging" product="default" msgid="6997633396534416792">"Repoziționează telefonul pentru încărcare mai rapidă"</string>
-    <!-- no translation found for dock_alignment_slow_charging (3407039002024253081) -->
-    <skip />
+    <string name="dock_alignment_slow_charging" product="desktop" msgid="3407039002024253081">"Repoziționează dispozitivul pentru încărcare mai rapidă"</string>
     <string name="dock_alignment_not_charging" product="default" msgid="3980752926226749808">"Repoziționează telefonul pentru încărcarea wireless"</string>
-    <!-- no translation found for dock_alignment_not_charging (1650693501464120367) -->
-    <skip />
+    <string name="dock_alignment_not_charging" product="desktop" msgid="1650693501464120367">"Repoziționează dispozitivul pentru încărcarea wireless"</string>
     <string name="inattentive_sleep_warning_message" product="tv" msgid="6844464574089665063">"Dispozitivul Android TV se va opri în curând. Apasă un buton pentru a-l menține pornit."</string>
     <string name="inattentive_sleep_warning_message" product="default" msgid="5693904520452332224">"Dispozitivul se va opri în curând. Apasă pentru a-l menține pornit."</string>
     <string name="keyguard_missing_sim_message" product="tablet" msgid="408124574073032188">"Nu există card SIM în tabletă."</string>
     <string name="keyguard_missing_sim_message" product="default" msgid="2605468359948247208">"Nu există card SIM în telefon."</string>
-    <!-- no translation found for keyguard_missing_sim_message (6678465505993388400) -->
-    <skip />
+    <string name="keyguard_missing_sim_message" product="desktop" msgid="6678465505993388400">"Nu există card SIM în dispozitiv."</string>
     <string name="kg_invalid_confirm_pin_hint" product="default" msgid="6278551068943958651">"Codurile PIN nu coincid"</string>
     <string name="kg_failed_attempts_almost_at_wipe" product="tablet" msgid="302165994845009232">"Ai făcut <xliff:g id="NUMBER_0">%1$d</xliff:g> încercări incorecte de deblocare a tabletei. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, tableta va fi resetată, iar toate datele vor fi șterse."</string>
     <string name="kg_failed_attempts_almost_at_wipe" product="default" msgid="2594813176164266847">"Ai făcut <xliff:g id="NUMBER_0">%1$d</xliff:g> încercări incorecte de deblocare a telefonului. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, acest telefon va fi resetat, iar toate datele acestuia vor fi șterse."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_wipe (6414651766868767274) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_wipe" product="desktop" msgid="6414651766868767274">"Ai făcut <xliff:g id="NUMBER_0">%1$d</xliff:g> încercări incorecte de deblocare a dispozitivului. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, dispozitivul va fi resetat, iar toate datele vor fi șterse."</string>
     <string name="kg_failed_attempts_now_wiping" product="tablet" msgid="8710104080409538587">"Ai făcut <xliff:g id="NUMBER">%d</xliff:g> încercări incorecte de deblocare a tabletei. Această tabletă va fi resetată, iar toate datele vor fi șterse."</string>
     <string name="kg_failed_attempts_now_wiping" product="default" msgid="6381835450014881813">"Ai făcut <xliff:g id="NUMBER">%d</xliff:g> încercări incorecte de deblocare a telefonului. Acest telefon va fi resetat, iar toate datele acestuia vor fi șterse."</string>
-    <!-- no translation found for kg_failed_attempts_now_wiping (2277485562881116948) -->
-    <skip />
+    <string name="kg_failed_attempts_now_wiping" product="desktop" msgid="2277485562881116948">"Ai făcut <xliff:g id="NUMBER">%d</xliff:g> încercări incorecte de deblocare a dispozitivului. Acest dispozitiv va fi resetat, iar toate datele acestuia vor fi șterse."</string>
     <string name="kg_failed_attempts_almost_at_erase_user" product="tablet" msgid="7325071812832605911">"Ai făcut <xliff:g id="NUMBER_0">%1$d</xliff:g> încercări incorecte de deblocare a tabletei. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, acest utilizator va fi eliminat, iar toate datele utilizatorului vor fi șterse."</string>
     <string name="kg_failed_attempts_almost_at_erase_user" product="default" msgid="8110939900089863103">"Ai făcut <xliff:g id="NUMBER_0">%1$d</xliff:g> încercări incorecte de deblocare a telefonului. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, acest utilizator va fi eliminat, iar toate datele utilizatorului vor fi șterse."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_erase_user (6685285863549889535) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_erase_user" product="desktop" msgid="6685285863549889535">"Ai făcut <xliff:g id="NUMBER_0">%1$d</xliff:g> încercări incorecte de deblocare a dispozitivului. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, acest utilizator va fi eliminat, iar toate datele utilizatorului vor fi șterse."</string>
     <string name="kg_failed_attempts_now_erasing_user" product="tablet" msgid="8509811676952707883">"Ai făcut <xliff:g id="NUMBER">%d</xliff:g> încercări incorecte de deblocare a tabletei. Acest utilizator va fi eliminat, iar toate datele utilizatorului vor fi șterse."</string>
     <string name="kg_failed_attempts_now_erasing_user" product="default" msgid="3051962486994265014">"Ai făcut <xliff:g id="NUMBER">%d</xliff:g> încercări incorecte de deblocare a telefonului. Acest utilizator va fi eliminat, iar toate datele utilizatorului vor fi șterse."</string>
-    <!-- no translation found for kg_failed_attempts_now_erasing_user (3003054879895735837) -->
-    <skip />
+    <string name="kg_failed_attempts_now_erasing_user" product="desktop" msgid="3003054879895735837">"Ai făcut <xliff:g id="NUMBER">%d</xliff:g> încercări incorecte de deblocare a dispozitivului. Acest utilizator va fi eliminat, iar toate datele utilizatorului vor fi șterse."</string>
     <string name="kg_failed_attempts_almost_at_erase_profile" product="tablet" msgid="1049523640263353830">"Ai făcut <xliff:g id="NUMBER_0">%1$d</xliff:g> încercări incorecte de deblocare a tabletei. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, profilul de serviciu va fi eliminat, iar toate datele profilului vor fi șterse."</string>
     <string name="kg_failed_attempts_almost_at_erase_profile" product="default" msgid="3280816298678433681">"Ai făcut <xliff:g id="NUMBER_0">%1$d</xliff:g> încercări incorecte de deblocare a telefonului. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, profilul de serviciu va fi eliminat, iar toate datele profilului vor fi șterse."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_erase_profile (6020310710703619275) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_erase_profile" product="desktop" msgid="6020310710703619275">"Ai făcut <xliff:g id="NUMBER_0">%1$d</xliff:g> încercări incorecte de deblocare a dispozitivului. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, profilul de serviciu va fi eliminat, iar toate datele profilului vor fi șterse."</string>
     <string name="kg_failed_attempts_now_erasing_profile" product="tablet" msgid="4417100487251371559">"Ai făcut <xliff:g id="NUMBER">%d</xliff:g> încercări incorecte de deblocare a tabletei. Profilul de serviciu va fi eliminat, iar toate datele profilului vor fi șterse."</string>
     <string name="kg_failed_attempts_now_erasing_profile" product="default" msgid="4682221342671290678">"Ai făcut <xliff:g id="NUMBER">%d</xliff:g> încercări incorecte de deblocare a telefonului. Profilul de serviciu va fi eliminat, iar toate datele profilului vor fi șterse."</string>
-    <!-- no translation found for kg_failed_attempts_now_erasing_profile (2786666082798973358) -->
-    <skip />
+    <string name="kg_failed_attempts_now_erasing_profile" product="desktop" msgid="2786666082798973358">"Ai făcut <xliff:g id="NUMBER">%d</xliff:g> încercări incorecte de deblocare a dispozitivului. Profilul de serviciu va fi eliminat, iar toate datele profilului vor fi șterse."</string>
     <string name="kg_failed_attempts_almost_at_login" product="tablet" msgid="1860049973474855672">"Ai desenat incorect modelul pentru deblocare de <xliff:g id="NUMBER_0">%1$d</xliff:g> ori. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, ți se va solicita să deblochezi tableta cu ajutorul unui cont de e-mail.\n\n Încearcă din nou peste <xliff:g id="NUMBER_2">%3$d</xliff:g> secunde."</string>
     <string name="kg_failed_attempts_almost_at_login" product="default" msgid="44112553371516141">"Ai desenat incorect modelul pentru deblocare de <xliff:g id="NUMBER_0">%1$d</xliff:g> ori. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, ți se va solicita să deblochezi telefonul cu ajutorul unui cont de e-mail.\n\n Încearcă din nou peste <xliff:g id="NUMBER_2">%3$d</xliff:g> secunde."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_login (1821951547429595155) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_login" product="desktop" msgid="1821951547429595155">"Ai desenat incorect modelul pentru deblocare de <xliff:g id="NUMBER_0">%1$d</xliff:g> ori. După încă <xliff:g id="NUMBER_1">%2$d</xliff:g> încercări nereușite, ți se va solicita să deblochezi dispozitivul cu ajutorul unui cont de e-mail.\n\n Încearcă din nou peste <xliff:g id="NUMBER_2">%3$d</xliff:g> secunde."</string>
     <string name="thermal_shutdown_title" product="default" msgid="8039593017174903505">"Telefonul s-a oprit din cauza încălzirii"</string>
     <string name="thermal_shutdown_title" product="desktop" msgid="2954206342842856379">"Dispozitiv oprit din cauza căldurii"</string>
     <string name="thermal_shutdown_title" product="device" msgid="2954206342842856379">"Dispozitiv oprit din cauza căldurii"</string>
@@ -94,16 +84,13 @@
     <string name="global_action_lock_message" product="desktop" msgid="3165224897120346096">"Deblochează dispozitivul pentru mai multe opțiuni"</string>
     <string name="media_transfer_playing_this_device" product="default" msgid="5795784619523545556">"Se redă pe acest telefon"</string>
     <string name="media_transfer_playing_this_device" product="tablet" msgid="222514408550408633">"Se redă pe această tabletă"</string>
-    <!-- no translation found for media_transfer_playing_this_device (3299409636487714269) -->
-    <skip />
+    <string name="media_transfer_playing_this_device" product="desktop" msgid="3299409636487714269">"Se redă pe acest dispozitiv"</string>
     <string name="finder_active" product="default" msgid="2734050945122991747">"Poți localiza telefonul folosind aplicația Găsește-mi dispozitivul chiar dacă este oprit"</string>
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Poți localiza tableta folosind aplicația Găsește-mi dispozitivul chiar dacă este oprită"</string>
-    <!-- no translation found for finder_active (924749965418452906) -->
-    <skip />
+    <string name="finder_active" product="desktop" msgid="924749965418452906">"Poți localiza acest dispozitiv chiar dacă este oprit folosind aplicația Găsește-mi dispozitivul"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Poți localiza telefonul folosind Localizatorul chiar dacă este oprit"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Poți localiza tableta folosind Localizatorul chiar dacă este oprită"</string>
-    <!-- no translation found for find_hub_active (5324909071852240549) -->
-    <skip />
+    <string name="find_hub_active" product="desktop" msgid="5324909071852240549">"Poți localiza acest dispozitiv chiar dacă este oprit folosind Localizatorul"</string>
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Afișează un ceas, fotografii sau informații meteo când telefonul se încarcă"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Afișează un ceas, fotografii sau informații meteo când tableta se încarcă"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Afișează un ceas, fotografii sau informații meteo când dispozitivul se încarcă"</string>
