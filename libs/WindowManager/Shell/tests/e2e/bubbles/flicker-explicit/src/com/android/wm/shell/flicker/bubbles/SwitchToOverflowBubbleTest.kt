@@ -91,7 +91,7 @@ class SwitchToOverflowBubbleTest(navBar: NavBar) :
 
     @Test
     override fun focusChanges() {
-        eventLogSubject.focusChanges(
+        focusEventSubject.focusChanges(
             testApp.toWindowName(), // LOST, the first click to switch out
             BUBBLE.toWindowName(), // GAINED, the Overflow gets the focus
         )

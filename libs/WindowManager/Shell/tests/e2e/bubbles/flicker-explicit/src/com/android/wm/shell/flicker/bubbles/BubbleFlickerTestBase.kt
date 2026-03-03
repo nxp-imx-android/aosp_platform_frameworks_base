@@ -23,8 +23,10 @@ import android.tools.Tag
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.flicker.assertions.SubjectsParser
 import android.tools.flicker.subject.events.EventLogSubject
+import android.tools.flicker.subject.events.FocusEventSubject
 import android.tools.flicker.subject.layers.LayerTraceEntrySubject
 import android.tools.flicker.subject.layers.LayersTraceSubject
+import android.tools.flicker.subject.protolog.ProtoLogSubject
 import android.tools.flicker.subject.wm.WindowManagerStateSubject
 import android.tools.flicker.subject.wm.WindowManagerTraceSubject
 import android.tools.io.Reader
@@ -58,8 +60,8 @@ abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
     /** The reader to read trace from. */
     abstract val traceDataReader: Reader
 
-    /** The event log subject. */
-    final override lateinit var eventLogSubject: EventLogSubject
+    /** The focus events subject. */
+    final override lateinit var focusEventSubject: FocusEventSubject
 
     /**
      * The WindowManager trace subject, which is equivalent to the data shown in `Window Manager`
@@ -104,11 +106,19 @@ abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
     @Before
     open fun setUp() {
         try {
-            eventLogSubject =
-                EventLogSubject(
-                    traceDataReader.readEventLogTrace() ?: error("Failed to read event log"),
-                    traceDataReader,
-                )
+            if (!android.tracing.Flags.nativeProtoLogging()) {
+                focusEventSubject =
+                    EventLogSubject(
+                        traceDataReader.readEventLogTrace() ?: error("Failed to read event log"),
+                        traceDataReader,
+                    )
+            } else {
+                focusEventSubject =
+                    ProtoLogSubject(
+                        traceDataReader.readProtoLogTrace() ?: error("Failed to read protolog"),
+                        traceDataReader,
+                    )
+            }
             wmTraceSubject =
                 WindowManagerTraceSubject(
                     traceDataReader.readWmTrace() ?: error("Failed to read WM trace")

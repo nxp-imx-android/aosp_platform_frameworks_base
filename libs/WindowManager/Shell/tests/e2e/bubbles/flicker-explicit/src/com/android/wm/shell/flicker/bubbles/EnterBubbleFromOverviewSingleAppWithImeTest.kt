@@ -144,7 +144,7 @@ class EnterBubbleFromOverviewSingleAppWithImeTest(navBar: NavBar) :
 
     @Test
     override fun focusChanges() {
-        eventLogSubject.focusChanges(
+        focusEventSubject.focusChanges(
             LAUNCHER.toWindowName(), // LOST, start in overview
             TASK_BAR.toWindowName(), // GAINED, interacting with taskbar
             testApp.toWindowName(), // GAINED, the app is running in bubble mode

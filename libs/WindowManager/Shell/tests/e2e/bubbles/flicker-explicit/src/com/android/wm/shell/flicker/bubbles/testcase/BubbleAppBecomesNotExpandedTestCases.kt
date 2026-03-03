@@ -42,7 +42,7 @@ interface BubbleAppBecomesNotExpandedTestCases : AppAnimateOutTestCases {
     /** Verifies the focus changed from bubbled [testApp] to [previousApp]. */
     @Test
     fun focusChanges() {
-        eventLogSubject.focusChanges(testApp.toWindowName(), previousApp.toWindowName())
+        focusEventSubject.focusChanges(testApp.toWindowName(), previousApp.toWindowName())
     }
 
     /** Verifies the [previousApp] replaces the bubbled [testApp] to be the top window. */

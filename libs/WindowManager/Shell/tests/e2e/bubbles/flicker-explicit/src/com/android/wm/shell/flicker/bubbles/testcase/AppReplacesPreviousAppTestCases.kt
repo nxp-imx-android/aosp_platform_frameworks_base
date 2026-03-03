@@ -34,7 +34,7 @@ interface AppReplacesPreviousAppTestCases : AppAnimateInTestCases, PreviousAppAn
     /** Verifies the focus changed from [previousApp] to [testApp]. */
     @Test
     fun focusChanges() {
-        eventLogSubject.focusChanges(previousApp.toWindowName(), testApp.toWindowName())
+        focusEventSubject.focusChanges(previousApp.toWindowName(), testApp.toWindowName())
     }
 
     /** Verifies the bubbled [testApp] replaces [previousApp] to be the top window. */

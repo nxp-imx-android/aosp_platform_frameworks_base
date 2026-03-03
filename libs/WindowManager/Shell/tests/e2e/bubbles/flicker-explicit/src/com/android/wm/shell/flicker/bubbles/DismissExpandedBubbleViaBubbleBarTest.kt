@@ -128,7 +128,7 @@ class DismissExpandedBubbleViaBubbleBarTest(navBar: NavBar) :
 
     @Test
     override fun focusChanges() {
-        eventLogSubject.focusChanges(
+        focusEventSubject.focusChanges(
             testApp.toWindowName(),
             // Launcher get focus when tapping bubble bar
             LAUNCHER.toWindowName(),

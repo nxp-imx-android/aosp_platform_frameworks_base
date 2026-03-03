@@ -17,7 +17,7 @@
 package com.android.wm.shell.flicker.bubbles.utils
 
 import android.tools.device.apphelpers.StandardAppHelper
-import android.tools.flicker.subject.events.EventLogSubject
+import android.tools.flicker.subject.events.FocusEventSubject
 import android.tools.flicker.subject.layers.LayerTraceEntrySubject
 import android.tools.flicker.subject.layers.LayersTraceSubject
 import android.tools.flicker.subject.wm.WindowManagerStateSubject
@@ -34,8 +34,8 @@ import android.tools.traces.wm.WindowManagerState
  */
 interface BubbleFlickerSubjects {
 
-    /** The event log subject. */
-    val eventLogSubject: EventLogSubject
+    /** The focus event subject. */
+    val focusEventSubject: FocusEventSubject
 
     /**
      * The WindowManager trace subject, which is equivalent to the data shown in `Window Manager`
