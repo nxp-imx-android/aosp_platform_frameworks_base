@@ -573,7 +573,14 @@ public class Chronometer extends TextView {
 
         long periodInMillis;
         if (mLowFrequency) {
-            periodInMillis = ChronometerLowFrequencyFormat.getTickPeriod();
+            // Even though this formatter only produces "1 string per minute", we need to "tick"
+            // much more often than that. "Low-frequency mode" is used exclusively by SystemUI on
+            // AOD, where the device is often dozing. Handler.postDelayed() uses *uptimeMillis*
+            // as its reference time, which does NOT advance during doze. Thus, if we delay the
+            // next update for a minute, it will effectively occur MUCH later than that (depending
+            // on the ratio between the duration of the maintenance windows and the time between
+            // them), on the worst case making the displayed time refresh only once every N minutes.
+            periodInMillis = SECOND_IN_MILLIS;
         } else if (mUseAdaptiveFormat) {
             // In adaptive format, ticks are every 1 minute instead of 1 second, if the time elapsed
             // or remaining is >= 3 minutes. Thus for time > 3 minutes the tick will be "on
