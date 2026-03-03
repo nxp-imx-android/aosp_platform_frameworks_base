@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.foundation.Image
@@ -34,7 +35,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRuleEditViewModel
 import kotlin.math.roundToInt
 
 /**
@@ -50,20 +50,16 @@ fun AsyncUriImage(
     uri: Uri?,
     contentDescription: String?,
     size: Dp,
-    viewModel: NotificationRuleEditViewModel,
+    loadBitmap: suspend (Uri, Context, Int) -> Bitmap?,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
     val sizePx = with(density) { size.toPx().roundToInt() }
-
     val bitmap: Bitmap? by
-        produceState<Bitmap?>(initialValue = null, uri, viewModel, context, sizePx) {
-            uri?.let {
-                value = viewModel.loadContactBitmapFromUri(it, userContext = context, sizePx)
-            }
+        produceState<Bitmap?>(initialValue = null, uri, loadBitmap, context, sizePx) {
+            uri?.let { value = loadBitmap(it, context, sizePx) }
         }
-
     Box(
         modifier =
             modifier

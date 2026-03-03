@@ -26,7 +26,13 @@ public data class ContactModel(
     val name: String,
     /** The URI for fetching the photo of the contact. */
     val photoUri: Uri?,
-)
+) {
+    /** The display label for the contact. */
+    public val displayLabel: String = name
+
+    /** A unique identifier for the contact. */
+    public val id: String = lookupUri.toString()
+}
 
 /**
  * Represents the list of contacts inside a rule filter.
