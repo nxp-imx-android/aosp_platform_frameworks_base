@@ -18,9 +18,12 @@ package com.android.server.devicepolicy.handlers
 
 import android.app.admin.BooleanPolicyValue
 import android.app.admin.DevicePolicyManager.NOT_A_DPC
+import android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE
+import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
 import android.app.admin.DevicePolicyManager.RESOURCE_DEVICE_WIDE
 import android.app.admin.DevicePolicyManager.RESOURCE_PER_USER
 import android.app.admin.NoArgsPolicyKey
+import android.app.admin.PolicyIdentifier
 import android.app.admin.PolicyValueTransport
 import android.app.admin.metadata.EnumPolicyMetadata
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -28,7 +31,6 @@ import com.android.server.devicepolicy.BooleanPolicySerializer
 import com.android.server.devicepolicy.IPermissionChecker
 import com.android.server.devicepolicy.MostRecent
 import com.android.server.devicepolicy.PolicyDefinition
-import com.android.server.devicepolicy.PolicyEnforcerCallbacks
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import org.junit.Test
@@ -51,31 +53,59 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
             on { getPermissionChecker() } doReturn mock<IPermissionChecker> {}
         }
 
-    val VALUE_TRUE = 12
-    val VALUE_FALSE = 24
+    // A sample policy that can be used in the tests.
+    object Policy {
+        val name = "thePolicy"
+        const val VALUE_TRUE = 12
+        const val VALUE_FALSE = 24
+        val key = PolicyIdentifier<Int>(name)
 
-    val enumMetadata = EnumPolicy.metadata.copy(allowedValues = setOf(VALUE_TRUE, VALUE_FALSE))
-    val booleanDefinition =
-        PolicyDefinition<Boolean>(
-            NoArgsPolicyKey(EnumPolicy.name),
-            MostRecent<Boolean>(),
-            PolicyEnforcerCallbacks::noOp,
-            BooleanPolicySerializer(),
-        )
+        val metadata =
+            EnumPolicyMetadata(
+                key,
+                /*allowedScopes=*/ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
+                /*affectedResource=*/ RESOURCE_PER_USER,
+                /*requiredPermission=*/ "testPermission",
+                /*requiredCrossUserPermission=*/ "testCrossUserPermission",
+                /*allowedDpcTypes=*/ setOf(),
+                /*resolutionMechanism=*/ null,
+                /*allowedValues=*/ setOf(VALUE_TRUE, VALUE_FALSE),
+            )
+        // The policy definition used for storing the policy value in DevicePolicyEngine.
+        val definition =
+            PolicyDefinition<Boolean>(
+                NoArgsPolicyKey(name),
+                MostRecent<Boolean>(),
+                NoOpPolicyEnforcerCallback<Boolean>(),
+                BooleanPolicySerializer(),
+            )
+    }
 
     fun createHandler(
-        metadata: EnumPolicyMetadata = enumMetadata
+        metadata: EnumPolicyMetadata = Policy.metadata
     ): EnumStoredAsBooleanPolicyHandler {
         val handler =
             EnumStoredAsBooleanPolicyHandler(
-                EnumPolicy.key,
-                booleanDefinition,
-                /*trueValue=*/ VALUE_TRUE,
-                /*falseValue=*/ VALUE_FALSE,
+                Policy.key,
+                Policy.definition,
+                /*trueValue=*/ Policy.VALUE_TRUE,
+                /*falseValue=*/ Policy.VALUE_FALSE,
             )
         handler.initialize(mockDelegate, null, metadata)
         return handler
     }
+
+    fun copyOf(metadata: EnumPolicyMetadata, affectedResource: Int) =
+        EnumPolicyMetadata(
+            metadata.id,
+            metadata.allowedValues,
+            affectedResource,
+            metadata.requiredPermission,
+            metadata.requiredCrossUserPermission,
+            metadata.allowedDpcTypes,
+            metadata.resolutionMechanism,
+            metadata.allowedValues,
+        )
 
     @Test
     fun setPolicyUnchecked_shouldAcceptNull() {
@@ -83,7 +113,7 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
 
         handler.setPolicyUnchecked(anyCaller, anyScope, null)
 
-        verify(mockDelegate).clearPolicy(anyCaller, booleanDefinition, anyScope)
+        verify(mockDelegate).clearPolicy(anyCaller, Policy.definition, anyScope)
     }
 
     @Test
@@ -109,7 +139,7 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
         handler.setPolicyUnchecked(
             anyCaller,
             anyScope,
-            PolicyValueTransport.integerField(VALUE_TRUE),
+            PolicyValueTransport.integerField(Policy.VALUE_TRUE),
         )
 
         verify(mockDelegate, times(1))
@@ -125,7 +155,7 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
         handler.setPolicyUnchecked(
             anyCaller,
             anyScope,
-            PolicyValueTransport.integerField(VALUE_FALSE),
+            PolicyValueTransport.integerField(Policy.VALUE_FALSE),
         )
 
         verify(mockDelegate, times(1))
@@ -161,7 +191,7 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
 
         assertThat(returnedValue).isNotNull()
         assertThat(returnedValue?.tag).isEqualTo(PolicyValueTransport.integerField)
-        assertThat(returnedValue?.getIntegerField()).isEqualTo(VALUE_TRUE)
+        assertThat(returnedValue?.getIntegerField()).isEqualTo(Policy.VALUE_TRUE)
     }
 
     @Test
@@ -176,7 +206,7 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
 
         assertThat(returnedValue).isNotNull()
         assertThat(returnedValue?.tag).isEqualTo(PolicyValueTransport.integerField)
-        assertThat(returnedValue?.getIntegerField()).isEqualTo(VALUE_FALSE)
+        assertThat(returnedValue?.getIntegerField()).isEqualTo(Policy.VALUE_FALSE)
     }
 
     @Test
@@ -192,7 +222,7 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
 
     @Test
     fun getResolvedPerUserPolicyUnchecked() {
-        val metadata = enumMetadata.copy(affectedResource = RESOURCE_PER_USER)
+        val metadata = copyOf(Policy.metadata, affectedResource = RESOURCE_PER_USER)
         val handler = createHandler(metadata = metadata)
         val anyUserId = 123
 
@@ -202,12 +232,12 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
 
         assertThat(returnedValue).isNotNull()
         assertThat(returnedValue?.tag).isEqualTo(PolicyValueTransport.integerField)
-        assertThat(returnedValue?.getIntegerField()).isEqualTo(VALUE_TRUE)
+        assertThat(returnedValue?.getIntegerField()).isEqualTo(Policy.VALUE_TRUE)
     }
 
     @Test
     fun getResolvedDeviceWidePolicyUnchecked() {
-        val metadata = enumMetadata.copy(affectedResource = RESOURCE_DEVICE_WIDE)
+        val metadata = copyOf(Policy.metadata, affectedResource = RESOURCE_DEVICE_WIDE)
         val handler = createHandler(metadata = metadata)
 
         mockDelegate.stub { on { getResolvedDeviceWidePolicy<Boolean>(any()) } doReturn false }
@@ -216,6 +246,6 @@ open class EnumStoredAsBooleanPolicyHandlerTest {
 
         assertThat(returnedValue).isNotNull()
         assertThat(returnedValue?.tag).isEqualTo(PolicyValueTransport.integerField)
-        assertThat(returnedValue?.getIntegerField()).isEqualTo(VALUE_FALSE)
+        assertThat(returnedValue?.getIntegerField()).isEqualTo(Policy.VALUE_FALSE)
     }
 }

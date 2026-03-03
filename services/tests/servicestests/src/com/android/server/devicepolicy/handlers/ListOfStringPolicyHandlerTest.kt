@@ -17,12 +17,19 @@
 package com.android.server.devicepolicy.handlers
 
 import android.app.admin.DevicePolicyManager.NOT_A_DPC
+import android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE
+import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
+import android.app.admin.DevicePolicyManager.RESOURCE_PER_USER
 import android.app.admin.ListOfStringPolicyValue
+import android.app.admin.NoArgsPolicyKey
 import android.app.admin.PolicyIdentifier
 import android.app.admin.PolicyValueTransport
 import android.app.admin.metadata.ListPolicyMetadata
+import android.app.admin.metadata.StringPolicyMetadata
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.server.devicepolicy.IPermissionChecker
+import com.android.server.devicepolicy.ListOfStringPolicySerializer
+import com.android.server.devicepolicy.MostRecent
 import com.android.server.devicepolicy.PolicyDefinition
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
@@ -45,16 +52,76 @@ class ListOfStringPolicyHandlerTest {
             on { getPermissionChecker() } doReturn mock<IPermissionChecker>()
         }
 
+    // A sample list of string policy that can be used in the tests.
+    private object Policy {
+        val name = "theStringListPolicy"
+        val id = PolicyIdentifier<List<String>>(name)
+        val metadata =
+            ListPolicyMetadata(
+                /* id= */ id,
+                /* elementMetadata= */ StringPolicyMetadata(
+                    /* id= */ PolicyIdentifier<String>(name + "#elements"),
+                    /* allowedScopes= */ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
+                    /* affectedResource= */ RESOURCE_PER_USER,
+                    /*requiredPermission=*/ "testPermission",
+                    /*requiredCrossUserPermission=*/ "testCrossUserPermission",
+                    /* allowedDpcTypes= */ setOf(),
+                    /* emptyStringAllowed= */ false,
+                ),
+                /* emptyListAllowed= */ false,
+            )
+        val anyTransportValue: PolicyValueTransport =
+            PolicyValueTransport.listOfStringField(listOf("anyValue"))
+
+        // The policy definition used for storing the policy value in DevicePolicyEngine.
+        val definition =
+            PolicyDefinition<List<String>>(
+                NoArgsPolicyKey(name),
+                MostRecent<List<String>>(),
+                NoOpPolicyEnforcerCallback<List<String>>(),
+                ListOfStringPolicySerializer(),
+            )
+    }
+
+    fun copyOf(
+        source: ListPolicyMetadata<String>,
+        id: PolicyIdentifier<List<String>>? = null,
+        allowedScopes: Set<Int>? = null,
+        affectedResource: Int? = null,
+        requiredPermission: String? = null,
+        requiredCrossUserPermission: String? = null,
+        allowedDpcTypes: Set<Int>? = null,
+        emptyStringAllowed: Boolean? = null,
+        emptyListAllowed: Boolean? = null,
+    ) =
+        ListPolicyMetadata(
+            /* id= */ id ?: source.id,
+            /* elementMetadata= */ StringPolicyMetadata(
+                /* id= */ id?.run { PolicyIdentifier<String>("$id#elements") }
+                    ?: PolicyIdentifier<String>("${source.id.id}#elements"),
+                /* allowedScopes= */ allowedScopes ?: source.elementMetadata.allowedScopes,
+                /* affectedResource= */ affectedResource ?: source.elementMetadata.affectedResource,
+                /* requiredPermission= */ requiredPermission
+                    ?: source.elementMetadata.requiredPermission,
+                /* requiredCrossUserPermission= */ requiredCrossUserPermission
+                    ?: source.elementMetadata.requiredCrossUserPermission,
+                /* allowedDpcTypes= */ allowedDpcTypes ?: source.elementMetadata.allowedDpcTypes,
+                /* emptyStringAllowed= */ emptyStringAllowed
+                    ?: (source.elementMetadata as StringPolicyMetadata).isEmptyStringAllowed,
+            ),
+            /* emptyListAllowed= */ emptyListAllowed ?: source.isEmptyListAllowed,
+        )
+
     fun createHandler(
-        key: PolicyIdentifier<List<String>> = ListOfStringPolicy.id,
-        metadata: ListPolicyMetadata<String> = ListOfStringPolicy.metadata,
-        definition: PolicyDefinition<List<String>> = ListOfStringPolicy.definition,
+        key: PolicyIdentifier<List<String>> = Policy.id,
+        metadata: ListPolicyMetadata<String> = Policy.metadata,
+        definition: PolicyDefinition<List<String>> = Policy.definition,
         delegate: PolicyHandler.Delegate = this.mockDelegate,
     ) = PolicyHandler<List<String>>(key, metadata, definition, delegate)
 
     @Test
     fun setPolicyUnchecked_emptyListDisallowed_shouldRejectEmptyList() {
-        val metadata = ListOfStringPolicy.metadata.copy(emptyListAllowed = false)
+        val metadata = copyOf(Policy.metadata, emptyListAllowed = false)
         val handler = createHandler(metadata = metadata, delegate = mockDelegate)
 
         val error =
@@ -72,7 +139,7 @@ class ListOfStringPolicyHandlerTest {
 
     @Test
     fun setPolicyUnchecked_emptyListAllowed_shouldAllowEmptyList() {
-        val metadata = ListOfStringPolicy.metadata.copy(emptyListAllowed = true)
+        val metadata = copyOf(Policy.metadata, emptyListAllowed = true)
         val handler = createHandler(metadata = metadata, delegate = mockDelegate)
 
         handler.setPolicyUnchecked(

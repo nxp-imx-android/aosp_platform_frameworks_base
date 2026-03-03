@@ -17,12 +17,18 @@
 package com.android.server.devicepolicy.handlers
 
 import android.app.admin.DevicePolicyManager.NOT_A_DPC
+import android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE
+import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
+import android.app.admin.DevicePolicyManager.RESOURCE_PER_USER
 import android.app.admin.IntegerPolicyValue
+import android.app.admin.NoArgsPolicyKey
 import android.app.admin.PolicyIdentifier
 import android.app.admin.PolicyValueTransport
 import android.app.admin.metadata.EnumPolicyMetadata
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.server.devicepolicy.IPermissionChecker
+import com.android.server.devicepolicy.IntegerPolicySerializer
+import com.android.server.devicepolicy.MostRecent
 import com.android.server.devicepolicy.PolicyDefinition
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
@@ -45,17 +51,67 @@ class EnumPolicyHandlerTest {
             on { getPermissionChecker() } doReturn mock<IPermissionChecker>()
         }
 
+    // A sample enum policy that can be used in the tests.
+    object Policy {
+        val name = "theEnumPolicy"
+        const val VALUE_1 = 1
+        const val VALUE_2 = 2
+        val key = PolicyIdentifier<Int>(name)
+        val metadata =
+            EnumPolicyMetadata(
+                key,
+                /*allowedScopes=*/ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
+                /*affectedResource=*/ RESOURCE_PER_USER,
+                /*requiredPermission=*/ "testPermission",
+                /*requiredCrossUserPermission=*/ "testCrossUserPermission",
+                /*allowedDpcTypes=*/ setOf(),
+                /*resolutionMechanism=*/ null,
+                /*allowedValues=*/ setOf(VALUE_1, VALUE_2),
+            )
+        val anyTransportValue: PolicyValueTransport = PolicyValueTransport.integerField(VALUE_1)
+
+        // The policy definition used for storing the policy value in DevicePolicyEngine.
+        val definition =
+            PolicyDefinition<Int>(
+                NoArgsPolicyKey(name),
+                MostRecent<Int>(),
+                NoOpPolicyEnforcerCallback<Int>(),
+                IntegerPolicySerializer(),
+            )
+    }
+
+    fun copyOf(
+        source: EnumPolicyMetadata,
+        id: PolicyIdentifier<Int>? = null,
+        allowedScopes: Set<Int>? = null,
+        affectedResource: Int? = null,
+        requiredPermission: String? = null,
+        requiredCrossUserPermission: String? = null,
+        allowedDpcTypes: Set<Int>? = null,
+        allowedValues: Set<Int>? = null,
+    ) =
+        EnumPolicyMetadata(
+            id ?: source.id,
+            allowedScopes ?: source.allowedScopes,
+            affectedResource ?: source.affectedResource,
+            requiredPermission ?: source.requiredPermission,
+            requiredCrossUserPermission ?: source.requiredCrossUserPermission,
+            allowedDpcTypes ?: source.allowedDpcTypes,
+            source.resolutionMechanism,
+            allowedValues ?: source.allowedValues,
+        )
+
     fun createHandler(
-        key: PolicyIdentifier<Int> = EnumPolicy.key,
-        metadata: EnumPolicyMetadata = EnumPolicy.metadata,
-        definition: PolicyDefinition<Int> = EnumPolicy.definition,
+        key: PolicyIdentifier<Int> = Policy.key,
+        metadata: EnumPolicyMetadata = Policy.metadata,
+        definition: PolicyDefinition<Int> = Policy.definition,
         delegate: PolicyHandler.Delegate = this.mockDelegate,
     ) = PolicyHandler<Int>(key, metadata, definition, delegate)
 
     @Test
     fun setPolicyUnchecked_shouldAcceptValidValues() {
         val enumValues = setOf(123, 456, 789)
-        val metadata = EnumPolicy.metadata.copy(allowedValues = enumValues)
+        val metadata = copyOf(Policy.metadata, allowedValues = enumValues)
         val handler = createHandler(metadata = metadata, delegate = mockDelegate)
 
         for (enumValue in enumValues) {
@@ -85,7 +141,7 @@ class EnumPolicyHandlerTest {
     @Test
     fun setPolicyUnchecked_shouldRejectValuesOutOfRange() {
         val validEnumValues = setOf(555, 666)
-        val metadata = EnumPolicy.metadata.copy(allowedValues = validEnumValues)
+        val metadata = copyOf(Policy.metadata, allowedValues = validEnumValues)
         val handler = createHandler(metadata = metadata)
 
         val invalidEnumValues = setOf(0, 1, 554, 556, 665, 667, 1000)
