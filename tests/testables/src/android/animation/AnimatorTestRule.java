@@ -25,6 +25,7 @@ import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunnableWithException;
 import android.util.AndroidRuntimeException;
 import android.util.Singleton;
+import android.util.TimeUtils;
 import android.view.Choreographer;
 import android.view.animation.AnimationUtils;
 
@@ -359,7 +360,7 @@ public final class AnimatorTestRule implements TestRule {
             Choreographer.FrameCallback frameCallback = mFrameCallback;
             mFrameCallback = null;
             if (frameCallback != null) {
-                frameCallback.doFrame(getFrameTime());
+                frameCallback.doFrame(getCurrentTime() * TimeUtils.NANOS_PER_MS);
             }
         }
 
@@ -377,11 +378,6 @@ public final class AnimatorTestRule implements TestRule {
         @Override
         public long getFrameDelay() {
             return mFrameDelay;
-        }
-
-        @Override
-        public long getFrameTime() {
-            return getCurrentTime();
         }
     }
 }
