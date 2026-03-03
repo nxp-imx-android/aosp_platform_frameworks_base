@@ -271,6 +271,28 @@ public class AppCompatLetterboxPolicyTest extends WindowTestsBase {
     }
 
     @Test
+    public void testGetRoundedCornersRadius_isCaptionInsetsExcluded_notRounded() {
+        runTestScenario((robot) -> {
+            robot.conf().setLetterboxActivityCornersRadius(15);
+            robot.configureWindowState();
+            robot.activity().createActivityWithComponent();
+            robot.activity().setTopActivityVisible(/* isVisible */ true);
+            robot.setIsLetterboxedForFixedOrientationAndAspectRatio(/* inLetterbox */ true);
+            robot.conf().setLetterboxActivityCornersRounded(/* rounded */ true);
+            robot.resources().configureGetDimensionPixelSize(R.dimen.taskbar_frame_height, 20);
+
+            robot.activity().setTaskWindowingMode(WINDOWING_MODE_FREEFORM);
+            robot.configureWindowStateFrame(new Rect(0, 0, 500, 200));
+            robot.activity().configureTaskAppBounds(new Rect(0, 0, 500, 500));
+            robot.setTaskIsCaptionInsetsExcluded(true);
+
+            robot.startLetterbox();
+
+            robot.checkWindowStateRoundedCornersRadius(/* expected */ 0);
+        });
+    }
+
+    @Test
     public void testHide_clearsLetterboxInsets_shellPolicy() {
         runTestScenario((robot) -> {
             // Setup: configure window state and create a visible activity.
@@ -402,6 +424,11 @@ public class AppCompatLetterboxPolicyTest extends WindowTestsBase {
         void setIsLetterboxedForFixedOrientationAndAspectRatio(boolean isLetterboxed) {
             doReturn(isLetterboxed).when(getAspectRatioPolicy())
                     .isLetterboxedForFixedOrientationAndAspectRatio();
+        }
+
+        void setTaskIsCaptionInsetsExcluded(boolean excluded) {
+            final Task task = activity().top().getTask();
+            doReturn(excluded).when(task).getIsCaptionInsetsExcluded();
         }
 
         void resizeMainWindow(int newWidth, int newHeight) {
