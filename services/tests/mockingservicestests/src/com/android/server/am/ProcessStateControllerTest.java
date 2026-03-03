@@ -33,13 +33,11 @@ import org.junit.Test;
 public class ProcessStateControllerTest {
 
     private static ProcessStateController createProcessStateController() {
-        final ActivityManagerService ams = mock(ActivityManagerService.class);
-        ams.mAppProfiler = mock(AppProfiler.class);
-        ams.mConstants = mock(ActivityManagerConstants.class);
+        final ProcessList pl = mock(ProcessList.class);
         final ActiveUids au = new ActiveUids(null);
         final OomAdjuster.Callback callback = mock(OomAdjuster.Callback.class);
         final OomAdjuster.StateGetter stateGetter = mock(OomAdjuster.StateGetter.class);
-        return new ProcessStateController.Builder(ams.mProcessList, au,
+        return new ProcessStateController.Builder(pl, au,
                 new OomAdjuster.Constants(), callback, stateGetter).build();
     }
 
