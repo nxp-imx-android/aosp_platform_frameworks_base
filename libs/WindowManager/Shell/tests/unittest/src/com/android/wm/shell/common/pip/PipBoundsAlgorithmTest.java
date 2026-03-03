@@ -710,6 +710,38 @@ public class PipBoundsAlgorithmTest extends ShellTestCase {
                 bounds.bottom, mPipDisplayLayoutState.getInsetBounds().bottom);
     }
 
+    @Test
+    public void snapToMovementBoundsEdge_freeFloatingPip_offscreenTopLeft_boundsSnappedToTopLeft() {
+        when(mPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(true);
+        // A rect that is offscreen on the top and left.
+        final Rect bounds = new Rect(-100, -100, 100, 100);
+        final Rect insetBounds = mPipDisplayLayoutState.getInsetBounds();
+
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds);
+
+        // The bounds should be snapped to the top and left edges of the movement bounds.
+        assertEquals("Bounds are snapped to left edge of movement bounds",
+                insetBounds.left, bounds.left);
+        assertEquals("Bounds top edge is moved to movement bounds top",
+                insetBounds.top, bounds.top);
+    }
+
+    @Test
+    public void snapToMovementBoundsEdge_freeFloatingPip_offscreenBottomRight_toBottomRight() {
+        when(mPipDesktopState.isFreeFloatingPipEnabled()).thenReturn(true);
+        // A rect that is offscreen on the bottom and right.
+        final Rect bounds = new Rect(900, 1400, 1100, 1600);
+        final Rect insetBounds = mPipDisplayLayoutState.getInsetBounds();
+
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(bounds);
+
+        // The bounds should be snapped to the bottom and right edges of the movement bounds.
+        assertEquals("Bounds are snapped to right edge of movement bounds",
+                insetBounds.right, bounds.right);
+        assertEquals("Bounds are snapped to bottom edge of movement bounds",
+                insetBounds.bottom, bounds.bottom);
+    }
+
     private void overrideDefaultAspectRatio(float aspectRatio) {
         final TestableResources res = mContext.getOrCreateTestableResources();
         res.addOverride(
