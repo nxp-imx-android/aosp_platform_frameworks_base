@@ -1,6 +1,7 @@
 package com.android.settingslib;
 
 import static android.app.admin.DevicePolicyResources.Strings.Settings.WORK_PROFILE_USER_LABEL;
+
 import static com.android.settingslib.Utils.fetchUserIconInfo;
 
 import android.annotation.ColorInt;
@@ -716,6 +717,10 @@ public class Utils {
                     userType = UserType.WORK;
                 } else if (ui.isPrivateProfile()) {
                     userType = UserType.PRIVATE;
+                } else if (android.multiuser.Flags.hsuAppManagement()
+                        && UserManager.isHeadlessSystemUserMode()
+                        && user.getIdentifier() == UserHandle.USER_SYSTEM) {
+                    userType = UserType.SYSTEM_HEADLESS;
                 }
             }
         } catch (Exception e) {
