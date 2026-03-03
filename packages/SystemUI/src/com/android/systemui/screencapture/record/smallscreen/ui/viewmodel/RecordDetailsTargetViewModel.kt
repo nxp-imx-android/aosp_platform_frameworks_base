@@ -32,9 +32,9 @@ constructor(private val interactor: RecordDetailsTargetInteractor) : HydratedAct
 
     private val model by interactor.model.hydratedStateOf("RecordDetailsTargetViewModel#model")
     val items: List<RecordDetailsTargetModel> by derivedStateOf { model.items }
-    val selectedIndex: Int by derivedStateOf { model.selectedIndex ?: 0 }
+    val selectedIndex: Int by derivedStateOf { model.selectedIndex }
     val shouldShowAppSelector: Boolean by derivedStateOf {
-        model.currentTargetModel.shouldShowAppSelector
+        model.currentTargetModel.shouldShowAppSelector && canChangeTarget
     }
     val canShowTouches: Boolean by derivedStateOf { model.currentTargetModel.canShowTouches }
     val selectedAppLabel: CharSequence? by derivedStateOf {
