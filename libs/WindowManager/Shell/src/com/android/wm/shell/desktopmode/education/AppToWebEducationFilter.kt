@@ -22,7 +22,6 @@ import android.content.Context
 import android.os.SystemClock
 import android.os.SystemProperties
 import android.provider.Settings.Secure
-import android.window.DesktopExperienceFlags
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.apptoweb.AppToWebRepository
@@ -80,16 +79,10 @@ class AppToWebEducationFilter(
     }
 
     private fun isAppToWebEducationRequested(taskInfo: RunningTaskInfo) =
-        if (
-            DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION.isTrue
-        ) {
-            appToWebRepository.updateAppToWebEducationRequestTimestamp(
-                taskInfo.taskId,
-                taskInfo.topActivityRequestOpenInBrowserEducationTimestamp,
-            )
-        } else {
-            false
-        }
+        appToWebRepository.updateAppToWebEducationRequestTimestamp(
+            taskInfo.taskId,
+            taskInfo.topActivityRequestOpenInBrowserEducationTimestamp,
+        )
 
     /** Returns [true] if app is not a browser app itself and browser link is available. */
     private suspend fun isBrowserSessionAvailable(taskInfo: RunningTaskInfo) =
