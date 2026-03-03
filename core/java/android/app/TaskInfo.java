@@ -206,6 +206,13 @@ public class TaskInfo {
     public boolean supportsMultiWindow;
 
     /**
+     * whether this task supports multi-window based on its resize mode,
+     * ignoring appCompat overrides and minimum size constraints.
+     * @hide
+     */
+    public boolean supportsMultiWindowWithoutConstraints;
+
+    /**
      * The resize mode of the task. See {@link ActivityInfo#resizeMode}.
      * @hide
      */
@@ -471,6 +478,7 @@ public class TaskInfo {
                 ? new ActivityManager.TaskDescription(other.taskDescription)
                 : null;
         supportsMultiWindow = other.supportsMultiWindow;
+        supportsMultiWindowWithoutConstraints = other.supportsMultiWindowWithoutConstraints;
         resizeMode = other.resizeMode;
         configuration.setTo(other.configuration);
         token = other.token != null
@@ -647,6 +655,8 @@ public class TaskInfo {
         return topActivityType == that.topActivityType
                 && isResizeable == that.isResizeable
                 && supportsMultiWindow == that.supportsMultiWindow
+                && supportsMultiWindowWithoutConstraints
+                == that.supportsMultiWindowWithoutConstraints
                 && displayAreaFeatureId == that.displayAreaFeatureId
                 && Objects.equals(positionInParent, that.positionInParent)
                 && Objects.equals(pictureInPictureParams, that.pictureInPictureParams)
@@ -721,6 +731,7 @@ public class TaskInfo {
         lastActiveTime = source.readLong();
         taskDescription = source.readTypedObject(ActivityManager.TaskDescription.CREATOR);
         supportsMultiWindow = source.readBoolean();
+        supportsMultiWindowWithoutConstraints = source.readBoolean();
         resizeMode = source.readInt();
         configuration.readFromParcel(source);
         token = WindowContainerToken.CREATOR.createFromParcel(source);
@@ -782,6 +793,7 @@ public class TaskInfo {
 
         dest.writeTypedObject(taskDescription, flags);
         dest.writeBoolean(supportsMultiWindow);
+        dest.writeBoolean(supportsMultiWindowWithoutConstraints);
         dest.writeInt(resizeMode);
         configuration.writeToParcel(dest, flags);
         token.writeToParcel(dest, flags);
@@ -835,6 +847,7 @@ public class TaskInfo {
                 + " numActivities=" + numActivities
                 + " lastActiveTime=" + lastActiveTime
                 + " supportsMultiWindow=" + supportsMultiWindow
+                + " supportsMultiWindowWithoutConstraints=" + supportsMultiWindowWithoutConstraints
                 + " resizeMode=" + resizeMode
                 + " isResizeable=" + isResizeable
                 + " minWidth=" + minWidth
