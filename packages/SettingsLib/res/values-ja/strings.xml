@@ -84,7 +84,7 @@
     <string name="preference_summary_default_combination" msgid="2644094566845577901">"<xliff:g id="STATE">%1$s</xliff:g> / <xliff:g id="DESCRIPTION">%2$s</xliff:g>"</string>
     <string name="bluetooth_disconnected" msgid="7739366554710388701">"切断"</string>
     <string name="bluetooth_disconnecting" msgid="7638892134401574338">"切断中..."</string>
-    <string name="bluetooth_connecting" msgid="5871702668260192755">"接続処理中..."</string>
+    <string name="bluetooth_connecting" msgid="5871702668260192755">"接続中..."</string>
     <string name="bluetooth_connected" msgid="8065345572198502293">"接続済み: <xliff:g id="ACTIVE_DEVICE">%1$s</xliff:g>"</string>
     <string name="bluetooth_pairing" msgid="4269046942588193600">"ペアとして設定中..."</string>
     <string name="bluetooth_pairing_failure" msgid="6914444518793157913">"ペア設定できません"</string>
