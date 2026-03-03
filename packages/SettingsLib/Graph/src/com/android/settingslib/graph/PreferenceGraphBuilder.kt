@@ -60,6 +60,7 @@ import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.PreferenceScreenMetadataFactory
 import com.android.settingslib.metadata.PreferenceScreenMetadataParameterizedFactory
 import com.android.settingslib.metadata.PreferenceScreenRegistry
+import com.android.settingslib.metadata.PreferenceSetWarningProvider
 import com.android.settingslib.metadata.PreferenceSummaryProvider
 import com.android.settingslib.metadata.PreferenceTitleProvider
 import com.android.settingslib.metadata.ReadWritePermit
@@ -708,8 +709,19 @@ fun PreferenceMetadata.toProto(
                 preconditionsDescription?.let { addPreconditions(it) }
             }
         }
-    } else if (metadata is PreferencesApiScreen) {
-        metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
+    } else {
+        if (metadata is PreferencesApiScreen) {
+            metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
+        } else if (metadata is PreferenceSetWarningProvider) {
+            metadata.setWarning?.let { warningInfo ->
+                setWarning =
+                    setWarningProto {
+                        warning = warningInfo.warningMessage
+                        warningInfo.preconditionsDescription?.let { addPreconditions(it) }
+                    }
+
+            }
+        }
     }
     persistent = metadata.isPersistent(context)
     if (metadata !is PersistentPreference<*>) return@preferenceProto

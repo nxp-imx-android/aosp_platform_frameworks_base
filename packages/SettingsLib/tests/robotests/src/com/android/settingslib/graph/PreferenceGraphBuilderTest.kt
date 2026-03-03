@@ -39,6 +39,8 @@ import com.android.settingslib.graph.PreferenceGetterFlags
 import com.android.settingslib.metadata.CatalystFlagProvider
 import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.KeyParametersSchema
+import com.android.settingslib.metadata.PreferenceSetWarningProvider
+import com.android.settingslib.metadata.WarningInfo
 import com.android.settingslib.metadata.preferencesapi.ApiPreference
 import com.android.settingslib.metadata.preferencesapi.GetConfig
 import com.android.settingslib.metadata.preferencesapi.PreconditionsConfig
@@ -67,7 +69,7 @@ class PreferenceGraphBuilderTest {
     private open class TestPreference(
         override val sensitivityLevel: Int,
         private val writePermissions: Permissions? = null
-    ) : PersistentPreference<Int> {
+    ) : PersistentPreference<Int>, PreferenceSetWarningProvider {
         override val bindingKey: String = "test_key"
         override val valueType: Class<Int> = Int::class.javaObjectType
         override val key: String = "test_key"
@@ -79,6 +81,11 @@ class PreferenceGraphBuilderTest {
             ReadWritePermit.ALLOW
 
         override fun getWritePermissions(context: Context): Permissions? = writePermissions
+
+        override val setWarning = WarningInfo(
+            preconditionsDescription = "set_warning_preconditions_description",
+            warningMessage = "set_warning_message"
+        )
     }
 
     @After
@@ -623,6 +630,15 @@ class PreferenceGraphBuilderTest {
         assertThat(proto.hasParametersSchema()).isTrue()
         assertThat(proto.hasKeyParameters()).isTrue()
         assertThat(proto.keyParameters.valuesMap).containsEntry("test_param", "value")
+    }
+
+    @Test
+    fun toProto_legacyPreferenceWithPreferenceSetWarningProvider_includesSetWarningInfo() {
+        val preference = TestPreference(SensitivityLevel.NO_SENSITIVITY)
+        val proto = preference.toProto(context, 0, 0, screenMetadata, false, 0)
+
+        assertThat(proto.setWarning.preconditionsList).containsExactly("set_warning_preconditions_description")
+        assertThat(proto.setWarning.warning).isEqualTo("set_warning_message")
     }
 
     companion object {

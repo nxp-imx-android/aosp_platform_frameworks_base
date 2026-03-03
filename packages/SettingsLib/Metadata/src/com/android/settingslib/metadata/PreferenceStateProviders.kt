@@ -128,6 +128,18 @@ interface PreferenceRestrictionProvider {
     fun isRestricted(context: Context): Boolean
 }
 
+/** Interface to provide an optional warning before setting a preference value. */
+interface PreferenceSetWarningProvider {
+    /** [WarningInfo] of the set warning. */
+    val setWarning: WarningInfo?
+}
+
+/** Representation of a warning information. */
+class WarningInfo(
+    val preconditionsDescription: String? = null,
+    val warningMessage: String
+)
+
 /**
  * Preference lifecycle to deal with preference UI state.
  *
