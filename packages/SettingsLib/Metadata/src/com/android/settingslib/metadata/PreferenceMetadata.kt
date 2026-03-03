@@ -25,6 +25,19 @@ import androidx.annotation.StringRes
 import com.android.settingslib.metadata.preferencesapi.ApiPreference
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
 
+/** Indicates how sensitive of the data. */
+@Retention(AnnotationRetention.SOURCE)
+@Target(AnnotationTarget.TYPE)
+annotation class SensitivityLevel {
+    companion object {
+        const val DO_NOT_EXPOSE = 0
+        const val NO_SENSITIVITY = 1
+        const val MUST_PROVIDE_UNDO = 2
+        const val REQUIRES_CONFIRMATION = 3
+        const val DEEP_LINK_ONLY = 4
+    }
+}
+
 /**
  * Interface provides preference metadata (title, summary, icon, etc.).
  *
@@ -89,6 +102,10 @@ interface PreferenceMetadata {
      */
     val title: Int
         @StringRes get() = 0
+
+    /** The sensitivity level of the preference. */
+    val sensitivityLevel: @SensitivityLevel Int
+        get() = SensitivityLevel.DO_NOT_EXPOSE
 
     /**
      * Preference summary resource id.

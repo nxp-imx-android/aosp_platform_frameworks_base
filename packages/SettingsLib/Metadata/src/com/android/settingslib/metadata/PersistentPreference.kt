@@ -75,28 +75,12 @@ annotation class PreferenceChangeReason {
     }
 }
 
-/** Indicates how sensitive of the data. */
-@Retention(AnnotationRetention.SOURCE)
-@Target(AnnotationTarget.TYPE)
-annotation class SensitivityLevel {
-    companion object {
-        const val DO_NOT_EXPOSE = 0
-        const val NO_SENSITIVITY = 1
-        const val MUST_PROVIDE_UNDO = 2
-        const val REQUIRES_CONFIRMATION = 3
-        const val DEEP_LINK_ONLY = 4
-    }
-}
 
 /** Preference metadata that has a value persisted in datastore. */
 interface PersistentPreference<T> : PreferenceMetadata {
 
     /** The value type the preference is associated with. */
     val valueType: Class<T>
-
-    /** The sensitivity level of the preference. */
-    val sensitivityLevel: @SensitivityLevel Int
-        get() = SensitivityLevel.DO_NOT_EXPOSE
 
     override fun isPersistent(context: Context) = true
 
