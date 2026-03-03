@@ -306,7 +306,9 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         Context userContext = mContext.createContextAsUser(UserHandle.of(userId), /* flags= */ 0);
         PackageManager pm = userContext.getPackageManager();
         int appMetadataXmlRes =
-                pm.getProperty(packageName, "android.app.appfunctions.app_metadata")
+                pm.getProperty(
+                                /* propertyName= */ "android.app.appfunctions.app_metadata",
+                                packageName)
                         .getResourceId();
         if (appMetadataXmlRes == Resources.ID_NULL) {
             errPw.println("No app metadata found for package: " + packageName);
