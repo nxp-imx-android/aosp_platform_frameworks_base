@@ -140,6 +140,7 @@ private constructor(
 
     fun build(): PreferenceGraphProto {
         for ((key, screenBuilder) in screens) builder.putScreens(key, screenBuilder.build())
+        builder.putAllValueDescriptors(valueDescriptors)
         return PreferenceGraphCompressor.shrink(builder.build())
     }
 
