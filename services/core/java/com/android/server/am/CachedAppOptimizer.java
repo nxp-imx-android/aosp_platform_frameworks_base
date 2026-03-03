@@ -2608,18 +2608,15 @@ public class CachedAppOptimizer {
             EventLog.writeEvent(EventLogTags.AM_FREEZE, pid, name);
 
             // See above for why we're not taking mPhenotypeFlagLock here
-            if (mRandom.nextFloat() < mFreezerStatsdSampleRate
-                    || Flags.unsampledFreezeAtomLogging()) {
-                ApplicationInfo appInfo = proc.info;
-                FrameworkStatsLog.write(FrameworkStatsLog.APP_FREEZE_CHANGED,
-                        FrameworkStatsLog.APP_FREEZE_CHANGED__ACTION__FREEZE_APP,
-                        pid,
-                        name,
-                        unfrozenDuration,
-                        FrameworkStatsLog.APP_FREEZE_CHANGED__UNFREEZE_REASON__NONE,
-                        UNFREEZE_REASON_NONE,
-                        appInfo != null ? appInfo.uid : -1);
-            }
+            ApplicationInfo appInfo = proc.info;
+            FrameworkStatsLog.write(FrameworkStatsLog.APP_FREEZE_CHANGED,
+                    FrameworkStatsLog.APP_FREEZE_CHANGED__ACTION__FREEZE_APP,
+                    pid,
+                    name,
+                    unfrozenDuration,
+                    FrameworkStatsLog.APP_FREEZE_CHANGED__UNFREEZE_REASON__NONE,
+                    UNFREEZE_REASON_NONE,
+                    appInfo != null ? appInfo.uid : -1);
 
             try {
                 // post-check to prevent races
@@ -2664,19 +2661,16 @@ public class CachedAppOptimizer {
             }
 
             // See above for why we're not taking mPhenotypeFlagLock here
-            if (mRandom.nextFloat() < mFreezerStatsdSampleRate
-                    || Flags.unsampledFreezeAtomLogging()) {
-                ApplicationInfo appInfo = app.info;
-                FrameworkStatsLog.write(
-                        FrameworkStatsLog.APP_FREEZE_CHANGED,
-                        FrameworkStatsLog.APP_FREEZE_CHANGED__ACTION__UNFREEZE_APP,
-                        pid,
-                        processName,
-                        frozenDuration,
-                        FrameworkStatsLog.APP_FREEZE_CHANGED__UNFREEZE_REASON__NONE, // deprecated
-                        reason,
-                        appInfo != null ? appInfo.uid : -1);
-            }
+            ApplicationInfo appInfo = app.info;
+            FrameworkStatsLog.write(
+                    FrameworkStatsLog.APP_FREEZE_CHANGED,
+                    FrameworkStatsLog.APP_FREEZE_CHANGED__ACTION__UNFREEZE_APP,
+                    pid,
+                    processName,
+                    frozenDuration,
+                    FrameworkStatsLog.APP_FREEZE_CHANGED__UNFREEZE_REASON__NONE, // deprecated
+                    reason,
+                    appInfo != null ? appInfo.uid : -1);
         }
 
         @GuardedBy({"mAm"})

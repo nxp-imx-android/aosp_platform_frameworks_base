@@ -284,16 +284,6 @@ flag {
 }
 
 flag {
-    name: "unsampled_freeze_atom_logging"
-    namespace: "system_performance"
-    description: "Whether to log 100% of APP_FREEZE_CHANGED atoms."
-    bug: "450077375"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "unsampled_compact_atom_logging"
     namespace: "system_performance"
     description: "Whether to log 100% of APP_COMPACTED_V2 atoms."
