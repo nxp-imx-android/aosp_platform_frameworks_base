@@ -17,19 +17,13 @@
 package com.android.server.devicepolicy.handlers
 
 import android.app.admin.DevicePolicyManager.NOT_A_DPC
-import android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE
-import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
-import android.app.admin.DevicePolicyManager.RESOURCE_PER_USER
-import android.app.admin.NoArgsPolicyKey
+import android.app.admin.LongPolicyValue
 import android.app.admin.PolicyIdentifier
 import android.app.admin.PolicyValueTransport
-import android.app.admin.LongPolicyValue
 import android.app.admin.metadata.LongPolicyMetadata
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.server.devicepolicy.IPermissionChecker
-import com.android.server.devicepolicy.MostRecent
 import com.android.server.devicepolicy.PolicyDefinition
-import com.android.server.devicepolicy.LongPolicySerializer
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import org.junit.Test
@@ -48,56 +42,16 @@ class LongPolicyHandlerTest {
             on { getPermissionChecker() } doReturn mock<IPermissionChecker> {}
         }
 
-    // A sample long policy that can be used in the tests.
-    object Policy {
-        val name = "theLongPolicy"
-        val key = PolicyIdentifier<Long>(name)
-        val metadata =
-            LongPolicyMetadata(
-                key,
-                /*allowedScopes=*/ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
-                /*affectedResource=*/ RESOURCE_PER_USER,
-                /*requiredPermission=*/ "testPermission",
-                /*requiredCrossUserPermission=*/ "testCrossUserPermission",
-                /*allowedDpcTypes=*/ setOf(),
-                /*minValue=*/ 10L,
-                /*maxValue=*/ 20L
-            )
-        val anyTransportValue: PolicyValueTransport =
-            PolicyValueTransport.longField(15L)
-
-        // The policy definition used for storing the policy value in DevicePolicyEngine.
-        val definition =
-            PolicyDefinition<Long>(
-                NoArgsPolicyKey(name),
-                MostRecent<Long>(),
-                NoOpPolicyEnforcerCallback<Long>(),
-                LongPolicySerializer(),
-            )
-    }
-
     fun createHandler(
-        key: PolicyIdentifier<Long> = Policy.key,
-        metadata: LongPolicyMetadata = Policy.metadata,
-        definition: PolicyDefinition<Long> = Policy.definition,
+        key: PolicyIdentifier<Long> = LongPolicy.key,
+        metadata: LongPolicyMetadata = LongPolicy.metadata,
+        definition: PolicyDefinition<Long> = LongPolicy.definition,
         delegate: PolicyHandler.Delegate = this.mockDelegate,
     ) = PolicyHandler<Long>(key, metadata, definition, delegate)
 
-    fun copyOf(source: LongPolicyMetadata, minValue: Long? = null, maxValue: Long? = null) =
-        LongPolicyMetadata(
-            source.id,
-            source.allowedScopes,
-            source.affectedResource,
-            source.requiredPermission,
-            source.requiredCrossUserPermission,
-            source.allowedDpcTypes,
-            minValue ?: source.minValue,
-            maxValue ?: source.maxValue
-        )
-
     @Test
     fun setPolicyUnchecked_shouldAcceptNull() {
-        val definition = Policy.definition
+        val definition = LongPolicy.definition
         val handler = createHandler(definition = definition)
 
         handler.setPolicyUnchecked(anyCaller, anyScope, null)
@@ -125,35 +79,23 @@ class LongPolicyHandlerTest {
     fun setPolicyUnchecked_shouldAcceptValuesWithinRange() {
         val handler = createHandler()
 
-        handler.setPolicyUnchecked(
-            anyCaller,
-            anyScope,
-            PolicyValueTransport.longField(15L),
-        )
+        handler.setPolicyUnchecked(anyCaller, anyScope, PolicyValueTransport.longField(15L))
 
         verify(mockDelegate)
-            .storePolicy(anyCaller, Policy.definition, anyScope, LongPolicyValue(15L))
+            .storePolicy(anyCaller, LongPolicy.definition, anyScope, LongPolicyValue(15L))
     }
 
     @Test
     fun setPolicyUnchecked_shouldAcceptMinAndMaxValues() {
         val handler = createHandler()
 
-        handler.setPolicyUnchecked(
-            anyCaller,
-            anyScope,
-            PolicyValueTransport.longField(10L),
-        )
-        handler.setPolicyUnchecked(
-            anyCaller,
-            anyScope,
-            PolicyValueTransport.longField(20L),
-        )
+        handler.setPolicyUnchecked(anyCaller, anyScope, PolicyValueTransport.longField(10L))
+        handler.setPolicyUnchecked(anyCaller, anyScope, PolicyValueTransport.longField(20L))
 
         verify(mockDelegate)
-            .storePolicy(anyCaller, Policy.definition, anyScope, LongPolicyValue(10L))
+            .storePolicy(anyCaller, LongPolicy.definition, anyScope, LongPolicyValue(10L))
         verify(mockDelegate)
-            .storePolicy(anyCaller, Policy.definition, anyScope, LongPolicyValue(20L))
+            .storePolicy(anyCaller, LongPolicy.definition, anyScope, LongPolicyValue(20L))
     }
 
     @Test
@@ -162,14 +104,9 @@ class LongPolicyHandlerTest {
 
         val exception =
             assertFailsWith<IllegalArgumentException> {
-                handler.setPolicyUnchecked(
-                    anyCaller,
-                    anyScope,
-                    PolicyValueTransport.longField(9L),
-                )
+                handler.setPolicyUnchecked(anyCaller, anyScope, PolicyValueTransport.longField(9L))
             }
-        assertThat(exception.message)
-            .contains("Value 9 is not within range [10, 20]")
+        assertThat(exception.message).contains("Value 9 is not within range [10, 20]")
     }
 
     @Test
@@ -178,13 +115,8 @@ class LongPolicyHandlerTest {
 
         val exception =
             assertFailsWith<IllegalArgumentException> {
-                handler.setPolicyUnchecked(
-                    anyCaller,
-                    anyScope,
-                    PolicyValueTransport.longField(21L),
-                )
+                handler.setPolicyUnchecked(anyCaller, anyScope, PolicyValueTransport.longField(21L))
             }
-        assertThat(exception.message)
-            .contains("Value 21 is not within range [10, 20]")
+        assertThat(exception.message).contains("Value 21 is not within range [10, 20]")
     }
 }
