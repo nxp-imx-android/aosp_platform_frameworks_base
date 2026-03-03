@@ -51,6 +51,7 @@ import java.util.concurrent.Executors;
  */
 public class ServiceClientRenderer
         extends BaseServiceClientComponent<IInsightRenderer> implements Renderer {
+    private static final String TAG = "ServiceClientRenderer";
     static final String META_DATA_RECEIVE_NOTIFICATION_INSIGHTS =
             "android.service.personalcontext.renderer.receive_notification_insights";
     private InsightFilter mFilter = InsightFilter.REQUIRE_RENDER_TOKEN;
