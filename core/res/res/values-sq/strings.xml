@@ -554,6 +554,8 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"Ky aplikacion mund të nxjerrë fotografi dhe të regjistrojë video me kamerën tënde në çdo kohë."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Lejo një aplikacion ose shërbim të ketë qasje në kamerat e sistemit për të shkrepur fotografi dhe regjistruar video"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"Ky aplikacion sistemi ose i privilegjuar mund të nxjerrë fotografi dhe të regjistrojë video duke përdorur një kamerë në çdo moment. Kërkon që autorizimi i android.permission.CAMERA të mbahet edhe nga aplikacioni"</string>
+    <string name="permlab_warmUpCamera" msgid="6135692056406854923">"Lejo që një aplikacion ose shërbim të dërgojë një sinjal përgatitjeje te nënsistemi i kamerës"</string>
+    <string name="permdesc_warmUpCamera" msgid="925343364567764736">"Ky aplikacion sistemi ose i privilegjuar mund të dërgojë një sinjal te nënsistemi i kamerës për ta përgatitur një pajisje kamere për të ndihmuar me performancën, ndër përfitimet e tjera"</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Lejo që një aplikacion ose shërbim të marrë telefonata mbrapsht për pajisjet e kamerës që hapen ose mbyllen."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"Ky aplikacion mund të marrë telefonata mbrapsht kur hapet ose mbyllet një pajisje e kamerës (nga një aplikacion)."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Lejo një aplikacion ose shërbim të ketë qasje te kamera si \"Përdorues i sistemit pa kokë\"."</string>
@@ -1657,7 +1659,7 @@
     <string name="car_mode_disable_notification_message" msgid="8954550232288567515">"Trokit për të dalë nga aplikacioni i drejtimit të makinës."</string>
     <string name="back_button_label" msgid="4078224038025043387">"Prapa"</string>
     <string name="next_button_label" msgid="6040209156399907780">"Para"</string>
-    <string name="skip_button_label" msgid="3566599811326688389">"Kapërce"</string>
+    <string name="skip_button_label" msgid="3566599811326688389">"Anashkalo"</string>
     <string name="no_matches" msgid="6472699895759164599">"Asnjë përputhje"</string>
     <string name="find_on_page" msgid="5400537367077438198">"Gjej brenda faqes"</string>
     <string name="matches_found" msgid="2296462299979507689">"{count,plural, =1{# përputhje}other{# nga {total}}}"</string>

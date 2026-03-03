@@ -554,6 +554,10 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"यो एपले जुनसुकै बेला क्यामेराको प्रयोग गरी फोटो खिच्न र भिडियो रेकर्ड गर्न सक्छ।"</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"एप वा सेवालाई फोटो र भिडियो खिच्न प्रणालीका क्यामेराहरूमाथि पहुँच राख्न दिनुहोस्"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"प्रणालीको यस विशेषाधिकार प्राप्त एपले जुनसुकै बेला प्रणालीको क्यामेरा प्रयोग गरी फोटो खिच्न र भिडियो रेकर्ड गर्न सक्छ। एपसँग पनि android.permission.CAMERA प्रयोग गर्ने अनुमति हुनु पर्छ"</string>
+    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
+    <skip />
+    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
+    <skip />
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"कुनै एप वा सेवालाई खोलिँदै वा बन्द गरिँदै गरेका क्यामेरा यन्त्रहरूका बारेमा कलब्याक प्राप्त गर्ने अनुमति दिनुहोस्।"</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"कुनै क्यामेरा यन्त्र खोलिँदा (कुन एपले खोलेको भन्ने बारेमा) वा बन्द गरिँदा यो एपले कलब्याक प्राप्त गर्न सक्छ।"</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"कुनै एप वा सेवालाई हेडलेस सिस्टमको प्रयोगकर्ताका रूपमा क्यामेरा एक्सेस गर्ने अनुमति दिनुहोस्।"</string>
@@ -2208,7 +2212,7 @@
     <string name="app_streaming_blocked_message_for_settings_dialog" product="default" msgid="6264287556598916295">"तपाईंको <xliff:g id="DEVICE">%1$s</xliff:g> मा यो एप चलाउन मिल्दैन। बरु तपाईंको फोनमा स्ट्रिम गरी हेर्नुहोस्।"</string>
     <string name="deprecated_target_sdk_message" msgid="5246906284426844596">"यो एप Android को पुरानो संस्करणका लागि निर्माण गरिएको थियो। यो एपले राम्ररी काम नगर्न सक्छ र यसमा सुरक्षा तथा गोपनीयतासम्बन्धी पछिल्ला सुरक्षा सुविधाहरू समावेश नहुन सक्छन्। यस एपको नवीनतम संस्करण उपलब्ध छ कि छैन हेर्नुहोस् वा एपका विकासकर्तासँग सम्पर्क गर्नुहोस्।"</string>
     <string name="deprecated_target_sdk_app_store" msgid="8456784048558808909">"अपडेट उपलब्ध छ वा छैन जाँच्नुहोस्"</string>
-    <string name="deprecated_abi_message" msgid="6820548011196218091">"यो एप Android को नवीनतम संस्करणसँग कम्प्याटिबल छैन। यस एपको नवीनतम संस्करण उपलब्ध छ कि छैन भन्ने कुरा हेर्नुहोस् वा एपका विकासकर्तालाई सम्पर्क गर्नुहोस्।"</string>
+    <string name="deprecated_abi_message" msgid="6820548011196218091">"यो एप Android को नवीनतम संस्करणसँग कम्प्याटिबल छैन। यस एपको नवीनतम संस्करण उपलब्ध छ कि छैन हेर्नुहोस् वा एपका विकासकर्तालाई सम्पर्क गर्नुहोस्।"</string>
     <string name="new_sms_notification_title" msgid="6528758221319927107">"तपाईंलाई नयाँ सन्देश आएको छ"</string>
     <string name="new_sms_notification_content" msgid="3197949934153460639">"हेर्नका लागि SMS एप खोल्नुहोस्"</string>
     <string name="profile_encrypted_title" msgid="9001208667521266472">"केही सुविधा राम्ररी नचल्न सक्छन्"</string>
