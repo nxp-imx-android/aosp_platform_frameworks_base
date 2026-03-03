@@ -59,6 +59,6 @@ class ContainerHierarchyController(
 
     private fun dump(pw: PrintWriter, prefix: String) {
         pw.println("${prefix}ContainerHierarchy")
-        pw.println(HierarchyDebugUtils.dumpHierarchy(hierarchy))
+        pw.println(HierarchyDebugUtils.getHierarchyDump(hierarchy))
     }
 }

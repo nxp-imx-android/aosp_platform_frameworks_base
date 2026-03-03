@@ -28,7 +28,8 @@ import com.android.wm.shell.hierarchy.utils.HierarchyUtils
 class SavedContainerState(
     container: Container
 ) {
-    val mode = HierarchyUtils.getMode(container)
+    val modeContainer = HierarchyUtils.getModeContainer(container)
+    val mode = modeContainer?.mode
     val props = container.props.copy()
     val parentToken = container.parent?.token
     val children = container.children.toList()

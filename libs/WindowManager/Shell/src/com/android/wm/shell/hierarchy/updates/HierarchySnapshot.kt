@@ -88,17 +88,31 @@ class HierarchySnapshot {
     }
 
     /**
-     * Returns whether the given container, or any of its ancestors have changed.
+     * Returns a list of any ancestors that have changed in a way that interesting for descendants.
+     * The returned list is in no specific order.
      */
-    fun hasChangesIncludingAncestors(container: Container): Boolean {
-        var c: Container? = container
+    fun getChangedAncestors(modeContainer: Container): List<Container> {
+        val ancestors = mutableListOf<Container>()
+        var c: Container? = modeContainer.parent
         while (c != null) {
-            if (hasChanges(c)) {
-                return true
+            if (areInterestingChangesToChildren(getChanges(c))) {
+                ancestors.add(c)
             }
             c = c.parent
         }
-        return false
+        return ancestors
+    }
+
+    /**
+     * Returns whether specific changes are interesting to descendant container's modes.
+     *
+     * ie. When a display container changes display state, generally all modes with containers under
+     *     that display will be interested in being notified.
+     */
+    private fun areInterestingChangesToChildren(changeFlags: HierarchyChangeFlags): Boolean {
+        // Descendants should only care about changes to their direct ancestors, so ignore
+        // children-only changes
+        return changeFlags.cardinality() >= 1 && !changeFlags[CHANGED_CHILDREN]
     }
 
     companion object {

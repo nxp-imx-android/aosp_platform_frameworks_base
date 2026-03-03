@@ -51,6 +51,16 @@ class HierarchyDebugUtils {
         val NONE = "\u001b[0m"
 
         /**
+         * Returns a dumps of the hierarchy.
+         */
+        fun getHierarchyDump(
+            hierarchy: ContainerHierarchy,
+            snapshot: HierarchySnapshot = EMPTY_SNAPSHOT,
+        ): String {
+            return dumpToString(hierarchy.root, hierarchy.root, "", true, snapshot, WHITE)
+        }
+
+        /**
          * Dumps the hierarchy to protolog.
          */
         fun dumpHierarchy(
