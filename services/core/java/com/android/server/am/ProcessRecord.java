@@ -1550,8 +1550,8 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mServices.onProcessFrozenCancelled();
     }
 
-    void onProcStateUpdated() {
-        mMemoryLimiter.onProcStateUpdated(getCurProcState());
+    void onProcStateUpdated(@ActivityManager.ProcessState int newProcState) {
+        mMemoryLimiter.onProcStateUpdated(newProcState);
     }
 
     /*
