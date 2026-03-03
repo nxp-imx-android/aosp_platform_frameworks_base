@@ -46,7 +46,9 @@ public record ThemeConfig(
         /** Device-specific default theme data from resources. */
         String[] defaultThemeData,
         /** The ultimate fallback theme settings when no user or device defaults are available. */
-        ThemeSettings hardcodedFallback) {
+        ThemeSettings hardcodedFallback,
+        /** On iHSUM, the system user can be switched to and therefore maintain their own theme. */
+        boolean canSwitchToHeadlessSystemUser) {
     public ThemeConfig(Context context, SystemPropertiesReader reader) {
         this(
                 /* platform */ RoSystemFeatures.hasFeatureWatch(context)
@@ -65,6 +67,9 @@ public record ThemeConfig(
                         .setThemeStyle(ThemeStyle.TONAL_SPOT)
                         .setColorSource(FieldColorSource.VALUE_PRESET)
                         .setSystemPalette(Color.valueOf(0xFF1B6EF3))
-                        .build());
+                        .build(),
+                /* canSwitchToHeadlessSystemUser */ context.getResources()
+                        .getBoolean(
+                                com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser));
     }
 }
