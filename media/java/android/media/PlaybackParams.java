@@ -213,11 +213,11 @@ public final class PlaybackParams implements Parcelable {
 
     /**
      * Sets the speed factor.
-     * @param speed a strictly positive value
+     * @param speed a non-negative value
      * @return this <code>PlaybackParams</code> instance.
      */
     public PlaybackParams setSpeed(float speed) {
-        if ((speed <= 0.f) || Float.isNaN(speed) || Float.isInfinite(speed)) {
+        if ((speed < 0.f) || Float.isNaN(speed) || Float.isInfinite(speed)) {
             // not throwing IAE due to API behavior change, but keeping the speed value unchanged
             android.util.Log.e("PlaybackParams", "invalid speed value " + Float.toString(speed));
             return this;
