@@ -18,11 +18,8 @@ package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -94,13 +91,15 @@ fun NotificationRuleEdit(
 
     BackHandler(enabled = true, onBack = onDismissRuleEditScreen)
     Column(modifier = modifier) {
-        Button(onClick = onDismissRuleEditScreen) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = stringResource(R.string.accessibility_back),
-            )
-        }
-
+        Header(
+            title =
+                if (viewModel.rule.isNew) {
+                    stringResource(R.string.notification_rules_create_new_title)
+                } else {
+                    stringResource(R.string.notification_rules_edit)
+                },
+            onDismissRequest = onDismissRuleEditScreen,
+        )
         EditableAction(viewModel, onEnterEditField = onEnterEditField)
         Text(text = text, style = MaterialTheme.typography.titleLargeEmphasized)
 

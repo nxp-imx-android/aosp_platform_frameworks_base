@@ -21,15 +21,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,7 +40,6 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
@@ -71,24 +66,10 @@ fun CurrentRulesScreen(
         modifier = modifier,
     ) {
         item("Title") {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Button(onClick = onDismissCurrentRulesScreen, modifier = Modifier) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.accessibility_back),
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.notification_rules_activity_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(start = 8.dp),
-                )
-            }
+            Header(
+                title = stringResource(R.string.notification_rules_activity_title),
+                onDismissRequest = onDismissCurrentRulesScreen,
+            )
         }
 
         viewModel.rules.forEach { rule ->
@@ -108,6 +89,7 @@ fun CurrentRulesScreen(
                     scope.launch {
                         onNavigateToEditScreen(
                             DraftRuleModel(
+                                isNew = true,
                                 action = ActionModel.Highlight,
                                 contacts = null,
                                 includedApps = null,

@@ -16,12 +16,17 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
+import com.android.systemui.res.R
 
 /** Renders a fullscreen page to choose one rule action. */
 @Composable
@@ -29,15 +34,21 @@ fun ActionChoiceScreen(
     viewState: RulesScreenViewState.EditField.Action,
     onDismissRequest: () -> Unit,
 ) {
-    DropdownMenu(expanded = true, onDismissRequest = onDismissRequest) {
-        for (action in ActionModel.entries) {
-            DropdownMenuItem(
-                text = { Text(text = action.toText()) },
-                onClick = {
-                    viewState.onActionSaved(action)
-                    onDismissRequest.invoke()
-                },
-            )
+    Column(Modifier.fillMaxSize()) {
+        Header(
+            stringResource(R.string.notification_rules_choose_action_title),
+            onDismissRequest = onDismissRequest,
+        )
+        DropdownMenu(expanded = true, onDismissRequest = onDismissRequest) {
+            for (action in ActionModel.entries) {
+                DropdownMenuItem(
+                    text = { Text(text = action.toText()) },
+                    onClick = {
+                        viewState.onActionSaved(action)
+                        onDismissRequest.invoke()
+                    },
+                )
+            }
         }
     }
 }

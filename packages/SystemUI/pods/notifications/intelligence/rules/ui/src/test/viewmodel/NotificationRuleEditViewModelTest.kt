@@ -50,6 +50,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel(
+                        isNew = false,
                         action = ActionModel.Highlight,
                         contacts = null,
                         includedApps = null,
@@ -82,6 +83,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel(
+                        isNew = false,
                         action = ActionModel.Highlight,
                         contacts = RuleValue.Specified(ContactsModel(listOf(contact))),
                         includedApps = null,
@@ -118,6 +120,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel(
+                        isNew = false,
                         action = ActionModel.Highlight,
                         contacts = RuleValue.Ambiguous("who is it?"),
                         includedApps = null,
@@ -161,6 +164,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel(
+                        isNew = false,
                         action = ActionModel.Highlight,
                         contacts = null,
                         includedApps = RuleValue.Specified(IncludedAppsModel(listOf(app))),
@@ -201,6 +205,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel(
+                        isNew = false,
                         action = ActionModel.Highlight,
                         contacts = RuleValue.Specified(ContactsModel(listOf(contact, CONTACT_CAT))),
                         includedApps = null,
@@ -238,6 +243,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel(
+                        isNew = false,
                         action = ActionModel.Highlight,
                         includedApps =
                             RuleValue.Specified(
@@ -284,6 +290,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel(
+                        isNew = false,
                         action = ActionModel.Highlight,
                         contacts = RuleValue.Specified(ContactsModel(listOf(contact))),
                         includedApps =
@@ -324,6 +331,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel(
+                        isNew = false,
                         action = ActionModel.Highlight,
                         contacts = null,
                         includedApps = null,
@@ -346,6 +354,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel(
+                        isNew = false,
                         action = ActionModel.Highlight,
                         contacts = null,
                         includedApps =
@@ -368,6 +377,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel(
+                        isNew = false,
                         action = ActionModel.Highlight,
                         contacts = null,
                         includedApps = null,
@@ -388,6 +398,7 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
             val underTest =
                 notificationRuleEditViewModelFactory.create(
                     DraftRuleModel(
+                        isNew = false,
                         action = ActionModel.Highlight,
                         contacts = RuleValue.Specified(ContactsModel(listOf(CONTACT_CAT))),
                         includedApps = null,

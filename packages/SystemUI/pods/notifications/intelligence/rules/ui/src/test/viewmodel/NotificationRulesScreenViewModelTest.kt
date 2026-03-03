@@ -54,7 +54,12 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
             assertThat(underTest.currentScreen).isEqualTo(RulesScreenViewState.CurrentRules)
 
             val draftRule =
-                DraftRuleModel(action = ActionModel.Highlight, contacts = null, includedApps = null)
+                DraftRuleModel(
+                    isNew = false,
+                    action = ActionModel.Highlight,
+                    contacts = null,
+                    includedApps = null,
+                )
 
             backStack.add(
                 RulesScreenViewState.EditRule(

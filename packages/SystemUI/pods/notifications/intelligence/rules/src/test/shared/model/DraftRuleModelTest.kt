@@ -39,6 +39,7 @@ class DraftRuleModelTest : SysuiTestCase() {
 
         val draftRule = rule.toDraft()
 
+        assertThat(draftRule.isNew).isFalse()
         assertThat(draftRule.action).isEqualTo(ActionModel.Bundle)
         assertThat(draftRule.contacts).isNull()
         assertThat(draftRule.includedApps).isNull()

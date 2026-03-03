@@ -2694,7 +2694,9 @@
 
     <!-- Title for a page where users can edit rules for how their notifications are displayed. [CHAR LIMIT=NONE]-->
     <string name="notification_rules_activity_title" translatable="false">Notification Rules</string>
-    <!-- Text for a button that will let users create a new notification rule. [CHAR LIMIT=NONE]-->
+    <!-- Title for a page where users can create a new notification rule. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_create_new_title" translatable="false">Create New</string>
+    <!-- Title for a button that will let users create a new notification rule. [CHAR LIMIT=NONE]-->
     <string name="notification_rules_create_new_rule" translatable="false">Create new rule</string>
 
     <!-- Notifications with this action will be highlighted in the list and will alert the user via sound and/or vibration if enabled. [CHAR LIMIT=NONE]-->
@@ -2712,6 +2714,8 @@
     <string name="notification_rules_field_people" translatable="false">People</string>
     <!-- Title for a page where users can add or remove apps that will be affected by a notification rule. [CHAR LIMIT=30]-->
     <string name="notification_rules_field_app" translatable="false">App</string>
+    <!-- Title for a page where users choose the action for a notification rule. [CHAR LIMIT=50]-->
+    <string name="notification_rules_choose_action_title" translatable="false">Choose Action</string>
 
     <!-- Text explaining that the notification rule applies to a single item. For example, "from Phone" explains that the rule applies to just notifications from the 'Phone' app.
      The "valueField" annotation specifies that 'Phone' is the item value. When the user taps on 'Phone', they will be able to change which items(s) are selected. [CHAR LIMIT=NONE]-->
