@@ -30,6 +30,7 @@ android_test {
 
     srcs: [
         "src/com/android/server/inputmethod/**/*.java",
+        "src/com/android/server/inputmethod/**/*.kt",
     ],
 
     static_libs: [

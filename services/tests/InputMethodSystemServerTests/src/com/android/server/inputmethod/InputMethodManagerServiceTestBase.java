@@ -271,11 +271,6 @@ public class InputMethodManagerServiceTestBase {
                 unusedUserId -> mMockInputMethodBindingController);
         spyOn(mInputMethodManagerService);
 
-        synchronized (ImfLock.class) {
-            doReturn(true).when(mInputMethodManagerService).setImeVisibilityOnFocusedWindowClient(
-                    anyBoolean(), any(UserData.class), any(ImeTracker.Token.class));
-        }
-
         // Start a InputMethodManagerService.Lifecycle to publish and manage the lifecycle of
         // InputMethodManagerService, which is closer to the real situation.
         InputMethodManagerService.Lifecycle lifecycle =
@@ -354,11 +349,11 @@ public class InputMethodManagerServiceTestBase {
                 .hideSoftInput(notNull() /* statsToken */);
     }
 
-    protected void verifySetImeVisibility(boolean setVisible, boolean invoked) {
+    protected void verifySetImeVisibility(boolean setVisible, boolean invoked)
+            throws RemoteException {
         synchronized (ImfLock.class) {
-            verify(mInputMethodManagerService,
-                    times(invoked ? 1 : 0)).setImeVisibilityOnFocusedWindowClient(eq(setVisible),
-                    any(UserData.class), any(ImeTracker.Token.class));
+            verify(mMockInputMethodClient, times(invoked ? 1 : 0))
+                    .setImeVisibility(eq(setVisible), any(ImeTracker.Token.class));
         }
     }
 
