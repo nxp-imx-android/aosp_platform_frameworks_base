@@ -128,13 +128,7 @@ constructor(
     fun setTargetViewModel(type: ScreenCaptureTarget) {
         currentTargetsModel =
             when (type) {
-                is ScreenCaptureTarget.App -> {
-                    mediaProjectionMetricsLogger.notifyAppSelectorDisplayed(
-                        shareScreenUiInteractor.uid
-                    )
-                    recentTasksViewModel
-                }
-                // TODO(b/471059930): Extend metrics for large screen sharing.
+                is ScreenCaptureTarget.App -> recentTasksViewModel
                 is ScreenCaptureTarget.AppContent -> appContentsViewModel
                 is ScreenCaptureTarget.Fullscreen -> displaysViewModel
                 else ->
@@ -154,6 +148,9 @@ constructor(
         when (val currentModel = currentTargetsModel) {
             is RecentTasksViewModel -> {
                 currentModel.selectedTarget.value?.let {
+                    mediaProjectionMetricsLogger.notifyAppSelectorDisplayed(
+                        shareScreenUiInteractor.uid
+                    )
                     enqueueOnActivatedScope {
                         shareScreenUiInteractor.onAppSharingApproved(it.model.taskId)
                     }
@@ -164,6 +161,7 @@ constructor(
                 }
             }
             is AppContentsViewModel -> {
+                // TODO(b/471059930) Extend metrics for large screen sharing.
                 currentModel.selectedTarget.value?.let {
                     val callback = currentModel.projectionCallback.value?.get()
                     // The callback is retrieved from a [WeakReference] and may be null if it was
