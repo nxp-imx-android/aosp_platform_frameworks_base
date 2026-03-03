@@ -141,16 +141,6 @@ flag {
 }
 
 flag {
-    name: "pause_invisible_activity"
-    namespace: "windowing_sdk"
-    description: "Pause the invisible activity vs. stopping it after idle."
-    bug: "457585218"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "assist_display_id_public"
     namespace: "windowing_sdk"
     description: "Make the preferred display id extra for launching assistant public."

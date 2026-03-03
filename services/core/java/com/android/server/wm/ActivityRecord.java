@@ -6002,31 +6002,28 @@ final class ActivityRecord extends WindowToken {
 
             switch (mState) {
                 case RESUMED:
-                    if (com.android.window.flags.Flags.pauseInvisibleActivity()) {
-                        // Do nothing if currently in the process of resuming the activity.
-                        if (task.mInResumeTopActivity
-                                && task.topRunningActivity(true /* focusableOnly */) == this) {
-                            break;
-                        }
-
-                        // Checks if the activity can enter pip
-                        boolean inPip = false;
-                        final Transition finishingTransition =
-                                mTransitionController.mFinishingTransition;
-                        if (finishingTransition != null
-                                && finishingTransition.isInTransientHide(task)) {
-                            inPip = finishingTransition.checkEnterPipOnFinish(this);
-                        }
-
-                        // If the activity is not entering pip and is still in RESUMED state,
-                        // starting to pause it since it is no longer visible.
-                        if (!inPip && mState == RESUMED) {
-                            getTaskFragment().startPausing(mTaskSupervisor.mUserLeaving,
-                                    false /* uiSleeping */, null /* resuming */, "makeInvisible");
-                        }
+                    // Do nothing if currently in the process of resuming the activity.
+                    if (task.mInResumeTopActivity
+                            && task.topRunningActivity(true /* focusableOnly */) == this) {
                         break;
                     }
-                    // fall through
+
+                    // Checks if the activity can enter pip
+                    boolean inPip = false;
+                    final Transition finishingTransition =
+                            mTransitionController.mFinishingTransition;
+                    if (finishingTransition != null
+                            && finishingTransition.isInTransientHide(task)) {
+                        inPip = finishingTransition.checkEnterPipOnFinish(this);
+                    }
+
+                    // If the activity is not entering pip and is still in RESUMED state,
+                    // starting to pause it since it is no longer visible.
+                    if (!inPip && mState == RESUMED) {
+                        getTaskFragment().startPausing(mTaskSupervisor.mUserLeaving,
+                                false /* uiSleeping */, null /* resuming */, "makeInvisible");
+                    }
+                    break;
                 case INITIALIZING:
                 case PAUSING:
                 case PAUSED:
