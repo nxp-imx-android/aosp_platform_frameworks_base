@@ -45,7 +45,6 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.internal.util.LatencyTracker;
 import com.android.launcher3.icons.IconProvider;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -209,7 +208,6 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.DefaultMixedHandler;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.HomeTransitionObserver;
-import com.android.wm.shell.transition.InteractiveTasksRepository;
 import com.android.wm.shell.transition.InteractiveTasksTransitionObserver;
 import com.android.wm.shell.transition.MixedTransitionHandler;
 import com.android.wm.shell.transition.Transitions;
@@ -1467,11 +1465,9 @@ public abstract class WMShellModule {
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             FocusTransitionObserver focusTransitionObserver,
             ShellController shellController,
-            ShellTaskOrganizer shellTaskOrganizer,
-            Optional<InteractiveTasksRepository> interactiveTasksRepository) {
+            ShellTaskOrganizer shellTaskOrganizer) {
         return new ShellDesktopStateImpl(desktopState, desktopUserRepositories,
-                focusTransitionObserver, shellController, shellTaskOrganizer,
-                interactiveTasksRepository);
+                focusTransitionObserver, shellController, shellTaskOrganizer);
     }
 
     @WMSingleton
@@ -2321,24 +2317,15 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static Optional<InteractiveTasksRepository> provideInteractiveTasksRepository() {
-        if (Flags.allowDragAndDropWhenInteractiveBugfix()) {
-            return Optional.of(new InteractiveTasksRepository());
-        }
-        return Optional.empty();
-    }
-
-    @WMSingleton
-    @Provides
     @DynamicOverride
     static InteractiveTasksTransitionObserver provideInteractiveTasksTransitionObserver(
             ShellInit shellInit,
             Transitions transitions,
-            Optional<InteractiveTasksRepository> repository) {
+            ShellTaskOrganizer shellTaskOrganizer) {
         // As a dynamic override it's binded as optional in the base module. Since that creates a
         // optional multi-binding situation, we need to provide here a real instance and rely on
         // lazy inject.
         return new InteractiveTasksTransitionObserver(shellInit, transitions,
-                repository.get());
+                shellTaskOrganizer);
     }
 }

@@ -25,13 +25,13 @@ import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.TransitionInfo
 import androidx.test.filters.SmallTest
 import com.android.testing.wm.util.MockToken
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.sysui.ShellInit
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 
 /**
  * Tests for [InteractiveTasksTransitionObserver].
@@ -47,18 +47,17 @@ class InteractiveTasksTransitionObserverTest : ShellTestCase() {
     private val startTransaction = mock<SurfaceControl.Transaction>()
     private val finishTransaction = mock<SurfaceControl.Transaction>()
     private val transition = mock<IBinder>()
+    private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
 
-    private lateinit var repository: InteractiveTasksRepository
     private lateinit var observer: InteractiveTasksTransitionObserver
 
     @Before
     fun setUp() {
-        repository = InteractiveTasksRepository()
-        observer = InteractiveTasksTransitionObserver(shellInit, transitions, repository)
+        observer = InteractiveTasksTransitionObserver(shellInit, transitions, shellTaskOrganizer)
     }
 
     @Test
-    fun testOnTransitionReady_gotInteractiveTask_addItToRepo() {
+    fun testOnTransitionReady_updatesTaskOrganizer() {
         val taskInfo =
             createTask(taskId = TASK_ID_0, displayId = DEFAULT_DISPLAY, isInteractive = true)
         val token = MockToken.token()
@@ -68,26 +67,8 @@ class InteractiveTasksTransitionObserverTest : ShellTestCase() {
         info.addChange(change)
 
         observer.onTransitionReady(transition, info, startTransaction, finishTransaction)
-        assertTrue(repository.isTaskInteractiveOnDisplay(DEFAULT_DISPLAY, TASK_ID_0))
-    }
 
-    @Test
-    fun testOnTransitionReady_hadInteractiveTask_gotItPaused_removeFromInteractive() {
-        // First add it.
-        val resumedInfo =
-            createTask(taskId = TASK_ID_0, displayId = DEFAULT_DISPLAY, isInteractive = true)
-        repository.addTask(resumedInfo)
-
-        // Then pause it via transition.
-        val pausedInfo =
-            createTask(taskId = TASK_ID_0, displayId = DEFAULT_DISPLAY, isInteractive = false)
-        val token = MockToken.token()
-        val change = TransitionInfo.Change(token, surfaceControl)
-        change.taskInfo = pausedInfo
-        val info = TransitionInfo(0, 0)
-        info.addChange(change)
-
-        assertFalse(repository.isTaskInteractiveOnDisplay(DEFAULT_DISPLAY, 1))
+        verify(shellTaskOrganizer).onTaskInfoUpdated(taskInfo)
     }
 
     private fun createTask(
