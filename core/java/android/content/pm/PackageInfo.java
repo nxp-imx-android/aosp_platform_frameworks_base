@@ -651,20 +651,20 @@ public class PackageInfo implements Parcelable {
         dest.writeLong(firstInstallTime);
         dest.writeLong(lastUpdateTime);
         dest.writeIntArray(gids);
-        dest.writeTypedArray(activities, parcelableFlags);
-        dest.writeTypedArray(receivers, parcelableFlags);
-        dest.writeTypedArray(services, parcelableFlags);
-        dest.writeTypedArray(providers, parcelableFlags);
+        final int activitiesSize = writeAndCount(dest, activities, parcelableFlags);
+        final int receiversSize = writeAndCount(dest, receivers, parcelableFlags);
+        final int servicesSize = writeAndCount(dest, services, parcelableFlags);
+        final int providersSize = writeAndCount(dest, providers, parcelableFlags);
         dest.writeTypedArray(instrumentation, parcelableFlags);
-        dest.writeTypedArray(permissions, parcelableFlags);
-        dest.writeString8Array(requestedPermissions);
+        final int permissionsSize = writeAndCount(dest, permissions, parcelableFlags);
+        final int requestedPermissionsSize = writeAndCount(dest, requestedPermissions);
         dest.writeIntArray(requestedPermissionsFlags);
         writeRequestedPermissionsPurposes(dest);
-        dest.writeTypedArray(signatures, parcelableFlags);
+        final int signaturesSize = writeAndCount(dest, signatures, parcelableFlags);
         dest.writeTypedArray(configPreferences, parcelableFlags);
         dest.writeTypedArray(reqFeatures, parcelableFlags);
         dest.writeTypedArray(featureGroups, parcelableFlags);
-        dest.writeTypedArray(attributions, parcelableFlags);
+        final int attributionsSize = writeAndCount(dest, attributions, parcelableFlags);
         dest.writeInt(installLocation);
         dest.writeInt(isStub ? 1 : 0);
         dest.writeInt(coreApp ? 1 : 0);
@@ -699,21 +699,57 @@ public class PackageInfo implements Parcelable {
         // The warning threshold is consistent with BaseParceledListSlice implementation
         if (elmSize > 16 * 1024) {
             StringBuilder sb = new StringBuilder();
-            sb.append("Large PackageInfo parcel: size=").append(elmSize)
-                    .append(" package=").append(packageName);
+            sb.append("Large parcel: size=").append(elmSize)
+                    .append(" pkg=").append(packageName);
 
-            if (activities != null) sb.append(" activities=").append(activities.length);
-            if (receivers != null) sb.append(" receivers=").append(receivers.length);
-            if (services != null) sb.append(" services=").append(services.length);
-            if (providers != null) sb.append(" providers=").append(providers.length);
-            if (permissions != null) sb.append(" permissions=").append(permissions.length);
-            if (requestedPermissions != null) {
-                sb.append(" reqPermissions=").append(requestedPermissions.length);
+            if (activities != null) {
+                sb.append(" actv=").append(activitiesSize);
+                sb.append("(").append(activities.length).append(")");
             }
-            if (attributions != null) sb.append(" attributions=").append(attributions.length);
+            if (receivers != null) {
+                sb.append(" recv=").append(receiversSize);
+                sb.append("(").append(receivers.length).append(")");
+            }
+            if (services != null) {
+                sb.append(" serv=").append(servicesSize);
+                sb.append("(").append(services.length).append(")");
+            }
+            if (providers != null) {
+                sb.append(" prov=").append(providersSize);
+                sb.append("(").append(providers.length).append(")");
+            }
+            if (permissions != null) {
+                sb.append(" perm=").append(permissionsSize);
+                sb.append("(").append(permissions.length).append(")");
+            }
+            if (requestedPermissions != null) {
+                sb.append(" reqPerm=").append(requestedPermissionsSize);
+                sb.append("(").append(requestedPermissions.length).append(")");
+            }
+            if (signatures != null) {
+                sb.append(" sig=").append(signaturesSize);
+                sb.append("(").append(signatures.length).append(")");
+            }
+            if (attributions != null) {
+                sb.append(" attr=").append(attributionsSize);
+                sb.append("(").append(attributions.length).append(")");
+            }
 
             Log.w(TAG, sb.toString());
         }
+    }
+
+    private <T extends Parcelable> int writeAndCount(Parcel dest, @Nullable T[] val,
+            int parcelableFlags) {
+        final int preWriteSize = dest.dataSize();
+        dest.writeTypedArray(val, parcelableFlags);
+        return dest.dataSize() - preWriteSize;
+    }
+
+    private int writeAndCount(Parcel dest, String[] val) {
+        final int preWriteSize = dest.dataSize();
+        dest.writeString8Array(val);
+        return dest.dataSize() - preWriteSize;
     }
 
     private void writeRequestedPermissionsPurposes(@NonNull Parcel dest) {
