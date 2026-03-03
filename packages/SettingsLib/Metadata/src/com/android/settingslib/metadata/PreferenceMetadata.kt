@@ -224,6 +224,14 @@ open class PreferenceCategory(
 /** Tag representing a preference that is ui only */
 const val UI_ONLY_PREFERENCE = "ui_only_preference"
 
+/**
+ * Tag representing a pure metadata object in a UI screen.
+ *
+ * Marking a preference with this tag will prevent it from being bound to a UI object, thus allowing
+ * for adding pure metadata objects in a fully migrated to the UI screen.
+ */
+const val METADATA_IN_UI="metadata_in_ui"
+
 /** Tag representing a preference that is considered `hero` and must be gettable*/
 const val HERO = "hero"
 
