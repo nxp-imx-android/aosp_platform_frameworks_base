@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -38,15 +39,16 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.res.R
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.ToAlwaysOnDisplay
-import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
@@ -56,6 +58,7 @@ import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrim
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_DELAYED_STACK_FADE_IN
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_MAX_SCRIM_ALPHA
+import com.android.systemui.statusbar.policy.fakeConfigurationController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.state.SynchronouslyObservableState
 import com.android.systemui.util.state.observableStateOf
@@ -70,7 +73,6 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
-@EnableFlags(FLAG_DUAL_SHADE)
 class NotificationScrollViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
@@ -86,7 +88,6 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     fun setUp(): Unit =
         with(kosmos) {
             sceneContainerStartable.start()
-            enableDualShade()
             runCurrent()
             underTest.activateIn(testScope)
         }
@@ -176,7 +177,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun noDualShade_brightnessMirrorShowing_notInteractive() =
         kosmos.runTest {
-            disableDualShade(disabledBySetting = true)
+            enableSingleShade()
             val interactive by collectLastValue(underTest.interactive)
 
             brightnessMirrorShowingInteractor.setMirrorShowing(false)
@@ -187,8 +188,10 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun interactive_whenBlurredAndHunIsPinned_isTrue() =
         kosmos.runTest {
+            enableDualShade()
             val interactive by collectLastValue(underTest.interactive)
             brightnessMirrorShowingInteractor.setMirrorShowing(false)
 
@@ -201,8 +204,10 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun interactive_whenBlurredAndNoHun_isFalse() =
         kosmos.runTest {
+            enableDualShade()
             val interactive by collectLastValue(underTest.interactive)
             brightnessMirrorShowingInteractor.setMirrorShowing(false)
 
@@ -215,8 +220,10 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun interactive_whenNotBlurredAndHunIsPinned_isTrue() =
         kosmos.runTest {
+            enableDualShade()
             val interactive by collectLastValue(underTest.interactive)
             brightnessMirrorShowingInteractor.setMirrorShowing(false)
 
@@ -231,6 +238,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun allowScrimClipping_toShadeScene_true() =
         kosmos.runTest {
+            enableSingleShade()
             val allowScrimClipping by collectLastValue(underTest.allowScrimClipping)
 
             // GIVEN a transition to Shade scene
@@ -240,7 +248,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
                         fromScene = Scenes.Gone,
                         toScene = Scenes.Shade,
                         currentScene = flowOf(Scenes.Gone),
-                        progress = MutableStateFlow(0.5f),
+                        progress = flowOf(0.5f),
                         isInitiatedByUserInput = true,
                         isUserInputOngoing = flowOf(true),
                     )
@@ -253,7 +261,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_NSSL_BLOCKING_QS)
+    @EnableFlags(Flags.FLAG_FIX_NSSL_BLOCKING_QS, FLAG_DUAL_SHADE)
     fun interactive_whenOnLockscreenAndQsOverlayIsShowing_isFalse() =
         kosmos.runTest {
             val interactive by collectLastValue(underTest.interactive)
@@ -264,7 +272,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
             // GIVEN we are on Lockscreen
             sceneInteractor.changeScene(Scenes.Lockscreen, "setup")
             sceneInteractor.setTransitionState(
-                MutableStateFlow(ObservableTransitionState.Idle(Scenes.Lockscreen))
+                flowOf(ObservableTransitionState.Idle(Scenes.Lockscreen))
             )
 
             // AND QS Overlay is showing
@@ -278,6 +286,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun allowScrimClipping_toNotifOverlay_false() =
         kosmos.runTest {
             val allowScrimClipping by collectLastValue(underTest.allowScrimClipping)
@@ -306,6 +315,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun suppressHeightUpdates_idleQuickSettings_EndHeightOnly() {
         kosmos.runTest {
             val suppressHeightUpdates by collectLastValue(underTest.suppressHeightUpdates)
@@ -325,6 +335,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun suppressHeightUpdates_idleShade_None() {
         kosmos.runTest {
+            enableSingleShade()
             val suppressHeightUpdates by collectLastValue(underTest.suppressHeightUpdates)
 
             // GIVEN transition states shows idling on the Shade scene
@@ -342,6 +353,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun suppressHeightUpdates_transitionShadeToQuickSettings_EndHeightOnly() {
         kosmos.runTest {
+            enableSingleShade()
             val suppressHeightUpdates by collectLastValue(underTest.suppressHeightUpdates)
 
             // GIVEN a transition from Shade to QuickSettings scene
@@ -351,7 +363,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
                         fromScene = Scenes.Shade,
                         toScene = Scenes.QuickSettings,
                         currentScene = flowOf(Scenes.Shade),
-                        progress = MutableStateFlow(0.5f),
+                        progress = flowOf(0.5f),
                         isInitiatedByUserInput = true,
                         isUserInputOngoing = flowOf(true),
                     )
@@ -368,6 +380,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun suppressHeightUpdates_transitionQuickSettingsToShade_None() {
         kosmos.runTest {
+            enableSingleShade()
             val suppressHeightUpdates by collectLastValue(underTest.suppressHeightUpdates)
 
             // GIVEN a transition from QuickSettings to Shade scene
@@ -377,7 +390,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
                         fromScene = Scenes.QuickSettings,
                         toScene = Scenes.Shade,
                         currentScene = flowOf(Scenes.QuickSettings),
-                        progress = MutableStateFlow(0.5f),
+                        progress = flowOf(0.5f),
                         isInitiatedByUserInput = true,
                         isUserInputOngoing = flowOf(true),
                     )
@@ -394,6 +407,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun suppressHeightUpdates_transitionQuickSettingsToLockscreen_EndHeightOnly() {
         kosmos.runTest {
+            enableSingleShade()
             val suppressHeightUpdates by collectLastValue(underTest.suppressHeightUpdates)
 
             // GIVEN a transition from QuickSettings to Lockscreen scene
@@ -403,7 +417,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
                         fromScene = Scenes.QuickSettings,
                         toScene = Scenes.Lockscreen,
                         currentScene = flowOf(Scenes.QuickSettings),
-                        progress = MutableStateFlow(0.5f),
+                        progress = flowOf(0.5f),
                         isInitiatedByUserInput = true,
                         isUserInputOngoing = flowOf(true),
                     )
@@ -429,7 +443,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
                         fromScene = Scenes.Lockscreen,
                         toScene = Scenes.Gone,
                         currentScene = flowOf(Scenes.Lockscreen),
-                        progress = MutableStateFlow(0.5f),
+                        progress = flowOf(0.5f),
                         isInitiatedByUserInput = true,
                         isUserInputOngoing = flowOf(true),
                     )
@@ -446,6 +460,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun suppressHeightUpdates_transitionShadeToGone_None() {
         kosmos.runTest {
+            enableSingleShade()
             val suppressHeightUpdates by collectLastValue(underTest.suppressHeightUpdates)
 
             // GIVEN a transition from Shade to Gone scene
@@ -455,7 +470,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
                         fromScene = Scenes.Shade,
                         toScene = Scenes.Gone,
                         currentScene = flowOf(Scenes.Shade),
-                        progress = MutableStateFlow(0.5f),
+                        progress = flowOf(0.5f),
                         isInitiatedByUserInput = true,
                         isUserInputOngoing = flowOf(true),
                     )
@@ -532,13 +547,13 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun shadeExpansion_goneToShade() =
         kosmos.runTest {
+            enableSingleShade()
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
             val isScrollable by collectLastValue(notificationScrollViewModel.isScrollable)
 
             // Setup: Unlock the device to allow switching to the Gone scene
             unlockDevice()
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Gone,
                 targetScene = Scenes.Shade,
@@ -559,13 +574,13 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun shadeExpansion_shadeToGone() =
         kosmos.runTest {
+            enableSingleShade()
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
             val isScrollable by collectLastValue(notificationScrollViewModel.isScrollable)
 
             // Setup: Unlock the device to allow switching to the Gone scene
             unlockDevice()
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Shade,
                 targetScene = Scenes.Gone,
@@ -586,10 +601,10 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun shadeExpansion_shadeToQs() =
         kosmos.runTest {
+            enableSingleShade()
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
             val isScrollable by collectLastValue(notificationScrollViewModel.isScrollable)
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Shade,
                 targetScene = Scenes.QuickSettings,
@@ -608,10 +623,10 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun shadeExpansion_qsToShade() =
         kosmos.runTest {
+            enableSingleShade()
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
             val isScrollable by collectLastValue(notificationScrollViewModel.isScrollable)
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.QuickSettings,
                 targetScene = Scenes.Shade,
@@ -630,13 +645,13 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun shadeExpansion_goneToQs() =
         kosmos.runTest {
+            enableSingleShade()
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
             val isScrollable by collectLastValue(notificationScrollViewModel.isScrollable)
 
             // Setup: Unlock the device to allow switching to the Gone scene
             unlockDevice()
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Gone,
                 targetScene = Scenes.QuickSettings,
@@ -667,7 +682,6 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
             // Setup: Unlock the device to allow switching to the Gone scene
             unlockDevice()
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Gone,
                 targetScene = Scenes.Lockscreen,
@@ -685,7 +699,6 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
             // Setup: Unlock the device to allow switching to the Gone scene
             unlockDevice()
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Lockscreen,
                 targetScene = Scenes.Gone,
@@ -698,9 +711,9 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun shadeExpansion_lockscreenToShade() =
         kosmos.runTest {
+            enableSingleShade()
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Lockscreen,
                 targetScene = Scenes.Shade,
@@ -713,9 +726,9 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun shadeExpansion_shadeToLockscreen() =
         kosmos.runTest {
+            enableSingleShade()
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Shade,
                 targetScene = Scenes.Lockscreen,
@@ -730,9 +743,9 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun shadeExpansion_shadeToAod() =
         kosmos.runTest {
+            enableSingleShade()
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
 
-            enableSingleShade()
             driveSceneTransition(
                 transitionKey = ToAlwaysOnDisplay,
                 currentScene = Scenes.Shade,
@@ -746,9 +759,9 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun shadeExpansion_qsToAod() =
         kosmos.runTest {
+            enableSingleShade()
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
 
-            enableSingleShade()
             driveSceneTransition(
                 transitionKey = ToAlwaysOnDisplay,
                 currentScene = Scenes.Shade,
@@ -762,9 +775,9 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun shadeExpansion_occludedToShade() =
         kosmos.runTest {
+            enableSingleShade()
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Occluded,
                 targetScene = Scenes.Shade,
@@ -779,9 +792,9 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     @Test
     fun shadeExpansion_shadeToOccluded() =
         kosmos.runTest {
+            enableSingleShade()
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Shade,
                 targetScene = Scenes.Occluded,
@@ -798,7 +811,6 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Lockscreen,
                 targetScene = Scenes.Occluded,
@@ -813,7 +825,6 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Occluded,
                 targetScene = Scenes.Lockscreen,
@@ -828,7 +839,6 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Lockscreen,
                 targetScene = Scenes.Communal,
@@ -843,7 +853,6 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
 
-            enableSingleShade()
             driveSceneTransition(
                 currentScene = Scenes.Communal,
                 targetScene = Scenes.Lockscreen,
@@ -890,8 +899,6 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val expandFraction by collectLastValue(notificationScrollViewModel.expandFraction)
 
-            enableSingleShade()
-
             listOf(Scenes.Communal, Scenes.Dream, Scenes.Occluded).forEach { sceneWithStackCollapsed
                 ->
                 driveShowOverlayTransition(
@@ -914,6 +921,44 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
                     },
                 )
             }
+        }
+
+    @Test
+    fun scrimClippingRadius_singleShade() =
+        kosmos.runTest {
+            val clippingRadius by collectLastValue(notificationScrollViewModel.scrimClippingRadius)
+            overrideResource(R.dimen.overlay_shade_panel_shape_radius, 50)
+            overrideResource(R.dimen.notification_scrim_corner_radius, 30)
+            fakeConfigurationController.notifyDensityOrFontScaleChanged()
+
+            enableSingleShade()
+            assertThat(clippingRadius).isEqualTo(30.dpToPxOffset())
+        }
+
+    @Test
+    @DisableFlags(FLAG_DUAL_SHADE)
+    fun scrimClippingRadius_splitShade() =
+        kosmos.runTest {
+            val clippingRadius by collectLastValue(notificationScrollViewModel.scrimClippingRadius)
+            overrideResource(R.dimen.overlay_shade_panel_shape_radius, 50)
+            overrideResource(R.dimen.notification_scrim_corner_radius, 30)
+            fakeConfigurationController.notifyDensityOrFontScaleChanged()
+
+            enableSplitShade()
+            assertThat(clippingRadius).isEqualTo(30.dpToPxOffset())
+        }
+
+    @Test
+    @EnableFlags(FLAG_DUAL_SHADE)
+    fun scrimClippingRadius_dualShade() =
+        kosmos.runTest {
+            val clippingRadius by collectLastValue(notificationScrollViewModel.scrimClippingRadius)
+            overrideResource(R.dimen.overlay_shade_panel_shape_radius, 50)
+            overrideResource(R.dimen.notification_scrim_corner_radius, 30)
+            fakeConfigurationController.notifyDensityOrFontScaleChanged()
+
+            enableDualShade()
+            assertThat(clippingRadius).isEqualTo(50.dpToPxOffset())
         }
 
     private fun Kosmos.unlockDevice() {
@@ -1015,10 +1060,12 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
     }
 
     private fun Kosmos.setHunIsPinned(isPinned: Boolean) {
-        if (isPinned) {
-            headsUpNotificationRepository.setNotifications(listOf(fakePinnedHun))
-        } else {
-            headsUpNotificationRepository.setNotifications(emptyList())
-        }
+        headsUpNotificationRepository.setNotifications(
+            if (isPinned) listOf(fakePinnedHun) else emptyList()
+        )
+    }
+
+    private fun Int.dpToPxOffset(): Int {
+        return (this / context.resources.displayMetrics.density).toInt()
     }
 }

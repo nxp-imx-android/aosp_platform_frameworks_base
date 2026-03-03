@@ -29,16 +29,19 @@ import com.android.compose.animation.scene.ObservableTransitionState.Transition.
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.brightness.domain.interactor.BrightnessMirrorShowingInteractor
+import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.notifications.ui.NotificationPlaceholderStateStorage
 import com.android.systemui.notifications.ui.YSpace
+import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.TransitionKeys.ToAlwaysOnDisplay
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
@@ -78,6 +81,7 @@ class NotificationScrollViewModel
 @AssistedInject
 constructor(
     dumpManager: DumpManager,
+    @ShadeDisplayAware private val configuration: ConfigurationState,
     placeholderStateStorage: NotificationPlaceholderStateStorage,
     private val stackAppearanceInteractor: NotificationStackAppearanceInteractor,
     private val lockscreenAppearanceInteractor: LockscreenNotificationDisplayConfigInteractor,
@@ -252,10 +256,6 @@ constructor(
     val animationsEnabled
         get() = shadeInteractor.isShadeTouchable.dumpWhileCollecting("animationsEnabled")
 
-    /** Blur radius to be applied to Notifications. */
-    fun blurRadius(maxBlurRadius: Flow<Int>) =
-        combine(blurFraction, maxBlurRadius) { fraction, maxRadius -> fraction * maxRadius }
-
     /** Whether or not Split Shade is enabled. */
     val isSplitShade: Flow<Boolean> =
         shadeModeInteractor.shadeMode
@@ -289,6 +289,15 @@ constructor(
                 .dumpWhileCollecting("blurFraction")
         } else {
             flowOf(0f)
+        }
+
+    /** Blur radius to be applied to Notifications. */
+    val blurRadius: Flow<Float> =
+        combine(
+            blurFraction,
+            configuration.getDimensionPixelSize(R.dimen.max_shade_content_blur_radius),
+        ) { fraction, maxRadius ->
+            fraction * maxRadius
         }
 
     private val brightnessMirrorShowing: Flow<Boolean> =
@@ -407,6 +416,20 @@ constructor(
         combine(stackAppearanceInteractor.qsPanelShapeInWindow, viewLeft) { shapeInWindow, left ->
             shapeInWindow?.copy(bounds = shapeInWindow.bounds.minus(leftOffset = left))
         }
+
+    /** Flow of the scrim clipping radius. */
+    val scrimClippingRadius: Flow<Int> =
+        shadeModeInteractor.shadeMode
+            .flatMapLatest { shadeMode ->
+                configuration.getDimensionPixelOffset(
+                    if (shadeMode is ShadeMode.Dual) {
+                        R.dimen.overlay_shade_panel_shape_radius
+                    } else {
+                        R.dimen.notification_scrim_corner_radius
+                    }
+                )
+            }
+            .distinctUntilChanged()
 
     /** Y coordinate for the top of the notification stack, including the scroll offset. */
     val stackScrollTop: ObservableState<Float> = placeholderStateStorage.stackScrollTop
