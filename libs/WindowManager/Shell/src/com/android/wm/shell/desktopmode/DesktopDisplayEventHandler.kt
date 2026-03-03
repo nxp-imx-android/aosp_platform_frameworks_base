@@ -183,7 +183,6 @@ class DesktopDisplayEventHandler(
         val newLayout = displayController.getDisplayLayout(displayId)
         val config = displayConfigById[displayId]
         if (oldestLayout == null || newLayout == null) return
-        oldDpiLayoutByDisplayId[displayId] = oldestLayout
         oldestLayout.getStableBounds(oldStableBounds)
         newLayout.getStableBounds(newStableBounds)
         when {
