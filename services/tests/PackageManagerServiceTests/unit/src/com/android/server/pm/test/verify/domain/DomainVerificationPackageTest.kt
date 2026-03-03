@@ -477,7 +477,7 @@ class DomainVerificationPackageTest {
                 DOMAIN_2, USER_ID + 10, true /*= includeUnverifiedOwners */)).isEmpty()
 
         listOf(DOMAIN_3, DOMAIN_4).forEach { domain ->
-            listOf(USER_ID, USER_ID + 10).forEach {  userId ->
+            listOf(USER_ID, USER_ID + 10).forEach { userId ->
                 assertThat(
                     service.getOwnersForDomain(
                         domain, userId, true /*= includeUnverifiedOwners */)).isEmpty()
@@ -904,6 +904,31 @@ class DomainVerificationPackageTest {
                     ArraySet(setOf(DOMAIN_1, DOMAIN_2)))
         }
     }
+
+    @Test
+    fun testWildcardDomain() {
+        val wildcardDomain = "*.xyz.com"
+        val pkg = mockPkgState(
+            PKG_ONE, UUID_ONE, SIGNATURE_ONE,
+            autoVerifyDomains = listOf(wildcardDomain)
+        )
+
+        val service = makeService(pkg)
+        service.addPackage(pkg, null)
+        service.setStatus(pkg.domainSetId, setOf(wildcardDomain), STATE_SUCCESS)
+
+        // Only "xyz.com" exactly or subdomains should match. "abcxyz.com" should not match.
+        assertThat(
+            service.getOwnersForDomain("abcxyz.com", USER_ID, /*includeUnverifiedOwners=*/false))
+            .isEmpty()
+        assertThat(
+            service.getOwnersForDomain("abc.xyz.com", USER_ID, /*includeUnverifiedOwners=*/false))
+            .containsExactly(DomainOwner(PKG_ONE, false))
+        assertThat(
+            service.getOwnersForDomain("xyz.com", USER_ID, /*includeUnverifiedOwners=*/false))
+            .containsExactly(DomainOwner(PKG_ONE, false))
+    }
+
 
     private fun verifiedUnapproved_unverifiedSelected_approvalCausesUnselect(
             setStatusBlock: DomainVerificationService.(PackageStateInternal) -> Unit
