@@ -1086,25 +1086,30 @@ class InsetsPolicy {
         }
 
         @Override
-        public void dispatchWindowInsetsAnimationPrepare(@NonNull WindowInsetsAnimation animation) {
+        public void dispatchWindowInsetsAnimationPrepare(@NonNull WindowInsetsAnimation animation,
+                boolean isUserAnimation, boolean isResizeAnimation, boolean hasAnimationCallback) {
         }
 
         @NonNull
         @Override
         public Bounds dispatchWindowInsetsAnimationStart(@NonNull WindowInsetsAnimation animation,
-                @NonNull Bounds bounds) {
+                @NonNull Bounds bounds, boolean isUserAnimation, boolean isResizeAnimation,
+                boolean hasAnimationCallback) {
             return bounds;
         }
 
         @NonNull
         @Override
         public WindowInsets dispatchWindowInsetsAnimationProgress(@NonNull WindowInsets insets,
-                @NonNull List<WindowInsetsAnimation> runningAnimations) {
+                @NonNull InsetsState state, @NonNull List<WindowInsetsAnimation> runningAnimations,
+                boolean hasUserAnimation, boolean hasResizeAnimation, boolean hasAnimationCallback,
+                @InsetsType int hidingTypes) {
             return insets;
         }
 
         @Override
-        public void dispatchWindowInsetsAnimationEnd(@NonNull WindowInsetsAnimation animation) {
+        public void dispatchWindowInsetsAnimationEnd(@NonNull WindowInsetsAnimation animation,
+                boolean isUserAnimation, boolean isResizeAnimation, boolean hasAnimationCallback) {
         }
 
         @Override

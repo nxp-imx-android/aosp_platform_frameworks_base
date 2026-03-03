@@ -100,17 +100,22 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
          */
         void notifyInsetsChanged();
 
-        void dispatchWindowInsetsAnimationPrepare(@NonNull WindowInsetsAnimation animation);
+        void dispatchWindowInsetsAnimationPrepare(@NonNull WindowInsetsAnimation animation,
+                boolean isUserAnimation, boolean isResizeAnimation, boolean hasAnimationCallback);
 
         @Nullable
         Bounds dispatchWindowInsetsAnimationStart(
-                @NonNull WindowInsetsAnimation animation, @NonNull Bounds bounds);
+                @NonNull WindowInsetsAnimation animation, @NonNull Bounds bounds,
+                boolean isUserAnimation, boolean isResizeAnimation, boolean hasAnimationCallback);
 
         @Nullable
         WindowInsets dispatchWindowInsetsAnimationProgress(@NonNull WindowInsets insets,
-                @NonNull List<WindowInsetsAnimation> runningAnimations);
+                @NonNull InsetsState state, @NonNull List<WindowInsetsAnimation> runningAnimations,
+                boolean hasUserAnimation, boolean hasResizeAnimation, boolean hasAnimationCallback,
+                @InsetsType int hidingTypes);
 
-        void dispatchWindowInsetsAnimationEnd(@NonNull WindowInsetsAnimation animation);
+        void dispatchWindowInsetsAnimationEnd(@NonNull WindowInsetsAnimation animation,
+                boolean isUserAnimation, boolean isResizeAnimation, boolean hasAnimationCallback);
 
         /**
          * Requests host to apply surface params in synchronized manner.
@@ -230,6 +235,14 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
          */
         default void updateAnimatingTypes(@InsetsType int animatingTypes,
                 @Nullable ImeTracker.Token statsToken) {
+        }
+
+        /**
+         * @return {@code true} if the synchronized insets animation is allowed for this host,
+         *         {@code false} otherwise.
+         */
+        default boolean allowsSyncedInsetsAnimation() {
+            return false;
         }
 
         /** @see ViewRootImpl#isHandlingPointerEvent */
@@ -545,7 +558,9 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         @NonNull
         Interpolator getAlphaInterpolator() {
             if ((mRequestedTypes & ime()) != 0) {
-                if (mHasAnimationCallbacks && !mController.hasZeroInsetsIme()) {
+                if ((mHasAnimationCallbacks
+                        || com.android.window.flags.Flags.syncedInsetsAnimation())
+                        && !mController.hasZeroInsetsIme()) {
                     return input -> 1f;
                 } else if (mShow) {
                     // Alpha animation takes half the time with linear interpolation;
@@ -594,6 +609,10 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         @AnimationType
         private int getAnimationType() {
             return mShow ? ANIMATION_TYPE_SHOW : ANIMATION_TYPE_HIDE;
+        }
+
+        public boolean hasAnimationCallbacks() {
+            return mHasAnimationCallbacks;
         }
     }
 
@@ -673,8 +692,6 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     private final SparseArray<InsetsSourceControl> mTmpControlArray = new SparseArray<>();
     @NonNull
     private final ArrayList<RunningAnimation> mRunningAnimations = new ArrayList<>();
-    @Nullable
-    private WindowInsets mLastInsets;
 
     private boolean mAnimCallbackScheduled;
 
@@ -690,6 +707,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     private int mLastLegacySoftInputMode;
     private int mLastLegacyWindowFlags;
     private int mLastLegacySystemUiFlags;
+    private boolean mLastScreenRound;
     @WindowConfiguration.ActivityType
     private int mLastActivityType;
     private boolean mStartingAnimation;
@@ -846,14 +864,25 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             }
 
             final var runningAnimations = new ArrayList<WindowInsetsAnimation>();
-            final var finishedAnimations = new ArrayList<WindowInsetsAnimation>();
+            final var finishedRunners = new ArrayList<InsetsAnimationControlRunner>();
             final var state = new InsetsState(mState, true /* copySources */);
+            boolean hasUserAnimation = false;
+            boolean hasResizeAnimation = false;
+            boolean hasAnimationCallback = false;
+            @InsetsType int hidingTypes = 0;
             for (int i = mRunningAnimations.size() - 1; i >= 0; i--) {
                 RunningAnimation runningAnimation = mRunningAnimations.get(i);
                 if (DEBUG) {
                     Log.d(TAG, "Running animation type: " + runningAnimation.mType);
                 }
                 final InsetsAnimationControlRunner runner = runningAnimation.mRunner;
+                if (com.android.window.flags.Flags.syncedInsetsAnimation()
+                        && runningAnimation.mType == ANIMATION_TYPE_HIDE) {
+                    hidingTypes |= runner.getControllingTypes();
+                }
+                hasUserAnimation |= runner.getAnimationType() == ANIMATION_TYPE_USER;
+                hasResizeAnimation |= runner.getAnimationType() == ANIMATION_TYPE_RESIZE;
+                hasAnimationCallback |= runner.hasAnimationCallback();
                 if (runner instanceof WindowInsetsAnimationController) {
 
                     // Keep track of running animation to be dispatched. Aggregate it here such that
@@ -864,17 +893,18 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                     }
 
                     if (((InternalInsetsAnimationController) runner).applyChangeInsets(state)) {
-                        finishedAnimations.add(runner.getAnimation());
+                        finishedRunners.add(runner);
                     }
                 }
             }
 
             final WindowInsets insets = state.calculateInsets(mFrame,
-                    mBounds, mState /* ignoringVisibilityState */, mLastInsets.isRound(),
+                    mBounds, mState /* ignoringVisibilityState */, mLastScreenRound,
                     mLastLegacySoftInputMode, mLastLegacyWindowFlags, mLastLegacySystemUiFlags,
                     mWindowType, mLastActivityType, null /* idSideMap */);
-            mHost.dispatchWindowInsetsAnimationProgress(insets,
-                    Collections.unmodifiableList(runningAnimations));
+            mHost.dispatchWindowInsetsAnimationProgress(insets, state,
+                    Collections.unmodifiableList(runningAnimations), hasUserAnimation,
+                    hasResizeAnimation, hasAnimationCallback, hidingTypes);
             if (DEBUG) {
                 for (WindowInsetsAnimation anim : runningAnimations) {
                     Log.d(TAG, String.format("Running animation on insets type: %s, progress: %f",
@@ -882,8 +912,13 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 }
             }
 
-            for (int i = finishedAnimations.size() - 1; i >= 0; i--) {
-                dispatchAnimationEnd(finishedAnimations.get(i));
+            for (int i = finishedRunners.size() - 1; i >= 0; i--) {
+                final var runner = finishedRunners.get(i);
+                dispatchAnimationEnd(
+                        runner.getAnimation(),
+                        runner.getAnimationType() == ANIMATION_TYPE_USER,
+                        runner.getAnimationType() == ANIMATION_TYPE_RESIZE,
+                        runner.hasAnimationCallback());
             }
         };
 
@@ -1010,20 +1045,22 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         mLastLegacySoftInputMode = legacySoftInputMode;
         mLastLegacyWindowFlags = legacyWindowFlags;
         mLastLegacySystemUiFlags = legacySystemUiFlags;
-        mLastInsets = mState.calculateInsets(mFrame, mBounds, null /* ignoringVisibilityState */,
+        mLastScreenRound = isScreenRound;
+        return mState.calculateInsets(mFrame, mBounds, null /* ignoringVisibilityState */,
                 isScreenRound, legacySoftInputMode, legacyWindowFlags,
                 legacySystemUiFlags, windowType, activityType, null /* idSideMap */);
-        return mLastInsets;
     }
 
     /**
-     * @see InsetsState#calculateVisibleInsets(Rect, Rect, int, int, int, int)
+     * @see InsetsState#calculateVisibleInsets(Rect, Rect, int, int, int, int, int)
      */
-    public Insets calculateVisibleInsets(@LayoutParams.WindowType int windowType,
+    public Insets calculateVisibleInsets(@NonNull InsetsState state,
+            @LayoutParams.WindowType int windowType,
             @WindowConfiguration.ActivityType int activityType,
-            @SoftInputModeFlags int softInputMode, @LayoutParams.Flags int windowFlags) {
-        return mState.calculateVisibleInsets(mFrame, mBounds, windowType, activityType,
-                softInputMode, windowFlags);
+            @SoftInputModeFlags int softInputMode, @LayoutParams.Flags int windowFlags,
+            @InsetsType int ignoringTypes) {
+        return state.calculateVisibleInsets(mFrame, mBounds, windowType, activityType,
+                softInputMode, windowFlags, ignoringTypes);
     }
 
     /**
@@ -1724,7 +1761,10 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 mRunningAnimations.remove(i);
                 removedTypes = runner.getTypes();
                 if (invokeCallback) {
-                    dispatchAnimationEnd(runningAnimation.mRunner.getAnimation());
+                    dispatchAnimationEnd(runner.getAnimation(),
+                            runner.getAnimationType() == ANIMATION_TYPE_USER,
+                            runner.getAnimationType() == ANIMATION_TYPE_RESIZE,
+                            runner.hasAnimationCallback());
                 } else {
                     if ((removedTypes & ime()) != 0
                             && runner.getAnimationType() == ANIMATION_TYPE_HIDE) {
@@ -1954,7 +1994,9 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         }
 
         final boolean hasAnimationCallbacks = mHost.hasAnimationCallbacks();
-        final boolean useInsetsAnimationThread = !hasAnimationCallbacks || skipsCallbacks;
+        final boolean useInsetsAnimationThread =
+                (!hasAnimationCallbacks && (!com.android.window.flags.Flags.syncedInsetsAnimation()
+                        || !mHost.allowsSyncedInsetsAnimation())) || skipsCallbacks;
 
         Handler handler = null;
         if (Flags.fixJankTrackerImeAnimationDelay() && useInsetsAnimationThread) {
@@ -2010,7 +2052,10 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     void startAnimation(@NonNull T runner, @NonNull WindowInsetsAnimationControlListener listener,
             @InsetsType int types, @NonNull WindowInsetsAnimation animation,
             @NonNull Bounds bounds) {
-        mHost.dispatchWindowInsetsAnimationPrepare(animation);
+        mHost.dispatchWindowInsetsAnimationPrepare(animation,
+                runner.getAnimationType() == ANIMATION_TYPE_USER,
+                runner.getAnimationType() == ANIMATION_TYPE_RESIZE,
+                runner.hasAnimationCallback());
         mHost.addOnPreDrawRunnable(() -> {
             if (runner.isCancelled()) {
                 if (WARN) {
@@ -2027,7 +2072,10 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 }
             }
             Trace.asyncTraceEnd(TRACE_TAG_VIEW, "IC.pendingAnim", 0);
-            mHost.dispatchWindowInsetsAnimationStart(animation, bounds);
+            mHost.dispatchWindowInsetsAnimationStart(animation, bounds,
+                    runner.getAnimationType() == ANIMATION_TYPE_USER,
+                    runner.getAnimationType() == ANIMATION_TYPE_RESIZE,
+                    runner.hasAnimationCallback());
             mStartingAnimation = true;
             if (runner.getAnimationType() == ANIMATION_TYPE_USER) {
                 ImeTracker.forLogging().onDispatched(runner.getStatsToken());
@@ -2038,12 +2086,13 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         });
     }
 
-    @VisibleForTesting
-    public void dispatchAnimationEnd(@NonNull WindowInsetsAnimation animation) {
+    private void dispatchAnimationEnd(@NonNull WindowInsetsAnimation animation,
+            boolean isUserAnimation, boolean isResizeAnimation, boolean hasAnimationCallback) {
         Trace.asyncTraceEnd(TRACE_TAG_VIEW,
                 "InsetsAnimation: " + Type.toString(animation.getTypeMask()),
                 animation.getTypeMask());
-        mHost.dispatchWindowInsetsAnimationEnd(animation);
+        mHost.dispatchWindowInsetsAnimationEnd(animation, isUserAnimation, isResizeAnimation,
+                hasAnimationCallback);
     }
 
     @VisibleForTesting

@@ -979,6 +979,8 @@ public final class ViewRootImpl implements ViewParent,
      */
     boolean mScrollMayChange;
 
+    boolean mImmediateScrolling = false;
+
     /**
      * The soft input mode for this window, as specified by
      * {@link WindowManager.LayoutParams#softInputMode}.
@@ -3733,10 +3735,47 @@ public final class ViewRootImpl implements ViewParent,
             mAttachInfo.mContentInsets.set(mLastWindowInsets.getSystemWindowInsets().toRect());
             mAttachInfo.mStableInsets.set(mLastWindowInsets.getStableInsets().toRect());
             mAttachInfo.mVisibleInsets.set(mInsetsController.calculateVisibleInsets(
-                    mWindowAttributes.type, config.windowConfiguration.getActivityType(),
-                    mWindowAttributes.softInputMode, mWindowAttributes.flags).toRect());
+                    mInsetsController.getState(), mWindowAttributes.type,
+                    config.windowConfiguration.getActivityType(), mWindowAttributes.softInputMode,
+                    mWindowAttributes.flags, 0 /* ignoringTypes */).toRect());
         }
         return mLastWindowInsets;
+    }
+
+    @Nullable
+    public WindowInsets dispatchWindowInsetsAnimationProgress(@NonNull WindowInsets insets,
+            @NonNull InsetsState state, @NonNull List<WindowInsetsAnimation> runningAnimations,
+            boolean hasUserAnimation, boolean hasResizeAnimation, boolean hasAnimationCallback,
+            @InsetsType int hidingTypes) {
+        if (mView == null) {
+            // The view has already detached from window.
+            return null;
+        }
+        if (InsetsController.DEBUG) {
+            for (WindowInsetsAnimation anim : runningAnimations) {
+                Log.d(mTag, "windowInsetsAnimation progress: " + anim.getInterpolatedFraction());
+            }
+        }
+        final boolean handlesAnimation =
+                hasUserAnimation || hasResizeAnimation || hasAnimationCallback;
+        if (com.android.window.flags.Flags.syncedInsetsAnimation() && !handlesAnimation) {
+            // will not include IME insets, if softInputMode is different from adjustResize
+            mAttachInfo.mContentInsets.set(insets.getSystemWindowInsets().toRect());
+            mAttachInfo.mStableInsets.set(insets.getStableInsets().toRect());
+
+            // Don't let the hiding types change mScrollY if it is already 0.
+            // This is to prevent the redundant scrolling animation.
+            @InsetsType final int ignoringTypes = mScrollY == 0 ? hidingTypes : 0;
+            mAttachInfo.mVisibleInsets.set(
+                    mInsetsController.calculateVisibleInsets(state, mWindowAttributes.type,
+                            getConfiguration().windowConfiguration.getActivityType(),
+                            mWindowAttributes.softInputMode, mWindowAttributes.flags,
+                            ignoringTypes).toRect());
+            mScrollMayChange = true;
+            mImmediateScrolling = true;
+            return null;
+        }
+        return mView.dispatchWindowInsetsAnimationProgress(insets, runningAnimations);
     }
 
     public void dispatchApplyInsets(View host) {
@@ -4786,6 +4825,7 @@ public final class ViewRootImpl implements ViewParent,
 
         mIsInTraversal = false;
         mRelayoutRequested = false;
+        mImmediateScrolling = false;
 
         if (!cancelAndRedraw) {
             mReportNextDraw = false;
@@ -6604,7 +6644,7 @@ public final class ViewRootImpl implements ViewParent,
         mInvalidateRootRequested = true;
     }
 
-    boolean scrollToRectOrFocus(Rect rectangle, boolean immediate) {
+    boolean scrollToRectOrFocus(Rect rectangle, boolean forceImmediate) {
         if (mImeBackAnimationController.isAnimationInProgress()) {
             // IME predictive back animation is currently in progress which means that scrollY is
             // currently controlled by ImeBackAnimationController.
@@ -6717,6 +6757,7 @@ public final class ViewRootImpl implements ViewParent,
         if (scrollY != mScrollY) {
             if (DEBUG_INPUT_RESIZE) Log.v(mTag, "Pan scroll changed: old="
                     + mScrollY + " , new=" + scrollY);
+            final boolean immediate = forceImmediate || mImmediateScrolling;
             if (!immediate) {
                 if (mScroller == null) {
                     mScroller = new Scroller(mView.getContext());

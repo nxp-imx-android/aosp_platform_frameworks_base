@@ -419,6 +419,14 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
     }
 
     @Override
+    public boolean hasAnimationCallback() {
+        if (mListener instanceof InsetsController.InternalAnimationControlListener listener) {
+            return listener.hasAnimationCallbacks();
+        }
+        return false;
+    }
+
+    @Override
     @NonNull
     public SurfaceParamsApplier getSurfaceParamsApplier() {
         return mSurfaceParamsApplier;
