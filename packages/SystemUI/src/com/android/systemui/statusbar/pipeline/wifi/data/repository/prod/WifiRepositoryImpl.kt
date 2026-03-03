@@ -196,10 +196,10 @@ constructor(
                                     }
                                 }
 
-                            // If a WifiPicker already exists, call onStop to begin its shutdown
+                            // If a WifiPicker already exists, call close() to begin its shutdown
                             // process in preparation for a new one to be created.
-                            wifiPickerTracker?.onStop()
-                            wifiPickerTracker =
+                            wifiPickerTracker?.close()
+                            val newWifiPickerTracker =
                                 wifiPickerTrackerFactory
                                     .create(currentContext, lifecycle, callback, "WifiRepository")
                                     .apply {
@@ -210,7 +210,10 @@ constructor(
                                         // costly and should be avoided whenever possible).
                                         this?.disableScanning()
                                     }
-                            awaitClose { mainExecutor.execute { wifiPickerTracker?.onStop() } }
+                            wifiPickerTracker = newWifiPickerTracker
+                            awaitClose {
+                                mainExecutor.execute { newWifiPickerTracker?.close() }
+                            }
                         }
                         .stateIn(scope, SharingStarted.Eagerly, current)
                 }
