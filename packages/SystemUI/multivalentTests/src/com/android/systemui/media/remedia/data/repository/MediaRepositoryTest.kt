@@ -77,8 +77,6 @@ class MediaRepositoryTest : SysuiTestCase() {
             visualStabilityProvider = mockVisualStabilityProvider
         }
     private val testScope = kosmos.testScope
-    private val mediaResumption =
-        Settings.Secure.getInt(context.contentResolver, Settings.Secure.MEDIA_CONTROLS_RESUME, 0)
     private lateinit var session: MediaSession
 
     private val underTest: MediaRepositoryImpl = kosmos.mediaRepository
@@ -92,11 +90,6 @@ class MediaRepositoryTest : SysuiTestCase() {
     fun tearDown() {
         session.release()
         kosmos.fakeMediaControllerFactory.reset()
-        Settings.Secure.putInt(
-            context.contentResolver,
-            Settings.Secure.MEDIA_CONTROLS_RESUME,
-            mediaResumption,
-        )
     }
 
     @Test
@@ -552,11 +545,7 @@ class MediaRepositoryTest : SysuiTestCase() {
             val instanceId = InstanceId.fakeInstanceId(123)
             val mediaData = createMediaData("app1", false, LOCAL, false, instanceId)
             // When resumption is disabled, paused media should be dismissed after being swiped away
-            Settings.Secure.putInt(
-                context.contentResolver,
-                Settings.Secure.MEDIA_CONTROLS_RESUME,
-                0,
-            )
+            kosmos.fakeSettings.putInt(Settings.Secure.MEDIA_CONTROLS_RESUME, 0)
 
             addCurrentUserMediaEntry(mediaData)
 
@@ -577,11 +566,7 @@ class MediaRepositoryTest : SysuiTestCase() {
             val instanceId = InstanceId.fakeInstanceId(123)
             val mediaData = createMediaData("app1", false, LOCAL, false, instanceId)
             // When resumption is disabled, paused media should be dismissed after being swiped away
-            Settings.Secure.putInt(
-                context.contentResolver,
-                Settings.Secure.MEDIA_CONTROLS_RESUME,
-                0,
-            )
+            kosmos.fakeSettings.putInt(Settings.Secure.MEDIA_CONTROLS_RESUME, 0)
 
             addCurrentUserMediaEntry(mediaData)
 
@@ -601,11 +586,7 @@ class MediaRepositoryTest : SysuiTestCase() {
             val instanceId = InstanceId.fakeInstanceId(123)
             val mediaData = createMediaData("app1", false, LOCAL, false, instanceId)
             // When resumption is disabled, paused media should be dismissed after being swiped away
-            Settings.Secure.putInt(
-                context.contentResolver,
-                Settings.Secure.MEDIA_CONTROLS_RESUME,
-                0,
-            )
+            kosmos.fakeSettings.putInt(Settings.Secure.MEDIA_CONTROLS_RESUME, 0)
 
             addCurrentUserMediaEntry(mediaData)
 
@@ -629,11 +610,7 @@ class MediaRepositoryTest : SysuiTestCase() {
             whenever(kosmos.visualStabilityProvider.isReorderingAllowed).thenReturn(false)
             val instanceId = InstanceId.fakeInstanceId(123)
             val mediaData = createMediaData("app1", false, LOCAL, false, instanceId)
-            Settings.Secure.putInt(
-                context.contentResolver,
-                Settings.Secure.MEDIA_CONTROLS_RESUME,
-                0,
-            )
+            kosmos.fakeSettings.putInt(Settings.Secure.MEDIA_CONTROLS_RESUME, 0)
 
             addCurrentUserMediaEntry(mediaData)
 
@@ -663,11 +640,7 @@ class MediaRepositoryTest : SysuiTestCase() {
             whenever(kosmos.visualStabilityProvider.isReorderingAllowed).thenReturn(false)
             val instanceId = InstanceId.fakeInstanceId(123)
             val mediaData = createMediaData("app1", null, LOCAL, false, instanceId)
-            Settings.Secure.putInt(
-                context.contentResolver,
-                Settings.Secure.MEDIA_CONTROLS_RESUME,
-                0,
-            )
+            kosmos.fakeSettings.putInt(Settings.Secure.MEDIA_CONTROLS_RESUME, 0)
 
             addCurrentUserMediaEntry(mediaData)
 

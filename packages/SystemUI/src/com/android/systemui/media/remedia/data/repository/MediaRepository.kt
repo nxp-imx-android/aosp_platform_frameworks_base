@@ -25,6 +25,7 @@ import android.graphics.drawable.Drawable
 import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.PlaybackState
+import android.provider.Settings
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -124,7 +125,7 @@ constructor(
     @Background val backgroundDispatcher: CoroutineDispatcher,
     private val visualStabilityProvider: VisualStabilityProvider,
     private val systemClock: SystemClock,
-    secureSettings: SecureSettings,
+    private val secureSettings: SecureSettings,
     private val mediaControllerFactory: MediaControllerFactory,
 ) :
     MediaRepository,
@@ -182,7 +183,7 @@ constructor(
             applicationScope.launch {
                 mediaMutex.withLock {
                     addToSortedMediaLocked(data, updateModel)
-                    if (data.canBeRemoved() && !Utils.useMediaResumption(applicationContext)) {
+                    if (data.canBeRemoved() && !useMediaResumption(applicationContext)) {
                         if (!visualStabilityProvider.isReorderingAllowed) {
                             isUserInitiatedRemovalQueued = isSwipedAway
                             keysNeedRemoval.add(data.instanceId)
@@ -393,7 +394,7 @@ constructor(
                 token = token,
                 needsImmediateRemoval =
                     canBeRemoved() &&
-                        !Utils.useMediaResumption(applicationContext) &&
+                        !useMediaResumption(applicationContext) &&
                         visualStabilityProvider.isReorderingAllowed,
             )
         }
@@ -680,6 +681,11 @@ constructor(
         val state = playbackState?.state ?: PlaybackState.STATE_NONE
         val actions = playbackState?.actions ?: 0L
         return state != PlaybackState.STATE_NONE && (actions and PlaybackState.ACTION_SEEK_TO != 0L)
+    }
+
+    private fun useMediaResumption(context: Context): Boolean {
+        return Utils.useQsMediaPlayer(context) &&
+            secureSettings.getInt(Settings.Secure.MEDIA_CONTROLS_RESUME, 1) > 0
     }
 
     companion object {
