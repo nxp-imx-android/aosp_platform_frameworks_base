@@ -53,6 +53,8 @@ import java.util.List;
  * Collection of utilities for accessibility target.
  */
 public final class AccessibilityTargetHelper {
+    public static boolean sSupportOneHandedMode = SUPPORT_ONE_HANDED_MODE;
+
     private AccessibilityTargetHelper() {}
 
     /**
@@ -240,7 +242,7 @@ public final class AccessibilityTargetHelper {
                         Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ENABLED);
         targets.add(mouseKeys);
 
-        if (SUPPORT_ONE_HANDED_MODE) {
+        if (sSupportOneHandedMode) {
             final ToggleAllowListingFeatureTarget oneHandedMode =
                     new ToggleAllowListingFeatureTarget(context,
                             shortcutType,
@@ -311,5 +313,10 @@ public final class AccessibilityTargetHelper {
     public static boolean sendRestrictedDialogIntent(Context context, String packageName, int uid) {
         final AccessibilityManager am = context.getSystemService(AccessibilityManager.class);
         return am.sendRestrictedDialogIntent(packageName, uid, UserHandle.myUserId());
+    }
+
+    @VisibleForTesting
+    public static void setSupportOneHandedMode(boolean value) {
+        sSupportOneHandedMode = value;
     }
 }

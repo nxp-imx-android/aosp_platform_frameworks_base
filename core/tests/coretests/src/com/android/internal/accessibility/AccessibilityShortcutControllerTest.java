@@ -80,6 +80,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.R;
+import com.android.internal.accessibility.dialog.AccessibilityTargetHelper;
 import com.android.internal.accessibility.util.FrameworkObjectProvider;
 
 import org.junit.Before;
@@ -567,7 +568,7 @@ public class AccessibilityShortcutControllerTest {
 
     @Test
     public void getFrameworkFeatureMap_oneHandedModeEnabled_containsExpectedKey() {
-        TestUtils.setOneHandedModeEnabled(this, /* enabled= */ true);
+        AccessibilityTargetHelper.setSupportOneHandedMode(true);
 
         final Map<ComponentName, AccessibilityShortcutController.FrameworkFeatureInfo>
                 frameworkFeatureMap =
@@ -578,7 +579,7 @@ public class AccessibilityShortcutControllerTest {
 
     @Test
     public void getFrameworkFeatureMap_oneHandedModeDisabled_containsExpectedKey() {
-        TestUtils.setOneHandedModeEnabled(this, /* enabled= */ false);
+        AccessibilityTargetHelper.setSupportOneHandedMode(false);
 
         final Map<ComponentName, AccessibilityShortcutController.FrameworkFeatureInfo>
                 frameworkFeatureMap =
