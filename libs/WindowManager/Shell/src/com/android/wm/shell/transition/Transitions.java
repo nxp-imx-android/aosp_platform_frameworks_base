@@ -604,7 +604,8 @@ public class Transitions implements RemoteCallable<Transitions>,
     /**
      * Sets up visibility/alpha/transforms to resemble the starting state of an animation.
      */
-    private static void setupStartState(@NonNull TransitionInfo info,
+    @VisibleForTesting
+    static void setupStartState(@NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction t, @NonNull SurfaceControl.Transaction finishT) {
         final boolean crossDisplay = com.android.window.flags.Flags.crossDisplayTransition();
         final SparseBooleanArray isRevealingOnDisplay = new SparseBooleanArray();
@@ -625,7 +626,7 @@ public class Transitions implements RemoteCallable<Transitions>,
                 // When the window is moved to front, make sure the crop is updated to prevent it
                 // from using the old crop.
                 t.setPosition(leash, change.getEndRelOffset().x, change.getEndRelOffset().y);
-                if (change.getActivityTransitionInfo() != null) {
+                if (change.getActivityTransitionInfo() == null) {
                     // We don't want to crop if it's an activity, because it can have
                     // letterbox child surface that is position at a negative position related to
                     // the activity's surface.
@@ -641,7 +642,7 @@ public class Transitions implements RemoteCallable<Transitions>,
                     t.setMatrix(leash, 1, 0, 0, 1);
                     t.setAlpha(leash, 1.f);
                     t.setPosition(leash, change.getEndRelOffset().x, change.getEndRelOffset().y);
-                    if (change.getActivityTransitionInfo() != null) {
+                    if (change.getActivityTransitionInfo() == null) {
                         // We don't want to crop if it's an activity, because it can have
                         // letterbox child surface that is position at a negative position related
                         // to the activity's surface.
