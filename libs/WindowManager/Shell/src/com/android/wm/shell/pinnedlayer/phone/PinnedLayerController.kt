@@ -20,6 +20,7 @@ import android.app.ActivityManager.AppTask.WINDOWING_LAYER_PINNED
 import android.app.TaskInfo
 import android.app.TaskWindowingLayerRequestHandler.REMOTE_CALLBACK_RESULT_KEY
 import android.app.TaskWindowingLayerRequestHandler.RESULT_APPROVED
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.graphics.Rect
 import android.os.Bundle
 import android.os.IBinder
@@ -28,8 +29,12 @@ import android.os.RemoteException
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
+import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_TO_BACK
+import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
+import android.window.TransitionInfo.FLAG_IS_WALLPAPER
+import android.window.TransitionInfo.FLAG_SHOW_WALLPAPER
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -464,7 +469,7 @@ class PinnedLayerController(
     ) {
         // TODO(b/449681882): Clean transitions here. Handler should track animation data
         // separately. Use PinnedLayerUiState instead.
-        val transitions = activeTransitions[transition] ?: return
+        val transitions = activeTransitions.getOrDefault(transition, emptySet())
         transitions.forEach { transition ->
             logV("onTransitionReady: Pin layer transition ready: %s", transition)
             when (transition) {
@@ -485,6 +490,39 @@ class PinnedLayerController(
                     unpin(transition.taskInfo, rememberAsPinned = isMovingToBack)
                 }
             }
+        }
+        checkFullscreenTaskOpenedAndClosePinnedIfNeeded(info)
+    }
+
+    /**
+     * Pinned tasks does not work well over the fullscreen tasks yet: b/488007558 In order to not
+     * break windowing state, pinned tasks are going to be closed if fullscreen task appears on the
+     * same display.
+     */
+    private fun checkFullscreenTaskOpenedAndClosePinnedIfNeeded(info: TransitionInfo) {
+        val pinnedTask = getCurrentPinnedTask() ?: return
+
+        val changeWithFullscreenTask =
+            info.changes.firstOrNull { change ->
+                val taskInfo = change.taskInfo
+                taskInfo != null &&
+                    !isPinned(taskInfo.taskId) &&
+                    taskInfo.displayId == pinnedTask.displayId &&
+                    taskInfo.windowingMode == WINDOWING_MODE_FULLSCREEN &&
+                    !(change.hasFlags(FLAG_IS_WALLPAPER or FLAG_SHOW_WALLPAPER)) &&
+                    (change.mode == TRANSIT_OPEN ||
+                        change.mode == TRANSIT_TO_FRONT ||
+                        change.mode == TRANSIT_CHANGE)
+            }
+
+        if (changeWithFullscreenTask != null) {
+            logD(
+                "Closing pinned task as fullscreen task appeared on same display. " +
+                    "Pinned task id=%d, caused by change=%s",
+                pinnedTask.taskId,
+                changeWithFullscreenTask,
+            )
+            closeTask(pinnedTask)
         }
     }
 
