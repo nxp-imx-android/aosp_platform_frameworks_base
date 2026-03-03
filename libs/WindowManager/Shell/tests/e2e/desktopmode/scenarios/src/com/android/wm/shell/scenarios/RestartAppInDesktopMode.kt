@@ -43,7 +43,11 @@ abstract class RestartAppInDesktopMode(
 
     @Test
     open fun restartFromAppHandleMenu() {
-        val connectedDisplayId = connectedDisplayRule.setupTestDisplay()
+        // Ensure that density is different between the internal and simulated displays.
+        val primaryDisplayDensity =
+            wmHelper.currentState.wmState.getDefaultDisplay()?.fullConfiguration?.densityDpi ?: 160
+        val targetDensity = if (primaryDisplayDensity == 160) 240 else 160
+        val connectedDisplayId = connectedDisplayRule.setupTestDisplay(density = targetDensity)
         wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(connectedDisplayId).waitForAndVerify()
         testApp.enterDesktopMode(wmHelper, device)
         testApp.moveToNextDisplayViaKeyboard(wmHelper, connectedDisplayId)
