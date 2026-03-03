@@ -51,6 +51,7 @@ import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwleSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationConfig;
+import android.os.vibrator.VibrationEffectSegment;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.SparseArray;
@@ -67,6 +68,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class DeviceAdapterTest {
     private static final int EMPTY_VIBRATOR_ID = 1;
@@ -406,6 +408,47 @@ public class DeviceAdapterTest {
 
         assertThat(mAdapter.adaptToVibrator(BASIC_VIBRATOR_ID, effect1)).isNull();
         assertThat(mAdapter.adaptToVibrator(BASIC_VIBRATOR_ID, effect2)).isNull();
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_REMOVE_HIDL_SUPPORT, Flags.FLAG_NORMALIZED_PWLE_EFFECTS})
+    public void testAdaptToVibrator_propagatesStartTimeThroughMultipleAdapters() {
+        // Config to enable RampDownAdapter
+        Context context = ApplicationProvider.getApplicationContext();
+        VibrationConfig.Builder configBuilder = new VibrationConfig.Builder(context.getResources());
+        configBuilder.setRampDownDurationMs(20);
+        VibrationSettings settings = new VibrationSettings(context,
+                new Handler(mTestLooper.getLooper()),
+                configBuilder.build(), mFallbackEffects);
+        SparseArray<HalVibrator> vibrators = new SparseArray<>();
+        vibrators.put(BASIC_VIBRATOR_ID, createBasicVibrator(BASIC_VIBRATOR_ID));
+        DeviceAdapter adapter = new DeviceAdapter(settings, vibrators);
+
+        // This test case exercises:
+        // 1. PrebakedFallbackAdapter: EFFECT_THUD -> Waveform (StepSegment)
+        // 2. RampDownAdapter: StepSegment (amplitude 0) -> Ramp down Steps
+        mFallbackEffects.put(EFFECT_THUD, VibrationEffect.createWaveform(
+                new long[] { 10 }, -1));
+        long startTime = 1234L;
+        VibrationEffect effect = new VibrationEffect.Composed(Arrays.asList(
+                new StepSegment(1f, 10),
+                new PrebakedSegment(EFFECT_THUD, true, VibrationEffect.EFFECT_STRENGTH_MEDIUM,
+                        startTime)),
+                -1);
+
+        VibrationEffect adapted = adapter.adaptToVibrator(BASIC_VIBRATOR_ID, effect);
+
+        assertThat(adapted).isInstanceOf(VibrationEffect.Composed.class);
+        List<VibrationEffectSegment> segments = ((VibrationEffect.Composed) adapted).getSegments();
+
+        // 1f/10ms step -> ramp down steps (1 step of 0.5f/5ms + 1 step of 0f/5ms)
+        // The replaced THUD (Step(0f, 10ms)) is consumed by the ramp down.
+        // So we have:
+        // [0] Step(1f, 10ms), start -1
+        // [1] Step(0.5f, 5ms), start startTime (propagated)
+        // [2] Step(0f, 5ms), start -1
+        assertThat(segments.size()).isEqualTo(3);
+        assertThat(segments.get(1).getStartTimeMillis()).isEqualTo(startTime);
     }
 
     private HalVibrator createEmptyVibrator(int vibratorId) {
