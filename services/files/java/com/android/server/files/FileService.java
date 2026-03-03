@@ -247,21 +247,21 @@ public class FileService extends SystemService {
         public void registerCompletionListener(String requestId, String packageName) {
             int callingUid = mInjector.getCallingUid();
             final long token = Binder.clearCallingIdentity();
-            final PackageManagerInternal packageManagerInternal =
-                    LocalServices.getService(PackageManagerInternal.class);
-            if (packageManagerInternal == null) {
-                Slog.wtf(
-                        TAG,
-                        "Failed to acquire PackageManagerInternal in"
-                                + " FileService#registerCompletionListener");
-                return;
-            }
-            if (!packageManagerInternal.isSameApp(
-                    packageName, callingUid, UserHandle.getUserId(callingUid))) {
-                throw new SecurityException(
-                        "Package " + packageName + " does not belong to uid " + callingUid);
-            }
             try {
+                final PackageManagerInternal packageManagerInternal =
+                        LocalServices.getService(PackageManagerInternal.class);
+                if (packageManagerInternal == null) {
+                    Slog.wtf(
+                            TAG,
+                            "Failed to acquire PackageManagerInternal in"
+                                    + " FileService#registerCompletionListener");
+                    return;
+                }
+                if (!packageManagerInternal.isSameApp(
+                        packageName, callingUid, UserHandle.getUserId(callingUid))) {
+                    throw new SecurityException(
+                            "Package " + packageName + " does not belong to uid " + callingUid);
+                }
                 synchronized (mSubscribers) {
                     FileOperationResult result = mResults.get(requestId);
                     if (result != null
