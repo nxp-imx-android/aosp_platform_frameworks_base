@@ -32,7 +32,6 @@ import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewRootImpl;
 import android.view.Window;
 import android.view.WindowInsets.Type;
 import android.view.WindowManager;
@@ -54,6 +53,7 @@ import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteracto
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
@@ -70,7 +70,7 @@ import javax.inject.Inject;
  * <p>The SystemUIDialog registers a listener for the screen off / close system dialogs broadcast,
  * and dismisses itself when it receives the broadcast.
  */
-public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigChangedCallback {
+public class SystemUIDialog extends AlertDialog {
     public static final int DEFAULT_THEME = R.style.Theme_SystemUI_Dialog;
     // TODO(b/203389579): Remove this once the dialog width on large screens has been agreed on.
     private static final String FLAG_TABLET_DIALOG_WIDTH =
@@ -322,12 +322,16 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         for (int i = 0; i < mOnCreateRunnables.size(); i++) {
             mOnCreateRunnables.get(i).run();
         }
-        View targetView = window.getDecorView();
+        View decorView = window.getDecorView();
+        if (decorView instanceof ViewGroup decorViewGroup) {
+            decorViewGroup.addView(
+                    new ConfigurationListenerView(getContext(), this::onConfigurationChanged));
+        }
         DialogKt.registerAnimationOnBackInvoked(
                 /* dialog = */ this,
-                /* targetView = */ targetView,
+                /* targetView = */ decorView,
                 /* backAnimationSpec= */mDelegate.getBackAnimationSpec(
-                        () -> targetView.getResources().getDisplayMetrics())
+                        () -> decorView.getResources().getDisplayMetrics())
         );
     }
 
@@ -348,13 +352,12 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
         window.setLayout(width, height);
     }
 
-    @Override
+    /**
+     * Called when the current configuration of the resources being used by the dialog has changed.
+     *
+     * @param configuration The new resource configuration.
+     */
     public void onConfigurationChanged(Configuration configuration) {
-        if (!isShowing()) {
-            // Dialog was already dismissed. Any further changes on the DecorView would throw an
-            // exception.
-            return;
-        }
         final Window window = getWindow();
         if (window == null) {
             return;
@@ -405,9 +408,6 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             mDismissReceiver.register();
         }
 
-        // Listen for configuration changes to resize this dialog window. This is mostly necessary
-        // for foldables that often go from large <=> small screen when folding/unfolding.
-        ViewRootImpl.addConfigCallback(this);
         if (!mIsTransient) {
             // TODO(b/471161535) Register transient dialogs too
             mDialogManager.setShowing(/* dialog= */ this, /* showing= */true);
@@ -434,7 +434,6 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
             mDismissReceiver.unregister();
         }
 
-        ViewRootImpl.removeConfigCallback(this);
         if (!mIsTransient) {
             // TODO(b/471161535) Register transient dialogs too
             mDialogManager.setShowing(/* dialog= */ this, /* showing= */false);
@@ -806,5 +805,27 @@ public class SystemUIDialog extends AlertDialog implements ViewRootImpl.ConfigCh
          * construction.
          */
         SystemUIDialog createDialog();
+    }
+
+    /** Empty view, used only to receive configuration changes. */
+    static final class ConfigurationListenerView extends View {
+
+        /** The callback to be invoked when the configuration changes. */
+        @NonNull
+        private final Consumer<Configuration> mConfigChangedCallback;
+
+        ConfigurationListenerView(Context context,
+                @NonNull Consumer<Configuration> configChangedCallback) {
+            super(context);
+            setWillNotDraw(true);
+            setVisibility(View.GONE);
+            mConfigChangedCallback = configChangedCallback;
+        }
+
+        @Override
+        public void onConfigurationChanged(Configuration newConfig) {
+            super.onConfigurationChanged(newConfig);
+            mConfigChangedCallback.accept(newConfig);
+        }
     }
 }

@@ -21,7 +21,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.MotionEvent
-import android.view.ViewRootImpl
+import android.view.View
 import com.android.systemui.animation.back.BackAnimationSpec
 import com.android.systemui.animation.back.floatingSystemSurfacesForSysUi
 
@@ -47,7 +47,7 @@ interface DialogDelegate<T : Dialog> {
     /** Called after [Dialog.onWindowFocusChanged] is called. */
     fun onWindowFocusChanged(dialog: T, hasFocus: Boolean) {}
 
-    /** Called as part of [ViewRootImpl.ConfigChangedCallback.onConfigurationChanged]. */
+    /** Called after [View.onConfigurationChanged] is called. */
     fun onConfigurationChanged(dialog: T, configuration: Configuration) {}
 
     fun getWidth(dialog: T): Int = SystemUIDialog.getDefaultDialogWidth(dialog)
