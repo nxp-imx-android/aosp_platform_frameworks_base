@@ -75,7 +75,6 @@ public class OutboundHandoffRequestHandler {
             int associationId, int taskId, @NonNull IHandoffRequestCallback callback) {
         Cookie cookie = new Cookie(associationId, taskId);
         FrameworkStatsLog.write(FrameworkStatsLog.HANDOFF_REQUESTED, cookie.hashCode());
-        boolean isNewRequest = !isCallbackRegisteredForCookie(cookie);
         boolean didRegister =
                 mCallbacksRef
                         .updateAndGet(
@@ -94,16 +93,6 @@ public class OutboundHandoffRequestHandler {
                     associationId,
                     taskId,
                     HANDOFF_REQUEST_RESULT_FAILURE_OTHER_INTERNAL_ERROR);
-            return;
-        }
-
-        if (!isNewRequest) {
-            Slog.i(
-                    TAG,
-                    "Request already registered for association "
-                            + associationId
-                            + " and task "
-                            + taskId);
             return;
         }
 

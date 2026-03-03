@@ -148,7 +148,7 @@ public class OutboundHandoffRequestHandlerTest extends TaskContinuityTest {
     }
 
     @Test
-    public void testRequestHandoff_multipleTimes_onlySendsOneMessage() throws Exception {
+    public void testRequestHandoff_multipleTimes_sendsMultipleMessages() throws Exception {
         int associationId = 1;
         int taskId = 1;
         doReturn(TaskContinuityMessenger.SendMessageResult.SUCCESS)
@@ -161,7 +161,7 @@ public class OutboundHandoffRequestHandlerTest extends TaskContinuityTest {
         mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, firstCallback);
         mOutboundHandoffRequestHandler.requestHandoff(associationId, taskId, secondCallback);
 
-        verify(mMockTaskContinuityMessenger, times(1))
+        verify(mMockTaskContinuityMessenger, times(2))
                 .sendMessage(
                         eq(associationId),
                         eq(
