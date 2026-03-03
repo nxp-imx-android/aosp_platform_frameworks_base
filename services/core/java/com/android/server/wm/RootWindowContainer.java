@@ -1757,12 +1757,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         // to send to the client now.
         final Configuration config =
                 displayContent.updateOrientationAndComputeConfig(true /* forceUpdate */);
-        // Visibilities may change so let the starting activity have a chance to report. Can't do it
-        // when visibility is changed in each AppWindowToken because it may trigger wrong
-        // configuration push because the visibility of some activities may not be updated yet.
-        if (starting != null) {
-            starting.reportDescendantOrientationChangeIfNeeded();
-        }
 
         // Update the configuration of the activities on the display.
         displayContent.updateDisplayOverrideConfigurationLocked(config, starting, deferResume);

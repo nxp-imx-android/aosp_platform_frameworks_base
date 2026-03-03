@@ -3069,24 +3069,6 @@ class Task extends TaskFragment {
     }
 
     @Override
-    public boolean onDescendantOrientationChanged(WindowContainer requestingContainer) {
-        if (com.android.window.flags.Flags.removeLegacyOrientationReport()) {
-            return super.onDescendantOrientationChanged(requestingContainer);
-        }
-        if (super.onDescendantOrientationChanged(requestingContainer)) {
-            return true;
-        }
-
-        // No one in higher hierarchy handles this request, let's adjust our bounds to fulfill
-        // it if possible.
-        if (getParent() != null) {
-            onConfigurationChanged(getParent().getConfiguration());
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     boolean handlesOrientationChangeFromDescendant(@ScreenOrientation int orientation) {
         if (!super.handlesOrientationChangeFromDescendant(orientation)) {
             return false;
