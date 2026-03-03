@@ -16,6 +16,7 @@
 
 package com.android.server.lights;
 
+import static android.graphics.Color.BLACK;
 import static android.graphics.Color.BLUE;
 import static android.graphics.Color.GREEN;
 import static android.graphics.Color.RED;
@@ -38,6 +39,8 @@ import static org.mockito.Mockito.when;
 
 import android.Manifest;
 import android.content.Context;
+import android.hardware.light.BrightnessMode;
+import android.hardware.light.FlashMode;
 import android.hardware.light.HwLight;
 import android.hardware.light.HwLightEffect;
 import android.hardware.light.HwLightState;
@@ -480,6 +483,8 @@ public class LightsServiceTest {
         Light light = manager.getLights().get(ANIMATED_LIGHT_INDEX);
         ArgumentCaptor<HwLightEffect[]> effectCaptor =
                 ArgumentCaptor.forClass(HwLightEffect[].class);
+        ArgumentCaptor<HwLightState> stateCaptor =
+                ArgumentCaptor.forClass(HwLightState.class);
 
         // Create a simple effect for a light that supports effects.
         MultiLightEffect effect = new MultiLightEffect.Builder()
@@ -515,6 +520,15 @@ public class LightsServiceTest {
         assertThat(capturedEffects[0].interpolationType).isEqualTo(InterpolationType.LINEAR);
         assertThat(capturedEffects[0].framePeriodMillis)
                 .isEqualTo(light.getMinUpdatePeriodMillis());
+
+        // After the session closes, the light is turned off.
+        verify(mHal).setLightState(eq(light.getId()), stateCaptor.capture());
+        HwLightState finalState = stateCaptor.getValue();
+        assertThat(finalState.color).isEqualTo(0);
+        assertThat(finalState.brightnessMode).isEqualTo(BrightnessMode.USER);
+        assertThat(finalState.flashMode).isEqualTo(FlashMode.NONE);
+        assertThat(finalState.flashOnMs).isEqualTo(0);
+        assertThat(finalState.flashOffMs).isEqualTo(0);
     }
 
     @Test
@@ -786,11 +800,11 @@ public class LightsServiceTest {
 
         // Session2 sets an effect on all animatable lights and wins the priority.
         session2.requestLights(new LightsRequest.Builder().setEffect(effect).build());
-        assertThat(manager.getLightState(light1).getColor()).isEqualTo(TRANSPARENT);
+        assertThat(manager.getLightState(light1).getColor()).isEqualTo(BLACK);
         assertThat(manager.getLightSequence(light1).getColors()[0]).isEqualTo(BLUE);
-        assertThat(manager.getLightState(light2).getColor()).isEqualTo(TRANSPARENT);
+        assertThat(manager.getLightState(light2).getColor()).isEqualTo(BLACK);
         assertThat(manager.getLightSequence(light2).getColors()[0]).isEqualTo(YELLOW);
-        assertThat(manager.getLightState(light3).getColor()).isEqualTo(TRANSPARENT);
+        assertThat(manager.getLightState(light3).getColor()).isEqualTo(BLACK);
         assertThat(manager.getLightSequence(light3).getColors()[0]).isEqualTo(RED);
 
         // Session1 sets a single light and hides the effect.
@@ -821,13 +835,13 @@ public class LightsServiceTest {
         assertThat(manager.getLightState(light3).getColor()).isEqualTo(GREEN);
         assertThat(manager.getLightSequence(light3)).isNull();
 
-        // Session1 goes away and let's session 2 take control.
+        // Session1 goes away and lets session 2 take control.
         session1.close();
-        assertThat(manager.getLightState(light1).getColor()).isEqualTo(TRANSPARENT);
+        assertThat(manager.getLightState(light1).getColor()).isEqualTo(BLACK);
         assertThat(manager.getLightSequence(light1).getColors()[0]).isEqualTo(BLUE);
-        assertThat(manager.getLightState(light2).getColor()).isEqualTo(TRANSPARENT);
+        assertThat(manager.getLightState(light2).getColor()).isEqualTo(BLACK);
         assertThat(manager.getLightSequence(light2).getColors()[0]).isEqualTo(YELLOW);
-        assertThat(manager.getLightState(light3).getColor()).isEqualTo(TRANSPARENT);
+        assertThat(manager.getLightState(light3).getColor()).isEqualTo(BLACK);
         assertThat(manager.getLightSequence(light3).getColors()[0]).isEqualTo(RED);
 
         // Session2 goes away and let's session3 take control.
@@ -879,7 +893,7 @@ public class LightsServiceTest {
             //  - Light sequence color is matches the effect.
             //  - One tansition task scheduled.
             //  - Hal received the configuration for 'effect'.
-            assertThat(manager.getLightState(light).getColor()).isEqualTo(TRANSPARENT);
+            assertThat(manager.getLightState(light).getColor()).isEqualTo(BLACK);
             assertThat(manager.getLightSequence(light).getColors()[0]).isEqualTo(BLUE);
             Message message = mTestLooperManager.poll();
             assertThat(message).isNotNull();
@@ -895,7 +909,7 @@ public class LightsServiceTest {
 
             // Continuation is queued and the state of the light remains the same. No new hal
             // requests and no new scheduled tasks.
-            assertThat(manager.getLightState(light).getColor()).isEqualTo(TRANSPARENT);
+            assertThat(manager.getLightState(light).getColor()).isEqualTo(BLACK);
             assertThat(manager.getLightSequence(light).getColors()[0]).isEqualTo(BLUE);
             inOrder.verify(mHal, never()).setLightEffects(any());
 
@@ -905,7 +919,7 @@ public class LightsServiceTest {
             // light changes configuration to the continuation effect.
             mTestLooperManager.execute(message);
 
-            assertThat(manager.getLightState(light).getColor()).isEqualTo(TRANSPARENT);
+            assertThat(manager.getLightState(light).getColor()).isEqualTo(BLACK);
             assertThat(manager.getLightSequence(light).getColors()[0]).isEqualTo(GREEN);
             message = mTestLooperManager.poll();
             assertThat(message).isNotNull();
