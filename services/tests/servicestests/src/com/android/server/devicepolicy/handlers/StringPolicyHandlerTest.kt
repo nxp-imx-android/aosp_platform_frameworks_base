@@ -17,13 +17,19 @@
 package com.android.server.devicepolicy.handlers
 
 import android.app.admin.DevicePolicyManager.NOT_A_DPC
+import android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE
+import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
+import android.app.admin.DevicePolicyManager.RESOURCE_PER_USER
+import android.app.admin.NoArgsPolicyKey
 import android.app.admin.PolicyIdentifier
 import android.app.admin.PolicyValueTransport
 import android.app.admin.StringPolicyValue
 import android.app.admin.metadata.StringPolicyMetadata
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.server.devicepolicy.IPermissionChecker
+import com.android.server.devicepolicy.MostRecent
 import com.android.server.devicepolicy.PolicyDefinition
+import com.android.server.devicepolicy.StringPolicySerializer
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import org.junit.Test
@@ -42,16 +48,54 @@ class StringPolicyHandlerTest {
             on { getPermissionChecker() } doReturn mock<IPermissionChecker> {}
         }
 
+    // A sample string policy that can be used in the tests.
+    object Policy {
+        val name = "theStringPolicy"
+        val key = PolicyIdentifier<String>(name)
+        val metadata =
+            StringPolicyMetadata(
+                key,
+                /*allowedScopes=*/ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
+                /*affectedResource=*/ RESOURCE_PER_USER,
+                /*requiredPermission=*/ "testPermission",
+                /*requiredCrossUserPermission=*/ "testCrossUserPermission",
+                /*allowedDpcTypes=*/ setOf(),
+                /*emptyStringAllowed=*/ false,
+            )
+        val anyTransportValue: PolicyValueTransport =
+            PolicyValueTransport.stringField("a string value")
+
+        // The policy definition used for storing the policy value in DevicePolicyEngine.
+        val definition =
+            PolicyDefinition<String>(
+                NoArgsPolicyKey(name),
+                MostRecent<String>(),
+                NoOpPolicyEnforcerCallback<String>(),
+                StringPolicySerializer(),
+            )
+    }
+
     fun createHandler(
-        key: PolicyIdentifier<String> = StringPolicy.key,
-        metadata: StringPolicyMetadata = StringPolicy.metadata,
-        definition: PolicyDefinition<String> = StringPolicy.definition,
+        key: PolicyIdentifier<String> = Policy.key,
+        metadata: StringPolicyMetadata = Policy.metadata,
+        definition: PolicyDefinition<String> = Policy.definition,
         delegate: PolicyHandler.Delegate = this.mockDelegate,
     ) = PolicyHandler<String>(key, metadata, definition, delegate)
 
+    fun copyOf(source: StringPolicyMetadata, emptyStringAllowed: Boolean? = null) =
+        StringPolicyMetadata(
+            source.id,
+            source.allowedScopes,
+            source.affectedResource,
+            source.requiredPermission,
+            source.requiredCrossUserPermission,
+            source.allowedDpcTypes,
+            emptyStringAllowed ?: source.isEmptyStringAllowed,
+        )
+
     @Test
     fun setPolicyUnchecked_shouldAcceptNull() {
-        val definition = StringPolicy.definition
+        val definition = Policy.definition
         val handler = createHandler(definition = definition)
 
         handler.setPolicyUnchecked(anyCaller, anyScope, null)
@@ -86,17 +130,12 @@ class StringPolicyHandlerTest {
         )
 
         verify(mockDelegate)
-            .storePolicy(
-                anyCaller,
-                StringPolicy.definition,
-                anyScope,
-                StringPolicyValue("It's a string"),
-            )
+            .storePolicy(anyCaller, Policy.definition, anyScope, StringPolicyValue("It's a string"))
     }
 
     @Test
     fun setPolicyUnchecked_shouldRejectEmptyString() {
-        val metadataBlockingEmptyString = StringPolicy.metadata.copy(emptyStringAllowed = false)
+        val metadataBlockingEmptyString = copyOf(Policy.metadata, emptyStringAllowed = false)
         val handler = createHandler(metadata = metadataBlockingEmptyString)
 
         val exception =
@@ -108,17 +147,17 @@ class StringPolicyHandlerTest {
                 )
             }
         assertThat(exception.message)
-            .contains("Empty string is not allowed for policy ${StringPolicy.key}")
+            .contains("Empty string is not allowed for policy ${Policy.key}")
     }
 
     @Test
     fun setPolicyUnchecked_shouldAcceptEmptyString() {
-        val metadataAllowingEmptyString = StringPolicy.metadata.copy(emptyStringAllowed = true)
+        val metadataAllowingEmptyString = copyOf(Policy.metadata, emptyStringAllowed = true)
         val handler = createHandler(metadata = metadataAllowingEmptyString)
 
         handler.setPolicyUnchecked(anyCaller, anyScope, PolicyValueTransport.stringField(""))
 
         verify(mockDelegate)
-            .storePolicy(anyCaller, StringPolicy.definition, anyScope, StringPolicyValue(""))
+            .storePolicy(anyCaller, Policy.definition, anyScope, StringPolicyValue(""))
     }
 }
