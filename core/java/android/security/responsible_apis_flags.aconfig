@@ -138,6 +138,16 @@ flag {
 }
 
 flag {
+    name: "dynamic_instrumentation_app_classloader"
+    namespace: "responsible_apis"
+    description: "Use the app's classloader for dynamic instrumentation offset lookups in ActivityThread"
+    bug: "489140321"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_intent_firewall_component_class_filter"
     namespace: "responsible_apis"
     description: "Flag for enabling component-class-filter in IntentFirewall"
