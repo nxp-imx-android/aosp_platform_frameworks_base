@@ -88,6 +88,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 
 /** Tests for {@link com.android.server.usb.UsbAuthManager} atest UsbTests:UsbAuthManagerTest */
 @RunWith(AndroidJUnit4.class)
@@ -671,6 +672,39 @@ public class UsbAuthManagerTest {
                         any(),
                         eq(SystemMessage.NOTE_USB_AUTH_SCREEN_LOCKED_REMINDER),
                         eq(UserHandle.ALL));
+    }
+
+    @Test
+    public void testBooted_processAwaitingOnSystemReady() throws Exception {
+        TestData fake0 = mTestData.get(FAKE0);
+        TestData fake1 = mTestData.get(FAKE1);
+
+        addConnectedDevice(fake0);
+        addConnectedDevice(fake1);
+        mUsbAuthManager.usbDeviceAdded(fake0.deviceAddress);
+        mUsbAuthManager.usbDeviceAdded(fake1.deviceAddress);
+
+        List<UsbAuthDeviceInfo> askList = List.of(fake0.deviceInfo);
+        List<UsbAuthDeviceInfo> allowPersistList = List.of(fake1.deviceInfo);
+
+        // Persist the fake used for ask (so we can just check authorization result).
+        mUsbAuthManager.addFingerprintToPersistedForTest(fake0.fingerprint);
+
+        when(mService.getDevicesAwaitingAuthorization()).thenReturn(askList);
+        when(mService.getDevicesAwaitingPersistedAuthorization()).thenReturn(allowPersistList);
+
+        // We should be starting in booted state.
+        verify(mService).setSystemState(UsbAuthorizationSystemState.BOOTED);
+
+        // No device should have been authorized at this point.
+        verify(mService, never()).setAuthorizationStatus(any(), anyInt());
+
+        // Trigger system ready which will get the pending devices and run callback handling.
+        mUsbAuthManager.systemReady();
+
+        // Ask device should be authorized and allowPersist device should be denied.
+        verify(mService).setAuthorizationStatus(fake0.deviceInfo, AUTHORIZED);
+        verify(mService).setAuthorizationStatus(fake1.deviceInfo, DENIED);
     }
 
     @Test
