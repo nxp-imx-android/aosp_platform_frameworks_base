@@ -37,7 +37,7 @@
         <ImageView
             android:layout_width="@dimen/resolver_icon_size"
             android:layout_height="@dimen/resolver_icon_size"
-            android:src="@drawable/ic_lock"
+            android:src="@drawable/ic_lock_bold"
             android:layout_gravity="center_horizontal"
             android:contentDescription="@null"
             android:tint="?android:attr/textColorPrimary"
