@@ -109,7 +109,7 @@ class EnterBubbleViaOverflowMenuTest(navBar: NavBar) :
 
     @Test
     override fun focusChanges() {
-        eventLogSubject.focusChanges(
+        focusEventSubject.focusChanges(
             messageApp.toWindowName(),
             // Switch to the overflow page
             BUBBLE.toWindowName(),

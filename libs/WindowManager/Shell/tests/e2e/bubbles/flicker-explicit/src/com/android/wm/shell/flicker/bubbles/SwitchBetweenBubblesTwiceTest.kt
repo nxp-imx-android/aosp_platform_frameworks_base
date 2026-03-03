@@ -112,13 +112,13 @@ class SwitchBetweenBubblesTwiceTest(navBar: NavBar) :
     @Test
     fun focusChanges() {
         if (tapl.isTablet) {
-            eventLogSubject.focusChanges(
+            focusEventSubject.focusChanges(
                 previousApp.toWindowName(),
                 testApp.toWindowName(),
                 previousApp.toWindowName(),
             )
         } else {
-            eventLogSubject.focusChanges(
+            focusEventSubject.focusChanges(
                 previousApp.toWindowName(),
                 testApp.toWindowName(),
                 previousApp.toWindowName(),
