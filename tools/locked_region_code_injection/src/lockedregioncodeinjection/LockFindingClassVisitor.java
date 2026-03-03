@@ -137,7 +137,7 @@ class LockFindingClassVisitor extends ClassVisitor {
                 handlersMap.add(a.getHandlers(i));
             }
 
-            if (ownerMonitor != null) {
+            if (ownerMonitor != null && ownerMonitor.getPre() != null) {
                 AbstractInsnNode s = instructions.getFirst();
                 MethodInsnNode call = new MethodInsnNode(Opcodes.INVOKESTATIC,
                         ownerMonitor.getPreOwner(), ownerMonitor.getPreMethod(), "()V", false);
@@ -158,13 +158,16 @@ class LockFindingClassVisitor extends ClassVisitor {
                             LockTarget target = state.getTargets().get(j);
                             i += injectAcquireTracing(mn, frameMap, handlersMap, s, i, target);
                             MethodInsnNode call = methodCall(target, true);
-                            if (target.getScoped()) {
-                                TypeInsnNode cast = typeCast(target);
-                                i += insertInvokeAcquire(mn, frameMap, handlersMap, s, i,
-                                        call, cast);
-                                anyDup = true;
-                            } else {
-                                i += insertMethodCallBefore(mn, frameMap, handlersMap, s, i, call);
+                            if (call != null) {
+                                if (target.getScoped()) {
+                                    TypeInsnNode cast = typeCast(target);
+                                    i += insertInvokeAcquire(mn, frameMap, handlersMap, s, i,
+                                            call, cast);
+                                    anyDup = true;
+                                } else {
+                                    i += insertMethodCallBefore(mn, frameMap, handlersMap, s, i,
+                                            call);
+                                }
                             }
                         }
                     }
@@ -197,20 +200,23 @@ class LockFindingClassVisitor extends ClassVisitor {
                             i += injectReleaseTracing(mn, frameMap, handlersMap, s, i, label,
                                     labelIndex, target);
                             MethodInsnNode call = methodCall(target, false);
-                            if (target.getScoped()) {
-                                TypeInsnNode cast = typeCast(target);
-                                i += insertInvokeRelease(mn, frameMap, handlersMap, s, i,
-                                        call, cast);
-                                anyDup = true;
-                            } else {
-                                insertMethodCallAfter(mn, frameMap, handlersMap, label,
-                                        labelIndex, call);
+                            if (call != null) {
+                                if (target.getScoped()) {
+                                    TypeInsnNode cast = typeCast(target);
+                                    i += insertInvokeRelease(mn, frameMap, handlersMap, s, i,
+                                            call, cast);
+                                    anyDup = true;
+                                } else {
+                                    insertMethodCallAfter(mn, frameMap, handlersMap, label,
+                                            labelIndex, call);
+                                }
                             }
                         }
                     }
                 }
 
-                if (ownerMonitor != null && (s.getOpcode() == Opcodes.RETURN
+                if (ownerMonitor != null && ownerMonitor.getPost() != null
+                        && (s.getOpcode() == Opcodes.RETURN
                         || s.getOpcode() == Opcodes.ARETURN || s.getOpcode() == Opcodes.DRETURN
                         || s.getOpcode() == Opcodes.FRETURN || s.getOpcode() == Opcodes.IRETURN)) {
                     MethodInsnNode call =
@@ -336,6 +342,12 @@ class LockFindingClassVisitor extends ClassVisitor {
     }
 
     public static MethodInsnNode methodCall(LockTarget target, boolean pre) {
+        if (pre && target.getPre() == null) {
+            return null;
+        }
+        if (!pre && target.getPost() == null) {
+            return null;
+        }
         String spec = "()V";
         if (!target.getScoped()) {
             if (pre) {
