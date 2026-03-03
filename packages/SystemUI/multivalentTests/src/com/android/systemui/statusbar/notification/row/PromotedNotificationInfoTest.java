@@ -18,6 +18,9 @@ package com.android.systemui.statusbar.notification.row;
 
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
+import static android.os.Process.SYSTEM_UID;
+
+import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -58,7 +61,6 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -105,17 +107,16 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
     @Mock
     private TelecomManager mTelecomManager;
 
-    @Before
-    public void setUp() throws Exception {
+    private void setUpEntry(int uid) {
         final ApplicationInfo applicationInfo = new ApplicationInfo();
-        applicationInfo.uid = TEST_UID;  // non-zero
+        applicationInfo.uid = uid;
 
         mNotificationChannel = new NotificationChannel(
                 TEST_CHANNEL, TEST_CHANNEL_NAME, IMPORTANCE_LOW);
         Notification notification = new Notification();
         notification.extras.putParcelable(EXTRA_BUILDER_APPLICATION_INFO, applicationInfo);
-        mSbn = new StatusBarNotification(TEST_PACKAGE_NAME, TEST_PACKAGE_NAME, 0, null, TEST_UID, 0,
-                notification, UserHandle.getUserHandleForUid(TEST_UID), null, 0);
+        mSbn = new StatusBarNotification(TEST_PACKAGE_NAME, TEST_PACKAGE_NAME, 0, null, uid, 0,
+                notification, UserHandle.getUserHandleForUid(uid), null, 0);
         mEntry = new NotificationEntryBuilder().setSbn(mSbn).updateRanking(rankingBuilder -> {
             rankingBuilder.setChannel(mNotificationChannel);
         }).build();
@@ -149,7 +150,7 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
 
     @Test
     public void testBindNotification_setsOnClickListenerForFeedback() throws Exception {
-
+        setUpEntry(TEST_UID);
         // Bind the notification to the Info object
         mInfo.bindNotification(
                 mMockPackageManager,
@@ -173,12 +174,46 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
                 true,
                 mMetricsLogger,
                 null);
+
+        View promotedInfoGroup = mInfo.findViewById(R.id.live_notifications_group);
+        assertThat(promotedInfoGroup.getVisibility()).isEqualTo(View.VISIBLE);
+
         // Click demote button
         final View demoteButton = mInfo.findViewById(R.id.promoted_demote);
         demoteButton.performClick();
         // verify that notiManager tried to demote
         verify(mMockINotificationManager, atLeastOnce()).setCanBePromoted(TEST_PACKAGE_NAME,
                 mSbn.getUid(), false, true);
+    }
 
+    @Test
+    public void testBindNotification_systemUidPackage_cannotDemote() throws Exception {
+        setUpEntry(SYSTEM_UID);
+        // Bind the notification to the Info object
+        mInfo.bindNotification(
+                mMockPackageManager,
+                mMockINotificationManager,
+                mMockAppIconProvider,
+                mMockIconStyleProvider,
+                mOnUserInteractionCallback,
+                mChannelEditorDialogController,
+                mPackageDemotionInteractor,
+                TEST_PACKAGE_NAME,
+                mRanking,
+                mSbn,
+                mEntryAdapter,
+                null,
+                null,
+                null,
+                mUiEventLogger,
+                true,
+                false,
+                true,
+                true,
+                mMetricsLogger,
+                null);
+
+        View promotedInfoGroup = mInfo.findViewById(R.id.live_notifications_group);
+        assertThat(promotedInfoGroup.getVisibility()).isEqualTo(View.GONE);
     }
 }
