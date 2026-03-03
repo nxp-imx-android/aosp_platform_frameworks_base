@@ -12263,7 +12263,7 @@ public class AudioService extends IAudioService.Stub
         setAvrcpAbsoluteVolumeSupported(support);
     }
 
-    /*package*/ void setAvrcpAbsoluteVolumeSupported(boolean support) {
+    private void setAvrcpAbsoluteVolumeSupported(boolean support, boolean updateDeviceVolume) {
         Log.i(TAG, "setAvrcpAbsoluteVolumeSupported support " + support);
         VolumeStreamState vss;
         int a2dpDev = AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP;
@@ -12304,8 +12304,14 @@ public class AudioService extends IAudioService.Stub
                     Objects.requireNonNullElse(streamAbs, AudioSystem.STREAM_MUSIC));
         }
 
-        sendMsg(mAudioHandler, MSG_SET_DEVICE_VOLUME, SENDMSG_QUEUE,
+        if (updateDeviceVolume) {
+            sendMsg(mAudioHandler, MSG_SET_DEVICE_VOLUME, SENDMSG_QUEUE,
                     AudioSystem.DEVICE_OUT_BLUETOOTH_A2DP, 0, vss, 0);
+        }
+    }
+
+    /*package*/ void setAvrcpAbsoluteVolumeSupported(boolean support) {
+        setAvrcpAbsoluteVolumeSupported(support, /*updateDeviceVolume=*/true);
     }
 
     /**
@@ -17495,6 +17501,10 @@ public class AudioService extends IAudioService.Stub
                     + AudioDeviceVolumeManager.volumeBehaviorName(info.mDeviceVolumeBehavior)
             );
         }
+        if (ada.getType() == TYPE_BLUETOOTH_A2DP) {
+            setAvrcpAbsoluteVolumeSupported(/*support=*/true, /*updateDeviceVolume=*/false);
+        }
+
         synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
             mAbsoluteVolumeDeviceInfoMap.put(adaAsKey, info);
         }
@@ -17507,6 +17517,9 @@ public class AudioService extends IAudioService.Stub
             Log.d(TAG, "Removing device: " + deviceOut + " from mAbsoluteVolumeDeviceInfoMap");
         }
 
+        if (ada.getType() == TYPE_BLUETOOTH_A2DP) {
+            setAvrcpAbsoluteVolumeSupported(/*support=*/false, /*updateDeviceVolume=*/false);
+        }
         synchronized (mAbsoluteVolumeDeviceInfoMapLock) {
             return mAbsoluteVolumeDeviceInfoMap.remove(deviceOut);
         }
