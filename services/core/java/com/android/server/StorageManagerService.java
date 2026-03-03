@@ -51,6 +51,7 @@ import static org.xmlpull.v1.XmlPullParser.START_TAG;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
@@ -497,6 +498,11 @@ class StorageManagerService extends IStorageManager.Stub
 
     private volatile boolean mRemountCurrentUserVolumesOnUnlock = false;
 
+    @GuardedBy("mLock")
+    private boolean mCheckpointReady = false;
+    @GuardedBy("mLock")
+    private List<Runnable> mOnCheckpointSyncCallbacks = null;
+
     private final Installer mInstaller;
 
     /** Holding lock for AppFuse business */
@@ -580,6 +586,11 @@ class StorageManagerService extends IStorageManager.Stub
             }
             return latch;
         }
+    }
+
+    @VisibleForTesting
+    IVold getVold() {
+        return mVold;
     }
 
     private final Context mContext;
@@ -5193,5 +5204,77 @@ class StorageManagerService extends IStorageManager.Stub
                 throw new IOException(e);
             }
         }
+
+        @RequiresPermission(android.Manifest.permission.MOUNT_FORMAT_FILESYSTEMS)
+        @Override
+        public boolean waitForCheckpointReady(Runnable onSyncReady) {
+            return StorageManagerService.this.waitForCheckpointReady(onSyncReady);
+        }
+    }
+
+    @RequiresPermission(android.Manifest.permission.MOUNT_FORMAT_FILESYSTEMS)
+    boolean waitForCheckpointReady(Runnable onSyncReady) {
+        synchronized (mLock) {
+            if (mCheckpointReady) {
+                return false;
+            }
+        }
+
+        try {
+            String cpCommitted = SystemProperties.get("vold.checkpoint_committed", "0");
+            if (!needsCheckpoint() || "1".equals(cpCommitted)) {
+                synchronized (mLock) {
+                    mCheckpointReady = true;
+                }
+                return false;
+            }
+        } catch (RemoteException e) {
+            synchronized (mLock) {
+                mCheckpointReady = true;
+            }
+            return false;
+        }
+
+        synchronized (mLock) {
+            if (mOnCheckpointSyncCallbacks != null) {
+                if (onSyncReady != null) {
+                    mOnCheckpointSyncCallbacks.add(onSyncReady);
+                }
+                return true;
+            }
+
+            mOnCheckpointSyncCallbacks = new ArrayList<>();
+            if (onSyncReady != null) {
+                mOnCheckpointSyncCallbacks.add(onSyncReady);
+            }
+        }
+
+        BackgroundThread.getHandler().post(() -> {
+            try {
+                Slog.i(TAG, "Start syncing storage via vold");
+                getVold().syncStorage();
+            } catch (Exception e) {
+                Slog.w(TAG, "Failed to sync storage", e);
+            }
+            final List<Runnable> callbacks;
+            synchronized (mLock) {
+                mCheckpointReady = true;
+                callbacks = getAndClearCheckpointCallbacksLocked();
+            }
+            if (callbacks != null) {
+                for (Runnable callback : callbacks) {
+                    BackgroundThread.getHandler().post(callback);
+                }
+            }
+        });
+
+        return true;
+    }
+
+    @GuardedBy("mLock")
+    private List<Runnable> getAndClearCheckpointCallbacksLocked() {
+        final List<Runnable> callbacks = mOnCheckpointSyncCallbacks;
+        mOnCheckpointSyncCallbacks = null;
+        return callbacks;
     }
 }
