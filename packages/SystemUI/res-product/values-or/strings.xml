@@ -20,46 +20,36 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="dock_alignment_slow_charging" product="default" msgid="6997633396534416792">"ଶୀଘ୍ର ଚାର୍ଜିଂ ପାଇଁ ଫୋନ୍‌କୁ ଠିକ୍ ଭାବରେ ରଖନ୍ତୁ"</string>
-    <!-- no translation found for dock_alignment_slow_charging (3407039002024253081) -->
-    <skip />
+    <string name="dock_alignment_slow_charging" product="desktop" msgid="3407039002024253081">"ଆହୁରି ଫାଷ୍ଟ ଚାର୍ଜିଂ ପାଇଁ ଡିଭାଇସକୁ ରିଆଲାଇନ ରଖନ୍ତୁ"</string>
     <string name="dock_alignment_not_charging" product="default" msgid="3980752926226749808">"ୱାୟାର୍‌ଲେସ୍ ଭାବେ ଚାର୍ଜ କରିବାକୁ ଫୋନ୍‌କୁ ଠିକ୍ ଭାବରେ ରଖନ୍ତୁ"</string>
-    <!-- no translation found for dock_alignment_not_charging (1650693501464120367) -->
-    <skip />
+    <string name="dock_alignment_not_charging" product="desktop" msgid="1650693501464120367">"ୱାୟାରଲେସ ଭାବେ ଚାର୍ଜ କରିବାକୁ ଡିଭାଇସକୁ ରିଆଲାଇନ କରନ୍ତୁ"</string>
     <string name="inattentive_sleep_warning_message" product="tv" msgid="6844464574089665063">"Android TV ଡିଭାଇସ୍ ଶୀଘ୍ର ବନ୍ଦ ହୋଇଯିବ; ଏହା ଚାଲୁ ରଖିବା ପାଇଁ ଏକ ବଟନ୍ ଦବାନ୍ତୁ।"</string>
     <string name="inattentive_sleep_warning_message" product="default" msgid="5693904520452332224">"ଡିଭାଇସ୍‌ଟି ଶୀଘ୍ର ବନ୍ଦ ହୋଇଯିବ; ଏହାକୁ ଚାଲୁ ରଖିବା ପାଇଁ ଦବାନ୍ତୁ।"</string>
     <string name="keyguard_missing_sim_message" product="tablet" msgid="408124574073032188">"ଟାବଲେଟରେ କୌଣସି SIM ନାହିଁ।"</string>
     <string name="keyguard_missing_sim_message" product="default" msgid="2605468359948247208">"ଫୋନରେ କୌଣସି SIM ନାହିଁ।"</string>
-    <!-- no translation found for keyguard_missing_sim_message (6678465505993388400) -->
-    <skip />
+    <string name="keyguard_missing_sim_message" product="desktop" msgid="6678465505993388400">"ଡିଭାଇସରେ କୌଣସି SIM ନାହିଁ।"</string>
     <string name="kg_invalid_confirm_pin_hint" product="default" msgid="6278551068943958651">"PIN କୋଡ୍‌ଗୁଡ଼ିକ ମେଳ ଖାଉନାହିଁ"</string>
     <string name="kg_failed_attempts_almost_at_wipe" product="tablet" msgid="302165994845009232">"ଆପଣ ଟାବ୍‌ଲେଟ୍‌କୁ ଅନ୍‌ଲକ୍ କରିବାକୁ <xliff:g id="NUMBER_0">%1$d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g>ଟି ଭୁଲ୍ ପ୍ରୟାସ ପରେ, ଏହି ଟାବ୍‌ଲେଟ୍‌କୁ ରିସେଟ୍ କରିଦିଆଯିବ, ଯାହାଦ୍ୱାରା ଏହାର ସମସ୍ତ ଡାଟା ଡିଲିଟ୍ ହେବ।"</string>
     <string name="kg_failed_attempts_almost_at_wipe" product="default" msgid="2594813176164266847">"ଆପଣ ଫୋନ୍‌କୁ ଅନ୍‌ଲକ୍ କରିବାକୁ <xliff:g id="NUMBER_0">%1$d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g>ଟି ଭୁଲ୍ ପ୍ରୟାସ ପରେ, ଏହି ଫୋନ୍‌କୁ ରିସେଟ୍ କରିଦିଆଯିବ, ଯାହାଦ୍ୱାରା ଏହାର ସମସ୍ତ ଡାଟା ଡିଲିଟ୍ ହେବ।"</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_wipe (6414651766868767274) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_wipe" product="desktop" msgid="6414651766868767274">"ଆପଣ ଡିଭାଇସକୁ ଅନଲକ କରିବାକୁ <xliff:g id="NUMBER_0">%1$d</xliff:g> ଥର ଭୁଲ ଭାବେ ପ୍ରଚେଷ୍ଟା କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g> ଥର ଅସଫଳ ପ୍ରଚେଷ୍ଟା ପରେ, ଏହି ଡିଭାଇସକୁ ରିସେଟ କରାଯିବ, ଯାହା ଫଳରେ ଏହାର ସମସ୍ତ ଡାଟା ଡିଲିଟ ହୋଇଯିବ।"</string>
     <string name="kg_failed_attempts_now_wiping" product="tablet" msgid="8710104080409538587">"ଆପଣ ଟାବ୍‌ଲେଟ୍‌କୁ ଅନ୍‌ଲକ୍ କରିବାକୁ <xliff:g id="NUMBER">%d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। ଏହି ଟାବ୍‌ଲେଟ୍‌ଟି ରିସେଟ୍ କରିଦିଆଯିବ, ଫଳରେ ଏହାର ସମସ୍ତ ଡାଟା ଡିଲିଟ୍ ହେବ।"</string>
     <string name="kg_failed_attempts_now_wiping" product="default" msgid="6381835450014881813">"ଆପଣ ଫୋନ୍‌କୁ ଅନ୍‌ଲକ୍ କରିବାକୁ <xliff:g id="NUMBER">%d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। ଏହି ଫୋନ୍‌ଟି ରିସେଟ୍ କରିଦିଆଯିବ, ଫଳରେ ଏହାର ସମସ୍ତ ଡାଟା ଡିଲିଟ୍ ହେବ।"</string>
-    <!-- no translation found for kg_failed_attempts_now_wiping (2277485562881116948) -->
-    <skip />
+    <string name="kg_failed_attempts_now_wiping" product="desktop" msgid="2277485562881116948">"ଆପଣ ଡିଭାଇସକୁ ଅନଲକ କରିବାକୁ <xliff:g id="NUMBER">%d</xliff:g> ଥର ଭୁଲ ଭାବେ ପ୍ରଚେଷ୍ଟା କରିଛନ୍ତି। ଏହି ଡିଭାଇସକୁ ରିସେଟ କରାଯିବ, ଯାହା ଫଳରେ ଏହାର ସମସ୍ତ ଡାଟା ଡିଲିଟ ହୋଇଯିବ।"</string>
     <string name="kg_failed_attempts_almost_at_erase_user" product="tablet" msgid="7325071812832605911">"ଆପଣ ଟାବଲେଟକୁ ଅନଲକ କରିବାକୁ <xliff:g id="NUMBER_0">%1$d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g> ଭୁଲ ପ୍ରୟାସ ପରେ, ଏହି ୟୁଜର ପ୍ରୋଫାଇଲ୍କୁ କାଢ଼ି ଦିଆଯିବ, ଯାହା ଫଳରେ ସମସ୍ତ ୟୁଜର ଡାଟା ଡିଲିଟ ହୋଇଯିବ।"</string>
     <string name="kg_failed_attempts_almost_at_erase_user" product="default" msgid="8110939900089863103">"ଆପଣ ଫୋନକୁ ଅନଲକ କରିବାକୁ <xliff:g id="NUMBER_0">%1$d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g> ଭୁଲ ପ୍ରୟାସ ପରେ, ଏହି ୟୁଜର ପ୍ରୋଫାଇଲକୁ କାଢ଼ି ଦିଆଯିବ, ଯାହା ଫଳରେ ସମସ୍ତ ୟୁଜର ଡାଟା ଡିଲିଟ ହୋଇଯିବ।"</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_erase_user (6685285863549889535) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_erase_user" product="desktop" msgid="6685285863549889535">"ଆପଣ ଡିଭାଇସକୁ ଅନଲକ କରିବାକୁ <xliff:g id="NUMBER_0">%1$d</xliff:g> ଥର ଭୁଲ ଭାବେ ପ୍ରଚେଷ୍ଟା କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g> ଥର ଅସଫଳ ପ୍ରଚେଷ୍ଟା ପରେ, ଏହି ୟୁଜରଙ୍କୁ କାଢ଼ି ଦିଆଯିବ, ଯାହା ଫଳରେ ସମସ୍ତ ୟୁଜର ଡାଟା ଡିଲିଟ ହୋଇଯିବ।"</string>
     <string name="kg_failed_attempts_now_erasing_user" product="tablet" msgid="8509811676952707883">"ଆପଣ ଟାବଲେଟକୁ ଅନଲକ କରିବାକୁ <xliff:g id="NUMBER">%d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। ଏହି ୟୁଜରଙ୍କୁ କାଢ଼ି ଦିଆଯିବ, ଯାହାଦ୍ୱାରା ସମସ୍ତ ୟୁଜର ଡାଟା ଡିଲିଟ ହୋଇଯିବ।"</string>
     <string name="kg_failed_attempts_now_erasing_user" product="default" msgid="3051962486994265014">"ଆପଣ ଫୋନକୁ ଅନଲକ କରିବାକୁ <xliff:g id="NUMBER">%d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। ଏହି ୟୁଜରଙ୍କୁ ବାହାର କରିଦିଆଯିବ, ଯାହା ଦ୍ୱାରା ସମସ୍ତ ୟୁଜର ଡାଟା ଡିଲିଟ ହେବ।"</string>
-    <!-- no translation found for kg_failed_attempts_now_erasing_user (3003054879895735837) -->
-    <skip />
+    <string name="kg_failed_attempts_now_erasing_user" product="desktop" msgid="3003054879895735837">"ଆପଣ ଡିଭାଇସକୁ ଅନଲକ କରିବାକୁ <xliff:g id="NUMBER">%d</xliff:g> ଥର ଭୁଲ ଭାବେ ପ୍ରଚେଷ୍ଟା କରିଛନ୍ତି। ଏହି ୟୁଜରଙ୍କୁ କାଢ଼ି ଦିଆଯିବ, ଯାହା ଫଳରେ ସମସ୍ତ ୟୁଜର ଡାଟା ଡିଲିଟ ହୋଇଯିବ।"</string>
     <string name="kg_failed_attempts_almost_at_erase_profile" product="tablet" msgid="1049523640263353830">"ଆପଣ ଟାବ୍‌ଲେଟ୍‌କୁ ଅନ୍‌ଲକ୍ କରିବାକୁ <xliff:g id="NUMBER_0">%1$d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g>ଟି ଭୁଲ୍ ପ୍ରୟାସ ପରେ, ୱାର୍କ ପ୍ରୋଫାଇଲ୍‌କୁ ବାହାର କରିଦିଆଯିବ, ଯାହା ଫଳରେ ସମସ୍ତ ପ୍ରୋଫାଇଲ୍ ଡାଟା ଡିଲିଟ୍ ହେବ।"</string>
     <string name="kg_failed_attempts_almost_at_erase_profile" product="default" msgid="3280816298678433681">"ଆପଣ ଫୋନ୍‌କୁ ଅନ୍‌ଲକ୍ କରିବାକୁ <xliff:g id="NUMBER_0">%1$d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g>ଟି ଭୁଲ୍ ପ୍ରୟାସ ପରେ, ୱାର୍କ ପ୍ରୋଫାଇଲ୍‌କୁ ବାହାର କରିଦିଆଯିବ, ଯାହା ଫଳରେ ସମସ୍ତ ପ୍ରୋଫାଇଲ୍ ଡାଟା ଡିଲିଟ୍ ହେବ।"</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_erase_profile (6020310710703619275) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_erase_profile" product="desktop" msgid="6020310710703619275">"ଆପଣ ଡିଭାଇସକୁ ଅନଲକ କରିବାକୁ <xliff:g id="NUMBER_0">%1$d</xliff:g> ଥର ଭୁଲ ଭାବେ ପ୍ରଚେଷ୍ଟା କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g> ଥର ଅସଫଳ ପ୍ରଚେଷ୍ଟା ପରେ, ୱାର୍କ ପ୍ରୋଫାଇଲକୁ କାଢ଼ି ଦିଆଯିବ, ଯାହା ଫଳରେ ସମସ୍ତ ପ୍ରୋଫାଇଲ ଡାଟା ଡିଲିଟ ହୋଇଯିବ।"</string>
     <string name="kg_failed_attempts_now_erasing_profile" product="tablet" msgid="4417100487251371559">"ଆପଣ ଟାବ୍‌ଲେଟ୍‌କୁ ଅନ୍‌ଲକ୍ କରିବାକୁ<xliff:g id="NUMBER">%d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। କାର୍ଯ୍ୟ ପ୍ରୋଫାଇଲ୍ ବାହାର କରିଦିଆଯିବ, ଯାହା ଫଳରେ ସମସ୍ତ ପ୍ରୋଫାଇଲ୍ ଡାଟା ଡିଲିଟ୍ ହେବ।"</string>
     <string name="kg_failed_attempts_now_erasing_profile" product="default" msgid="4682221342671290678">"ଆପଣ ଫୋନ୍‌କୁ ଅନ୍‌ଲକ୍ କରିବାକୁ<xliff:g id="NUMBER">%d</xliff:g>ଥର ଭୁଲ ପ୍ରୟାସ କରିଛନ୍ତି। କାର୍ଯ୍ୟ ପ୍ରୋଫାଇଲ୍ ବାହାର କରିଦିଆଯିବ, ଯାହା ଫଳରେ ସମସ୍ତ ପ୍ରୋଫାଇଲ୍ ଡାଟା ଡିଲିଟ୍ ହେବ।"</string>
-    <!-- no translation found for kg_failed_attempts_now_erasing_profile (2786666082798973358) -->
-    <skip />
+    <string name="kg_failed_attempts_now_erasing_profile" product="desktop" msgid="2786666082798973358">"ଆପଣ ଡିଭାଇସକୁ ଅନଲକ କରିବାକୁ <xliff:g id="NUMBER">%d</xliff:g> ଥର ଭୁଲ ଭାବେ ପ୍ରଚେଷ୍ଟା କରିଛନ୍ତି। ୱାର୍କ ପ୍ରୋଫାଇଲକୁ କାଢ଼ି ଦିଆଯିବ, ଯାହା ଫଳରେ ସମସ୍ତ ପ୍ରୋଫାଇଲ ଡାଟା ଡିଲିଟ ହୋଇଯିବ।"</string>
     <string name="kg_failed_attempts_almost_at_login" product="tablet" msgid="1860049973474855672">"ଆପଣ ଆପଣଙ୍କ ଅନ୍‌ଲକ୍ ପାଟର୍ନକୁ <xliff:g id="NUMBER_0">%1$d</xliff:g>ଥର ଭୁଲ ଭାବେ ଡ୍ର କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g>ଟି ଭୁଲ ପ୍ରୟାସ ପରେ ଆପଣଙ୍କୁ ଏକ ଇମେଲ୍ ଆକାଉଣ୍ଟ ବ୍ୟବହାର କରି ଆପଣଙ୍କ ଟାବ୍‌ଲୋଟ୍‌କୁ ଅନ୍‌ଲକ୍ କରିବା ପାଇଁ କୁହାଯିବ।\n\n <xliff:g id="NUMBER_2">%3$d</xliff:g> ସେକେଣ୍ଡ ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
     <string name="kg_failed_attempts_almost_at_login" product="default" msgid="44112553371516141">"ଆପଣ ଆପଣଙ୍କ ଅନ୍‌ଲକ୍ ପାଟର୍ନକୁ <xliff:g id="NUMBER_0">%1$d</xliff:g>ଥର ଭୁଲ ଭାବେ ଡ୍ର କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g>ଟି ଭୁଲ ପ୍ରୟାସ ପରେ ଆପଣଙ୍କୁ ଏକ ଇମେଲ୍ ଆକାଉଣ୍ଟ ବ୍ୟବହାର କରି ଆପଣଙ୍କ ଫୋନ୍‌କୁ ଅନ୍‌ଲକ୍‌ କରିବା ପାଇଁ କୁହାଯିବ।\n\n <xliff:g id="NUMBER_2">%3$d</xliff:g> ସେକେଣ୍ଡ ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_login (1821951547429595155) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_login" product="desktop" msgid="1821951547429595155">"ଆପଣ <xliff:g id="NUMBER_0">%1$d</xliff:g> ଥର ଭୁଲ ଭାବେ ଆପଣଙ୍କ ଅନଲକ ପାଟର୍ନକୁ ଡ୍ର କରିଛନ୍ତି। ଆଉ <xliff:g id="NUMBER_1">%2$d</xliff:g> ଥର ଅସଫଳ ପ୍ରଚେଷ୍ଟା ପରେ, ଆପଣଙ୍କୁ ଏକ ଇମେଲ ଆକାଉଣ୍ଟ ବ୍ୟବହାର କରି ଆପଣଙ୍କ ଡିଭାଇସକୁ ଅନଲକ କରିବା ପାଇଁ କୁହାଯିବ।\n\n <xliff:g id="NUMBER_2">%3$d</xliff:g> ସେକେଣ୍ଡରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
     <string name="thermal_shutdown_title" product="default" msgid="8039593017174903505">"ଗରମ ହେବା ଯୋଗୁଁ ଫୋନଟି ବନ୍ଦ ହୋଇଯାଇଛି"</string>
     <string name="thermal_shutdown_title" product="desktop" msgid="2954206342842856379">"ଗରମ ହେବା ଯୋଗୁଁ ଡିଭାଇସଟି ବନ୍ଦ ହୋଇଯାଇଛି"</string>
     <string name="thermal_shutdown_title" product="device" msgid="2954206342842856379">"ଗରମ ହେବା ଯୋଗୁଁ ଡିଭାଇସଟି ବନ୍ଦ ହୋଇଯାଇଛି"</string>
@@ -94,16 +84,13 @@
     <string name="global_action_lock_message" product="desktop" msgid="3165224897120346096">"ଅଧିକ ବିକଳ୍ପ ପାଇଁ ଆପଣଙ୍କ ଡିଭାଇସ୍ ଅନଲକ୍ କରନ୍ତୁ"</string>
     <string name="media_transfer_playing_this_device" product="default" msgid="5795784619523545556">"ଏହି ଫୋନରେ ପ୍ଲେ ହେଉଛି"</string>
     <string name="media_transfer_playing_this_device" product="tablet" msgid="222514408550408633">"ଏହି ଟାବଲେଟରେ ପ୍ଲେ ହେଉଛି"</string>
-    <!-- no translation found for media_transfer_playing_this_device (3299409636487714269) -->
-    <skip />
+    <string name="media_transfer_playing_this_device" product="desktop" msgid="3299409636487714269">"ଏହି ଡିଭାଇସରେ ଚଲାଯାଉଛି"</string>
     <string name="finder_active" product="default" msgid="2734050945122991747">"ପାୱାର ବନ୍ଦ ଥିଲେ ମଧ୍ୟ ଆପଣ Find My Device ମାଧ୍ୟମରେ ଏହି ଫୋନକୁ ଖୋଜିପାରିବେ"</string>
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"ପାୱାର ବନ୍ଦ ଥିଲେ ମଧ୍ୟ ଆପଣ Find My Device ମାଧ୍ୟମରେ ଏହି ଟାବଲେଟକୁ ଖୋଜିପାରିବେ"</string>
-    <!-- no translation found for finder_active (924749965418452906) -->
-    <skip />
+    <string name="finder_active" product="desktop" msgid="924749965418452906">"ପାୱାର ବନ୍ଦ ଥିଲେ ମଧ୍ୟ ଆପଣ Find My Device ମାଧ୍ୟମରେ ଏହି ଡିଭାଇସକୁ ଖୋଜିପାରିବେ"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"ପାୱାର ବନ୍ଦ ଥିଲେ ମଧ୍ୟ ଆପଣ Find Hub ମାଧ୍ୟମରେ ଏହି ଫୋନକୁ ଖୋଜିପାରିବେ"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"ପାୱାର ବନ୍ଦ ଥିଲେ ମଧ୍ୟ ଆପଣ Find Hub ମାଧ୍ୟମରେ ଏହି ଟାବଲେଟକୁ ଖୋଜିପାରିବେ"</string>
-    <!-- no translation found for find_hub_active (5324909071852240549) -->
-    <skip />
+    <string name="find_hub_active" product="desktop" msgid="5324909071852240549">"ପାୱାର ବନ୍ଦ ଥିଲେ ମଧ୍ୟ ଆପଣ Find Hub ମାଧ୍ୟମରେ ଏହି ଡିଭାଇସକୁ ଖୋଜିପାରିବେ"</string>
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"ଆପଣଙ୍କ ଫୋନ ଚାର୍ଜ ହେଉଥିବା ବେଳେ ଏକ ଘଣ୍ଟା, ଫଟୋ କିମ୍ବା ପାଣିପାଗ ଦେଖାନ୍ତୁ"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"ଆପଣଙ୍କ ଟାବଲେଟ ଚାର୍ଜ ହେଉଥିବା ବେଳେ ଏକ ଘଣ୍ଟା, ଫଟୋ କିମ୍ବା ପାଣିପାଗ ଦେଖାନ୍ତୁ"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"ଆପଣଙ୍କ ଡିଭାଇସ ଚାର୍ଜ ହେଉଥିବା ବେଳେ ଏକ ଘଣ୍ଟା, ଫଟୋ କିମ୍ବା ପାଣିପାଗ ଦେଖାନ୍ତୁ"</string>

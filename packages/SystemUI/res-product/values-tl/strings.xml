@@ -20,46 +20,36 @@
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="dock_alignment_slow_charging" product="default" msgid="6997633396534416792">"I-align ulit ang telepono para sa mas mabilis na pag-charge"</string>
-    <!-- no translation found for dock_alignment_slow_charging (3407039002024253081) -->
-    <skip />
+    <string name="dock_alignment_slow_charging" product="desktop" msgid="3407039002024253081">"I-align ulit ang device para sa mas mabilis na pag-charge"</string>
     <string name="dock_alignment_not_charging" product="default" msgid="3980752926226749808">"I-align ulit ang telepono para i-charge nang wireless"</string>
-    <!-- no translation found for dock_alignment_not_charging (1650693501464120367) -->
-    <skip />
+    <string name="dock_alignment_not_charging" product="desktop" msgid="1650693501464120367">"I-align ulit ang device para mag-charge nang wireless"</string>
     <string name="inattentive_sleep_warning_message" product="tv" msgid="6844464574089665063">"Mag-o-off na ang Android TV device; pumindot ng button para panatilihin itong naka-on."</string>
     <string name="inattentive_sleep_warning_message" product="default" msgid="5693904520452332224">"Mag-o-off na ang device; pumindot para panatilihin itong naka-on."</string>
     <string name="keyguard_missing_sim_message" product="tablet" msgid="408124574073032188">"Walang SIM sa tablet."</string>
     <string name="keyguard_missing_sim_message" product="default" msgid="2605468359948247208">"Walang SIM sa telepono."</string>
-    <!-- no translation found for keyguard_missing_sim_message (6678465505993388400) -->
-    <skip />
+    <string name="keyguard_missing_sim_message" product="desktop" msgid="6678465505993388400">"Walang SIM sa device."</string>
     <string name="kg_invalid_confirm_pin_hint" product="default" msgid="6278551068943958651">"Hindi nagtutugma ang mga PIN code"</string>
     <string name="kg_failed_attempts_almost_at_wipe" product="tablet" msgid="302165994845009232">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses mo nang sinubukang i-unlock ang tablet gamit ang maling password. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, ire-reset ang tablet na ito, na magiging dahilan para ma-delete ang lahat ng data nito."</string>
     <string name="kg_failed_attempts_almost_at_wipe" product="default" msgid="2594813176164266847">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses mo nang sinubukang i-unlock ang telepono gamit ang maling password. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, ire-reset ang teleponong ito, na magiging dahilan para ma-delete ang lahat ng data nito."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_wipe (6414651766868767274) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_wipe" product="desktop" msgid="6414651766868767274">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses mo nang sinubukang i-unlock ang device gamit ang maling password. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, ire-reset ang device na ito, na magiging dahilan para ma-delete ang lahat ng data nito."</string>
     <string name="kg_failed_attempts_now_wiping" product="tablet" msgid="8710104080409538587">"<xliff:g id="NUMBER">%d</xliff:g> (na) beses mo nang sinubukang i-unlock ang tablet gamit ang maling password. Ire-reset ang tablet na ito, na magiging dahilan para ma-delete ang lahat ng data nito."</string>
     <string name="kg_failed_attempts_now_wiping" product="default" msgid="6381835450014881813">"<xliff:g id="NUMBER">%d</xliff:g> (na) beses mo nang sinubukang i-unlock ang telepono gamit ang maling password. Ire-reset ang teleponong ito, na magiging dahilan para ma-delete ang lahat ng data nito."</string>
-    <!-- no translation found for kg_failed_attempts_now_wiping (2277485562881116948) -->
-    <skip />
+    <string name="kg_failed_attempts_now_wiping" product="desktop" msgid="2277485562881116948">"<xliff:g id="NUMBER">%d</xliff:g> (na) beses mo nang sinubukang i-unlock ang device gamit ang maling password. Ire-reset ang device na ito, na magiging dahilan para ma-delete ang lahat ng data nito."</string>
     <string name="kg_failed_attempts_almost_at_erase_user" product="tablet" msgid="7325071812832605911">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses mo nang sinubukang i-unlock ang tablet gamit ang maling password. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, aalisin ang user na ito, na magiging dahilan para ma-delete ang lahat ng data ng user."</string>
     <string name="kg_failed_attempts_almost_at_erase_user" product="default" msgid="8110939900089863103">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses mo nang sinubukang i-unlock ang telepono gamit ang maling password. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, aalisin ang user na ito, na magiging dahilan para ma-delete ang lahat ng data ng user."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_erase_user (6685285863549889535) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_erase_user" product="desktop" msgid="6685285863549889535">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses mo nang sinubukang i-unlock ang device gamit ang maling password. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, aalisin ang user na ito, na magiging dahilan para ma-delete ang lahat ng data ng user."</string>
     <string name="kg_failed_attempts_now_erasing_user" product="tablet" msgid="8509811676952707883">"<xliff:g id="NUMBER">%d</xliff:g> (na) beses mo nang sinubukang i-unlock ang tablet gamit ang maling password. Aalisin ang user na ito, na magiging dahilan para ma-delete ang lahat ng data ng user."</string>
     <string name="kg_failed_attempts_now_erasing_user" product="default" msgid="3051962486994265014">"<xliff:g id="NUMBER">%d</xliff:g> (na) beses mo nang sinubukang i-unlock ang telepono gamit ang maling password. Aalisin ang user na ito, na magiging dahilan para ma-delete ang lahat ng data ng user."</string>
-    <!-- no translation found for kg_failed_attempts_now_erasing_user (3003054879895735837) -->
-    <skip />
+    <string name="kg_failed_attempts_now_erasing_user" product="desktop" msgid="3003054879895735837">"<xliff:g id="NUMBER">%d</xliff:g> (na) beses mo nang sinubukang i-unlock ang device gamit ang maling password. Aalisin ang user na ito, na magiging dahilan para ma-delete ang lahat ng data ng user."</string>
     <string name="kg_failed_attempts_almost_at_erase_profile" product="tablet" msgid="1049523640263353830">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses mo nang sinubukang i-unlock ang tablet gamit ang maling password. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, aalisin ang profile sa trabaho, na magiging dahilan para ma-delete ang lahat ng data sa profile."</string>
     <string name="kg_failed_attempts_almost_at_erase_profile" product="default" msgid="3280816298678433681">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses mo nang sinubukang i-unlock ang telepono gamit ang maling password. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, aalisin ang profile sa trabaho, na magiging dahilan para ma-delete ang lahat ng data sa profile."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_erase_profile (6020310710703619275) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_erase_profile" product="desktop" msgid="6020310710703619275">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses mo nang sinubukang i-unlock ang device gamit ang maling password. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, aalisin ang profile sa trabaho, na magiging dahilan para ma-delete ang lahat ng data sa profile."</string>
     <string name="kg_failed_attempts_now_erasing_profile" product="tablet" msgid="4417100487251371559">"<xliff:g id="NUMBER">%d</xliff:g> (na) beses mo nang sinubukang i-unlock ang tablet gamit ang maling password. Aalisin ang profile sa trabaho, na magiging dahilan para ma-delete ang lahat ng data sa profile."</string>
     <string name="kg_failed_attempts_now_erasing_profile" product="default" msgid="4682221342671290678">"<xliff:g id="NUMBER">%d</xliff:g> (na) beses mo nang sinubukang i-unlock ang telepono gamit ang maling password. Aalisin ang profile sa trabaho, na magiging dahilan para ma-delete ang lahat ng data sa profile."</string>
-    <!-- no translation found for kg_failed_attempts_now_erasing_profile (2786666082798973358) -->
-    <skip />
+    <string name="kg_failed_attempts_now_erasing_profile" product="desktop" msgid="2786666082798973358">"<xliff:g id="NUMBER">%d</xliff:g> (na) beses mo nang sinubukang i-unlock ang device gamit ang maling password. Aalisin ang profile sa trabaho, na magiging dahilan para ma-delete ang lahat ng data sa profile."</string>
     <string name="kg_failed_attempts_almost_at_login" product="tablet" msgid="1860049973474855672">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses kang nagkamali sa pagguhit ng iyong pattern sa pag-unlock. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, hihilingin sa iyong i-unlock ang tablet mo gamit ang isang email account.\n\n Subukan ulit sa loob ng <xliff:g id="NUMBER_2">%3$d</xliff:g> (na) segundo."</string>
     <string name="kg_failed_attempts_almost_at_login" product="default" msgid="44112553371516141">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses kang nagkamali sa pagguhit ng iyong pattern sa pag-unlock. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, hihilingin sa iyong i-unlock ang telepono mo gamit ang isang email account.\n\n Subukan ulit sa loob ng <xliff:g id="NUMBER_2">%3$d</xliff:g> (na) segundo."</string>
-    <!-- no translation found for kg_failed_attempts_almost_at_login (1821951547429595155) -->
-    <skip />
+    <string name="kg_failed_attempts_almost_at_login" product="desktop" msgid="1821951547429595155">"<xliff:g id="NUMBER_0">%1$d</xliff:g> (na) beses ka nang nagkamali sa pagguhit sa iyong pattern sa pag-unlock. Pagkatapos ng <xliff:g id="NUMBER_1">%2$d</xliff:g> pang hindi matagumpay na pagsubok, ipapa-unlock sa iyo ang device mo gamit ang isang email account.\n\n Subukan ulit pagkalipas ng <xliff:g id="NUMBER_2">%3$d</xliff:g> (na) segundo."</string>
     <string name="thermal_shutdown_title" product="default" msgid="8039593017174903505">"Na-off ang telepono dahil sa init"</string>
     <string name="thermal_shutdown_title" product="desktop" msgid="2954206342842856379">"Na-off ang device dahil sa init"</string>
     <string name="thermal_shutdown_title" product="device" msgid="2954206342842856379">"Na-off ang device dahil sa init"</string>
@@ -94,16 +84,13 @@
     <string name="global_action_lock_message" product="desktop" msgid="3165224897120346096">"I-unlock ang iyong device para sa higit pang opsyon"</string>
     <string name="media_transfer_playing_this_device" product="default" msgid="5795784619523545556">"Nagpe-play sa teleponong ito"</string>
     <string name="media_transfer_playing_this_device" product="tablet" msgid="222514408550408633">"Nagpe-play sa tablet na ito"</string>
-    <!-- no translation found for media_transfer_playing_this_device (3299409636487714269) -->
-    <skip />
+    <string name="media_transfer_playing_this_device" product="desktop" msgid="3299409636487714269">"Nagpe-play sa device na ito"</string>
     <string name="finder_active" product="default" msgid="2734050945122991747">"Puwede mong hanapin ang teleponong ito gamit ang Hanapin ang Aking Device kahit naka-off ito"</string>
     <string name="finder_active" product="tablet" msgid="8045583079989970505">"Puwede mong hanapin ang tablet na ito gamit ang Hanapin ang Aking Device kahit naka-off ito"</string>
-    <!-- no translation found for finder_active (924749965418452906) -->
-    <skip />
+    <string name="finder_active" product="desktop" msgid="924749965418452906">"Puwede mong hanapin ang device na ito gamit ang Hanapin ang Aking Device kahit naka-off ito"</string>
     <string name="find_hub_active" product="default" msgid="8884083861904230143">"Puwede mong mahanap ang teleponong ito gamit ang Find Hub kahit na naka-off"</string>
     <string name="find_hub_active" product="tablet" msgid="7422713080929515642">"Puwede mong mahanap ang tablet na ito gamit ang Find Hub kahit na naka-off"</string>
-    <!-- no translation found for find_hub_active (5324909071852240549) -->
-    <skip />
+    <string name="find_hub_active" product="desktop" msgid="5324909071852240549">"Puwede mong mahanap ang device na ito gamit ang Find Hub kahit na naka-off"</string>
     <string name="dream_setup_description" product="default" msgid="5167691612621831552">"Magpakita ng orasan, mga larawan, o lagay ng panahon kapag nagcha-charge ang telepono mo"</string>
     <string name="dream_setup_description" product="tablet" msgid="6296793330727926553">"Magpakita ng orasan, mga larawan, o lagay ng panahon kapag nagcha-charge ang tablet mo"</string>
     <string name="dream_setup_description" product="device" msgid="3098487756905462324">"Magpakita ng orasan, mga larawan, o lagay ng panahon kapag nagcha-charge ang device mo"</string>
