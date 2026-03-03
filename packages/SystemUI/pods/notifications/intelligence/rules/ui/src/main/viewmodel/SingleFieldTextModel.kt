@@ -34,15 +34,15 @@ internal data class SingleFieldTextModel(
      * [onClick] will be associated with this range.
      */
     val valueFieldRange: IntRange?,
-    /** Clickable behavior. */
-    val onClick: () -> Unit,
+    /** Optional clickable behavior. */
+    val onClick: (() -> Unit)?,
 )
 
 /** Creates text that shows 1 or more selected items. */
 internal fun <T> createMultiItemText(
     items: List<T>,
     label: (T) -> String,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     resources: Resources,
 ): SingleFieldTextModel {
     check(items.isNotEmpty()) { "Items must be non-empty" }
@@ -76,7 +76,7 @@ internal fun createAmbiguousText(
 
 private fun createFieldText(
     spanned: Spanned,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)?,
     isAmbiguous: Boolean,
 ): SingleFieldTextModel {
     val annotations: Array<Annotation> = spanned.getSpans(0, spanned.length, Annotation::class.java)

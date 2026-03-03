@@ -16,30 +16,50 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.content.res.Resources
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 
 /**
  * Transforms [rule] into a readable string. Because this is a read-only view, individual fields are
- * more visually prominent but not clickable.
+ * more visually prominent but not editable.
  */
-internal fun buildReadOnlyRuleText(rule: RuleModel): String {
-    // TODO: b/478225883 - Internationalize this string when design is ready.
-    // TODO: b/478225883 - Re-use text rendering from edit screen.
-    val contactsList = rule.filter.contacts?.contacts
-    val contactsString =
-        if (contactsList != null) {
-            " from ${contactsList.joinToString { it.name }} [TK]"
-        } else {
-            ""
+internal fun buildReadOnlyRuleText(rule: RuleModel, resources: Resources): RuleDisplayModel {
+    val appsText: SingleFieldTextModel? =
+        rule.filter.includedApps?.let {
+            createReadOnlyIncludedAppsText(selectedIncludedApps = it, resources = resources)
         }
 
-    val includedAppsList = rule.filter.includedApps?.apps
-    val includedAppsString =
-        if (includedAppsList != null) {
-            " from ${includedAppsList.joinToString { it.label }} [TK]"
-        } else {
-            ""
+    val contactsText: SingleFieldTextModel? =
+        rule.filter.contacts?.let {
+            createReadOnlyContactsText(selectedContacts = it, resources = resources)
         }
+    return buildRuleText(appsText = appsText, contactsText = contactsText)
+}
 
-    return "Notifications$contactsString$includedAppsString [TK]"
+/** Creates text representation for the included apps filter field. */
+private fun createReadOnlyIncludedAppsText(
+    selectedIncludedApps: IncludedAppsModel,
+    resources: Resources,
+): SingleFieldTextModel {
+    return createMultiItemText(
+        items = selectedIncludedApps.apps,
+        label = { it.label },
+        onClick = null,
+        resources = resources,
+    )
+}
+
+/** Creates text representation for the contacts filter field. */
+private fun createReadOnlyContactsText(
+    selectedContacts: ContactsModel,
+    resources: Resources,
+): SingleFieldTextModel {
+    return createMultiItemText(
+        items = selectedContacts.contacts,
+        label = { it.displayLabel },
+        onClick = null,
+        resources = resources,
+    )
 }

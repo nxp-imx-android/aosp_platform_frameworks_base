@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.content.res.Resources
 import com.android.systemui.lifecycle.Activatable
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 
@@ -37,7 +38,7 @@ public interface NotificationRulesScreenViewModel : Activatable {
      * Transforms [rule] into a readable string. Because this is a read-only view, individual fields
      * are more visually prominent but not clickable.
      */
-    public fun buildRuleText(rule: RuleModel): String
+    public fun buildRuleText(rule: RuleModel, resources: Resources): RuleDisplayModel
 
     /** Creates a new rule and adds it to the list of saved rules. */
     public fun createRule(newRule: RuleModel)

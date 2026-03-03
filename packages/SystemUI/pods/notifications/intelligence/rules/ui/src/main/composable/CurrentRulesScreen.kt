@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,7 +40,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
@@ -47,6 +51,7 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.DraftR
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel.Companion.toDraft
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.NotificationRulesScreenViewModel
+import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.TextStyles
 import com.android.systemui.res.R
 import kotlinx.coroutines.launch
 
@@ -58,6 +63,7 @@ fun CurrentRulesScreen(
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
+    val textStyles = rememberTextStyles()
     BackHandler(enabled = true, onBack = onDismissCurrentRulesScreen)
 
     LazyColumn(
@@ -90,6 +96,7 @@ fun CurrentRulesScreen(
                 CurrentRule(
                     rule = rule,
                     screenViewModel = viewModel,
+                    textStyles = textStyles,
                     onNavigateToEditScreen = onNavigateToEditScreen,
                 )
             }
@@ -117,11 +124,19 @@ fun CurrentRulesScreen(
 
 @Composable
 private fun CurrentRule(
-    screenViewModel: NotificationRulesScreenViewModel,
     rule: RuleModel,
+    screenViewModel: NotificationRulesScreenViewModel,
+    textStyles: TextStyles,
     onNavigateToEditScreen: (DraftRuleModel) -> Unit,
 ) {
+    val resources = LocalResources.current
     var isExpanded by remember { mutableStateOf(false) }
+
+    val ruleDisplay = remember(rule, resources) { screenViewModel.buildRuleText(rule, resources) }
+    val text =
+        remember(ruleDisplay.textChunks, textStyles) {
+            buildAnnotatedString(ruleDisplay.textChunks, textStyles)
+        }
 
     Column(
         modifier =
@@ -135,7 +150,7 @@ private fun CurrentRule(
     ) {
         ReadOnlyAction(rule.action)
         Text(
-            text = screenViewModel.buildRuleText(rule),
+            text = text,
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.bodyMedium,
         )
@@ -145,5 +160,19 @@ private fun CurrentRule(
                 Text(stringResource(R.string.notification_rules_edit))
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun rememberTextStyles(): TextStyles {
+    val defaultStyle = MaterialTheme.typography.titleLargeEmphasized
+    val valueSpanStyle = SpanStyle(fontWeight = FontWeight.Bold)
+    return remember(defaultStyle, valueSpanStyle) {
+        TextStyles(
+            defaultStyle = defaultStyle,
+            specifiedValueSpanStyle = valueSpanStyle,
+            ambiguousValueSpanStyle = valueSpanStyle,
+        )
     }
 }

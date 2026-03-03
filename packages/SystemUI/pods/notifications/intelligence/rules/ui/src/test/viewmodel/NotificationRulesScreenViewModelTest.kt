@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.content.applicationContext
 import android.graphics.drawable.Drawable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.core.net.toUri
@@ -76,9 +77,11 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                     filter = FilterModel(includedApps = null, contacts = null),
                 )
 
-            val ruleDisplay = underTest.buildRuleText(rule)
+            val ruleDisplay = underTest.buildRuleText(rule, applicationContext.resources)
 
-            assertThat(ruleDisplay).contains("Notifications")
+            assertThat(ruleDisplay.textChunks).hasSize(1)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
         }
 
     @Test
@@ -97,9 +100,16 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                         FilterModel(includedApps = null, contacts = ContactsModel(listOf(contact))),
                 )
 
-            val ruleDisplay = underTest.buildRuleText(rule)
+            val ruleDisplay = underTest.buildRuleText(rule, applicationContext.resources)
 
-            assertThat(ruleDisplay).contains("Notifications from Meowth")
+            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.FieldValueText::class.java)
+            val valueChunk = ruleDisplay.textChunks[2] as TextChunk.FieldValueText
+            assertThat(valueChunk.text).isEqualTo("Meowth")
         }
 
     @Test
@@ -119,9 +129,16 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                         FilterModel(includedApps = IncludedAppsModel(listOf(app)), contacts = null),
                 )
 
-            val ruleDisplay = underTest.buildRuleText(rule)
+            val ruleDisplay = underTest.buildRuleText(rule, applicationContext.resources)
 
-            assertThat(ruleDisplay).contains("Notifications from Chat the Cat")
+            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.FieldValueText::class.java)
+            val valueChunk = ruleDisplay.textChunks[2] as TextChunk.FieldValueText
+            assertThat(valueChunk.text).isEqualTo("Chat the Cat")
         }
 
     @Test
@@ -143,9 +160,16 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                         ),
                 )
 
-            val ruleDisplay = underTest.buildRuleText(rule)
+            val ruleDisplay = underTest.buildRuleText(rule, applicationContext.resources)
 
-            assertThat(ruleDisplay).contains("Notifications from Mom Cell")
+            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.FieldValueText::class.java)
+            val fieldValueChunk = ruleDisplay.textChunks[2] as TextChunk.FieldValueText
+            assertThat(fieldValueChunk.text).isEqualTo("Mom Cell +1 more")
         }
 
     @Test
@@ -169,9 +193,16 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                         ),
                 )
 
-            val ruleDisplay = underTest.buildRuleText(rule)
+            val ruleDisplay = underTest.buildRuleText(rule, applicationContext.resources)
 
-            assertThat(ruleDisplay).contains("Notifications from Puzzle the Cat")
+            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.FieldValueText::class.java)
+            val fieldValueChunk = ruleDisplay.textChunks[2] as TextChunk.FieldValueText
+            assertThat(fieldValueChunk.text).isEqualTo("Puzzle the Cat +2 more")
         }
 
     @Test
@@ -201,10 +232,21 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                         ),
                 )
 
-            val ruleDisplay = underTest.buildRuleText(rule)
+            val ruleDisplay = underTest.buildRuleText(rule, applicationContext.resources)
 
-            assertThat(ruleDisplay).contains("Notifications from Mom Cell")
-            assertThat(ruleDisplay).contains("from Puzzle the Cat")
+            assertThat(ruleDisplay.textChunks).hasSize(5)
+            assertThat(ruleDisplay.textChunks[0])
+                .isEqualTo(TextChunk.BasicText("Notifications [TK]"))
+            assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+
+            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.FieldValueText::class.java)
+            val fieldValueChunkApps = ruleDisplay.textChunks[2] as TextChunk.FieldValueText
+            assertThat(fieldValueChunkApps.text).isEqualTo("Puzzle the Cat +2 more")
+
+            assertThat(ruleDisplay.textChunks[3]).isEqualTo(TextChunk.BasicText(" from "))
+            assertThat(ruleDisplay.textChunks[4]).isInstanceOf(TextChunk.FieldValueText::class.java)
+            val fieldValueChunkContacts = ruleDisplay.textChunks[4] as TextChunk.FieldValueText
+            assertThat(fieldValueChunkContacts.text).isEqualTo("Mom Cell")
         }
 
     companion object {

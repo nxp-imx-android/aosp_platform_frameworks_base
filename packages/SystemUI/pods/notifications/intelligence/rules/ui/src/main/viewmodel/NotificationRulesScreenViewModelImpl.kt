@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.content.res.Resources
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.NotificationRulesInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
@@ -39,8 +40,8 @@ constructor(
         interactor.createRule(newRule)
     }
 
-    override fun buildRuleText(rule: RuleModel): String {
-        return buildReadOnlyRuleText(rule)
+    override fun buildRuleText(rule: RuleModel, resources: Resources): RuleDisplayModel {
+        return buildReadOnlyRuleText(rule, resources)
     }
 
     @AssistedFactory

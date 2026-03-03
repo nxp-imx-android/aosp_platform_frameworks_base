@@ -37,16 +37,22 @@ internal fun SingleFieldTextModel.toTextChunks(): List<TextChunk> {
     }
 
     return buildList {
-        add(TextChunk.BasicText(text.substring(0 until valueFieldRange.first)))
-        add(
-            TextChunk.ClickableText(
-                text = text.substring(valueFieldRange),
-                onClick = onClick,
-                isAmbiguous = isAmbiguous,
-            )
-        )
-        add(TextChunk.BasicText(text.substring(valueFieldRange.last + 1)))
-    }
+            add(TextChunk.BasicText(text.substring(0 until valueFieldRange.first)))
+
+            if (onClick != null) {
+                add(
+                    TextChunk.ClickableText(
+                        text = text.substring(valueFieldRange),
+                        onClick = onClick,
+                        isAmbiguous = isAmbiguous,
+                    )
+                )
+            } else {
+                add(TextChunk.FieldValueText(text = text.substring(valueFieldRange)))
+            }
+
+            add(TextChunk.BasicText(text.substring(valueFieldRange.last + 1)))
+        }
         .filterNot {
             // Get rid of any empty strings, which will happen if the onClick range is at the
             // beginning or end of the string

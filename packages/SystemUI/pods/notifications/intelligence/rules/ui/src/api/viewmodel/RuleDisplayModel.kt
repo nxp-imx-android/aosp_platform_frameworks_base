@@ -27,6 +27,9 @@ public sealed interface TextChunk {
     /** Simple filler text. */
     public data class BasicText(val text: String) : TextChunk
 
+    /** Text that represents the value of a particular field but is *not* clickable. */
+    public data class FieldValueText(val text: String) : TextChunk
+
     /** Text that, when clicked on, will trigger [onClick]. */
     public data class ClickableText(
         val text: String,

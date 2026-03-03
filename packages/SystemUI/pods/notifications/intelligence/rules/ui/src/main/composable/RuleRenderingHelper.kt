@@ -21,6 +21,7 @@ import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.TextChunk
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.TextStyles
 
@@ -36,6 +37,9 @@ private fun AnnotatedString.Builder.appendTextChunk(chunk: TextChunk, textStyles
     when (chunk) {
         is TextChunk.BasicText -> {
             append(chunk.text)
+        }
+        is TextChunk.FieldValueText -> {
+            withStyle(style = textStyles.specifiedValueSpanStyle) { append(chunk.text) }
         }
         is TextChunk.ClickableText -> {
             appendClickableRegion(
