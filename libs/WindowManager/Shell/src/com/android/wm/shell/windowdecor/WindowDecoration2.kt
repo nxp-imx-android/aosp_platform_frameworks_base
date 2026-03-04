@@ -46,12 +46,10 @@ import android.window.WindowContainerTransaction
 import androidx.core.content.res.use
 import com.android.app.tracing.traceSection
 import com.android.internal.annotations.VisibleForTesting
-import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.BoxShadowHelper
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
-import com.android.wm.shell.protolog.ShellProtoLogGroup
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.caption.CaptionController
@@ -178,7 +176,13 @@ abstract class WindowDecoration2<T>(
             traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
             name = "WindowDecoration2#relayout",
         ) {
-            logD("relayout(task=%d) startT=%d finishT=%d", taskInfo.taskId, startT.id, finishT.id)
+            logD(
+                TAG,
+                "relayout(task=%d) startT=%d finishT=%d",
+                taskInfo.taskId,
+                startT.id,
+                finishT.id,
+            )
             taskInfo = params.runningTaskInfo
             hasGlobalFocus = params.hasGlobalFocus
             exclusionRegion.set(params.displayExclusionRegion)
@@ -203,7 +207,7 @@ abstract class WindowDecoration2<T>(
                     finishT.hide(taskSurface)
                 }
                 lastValidDragArea = captionController?.calculateValidDragArea()
-                logD("relayout(task=%d) invisible task, skipping", taskInfo.taskId)
+                logD(TAG, "relayout(task=%d) invisible task, skipping", taskInfo.taskId)
                 return null
             }
 
@@ -212,7 +216,7 @@ abstract class WindowDecoration2<T>(
             // If display has not yet appeared, return. Relayout will run again once display is
             // registered
             if (display == null) {
-                logD("relayout(task=%d) null display, skipping", taskInfo.taskId)
+                logD(TAG, "relayout(task=%d) null display, skipping", taskInfo.taskId)
                 return null
             }
 
@@ -270,7 +274,7 @@ abstract class WindowDecoration2<T>(
 
             val controller = getOrCreateCaptionController(params.captionType)
             if (controller == null) {
-                logD("relayout(task=%d) null caption controller, skipping", taskInfo.taskId)
+                logD(TAG, "relayout(task=%d) null caption controller, skipping", taskInfo.taskId)
                 return null
             }
             val captionResult =
@@ -463,7 +467,7 @@ abstract class WindowDecoration2<T>(
                 "expected non-null decoration container surface"
             }
         }
-        logD("Creating new decoration container surface for taskId=%d", taskInfo.taskId)
+        logD(TAG, "Creating new decoration container surface for taskId=%d", taskInfo.taskId)
         val builder = surfaceControlBuilderSupplier()
         val containerSurface =
             builder
@@ -492,7 +496,7 @@ abstract class WindowDecoration2<T>(
         ) {
             // If decoration container surface is not needed, destroy it if it exists
             decorationContainerSurface?.let {
-                logD("Destroying decoration container surface for taskId=%d", taskInfo.taskId)
+                logD(TAG, "Destroying decoration container surface for taskId=%d", taskInfo.taskId)
                 startT.remove(it)
                 decorationContainerSurface = null
             }
@@ -502,12 +506,6 @@ abstract class WindowDecoration2<T>(
         getOrCreateDecorationSurface(taskInfo, startT).let {
             startT.setWindowCrop(it, taskWidth, taskHeight).show(it)
         }
-    }
-
-    // TODO(b/478792808): Remove suppression
-    @SuppressWarnings("ProtoLogNonConstantFormat")
-    private fun logD(msg: String, vararg arguments: Any?) {
-        ProtoLog.d(ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION, "%s: $msg", TAG, *arguments)
     }
 
     private fun releaseViewsIfNeeded(params: RelayoutParams, wct: WindowContainerTransaction) =

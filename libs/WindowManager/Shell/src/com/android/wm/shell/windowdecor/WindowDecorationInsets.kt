@@ -24,9 +24,7 @@ import android.view.InsetsSource
 import android.view.WindowInsets
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
-import com.android.internal.protolog.ProtoLog
 import com.android.window.flags.Flags
-import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
 
 /** Adds, removes, and updates caption insets. */
 data class WindowDecorationInsets
@@ -75,6 +73,7 @@ private constructor(
     fun update(wct: WindowContainerTransaction) {
         if (!shouldAddCaptionInset) return
         logD(
+            TAG,
             "update insets for wc=%s with frame=%s, rects=%s, appBoundsExclusion=%s",
             token,
             frame,
@@ -193,12 +192,6 @@ private constructor(
         if (!Flags.refactorCaptionSandboxingToCore()) {
             appBoundsExclusion?.let { wct.setAppBounds(token, Rect()) }
         }
-    }
-
-    // TODO(b/478792808): Remove suppression
-    @SuppressWarnings("ProtoLogNonConstantFormat")
-    private fun logD(msg: String, vararg arguments: Any?) {
-        ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: $msg", TAG, *arguments)
     }
 
     companion object {

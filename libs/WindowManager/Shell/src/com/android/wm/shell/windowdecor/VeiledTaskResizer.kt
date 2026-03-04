@@ -95,11 +95,25 @@ class VeiledTaskResizer(
         )
 
         session.windowDecoration.updateResizeVeil(session.repositionTaskBounds)
-        if (session.taskBoundsAtDragStart != session.repositionTaskBounds) {
+        val boundsChanged = session.taskBoundsAtDragStart != session.repositionTaskBounds
+        logD(
+            TAG,
+            session.windowDecoration.taskInfo.taskId,
+            "onResizeEnd: boundsChanged=%b, bounds=%s",
+            boundsChanged,
+            session.repositionTaskBounds,
+        )
+        if (boundsChanged) {
             val wct = WindowContainerTransaction()
             wct.setBounds(session.windowDecoration.taskInfo.token, session.repositionTaskBounds)
             val captionInsets = session.windowDecoration.taskInfo.freeformCaptionInsets
             if (captionInsets != 0) {
+                logD(
+                    TAG,
+                    session.windowDecoration.taskInfo.taskId,
+                    "onResizeEnd: resetting app bounds for caption insets=%d",
+                    captionInsets,
+                )
                 // Reset app bounds if app bounds were overridden.
                 wct.setAppBounds(session.windowDecoration.taskInfo.token, null)
             }
@@ -111,6 +125,7 @@ class VeiledTaskResizer(
     }
 
     override fun cleanup(session: DragSession) {
+        logD(TAG, session.windowDecoration.taskInfo.taskId, "cleanup")
         endDragResizeSession(session)
     }
 
@@ -119,5 +134,9 @@ class VeiledTaskResizer(
             session.windowDecoration.hideResizeVeil()
             session.isResizingOrAnimatingResize = false
         }
+    }
+
+    companion object {
+        private const val TAG = "VeiledTaskResizer"
     }
 }

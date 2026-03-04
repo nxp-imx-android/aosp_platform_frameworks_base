@@ -139,21 +139,37 @@ class MultiDisplayVeiledResizeTaskPositioner(
         y: Float,
         inputMethodType: Int,
     ): Rect {
-        if (DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue) {
-            desktopRepository = desktopUserRepositories.getProfile(windowDecoration.taskInfo.userId)
-            shouldRestoreBoundsOnMove =
-                desktopRepository.hasBoundsBeforeSnapOrMaximize(windowDecoration.taskInfo)
-            if (shouldRestoreBoundsOnMove) {
-                pendingResizeTransition = null
-            }
-        }
-
         this.ctrlType = ctrlType
         startDisplayId = displayId
         hasMovedTaskSurfaceOffScreen = false
         taskBoundsAtDragStart.set(
             windowDecoration.taskInfo.configuration.windowConfiguration.bounds
         )
+        logD(
+            TAG,
+            windowDecoration.taskInfo.taskId,
+            "onDragPositioningStart: taskId=%d, ctrlType=%d, displayId=%d, x=%f, y=%f, " +
+                "taskBounds=%s",
+            windowDecoration.taskInfo.taskId,
+            ctrlType,
+            displayId,
+            x,
+            y,
+            taskBoundsAtDragStart,
+        )
+
+        if (DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue) {
+            desktopRepository = desktopUserRepositories.getProfile(windowDecoration.taskInfo.userId)
+            shouldRestoreBoundsOnMove =
+                desktopRepository.hasBoundsBeforeSnapOrMaximize(windowDecoration.taskInfo)
+            if (shouldRestoreBoundsOnMove) {
+                logD(
+                    TAG,
+                    windowDecoration.taskInfo.taskId,
+                    "onDragPositioningStart: shouldRestoreBoundsOnMove",
+                )
+            }
+        }
         repositionStartPoint[x] = y
         hasMoved = false
         inputMethod = getInputMethodType(inputMethodType)
@@ -203,12 +219,25 @@ class MultiDisplayVeiledResizeTaskPositioner(
         check(Looper.myLooper() == handler.looper) {
             "This method must run on the shell main thread."
         }
+        motionEventLogD(
+            TAG,
+            windowDecoration.taskInfo.taskId,
+            "onDragPositioningMove: displayId=%d, x=%f, y=%f",
+            displayId,
+            x,
+            y,
+        )
         // If the window needs to be resized to its bounds before snap or maximize, then wait until
         // resizing is complete before moving it.
         if (
             DesktopExperienceFlags.ENABLE_BOUNDS_RESTORING_ON_DRAG_EXIT.isTrue &&
                 pendingResizeTransition != null
         ) {
+            logD(
+                TAG,
+                windowDecoration.taskInfo.taskId,
+                "onDragPositioningMove: deferring move due to ongoing bounds restore transition",
+            )
             return taskBoundsAtDragStart
         }
         val delta = DragPositioningCallbackUtility.calculateDelta(x, y, repositionStartPoint)
@@ -251,6 +280,14 @@ class MultiDisplayVeiledResizeTaskPositioner(
             val currentDisplayLayout = displayController.getDisplayLayout(displayId)
 
             if (startDisplayLayout == null || currentDisplayLayout == null) {
+                logD(
+                    TAG,
+                    windowDecoration.taskInfo.taskId,
+                    "onDragPositioningMove: falling back to single-display move (startLayout=%s, " +
+                        "currentLayout=%s)",
+                    startDisplayLayout,
+                    currentDisplayLayout,
+                )
                 // Fall back to single-display drag behavior if any display layout is unavailable.
                 DragPositioningCallbackUtility.setPositionOnDrag(
                     windowDecoration,
@@ -294,6 +331,12 @@ class MultiDisplayVeiledResizeTaskPositioner(
                             windowDecoration.taskInfo.configuration.windowConfiguration.bounds
                         val restoredBounds =
                             calculateOnMoveRestoredBounds(prevBounds, currentBounds, x)
+                        logD(
+                            TAG,
+                            windowDecoration.taskInfo.taskId,
+                            "onDragPositioningMove: restoredBounds=%s",
+                            restoredBounds,
+                        )
                         taskBoundsAtDragStart.set(restoredBounds)
 
                         transitions.registerObserver(this)
@@ -347,9 +390,25 @@ class MultiDisplayVeiledResizeTaskPositioner(
     }
 
     override fun onDragPositioningEnd(displayId: Int, x: Float, y: Float): Rect {
+        logD(
+            TAG,
+            windowDecoration.taskInfo.taskId,
+            "onDragPositioningEnd: taskId=%d, displayId=%d, x=%f, y=%f",
+            windowDecoration.taskInfo.taskId,
+            displayId,
+            x,
+            y,
+        )
         val delta = DragPositioningCallbackUtility.calculateDelta(x, y, repositionStartPoint)
         if (isResizing) {
-            if (taskBoundsAtDragStart != repositionTaskBounds) {
+            val boundsChanged = taskBoundsAtDragStart != repositionTaskBounds
+            logD(
+                TAG,
+                windowDecoration.taskInfo.taskId,
+                "onDragPositioningEnd: boundsChanged=%b",
+                boundsChanged,
+            )
+            if (boundsChanged) {
                 DragPositioningCallbackUtility.changeBounds(
                     ctrlType,
                     repositionTaskBounds,
@@ -373,6 +432,12 @@ class MultiDisplayVeiledResizeTaskPositioner(
                 wct.setBounds(windowDecoration.taskInfo.token, repositionTaskBounds)
                 val captionInsets = windowDecoration.taskInfo.freeformCaptionInsets
                 if (!Flags.refactorCaptionSandboxingToCore() && captionInsets != 0) {
+                    logD(
+                        TAG,
+                        windowDecoration.taskInfo.taskId,
+                        "onDragPositioningEnd: resetting app bounds for caption insets=%d",
+                        captionInsets,
+                    )
                     // Reset app bounds if app bounds were overridden.
                     wct.setAppBounds(windowDecoration.taskInfo.token, null)
                 }
@@ -392,6 +457,15 @@ class MultiDisplayVeiledResizeTaskPositioner(
                     startDisplayLayout == null ||
                     currentDisplayLayout == null
             ) {
+                logD(
+                    TAG,
+                    windowDecoration.taskInfo.taskId,
+                    "onDragPositioningEnd: falling back to single-display move (sameDisplay=%b, " +
+                        "startLayout=%s, currentLayout=%s)",
+                    startDisplayId == displayId,
+                    startDisplayLayout,
+                    currentDisplayLayout,
+                )
                 // Fall back to single-display drag behavior if:
                 // 1. The drag destination display is the same as the start display. This prevents
                 // unnecessary animations caused by minor width/height changes due to DPI scaling.
@@ -428,6 +502,12 @@ class MultiDisplayVeiledResizeTaskPositioner(
         taskBoundsAtDragStart.setEmpty()
         repositionStartPoint[0f] = 0f
         hasMovedTaskSurfaceOffScreen = false
+        logD(
+            TAG,
+            windowDecoration.taskInfo.taskId,
+            "onDragPositioningEnd: bounds=%s",
+            repositionTaskBounds,
+        )
         return Rect(repositionTaskBounds)
     }
 
@@ -548,9 +628,12 @@ class MultiDisplayVeiledResizeTaskPositioner(
         displayIds.clear()
         if (topology == null) return
         displayIds.addAll(topology.allNodesIdMap().keys)
+        logD(TAG, windowDecoration.taskInfo.taskId, "onTopologyChanged: displayIds=%s", displayIds)
     }
 
     companion object {
+        private const val TAG = "MultiDisplayVeiledResizeTaskPositioner"
+
         // Timeout used for resize and drag CUJs, this is longer than the default timeout to avoid
         // timing out in the middle of a resize or drag action.
         private val LONG_CUJ_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(/* duration= */ 10L)
