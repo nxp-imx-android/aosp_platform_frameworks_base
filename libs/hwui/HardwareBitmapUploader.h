@@ -54,7 +54,7 @@ public:
     static bool has10101010Support();
     static bool hasAlpha8Support();
 
-    static FormatInfo determineFormat(const SkBitmap& skBitmap, bool usingGL = false);
+    static FormatInfo determineFormat(const SkImageInfo& info, bool usingGL = false);
 #else
     static bool hasFP16Support() {
         return true;

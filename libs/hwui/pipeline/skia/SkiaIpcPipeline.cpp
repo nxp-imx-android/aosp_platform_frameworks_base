@@ -164,6 +164,10 @@ IRenderPipeline::DrawResult SkiaIpcPipeline::draw(
     renderLayersImpl(*layerUpdateQueue, opaque);
     layerUpdateQueue->clear();
     renderFrameImpl(dirty, renderNodes, opaque, contentDrawBounds, canvas, SkMatrix::I());
+
+    // Send queued bitmaps registrations (e.g. created during this frame)
+    mOoprClient->sendPendingBitmapRegistrations(mIPCRecordingCanvas->getRenderCommandBuffer());
+
     mIPCRecordingCanvas->endRecording();
 
     return {true, IRenderPipeline::DrawResult::kUnknownTime, android::base::unique_fd{}};
@@ -177,8 +181,6 @@ bool SkiaIpcPipeline::swapBuffers(const Frame& frame, IRenderPipeline::DrawResul
     if (!drawResult.success) {
         return false;
     }
-    // Register any pending bitmaps (e.g. created during this frame)
-    mOoprClient->registerPendingBitmaps();
 
     SurfaceComposerClient::Transaction pendingTransactions;
     std::function<void(SurfaceComposerClient::Transaction*)> syncCallback;

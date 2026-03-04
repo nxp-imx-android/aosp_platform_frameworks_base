@@ -486,24 +486,6 @@ sk_sp<SkImage> Bitmap::makeImage() {
         image = SkImages::PinnableRasterFromBitmap(skiaBitmap);
 
         if (mPixelStorageType == PixelStorageType::Heap) {
-            // TODO(b/448196792): Improve OOPR handling for heap-based Bitmaps.
-            //
-            // To support Out-of-Process Rasterization (OOPR), a shadow buffer
-            // (e.g., GraphicBuffer) is currently created when makeImage is called for
-            // heap-based Bitmaps. This buffer captures a snapshot of the Bitmap's data
-            // at that specific moment.
-            //
-            // This is a temporary approach. Since Android allows mutations to the
-            // Bitmap's data after SkImage creation, the contents of this shadow buffer
-            // may not always match the data that would be uploaded by the RenderThread
-            // in the standard rendering path (which typically happens later during
-            // CanvasContext::prepareTree). Future improvements will aim to better
-            // synchronize or handle these potential divergences.
-            //
-            // Additionally, because the GraphicBuffer is created with an usage flag like
-            // GRALLOC_USAGE_SW_WRITE_RARELY, this may result in a suboptimal format for GPU
-            // sampling (e.g., non-tiled layout, disabled compression). This can negatively
-            // impact performance and should be addressed in future improvements.
             mOoprResources.createAndRegisterShadowBuffer(skiaBitmap, image);
         }
 #else
