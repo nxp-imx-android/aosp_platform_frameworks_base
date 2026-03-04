@@ -47,6 +47,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
@@ -2202,6 +2203,39 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         // the HUN at the bottom should be clipped
         assertThat(topHun.viewState.clipBottomAmount).isEqualTo(0)
         assertThat(bottomHun.viewState.clipBottomAmount).isEqualTo(bottomHunHeight - topHunHeight)
+    }
+
+    @Test
+    @DisableSceneContainer
+    fun resetViewStates_legacy_firstViewInShelf_setCorrectly() {
+        // GIVEN two notification rows, gap, and shelf
+        val notif1 = mockExpandableNotificationRow().apply { whenever(key).thenReturn("notif1") }
+        val notif2 = mockExpandableNotificationRow().apply { whenever(key).thenReturn("notif2") }
+        whenever(notif1.intrinsicHeight).thenReturn(100)
+        whenever(notif2.intrinsicHeight).thenReturn(100)
+        hostView.removeAllViews()
+        hostView.addView(notif1)
+        hostView.addView(notif2)
+
+        val gap = testableResources.resources
+            .getDimensionPixelSize(R.dimen.notification_divider_height)
+
+        val shelfHeight = 50
+        whenever(notificationShelf.intrinsicHeight).thenReturn(shelfHeight)
+
+        // Set shelfStart = 100 so notif2 is first view in shelf
+        val stackHeight = (100 + shelfHeight + gap).toFloat()
+        ambientState.stackEndHeight = stackHeight
+        ambientState.shelf = notificationShelf
+        stackScrollAlgorithm.setIsExpanded(true)
+
+        // RUN algorithm
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // VERIFY notif2 is first view in shelf
+        val stateCaptor = argumentCaptor<StackScrollAlgorithm.StackScrollAlgorithmState>()
+        verify(notificationShelf).updateState(stateCaptor.capture(), eq(ambientState))
+        assertThat(stateCaptor.firstValue.firstViewInShelf).isEqualTo(notif2)
     }
 
     private fun resetViewStates_expansionChanging_notificationAlphaUpdated(
