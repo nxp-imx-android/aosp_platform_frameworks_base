@@ -1486,6 +1486,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             // The transient hide tasks could be occluded now, e.g. returning to home. So trigger
             // the update to make the activities in the tasks invisible-requested, then the next
             // step can continue to commit the visibility.
+            mWmService.mAtmService.mTaskSupervisor.rescheduleTopResumedStateIfNeeded();
             mController.mAtm.mRootWindowContainer.ensureActivitiesVisible();
             // Record all the now-hiding activities so that they are committed. Just use
             // mParticipants because we can avoid a new list this way.
