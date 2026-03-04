@@ -422,6 +422,13 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_taskbar_in_fullscreen_mode"
+    namespace: "lse_desktop_experience"
+    description: "Adding functionalities for desktop-first taskbar in fullscreen mode, including showing recent fullscreen apps and auto-hide taskbar in fullscreen mode."
+    bug: "478732123"
+}
+
+flag {
     name: "enable_desktop_taskbar_on_freeform_displays"
     namespace: "lse_desktop_experience"
     description: "Forces pinned taskbar with desktop tasks on freeform displays"
