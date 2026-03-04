@@ -21,6 +21,8 @@ import com.android.hoststubgen.utils.BaseOptions
 import com.android.hoststubgen.utils.ClassDescriptorSet
 import com.android.hoststubgen.utils.FileOrResource
 import com.android.hoststubgen.utils.SetOnce
+import com.android.hoststubgen.utils.ensureDirExists
+import com.android.hoststubgen.utils.ensureFileExists
 
 private fun parsePackageRedirect(fromColonTo: String): Pair<String, String> {
     val colon = fromColonTo.indexOf(':')
@@ -35,6 +37,9 @@ private fun parsePackageRedirect(fromColonTo: String): Pair<String, String> {
  * Options to configure [HostStubGenClassProcessor].
  */
 open class HostStubGenClassProcessorOptions(
+    /** Input jar files, or directories containing *.class files */
+    val inJars: MutableList<String> = mutableListOf(),
+
     val keepAnnotations: MutableSet<String> = mutableSetOf(),
     val throwAnnotations: MutableSet<String> = mutableSetOf(),
     val removeAnnotations: MutableSet<String> = mutableSetOf(),
@@ -95,6 +100,10 @@ open class HostStubGenClassProcessorOptions(
             }
 
         when (option) {
+            "--in-jar" -> inJars.add(nextArg().ensureFileExists())
+
+            "--in-dir" -> inJars.add(nextArg().ensureDirExists())
+
             "--policy-override-file" -> policyOverrideFiles.add(FileOrResource(nextArg()))
 
             "--default-remove" -> defaultPolicy.set(FilterPolicy.Remove)
@@ -177,6 +186,13 @@ open class HostStubGenClassProcessorOptions(
         return true
     }
 
+    override fun checkArgs() {
+        super.checkArgs()
+        if (inJars.isEmpty()) {
+            throw ArgumentsException("Required option missing: --in-jar")
+        }
+    }
+
     override fun dumpFields(): String {
         return """
             keepAnnotations=$keepAnnotations,
@@ -204,6 +220,7 @@ open class HostStubGenClassProcessorOptions(
             enableClassChecker=$enableClassChecker,
             enablePreTrace=$enablePreTrace,
             enablePostTrace=$enablePostTrace,
+            inJars=$inJars,
         """.trimIndent()
     }
 }

@@ -141,7 +141,7 @@ inline fun runMainWithBoilerplate(realMain: () -> Unit) {
 /** Generate a text file context put in the "hoststubgen.txt" file. */
 fun getJarMetadata(
     tool: String,
-    inFile: String,
+    inFiles: List<String>,
     outFile: String,
 ): String {
     val currentDateTime = LocalDateTime.now()
@@ -151,7 +151,7 @@ fun getJarMetadata(
     // The last blank line is needed to preserve the final newline.
     return """
         |tool: $tool
-        |infile: $inFile
+        |infiles: ${inFiles.joinToString(":")}
         |outfile: $outFile
         |timestamp: $formattedTime
         |
