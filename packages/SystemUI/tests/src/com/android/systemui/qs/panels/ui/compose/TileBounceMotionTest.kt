@@ -56,8 +56,7 @@ import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
-import platform.test.motion.golden.FeatureCapture
-import platform.test.motion.golden.asDataPoint
+import platform.test.motion.golden.dataPointType
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
@@ -200,15 +199,7 @@ class TileBounceMotionTest : SysuiTestCase() {
                         awaitIdle()
                     }
                 ) {
-                    feature(
-                        motionTestValueKey = TileBounceMotionTestKeys.BounceScale,
-                        capture =
-                            FeatureCapture(
-                                TileBounceMotionTestKeys.BounceScale.semanticsPropertyKey.name
-                            ) {
-                                it.asDataPoint()
-                            },
-                    )
+                    feature(TileBounceMotionTestKeys.BounceScale, Float.dataPointType)
                 },
             )
         assertThat(motion).timeSeriesMatchesGolden()

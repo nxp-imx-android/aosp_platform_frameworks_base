@@ -73,9 +73,8 @@ import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
-import platform.test.motion.golden.DataPoint
-import platform.test.motion.golden.DataPointTypes
 import platform.test.motion.golden.FeatureCapture
+import platform.test.motion.golden.dataPointType
 import platform.test.motion.testing.createGoldenPathManager
 
 @RunWith(AndroidJUnit4::class)
@@ -510,8 +509,8 @@ class TransitionScopedMechanicsAdapterTest {
         val TestSpring = SpringParameters(1200f, 1f)
 
         val yOffsetFeature =
-            FeatureCapture<SemanticsNode, Float>("yOffset") {
-                DataPoint.of(it.lastOffsetForTesting?.y, DataPointTypes.float)
+            FeatureCapture<SemanticsNode, Float>("yOffset", Float.dataPointType) {
+                it.lastOffsetForTesting?.y
             }
     }
 }

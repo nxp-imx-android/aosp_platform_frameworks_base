@@ -100,7 +100,7 @@ import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
-import platform.test.motion.golden.DataPointTypes
+import platform.test.motion.golden.dataPointType
 import platform.test.motion.golden.feature
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
@@ -219,7 +219,7 @@ class LockScreenTransitionTest : SysuiTestCase() {
                         ) {
                             feature(
                                 LockscreenContent.LockscreenContentMotionTestKeys.Alpha,
-                                DataPointTypes.float,
+                                Float.dataPointType,
                             )
                             feature(
                                 isElement(Communal.Elements.Grid),
@@ -255,7 +255,7 @@ class LockScreenTransitionTest : SysuiTestCase() {
                         ) {
                             feature(
                                 LockscreenContent.LockscreenContentMotionTestKeys.Alpha,
-                                DataPointTypes.float,
+                                Float.dataPointType,
                             )
                         },
                 )

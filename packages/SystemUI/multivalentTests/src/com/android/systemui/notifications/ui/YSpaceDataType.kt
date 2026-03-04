@@ -18,9 +18,9 @@ package com.android.systemui.notifications.ui
 
 import org.json.JSONObject
 import platform.test.motion.golden.DataPointType
-import platform.test.motion.golden.DataPointTypes
 import platform.test.motion.golden.UnknownTypeException
 import platform.test.motion.golden.ValueDataPoint
+import platform.test.motion.golden.dataPointType
 
 fun YSpace.asDataPoint() = ySpace.makeDataPoint(this)
 
@@ -31,8 +31,8 @@ internal val ySpace: DataPointType<YSpace> =
             when (it) {
                 is JSONObject -> {
                     // Delegate to the float serializer to handle special cases (NaN, etc.)
-                    val top = DataPointTypes.float.fromJson(it.get("top"))
-                    val bottom = DataPointTypes.float.fromJson(it.get("bottom"))
+                    val top = Float.dataPointType.fromJson(it.get("top"))
+                    val bottom = Float.dataPointType.fromJson(it.get("bottom"))
 
                     if (top !is ValueDataPoint<Float> || bottom !is ValueDataPoint<Float>) {
                         throw UnknownTypeException()
@@ -45,8 +45,8 @@ internal val ySpace: DataPointType<YSpace> =
         },
         valueToJson = {
             JSONObject().apply {
-                put("top", DataPointTypes.float.toJson(it.top))
-                put("bottom", DataPointTypes.float.toJson(it.bottom))
+                put("top", Float.dataPointType.toJson(it.top))
+                put("bottom", Float.dataPointType.toJson(it.bottom))
             }
         },
     )

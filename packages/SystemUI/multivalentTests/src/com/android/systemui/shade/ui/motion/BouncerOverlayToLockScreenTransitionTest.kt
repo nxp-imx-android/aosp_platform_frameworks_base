@@ -20,7 +20,6 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.MotionTest
 import android.testing.TestableLooper.RunWithLooper
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.swipeDown
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -85,10 +84,7 @@ import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
-import platform.test.motion.compose.values.MotionTestValueKey
-import platform.test.motion.golden.FeatureCapture
-import platform.test.motion.golden.TimeSeriesCaptureScope
-import platform.test.motion.golden.asDataPoint
+import platform.test.motion.golden.dataPointType
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
@@ -186,7 +182,10 @@ class BouncerOverlayToLockScreenTransitionTest : SysuiTestCase() {
                             }
                         ) {
                             featureOfElement(Bouncer.Elements.Background, elementAlpha)
-                            featureFloat(LockscreenContent.LockscreenContentMotionTestKeys.Alpha)
+                            feature(
+                                LockscreenContent.LockscreenContentMotionTestKeys.Alpha,
+                                Float.dataPointType,
+                            )
                         },
                 )
             assertThat(motion).timeSeriesMatchesGolden()
@@ -328,21 +327,6 @@ class BouncerOverlayToLockScreenTransitionTest : SysuiTestCase() {
                     fromOrToScene = vm.currentScene,
                     overlay = Overlays.Bouncer,
                 )
-            )
-        }
-    }
-
-    private companion object {
-        fun TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.featureFloat(
-            motionTestValueKey: MotionTestValueKey<Float>
-        ) {
-            feature(
-                motionTestValueKey = motionTestValueKey,
-                capture =
-                    FeatureCapture(motionTestValueKey.semanticsPropertyKey.name) {
-                        it.asDataPoint()
-                    },
-                name = motionTestValueKey.semanticsPropertyKey.name,
             )
         }
     }
