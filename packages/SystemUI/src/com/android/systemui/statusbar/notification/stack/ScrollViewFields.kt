@@ -58,10 +58,17 @@ class ScrollViewFields {
     @JvmField var interactive = true
 
     /**
-     * Whether or not to use extra horizontal side-paddings to align to the QS tiles showing above
-     * the NSSL.
+     * The base side paddings for NSSL, determined by screen width, orientation, and shadeMode.
+     *
+     * Check NotificationScrollViewModel.sidePaddingConfig
      */
-    @JvmField var useLargeSidePaddings = false
+    @JvmField var baseSidePadding: Int = 0
+
+    /**
+     * Whether the NSSL should inset its left and right paddings to visually align with the second
+     * tile from each edge in the QQS above notifications.
+     */
+    @JvmField var alignToInnerQqsTiles = false
 
     /**
      * When internal NSSL expansion requires the stack to be scrolled (e.g. to keep an expanding
@@ -122,7 +129,8 @@ class ScrollViewFields {
             pw.println("scrollState", scrollState)
             pw.println("intrinsicStackHeight", intrinsicStackHeight)
             pw.println("interactive", interactive)
-            pw.println("useLargeSidePaddings", useLargeSidePaddings)
+            pw.println("baseSidePadding", baseSidePadding)
+            pw.println("alignToInnerQqsTiles", alignToInnerQqsTiles)
         }
     }
 }

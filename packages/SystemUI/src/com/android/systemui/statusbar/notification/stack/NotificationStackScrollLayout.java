@@ -991,15 +991,17 @@ public class NotificationStackScrollLayout
 
     void updateSidePadding(int viewWidth) {
         if (SceneContainerFlag.isEnabled()) {
-            mSidePaddings = mMinimumPaddings;
+            mSidePaddings = mScrollViewFields.baseSidePadding;
+            mLastUpdateSidePaddingDumpStringSupplier = () -> "viewWidth=" + viewWidth
+                    + " baseSidePadding=" + mSidePaddings
+                    + " alignToInnerQqsTiles=" + mScrollViewFields.alignToInnerQqsTiles;
 
             if (viewWidth == 0) {
                 Log.e(TAG, "updateSidePadding: viewWidth is zero");
                 return;
             }
 
-            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE
-                    && mScrollViewFields.useLargeSidePaddings) {
+            if (mScrollViewFields.alignToInnerQqsTiles) {
                 final int innerWidth = viewWidth - mSidePaddings * 2;
                 mSidePaddings += calculateExtraSidePaddingToAlignToTile(innerWidth);
             }
@@ -3492,9 +3494,9 @@ public class NotificationStackScrollLayout
     }
 
     @Override
-    public void setUseLargeSidePaddings(boolean useLargeSidePaddings) {
+    public void setAlignToInnerQqsTiles(boolean alignToInnerQqsTiles) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        mScrollViewFields.useLargeSidePaddings = useLargeSidePaddings;
+        mScrollViewFields.alignToInnerQqsTiles = alignToInnerQqsTiles;
     }
 
     @Override

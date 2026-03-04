@@ -135,8 +135,13 @@ constructor(
             launch {
                 viewModel.suppressHeightUpdates.collectTraced { view.suppressHeightUpdates(it) }
             }
+
             launch {
-                viewModel.useLargeSidePaddings.collectTraced { view.setUseLargeSidePaddings(it) }
+                viewModel.sidePaddingConfig.collectLatestTraced {
+                    (baseSidePadding, alignToInnerQqsTiles) ->
+                    view.setBaseSidePadding(baseSidePadding)
+                    view.setAlignToInnerQqsTiles(alignToInnerQqsTiles)
+                }
             }
 
             launchAndDispose {

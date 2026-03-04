@@ -310,7 +310,7 @@
     <!-- Height of a heads up notification in the status bar -->
     <dimen name="notification_max_heads_up_height">136dp</dimen>
 
-    <!-- Side padding on the side of notifications -->
+    <!-- Padding on the side of notifications for single shade -->
     <dimen name="notification_side_paddings_single">16dp</dimen>
 
     <!-- Padding on the side of notifications for split shade -->

@@ -178,9 +178,12 @@ interface NotificationScrollView {
     /** Sets whether touch and animations on the stack are enabled. */
     fun setAnimationsEnabled(enabled: Boolean)
 
+    /** Sets the base side paddings when not aligning to the QS tiles. */
+    fun setBaseSidePadding(basePadding: Int)
+
     /**
-     * Whether or not to align the horizontal side-padding of notifications to the QS tiles showing
-     * above.
+     * Sets whether the notification panel should inset its left and right paddings to visually
+     * align with the second tile from each edge in the QQS above notifications.
      */
-    fun setUseLargeSidePaddings(useLargeSidePaddings: Boolean)
+    fun setAlignToInnerQqsTiles(alignToInnerQqsTiles: Boolean)
 }
