@@ -18,6 +18,8 @@ package com.android.systemui.statusbar.notification.row;
 
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.notifications.content.icon.AppIconProvider;
+import com.android.systemui.statusbar.notification.row.icon.AppIconHelper;
+import com.android.systemui.statusbar.notification.row.icon.AppIconHelperImpl;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProviderImpl;
 import com.android.systemui.statusbar.notification.row.icon.BridgedIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.BridgedIconProviderImpl;
@@ -62,6 +64,13 @@ public abstract class NotificationRowModule {
     @Binds
     @SysUISingleton
     public abstract HeadsUpStyleProvider provideHeadsUpStyleManager(HeadsUpStyleProviderImpl impl);
+
+    /**
+     * Provides app icon helper instance.
+     */
+    @Binds
+    @SysUISingleton
+    public abstract AppIconHelper provideAppIconHelper(AppIconHelperImpl impl);
 
     /**
      * Provides app icon provider instance.

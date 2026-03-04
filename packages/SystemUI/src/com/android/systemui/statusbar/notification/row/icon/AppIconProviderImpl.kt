@@ -20,7 +20,6 @@ import android.annotation.WorkerThread
 import android.app.ActivityManager
 import android.app.Flags.notificationsRedesignThemedAppIcons
 import android.content.Context
-import android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -33,7 +32,6 @@ import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.icons.mono.ColorList
 import com.android.launcher3.icons.mono.MonoIconThemeController
 import com.android.launcher3.util.UserIconInfo
-import com.android.settingslib.Utils
 import com.android.systemui.Dumpable
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
@@ -44,20 +42,18 @@ import com.android.systemui.util.asIndenting
 import com.android.systemui.util.dpToPx
 import com.android.systemui.util.printSection
 import com.android.systemui.util.time.SystemClock
-import com.android.users.UserType
 import java.io.PrintWriter
 import javax.inject.Inject
 import kotlin.math.ceil
 
-// TODO: b/476412775 - This class shouldn't be open, instead the open methods should be moved to
-//  an interface we can inject.
 @SysUISingleton
-open class AppIconProviderImpl
+class AppIconProviderImpl
 @Inject
 constructor(
     @ShadeDisplayAware private val sysuiContext: Context,
     dumpManager: DumpManager,
     systemClock: SystemClock,
+    private val appIconHelper: AppIconHelper,
 ) : AppIconProvider, Dumpable {
     init {
         dumpManager.registerNormalDumpable(TAG, this)
@@ -144,12 +140,7 @@ constructor(
                 it.createIconDrawable(themed = notificationsRedesignThemedAppIcons())
             },
         ) {
-            fetchAppIconBitmapInfo(
-                standardIconFactory,
-                packageName,
-                userHandle,
-                allowProfileBadge = true,
-            )
+            fetchAppIconBitmapInfo(standardIconFactory, packageName, userHandle)
         }
 
     override fun getOrFetchSkeletonAppIcon(packageName: String, userHandle: UserHandle): Drawable =
@@ -161,36 +152,17 @@ constructor(
                 it.createIconDrawable(themed = true, outlined = Flags.aodNotifIconOutline())
             },
         ) {
-            fetchAppIconBitmapInfo(
-                skeletonIconFactory,
-                packageName,
-                userHandle,
-                allowProfileBadge = true,
-            )
+            fetchAppIconBitmapInfo(skeletonIconFactory, packageName, userHandle)
         }
-
-    /**
-     * Get the unstyled, unbadged icon corresponding to the given package and user. By default this
-     * calls directly into PackageManager, but it can be overridden if a different approach is
-     * needed (e.g. in tests).
-     */
-    protected open fun getRawIcon(packageName: String, userHandle: UserHandle): Drawable? {
-        val pm = sysuiContext.packageManager
-        val userId = userHandle.identifier
-        return pm.getApplicationInfoAsUser(packageName, MATCH_UNINSTALLED_PACKAGES, userId)
-            .loadUnbadgedIcon(pm)
-    }
 
     @WorkerThread
     private fun fetchAppIconBitmapInfo(
         iconFactory: BaseIconFactory,
         packageName: String,
         userHandle: UserHandle,
-        allowProfileBadge: Boolean,
     ): BitmapInfo {
-        val icon = getRawIcon(packageName, userHandle)
-        val options =
-            iconOptions(getUserIconInfo(userHandle, allowProfileBadge = allowProfileBadge))
+        val icon = appIconHelper.getUnbadgedIcon(packageName, userHandle)
+        val options = iconOptions(appIconHelper.getUserIconInfo(userHandle))
         return iconFactory.createBadgedIconBitmap(icon, options)
     }
 
@@ -240,18 +212,6 @@ constructor(
             setExtractedColor(Color.BLUE)
         }
     }
-
-    protected open fun getUserIconInfo(
-        userHandle: UserHandle,
-        allowProfileBadge: Boolean,
-    ): UserIconInfo =
-        if (allowProfileBadge) {
-            // Look up the user to determine if it is a profile, and if so which badge to use
-            Utils.fetchUserIconInfo(sysuiContext, userHandle)
-        } else {
-            // For a main user the IconFactory does not add a badge
-            UserIconInfo(/* user= */ userHandle, /* type= */ UserType.MAIN)
-        }
 
     override fun purgeCache(wantedPackages: Collection<String>) {
         standardCache.purgeCache(wantedPackages)
