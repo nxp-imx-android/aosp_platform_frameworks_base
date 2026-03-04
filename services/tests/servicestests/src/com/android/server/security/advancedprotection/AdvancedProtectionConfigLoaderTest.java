@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 
 import android.security.advancedprotection.AdvancedProtectionManager;
 
-import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
+import com.android.internal.pm.pkg.component.AconfigFlags;
 import com.android.server.security.advancedprotection.AdvancedProtectionConfigLoader.Injector;
 
 import com.google.testing.junit.testparameterinjector.TestParameter;
@@ -263,7 +263,7 @@ public class AdvancedProtectionConfigLoaderTest {
         String feature1Flag = "android.test.feature1";
         String feature2Flag = "android.test.feature2";
 
-        ParsingPackageUtils.getAconfigFlags()
+        AconfigFlags.getInstance()
                 .addFlagValuesForTesting(
                         Map.of(feature1Flag, feature1Enabled, feature2Flag, feature2Enabled));
 

@@ -89,6 +89,7 @@ import com.android.internal.pm.parsing.PackageParserException;
 import com.android.internal.pm.parsing.pkg.PackageImpl;
 import com.android.internal.pm.parsing.pkg.ParsedPackage;
 import com.android.internal.pm.permission.CompatibilityPermissionInfo;
+import com.android.internal.pm.pkg.component.AconfigFlags;
 import com.android.internal.pm.pkg.component.ParsedActivity;
 import com.android.internal.pm.pkg.component.ParsedActivityImpl;
 import com.android.internal.pm.pkg.component.ParsedAllowComponentAccessPolicy;
@@ -110,7 +111,6 @@ import com.android.internal.pm.pkg.component.ParsedServiceImpl;
 import com.android.internal.pm.pkg.component.ParsedUsesPermission;
 import com.android.internal.pm.pkg.component.ParsedUsesPermissionImpl;
 import com.android.internal.pm.pkg.parsing.ParsingPackage;
-import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.HexDump;
 import com.android.server.pm.parsing.PackageCacher;
@@ -890,7 +890,7 @@ public class PackageParserTest {
             flagValues.put("my.flag2", false);
             flagValues.put("my.flag3", false);
             flagValues.put("my.flag4", true);
-            ParsingPackageUtils.getAconfigFlags().addFlagValuesForTesting(flagValues);
+            AconfigFlags.getInstance().addFlagValuesForTesting(flagValues);
 
             // The manifest has:
             //    <permission android:name="PERM1" android:featureFlag="my.flag1 " />
@@ -928,7 +928,7 @@ public class PackageParserTest {
             flagValues.put("my.flag2", false);
             flagValues.put("my.flag3", false);
             flagValues.put("my.flag4", true);
-            ParsingPackageUtils.getAconfigFlags().addFlagValuesForTesting(flagValues);
+            AconfigFlags.getInstance().addFlagValuesForTesting(flagValues);
 
             // The manifest has:
             //    <permission android:name="PERM1" android:featureFlag="my.flag1 " />
