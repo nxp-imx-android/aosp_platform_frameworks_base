@@ -2016,7 +2016,7 @@ public class InputManagerService extends IInputManager.Stub
                         config.getAssociatedDisplayId()),
                 config.getLanguageTag(), config.getLayoutType(),
                 android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
-                        ? config.getViewBehaviorConfig() : null);
+                        ? config.getViewBehaviorConfigOrDefault(/* defaultValue= */ null) : null);
     }
 
     @NonNull
@@ -4248,7 +4248,8 @@ public class InputManagerService extends IInputManager.Stub
                     config.getVendorId(), config.getProductId(), token,
                     config.getAssociatedDisplayId(),
                     android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
-                            ? config.getViewBehaviorConfig() : null);
+                            ? config.getViewBehaviorConfigOrDefault(/* defaultValue= */ null)
+                            : null);
         }
 
         @NonNull
@@ -4259,7 +4260,8 @@ public class InputManagerService extends IInputManager.Stub
                     config.getVendorId(), config.getProductId(), token,
                     config.getAssociatedDisplayId(), config.getHeight(), config.getWidth(),
                     android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
-                            ? config.getViewBehaviorConfig() : null);
+                            ? config.getViewBehaviorConfigOrDefault(/* defaultValue= */ null)
+                            : null);
         }
 
         @NonNull
@@ -4273,7 +4275,8 @@ public class InputManagerService extends IInputManager.Stub
                             config.getAssociatedDisplayId()),
                     config.getHeight(), config.getWidth(),
                     android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
-                            ? config.getViewBehaviorConfig() : null);
+                            ? config.getViewBehaviorConfigOrDefault(/* defaultValue= */ null)
+                            : null);
         }
 
         @NonNull
@@ -4285,7 +4288,8 @@ public class InputManagerService extends IInputManager.Stub
                     InputManagerService.this.getTargetDisplayIdForInput(
                             config.getAssociatedDisplayId()),
                     android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
-                            ? config.getViewBehaviorConfig() : null);
+                            ? config.getViewBehaviorConfigOrDefault(/* defaultValue= */ null)
+                            : null);
         }
 
         @NonNull
@@ -4296,7 +4300,8 @@ public class InputManagerService extends IInputManager.Stub
                     config.getVendorId(), config.getProductId(), token,
                     config.getAssociatedDisplayId(), config.getHeight(), config.getWidth(),
                     android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
-                            ? config.getViewBehaviorConfig() : null);
+                            ? config.getViewBehaviorConfigOrDefault(/* defaultValue= */ null)
+                            : null);
         }
 
         @NonNull
@@ -4309,7 +4314,8 @@ public class InputManagerService extends IInputManager.Stub
                     InputManagerService.this.getTargetDisplayIdForInput(
                             config.getAssociatedDisplayId()),
                     android.companion.virtualdevice.flags.Flags.virtualInputViewBehavior()
-                            ? config.getViewBehaviorConfig() : null);
+                            ? config.getViewBehaviorConfigOrDefault(/* defaultValue= */ null)
+                            : null);
         }
 
         @Override
