@@ -599,6 +599,7 @@ public final class Trace {
             PerfettoCategories.PROC_STATE_COUNTER_CATEGORY.register();
             PerfettoCategories.GFX_CATEGORY.register();
             PerfettoCategories.FREEZER_CATEGORY.register();
+            PerfettoCategories.BROADCASTS_CATEGORY.register();
         }
     }
 }

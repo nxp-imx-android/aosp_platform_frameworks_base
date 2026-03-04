@@ -38,7 +38,7 @@ import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.Andro
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.SENDER_PROCESS_STATE;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.RECEIVER_PROCESS_STATE;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBroadcastEvent.FIRST_LAUNCH;
-import static android.os.PerfettoTrace.BROADCAST_V3;
+import static android.os.PerfettoCategories.BROADCASTS_CATEGORY;
 
 import static com.android.internal.util.FrameworkStatsLog.BOOT_COMPLETED_BROADCAST_COMPLETION_LATENCY_REPORTED;
 import static com.android.internal.util.FrameworkStatsLog.BOOT_COMPLETED_BROADCAST_COMPLETION_LATENCY_REPORTED__EVENT__BOOT_COMPLETED;
@@ -2439,7 +2439,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
                     queue.getActiveFirstLaunch(), 0L /* TODO: stoppedDuration */);
             if (android.os.Flags.perfettoSdkTracingV3()) {
                 PerfettoTrackEventBuilder builder = PerfettoTrace
-                        .instant(BROADCAST_V3, "broadcast_delivered")
+                        .instant(BROADCASTS_CATEGORY, "broadcast_delivered")
                         .beginProto()
                         .beginNested(BROADCAST_EVENT);
 
