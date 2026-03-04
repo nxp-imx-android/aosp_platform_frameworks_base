@@ -932,7 +932,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
             fakeConfigurationController.notifyDensityOrFontScaleChanged()
 
             enableSingleShade()
-            assertThat(clippingRadius).isEqualTo(30.dpToPxOffset())
+            assertThat(clippingRadius).isEqualTo(30)
         }
 
     @Test
@@ -945,7 +945,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
             fakeConfigurationController.notifyDensityOrFontScaleChanged()
 
             enableSplitShade()
-            assertThat(clippingRadius).isEqualTo(30.dpToPxOffset())
+            assertThat(clippingRadius).isEqualTo(30)
         }
 
     @Test
@@ -958,7 +958,7 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
             fakeConfigurationController.notifyDensityOrFontScaleChanged()
 
             enableDualShade()
-            assertThat(clippingRadius).isEqualTo(50.dpToPxOffset())
+            assertThat(clippingRadius).isEqualTo(50)
         }
 
     private fun Kosmos.unlockDevice() {
@@ -1063,9 +1063,5 @@ class NotificationScrollViewModelTest : SysuiTestCase() {
         headsUpNotificationRepository.setNotifications(
             if (isPinned) listOf(fakePinnedHun) else emptyList()
         )
-    }
-
-    private fun Int.dpToPxOffset(): Int {
-        return (this / context.resources.displayMetrics.density).toInt()
     }
 }
