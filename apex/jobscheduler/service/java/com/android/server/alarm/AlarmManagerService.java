@@ -2368,8 +2368,7 @@ public class AlarmManagerService extends SystemService {
         }
 
         final long batterySaverPolicyElapsed;
-        if ((alarm.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED)) != 0
-                || ignoreDeviceIdleForListeners(alarm)) {
+        if ((alarm.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED)) != 0) {
             // Unrestricted.
             batterySaverPolicyElapsed = nowElapsed;
         } else if (isAllowedWhileIdleRestricted(alarm)) {
@@ -2409,24 +2408,12 @@ public class AlarmManagerService extends SystemService {
     }
 
     /**
-     * Returns {@code true} if the given alarm is a listener variant and has the flag
-     * {@link AlarmManager#FLAG_ALLOW_WHILE_IDLE}
-     */
-    private static boolean ignoreDeviceIdleForListeners(Alarm a) {
-        return Flags.allowAlarmsWithRelaxedQuota() && a.listener != null
-                && (a.flags & FLAG_ALLOW_WHILE_IDLE) != 0;
-    }
-
-    /**
      * Returns {@code true} if the given alarm has the flag
      * {@link AlarmManager#FLAG_ALLOW_WHILE_IDLE} or
      * {@link AlarmManager#FLAG_ALLOW_WHILE_IDLE_COMPAT}
-     * and it is not a listener-based alarm for which device idle restrictions are ignored
-     * (as determined by {@link #ignoreDeviceIdleForListeners(Alarm)}).
      */
     private static boolean isAllowedWhileIdleRestricted(Alarm a) {
-        return !ignoreDeviceIdleForListeners(a)
-                && (a.flags & (FLAG_ALLOW_WHILE_IDLE | FLAG_ALLOW_WHILE_IDLE_COMPAT)) != 0;
+        return (a.flags & (FLAG_ALLOW_WHILE_IDLE | FLAG_ALLOW_WHILE_IDLE_COMPAT)) != 0;
     }
 
     /**
@@ -2442,8 +2429,7 @@ public class AlarmManagerService extends SystemService {
         }
 
         final long deviceIdlePolicyTime;
-        if ((alarm.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED | FLAG_WAKE_FROM_IDLE)) != 0
-                || ignoreDeviceIdleForListeners(alarm)) {
+        if ((alarm.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED | FLAG_WAKE_FROM_IDLE)) != 0) {
             // Unrestricted.
             deviceIdlePolicyTime = nowElapsed;
         } else if (isAllowedWhileIdleRestricted(alarm)) {
@@ -2797,11 +2783,7 @@ public class AlarmManagerService extends SystemService {
                         lowerQuota = !exact;
                     } else {
                         needsPermission = false;
-                        if (Flags.allowAlarmsWithRelaxedQuota()) {
-                            lowerQuota = false;
-                        } else {
-                            lowerQuota = allowWhileIdle;
-                        }
+                        lowerQuota = allowWhileIdle;
                         if (exact) {
                             exactAllowReason = EXACT_ALLOW_REASON_LISTENER;
                         }
@@ -4370,30 +4352,7 @@ public class AlarmManagerService extends SystemService {
     @VisibleForTesting
     static boolean isExemptFromAppStandby(Alarm a) {
         return a.alarmClock != null || UserHandle.isCore(a.creatorUid)
-                || (a.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED)) != 0
-                || isAllowWhileIdleAlarmExemptFromAppStandby(a);
-    }
-
-    /**
-     * Helper function to determine if an alarm with FLAG_ALLOW_WHILE_IDLE
-     * should be exempt from App Standby, considering the feature flag.
-     * TODO(b/473768453): Revisit app-standby quota for AWI alarms
-     */
-    private static boolean isAllowWhileIdleAlarmExemptFromAppStandby(Alarm a) {
-        if ((a.flags & FLAG_ALLOW_WHILE_IDLE) == 0) {
-            return false;
-        }
-
-        if (Flags.allowAlarmsWithRelaxedQuota()) {
-            // When the flag is enabled, listener-based allow-while-idle alarms are subject to
-            // App Standby restrictions. This is to encourage apps to use listener-based alarms,
-            // which are more efficient. PendingIntent-based AWI alarms remain exempt to preserve
-            // existing behavior.
-            return a.listener == null;
-        } else {
-            // All alarms with FLAG_ALLOW_WHILE_IDLE are exempt from App Standby.
-            return true;
-        }
+                || (a.flags & (FLAG_ALLOW_WHILE_IDLE_UNRESTRICTED | FLAG_ALLOW_WHILE_IDLE)) != 0;
     }
 
     @VisibleForTesting
