@@ -22,8 +22,8 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.res.R
-import kotlin.test.Test
 import org.junit.Assert.assertThrows
+import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest

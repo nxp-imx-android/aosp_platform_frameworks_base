@@ -64,6 +64,7 @@ java_library {
         "com.android.systemui.retail.domain-api",
         "com.android.systemui.scene.ui_api",
         "com.android.systemui.scene_api",
+        "com.android.systemui.statusbar.chips.ui_api",
         "com.android.systemui.statusbar.pipeline.airplane.data-api",
         "com.android.systemui.statusbar.pipeline.airplane.shared-api",
         "com.android.systemui.user.data-api",
