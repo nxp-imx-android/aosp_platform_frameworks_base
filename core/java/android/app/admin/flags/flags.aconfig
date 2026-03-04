@@ -681,3 +681,11 @@ flag {
   bug: "444381084"
   is_exported: true
 }
+
+flag {
+  name: "policy_streamlining_keyguard_status"
+  namespace: "enterprise"
+  description: "Redirect setKeyguardDisabled to the generic setPolicy APIs"
+  bug: "434919316"
+  is_exported: true
+}

@@ -4056,7 +4056,8 @@
     <permission android:name="android.permission.MANAGE_DEVICE_POLICY_CAMERA"
                 android:protectionLevel="internal|role" />
 
-    <!-- Allows an application to manage policy related to keyguard.
+    <!-- Allows an application to manage policy related to keyguard features. Like whether the
+        camera, notifications are allowed on the secure keyguard screens.
         <p>{@link Manifest.permission#MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL} is
         required to call APIs protected by this permission on users different to the calling user.
         <p>Protection level: internal|role
@@ -4064,6 +4065,16 @@
     -->
     <permission android:name="android.permission.MANAGE_DEVICE_POLICY_KEYGUARD"
                 android:protectionLevel="internal|role" />
+
+    <!-- Allows an application to manage policy related to keyguard status (enabled/disabled).
+        <p>{@link Manifest.permission#MANAGE_DEVICE_POLICY_ACROSS_USERS_SECURITY_CRITICAL} is
+        required to call APIs protected by this permission on users different to the calling user.
+        <p>Protection level: internal|role
+        @FlaggedApi(android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_KEYGUARD_STATUS)
+    -->
+    <permission android:name="android.permission.MANAGE_DEVICE_POLICY_KEYGUARD_STATUS"
+                android:protectionLevel="internal|role"
+                android:featureFlag="android.app.admin.flags.policy_streamlining_keyguard_status" />
 
     <!-- Allows an application to set policy related to account management.
         <p>{@link Manifest.permission#MANAGE_DEVICE_POLICY_ACROSS_USERS} is required to call
