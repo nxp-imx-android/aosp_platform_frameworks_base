@@ -1188,6 +1188,9 @@
     <!-- Default height of desktop view's large header for desktop tasks on launch. -->
     <dimen name="desktop_view_default_large_header_height">48dp</dimen>
 
+    <!-- The cascading offset in desktop mode. -->
+    <dimen name="desktop_mode_cascading_offset">60dp</dimen>
+
     <!-- Default height of taskbar for Launcher.   -->
     <dimen name="taskbar_stashed_size">24dp</dimen>
 
