@@ -2232,7 +2232,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
         if (mLogger.mInfo != null) {
             mLogger.logOnSendAsync(mController.mLoggerHandler);
-            mController.mTransitionTracer.logSentTransition(this, mTargets);
+            mController.mTransitionTracer.logSentTransition(this, mLogger.mInfo);
         }
         removeStartingWindowIfAny();
     }
