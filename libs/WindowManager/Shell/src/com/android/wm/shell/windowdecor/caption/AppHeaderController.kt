@@ -548,8 +548,9 @@ class AppHeaderController(
     }
 
     private fun isBrowserApp(): Boolean =
-        taskInfo.baseActivity?.let { isBrowserApp(userContext, it.packageName, userContext.userId) }
-            ?: false
+        taskInfo.baseIntent.component?.let {
+            isBrowserApp(userContext, it.packageName, userContext.userId)
+        } ?: false
 
     /** Creates and shows the manage windows menu. */
     override fun createManageWindowsMenu(snapshotList: ArrayList<Pair<Int, TaskSnapshot>>) {
