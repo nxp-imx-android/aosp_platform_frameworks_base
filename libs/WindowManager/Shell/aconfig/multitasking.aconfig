@@ -353,6 +353,16 @@ flag {
 }
 
 flag {
+    name: "fix_reduce_shadow_alpha"
+    namespace: "multitasking"
+    description: "Reduce floating bubbles scrim view alpha to make navigation buttons visible"
+    bug: "450646947"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_flicker_when_app_bubble_from_overflow"
     namespace: "multitasking"
     description: "Fixes a flicker issue that happens when promoting an app bubble from overflow"
