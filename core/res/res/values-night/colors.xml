@@ -59,4 +59,17 @@
     <!-- Color for APM USB Data Protection Notification-->
     <!-- Notification icon tint color-->
     <color name="security_privacy_notification_tint_normal">#8AB4F8</color>
+
+    <color name="system_on_primary_fixed">@color/system_on_primary_fixed_dark</color>
+    <color name="system_on_primary_fixed_variant">@color/system_on_primary_fixed_variant_dark</color>
+    <color name="system_on_secondary_fixed">@color/system_on_secondary_fixed_dark</color>
+    <color name="system_on_secondary_fixed_variant">@color/system_on_secondary_fixed_variant_dark</color>
+    <color name="system_on_tertiary_fixed">@color/system_on_tertiary_fixed_dark</color>
+    <color name="system_on_tertiary_fixed_variant">@color/system_on_tertiary_fixed_variant_dark</color>
+    <color name="system_primary_fixed">@color/system_primary_fixed_dark</color>
+    <color name="system_primary_fixed_dim">@color/system_primary_fixed_dim_dark</color>
+    <color name="system_secondary_fixed">@color/system_secondary_fixed_dark</color>
+    <color name="system_secondary_fixed_dim">@color/system_secondary_fixed_dim_dark</color>
+    <color name="system_tertiary_fixed">@color/system_tertiary_fixed_dark</color>
+    <color name="system_tertiary_fixed_dim">@color/system_tertiary_fixed_dim_dark</color>
 </resources>
