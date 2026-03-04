@@ -25,7 +25,7 @@ import platform.test.motion.golden.ValueDataPoint
 fun YSpace.asDataPoint() = ySpace.makeDataPoint(this)
 
 internal val ySpace: DataPointType<YSpace> =
-    DataPointType(
+    DataPointType.create(
         "YSpace",
         jsonToValue = {
             when (it) {
