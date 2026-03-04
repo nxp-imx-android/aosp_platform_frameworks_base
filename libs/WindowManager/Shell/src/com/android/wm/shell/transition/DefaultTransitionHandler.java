@@ -1039,7 +1039,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         final SizeChangeAnimation sca = new SizeChangeAnimation(change.getStartAbsBounds(),
                 change.getEndAbsBounds(), /* initialScale= */ 1f, /* scaleFactor= */ 1f);
         sca.initialize(change.getLeash(), change.getSnapshot(), startT);
-        final WindowAnimation winAnim = new WindowAnimation(change, 0 /* cornerRadius */);
+        final WindowAnimation winAnim = new WindowAnimation(change, 0 /* cornerRadius */,
+                sca.getAnimation(), null /* animator */);
         final ValueAnimator va = sca.buildAnimator(change.getLeash(), change.getSnapshot(),
                 (animation) -> mainExecutor.execute(() -> finishCallback.accept(winAnim)));
         va.setDuration(SIZE_CHANGE_ANIMATION_DURATION);

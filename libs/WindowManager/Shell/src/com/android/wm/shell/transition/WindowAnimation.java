@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.transition;
 
-import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -25,6 +24,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.SystemProperties;
+import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.window.TransitionInfo;
 import android.window.WindowAnimationState;
@@ -32,37 +32,63 @@ import android.window.WindowAnimationState;
 import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 
-import java.util.Locale;
-
 /**
  * Keeps track of the animation of a single window/container.
  */
 class WindowAnimation {
     private static final boolean DEBUG_WINDOW_ANIMATION_STATE = Build.IS_DEBUGGABLE
             && SystemProperties.getBoolean("persist.wm.debug.window_animation_state", false);
+    private static final long VELOCITY_CALCULATION_THRESHOLD_MS = 10;
 
+    /**
+     * Constant that determines what percentage of the current animation playtime are we using to
+     * estimate the velocity
+     */
+    private static final float VELOCITY_CALCULATION_INTERVAL_RELATIVE_SIZE = 0.1f;
+
+    /**
+     * Bias that determines how much are we centering our velocity calculation e.g. if it's 0.7f,
+     * we are taking into account 30% of the past and 70% of the future
+     *
+     */
+    private static final float VELOCITY_CALCULATION_BIAS = 0.7f;
     @NonNull
     final TransitionInfo.Change mChange;
     final float mCornerRadius;
     private final WindowAnimationState mWindowAnimationState = new WindowAnimationState();
-
     @Nullable
-    private Animator mAnimator;
+    private ValueAnimator mAnimator;
     @Nullable
-    Transformation mTransformation;
+    private final Animation mAnimation;
 
     WindowAnimation(@NonNull TransitionInfo.Change change, float cornerRadius) {
         mChange = change;
         mCornerRadius = cornerRadius;
+        mAnimation = null;
+        mAnimator = null;
     }
 
-    void setAnimator(@Nullable Animator animator) {
+    WindowAnimation(@NonNull TransitionInfo.Change change, float cornerRadius,
+            @NonNull Animation animation,
+            @Nullable ValueAnimator animator) {
+        mChange = change;
+        mCornerRadius = cornerRadius;
+        mAnimation = animation;
+        mAnimator = animator;
+    }
+
+    void setAnimator(@Nullable ValueAnimator animator) {
         mAnimator = animator;
     }
 
     @Nullable
-    Animator getAnimator() {
+    ValueAnimator getAnimator() {
         return mAnimator;
+    }
+
+    @Nullable
+    Animation getAnimation() {
+        return mAnimation;
     }
 
     void start() {
@@ -79,16 +105,9 @@ class WindowAnimation {
 
     void cancelRemoveListeners() {
         if (mAnimator != null) {
-            if (mAnimator instanceof ValueAnimator) {
-                // Remove all update listeners so we don't trigger a jump to end state
-                ((ValueAnimator) mAnimator).removeAllUpdateListeners();
-            }
+            mAnimator.removeAllUpdateListeners();
             mAnimator.cancel();
         }
-    }
-
-    void setTransformation(@Nullable Transformation transformation) {
-        mTransformation = transformation;
     }
 
     /**
@@ -99,13 +118,19 @@ class WindowAnimation {
      * animation.
      */
     WindowAnimationState getWindowAnimationState() {
-        PointF position = new PointF();
-        PointF scale = new PointF();
-        RectF currentBoundsF = getTransformComponents(position, scale);
+        if (mAnimation == null || mAnimator == null) {
+            return null;
+        }
 
-        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
-                "getWindowAnimationState: capture bounds=%s scale=%s pos=%s corner=%f",
-                currentBoundsF, scale, position, mCornerRadius);
+        final long currentPlayTime = Math.clamp(mAnimator.getCurrentPlayTime(), 0,
+                mAnimator.getDuration());
+        Transformation currentTransformation = new Transformation();
+        mAnimation.getTransformation(currentPlayTime, currentTransformation);
+
+        final RectF currentBoundsF = new RectF(mChange.getStartAbsBounds());
+        currentTransformation.getMatrix().mapRect(currentBoundsF);
+        var scale = getScaleOfTransformation(currentTransformation);
+        var velocity = getTranslateVelocity(mAnimator, mAnimation, VELOCITY_CALCULATION_BIAS);
 
         mWindowAnimationState.bounds = currentBoundsF;
         // We assume that the scaling is uniform eg. scale.x == scale.y
@@ -116,85 +141,81 @@ class WindowAnimation {
         mWindowAnimationState.bottomRightRadius = mCornerRadius;
         mWindowAnimationState.topRightRadius = mCornerRadius;
         mWindowAnimationState.timestamp = System.currentTimeMillis();
-        // TODO: Calculate velocity from previous state
-        mWindowAnimationState.velocityPxPerMs = new PointF(0, 0);
+        mWindowAnimationState.velocityPxPerMs = velocity;
         if (DEBUG_WINDOW_ANIMATION_STATE) {
-            logWindowAnimationState(currentBoundsF, position, scale);
+            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "%s",
+                    windowAnimationStateToString(mWindowAnimationState));
         }
         return mWindowAnimationState;
     }
 
-    private void logWindowAnimationState(RectF currentBoundsF, PointF position, PointF scale) {
-        final float[] matrix = new float[9];
-        mTransformation.getMatrix().getValues(matrix);
-
-        final String animationInfo;
-        if (mAnimator != null) {
-            animationInfo = String.format(Locale.ROOT, "%s { duration=%d, startDelay=%d, "
-                            + "isRunning=%b, "
-                            + "isStarted=%b }",
-                    mAnimator.getClass().getSimpleName(),
-                    mAnimator.getDuration(),
-                    mAnimator.getStartDelay(),
-                    mAnimator.isRunning(),
-                    mAnimator.isStarted());
-        } else {
-            animationInfo = "null";
-        }
-
-        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
-                """
-                        getWindowAnimationState() called:
-                          mAnimation: %s
-                          bounds: %s
-                          matrix: [%f, %f, %f, %f, %f, %f, %f, %f, %f]
-                        """,
-                animationInfo,
-                currentBoundsF,
-                matrix[0], matrix[1], matrix[2],
-                matrix[3], matrix[4], matrix[5],
-                matrix[6], matrix[7], matrix[8]);
-
-        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
-                """
-                          Matrix Components: { positionX=%f, positionY=%f, scaleX=%f, scaleY=%f }
-                        WindowAnimationState: bounds=%s, scale=%f, cornerRadius=%f, timestamp=%d,
-                         velocityPxPerMs=[%f, %f],
-                        """,
-                position.x, position.y, scale.x, scale.y,
-                mWindowAnimationState.bounds,
-                mWindowAnimationState.scale,
-                mCornerRadius,
-                mWindowAnimationState.timestamp,
-                mWindowAnimationState.velocityPxPerMs.x,
-                mWindowAnimationState.velocityPxPerMs.y);
+    public static String windowAnimationStateToString(WindowAnimationState state) {
+        StringBuilder sb = new StringBuilder(128);
+        sb.append("WindowAnimationState ");
+        sb.append("{ bounds="); sb.append(state.bounds);
+        sb.append(" scale="); sb.append(state.scale);
+        sb.append(" topLeftRadius="); sb.append(state.topLeftRadius);
+        sb.append(" topRightRadius="); sb.append(state.topRightRadius);
+        sb.append(" bottomRightRadius="); sb.append(state.bottomRightRadius);
+        sb.append(" bottomLeftRadius="); sb.append(state.bottomLeftRadius);
+        sb.append(" timestamp="); sb.append(state.timestamp);
+        sb.append(" velocityPxPerMs="); sb.append(state.velocityPxPerMs);
+        sb.append('}');
+        return sb.toString();
     }
 
-    private RectF getTransformComponents(PointF position, PointF scale) {
-        if (mTransformation == null) {
-            position.set(-1, -1);
-            scale.set(-1, -1);
-            return new RectF();
+    private PointF getTranslateVelocity(@NonNull ValueAnimator animator,
+            @NonNull Animation animation, float bias) {
+
+        final long duration = animator.getDuration();
+        final long currentPlayTime = Math.clamp(animator.getCurrentPlayTime(), 0, duration);
+
+        // If the animation just started or is near the end, we ignore the velocity as it would
+        // be unnoticeable if we start a new animation with 0 velocity
+        if (currentPlayTime <= VELOCITY_CALCULATION_THRESHOLD_MS
+                || currentPlayTime >= duration - VELOCITY_CALCULATION_THRESHOLD_MS) {
+            return new PointF(0, 0);
         }
 
-        /* Apply the current transformation based on the starting bounds of the change */
-        float w = mChange.getStartAbsBounds().width();
-        float h = mChange.getStartAbsBounds().height();
-        RectF currentBoundsF = new RectF(0, 0, w, h);
-        mTransformation.getMatrix().mapRect(currentBoundsF);
+        final float deltaTime = VELOCITY_CALCULATION_INTERVAL_RELATIVE_SIZE * currentPlayTime;
+        long tStart = Math.max(0,
+                (long) (currentPlayTime - (1 - bias) * deltaTime));
+        long tEnd = Math.min(duration,
+                (long) (currentPlayTime + bias * deltaTime));
 
+        long effectiveDeltaTime = tEnd - tStart;
+
+        Transformation endTransform = new Transformation();
+        animation.getTransformation(tEnd, endTransform);
+
+        Transformation startTransform = new Transformation();
+        animation.getTransformation(tStart, startTransform);
+
+        var endPosition = getPositionOfTransformation(endTransform);
+        var startPosition = getPositionOfTransformation(startTransform);
+
+        float velocityX = (endPosition.x - startPosition.x) / effectiveDeltaTime; // [px/ms]
+        float velocityY = (endPosition.y - startPosition.y) / effectiveDeltaTime; // [px/ms]
+
+        return new PointF(velocityX, velocityY);
+    }
+
+    private PointF getScaleOfTransformation(Transformation transformation) {
         final float[] matrix = new float[9];
-        mTransformation.getMatrix().getValues(matrix);
-
-        position.x = matrix[Matrix.MTRANS_X];
-        position.y = matrix[Matrix.MTRANS_Y];
+        transformation.getMatrix().getValues(matrix);
 
         // Calculate scale magnitudes, robust to rotation/skew.
-        scale.x = (float) Math.hypot(matrix[Matrix.MSCALE_X],
+        float scaleX = (float) Math.hypot(matrix[Matrix.MSCALE_X],
                 matrix[Matrix.MSKEW_X]);
-        scale.y = (float) Math.hypot(matrix[Matrix.MSKEW_Y],
+        float scaleY = (float) Math.hypot(matrix[Matrix.MSKEW_Y],
                 matrix[Matrix.MSCALE_Y]);
 
-        return currentBoundsF;
+        return new PointF(scaleX, scaleY);
+    }
+
+    private PointF getPositionOfTransformation(Transformation transformation) {
+        final float[] matrix = new float[9];
+        transformation.getMatrix().getValues(matrix);
+        return new PointF(matrix[Matrix.MTRANS_X], matrix[Matrix.MTRANS_Y]);
     }
 }

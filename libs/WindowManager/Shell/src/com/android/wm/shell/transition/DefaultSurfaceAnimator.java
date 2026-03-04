@@ -136,9 +136,8 @@ public class DefaultSurfaceAnimator implements Runnable {
             Consumer<WindowAnimation> finishCallback, @NonNull TransactionPool pool,
             ShellExecutor mainExecutor,
             float cornerRadius) {
-        WindowAnimation windowAnimation = new WindowAnimation(change, cornerRadius);
-        windowAnimation.setTransformation(adapter.mTransformation);
-
+        WindowAnimation windowAnimation = new WindowAnimation(change, cornerRadius, anim,
+                null /* animator */);
         Runnable finishRunnable = () -> finishCallback.accept(windowAnimation);
         ValueAnimator va = buildSurfaceAnimation(anim, finishRunnable, pool, mainExecutor, adapter);
         windowAnimation.setAnimator(va);

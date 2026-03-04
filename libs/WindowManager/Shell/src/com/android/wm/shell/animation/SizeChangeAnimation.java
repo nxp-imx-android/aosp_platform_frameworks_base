@@ -155,6 +155,10 @@ public class SizeChangeAnimation {
         apply(view, startToApply, leash, snapshot, 0.f);
     }
 
+    public Animation getAnimation() {
+        return mAnimation;
+    }
+
     private ValueAnimator buildAnimatorInner(ValueAnimator.AnimatorUpdateListener updater,
             SurfaceControl leash, @Nullable SurfaceControl snapshot, Consumer<Animator> onFinish,
             SurfaceControl.Transaction transaction, @Nullable View view) {
