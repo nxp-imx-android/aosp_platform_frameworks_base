@@ -549,14 +549,8 @@ class FooterActionsViewModelTest : SysuiTestCase() {
         qsSecurityFooterUtils: QSSecurityFooterUtils,
         securityToConfig: (SecurityModel) -> SecurityButtonConfig?,
     ) {
-        if (Flags.enableSupervisionAppService()) {
-            whenever(qsSecurityFooterUtils.getButtonConfig(any(), any())).thenAnswer {
-                securityToConfig(it.arguments.first() as SecurityModel)
-            }
-        } else {
-            whenever(qsSecurityFooterUtils.getButtonConfig(any(), eq(null))).thenAnswer {
-                securityToConfig(it.arguments.first() as SecurityModel)
-            }
+        whenever(qsSecurityFooterUtils.getButtonConfig(any(), any())).thenAnswer {
+            securityToConfig(it.arguments.first() as SecurityModel)
         }
     }
 

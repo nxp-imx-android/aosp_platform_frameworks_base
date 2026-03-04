@@ -73,17 +73,6 @@ public class ContentRestrictionAppServiceFinder
         return IContentRestrictionAppService.Stub.asInterface(obj);
     }
 
-    @Nullable
-    @Override
-    @Deprecated
-    public String getTargetPackage(int userId) {
-        final String ret =
-                CollectionUtils.firstOrNull(
-                        mRoleManager.getRoleHoldersAsUser(
-                                RoleManager.ROLE_CONTENT_RESTRICTION, UserHandle.of(userId)));
-        return ret;
-    }
-
     @Override
     public Set<String> getTargetPackages(int userId) {
         final Set<String> ret = new HashSet<>();

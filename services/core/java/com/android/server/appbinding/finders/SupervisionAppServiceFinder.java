@@ -55,8 +55,7 @@ public class SupervisionAppServiceFinder
 
     @Override
     protected boolean isEnabled(AppBindingConstants constants, int userId) {
-        return constants.SUPERVISION_APP_SERVICE_ENABLED && Flags.enableSupervisionAppService()
-                && isSupervisionEnabledForUser(userId);
+        return constants.SUPERVISION_APP_SERVICE_ENABLED && isSupervisionEnabledForUser(userId);
     }
 
     private boolean isSupervisionEnabledForUser(int userId) {
@@ -79,17 +78,6 @@ public class SupervisionAppServiceFinder
     @Override
     public ISupervisionListener asInterface(IBinder obj) {
         return ISupervisionListener.Stub.asInterface(obj);
-    }
-
-    @Nullable
-    @Override
-    @Deprecated
-    public String getTargetPackage(int userId) {
-        final String ret =
-                CollectionUtils.firstOrNull(
-                        mRoleManager.getRoleHoldersAsUser(
-                                RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
-        return ret;
     }
 
     @Override

@@ -62,18 +62,6 @@ public class AllowlistProviderServiceFinder
         return IAllowlistProviderService.Stub.asInterface(obj);
     }
 
-    @Nullable
-    @Deprecated
-    @Override
-    public String getTargetPackage(int userId) {
-        if (userId != UserHandle.USER_SYSTEM) {
-            // allowlist provider only exists for the system user
-            return null;
-        }
-        return mContext.getResources().getString(
-                com.android.internal.R.string.config_allowlistProviderServicePackage);
-    }
-
     @Override
     public Set<String> getTargetPackages(int userId) {
         if (userId != UserHandle.USER_SYSTEM) {
