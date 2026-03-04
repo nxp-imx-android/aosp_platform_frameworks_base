@@ -392,9 +392,10 @@ public class ContextHubService extends IContextHubService.Stub {
                         IContextHubClient client = mDefaultClientMap.get(contextHubId);
                         client.callbackFinished();
                     } else {
-                        String reason = (mDefaultClientMap == null)
-                                ? "map was null"
-                                : "map did not contain the hub";
+                        String reason =
+                                (mDefaultClientMap == null)
+                                        ? "map was null"
+                                        : "map did not contain the hub";
 
                         Log.e(
                                 TAG,
@@ -1654,6 +1655,9 @@ public class ContextHubService extends IContextHubService.Stub {
         pw.println("=================== EVENTS ====================");
         pw.println(ContextHubEventLogger.getInstance());
 
+        pw.println("");
+        pw.println("=================== PCC ACCESS LIST ===================");
+        pw.println(PccAccessList.getInstance().toString());
         // dump eventLog
     }
 

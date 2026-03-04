@@ -109,6 +109,15 @@ public final class HubEndpointInfo implements Parcelable {
             }
             return other.mEndpointId == mEndpointId;
         }
+
+        @Override
+        public String toString() {
+            return "HubEndpointIdentifier[hubId=0x"
+                    + Long.toHexString(mHubId)
+                    + ", endpointId=0x"
+                    + Long.toHexString(mEndpointId)
+                    + "]";
+        }
     }
 
     /** This endpoint is from the Android framework */

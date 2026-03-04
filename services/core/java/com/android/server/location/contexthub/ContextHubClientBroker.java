@@ -487,6 +487,9 @@ public class ContextHubClientBroker extends IContextHubClient.Stub
 
         @ContextHubTransaction.Result int result;
         if (isRegistered()) {
+            PccAccessList.getInstance()
+                    .maybeNotePccAccessForNanoapp(
+                            mUid, getAttachedContextHubId(), message.getNanoAppId());
             int authState =
                     mMessageChannelNanoappIdMap.getOrDefault(
                             message.getNanoAppId(), AUTHORIZATION_UNKNOWN);
@@ -664,6 +667,17 @@ public class ContextHubClientBroker extends IContextHubClient.Stub
             List<String> nanoappPermissions,
             List<String> messagePermissions) {
         long nanoAppId = message.getNanoAppId();
+        if (!PccAccessList.getInstance()
+                .checkPccAccessForNanoapp(mUid, getAttachedContextHubId(), nanoAppId)) {
+            Log.w(
+                    TAG,
+                    "Dropping message from 0x"
+                            + Long.toHexString(nanoAppId)
+                            + ". Target client "
+                            + mPackage
+                            + " is not PCC");
+            return ErrorCode.PERMISSION_DENIED;
+        }
 
         int authState =
                 updateNanoAppAuthState(
