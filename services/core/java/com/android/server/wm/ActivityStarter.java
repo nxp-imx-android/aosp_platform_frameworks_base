@@ -1189,7 +1189,8 @@ class ActivityStarter {
                             UserHandle.getUserId(callingUid));
                     // Only override callingPackage and callingFeatureId based on package UID check.
                     // This is to prevent spoofing. See b/457742426.
-                    if (UserHandle.isSameApp(packageUid, callingUid)) {
+                    if (pmInternal.isSameApp(launchedFromPackage, callingUid,
+                            UserHandle.getUserId(callingUid))) {
                         callingPackage = launchedFromPackage;
                         callingFeatureId = sourceRecord.launchedFromFeatureId;
                     }

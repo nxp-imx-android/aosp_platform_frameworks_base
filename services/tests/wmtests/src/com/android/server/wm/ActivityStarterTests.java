@@ -118,7 +118,6 @@ import com.android.server.wm.BackgroundActivityStartController.BalVerdict;
 import com.android.server.wm.LaunchParamsController.LaunchParams;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
 import com.android.server.wm.utils.MockTracker;
-import com.android.window.flags.Flags;
 
 import org.junit.Test;
 
@@ -2041,6 +2040,8 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
                 eq(privilegedPackage), anyLong(), anyInt());
         doReturn(maliciousUid).when(mMockPackageManager).getPackageUid(
                 eq(maliciousPackage), anyLong(), anyInt());
+        doReturn(false).when(mMockPackageManager).isSameApp(eq(privilegedPackage),
+                eq(maliciousUid), anyInt());
         starter.setCallingPackage(maliciousPackage);
         starter.setCallingUid(maliciousUid);
 
