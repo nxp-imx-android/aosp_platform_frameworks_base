@@ -18,7 +18,7 @@ package com.android.sdkparcelables
 
 import org.objectweb.asm.ClassVisitor
 
-data class Ancestors(val superName: String?, val interfaces: List<String>?)
+data class Ancestors(val superName: String?, val interfaces: List<String>)
 
 /** A class that implements an ASM ClassVisitor that collects super class and
  * implemented interfaces for each class that it visits.
@@ -39,7 +39,7 @@ class AncestorCollector(api: Int, dest: ClassVisitor?) : ClassVisitor(api, dest)
     ) {
         name!!
 
-        val old = _ancestors.put(name, Ancestors(superName, interfaces?.toList()))
+        val old = _ancestors.put(name, Ancestors(superName, interfaces?.toList() ?: emptyList()))
         if (old != null) {
             throw RuntimeException("class $name already found")
         }

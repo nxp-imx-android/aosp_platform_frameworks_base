@@ -69,6 +69,24 @@ class ParcelableDetectorTest {
 
         assertEquals(parcelables, listOf("android/test/IParcelable", "android/test/Parcelable"))
     }
+
+    @Test
+    fun `detect implements with missing dependency`() {
+        val ancestorMap = mapOf(
+                testAncestors("android/test/IParcelable", null, "android/os/Parcelable"),
+                testAncestors(
+                    "android/test/Parcelable",
+                    null,
+                    "android/test/Missing",
+                    "android/test/IParcelable"
+                ),
+                testAncestors("android/os/Parcelable", null)
+        )
+
+        val parcelables = ParcelableDetector.ancestorsToParcelables(ancestorMap)
+
+        assertEquals(parcelables, listOf("android/test/IParcelable", "android/test/Parcelable"))
+    }
 }
 
 private fun testAncestors(
