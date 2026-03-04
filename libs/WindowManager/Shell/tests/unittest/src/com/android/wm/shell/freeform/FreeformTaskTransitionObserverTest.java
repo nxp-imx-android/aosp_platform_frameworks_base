@@ -54,6 +54,7 @@ import com.android.testing.wm.util.TransitionInfoBuilder;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.desktopmode.DesktopInOrderTransitionObserver;
+import com.android.wm.shell.desktopmode.FreeformFallbackTransitionObserver;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.sysui.ShellInit;
@@ -80,6 +81,7 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
     @Mock private TaskChangeListener mTaskChangeListener;
     @Mock private DesksOrganizer mDesksOrganizer;
     @Mock private DesktopInOrderTransitionObserver mDesktopInOrderTransitionObserver;
+    @Mock private FreeformFallbackTransitionObserver mFreeformFallbackTransitionObserver;
     private FakeDesktopState mDesktopState;
     private FreeformTaskTransitionObserver mTransitionObserver;
     private AutoCloseable mMocksInits = null;
@@ -105,7 +107,8 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
                         Optional.of(mTaskChangeListener),
                         mDesksOrganizer,
                         mDesktopState,
-                        Optional.of(mDesktopInOrderTransitionObserver));
+                        Optional.of(mDesktopInOrderTransitionObserver),
+                        Optional.of(mFreeformFallbackTransitionObserver));
 
         final ArgumentCaptor<Runnable> initRunnableCaptor = ArgumentCaptor.forClass(Runnable.class);
         verify(mShellInit).addInitCallback(initRunnableCaptor.capture(), same(mTransitionObserver));
@@ -428,6 +431,20 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
 
         verify(mDesktopInOrderTransitionObserver).onTransitionReady(transition, info, startT,
                 finishT);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_FALLBACK_TRANSITION_OBSERVER)
+    public void onTransitionReady_forwardsToFreeformFallbackTransitionObserver() {
+        final IBinder transition = mock(IBinder.class);
+        final TransitionInfo info = new TransitionInfoBuilder(TRANSIT_OPEN, /* flags= */ 0)
+                .build();
+        final SurfaceControl.Transaction startT = new StubTransaction();
+        final SurfaceControl.Transaction finishT = new StubTransaction();
+
+        mTransitionObserver.onTransitionReady(transition, info, startT, finishT);
+
+        verify(mFreeformFallbackTransitionObserver).onTransitionReady(info);
     }
 
     @Test
