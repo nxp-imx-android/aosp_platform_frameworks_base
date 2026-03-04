@@ -246,29 +246,36 @@ class AppToWebRepositoryImpl(
         }
         if (isFirstRunPromptShown(taskInfo)) {
             // The prompt is already shown on the task.
+            logD("Prompt already shown for task %d", taskInfo.taskId)
             return false
         }
         val flags = taskInfo.baseIntent?.flags
         if (flags != null && flags.and(Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER) != 0) {
             // The intent sender explicitly prefers non-browser.
+            logD("Intent sender prefers non-browser for task %d", taskInfo.taskId)
             return false
         }
         if (isBrowserApp(context, packageName, taskInfo.userId)) {
             // Browser apps are not the target.
+            logD("Browser app %s is not the target for task %d", packageName, taskInfo.taskId)
             return false
         }
         if (ALWAYS_SHOW_APP_TO_WEB_FIRST_RUN_PROMPT_FOR_TESTING) {
+            logD("Debug option enabled. Always showing prompt for task %d", taskInfo.taskId)
             return true
         }
         val everAcked =
             firstRunPromptAckedPackagesByUserId[taskInfo.userId]?.contains(packageName) ?: false
         if (everAcked) {
             // The prompt has been acknowledged before.
+            logD("Prompt already acknowledged for task %d", taskInfo.taskId)
             return false
         }
         if (isPackageInFirstRunPromptExemptList(packageName)) {
+            logD("Package %s is in the exempt list for task %d", packageName, taskInfo.taskId)
             return false
         }
+        logD("Showing prompt for task %s, packageName=%s", taskInfo, packageName)
         return true
     }
 
