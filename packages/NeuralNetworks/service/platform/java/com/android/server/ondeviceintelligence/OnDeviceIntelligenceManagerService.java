@@ -75,6 +75,7 @@ import android.os.Message;
 import android.os.RemoteCallbackList;
 import android.os.ParcelFileDescriptor;
 import android.os.PersistableBundle;
+import android.os.Process;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
@@ -101,6 +102,7 @@ import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.server.FgThread;
 import com.android.server.LocalManagerRegistry;
+import com.android.server.ServiceThread;
 import com.android.server.SystemService;
 import com.android.server.ondeviceintelligence.callbacks.ListenableDownloadCallback;
 import com.android.server.ondeviceintelligence.callbacks.ListenableStreamingResponseCallback;
@@ -175,6 +177,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
     private final Object mPriorityBindingLock = new Object();
 
     private final InferenceInfoStore mInferenceInfoStore;
+    private final ServiceThread mServiceThread;
     private RemoteOnDeviceSandboxedInferenceService mRemoteInferenceService;
     private RemoteOnDeviceIntelligenceService mRemoteOnDeviceIntelligenceService;
     volatile boolean mIsServiceEnabled;
@@ -277,6 +280,9 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
         sInstance = this;
         mTemporaryServiceNames = new String[0];
         mInferenceInfoStore = new InferenceInfoStore(MAX_AGE_MS);
+        mServiceThread = new ServiceThread("odi-service-thread",
+                Process.THREAD_PRIORITY_URGENT_DISPLAY, /* allowIo */ false);
+        mServiceThread.start();
     }
 
     @Override
@@ -1193,7 +1199,8 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 mRemoteOnDeviceIntelligenceService = new RemoteOnDeviceIntelligenceService(
                         mContext,
                         ComponentName.unflattenFromString(serviceName),
-                        UserHandle.SYSTEM.getIdentifier());
+                        UserHandle.SYSTEM.getIdentifier(),
+                        mServiceThread.getThreadHandler());
                 mRemoteOnDeviceIntelligenceService.setServiceLifecycleCallbacks(
                         new ServiceConnector.ServiceLifecycleCallbacks<>() {
                             @Override
@@ -1287,7 +1294,8 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 mRemoteInferenceService = new RemoteOnDeviceSandboxedInferenceService(
                         mContext,
                         ComponentName.unflattenFromString(serviceName),
-                        UserHandle.SYSTEM.getIdentifier());
+                        UserHandle.SYSTEM.getIdentifier(),
+                        mServiceThread.getThreadHandler());
                 mRemoteInferenceService.setServiceLifecycleCallbacks(
                         new ServiceConnector.ServiceLifecycleCallbacks<>() {
                             @Override
@@ -1850,7 +1858,8 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                     }
                     mHighPriorityConnection = new RemoteOnDeviceSandboxedInferenceService(mContext,
                             componentName, UserHandle.SYSTEM.getIdentifier(),
-                            Context.BIND_SCHEDULE_LIKE_TOP_APP);
+                            Context.BIND_SCHEDULE_LIKE_TOP_APP,
+                            mServiceThread.getThreadHandler());
                 } catch (Resources.NotFoundException e) {
                     Slog.e(TAG, "Could not find service to bind for high priority", e);
                 }
