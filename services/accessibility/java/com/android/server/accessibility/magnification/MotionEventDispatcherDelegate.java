@@ -26,7 +26,6 @@ import android.view.ViewConfiguration;
 
 import com.android.internal.R;
 import com.android.server.accessibility.AccessibilityMotionEventBuilder;
-import com.android.server.accessibility.Flags;
 
 import java.util.List;
 
@@ -66,15 +65,10 @@ class MotionEventDispatcherDelegate {
                 SystemClock.uptimeMillis() - lastDetectingDownEventTime, mMultiTapMaxDelay);
 
         for (MotionEventInfo info : delayedEventQueue) {
-            if (Flags.enableMagnificationRebasedDelayedMotionEvent()) {
-                MotionEvent newEvent = AccessibilityMotionEventBuilder.fromBaseEvent(info.mEvent)
-                        .setTimeOffset(offset).build();
-                dispatchMotionEvent(newEvent, info.mRawEvent, info.mPolicyFlags);
-                newEvent.recycle();
-            } else {
-                info.mEvent.setDownTime(info.mEvent.getDownTime() + offset);
-                dispatchMotionEvent(info.mEvent, info.mRawEvent, info.mPolicyFlags);
-            }
+            MotionEvent newEvent = AccessibilityMotionEventBuilder.fromBaseEvent(info.mEvent)
+                    .setTimeOffset(offset).build();
+            dispatchMotionEvent(newEvent, info.mRawEvent, info.mPolicyFlags);
+            newEvent.recycle();
             info.recycle();
         }
     }

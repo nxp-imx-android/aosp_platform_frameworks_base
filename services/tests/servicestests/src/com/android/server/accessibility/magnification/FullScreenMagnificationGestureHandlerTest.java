@@ -494,28 +494,7 @@ public class FullScreenMagnificationGestureHandlerTest {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_MAGNIFICATION_REBASED_DELAYED_MOTION_EVENT)
-    public void testSendDelayedMotionEvents_flagOff_onlyDownTimeAdjusted() {
-        final EventCaptor eventCaptor = new EventCaptor();
-        mMgh.setNext(eventCaptor);
-
-        // Use two taps to verify that rebased logic applies individually, preserving the interval.
-        tap(DEFAULT_X, DEFAULT_Y);
-        fastForward(50);
-        tap(DEFAULT_X, DEFAULT_Y);
-        // Wait for timeout to trigger delegation.
-        fastForward1sec();
-
-        MotionEvent firstDownEvent = eventCaptor.mEvents.get(0);
-        MotionEvent secondDownEvent = eventCaptor.mEvents.get(2);
-        assertThat(firstDownEvent.getDownTime()).isNotEqualTo(secondDownEvent.getDownTime());
-        assertThat(firstDownEvent.getEventTime()).isNotEqualTo(firstDownEvent.getDownTime());
-        assertThat(secondDownEvent.getEventTime()).isNotEqualTo(secondDownEvent.getDownTime());
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_REBASED_DELAYED_MOTION_EVENT)
-    public void testActionDownMotionEvent_flagOn_downTimeAndEventTimeAdjusted() {
+    public void testSendDelayedMotionEvents_downTimeAndEventTimeAdjusted() {
         final EventCaptor eventCaptor = new EventCaptor();
         mMgh.setNext(eventCaptor);
 

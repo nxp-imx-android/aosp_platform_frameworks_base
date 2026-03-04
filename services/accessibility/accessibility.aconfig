@@ -89,16 +89,6 @@ flag {
 }
 
 flag {
-    name: "enable_magnification_rebased_delayed_motion_event"
-    namespace: "accessibility"
-    description: "Whether to dispatch rebased MotionEvents for Magnification delayed events to fix timestamp synchronization issues"
-    bug: "279211403"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_magnification_viewport_prioritization"
     namespace: "accessibility"
     description: "Whether to prioritize Magnification viewport movements in response to cursor and focus events"
