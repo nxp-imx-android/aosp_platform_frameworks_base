@@ -209,6 +209,12 @@ class AppHeaderController(
                 onLayoutButtonHoverExit()
             }
 
+            if (hasGlobalFocus && !params.hasGlobalFocus) {
+                closeHandleMenu()
+                closeManageWindowsMenu()
+                closeLayoutMenu()
+            }
+
             val captionLayout =
                 super.relayout(
                     params,
@@ -232,12 +238,6 @@ class AppHeaderController(
             updateLayoutMenu(startT)
 
             updateViewHolder(params.hasGlobalFocus)
-
-            if (!params.hasGlobalFocus) {
-                closeHandleMenu()
-                closeManageWindowsMenu()
-                closeLayoutMenu()
-            }
 
             notifyCaptionStateChanged()
             return captionLayout
