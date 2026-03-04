@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.intelligence.rules.data
 
+import com.android.systemui.CoreStartable
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.data.repository.InstalledAppsRepository
@@ -24,6 +25,8 @@ import com.android.systemui.notifications.intelligence.rules.data.repository.Not
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepositoryImpl
 import dagger.Binds
 import dagger.Module
+import dagger.multibindings.ClassKey
+import dagger.multibindings.IntoMap
 
 @Module
 interface NotificationRulesDataModule {
@@ -38,4 +41,9 @@ interface NotificationRulesDataModule {
     public fun bindRulesRepository(
         impl: NotificationRulesRepositoryImpl
     ): NotificationRulesRepository
+
+    @Binds
+    @IntoMap
+    @ClassKey(NotificationRulesRepositoryImpl::class)
+    public fun bindRepoAsCoreStartable(impl: NotificationRulesRepositoryImpl): CoreStartable
 }

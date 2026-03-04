@@ -75,7 +75,7 @@ fun CurrentRulesScreen(
         }
 
         viewModel.rules.forEach { rule ->
-            item(rule.toString()) {
+            item(rule.id) {
                 CurrentRule(
                     rule = rule,
                     screenViewModel = viewModel,

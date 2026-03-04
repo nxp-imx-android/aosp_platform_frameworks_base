@@ -78,6 +78,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val rule =
                 RuleModel(
+                    id = ID,
                     action = ActionModel.Highlight,
                     filter = FilterModel(includedApps = null, contacts = null),
                 )
@@ -100,6 +101,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                 )
             val rule =
                 RuleModel(
+                    id = ID,
                     action = ActionModel.Highlight,
                     filter =
                         FilterModel(includedApps = null, contacts = ContactsModel(listOf(contact))),
@@ -129,6 +131,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                 )
             val rule =
                 RuleModel(
+                    id = ID,
                     action = ActionModel.Highlight,
                     filter =
                         FilterModel(includedApps = IncludedAppsModel(listOf(app)), contacts = null),
@@ -157,6 +160,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                 )
             val rule =
                 RuleModel(
+                    id = ID,
                     action = ActionModel.Highlight,
                     filter =
                         FilterModel(
@@ -189,6 +193,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                 )
             val rule =
                 RuleModel(
+                    id = ID,
                     action = ActionModel.Highlight,
                     filter =
                         FilterModel(
@@ -228,6 +233,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
                 )
             val rule =
                 RuleModel(
+                    id = ID,
                     action = ActionModel.Highlight,
                     filter =
                         FilterModel(
@@ -255,6 +261,7 @@ class NotificationRulesScreenViewModelTest : SysuiTestCase() {
         }
 
     companion object {
+        private const val ID = 10
         private val CONTACT_CAT =
             ContactModel(
                 lookupUri = "cat-uri".toUri(),

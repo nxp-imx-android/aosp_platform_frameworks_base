@@ -23,6 +23,8 @@ package com.android.systemui.notifications.intelligence.rules.shared.model
  * See also: [DraftRuleModel] for rules that are still being drafted.
  */
 public data class RuleModel(
+    /** A unique identifier for the rule. See [android.app.NotificationRule.getId]. */
+    public val id: Int,
     /** The action to apply to the notification. See [android.app.NotificationRule.getAction]. */
     public val action: ActionModel,
     /**
