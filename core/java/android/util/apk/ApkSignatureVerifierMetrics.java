@@ -74,7 +74,8 @@ public class ApkSignatureVerifierMetrics {
             VerificationResult.VERIFICATION_V32_MISSING_CLASSICAL_INSTALLED_DATA,
             VerificationResult.VERIFICATION_V32_MISSING_CLASSICAL_ROLLBACK,
             VerificationResult.VERIFICATION_V32_MISSING_CLASSICAL,
-            VerificationResult.VERIFICATION_V32_MAX_ATTR_WITHOUT_MIN_ATTR
+            VerificationResult.VERIFICATION_V32_MAX_ATTR_WITHOUT_MIN_ATTR,
+            VerificationResult.VERIFICATION_V32_UPDATE_SIGNATURE_MISMATCH
     })
     public @interface VerificationResult {
         int VERIFICATION_SUCCESS = ApkSigVerifyProtoEnums.VERIFICATION_SUCCESS;
@@ -140,6 +141,8 @@ public class ApkSignatureVerifierMetrics {
                 ApkSigVerifyProtoEnums.VERIFICATION_V32_MISSING_CLASSICAL;
         int VERIFICATION_V32_MAX_ATTR_WITHOUT_MIN_ATTR =
                 ApkSigVerifyProtoEnums.VERIFICATION_V32_MAX_ATTR_WITHOUT_MIN_ATTR;
+        int VERIFICATION_V32_UPDATE_SIGNATURE_MISMATCH =
+                ApkSigVerifyProtoEnums.VERIFICATION_V32_UPDATE_SIGNATURE_MISMATCH;
     }
 
     /**

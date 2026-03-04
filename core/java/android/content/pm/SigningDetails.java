@@ -702,6 +702,16 @@ public final class SigningDetails implements Parcelable {
         // If a match was not found above, then the oldDetails would fail any potential hybrid
         // checks below as well.
         if (!android.security.Flags.apkPqcHybridSigning() || !matchFound) {
+            if (android.security.Flags.apkPqcHybridSigning()) {
+                // If this is a hybrid update package that doesn't have the current signing identity
+                // of the existing package on the device in its lineage, then log to track potential
+                // update failures from the hybrid block.
+                if (isV32Hybrid() && (flags & CertCapabilities.INSTALLED_DATA) != 0) {
+                    ApkSignatureVerifierMetrics.logSigningKeyPolicyFailure(mSignatureSchemeVersion,
+                            mSignatureSchemeMinorVersion,
+                            VerificationResult.VERIFICATION_V32_UPDATE_SIGNATURE_MISMATCH);
+                }
+            }
             return matchFound;
         }
         // If either this or the oldDetails is a hybrid signature, then ensure that either both
