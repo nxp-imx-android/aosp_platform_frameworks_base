@@ -721,3 +721,11 @@ flag {
     description: "Whether location button (rendered by a system process) APIs are enabled."
     bug: "413293601"
 }
+
+flag {
+    name: "device_controller_role_api_enabled"
+    is_exported: true
+    namespace: "device_controller_hsum"
+    description: "This flag enables the device controller role API"
+    bug: "483629130"
+}
