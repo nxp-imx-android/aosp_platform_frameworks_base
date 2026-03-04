@@ -1392,7 +1392,7 @@ public class Transitions implements RemoteCallable<Transitions>,
                         mDisplayController.onDisplayChangeRequested(wct, change.getDisplayId(),
                                 change.getStartAbsBounds(), change.getEndAbsBounds(),
                                 change.getStartRotation(), change.getEndRotation(),
-                                change.getEndInsetsState());
+                                change.getEndInsetsState(), change.getEndDisplayAreaInfo());
                     }
                 }
             }

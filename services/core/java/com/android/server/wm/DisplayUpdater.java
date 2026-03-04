@@ -286,16 +286,13 @@ class DisplayUpdater {
     private TransitionRequestInfo.DisplayChange createDisplayChange(int fromRotation,
             @NonNull Rect startBounds, @Nullable String fromUniqueId, int disconnectReparentDisplay,
             @NonNull DisplayContent displayContent) {
-        final Rect endBounds = new Rect(displayContent.getBounds());
         final int toRotation = displayContent.getRotation();
         final boolean physicalDisplayChanged = fromUniqueId != null
                 && !fromUniqueId.equals(displayContent.getDisplayInfo().uniqueId);
         final TransitionRequestInfo.DisplayChange displayChange =
-                new TransitionRequestInfo.DisplayChange(displayContent.getDisplayId());
+                new TransitionRequestInfo.DisplayChange(displayContent.getDisplayAreaInfo());
         displayChange.setStartAbsBounds(startBounds);
-        displayChange.setEndAbsBounds(endBounds);
         displayChange.setStartRotation(fromRotation);
-        displayChange.setEndRotation(toRotation);
         displayChange.setDisconnectReparentDisplay(disconnectReparentDisplay);
         displayChange.setPhysicalDisplayChanged(physicalDisplayChanged);
         if (com.android.window.flags.Flags.sendNewInsetsStateWithRotation()) {
