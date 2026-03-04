@@ -22,6 +22,7 @@ import com.android.systemui.Dumpable
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import java.io.PrintWriter
 import org.junit.Assert.assertThrows
@@ -34,6 +35,7 @@ import org.mockito.MockitoAnnotations
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DumpManagerTest : SysuiTestCase() {
+    private val kosmos = testKosmosNew()
 
     @Mock private lateinit var dumpable1: Dumpable
     @Mock private lateinit var dumpable2: Dumpable
@@ -45,7 +47,7 @@ class DumpManagerTest : SysuiTestCase() {
     @Mock private lateinit var table1: TableLogBuffer
     @Mock private lateinit var table2: TableLogBuffer
 
-    private val dumpManager = DumpManager()
+    private val dumpManager = kosmos.realDumpManager
 
     @Before
     fun setUp() {

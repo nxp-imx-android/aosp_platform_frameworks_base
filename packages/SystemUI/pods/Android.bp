@@ -82,6 +82,7 @@ java_library {
 
     static_libs: [
         "com.android.systemui.brightness_testlib",
+        "com.android.systemui.dump_testlib",
         "com.android.systemui.notifications.intelligence.rules_testlib",
         "com.android.systemui.notifications.intelligence.rules.ui_testlib",
     ],
@@ -96,6 +97,7 @@ filegroup {
         "testFixtures/**/*.java",
         "testFixtures/**/*.kt",
         ":com.android.systemui.brightness_fixtureFiles",
+        ":com.android.systemui.dump_fixtureFiles",
         ":com.android.systemui.notifications.intelligence.rules_fixtureFiles",
         ":com.android.systemui.notifications.intelligence.rules.ui_fixtureFiles",
     ],

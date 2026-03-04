@@ -51,6 +51,7 @@ import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteract
 import com.android.systemui.display.data.repository.displayPhoneSubcomponentPerDisplayRepository
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
+import com.android.systemui.dump.realDumpManager
 import com.android.systemui.globalactions.actionsDialogLiteDelegateFactory
 import com.android.systemui.globalactions.data.repository.globalActionsRepository
 import com.android.systemui.globalactions.domain.interactor.globalActionsInteractor
@@ -298,6 +299,7 @@ class KosmosJavaAdapter() {
     val fakeGlobalSettings by lazy { kosmos.fakeGlobalSettings }
     val dialogTransitionAnimator by lazy { kosmos.dialogTransitionAnimator }
     val systemUIDialogDotFactory by lazy { kosmos.systemUIDialogDotFactory }
+    val dumpManager by lazy { kosmos.realDumpManager }
 
     /** Use if you need a unique or mutate-able row */
     fun createRow(): ExpandableNotificationRow {

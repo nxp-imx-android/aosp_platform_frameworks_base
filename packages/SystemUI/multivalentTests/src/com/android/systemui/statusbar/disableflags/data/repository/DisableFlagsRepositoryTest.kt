@@ -27,7 +27,7 @@ import android.content.res.Configuration
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.dump.DumpManager
+import com.android.systemui.dump.realDumpManager
 import com.android.systemui.log.impl.LogBufferFactoryImpl
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -72,7 +72,8 @@ class DisableFlagsRepositoryTest : SysuiTestCase() {
             configurationController,
             testScope.backgroundScope,
         )
-    private val logBuffer = LogBufferFactoryImpl(DumpManager(), mock()).create("buffer", 10)
+    private val logBuffer =
+        LogBufferFactoryImpl(kosmos.realDumpManager, mock()).create("buffer", 10)
     private val disableFlagsLogger = DisableFlagsLogger()
 
     @Before

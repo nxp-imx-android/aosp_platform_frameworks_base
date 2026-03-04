@@ -21,3 +21,5 @@ import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.util.mockito.mock
 
 var Kosmos.dumpManager by Fixture { mock<DumpManager>() }
+
+val Kosmos.realDumpManager by Fixture { DumpManagerImpl() }
