@@ -32,6 +32,7 @@ import android.content.pm.PackageManager;
 import android.os.RemoteException;
 import android.util.ArraySet;
 import android.util.TypedValue;
+import android.window.TaskFragmentOrganizer;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.NonNull;
@@ -100,7 +101,10 @@ public class AppCompatEmbeddingRuleController {
                 (androidx.window.extensions.core.util.function.Predicate<Activity>)
                         activity -> activity.getResources().getConfiguration().touchscreen
                                 == TOUCHSCREEN_FINGER
-                                && isVirtualGamepadEnabled(selfPackageName, userId),
+                                && isVirtualGamepadEnabled(selfPackageName, userId)
+                                // Do not enable the gamepad if the game is in a non-embedding
+                                // multi-window mode such as system split screen.
+                                && (!isInMultiWindowModeExcludingEmbedding(activity)),
                 intent -> true,
                 parentMetrics -> parentMetrics.getBounds().height() >= minSizePx
                         && parentMetrics.getBounds().width() >= minSizePx)
@@ -163,5 +167,21 @@ public class AppCompatEmbeddingRuleController {
         } catch (RemoteException e) {
             return PackageManager.VIRTUAL_GAMEPAD_USER_OPTION_UNSET;
         }
+    }
+
+    /**
+     * Returns {@code true} if the {@param activity} is in multi-window mode and it is not embedded.
+     *
+     * This is used to ensure that the gamepad feature is not enabled when the game is in system
+     * multi-window modes such as split screen.
+     *
+     * TODO(b/489825790) Better handling of gamepad in system split screen. Issues may happen if
+     * the game enters system split screen where the window size is large enough to not dismiss
+     * the placeholder. Practically, this doesn't happen on known devices.
+     */
+    @VisibleForTesting
+    static boolean isInMultiWindowModeExcludingEmbedding(@NonNull Activity activity) {
+        return activity.isInMultiWindowMode()
+                && !TaskFragmentOrganizer.isActivityEmbedded(activity);
     }
 }
