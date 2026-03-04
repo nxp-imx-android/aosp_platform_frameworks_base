@@ -5200,8 +5200,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
             // Report ImeDrawn to Shell when the visible IME is reparented, allowing Shell to
             // proceed with starting window removal after a task or activity switch.
-            if (Flags.deferSnapshotRemovalForPredictiveBackWithIme()
-                    && mImeControlTarget != null && originalParent != newParent
+            if (mImeControlTarget != null && originalParent != newParent
                     && mInsetsStateController.getImeSourceProvider().isImeShowing()) {
                 mInsetsStateController.getImeSourceProvider()
                         .reportImeDrawnForOrganizerIfNeeded(mImeControlTarget);

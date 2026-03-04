@@ -381,16 +381,6 @@ flag {
 }
 
 flag {
-    name: "defer_snapshot_removal_for_predictive_back_with_ime"
-    namespace: "windowing_frontend"
-    description: "Prevents flicker by keeping the snapshot visible until the input method has drawn"
-    bug: "435285991"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "fix_cross_activity_back_animation_in_bubbles"
     namespace: "windowing_frontend"
     description: "Enables the predictive cross-activity back animation in bubbles"
