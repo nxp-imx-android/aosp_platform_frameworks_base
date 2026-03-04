@@ -20,8 +20,7 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
-import android.view.ViewRootImpl
-import android.view.ViewRootImpl.ConfigChangedCallback
+import android.view.ViewGroup
 import androidx.annotation.StyleRes
 
 /**
@@ -32,28 +31,29 @@ import androidx.annotation.StyleRes
 class AlertDialogWithDelegate(
     context: Context,
     @StyleRes theme: Int,
-    private val delegate: DialogDelegate<AlertDialog>
-) : AlertDialog(context, theme), ConfigChangedCallback {
+    private val delegate: DialogDelegate<AlertDialog>,
+) : AlertDialog(context, theme) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         delegate.beforeCreate(dialog = this, savedInstanceState)
         super.onCreate(savedInstanceState)
         delegate.onCreate(dialog = this, savedInstanceState)
+        (window?.decorView as ViewGroup).addView(
+            SystemUIDialog.ConfigurationListenerView(context) { onConfigurationChanged(it) }
+        )
     }
 
-    override fun onConfigurationChanged(configuration: Configuration) {
+    fun onConfigurationChanged(configuration: Configuration) {
         delegate.onConfigurationChanged(dialog = this, configuration)
     }
 
     override fun onStart() {
         super.onStart()
-        ViewRootImpl.addConfigCallback(this)
         delegate.onStart(dialog = this)
     }
 
     override fun onStop() {
         super.onStop()
-        ViewRootImpl.removeConfigCallback(this)
         delegate.onStop(dialog = this)
     }
 
