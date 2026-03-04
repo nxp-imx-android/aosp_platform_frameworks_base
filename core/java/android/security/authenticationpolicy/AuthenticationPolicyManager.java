@@ -580,7 +580,7 @@ public final class AuthenticationPolicyManager {
     @RequiresPermission(USE_BIOMETRIC_INTERNAL)
     @UserHandleAware
     @FlaggedApi(FLAG_SUPPORT_AI_AGENT)
-    public boolean isConnectedAgentAuthorized(@Nullable DeviceId companionDeviceId) {
+    public boolean isAgentAuthorized(@Nullable DeviceId companionDeviceId) {
         try {
             return mAuthenticationPolicyService.isAgentAuthorized(
                     mContext.getUser(), mContext.getDeviceId(), companionDeviceId);
@@ -590,7 +590,7 @@ public final class AuthenticationPolicyManager {
     }
 
     /**
-     * Per-user per-device version of {@link #isConnectedAgentAuthorized(DeviceId)}.
+     * Per-user per-device version of {@link #isAgentAuthorized(DeviceId)}.
      *
      * @param userId user id
      * @param deviceId local device id
@@ -600,7 +600,7 @@ public final class AuthenticationPolicyManager {
      */
     @RequiresPermission(USE_BIOMETRIC_INTERNAL)
     @FlaggedApi(FLAG_SUPPORT_AI_AGENT)
-    public boolean isConnectedAgentAuthorized(
+    public boolean isAgentAuthorized(
             @UserIdInt int userId, int deviceId, @Nullable DeviceId companionDeviceId) {
         try {
             return mAuthenticationPolicyService.isAgentAuthorized(
