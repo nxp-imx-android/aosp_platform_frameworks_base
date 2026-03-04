@@ -183,16 +183,6 @@ flag {
 }
 
 flag {
-    name: "pass_through_unprocessed_motion_events"
-    namespace: "accessibility"
-    description: "Fixes screen freeze by passing through motion events that AccessibilityInputFilter declines to process (e.g. during mid-gesture feature enables)."
-    bug: "397138372"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "reduce_interactive_delay_with_magnification"
     namespace: "accessibility"
     description: "Reduces the delay for single-tap interactions when full-screen magnification is active but the triple-tap shortcut is disabled."
