@@ -130,13 +130,6 @@ flag {
 }
 
 flag {
-  name: "universal_resizable_by_default"
-  namespace: "windowing_frontend"
-  description: "The orientation, aspect ratio, resizability of activity will follow system behavior by default"
-  bug: "357141415"
-}
-
-flag {
     name: "enable_split_dismiss_animation"
     namespace: "windowing_frontend"
     description: "Resize animation for expanding and collapsing surfaces when split screen is dismissed"

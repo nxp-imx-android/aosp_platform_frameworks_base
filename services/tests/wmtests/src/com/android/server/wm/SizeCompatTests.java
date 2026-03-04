@@ -226,12 +226,8 @@ public class SizeCompatTests extends WindowTestsBase {
         doNothing().when(display).updateDisplayInfo(any());
         resizeDisplay(display, displayInfo.logicalWidth, displayInfo.logicalHeight);
         assertTrue(display.isLargeScreen());
-        if (com.android.window.flags.Flags.universalResizableByDefault()) {
-            assertTrue("Large screen must ignore orientation request",
-                    display.getIgnoreOrientationRequest());
-        } else {
-            display.setIgnoreOrientationRequest(true);
-        }
+        assertTrue("Large screen must ignore orientation request",
+                display.getIgnoreOrientationRequest());
         setUpApp(display, null /* appBuilder */);
         spyOn(display.getDisplayRotation());
     }
@@ -5494,7 +5490,6 @@ public class SizeCompatTests extends WindowTestsBase {
     @Test
     @EnableCompatChanges({ActivityInfo.UNIVERSAL_RESIZABLE_BY_DEFAULT})
     public void testUniversalResizeableByDefault() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_UNIVERSAL_RESIZABLE_BY_DEFAULT);
         mDisplayContent.setIgnoreOrientationRequest(false);
         setUpApp(mDisplayContent, new ActivityBuilder(mAtm)
                 .setResizeMode(RESIZE_MODE_UNRESIZEABLE)
