@@ -120,18 +120,13 @@
     <public name="alternateLauncherLabels"/>
     <!-- @FlaggedApi(android.permission.flags.Flags.FLAG_PPD_MANIFEST_ENABLED) -->
     <public name="purposeString"/>
-    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
-    <public name="iconColor"/>
-    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
-    <public name="suggestionBackgroundColor"/>
-    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
-    <public name="suggestionCornerRadius"/>
+    <public name="removed_iconColor"/>
+    <public name="removed_suggestionBackgroundColor"/>
+    <public name="removed_suggestionCornerRadius"/>
     <!-- @FlaggedApi(com.android.window.flags.Flags.FLAG_SUPPORT_CUSTOM_DIM_COLOR) -->
     <public name="backgroundDimColor"/>
-    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
-    <public name="embeddedViewTheme"/>
-    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
-    <public name="inlineSuggestion"/>
+    <public name="removed_embeddedViewTheme"/>
+    <public name="removed_inlineSuggestion"/>
   </staging-public-group>
 
   <staging-public-group type="id" first-id="0x019a0000">

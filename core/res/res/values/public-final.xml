@@ -4187,6 +4187,17 @@
     <public name="removed_" />
     <public name="removed_" />
     <public name="removed_" />
+    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+    <public name="iconColor"/>
+    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+    <public name="suggestionBackgroundColor"/>
+    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+    <public name="suggestionCornerRadius"/>
+    <public name="removed_" />
+    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+    <public name="embeddedViewTheme"/>
+    <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+    <public name="inlineSuggestion"/>
   </staging-public-group-final>
 
   <!-- @FlaggedApi(android.service.dreams.Flags.FLAG_USER_SELECTABLE_METADATA)
@@ -4210,6 +4221,16 @@
   <public type="attr" name="privateComputeCore" id="0x010106b5" />
   <!-- @FlaggedApi(android.app.privatecompute.flags.Flags.FLAG_ENABLE_PCC_FRAMEWORK_SUPPORT) -->
   <public type="attr" name="backupAgentProcess" id="0x010106b6" />
+  <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+  <public type="attr" name="iconColor" id="0x010106b7" />
+  <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+  <public type="attr" name="suggestionBackgroundColor" id="0x010106b8" />
+  <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+  <public type="attr" name="suggestionCornerRadius" id="0x010106b9" />
+  <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+  <public type="attr" name="embeddedViewTheme" id="0x010106ba" />
+  <!-- @FlaggedApi(android.service.personalcontext.Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE) -->
+  <public type="attr" name="inlineSuggestion" id="0x010106bb" />
 
   <staging-public-group-final type="color" first-id="0x019d0000">
     <!-- @FlaggedApi(android.os.Flags.FLAG_MATERIAL_COLORS_10_2024)-->
