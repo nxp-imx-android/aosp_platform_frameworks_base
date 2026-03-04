@@ -59,7 +59,6 @@ import com.android.systemui.statusbar.phone.KeyguardStatusBarViewController
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import com.android.systemui.window.data.repository.fakeWindowRootViewBlurRepository
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import org.junit.Before
 import org.junit.Rule
@@ -163,8 +162,7 @@ class GoneSceneToLockScreenTransitionTest : SysuiTestCase() {
                                         "changing scene for testing transition from Gone to Lockscreen",
                                     )
                                 }
-                                // TODO replace with awaitIdle(b/480861333)
-                                awaitDelay(250.milliseconds)
+                                awaitIdle()
                             }
                         ) {
                             featureFloat(LockscreenContent.LockscreenContentMotionTestKeys.Alpha)

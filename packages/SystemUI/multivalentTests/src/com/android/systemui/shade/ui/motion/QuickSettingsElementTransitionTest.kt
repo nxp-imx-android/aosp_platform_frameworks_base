@@ -62,7 +62,6 @@ import com.android.systemui.statusbar.notification.stack.ui.view.notificationScr
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -199,9 +198,7 @@ class QuickSettingsElementTransitionTest : SysuiTestCase() {
                                         endVelocity = 3000.dp.toPx(),
                                     )
                                 }
-                                // await some time for the animation to settle
-                                // TODO replace this with waitForIdle until ComposeToolkitV2 lands
-                                awaitDelay(450.milliseconds)
+                                awaitIdle()
                             }
                         ) {
                             val firstTileXCoordinate =
