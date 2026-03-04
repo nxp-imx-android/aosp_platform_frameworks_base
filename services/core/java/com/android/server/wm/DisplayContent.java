@@ -7115,8 +7115,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     @Override
     boolean getIgnoreOrientationRequest() {
-        if (mHasSetIgnoreOrientationRequest
-                || !com.android.window.flags.Flags.universalResizableByDefault()) {
+        if (mHasSetIgnoreOrientationRequest) {
             return super.getIgnoreOrientationRequest();
         }
         // Large screen (sw >= 600dp) ignores orientation request by default.

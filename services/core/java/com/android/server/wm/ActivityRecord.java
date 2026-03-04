@@ -3174,7 +3174,7 @@ final class ActivityRecord extends WindowToken {
         if (appInfo.category == ApplicationInfo.CATEGORY_GAME) {
             return false;
         }
-        final boolean compatEnabled = isLargeScreen && Flags.universalResizableByDefault()
+        final boolean compatEnabled = isLargeScreen
                 && appInfo.isChangeEnabled(ActivityInfo.UNIVERSAL_RESIZABLE_BY_DEFAULT);
         final boolean configEnabled = (isLargeScreen
                 ? wms.mConstants.mIgnoreActivityOrientationRequestLargeScreen

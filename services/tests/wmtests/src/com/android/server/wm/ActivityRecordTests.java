@@ -2900,7 +2900,6 @@ public class ActivityRecordTests extends WindowTestsBase {
 
     @Test
     public void testSetOrientation_restrictedByTargetSdk() {
-        mSetFlagsRule.enableFlags(Flags.FLAG_UNIVERSAL_RESIZABLE_BY_DEFAULT);
         makeDisplayLargeScreen(mDisplayContent);
         assertTrue(mDisplayContent.getIgnoreOrientationRequest());
 

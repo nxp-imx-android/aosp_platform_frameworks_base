@@ -58,7 +58,6 @@ import org.mockito.quality.Strictness
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
-@EnableFlags(Flags.FLAG_UNIVERSAL_RESIZABLE_BY_DEFAULT)
 @RunWithLooper
 class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     DesktopModeWindowDecorViewModelTestsBase() {
