@@ -16,13 +16,17 @@
 
 package com.android.server.personalcontext.embedded;
 
+import android.Manifest;
 import android.annotation.RequiresNoPermission;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.UserHandle;
+import android.permission.PermissionManager;
 import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.IInsightSurfaceVisualizer;
@@ -56,6 +60,7 @@ public class VisualizerConnection {
 
     private final Injector mInjector;
     private final ComponentName mComponentName;
+    private final Context mContext;
     private IInsightSurfaceVisualizer mVisualizer;
     // A queue of actions that have been deferred until a visualizer has connected.
     private final List<Runnable> mDeferredActions = new ArrayList<>();
@@ -94,6 +99,11 @@ public class VisualizerConnection {
     @VisibleForTesting
     public interface Injector {
         /**
+         * Returns the context to use for this {@link VisualizerConnection}.
+         */
+        Context getContext();
+
+        /**
          * Connect to the visualizer service specified by the given intent.
          *
          * @param intent the {@link Intent} specifying the visualizer service.
@@ -122,6 +132,11 @@ public class VisualizerConnection {
         DefaultInjector(Context context, Executor executor) {
             mContext = context;
             mExecutor = executor;
+        }
+
+        @Override
+        public Context getContext() {
+            return mContext;
         }
 
         @Override
@@ -156,6 +171,7 @@ public class VisualizerConnection {
             Injector injector) {
         mComponentName = componentName;
         mInjector = injector;
+        mContext = injector.getContext();
     }
 
     /** Return the {@link ComponentName} of the service this connection manages. */
@@ -173,6 +189,12 @@ public class VisualizerConnection {
             if (mVisualizer == null) {
                 // Something went wrong connecting to the visualizer.
                 Slog.e(TAG, "Failed to connect to visualizer in createVisualizationForClient");
+                callback.accept(false);
+                return;
+            }
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()
+                    && !checkPermission(Manifest.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS)) {
+                Slog.e(TAG, "Visualizer missing PERSONAL_CONTEXT_RECEIVE_INSIGHTS permission");
                 callback.accept(false);
                 return;
             }
@@ -245,6 +267,18 @@ public class VisualizerConnection {
     public void onUnregistered() {
         mInjector.executeAction(
                 () -> teardownVisualizer(mComponentName, "unregistered from visualizer"));
+    }
+
+    /** Returns true if this service client has the given permission. */
+    protected boolean checkPermission(String permission) {
+        // TODO(b/489183723): use proper UserHandle when visualizers are per-user.
+        return mContext.getSystemService(PermissionManager.class)
+                .checkPackageNamePermission(
+                        permission,
+                        getComponentName().getPackageName(),
+                        Context.DEVICE_ID_DEFAULT,
+                        UserHandle.CURRENT.getIdentifier())
+                == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
