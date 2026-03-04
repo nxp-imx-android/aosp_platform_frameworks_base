@@ -54,6 +54,8 @@ class PackageUpdateTransitionHandlerTest : ShellTestCase() {
                 mContext,
                 testExecutor,
                 testExecutor,
+                mock(),
+                mock(),
             )
     }
 

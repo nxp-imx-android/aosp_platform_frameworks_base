@@ -2188,10 +2188,12 @@ public abstract class WMShellModule {
             TransactionSupplier transactionSupplier,
             Context context,
             @ShellAnimationThread ShellExecutor animExecutor,
-            @ShellMainThread ShellExecutor mainExecutor
+            @ShellMainThread ShellExecutor mainExecutor,
+            @ShellMainThread Handler shellMainHandler,
+            InteractionJankMonitor interactionJankMonitor
     ) {
         return new PackageUpdateTransitionHandler(transactionSupplier, context, animExecutor,
-                mainExecutor);
+                mainExecutor, shellMainHandler, interactionJankMonitor);
     }
     //
     // App zoom out
