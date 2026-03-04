@@ -413,7 +413,6 @@ import com.android.server.IoThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.bitmapoffload.BitmapOffloadInternal;
-import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.lights.LightsManager;
 import com.android.server.notification.GroupHelper.NotificationAttributes;
@@ -702,7 +701,8 @@ public class NotificationManagerService extends SystemService {
     @Nullable StatusBarManagerInternal mStatusBar;
     private DisplayManager mDisplayManager;
     private WindowManagerInternal mWindowManagerInternal;
-    private VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
+    @VisibleForTesting
+    ComputerControlHelper mComputerControlHelper;
     private AlarmManager mAlarmManager;
     @VisibleForTesting
     ICompanionDeviceManager mCompanionManager;
@@ -3674,8 +3674,9 @@ public class NotificationManagerService extends SystemService {
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
             mDisplayManager = getContext().getSystemService(DisplayManager.class);
             mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
-            mVirtualDeviceManagerInternal =
-                    LocalServices.getService(VirtualDeviceManagerInternal.class);
+            if (mComputerControlHelper == null) {
+                mComputerControlHelper = ComputerControlHelper.forLocalService();
+            }
             mZenModeHelper.onSystemReady();
             RoleObserver roleObserver = new RoleObserver(getContext(),
                     getContext().getSystemService(RoleManager.class),
@@ -9763,12 +9764,11 @@ public class NotificationManagerService extends SystemService {
 
     private boolean isComputerControlNotification(int notificationId, String notificationTag,
             String packageName) {
-        if (mVirtualDeviceManagerInternal == null) {
-            mVirtualDeviceManagerInternal =
-                    LocalServices.getService(VirtualDeviceManagerInternal.class);
+        if (mComputerControlHelper == null) {
+            mComputerControlHelper = ComputerControlHelper.forLocalService();
         }
-        if (mVirtualDeviceManagerInternal != null) {
-            return mVirtualDeviceManagerInternal.isComputerControlNotification(notificationId,
+        if (mComputerControlHelper != null) {
+            return mComputerControlHelper.isComputerControlNotification(notificationId,
                     notificationTag, packageName);
         }
         return false;

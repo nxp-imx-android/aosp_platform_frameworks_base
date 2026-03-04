@@ -557,6 +557,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     BroadcastReceiver mNotificationTimeoutReceiver;
     NotificationRecordLoggerFake mNotificationRecordLogger = new NotificationRecordLoggerFake();
     TestableNotificationManagerService.StrongAuthTrackerFake mStrongAuthTracker;
+    FakeComputerControlHelper mFakeComputerControlHelper = new FakeComputerControlHelper();
 
     TestableFlagResolver mTestFlagResolver = new TestableFlagResolver();
     @Rule
@@ -15935,6 +15936,22 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    public void fixComputerControlNotification_withOnGoingFlag_shouldBeNonDismissible()
+            throws Exception {
+        // Given: a computer control notification has the flag FLAG_ONGOING_EVENT set
+        mService.getFakeComputerControlHelper().setDefaultResponse(true);
+        Notification n = new Notification.Builder(mContext, "test")
+                .setOngoing(true)
+                .build();
+
+        // When: fix the notification with NotificationManagerService
+        mService.fixNotification(n, mPkg, "tag", 9, 0, mUid, NOT_FOREGROUND_SERVICE, true);
+
+        // Then: the notification's flag FLAG_NO_DISMISS should be set
+        assertNotSame(0, n.flags & Notification.FLAG_NO_DISMISS);
+    }
+
+    @Test
     public void fixSystemNotification_defaultSearchSelectior_withOnGoingFlag_nondismissible()
             throws Exception {
         final ApplicationInfo ai = new ApplicationInfo();
@@ -15988,7 +16005,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void fixCallNotification_withOnGoingFlag_shouldNotBeNonDismissible()
+    public void fixCallNotification_withOnGoingFlag_shouldBeDismissible()
             throws Exception {
         // Given: a call notification has the flag FLAG_ONGOING_EVENT set
         Person person = new Person.Builder()
@@ -16144,6 +16161,40 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         // Then: the notification's flag FLAG_NO_DISMISS should not be set
         assertSame(0, n.flags & Notification.FLAG_NO_DISMISS);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NOTIFICATION_FLAG_COMPUTER_CONTROL)
+    public void fixComputerControlNotification_shouldReceiveFlag()
+            throws Exception {
+        // Given: a computer control notification
+        mService.getFakeComputerControlHelper().setDefaultResponse(true);
+        Notification n = new Notification.Builder(mContext, "test")
+                .setOngoing(true)
+                .build();
+
+        // When: fix the notification with NotificationManagerService
+        mService.fixNotification(n, mPkg, "tag", 9, 0, mUid, NOT_FOREGROUND_SERVICE, true);
+
+        // Then: the notification's flag FLAG_COMPUTER_CONTROL should be set
+        assertNotSame(0, n.flags & Notification.FLAG_COMPUTER_CONTROL);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NOTIFICATION_FLAG_COMPUTER_CONTROL)
+    public void fixNonComputerControlNotification_shouldClearFlag() throws Exception {
+        // Given: a non-computer control notification has the flag FLAG_COMPUTER_CONTROL set
+        mService.getFakeComputerControlHelper().setDefaultResponse(false);
+        Notification n = new Notification.Builder(mContext, "test")
+                .setOngoing(true)
+                .build();
+        n.flags |= Notification.FLAG_COMPUTER_CONTROL;
+
+        // When: fix the notification with NotificationManagerService
+        mService.fixNotification(n, mPkg, "tag", 9, 0, mUid, NOT_FOREGROUND_SERVICE, true);
+
+        // Then: the notification's flag FLAG_COMPUTER_CONTROL should be cleared
+        assertSame(0, n.flags & Notification.FLAG_COMPUTER_CONTROL);
     }
 
     @Test
