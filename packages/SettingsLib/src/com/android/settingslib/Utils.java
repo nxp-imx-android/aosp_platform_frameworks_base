@@ -80,6 +80,8 @@ public class Utils {
 
     public static final String INCOMPATIBLE_CHARGER_WARNING_DISABLED =
             "incompatible_charger_warning_disabled";
+    public static final String KEY_WIRELESS_INCOMPATIBLE_CHARGING_STATE =
+            "wireless_incompatible_charging_state";
 
     @VisibleForTesting
     static final String STORAGE_MANAGER_ENABLED_PROPERTY = "ro.storage_manager.enabled";
@@ -842,5 +844,27 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    /** Whether it is wireless incompatible charging or not? */
+    public static boolean isWirelessIncompatibleCharging(Context context) {
+        return Settings.Global.getInt(
+                        context.getContentResolver(),
+                        KEY_WIRELESS_INCOMPATIBLE_CHARGING_STATE,
+                        /* defaultValue= */ 0)
+                == 1;
+    }
+
+    /** Set wireless incompatible charging enabled. */
+    public static void setWirelessIncompatibleChargingEnabled(
+            Context context, boolean enabled) {
+        final boolean oldEnabledValue = isWirelessIncompatibleCharging(context);
+        if (oldEnabledValue == enabled) {
+            return;
+        }
+        Settings.Global.putInt(
+                context.getContentResolver(),
+                KEY_WIRELESS_INCOMPATIBLE_CHARGING_STATE,
+                enabled ? 1 : 0);
     }
 }
