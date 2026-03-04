@@ -1964,7 +1964,9 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
         mCurrentUser = userId;
 
-        mTaskSupervisor.mStartingUsers.add(uss);
+        if (!mTaskSupervisor.mStartingUsers.contains(uss)) {
+            mTaskSupervisor.mStartingUsers.add(uss);
+        }
         forAllRootTasks(rootTask -> {
             rootTask.switchUser(userId);
         });
