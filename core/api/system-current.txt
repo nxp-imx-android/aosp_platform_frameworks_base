@@ -4282,6 +4282,7 @@ package android.companion.virtual.camera {
 
   public final class VirtualCamera implements java.io.Closeable {
     method public void close();
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_close_session") public void closeSessionOnError();
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig getConfig();
   }
 

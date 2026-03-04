@@ -1358,6 +1358,17 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         return mVirtualCameraController.getCameraId(cameraConfig);
     }
 
+    @Override // Binder call
+    public void closeVirtualCameraSession(@NonNull VirtualCameraConfig cameraConfig)
+            throws RemoteException {
+        checkCallerIsDeviceOwner();
+        Objects.requireNonNull(cameraConfig);
+        if (mVirtualCameraController == null) {
+            throw new UnsupportedOperationException("Virtual camera controller is not available");
+        }
+        mVirtualCameraController.closeVirtualCameraSession(cameraConfig);
+    }
+
     @Override
     public boolean hasCustomAudioInputSupport() throws RemoteException {
         return hasCustomAudioInputSupportInternal();
