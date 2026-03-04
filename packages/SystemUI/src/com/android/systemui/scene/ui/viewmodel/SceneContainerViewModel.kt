@@ -298,9 +298,11 @@ constructor(
                 sceneInteractor.currentOverlays.value.isNotEmpty()
         ) {
             if (Flags.fixSceneContainerActionOutsideTouch()) {
-                val statusBarHeight = resources.getDimensionPixelSize(R.dimen.status_bar_height)
-                if (event.y <= statusBarHeight) {
-                    return
+                if (currentScene == Scenes.Lockscreen) {
+                    val statusBarHeight = resources.getDimensionPixelSize(R.dimen.status_bar_height)
+                    if (event.y <= statusBarHeight) {
+                        return
+                    }
                 }
             }
 
