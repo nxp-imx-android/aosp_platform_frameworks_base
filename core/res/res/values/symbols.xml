@@ -3619,6 +3619,9 @@
   <java-symbol type="string" name="notification_metric_label_unit" />
   <java-symbol type="string" name="notification_metric_label_unit_separator" />
   <java-symbol type="string" name="notification_metric_label_separator" />
+  <java-symbol type="string" name="notification_history_metric_subtext" />
+  <java-symbol type="string" name="notification_metric_running_timer" />
+  <java-symbol type="string" name="notification_metric_running_stopwatch" />
 
   <!-- Notifications: CallStyle -->
   <java-symbol type="layout" name="notification_2025_template_collapsed_call" />
@@ -3919,6 +3922,7 @@
   <java-symbol type="drawable" name="lockscreen_notselected" />
   <java-symbol type="drawable" name="lockscreen_selected" />
 
+  <java-symbol type="string" name="notification_header_divider_symbol" />
   <java-symbol type="string" name="notification_header_divider_symbol_with_spaces" />
   <java-symbol type="string" name="notification_compact_heads_up_reply" />
 
