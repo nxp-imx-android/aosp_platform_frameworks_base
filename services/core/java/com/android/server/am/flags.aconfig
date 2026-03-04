@@ -356,15 +356,6 @@ flag {
     }
 }
 
-flag {
-    name: "battery_stats_log_combined_display_state"
-    namespace: "backstage_power"
-    description: "Logs atom for screen state for the most important display on device."
-    bug: "416368479"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
 
 flag {
     name: "use_safesetid_uid_policy2"
