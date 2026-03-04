@@ -33,7 +33,7 @@ import java.util.Objects;
  */
 @RavenwoodKeepWholeClass
 final class ProcessEdge extends GraphEdge {
-    private final @NonNull GraphNode mNode;
+    private final @NonNull ProcessNode mNode;
 
     /**
      * The cached reasons for granting {@link ActivityManager#PROCESS_CAPABILITY_CPU_TIME} through
@@ -41,7 +41,7 @@ final class ProcessEdge extends GraphEdge {
      */
     private @CpuTimeReasons int mCpuTimeReasons = CPU_TIME_REASON_NONE;
 
-    ProcessEdge(@NonNull GraphNode node) {
+    ProcessEdge(@NonNull ProcessNode node) {
         mNode = Objects.requireNonNull(node);
     }
 
@@ -61,13 +61,13 @@ final class ProcessEdge extends GraphEdge {
     /** Returns {@code null} since the source is always the system. */
     @Override
     @Nullable
-    GraphNode getSource() {
+    ProcessNode getSource() {
         return null;
     }
 
     @Override
     @NonNull
-    GraphNode getTarget() {
+    ProcessNode getTarget() {
         return mNode;
     }
 

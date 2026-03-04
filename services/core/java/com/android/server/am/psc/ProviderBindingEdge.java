@@ -36,18 +36,18 @@ class ProviderBindingEdge extends GraphEdge {
 
     @Override
     @NonNull
-    GraphNode getSource() {
-        return mConn.getClient().getGraphNode();
+    ProcessNode getSource() {
+        return mConn.getClient().getProcessNode();
     }
 
     @Override
     @Nullable
-    GraphNode getTarget() {
+    ProcessNode getTarget() {
         final ProcessRecordInternal provider = mConn.getProvider().getHostProcess();
         // The target can be null if the ContentProviderConnection is not yet associated with a host
         // process, or if the host process has died.
         if (provider == null) return null;
-        return provider.getGraphNode();
+        return provider.getProcessNode();
     }
 
     @Override

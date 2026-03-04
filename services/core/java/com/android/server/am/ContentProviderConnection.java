@@ -21,7 +21,7 @@ import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 
 import android.annotation.NonNull;
 import android.annotation.UserIdInt;
-import android.os.Binder;
+import android.app.ActivityManager.ProcessState;
 import android.os.SystemClock;
 import android.util.Slog;
 import android.util.TimeUtils;
@@ -34,8 +34,7 @@ import com.android.server.am.psc.ContentProviderConnectionInternal;
 /**
  * Represents a link between a content provider and client.
  */
-public final class ContentProviderConnection extends Binder implements
-        ContentProviderConnectionInternal {
+public final class ContentProviderConnection extends ContentProviderConnectionInternal {
     public final ContentProviderRecord provider;
     public final @NonNull ProcessRecord client;
     public final String clientPackage;
@@ -106,7 +105,7 @@ public final class ContentProviderConnection extends Binder implements
      * Track the given proc state change.
      */
     @Override
-    public void trackProcState(int procState, int seq) {
+    public void trackProcState(@ProcessState int procState, int seq) {
         if (association == null) {
             return; // early exit to optimize on oomadj cycles
         }

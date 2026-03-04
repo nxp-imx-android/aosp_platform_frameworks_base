@@ -34,10 +34,10 @@ import java.util.ArrayList;
 /** Container class for test-specific implementations of process graph node and edges. */
 final class TestGraphElements {
     /**
-     * A test implementation of {@link GraphNode}. Uses a {@link Builder} pattern to set up various
-     * fields.
+     * A test implementation of {@link ProcessNode}. Uses a {@link Builder} pattern to set up
+     * various fields.
      */
-    static class TestNode extends GraphNode {
+    static class TestProcessNode extends ProcessNode {
         private final boolean mIsProcessRunning;
         private final boolean mHasActiveInstrumentation;
         private final boolean mHasForegroundServices;
@@ -52,7 +52,7 @@ final class TestGraphElements {
         private final @ProcessState int mProcState;
         private final ArrayList<TestServiceRecord> mServices;
 
-        private TestNode(boolean isProcessRunning, boolean hasActiveInstrumentation,
+        private TestProcessNode(boolean isProcessRunning, boolean hasActiveInstrumentation,
                 boolean hasForegroundServices, boolean hasNonShortForegroundServices,
                 boolean cachedCompatChangeCameraMicrophoneCapability, boolean isCurAllowListed,
                 boolean hasForegroundActivities, boolean hasExecutingServices,
@@ -237,8 +237,8 @@ final class TestGraphElements {
                 return this;
             }
 
-            TestNode build() {
-                return new TestNode(mIsProcessRunning, mHasActiveInstrumentation,
+            TestProcessNode build() {
+                return new TestProcessNode(mIsProcessRunning, mHasActiveInstrumentation,
                         mHasForegroundServices, mHasNonShortForegroundServices,
                         mCachedCompatChangeCameraMicrophoneCapability, mIsCurAllowListed,
                         mHasForegroundActivities, mHasExecutingServices, mIsReceivingBroadcast,

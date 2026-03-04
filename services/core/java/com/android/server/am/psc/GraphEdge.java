@@ -55,13 +55,13 @@ abstract class GraphEdge {
     /**
      * Returns the source node of the edge.
      */
-    abstract @Nullable GraphNode getSource();
+    abstract @Nullable ProcessNode getSource();
 
     /**
      * Returns the target node of the edge. For binding edges, returns {@code null} if the host
      * process record is {@code null}.
      */
-    abstract @Nullable GraphNode getTarget();
+    abstract @Nullable ProcessNode getTarget();
 
     /**
      * Evaluates whether the edge propagates each capability.
