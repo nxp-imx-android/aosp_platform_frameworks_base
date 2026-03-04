@@ -1061,6 +1061,13 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         // Group the given tasks per state
         for (int i = 0; i < tasks.size(); i++) {
             final Task task = tasks.valueAt(i);
+
+            if (task.mTaskOrganizer == null) {
+                Slog.w(TAG, "Cannot handle onPackageUpdateRequest because task organizer is "
+                        + "not present for taskId: " + task.mTaskId);
+                continue;
+            }
+
             final TaskOrganizerState state = mTaskOrganizerStates.get(
                     task.mTaskOrganizer.asBinder());
 
@@ -1088,6 +1095,16 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         // Group the given tasks per state
         for (int i = 0; i < tasks.size(); i++) {
             final Task task = tasks.get(i);
+
+            if (task.mTaskOrganizer == null) {
+                Slog.w(TAG, "Cannot handle onPackageUpdateFinished because task organizer is "
+                        + "not present for taskId: " + task.mTaskId);
+                // Handler of this task won't get the call do clean up for this task, so go ahead
+                // and mark the task as handled instead of hitting the timeout.
+                task.continuePackageUpdate();
+                continue;
+            }
+
             final TaskOrganizerState state = mTaskOrganizerStates.get(
                     task.mTaskOrganizer.asBinder());
 
