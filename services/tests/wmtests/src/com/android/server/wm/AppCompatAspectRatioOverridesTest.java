@@ -463,6 +463,26 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
         });
     }
 
+    @Test
+    @EnableCompatChanges(ActivityInfo.OVERRIDE_ANY_ORIENTATION_TO_USER)
+    public void testSystemFullscreenOverride_movedToLargeScreen_scmCleared() {
+        runTestScenario((robot) -> {
+            robot.applyOnActivity((a) -> {
+                a.setDisplayId(DEFAULT_DISPLAY);
+                a.createActivityWithComponent();
+                a.configureTopActivity(/* minAspect */ -1f, /* maxAspect */-1f,
+                        SCREEN_ORIENTATION_LANDSCAPE, true);
+            });
+
+            robot.checkHasFullscreenOverride(false);
+            robot.checkHasCompatDisplayInsets(true);
+            robot.activity().makeDisplayLargeScreen();
+
+            robot.checkHasCompatDisplayInsets(false);
+            robot.checkHasFullscreenOverride(true);
+        });
+    }
+
     /**
      * Runs a test scenario providing a Robot.
      */
@@ -545,6 +565,10 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
 
         void checkTaskIsResizeable(boolean expected) {
             assertEquals(expected, activity().top().getTask().isResizeable());
+        }
+
+        void checkHasCompatDisplayInsets(boolean expected) {
+            assertEquals(expected, activity().top().getAppCompatDisplayInsets() != null);
         }
 
         private AppCompatAspectRatioOverrides getTopActivityAppCompatAspectRatioOverrides() {

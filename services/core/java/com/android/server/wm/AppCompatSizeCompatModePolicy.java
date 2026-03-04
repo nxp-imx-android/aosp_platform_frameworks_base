@@ -193,11 +193,16 @@ class AppCompatSizeCompatModePolicy {
     }
 
     void clearSizeCompatModeIfNeededOnResolveOverrideConfiguration() {
-        if (mAppCompatDisplayInsets == null || !mActivityRecord.isUniversalResizeable()) {
+        if (mAppCompatDisplayInsets == null) {
             return;
         }
-        clearSizeCompatModeAttributes();
-        clearOverrideConfiguration();
+        final AppCompatAspectRatioOverrides aspectRatioOverrides =
+                mActivityRecord.mAppCompatController.getAspectRatioOverrides();
+        if (mActivityRecord.isUniversalResizeable()
+                || aspectRatioOverrides.isSystemOverrideToFullscreenEnabled()) {
+            clearSizeCompatModeAttributes();
+            clearOverrideConfiguration();
+        }
     }
 
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
