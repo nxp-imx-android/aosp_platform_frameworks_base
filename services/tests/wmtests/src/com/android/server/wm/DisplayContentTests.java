@@ -1906,8 +1906,8 @@ public class DisplayContentTests extends WindowTestsBase {
 
         doReturn(true).when(nonTopVisible).hasFixedRotationTransform();
         assertFalse("Not skip orientation update if fixed rotation app switched without transition",
-                mDisplayContent.handleTopActivityLaunchingInDifferentOrientation(
-                        nonTopVisible, true /* checkOpening */));
+                mDisplayContent.handleTopActivityLaunchingInDifferentOrientation(nonTopVisible,
+                        true /* checkOpening */, WindowConfiguration.ROTATION_UNDEFINED));
         assertTrue(mDisplayContent.isFixedRotationLaunchingApp(nonTopVisible));
     }
 

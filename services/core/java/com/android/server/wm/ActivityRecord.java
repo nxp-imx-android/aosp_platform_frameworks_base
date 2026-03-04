@@ -4544,7 +4544,7 @@ final class ActivityRecord extends WindowToken {
             // starting window.
             if (fromActivity.hasFixedRotationTransform()) {
                 mDisplayContent.handleTopActivityLaunchingInDifferentOrientation(this,
-                        false /* checkOpening */);
+                        false /* checkOpening */, ROTATION_UNDEFINED);
             }
             // Do not transfer if the orientation doesn't match, redraw starting window while it is
             // on top will cause flicker.
