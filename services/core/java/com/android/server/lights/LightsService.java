@@ -18,6 +18,7 @@ package com.android.server.lights;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.graphics.Color;
 import android.hardware.light.HwLight;
 import android.hardware.light.HwLightEffect;
 import android.hardware.light.HwLightState;
@@ -644,8 +645,9 @@ public class LightsService extends SystemService {
                 return false;
             }
 
-            // Reset the static color to transparent to clear state when we have an effect.
-            mColor = 0;
+            // Reset the static color to Black to clear state when we have an effect. This has to be
+            // different than '0' to allow the end of the session to send a "turnOff" request.
+            mColor = Color.BLACK;
 
             // If the configuration is different from the last configuration the effect needs to be
             // sent down to the HAL, so return true to let the service know it needs to do it.
