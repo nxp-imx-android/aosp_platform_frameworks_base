@@ -17,16 +17,20 @@
 package com.android.server.pm.parsing.library;
 
 import static android.content.pm.ActivityInfo.OVERRIDE_ENABLE_VIRTUAL_GAMEPAD;
+import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE;
 
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.app.compat.CompatChanges;
+import android.content.pm.PackageManager;
 import android.os.UserHandle;
 import android.view.WindowManager;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.pm.parsing.pkg.ParsedPackage;
 import com.android.window.flags.Flags;
+
+import java.util.Map;
 
 /**
  * Updates a package to ensure that the WindowManager Extensions is included as an optional shared
@@ -50,8 +54,17 @@ public class WindowManagerExtensionsUpdater extends PackageSharedLibraryUpdater 
     public void updatePackage(@NonNull ParsedPackage pkg, boolean isSystemApp,
             boolean isUpdatedSystemApp) {
         if (WindowManager.HAS_WINDOW_EXTENSIONS_ON_DEVICE && CompatChanges.isChangeEnabled(
-                OVERRIDE_ENABLE_VIRTUAL_GAMEPAD, pkg.getPackageName(), UserHandle.CURRENT)) {
+                OVERRIDE_ENABLE_VIRTUAL_GAMEPAD, pkg.getPackageName(), UserHandle.CURRENT)
+                && isVirtualGamepadOverrideAllowed(pkg)) {
             prefixRequiredLibrary(pkg, LIBRARY_NAME);
         }
+    }
+
+    private static boolean isVirtualGamepadOverrideAllowed(@NonNull ParsedPackage pkg) {
+        final Map<String, PackageManager.Property> properties = pkg.getProperties();
+        if (properties.containsKey(PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE)) {
+            return properties.get(PROPERTY_COMPAT_ALLOW_VIRTUAL_GAMEPAD_OVERRIDE).getBoolean();
+        }
+        return true;
     }
 }

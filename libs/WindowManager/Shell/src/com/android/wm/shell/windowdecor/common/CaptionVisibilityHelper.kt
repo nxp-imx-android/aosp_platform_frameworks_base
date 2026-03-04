@@ -91,7 +91,10 @@ class CaptionVisibilityHelper(
             return false
         }
 
-        if (splitScreenController?.isTaskRootOrStageRoot(taskInfo.taskId) == true) {
+        if (
+            !DesktopExperienceFlags.ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS.isTrue &&
+                splitScreenController?.isTaskRootOrStageRoot(taskInfo.taskId) == true
+        ) {
             return false
         }
 
@@ -140,10 +143,19 @@ class CaptionVisibilityHelper(
                 false
             }
 
+        // When window decoration for all tasks is enabled, tasks without standard activity
+        // types and wallpaper tasks should already be filtered out, so these do not need to
+        // be checked again.
+        if (
+            !DesktopExperienceFlags.ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS.isTrue &&
+                (taskInfo.activityType != WindowConfiguration.ACTIVITY_TYPE_STANDARD ||
+                    isWallpaperTask(taskInfo))
+        ) {
+            return false
+        }
+
         return desktopState.canEnterDesktopModeOrShowAppHandle &&
-            !isWallpaperTask(taskInfo) &&
             taskInfo.windowingMode != WindowConfiguration.WINDOWING_MODE_PINNED &&
-            taskInfo.activityType == WindowConfiguration.ACTIVITY_TYPE_STANDARD &&
             !taskInfo.configuration.windowConfiguration.isAlwaysOnTop &&
             !taskInfo.isBubble()
     }

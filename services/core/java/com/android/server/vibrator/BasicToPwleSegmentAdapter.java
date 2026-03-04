@@ -210,7 +210,7 @@ final class BasicToPwleSegmentAdapter implements VibrationSegmentsAdapter {
                 basicPwleSegment.getEndIntensity(), endFrequency, maxSensitivityLevel);
 
         return new PwleSegment(startAmplitude, endAmplitude, startFrequency, endFrequency,
-                basicPwleSegment.getDuration());
+                basicPwleSegment.getDuration(), basicPwleSegment.getStartTimeMillis());
     }
 
     /**

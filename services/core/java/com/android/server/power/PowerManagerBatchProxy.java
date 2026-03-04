@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.am;
-
-import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
-import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
+package com.android.server.power;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -33,23 +30,9 @@ import com.android.internal.annotations.GuardedBy;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-
-/**
- * A proxy for {@link PowerManagerInternal} that batches UID state change notifications
- * and executes them asynchronously.
- *
- * <p>When {@link #startUidChanges()} is called, the proxy enters a batching mode.
- * All subsequent UID state change notifications (e.g., {@link #uidActive}, {@link #uidIdle})
- * are buffered. When {@link #finishUidChanges()} is called, all buffered operations are posted
- * to a handler for asynchronous execution. Calls made outside of a
- * {@code startUidChanges/finishUidChanges} block are also executed asynchronously but are
- * flushed immediately.</p>
- *
- * <p>This class is thread-safe.</p>
- */
 @RavenwoodKeepWholeClass
-final class PowerManagerBatchProxy {
-    private static final String TAG = TAG_WITH_CLASS_NAME ? "PowerManagerBatchProxy" : TAG_AM;
+final class PowerManagerBatchProxy implements PowerManagerInternal.UidChangesBatch {
+    private static final String TAG = "PowerManagerBatchProxy";
 
     @IntDef(prefix = { "OP_" }, value = {
             OP_START_UID_CHANGES,
@@ -101,13 +84,9 @@ final class PowerManagerBatchProxy {
         mHandler = new Handler(looper);
     }
 
-    /**
-     * Signals the beginning of a series of UID changes.
-     * <p>Subsequent calls to UID state modification methods will be buffered until
-     * {@link #finishUidChanges()} is called.</p>
-     */
-    void startUidChanges() {
-        if (!Flags.batchPowerManagerCalls()) {
+    @Override
+    public void startUidChanges() {
+        if (!batchPowerManagerCalls()) {
             mLocalPowerManager.startUidChanges();
             return;
         }
@@ -118,13 +97,9 @@ final class PowerManagerBatchProxy {
         }
     }
 
-    /**
-     * Signals the end of a series of UID changes.
-     * <p>All buffered operations since the corresponding {@link #startUidChanges()} call are
-     * posted for asynchronous execution.</p>
-     */
-    void finishUidChanges() {
-        if (!Flags.batchPowerManagerCalls()) {
+    @Override
+    public void finishUidChanges() {
+        if (!batchPowerManagerCalls()) {
             mLocalPowerManager.finishUidChanges();
             return;
         }
@@ -136,48 +111,36 @@ final class PowerManagerBatchProxy {
         mHandler.post(mFlushRunnable);
     }
 
-    /**
-     * Notifies PowerManager that a UID has become active.
-     * <p>This operation is buffered if called within a {@code start/finishUidChanges} block.</p>
-     */
-    void uidActive(int uid) {
-        if (!Flags.batchPowerManagerCalls()) {
+    @Override
+    public void uidActive(int uid) {
+        if (!batchPowerManagerCalls()) {
             mLocalPowerManager.uidActive(uid);
             return;
         }
         enqueueOp(OP_UID_ACTIVE, uid);
     }
 
-    /**
-     * Notifies PowerManager that a UID has become idle.
-     * <p>This operation is buffered if called within a {@code start/finishUidChanges} block.</p>
-     */
-    void uidIdle(int uid) {
-        if (!Flags.batchPowerManagerCalls()) {
+    @Override
+    public void uidIdle(int uid) {
+        if (!batchPowerManagerCalls()) {
             mLocalPowerManager.uidIdle(uid);
             return;
         }
         enqueueOp(OP_UID_IDLE, uid);
     }
 
-    /**
-     * Notifies PowerManager that a UID is no longer active.
-     * <p>This operation is buffered if called within a {@code start/finishUidChanges} block.</p>
-     */
-    void uidGone(int uid) {
-        if (!Flags.batchPowerManagerCalls()) {
+    @Override
+    public void uidGone(int uid) {
+        if (!batchPowerManagerCalls()) {
             mLocalPowerManager.uidGone(uid);
             return;
         }
         enqueueOp(OP_UID_GONE, uid);
     }
 
-    /**
-     * Notifies PowerManager of a process state change for a UID.
-     * <p>This operation is buffered if called within a {@code start/finishUidChanges} block.</p>
-     */
-    void updateUidProcState(int uid, int procState) {
-        if (!Flags.batchPowerManagerCalls()) {
+    @Override
+    public void updateUidProcState(int uid, int procState) {
+        if (!batchPowerManagerCalls()) {
             mLocalPowerManager.updateUidProcState(uid, procState);
             return;
         }
@@ -271,5 +234,9 @@ final class PowerManagerBatchProxy {
             }
         }
         mFlushingOps.clear();
+    }
+
+    private static boolean batchPowerManagerCalls() {
+        return com.android.server.am.Flags.batchPowerManagerCalls();
     }
 }

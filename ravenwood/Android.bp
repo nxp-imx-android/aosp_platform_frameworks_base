@@ -677,6 +677,21 @@ android_ravenwood_libgroup {
     ],
 }
 
+// Phony target to build all the Ravenwood specific artifacts:
+// - ravenwood-runtime
+// - ravenwood-utils
+// - ravenizer
+// - and their dependencies such as hoststubgen
+// This allows projects like go/sonata to easily build all the
+// necessary artifacts.
+phony {
+    name: "ravenwood",
+    required: [
+        // This module requires all the artifacts.
+        "RavenwoodMinimumTest",
+    ],
+}
+
 build = [
     "Framework.bp",
 ]

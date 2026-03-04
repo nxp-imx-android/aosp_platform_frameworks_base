@@ -21,7 +21,6 @@ import android.content.res.Resources
 import android.util.SparseArray
 import androidx.annotation.GuardedBy
 import com.android.app.tracing.coroutines.launchTraced
-import com.android.systemui.Flags.qsDeleteUninstalledTileService
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.pipeline.data.model.RestoreData
@@ -184,9 +183,7 @@ constructor(
     }
 
     override suspend fun removePackage(packageName: String, userId: Int) {
-        if (qsDeleteUninstalledTileService()) {
-            maybeGetTileRepositoryForUser(userId)?.onPackageRemoved(packageName)
-        }
+        maybeGetTileRepositoryForUser(userId)?.onPackageRemoved(packageName)
     }
 
     private suspend fun getTileRepositoryForUser(userId: Int): UserTileSpecRepository {

@@ -30,6 +30,7 @@ import com.android.systemui.screencapture.common.domain.interactor.ScreenCapture
 import com.android.systemui.screencapture.common.domain.model.ScreenCaptureRecentTask
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraSurfaceInteractor
 import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordParametersInteractor
+import com.android.systemui.screencapture.record.smallscreen.data.repository.RecordDetailsTargetRepository
 import com.android.systemui.screencapture.record.smallscreen.shared.model.RecordDetailsTargetModel
 import com.android.systemui.screencapture.record.smallscreen.shared.model.SmallScreenRecordTargetsModel
 import com.android.systemui.screencapture.record.smallscreen.shared.model.currentTargetModel
@@ -38,7 +39,6 @@ import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServic
 import com.android.systemui.screenrecord.shared.model.ScreenRecordingStatus
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -52,6 +52,7 @@ class RecordDetailsTargetInteractor
 constructor(
     @ScreenCaptureUi private val display: Display,
     @ScreenCaptureUi private val coroutineScope: CoroutineScope,
+    private val recordDetailsTargetRepository: RecordDetailsTargetRepository,
     recordingServiceInteractor: ScreenRecordingServiceInteractor,
     recentTaskInteractor: ScreenCaptureRecentTaskInteractor,
     private val screenCaptureLabelInteractor: ScreenCaptureLabelInteractor,
@@ -70,8 +71,6 @@ constructor(
                 SharingStarted.Eagerly,
                 emptyList(),
             )
-    private val currentlySelectedTask = MutableStateFlow<ScreenCaptureRecentTask?>(null)
-    private val selectedIndex = MutableStateFlow(0)
     private val items: StateFlow<List<RecordDetailsTargetModel>> =
         combine(
                 displayRepository.displays.map { displays ->
@@ -80,7 +79,7 @@ constructor(
                         .sortedBy { it.name }
                 },
                 recentTasks,
-                currentlySelectedTask,
+                recordDetailsTargetRepository.currentlySelectedTask,
             ) { displays, recentTasks, currentlySelectedTask ->
                 buildList(capacity = displays.size + 2) {
                     add(
@@ -133,7 +132,7 @@ constructor(
             )
 
     val model: StateFlow<SmallScreenRecordTargetsModel> =
-        combine(items, selectedIndex) { items, selectedIndex ->
+        combine(items, recordDetailsTargetRepository.selectedIndex) { items, selectedIndex ->
                 SmallScreenRecordTargetsModel(
                     items = items,
                     selectedIndex =
@@ -164,11 +163,11 @@ constructor(
     }
 
     fun selectItem(index: Int) {
-        selectedIndex.value = index
+        recordDetailsTargetRepository.selectIndex(index)
     }
 
     fun selectTask(task: ScreenCaptureRecentTask?) {
-        currentlySelectedTask.value = task
+        recordDetailsTargetRepository.selectTask(task)
     }
 }
 

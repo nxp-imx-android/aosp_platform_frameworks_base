@@ -25,10 +25,8 @@ import android.view.WindowManagerGlobal;
 
 import com.android.keyguard.KeyguardViewController;
 import com.android.systemui.DejankUtils;
-import com.android.systemui.Flags;
 import com.android.systemui.assist.AssistManager;
 import com.android.systemui.dagger.SysUISingleton;
-import com.android.systemui.dagger.qualifiers.DisplayId;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.scene.domain.interactor.WindowRootViewVisibilityInteractor;
@@ -55,10 +53,6 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
 
     private static final String TAG = "ShadeControllerImpl";
     private static final boolean SPEW = false;
-
-    /** @deprecated use {@link #getDisplayId()} instead. */
-    @Deprecated
-    private final int mDisplayId;
 
     private final CommandQueue mCommandQueue;
     private final Executor mMainExecutor;
@@ -90,7 +84,6 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
             StatusBarWindowControllerStore statusBarWindowControllerStore,
             DeviceProvisionedController deviceProvisionedController,
             NotificationShadeWindowController notificationShadeWindowController,
-            @DisplayId int displayId,
             Lazy<NotificationShadeWindowViewController> notificationShadeWindowViewController,
             Lazy<NotificationPanelViewController> shadeViewControllerLazy,
             Lazy<AssistManager> assistManagerLazy,
@@ -113,7 +106,6 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
         mGutsManager = gutsManager;
         mNotificationShadeWindowController = notificationShadeWindowController;
         mNotifShadeWindowViewController = notificationShadeWindowViewController;
-        mDisplayId = displayId;
         mKeyguardStateController = keyguardStateController;
         mAssistManagerLazy = assistManagerLazy;
     }
@@ -417,10 +409,6 @@ public final class ShadeControllerImpl extends BaseShadeControllerImpl {
     }
 
     private int getDisplayId() {
-        if (Flags.displayAwareShadeControllerImpl()) {
-            return mShadeDisplaysInteractorLazy.get().getDisplayId().getValue();
-        } else {
-            return mDisplayId;
-        }
+        return mShadeDisplaysInteractorLazy.get().getDisplayId().getValue();
     }
 }

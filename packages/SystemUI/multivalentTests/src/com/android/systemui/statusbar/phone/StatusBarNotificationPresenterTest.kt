@@ -231,11 +231,7 @@ class StatusBarNotificationPresenterTest : SysuiTestCase() {
     fun testExpandSensitiveNotification_onLockedShade_showsBouncer_entryAdapter() =
         kosmos.runTest {
             // Given we are on the locked shade
-            kosmos.sysuiStatusBarStateController.state = StatusBarState.SHADE_LOCKED
-            // And the device is locked
-            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
-                AuthenticationMethodModel.Pin
-            )
+            whenever(kosmos.lockscreenShadeTransitionController.isLockdownShade()).thenReturn(true)
 
             // When the user expands a sensitive Notification
             val entry = createNotificationEntry()

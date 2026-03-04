@@ -293,10 +293,7 @@ public class SettingsStateTest {
         checkWriteSingleSetting(serializer, CRAZY_STRING, null);
         SettingsState.writeSingleSetting(
                 SettingsState.SETTINGS_VERSION_NEW_ENCODING,
-                serializer, null, "k", "v", null, "package", null, false, false);
-        SettingsState.writeSingleSetting(
-                SettingsState.SETTINGS_VERSION_NEW_ENCODING,
-                serializer, "1", "k", "v", null, null, null, false, false);
+                serializer, 1L, "k", "v", null, null, null, false, false);
     }
 
     private void checkWriteSingleSetting(TypedXmlSerializer serializer, String key, String value)
@@ -309,7 +306,7 @@ public class SettingsStateTest {
         // Make sure the XML serializer won't crash.
         SettingsState.writeSingleSetting(
                 SettingsState.SETTINGS_VERSION_NEW_ENCODING,
-                serializer, "1", key, value, null, "package", null, false, false);
+                serializer, 1L, key, value, null, "package", null, false, false);
     }
 
     /**

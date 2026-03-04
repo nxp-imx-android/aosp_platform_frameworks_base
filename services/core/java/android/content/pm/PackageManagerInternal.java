@@ -419,11 +419,17 @@ public abstract class PackageManagerInternal {
     public abstract ComponentName getSystemUiServiceComponent();
 
     /**
-     * Called by DeviceOwnerManagerService to set the package names of device owner and profile
+     * Called by DevicePolicyManagerService to set the package names of device owner and profile
      * owners.
      */
     public abstract void setDeviceAndProfileOwnerPackages(
             int deviceOwnerUserId, String deviceOwner, SparseArray<String> profileOwners);
+
+    /**
+     * Called by DevicePolicyManagerService to set the package names of DPC apps.
+     */
+    public abstract void setDevicePolicyControllerPackages(
+            @Nullable SparseArray<String> devicePolicyControllerPackages);
 
     /**
      * Marks packages as protected for a given user or all users in case of USER_ALL. Setting

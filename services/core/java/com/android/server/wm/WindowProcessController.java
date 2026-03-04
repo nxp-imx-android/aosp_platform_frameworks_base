@@ -835,7 +835,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         }
         mActivities.add(r);
         if (!mHasActivities) {
-            mAtm.mActivityStateUpdater.setHasActivityAsync(this, true);
+            mAtm.mActivityStateUpdater.setHasActivityAsync(mOwner, true);
         }
         mHasActivities = true;
         if (mInactiveActivities != null) {
@@ -868,7 +868,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         mActivities.remove(r);
         mHasActivities = !mActivities.isEmpty();
         if (!mHasActivities) {
-            mAtm.mActivityStateUpdater.setHasActivityAsync(this, false);
+            mAtm.mActivityStateUpdater.setHasActivityAsync(mOwner, false);
         }
         updateActivityConfigurationListener();
     }
@@ -877,7 +877,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         mInactiveActivities = null;
         mActivities.clear();
         mHasActivities = false;
-        mAtm.mActivityStateUpdater.setHasActivityAsync(this, false);
+        mAtm.mActivityStateUpdater.setHasActivityAsync(mOwner, false);
         updateActivityConfigurationListener();
     }
 
@@ -1382,7 +1382,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         }
         mActivityStateFlags = stateFlags;
         mPerceptibleTaskStoppedTimeMillis = perceptibleTaskStoppedTimeMillis;
-        mAtm.mActivityStateUpdater.setActivityStateAsync(this, stateFlags,
+        mAtm.mActivityStateUpdater.setActivityStateAsync(mOwner, stateFlags,
                 perceptibleTaskStoppedTimeMillis);
 
         final boolean anyVisible = (stateFlags & ACTIVITY_STATE_FLAG_IS_VISIBLE) != 0;
@@ -2067,7 +2067,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     void addRecentTask(Task task) {
         mRecentTasks.add(task);
         mHasRecentTasks = true;
-        mAtm.mActivityStateUpdater.setHasRecentTasksAsync(this, true);
+        mAtm.mActivityStateUpdater.setHasRecentTasksAsync(mOwner, true);
     }
 
     void removeRecentTask(Task task) {
@@ -2075,7 +2075,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         final boolean hasRecentTask = !mRecentTasks.isEmpty();
         mHasRecentTasks = hasRecentTask;
         if (!hasRecentTask) {
-            mAtm.mActivityStateUpdater.setHasRecentTasksAsync(this, false);
+            mAtm.mActivityStateUpdater.setHasRecentTasksAsync(mOwner, false);
         }
     }
 
@@ -2090,7 +2090,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         }
         mRecentTasks.clear();
         mHasRecentTasks = false;
-        mAtm.mActivityStateUpdater.setHasRecentTasksAsync(this, false);
+        mAtm.mActivityStateUpdater.setHasRecentTasksAsync(mOwner, false);
     }
 
     public void appEarlyNotResponding(String annotation, Runnable killAppCallback) {

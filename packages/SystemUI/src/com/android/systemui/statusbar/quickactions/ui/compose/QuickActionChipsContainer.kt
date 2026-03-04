@@ -43,14 +43,14 @@ import com.android.systemui.shade.ui.composable.ShadeHighlightChip
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.DesktopStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.composable.WithAdaptiveTint
 import com.android.systemui.statusbar.quickactions.popups.ui.compose.StatusBarPopup
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
+import com.android.systemui.statusbar.quickactions.shared.model.ChipContent
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.statusbar.shared.ui.compose.StatusBarIcon
 
 /** Container view that holds all right hand side chips in the status bar. */
 @Composable
 fun QuickActionChipsContainer(
-    chips: List<QuickActionChipUiState>,
+    chips: List<QuickActionChipModel>,
     isDarkProvider: (Rect) -> Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -62,13 +62,13 @@ fun QuickActionChipsContainer(
         ) {
             chips.forEach { chip ->
                 when (chip) {
-                    is QuickActionChipUiState.LaunchChip -> {
+                    is QuickActionChipModel.LaunchChip -> {
                         Launch(chip = chip, isDarkProvider = isDarkProvider)
                     }
-                    is QuickActionChipUiState.PopupChip -> {
+                    is QuickActionChipModel.PopupChip -> {
                         Popup(chip = chip)
                     }
-                    is QuickActionChipUiState.Hidden -> {}
+                    is QuickActionChipModel.Hidden -> {}
                 }
             }
         }
@@ -76,7 +76,7 @@ fun QuickActionChipsContainer(
 }
 
 @Composable
-private fun Launch(chip: QuickActionChipUiState.LaunchChip, isDarkProvider: (Rect) -> Boolean) {
+private fun Launch(chip: QuickActionChipModel.LaunchChip, isDarkProvider: (Rect) -> Boolean) {
     val context = LocalContext.current
     val chipHighlightModel =
         if (chip.isSelected) {
@@ -144,7 +144,7 @@ private fun Launch(chip: QuickActionChipUiState.LaunchChip, isDarkProvider: (Rec
 }
 
 @Composable
-private fun Popup(chip: QuickActionChipUiState.PopupChip) {
+private fun Popup(chip: QuickActionChipModel.PopupChip) {
     val context = LocalContext.current
     QuickActionChip(
         isSelected = chip.isPopupShown,

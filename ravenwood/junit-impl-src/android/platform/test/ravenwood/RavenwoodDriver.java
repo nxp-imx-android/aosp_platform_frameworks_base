@@ -44,6 +44,7 @@ import android.util.Log;
 import android.util.Log_ravenwood;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.compat.CompatibilityRules;
 import com.android.internal.os.RuntimeInit;
 import com.android.ravenwood.OpenJdkWorkaround;
 import com.android.ravenwood.RavenwoodRuntimeNative;
@@ -259,6 +260,9 @@ public class RavenwoodDriver {
         var mainThread = new HandlerThread(RavenwoodEnvironment.MAIN_THREAD_NAME);
         mainThread.start();
         Looper.setMainLooperForTest(mainThread.getLooper());
+
+        // Initialize compatibility rules.
+        CompatibilityRules.loadSystemRules();
 
         // Start app lifecycle.
         RavenwoodAppDriver.init();

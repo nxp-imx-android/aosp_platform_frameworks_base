@@ -119,7 +119,7 @@ class RelaunchBubbleToFullscreenViaTaskbarAppIconTest :
     /** Verifies the focus transition from [LAUNCHER] to [TASK_BAR_OVERLAY] and [testApp]. */
     @Test
     override fun focusChanges() {
-        eventLogSubject.focusChanges(
+        focusEventSubject.focusChanges(
             LAUNCHER.toWindowName(), // LOST, launcher losts focus
             TASK_BAR_OVERLAY.toWindowName(), // GAINED, taskbar in overview mode gains focus
             testApp.toWindowName(), // GAINED, relaunched app gains focus

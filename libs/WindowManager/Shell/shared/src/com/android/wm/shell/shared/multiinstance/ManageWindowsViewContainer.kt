@@ -107,7 +107,7 @@ abstract class ManageWindowsViewContainer(
     abstract fun removeFromContainer()
 
     companion object {
-        const val MANAGE_WINDOWS_MINIMUM_INSTANCES = 2
+        const val MANAGE_WINDOWS_MINIMUM_ADDITIONAL_INSTANCES = 1
     }
 
     class ManageWindowsView(private val context: Context, menuBackgroundColor: Int) {

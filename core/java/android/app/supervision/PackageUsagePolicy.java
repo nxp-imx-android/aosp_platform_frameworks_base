@@ -26,10 +26,24 @@ import android.os.Parcel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.Duration;
 import java.util.Objects;
 
 /**
  * A policy that defines the usage type for a package.
+ *
+ * <p>The usage type can be one of the following:
+ *
+ * <ul>
+ *   <li>{@link #TYPE_ALLOWED}: The package is allowed to be used, without any restrictions.
+ *   <li>{@link #TYPE_BLOCKED}: The package is blocked from being used. It will be hidden from the
+ *       user and cannot be launched.
+ *   <li>{@link #TYPE_TIME_LIMIT}: The package can be used for a limited amount of time each day.
+ *       This type requires a time limit to be set via {@link Builder#setTimeLimit(Duration)}. The
+ *       time limit must be non-negative and cannot exceed 24 hours. When applied, if the previous
+ *       type was {@link #TYPE_BLOCKED}, the package is unhidden, and its usage is tracked and
+ *       enforced. The package will be unusable once the time limit is reached.
+ * </ul>
  *
  * @hide
  */
@@ -42,18 +56,24 @@ public final class PackageUsagePolicy extends Policy {
     /** Policy type for blocked package usage. */
     public static final int TYPE_BLOCKED = 1;
 
+    /** Policy type for time-limited package usage. */
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_PACKAGE_USAGE_APIS)
+    public static final int TYPE_TIME_LIMIT = 2;
+
     /** @hide */
     @IntDef(
             prefix = {"TYPE_"},
             value = {
                 TYPE_ALLOWED,
                 TYPE_BLOCKED,
+                TYPE_TIME_LIMIT,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {}
 
     private final String mPackageName;
     private final @Type int mType;
+    private final @Nullable Duration mTimeLimit;
 
     /**
      * Constructs a new {@link PackageUsagePolicy} with the given version and package name.
@@ -61,10 +81,15 @@ public final class PackageUsagePolicy extends Policy {
      * @param version version of the policy
      * @param packageName package name tor this policy
      */
-    private PackageUsagePolicy(long version, @NonNull String packageName, @Type int type) {
+    private PackageUsagePolicy(
+            long version,
+            @NonNull String packageName,
+            @Type int type,
+            @Nullable Duration timeLimit) {
         super(version);
         mPackageName = packageName;
         mType = type;
+        mTimeLimit = timeLimit;
     }
 
     /**
@@ -80,6 +105,8 @@ public final class PackageUsagePolicy extends Policy {
         super(in);
         mPackageName = in.readString8();
         mType = in.readInt();
+        Long timeLimitMillis = (Long) in.readValue(Long.class.getClassLoader());
+        mTimeLimit = timeLimitMillis == null ? null : Duration.ofMillis(timeLimitMillis);
     }
 
     /**
@@ -100,11 +127,22 @@ public final class PackageUsagePolicy extends Policy {
         return mPackageName;
     }
 
+    /**
+     * Returns the time limit for this policy.
+     *
+     * @return the time limit
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_PACKAGE_USAGE_APIS)
+    public @Nullable Duration getTimeLimit() {
+        return mTimeLimit;
+    }
+
     @Override
     public void writeToParcel(@NonNull Parcel parcel, @WriteFlags int flags) {
         super.writeToParcel(parcel, flags);
         parcel.writeString8(mPackageName);
         parcel.writeInt(mType);
+        parcel.writeValue((Long) (mTimeLimit == null ? null : mTimeLimit.toMillis()));
     }
 
     @NonNull
@@ -143,6 +181,8 @@ public final class PackageUsagePolicy extends Policy {
                 + mType
                 + ", version="
                 + getVersion()
+                + ", timeLimit="
+                + mTimeLimit
                 + '}';
     }
 
@@ -157,12 +197,20 @@ public final class PackageUsagePolicy extends Policy {
         PackageUsagePolicy that = (PackageUsagePolicy) o;
         return getVersion() == that.getVersion()
                 && mPackageName.equals(that.mPackageName)
-                && mType == that.mType;
+                && mType == that.mType
+                && Objects.equals(mTimeLimit, that.mTimeLimit);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getVersion(), mPackageName, mType);
+        return Objects.hash(getVersion(), mPackageName, mType, mTimeLimit);
+    }
+
+    /** @hide */
+    public static boolean isTypeValid(int type) {
+        return type == TYPE_ALLOWED
+                || type == TYPE_BLOCKED
+                || (Flags.enableSupervisionPackageUsageApis() && type == TYPE_TIME_LIMIT);
     }
 
     /**
@@ -175,13 +223,14 @@ public final class PackageUsagePolicy extends Policy {
     public static final class Builder extends Policy.Builder<PackageUsagePolicy, Builder> {
         private String mPackageName;
         private @Type int mType = -1;
+        private @Nullable Duration mTimeLimit = null;
 
         /**
          * Constructs a new builder with the given package name and type.
          *
          * @param packageName the package name to set
-         * @param type the type to set, must be one of {@link PackageUsagePolicy#TYPE_ALLOWED} or
-         *     {@link PackageUsagePolicy#TYPE_BLOCKED}
+         * @param type the type to set, must be one of {@link PackageUsagePolicy#TYPE_ALLOWED},
+         *     {@link PackageUsagePolicy#TYPE_BLOCKED} or {@link PackageUsagePolicy#TYPE_TIME_LIMIT}
          */
         public Builder(@NonNull String packageName, @Type int type) {
             setPackageName(packageName);
@@ -197,6 +246,7 @@ public final class PackageUsagePolicy extends Policy {
             super(policy);
             mPackageName = policy.mPackageName;
             mType = policy.mType;
+            mTimeLimit = policy.mTimeLimit;
         }
 
         /**
@@ -214,13 +264,28 @@ public final class PackageUsagePolicy extends Policy {
         /**
          * Sets the type of this policy.
          *
-         * @param type the type to set, must be one of {@link PackageUsagePolicy#TYPE_ALLOWED} or
-         *     {@link PackageUsagePolicy#TYPE_BLOCKED}
+         * @param type the type to set, must be one of {@link PackageUsagePolicy#TYPE_ALLOWED},
+         *     {@link PackageUsagePolicy#TYPE_BLOCKED} or {@link PackageUsagePolicy#TYPE_TIME_LIMIT}
          * @return this builder
          */
         @NonNull
         public Builder setType(@Type int type) {
             mType = type;
+            return this;
+        }
+
+        /**
+         * Sets the time limit for this policy.
+         *
+         * <p>Required if type is {@link PackageUsagePolicy#TYPE_TIME_LIMIT}
+         *
+         * @param timeLimit the time limit to set
+         * @return this builder
+         */
+        @NonNull
+        @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_PACKAGE_USAGE_APIS)
+        public Builder setTimeLimit(@Nullable Duration timeLimit) {
+            mTimeLimit = timeLimit;
             return this;
         }
 
@@ -237,11 +302,31 @@ public final class PackageUsagePolicy extends Policy {
             if (mPackageName == null) {
                 throw new IllegalStateException("Package name must be set");
             }
-            if (mType != TYPE_ALLOWED && mType != TYPE_BLOCKED) {
+
+            if (!isTypeValid(mType)) {
                 throw new IllegalStateException("Invalid type: " + mType);
             }
 
-            return new PackageUsagePolicy(mVersion, mPackageName, mType);
+            if (mType != TYPE_TIME_LIMIT && mTimeLimit != null) {
+                throw new IllegalStateException(
+                        "Time limit must not be set for non-time limit types");
+            }
+
+            if (mType == TYPE_TIME_LIMIT) {
+                if (mTimeLimit == null) {
+                    throw new IllegalStateException("Time limit must be set for TYPE_TIME_LIMIT");
+                }
+
+                if (mTimeLimit.compareTo(Duration.ofDays(1)) > 0) {
+                    throw new IllegalStateException("Time limit cannot be longer than 24 hours");
+                }
+
+                if (mTimeLimit.isNegative()) {
+                    throw new IllegalStateException("Invalid time limit");
+                }
+            }
+
+            return new PackageUsagePolicy(mVersion, mPackageName, mType, mTimeLimit);
         }
     }
 }

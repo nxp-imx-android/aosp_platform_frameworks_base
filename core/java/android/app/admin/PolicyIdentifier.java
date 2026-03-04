@@ -19,6 +19,7 @@ package android.app.admin;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_FUN;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE;
 import static android.Manifest.permission.SET_TIME;
@@ -30,6 +31,7 @@ import static android.app.admin.DevicePolicyManager.RESOURCE_PER_USER;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE;
+import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_EASTER_EGGS;
 import static android.processor.devicepolicy.AllowedDpcTypes.ALLOWED;
 import static android.processor.devicepolicy.AllowedDpcTypes.DISALLOWED;
 
@@ -298,20 +300,18 @@ public final class PolicyIdentifier<T> {
                                             requiredCrossUserPermission =
                                                     MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL,
                                             allowedDpcTypes =
-                                            @AllowedDpcTypes(
-                                                    deviceOwner = ALLOWED,
-                                                    managedProfileOwnerOfOrganizationOwnedDevice =
-                                                            ALLOWED,
-                                                    managedProfileOwnerOfPersonalOwnedDevice =
-                                                            DISALLOWED,
-                                                    unaffiliatedFullUserProfileOwner =
-                                                            DISALLOWED))))
+                                                    @AllowedDpcTypes(
+                                                            deviceOwner = ALLOWED,
+                                                            managedProfileOwnerOfOrganizationOwnedDevice =
+                                                                    ALLOWED,
+                                                            managedProfileOwnerOfPersonalOwnedDevice =
+                                                                    DISALLOWED,
+                                                            unaffiliatedFullUserProfileOwner =
+                                                                    DISALLOWED))))
     public static final PolicyIdentifier<List<String>> CONTENT_RESTRICTION_APPS =
             new PolicyIdentifier<>("CONTENT_RESTRICTION_APPS");
 
-    /**
-     * The user can choose whether the device's time zone is set automatically or not.
-     */
+    /** The user can choose whether the device's time zone is set automatically or not. */
     @FlaggedApi(FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE)
     public static final int AUTO_TIME_ZONE_USER_CHOICE = 0;
 
@@ -386,6 +386,55 @@ public final class PolicyIdentifier<T> {
             resolutionMechanism = @EnumResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Integer> AUTO_TIME_ZONE =
             new PolicyIdentifier<>("AUTO_TIME_ZONE");
+
+    /** Easter eggs are disallowed. */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_EASTER_EGGS)
+    public static final int EASTER_EGGS_DISALLOWED = 1;
+
+    /** Easter eggs are allowed. */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_EASTER_EGGS)
+    public static final int EASTER_EGGS_ALLOWED = 2;
+
+    /**
+     * Possible values {@link EASTER_EGGS}
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = {"EASTER_EGGS_"},
+            value = {
+                EASTER_EGGS_DISALLOWED,
+                EASTER_EGGS_ALLOWED,
+            })
+    public @interface EasterEggsValue {}
+
+    /**
+     * Policy that controls whether the user is allowed to access various Easter egg games across
+     * the system (for instance, in settings).
+     */
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_EASTER_EGGS)
+    @NonNull
+    @EnumPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE},
+                            affectedResource = RESOURCE_PER_USER,
+                            requiredPermission = MANAGE_DEVICE_POLICY_FUN,
+                            requiredCrossUserPermission = MANAGE_DEVICE_POLICY_ACROSS_USERS,
+                            allowedDpcTypes =
+                                    @AllowedDpcTypes(
+                                            deviceOwner = ALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice =
+                                                    DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            profileOwnerOnUser0 = ALLOWED,
+                                            unaffiliatedFullUserProfileOwner = ALLOWED)),
+            intDef = EasterEggsValue.class,
+            defaultValue = EASTER_EGGS_ALLOWED,
+            resolutionMechanism = @EnumResolutionMechanism(custom = true))
+    public static final PolicyIdentifier<Integer> EASTER_EGGS =
+            new PolicyIdentifier<>("EASTER_EGGS");
 
     // LINT.ThenChange(/tools/policymetadata/policies.textproto)
 }

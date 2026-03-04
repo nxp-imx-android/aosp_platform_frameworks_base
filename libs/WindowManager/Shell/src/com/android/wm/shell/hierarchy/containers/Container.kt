@@ -143,6 +143,10 @@ open class Container(
         surface.updateReferenceFrame(relBounds)
     }
 
+    override fun toString(): String {
+        return name
+    }
+
     //
     // Convenience methods
     //

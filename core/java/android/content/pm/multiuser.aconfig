@@ -106,23 +106,6 @@ flag {
 }
 
 flag {
-    name: "show_policy_transparency_for_system_restrictions"
-    namespace: "multiuser"
-    description: "Show policy transparency dialog when \"Add user\" actions are restricted in COPE."
-    bug: "338226475"
-}
-
-flag {
-    name: "show_confirmation_toast_on_user_deletion"
-    namespace: "multiuser"
-    description: "Show a toast to confirm that user deletion has been successful"
-    bug: "438126997"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "property_invalidated_cache_bypass_mismatched_uids"
     namespace: "multiuser"
     description: "Bypass the cache when the process UID does not match the binder UID."
@@ -185,13 +168,6 @@ flag {
     bug: "321988638"
 }
 
-
-flag {
-    name: "set_power_mode_during_user_switch"
-    namespace: "multiuser"
-    description: "Set power mode during a user switch."
-    bug: "325249845"
-}
 
 flag {
     name: "stop_previous_user_apps"

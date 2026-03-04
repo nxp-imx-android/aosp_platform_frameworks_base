@@ -140,8 +140,6 @@ import android.window.WindowContainerToken;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.ResolverActivity;
 import com.android.internal.protolog.ProtoLog;
-import com.android.internal.util.function.pooled.PooledLambda;
-import com.android.internal.util.function.pooled.PooledPredicate;
 import com.android.server.LocalServices;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.am.AppTimeTracker;
@@ -1759,12 +1757,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         // to send to the client now.
         final Configuration config =
                 displayContent.updateOrientationAndComputeConfig(true /* forceUpdate */);
-        // Visibilities may change so let the starting activity have a chance to report. Can't do it
-        // when visibility is changed in each AppWindowToken because it may trigger wrong
-        // configuration push because the visibility of some activities may not be updated yet.
-        if (starting != null) {
-            starting.reportDescendantOrientationChangeIfNeeded();
-        }
 
         // Update the configuration of the activities on the display.
         displayContent.updateDisplayOverrideConfigurationLocked(config, starting, deferResume);
@@ -3054,18 +3046,15 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     }
 
     ActivityRecord findActivity(Intent intent, ActivityInfo info, boolean compareIntentFilters) {
-        ComponentName cls = intent.getComponent();
+        final ComponentName cls;
         if (info.targetActivity != null) {
             cls = new ComponentName(info.packageName, info.targetActivity);
+        } else {
+            cls = intent.getComponent();
         }
         final int userId = UserHandle.getUserId(info.getUid());
 
-        final PooledPredicate p = PooledLambda.obtainPredicate(
-                RootWindowContainer::matchesActivity, PooledLambda.__(ActivityRecord.class),
-                userId, compareIntentFilters, intent, cls);
-        final ActivityRecord r = getActivity(p);
-        p.recycle();
-        return r;
+        return getActivity(r -> matchesActivity(r, userId, compareIntentFilters, intent, cls));
     }
 
     private static boolean matchesActivity(ActivityRecord r, int userId,
@@ -3651,10 +3640,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     + " lookup");
         }
 
-        final PooledPredicate p = PooledLambda.obtainPredicate(
-                Task::isTaskId, PooledLambda.__(Task.class), id);
-        Task task = getTask(p);
-        p.recycle();
+        Task task = getTask(t -> t.isTaskId(id));
 
         if (task != null) {
             if (aOptions != null) {

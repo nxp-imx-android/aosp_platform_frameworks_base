@@ -361,6 +361,7 @@ import com.android.server.DisplayThread;
 import com.android.server.FgThread;
 import com.android.server.LocalServices;
 import com.android.server.LockGuard;
+import com.android.server.StorageManagerInternal;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.UserState;
@@ -4291,6 +4292,15 @@ public class WindowManagerService extends IWindowManager.Stub
 
             if (!mShowingBootMessages && !mPolicy.canDismissBootAnimation()) {
                 return;
+            }
+
+            if (Flags.syncBeforeEnablingScreen()) {
+                final StorageManagerInternal smi =
+                        LocalServices.getService(StorageManagerInternal.class);
+                if (smi != null && smi.waitForCheckpointReady(this::enableScreenIfNeeded)) {
+                    ProtoLog.i(WM_DEBUG_BOOT, "Need to wait for the checkpoint to be ready");
+                    return;
+                }
             }
 
             // Don't enable the screen until all existing windows have been drawn.

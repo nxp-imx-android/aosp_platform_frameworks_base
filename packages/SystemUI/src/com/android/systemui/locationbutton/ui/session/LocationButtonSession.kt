@@ -32,6 +32,7 @@ import android.os.ParcelableException
 import android.os.Process
 import android.os.RemoteCallback
 import android.os.RemoteException
+import android.os.Trace
 import android.util.Log
 import android.util.Slog
 import android.view.SurfaceControlViewHost
@@ -126,18 +127,23 @@ class LocationButtonSession(
     }
 
     private fun setupComposeView() {
-        val buttonModel = interactor.getButtonState(sessionId) ?: return
-        val rootView = LocationButtonRootView(context)
-        val composeView = ComposeView(context)
-        rootView.addView(composeView)
-        composeView.setContent {
-            LocationButton(
-                viewModelFactory = viewModelFactory,
-                sessionId = sessionId,
-                onClick = { handleLocationButtonClick() },
-            )
+        Trace.beginSection("LocationButtonSession#setupComposeView")
+        try {
+            val buttonModel = interactor.getButtonState(sessionId) ?: return
+            val rootView = LocationButtonRootView(context)
+            val composeView = ComposeView(context)
+            rootView.addView(composeView)
+            composeView.setContent {
+                LocationButton(
+                    viewModelFactory = viewModelFactory,
+                    sessionId = sessionId,
+                    onClick = { handleLocationButtonClick() },
+                )
+            }
+            surfaceControlViewHost.setView(rootView, buttonModel.width, buttonModel.height)
+        } finally {
+            Trace.endSection()
         }
-        surfaceControlViewHost.setView(rootView, buttonModel.width, buttonModel.height)
     }
 
     private fun linkToDeath() {
@@ -153,43 +159,53 @@ class LocationButtonSession(
     val surfacePackage = surfaceControlViewHost.surfacePackage!!
 
     private fun handleLocationButtonClick() {
-        if (!isButtonUiInTrustedState) {
-            Slog.w(LOG_TAG, "Location button clicked, but ui state not trusted.")
-            return
-        }
-        if (DEBUG) {
-            Slog.d(LOG_TAG, "Location button clicked...")
-        }
-        if (
-            context.checkPermission(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Process.INVALID_PID,
-                packageUid,
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            locationButtonClient.onPermissionsResult(true)
-            return
-        }
-
-        val remoteCallback = RemoteCallback { bundle ->
-            val isPermissionGranted =
-                bundle?.getBoolean(LocationButtonClient.EXTRA_PERMISSION_RESULT) ?: false
-            locationButtonClient.onPermissionsResult(isPermissionGranted)
-        }
-
-        val intent =
-            Intent(LocationButtonClient.ACTION_REQUEST_LOCATION_BUTTON_PERMISSIONS).apply {
-                setPackage(context.packageManager.permissionControllerPackageName)
-                putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
-                putExtra(Intent.EXTRA_REMOTE_CALLBACK, remoteCallback)
-            }
-        val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
-        val pendingIntent = PendingIntent.getActivity(context, /* requestCode */ 0, intent, flags)
+        Trace.beginSection("LocationButtonSession#handleLocationButtonClick")
         try {
-            locationButtonClient.onRequestPermissions(pendingIntent)
-        } catch (e: RemoteException) {
-            Slog.e(LOG_TAG, "Client died or failed to respond on button click, close session.", e)
-            close()
+            if (!isButtonUiInTrustedState) {
+                Slog.w(LOG_TAG, "Location button clicked, but ui state not trusted.")
+                return
+            }
+            if (DEBUG) {
+                Slog.d(LOG_TAG, "Location button clicked...")
+            }
+            if (
+                context.checkPermission(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Process.INVALID_PID,
+                    packageUid,
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                locationButtonClient.onPermissionsResult(true)
+                return
+            }
+
+            val remoteCallback = RemoteCallback { bundle ->
+                val isPermissionGranted =
+                    bundle?.getBoolean(LocationButtonClient.EXTRA_PERMISSION_RESULT) ?: false
+                locationButtonClient.onPermissionsResult(isPermissionGranted)
+            }
+
+            val intent =
+                Intent(LocationButtonClient.ACTION_REQUEST_LOCATION_BUTTON_PERMISSIONS).apply {
+                    setPackage(context.packageManager.permissionControllerPackageName)
+                    putExtra(Intent.EXTRA_PACKAGE_NAME, packageName)
+                    putExtra(Intent.EXTRA_REMOTE_CALLBACK, remoteCallback)
+                }
+            val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+            val pendingIntent =
+                PendingIntent.getActivity(context, /* requestCode */ 0, intent, flags)
+            try {
+                locationButtonClient.onRequestPermissions(pendingIntent)
+            } catch (e: RemoteException) {
+                Slog.e(
+                    LOG_TAG,
+                    "Client died or failed to respond on button click, close session.",
+                    e,
+                )
+                close()
+            }
+        } finally {
+            Trace.endSection()
         }
     }
 
@@ -293,21 +309,26 @@ class LocationButtonSession(
 
     override fun resize(width: Int, height: Int) {
         executor.execute {
-            if (DEBUG) {
-                Slog.d(LOG_TAG, "resize() called for session $sessionId: $width x $height")
+            Trace.beginSection("LocationButtonSession#resize")
+            try {
+                if (DEBUG) {
+                    Slog.d(LOG_TAG, "resize() called for session $sessionId: $width x $height")
+                }
+                if (!ensureActiveSession()) {
+                    return@execute
+                }
+                interactor.setSize(sessionId, width, height)
+                val model = interactor.getButtonState(sessionId) ?: return@execute
+                if (DEBUG) {
+                    Slog.d(
+                        LOG_TAG,
+                        "relayout() session $sessionId to validated size: ${model.width} x ${model.height}",
+                    )
+                }
+                surfaceControlViewHost.relayout(model.width, model.height)
+            } finally {
+                Trace.endSection()
             }
-            if (!ensureActiveSession()) {
-                return@execute
-            }
-            interactor.setSize(sessionId, width, height)
-            val model = interactor.getButtonState(sessionId) ?: return@execute
-            if (DEBUG) {
-                Slog.d(
-                    LOG_TAG,
-                    "relayout() session $sessionId to validated size: ${model.width} x ${model.height}",
-                )
-            }
-            surfaceControlViewHost.relayout(model.width, model.height)
         }
     }
 
@@ -352,37 +373,47 @@ class LocationButtonSession(
 
     override fun changeConfiguration(newConfig: Configuration) {
         executor.execute {
-            if (DEBUG) {
-                Slog.d(LOG_TAG, "changeConfiguration() for session $sessionId: $newConfig")
+            Trace.beginSection("LocationButtonSession#changeConfiguration")
+            try {
+                if (DEBUG) {
+                    Slog.d(LOG_TAG, "changeConfiguration() for session $sessionId: $newConfig")
+                }
+                if (!ensureActiveSession()) {
+                    return@execute
+                }
+                val display = displayManager.getDisplay(displayId)
+                val displayContext = context.createDisplayContext(display)
+                interactor.setConfiguration(
+                    sessionId,
+                    newConfig,
+                    displayContext.resources.displayMetrics.density,
+                )
+            } finally {
+                Trace.endSection()
             }
-            if (!ensureActiveSession()) {
-                return@execute
-            }
-            val display = displayManager.getDisplay(displayId)
-            val displayContext = context.createDisplayContext(display)
-            interactor.setConfiguration(
-                sessionId,
-                newConfig,
-                displayContext.resources.displayMetrics.density,
-            )
         }
     }
 
     override fun close() {
         executor.execute {
-            if (!isActive) {
-                return@execute
-            }
-            isActive = false
-            windowManager.unregisterTrustedPresentationListener(trustedPresentationListener)
-            surfaceControlViewHost.release()
+            Trace.beginSection("LocationButtonSession#close")
             try {
-                locationButtonClient.asBinder().unlinkToDeath(this, 0)
-            } catch (_: NoSuchElementException) {
-                // ignore
+                if (!isActive) {
+                    return@execute
+                }
+                isActive = false
+                windowManager.unregisterTrustedPresentationListener(trustedPresentationListener)
+                surfaceControlViewHost.release()
+                try {
+                    locationButtonClient.asBinder().unlinkToDeath(this, 0)
+                } catch (_: NoSuchElementException) {
+                    // ignore
+                }
+                interactor.removeButtonState(sessionId)
+                onLocationButtonSessionCloseListener?.onSessionClose(this)
+            } finally {
+                Trace.endSection()
             }
-            interactor.removeButtonState(sessionId)
-            onLocationButtonSessionCloseListener?.onSessionClose(this)
         }
     }
 

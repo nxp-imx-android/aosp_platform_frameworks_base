@@ -19,12 +19,9 @@ package com.android.systemui.statusbar.notification.headsup;
 import static com.android.systemui.util.kotlin.FlowKt.pairwise;
 import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
 
-import android.view.Display;
-
 import androidx.annotation.Nullable;
 
 import com.android.systemui.CoreStartable;
-import com.android.systemui.Flags;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
@@ -90,9 +87,7 @@ public class StatusBarHeadsUpChangeListener implements OnHeadsUpChangedListener,
     @Override
     public void start() {
         mHeadsUpManager.addListener(this);
-        if (Flags.displayAwareShadeControllerImpl()) {
-            listenForShadeDisplayChanges();
-        }
+        listenForShadeDisplayChanges();
     }
 
     private void listenForShadeDisplayChanges() {
@@ -186,11 +181,7 @@ public class StatusBarHeadsUpChangeListener implements OnHeadsUpChangedListener,
     }
 
     private int getCurrentDisplayId() {
-        if (Flags.displayAwareShadeControllerImpl()) {
-            return mShadeDisplaysInteractor.getDisplayId().getValue();
-        } else {
-            return Display.DEFAULT_DISPLAY;
-        }
+        return mShadeDisplaysInteractor.getDisplayId().getValue();
     }
 
     private void setHeadsAnimatingAway(boolean headsUpAnimatingAway) {

@@ -146,6 +146,8 @@ private fun VolumeDialogVisibilityModel.Dismissed.toVolumeDialogUiEvent(): Volum
         Events.DISMISS_STREAM_GONE -> VolumeDialogUiEvent.VOLUME_DIALOG_DISMISS_STREAM_GONE
         Events.DISMISS_REASON_USB_OVERHEAD_ALARM_CHANGED ->
             VolumeDialogUiEvent.VOLUME_DIALOG_DISMISS_USB_TEMP_ALARM_CHANGED
+        Events.DISMISS_REASON_BRIGHTNESS_DIALOG_SHOWING ->
+            VolumeDialogUiEvent.VOLUME_DIALOG_DISMISS_BRIGHTNESS_DIALOG_SHOWING
         else -> null
     }
 }

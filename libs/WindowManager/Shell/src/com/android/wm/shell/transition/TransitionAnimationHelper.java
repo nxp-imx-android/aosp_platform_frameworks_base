@@ -236,7 +236,7 @@ public class TransitionAnimationHelper {
             boolean hasOpenTransit = false;
             for (TransitionInfo.Change change : info.getChanges()) {
                 if ((change.getTaskInfo() != null || change.hasFlags(FLAG_IS_DISPLAY))
-                        && !TransitionUtil.isOrderOnly(change)) {
+                        && !TransitionUtil.isStationary(change)) {
                     // This isn't an activity-level transition.
                     return type;
                 }

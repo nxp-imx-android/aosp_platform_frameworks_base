@@ -1057,6 +1057,7 @@ public final class ActivityThread extends ClientTransactionHandler
         ContentCaptureOptions contentCaptureOptions;
 
         long[] disabledCompatChanges;
+        long[] enabledCompatChanges;
         long[] mLoggableCompatChanges;
         boolean mLogChangeChecksToStatsD;
 
@@ -1445,6 +1446,7 @@ public final class ActivityThread extends ClientTransactionHandler
                 AutofillOptions autofillOptions,
                 ContentCaptureOptions contentCaptureOptions,
                 long[] disabledCompatChanges,
+                long[] enabledCompatChanges,
                 long[] loggableCompatChanges,
                 boolean logChangeChecksToStatsD,
                 SharedMemory serializedSystemFontMap,
@@ -1528,6 +1530,7 @@ public final class ActivityThread extends ClientTransactionHandler
             data.autofillOptions = autofillOptions;
             data.contentCaptureOptions = contentCaptureOptions;
             data.disabledCompatChanges = disabledCompatChanges;
+            data.enabledCompatChanges = enabledCompatChanges;
             data.mLoggableCompatChanges = loggableCompatChanges;
             data.mLogChangeChecksToStatsD = logChangeChecksToStatsD;
             data.mSerializedSystemFontMap = serializedSystemFontMap;
@@ -7963,8 +7966,10 @@ public final class ActivityThread extends ClientTransactionHandler
 
         AppCompatCallbacks.install(
                 data.disabledCompatChanges,
+                data.enabledCompatChanges,
                 data.mLoggableCompatChanges,
-                data.mLogChangeChecksToStatsD);
+                data.mLogChangeChecksToStatsD,
+                data.appInfo.targetSdkVersion);
         // Let libcore handle any compat changes after installing the list of compat changes.
         AppSpecializationHooks.handleCompatChangesBeforeBindingApplication();
 

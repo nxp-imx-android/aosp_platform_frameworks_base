@@ -802,6 +802,10 @@ class BackNavigationController {
         return false;
     }
 
+    void removePredictiveSurfaceIfNeeded(ActivityRecord openActivity) {
+        mAnimationHandler.markWindowHasDrawn(openActivity);
+    }
+
     boolean isStartingSurfaceShown(ActivityRecord openActivity) {
         return mAnimationHandler.isStartingSurfaceDrawn(openActivity);
     }
@@ -901,9 +905,8 @@ class BackNavigationController {
             return mNavigatingWindow != null && mObserver != null;
         }
 
-        boolean isMonitorAnimationOrTransition() {
-            return mNavigatingWindow != null
-                    && (mAnimationHandler.mComposed || mAnimationHandler.mWaitTransition);
+        boolean isMonitorAnimation() {
+            return mNavigatingWindow != null && mAnimationHandler.mComposed;
         }
 
         /**
@@ -917,7 +920,7 @@ class BackNavigationController {
          */
         private void onFocusWindowChanged(WindowState newFocus) {
             if (!atSameDisplay(newFocus)
-                    || !(isMonitorForRemote() || isMonitorAnimationOrTransition())) {
+                    || !(isMonitorForRemote() || isMonitorAnimation())) {
                 return;
             }
             // Keep navigating if either new focus == navigating window or null.
@@ -955,7 +958,7 @@ class BackNavigationController {
             if (isMonitorForRemote()) {
                 mObserver.sendResult(null /* result */);
             }
-            if (isMonitorAnimationOrTransition() && canCancelAnimations()) {
+            if (isMonitorAnimation() && canCancelAnimations()) {
                 clearBackAnimations(true /* cancel */);
             }
             if (mCurrentAnimationBuilder != null) {
@@ -1159,7 +1162,6 @@ class BackNavigationController {
         private BackWindowAnimationAdaptor mCloseAdaptor;
         private BackWindowAnimationAdaptorWrapper mOpenAnimAdaptor;
         private boolean mComposed;
-        private boolean mWaitTransition;
         private int mSwitchType = UNKNOWN;
 
         // This will be set before transition happen, to know whether the real opening target
@@ -1297,7 +1299,7 @@ class BackNavigationController {
 
         private boolean composeAnimations(@NonNull ScheduleAnimationBuilder builder,
                 @NonNull ActivityRecord[] openingActivities) {
-            if (mComposed || mWaitTransition) {
+            if (mComposed) {
                 Slog.e(TAG, "Previous animation is running " + this);
                 return false;
             }
@@ -1314,7 +1316,6 @@ class BackNavigationController {
                 return false;
             }
             mComposed = true;
-            mWaitTransition = false;
             return true;
         }
 
@@ -1355,6 +1356,36 @@ class BackNavigationController {
                 return false;
             }
             return isAnimateTarget(wc, mCloseAdaptor.mTarget, mSwitchType);
+        }
+
+        void markWindowHasDrawn(ActivityRecord activity) {
+            if (!mComposed || mOpenActivities == null || mOpenAnimAdaptor == null
+                    || mOpenAnimAdaptor.mRequestedStartingSurfaceId == INVALID_TASK_ID
+                    || mOpenAnimAdaptor.mPreparedOpenTransition == null
+                    || !mOpenAnimAdaptor.mPreparedOpenTransition.isPlaying()) {
+                return;
+            }
+            boolean isAnimating = false;
+            for (int i = mOpenAnimAdaptor.mAdaptors.length - 1; i >= 0; --i) {
+                final BackWindowAnimationAdaptor next = mOpenAnimAdaptor.mAdaptors[i];
+                if (isAnimateTarget(activity, next.mTarget, mSwitchType)) {
+                    isAnimating = true;
+                    break;
+                }
+            }
+            if (!isAnimating) {
+                return;
+            }
+            boolean allWindowDrawn = true;
+            for (int i = mOpenActivities.length - 1; i >= 0; --i) {
+                final ActivityRecord ar = mOpenActivities[i];
+                allWindowDrawn &= ar.isReportedDrawn();
+            }
+
+            if (allWindowDrawn) {
+                mOpenAnimAdaptor.cleanUpWindowlessSurface(true /* openTransitionMatch */,
+                        true /* deferForIme */);
+            }
         }
 
         boolean isStartingSurfaceDrawn(ActivityRecord activity) {
@@ -1460,7 +1491,6 @@ class BackNavigationController {
                 finishPresentAnimations(cancel);
             }
             mPrepareCloseTransition = null;
-            mWaitTransition = false;
             mStartingSurfaceTargetMatch = false;
             mSwitchType = UNKNOWN;
             mOpenActivities = null;
@@ -1501,8 +1531,6 @@ class BackNavigationController {
                     + mSwitchType
                     + " mComposed= "
                     + mComposed
-                    + " mWaitTransition= "
-                    + mWaitTransition
                     + '}';
         }
 
@@ -2315,8 +2343,7 @@ class BackNavigationController {
             proto.write(MAIN_OPEN_ACTIVITY, "");
         }
         // TODO (b/268563842) Only meaningful after new test added
-        proto.write(ANIMATION_RUNNING, mAnimationHandler.mComposed
-                || mAnimationHandler.mWaitTransition);
+        proto.write(ANIMATION_RUNNING, mAnimationHandler.mComposed);
         proto.end(token);
     }
 }

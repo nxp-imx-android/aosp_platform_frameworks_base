@@ -18,12 +18,10 @@ package com.android.wm.shell
 
 import android.app.Instrumentation
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
-import android.content.Intent
 import android.platform.test.rule.EnsureDeviceSettingsRule
 import android.platform.test.rule.NavigationModeRule
 import android.platform.test.rule.PressHomeRule
 import android.platform.test.rule.UnlockScreenRule
-import android.provider.Settings
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.device.apphelpers.MessagingAppHelper
@@ -36,10 +34,7 @@ import android.tools.traces.parsers.WindowManagerStateHelper
 import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By.res
-import androidx.test.uiautomator.By.text
 import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.Until.findObject
-import com.android.compatibility.common.util.UiAutomatorUtils2.waitFindObject
 import java.io.IOException
 import org.junit.rules.RuleChain
 
@@ -49,8 +44,6 @@ object Utils {
 
     private val settingsResources =
         instrumentation.context.packageManager.getResourcesForApplication(SETTINGS_PACKAGE_NAME)
-
-    private val externalDisplaySettings = getSettingsString(EXTERNAL_DISPLAY_SETTING)
 
     /**
      * A helper method to initialize a [RuleChain] to set up [navigationMode] and screen [rotation].
@@ -112,34 +105,6 @@ object Utils {
         } catch (e: IOException) {
             Log.e("TestUtils", "Failed to reset frozen recent tasks list", e)
         }
-    }
-
-    fun toggleMirroringSwitchViaSettingsApp() {
-        // Launch the Settings app and open the "External Display" settings list
-        instrumentation.context.startActivity(
-            Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-                .addCategory(Intent.CATEGORY_DEFAULT)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        )
-        waitFindObject(text(externalDisplaySettings)).click()
-
-        // Maximize Settings app's window to avoid scrolling on the display topology settings panel
-        // when looking for the mirroring switch
-        val maximizeButton =
-            device.wait(findObject(res(SETTINGS_MAXIMIZE_BUTTON_ID)), SETTINGS_UPDATE_TIME_OUT)
-        maximizeButton?.click()
-
-        // Find the mirroring switch and toggle it
-        val switch =
-            checkNotNull(
-                device.wait(
-                    findObject(res(MIRROR_BUILT_IN_DISPLAY_SWITCH_ID)),
-                    SETTINGS_UPDATE_TIME_OUT,
-                )
-            )
-        switch.click()
-        device.waitForWindowUpdate(SETTINGS_PACKAGE_NAME, SETTINGS_UPDATE_TIME_OUT)
-        device.waitForIdle()
     }
 
     fun isInDesktopFirstMode(wmHelper: WindowManagerStateHelper, displayId: Int): Boolean =
@@ -211,14 +176,5 @@ object Utils {
         }
     }
 
-    private fun getSettingsString(resName: String): String {
-        val identifier = settingsResources.getIdentifier(resName, "string", SETTINGS_PACKAGE_NAME)
-        return settingsResources.getString(identifier)
-    }
-
     private const val SETTINGS_PACKAGE_NAME = "com.android.settings"
-    private const val EXTERNAL_DISPLAY_SETTING = "external_display_settings_title"
-    private const val SETTINGS_MAXIMIZE_BUTTON_ID = "com.android.systemui:id/maximize_window"
-    private const val MIRROR_BUILT_IN_DISPLAY_SWITCH_ID = "com.android.settings:id/switchWidget"
-    private const val SETTINGS_UPDATE_TIME_OUT: Long = 2000
 }

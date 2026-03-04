@@ -15,21 +15,16 @@
  */
 package com.android.server.appfunctions;
 
-import static android.app.appfunctions.AppFunctionStaticMetadataHelper.STATIC_SCHEMA_TYPE;
-
-import static java.util.Objects.requireNonNull;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.app.appfunctions.AppFunctionAidlSearchSpec;
 import android.app.appfunctions.AppFunctionName;
-import android.app.appfunctions.AppFunctionSearchSpec;
 import android.app.appfunctions.IObserveAppFunctionChangesCallback;
 import android.app.appsearch.observer.DocumentChangeInfo;
 import android.app.appsearch.observer.SchemaChangeInfo;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Slog;
 
@@ -39,7 +34,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -50,16 +44,29 @@ import java.util.concurrent.TimeUnit;
  * Routes app function change notifications to registered callbacks.
  *
  * <p>This class receives generic change notifications from AppSearch and dispatches them to the
- * appropriate {@link IObserveAppFunctionChangesCallback} instances, filtering based on the {@link
- * AppFunctionSearchSpec} each callback was registered with.
+ * appropriate {@link IObserveAppFunctionChangesCallback} instances.
  */
 class InternalObserverCallbackRouter {
     private static final String TAG = InternalObserverCallbackRouter.class.getSimpleName();
 
     // TODO: b/481984551 - Handle callbacks for frozen processes.
-    @NonNull
     private final RemoteCallbackList<IObserveAppFunctionChangesCallback> mInternalCallbacks =
-            new RemoteCallbackList<>();
+            new RemoteCallbackList<IObserveAppFunctionChangesCallback>() {
+                @Override
+                public void onCallbackDied(
+                        IObserveAppFunctionChangesCallback callback, Object cookie) {
+                    if (!(cookie instanceof CallerIdentity deadCallbackIdentity)) {
+                        return;
+                    }
+                    maybeCleanupVisibilityCache(deadCallbackIdentity);
+                }
+            };
+
+    private final Object mVisibilityCacheLock = new Object();
+
+    @GuardedBy("mVisibilityCacheLock")
+    private final ArrayMap<CallerIdentity, ArraySet<String>> mIdentityToVisiblePackages =
+            new ArrayMap<>();
 
     private final int mMetadataChangeDebounceMs;
     private final long mEnabledStateDebounceMs;
@@ -90,9 +97,13 @@ class InternalObserverCallbackRouter {
 
     private final TimeSource mTimeSource;
 
-    InternalObserverCallbackRouter(@NonNull ServiceConfig serviceConfig) {
+    private final VisibilityHelper mVisibilityHelper;
+
+    InternalObserverCallbackRouter(
+            @NonNull ServiceConfig serviceConfig, @NonNull VisibilityHelper visibilityHelper) {
         this(
                 serviceConfig,
+                visibilityHelper,
                 Executors.newSingleThreadScheduledExecutor(
                         new NamedThreadFactory("AppFunctionsObserverRouter")),
                 SystemClock::elapsedRealtimeNanos);
@@ -100,13 +111,8 @@ class InternalObserverCallbackRouter {
 
     @VisibleForTesting
     InternalObserverCallbackRouter(
-            @NonNull ServiceConfig serviceConfig, @NonNull ScheduledExecutorService executor) {
-        this(serviceConfig, executor, SystemClock::elapsedRealtimeNanos);
-    }
-
-    @VisibleForTesting
-    InternalObserverCallbackRouter(
             @NonNull ServiceConfig serviceConfig,
+            @NonNull VisibilityHelper visibilityHelper,
             @NonNull ScheduledExecutorService executor,
             @NonNull TimeSource timeSource) {
         mMetadataChangeDebounceMs =
@@ -115,6 +121,7 @@ class InternalObserverCallbackRouter {
                 serviceConfig.getAppFunctionEnabledStateChangeDebounceMilliseconds();
         mEnabledStateMaxDebounceMs =
                 serviceConfig.getAppFunctionEnabledStateChangeMaxDebounceMilliseconds();
+        mVisibilityHelper = visibilityHelper;
         mExecutor = executor;
         mTimeSource = timeSource;
     }
@@ -249,11 +256,20 @@ class InternalObserverCallbackRouter {
             return;
         }
         mInternalCallbacks.broadcast(
-                (callback, searchSpec) -> {
-                    try {
-                        callback.onPackagesChanged(new ArrayList<>(changedPackageNames));
-                    } catch (RemoteException e) {
-                        Slog.e(TAG, "Failed to execute callback#onPackagesChanged.", e);
+                (callback, cookie) -> {
+                    if (cookie instanceof CallerIdentity callerIdentity) {
+                        try {
+                            Set<String> packagesToNotify =
+                                    filterPackagesToNotify(
+                                            changedPackageNames,
+                                            Objects.requireNonNull(callerIdentity));
+
+                            if (!packagesToNotify.isEmpty()) {
+                                callback.onPackagesChanged(new ArrayList<>(packagesToNotify));
+                            }
+                        } catch (RemoteException e) {
+                            Slog.e(TAG, "Failed to execute callback#onPackagesChanged.", e);
+                        }
                     }
                 });
     }
@@ -263,11 +279,24 @@ class InternalObserverCallbackRouter {
             return;
         }
         mInternalCallbacks.broadcast(
-                (callback, searchSpec) -> {
-                    try {
-                        callback.onAppFunctionStatesChanged(new ArrayList<>(changedFunctionNames));
-                    } catch (RemoteException e) {
-                        Slog.e(TAG, "Failed to execute callback#onAppFunctionStatesChanged.", e);
+                (callback, cookie) -> {
+                    if (cookie instanceof CallerIdentity callerIdentity) {
+                        try {
+                            Set<AppFunctionName> functionsToNotify =
+                                    filterFunctionsToNotify(
+                                            changedFunctionNames,
+                                            Objects.requireNonNull(callerIdentity));
+
+                            if (!functionsToNotify.isEmpty()) {
+                                callback.onAppFunctionStatesChanged(
+                                        new ArrayList<>(functionsToNotify));
+                            }
+                        } catch (RemoteException e) {
+                            Slog.e(
+                                    TAG,
+                                    "Failed to execute callback#onAppFunctionStatesChanged.",
+                                    e);
+                        }
                     }
                 });
     }
@@ -279,12 +308,89 @@ class InternalObserverCallbackRouter {
 
     void addCallback(
             @NonNull IObserveAppFunctionChangesCallback callbackToAdd,
-            @NonNull AppFunctionAidlSearchSpec searchSpec) {
-        mInternalCallbacks.register(callbackToAdd, searchSpec);
+            @NonNull CallerIdentity callerIdentity) {
+        mInternalCallbacks.register(callbackToAdd, callerIdentity);
     }
 
-    void removeCallback(@NonNull IObserveAppFunctionChangesCallback callbackToRemove) {
+    void removeCallback(
+            @NonNull IObserveAppFunctionChangesCallback callbackToRemove,
+            @NonNull CallerIdentity callerIdentity) {
         mInternalCallbacks.unregister(callbackToRemove);
+        maybeCleanupVisibilityCache(callerIdentity);
+    }
+
+    private Set<String> filterPackagesToNotify(
+            @NonNull Set<String> changedPackageNames, @NonNull CallerIdentity callerIdentity) {
+        Objects.requireNonNull(changedPackageNames);
+        Objects.requireNonNull(callerIdentity);
+        Set<String> visibleChangedPackages =
+                mVisibilityHelper.filterVisiblePackages(changedPackageNames, callerIdentity);
+
+        synchronized (mVisibilityCacheLock) {
+            Set<String> visiblePackagesHistory =
+                    mIdentityToVisiblePackages.computeIfAbsent(
+                            callerIdentity, callerIdentity1 -> new ArraySet<>());
+            // Incrementally update the cache with newly visible packages.
+            // We intentionally do not remove packages that have become invisible since visibility
+            // loss implies uninstallation, and we require these cache entries to successfully
+            // notify all relevant observers of the uninstallation.
+            visiblePackagesHistory.addAll(visibleChangedPackages);
+
+            Set<String> packagesToNotify = new ArraySet<>(changedPackageNames);
+            packagesToNotify.retainAll(visiblePackagesHistory);
+            return packagesToNotify;
+        }
+    }
+
+    private Set<AppFunctionName> filterFunctionsToNotify(
+            @NonNull Set<AppFunctionName> changedFunctionNames,
+            @NonNull CallerIdentity callerIdentity) {
+        Objects.requireNonNull(changedFunctionNames);
+        Objects.requireNonNull(callerIdentity);
+
+        Set<AppFunctionName> visibleChangedFunctions =
+                mVisibilityHelper.filterVisibleAppFunctions(changedFunctionNames, callerIdentity);
+
+        synchronized (mVisibilityCacheLock) {
+            Set<String> visiblePackagesHistory =
+                    mIdentityToVisiblePackages.computeIfAbsent(
+                            callerIdentity, callerIdentity1 -> new ArraySet<>());
+            for (AppFunctionName functionName : visibleChangedFunctions) {
+                visiblePackagesHistory.add(functionName.getPackageName());
+            }
+
+            Set<AppFunctionName> functionsToNotify = new ArraySet<>(changedFunctionNames);
+            functionsToNotify.removeIf(
+                    function -> !visiblePackagesHistory.contains(function.getPackageName()));
+            return functionsToNotify;
+        }
+    }
+
+    /** Removes cached visibility list for the given caller identity, if no longer needed. */
+    private void maybeCleanupVisibilityCache(@NonNull CallerIdentity identityToRemove) {
+
+        Runnable scheduledRunnable =
+                () -> {
+                    int callbacksSize = mInternalCallbacks.beginBroadcast();
+                    try {
+                        for (int i = 0; i < callbacksSize; i++) {
+                            Object activeCookie = mInternalCallbacks.getBroadcastCookie(i);
+                            if (identityToRemove.equals(activeCookie)) {
+                                return;
+                            }
+                        }
+                    } finally {
+                        mInternalCallbacks.finishBroadcast();
+                    }
+                    synchronized (mVisibilityCacheLock) {
+                        mIdentityToVisiblePackages.remove(identityToRemove);
+                    }
+                };
+        try {
+            mExecutor.execute(scheduledRunnable);
+        } catch (RejectedExecutionException ex) {
+            Slog.w(TAG, "Failed to execute visibility cleanup due to executor shutdown.", ex);
+        }
     }
 
     // AppSearch schema names for app functions are expected to be in the format
@@ -300,9 +406,5 @@ class InternalObserverCallbackRouter {
         } catch (IndexOutOfBoundsException e) {
             return null;
         }
-    }
-
-    private boolean isAppFunctionStaticMetadataSchema(String schemaName) {
-        return schemaName.startsWith(STATIC_SCHEMA_TYPE);
     }
 }

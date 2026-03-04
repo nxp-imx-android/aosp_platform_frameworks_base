@@ -34,9 +34,9 @@ import static android.os.PowerManagerInternal.wakefulnessToString;
 import static android.service.dreams.Flags.dreamsV2;
 import static android.service.dreams.Flags.napWhenDreamEnabled;
 
+import static com.android.internal.display.BrightnessUtils.INVALID_BRIGHTNESS_IN_CONFIG;
 import static com.android.internal.util.LatencyTracker.ACTION_TURN_ON_SCREEN;
 import static com.android.server.deviceidle.Flags.disableWakelocksInLightIdle;
-import static com.android.internal.display.BrightnessUtils.INVALID_BRIGHTNESS_IN_CONFIG;
 import static com.android.server.display.brightness.BrightnessUtils.isValidBrightnessValue;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_NOT_ACQUIRED;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_WAKE_LOCK_DEATH;
@@ -8118,6 +8118,11 @@ public final class PowerManagerService extends SystemService
         public void wakeupPerGroup(IntArray groupIds, long eventTime, int reason, String details,
                 String opPackageName, int uid) {
             wakeupDisplayGroupsLocked(groupIds, eventTime, reason, details, opPackageName, uid);
+        }
+
+        @Override
+        public PowerManagerBatchProxy getBatchProxy(@NonNull Looper looper) {
+            return new PowerManagerBatchProxy(this, looper);
         }
     }
 

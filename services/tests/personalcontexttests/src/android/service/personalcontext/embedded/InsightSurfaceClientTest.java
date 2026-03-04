@@ -16,6 +16,8 @@
 
 package android.service.personalcontext.embedded;
 
+import static android.service.personalcontext.embedded.InsightSurfaceSessionException.ERROR_FAILED_TO_CREATE_SESSION;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +36,7 @@ import android.service.personalcontext.PersonalContextManager;
 import android.service.personalcontext.hint.ContextHint;
 import android.service.personalcontext.insight.ContextInsightWrapper;
 import android.view.Display;
+import android.view.SurfaceControl;
 import android.view.SurfaceControlViewHost.SurfacePackage;
 import android.view.View;
 
@@ -63,6 +66,7 @@ public class InsightSurfaceClientTest {
     @Mock private PersonalContextManager mPersonalContextManager;
     @Mock private InsightSurfaceClient.ClientCallback mClientCallbacks;
     @Mock private IInsightSurfaceSession mSession;
+    @Mock private SurfaceControl mSurfaceControl;
     private final Executor mExecutor = Runnable::run;
     private InsightSurfaceClient mClient;
 
@@ -73,6 +77,8 @@ public class InsightSurfaceClientTest {
         when(mContext.getDisplay()).thenReturn(mDisplay);
         when(mContext.getResources()).thenReturn(mResources);
         when(mResources.getConfiguration()).thenReturn(mConfiguration);
+        when(mSurfacePackage.getSurfaceControl()).thenReturn(mSurfaceControl);
+        when(mSurfaceControl.isSameSurface(mSurfaceControl)).thenReturn(true);
 
         when(mContext.getSystemService(PersonalContextManager.class))
                 .thenReturn(mPersonalContextManager);
@@ -284,10 +290,19 @@ public class InsightSurfaceClientTest {
         final InsightSurfaceClient client = new InsightSurfaceClient.Builder(mContext).build();
         final Set<ContextHint> hints = Set.of(mock(ContextHint.class));
 
-        client.register(null, mClientCallbacks);
         client.publishHints(hints);
+        client.register(null, mClientCallbacks);
+        client.getClientInfo().onRegistered();
 
         verify(mPersonalContextManager).publishInsightSurfaceHints(
                 eq(hints), any(InsightSurfaceClientInfo.class));
+    }
+
+    @Test
+    public void testVisualizationErrorCallsOnError() {
+        mClient.register(Runnable::run, mClientCallbacks);
+        mClient.publishHints(Set.of(mock(ContextHint.class)));
+        mClient.getClientInfo().onVisualizationError(ERROR_FAILED_TO_CREATE_SESSION);
+        verify(mClientCallbacks).onError(any());
     }
 }

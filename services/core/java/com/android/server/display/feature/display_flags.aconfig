@@ -353,3 +353,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_charging_experience_by_default"
+    namespace: "display_manager"
+    description: "Enable wear charging experience by default."
+    bug: "482420038"
+    metadata {
+            purpose: PURPOSE_BUGFIX
+    }
+}

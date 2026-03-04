@@ -675,6 +675,7 @@ com.android.internal.os.ProcStatsUtil
 com.android.internal.os.RuntimeInit
 com.android.internal.os.SomeArgs
 com.android.internal.os.StoragedUidIoStatsReader
+com.android.internal.os.ZygoteArguments
 com.android.internal.pm.pkg.component.AconfigFlags
 com.android.internal.pm.pkg.parsing.ParsingPackageUtils
 com.android.internal.power.EnergyConsumerStats
@@ -747,7 +748,6 @@ com.android.server.ServiceThread
 com.android.server.SystemService
 com.android.server.SystemServiceManager
 com.android.server.am.ConnectionRecord
-com.android.server.am.PowerManagerBatchProxy
 com.android.server.am.psc.AsyncBatchSession
 com.android.server.am.psc.BatchSession
 com.android.server.am.psc.BinderSession
@@ -761,6 +761,7 @@ com.android.server.am.psc.ProcessServiceRecordInternal
 com.android.server.am.psc.ProviderBindingEdge
 com.android.server.am.psc.ServiceBindingEdge
 com.android.server.am.psc.SyncBatchSession
+com.android.server.power.PowerManagerBatchProxy
 com.android.server.utils.TimingsTraceAndSlog
 com.google.android.collect.Lists
 com.google.android.collect.Maps

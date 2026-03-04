@@ -16,6 +16,7 @@
 
 package com.android.server.notification;
 
+import static android.app.Flags.nmContextualDisplayLaunch;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
@@ -48,11 +49,13 @@ import static com.android.server.notification.ManagedServices.ATT_USER_ID;
 import static com.android.server.notification.NotificationManagerService.NotificationAssistants.ATT_DENIED_KEY;
 import static com.android.server.notification.NotificationManagerService.NotificationAssistants.ATT_DENIED_KEY_APPS;
 import static com.android.server.notification.NotificationManagerService.NotificationAssistants.ATT_USER_LIST;
+import static com.android.server.notification.NotificationManagerService.NotificationAssistants.TAG_DENIED;
 import static com.android.server.notification.NotificationManagerService.NotificationAssistants.TAG_DENIED_KEY;
 import static com.android.server.notification.NotificationManagerService.NotificationAssistants.TAG_ENABLED_TYPES;
 import static com.android.server.notification.NotificationManagerService.NotificationAssistants.TAG_SET_BY_USERS;
 import static com.android.server.notification.NotificationManagerService.NotificationListeners.ATT_TYPES;
 import static com.android.server.notification.NotificationManagerService.TAG_NOTIFICATION_RULES;
+import static com.android.server.pm.UserManagerInternal.USER_FILTER_WITH_DYING_USERS;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -60,6 +63,8 @@ import android.annotation.UserIdInt;
 import android.app.NotificationRule;
 import android.app.backup.BackupRestoreEventLogger;
 import android.content.Context;
+import android.content.pm.PackageManagerInternal;
+import android.content.pm.UserInfo;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.service.notification.Adjustment;
@@ -98,6 +103,7 @@ public class NotificationRuleManager {
     private Context mContext;
     private NotificationManagerPrivate mNmPrivate;
     private UserManagerInternal mUmInternal;
+    PackageManagerInternal mPmInternal;
 
     // tags and attributes for persistence
     private final int mVersion = 1;
@@ -131,6 +137,7 @@ public class NotificationRuleManager {
         mContext = context;
         mNmPrivate = nmPrivate;
         mUmInternal = LocalServices.getService(UserManagerInternal.class);
+        mPmInternal = LocalServices.getService(PackageManagerInternal.class);
     }
 
     // for bugreports
@@ -176,8 +183,16 @@ public class NotificationRuleManager {
                                     mContext);
                             List<NotificationRule> rulesForUser =
                                     mNotificationRules.getOrDefault(targetUser, new ArrayList<>());
-                            rulesForUser.add(rule);
-                            mNotificationRules.put(targetUser, rulesForUser);
+                            // the static bundle rule might already exist if we're upgrading
+                            // since the policy xml is read before the rules xml. update it with
+                            // the latest info if so.
+                            if (RESERVED_ID_STATIC_BUNDLES == rule.getId() &&
+                                    doesStaticBundleRuleExist(targetUser)) {
+                                updateNotificationRule(targetUser, rule);
+                            } else {
+                                rulesForUser.add(rule);
+                                mNotificationRules.put(targetUser, rulesForUser);
+                            }
                             successfulReads++;
                         } catch (Exception e) {
                             Slog.d(TAG, "failed to restore rule", e);
@@ -238,6 +253,10 @@ public class NotificationRuleManager {
 
     @GuardedBy("mLock")
     protected void addDefaultClassificationTypes(int userId) {
+        if (nmContextualDisplayLaunch()) {
+            Slog.wtf(TAG, new IllegalStateException("Legacy method called with flag enabled"));
+            return;
+        }
         // Add the default classification types if the list is empty or not present.
         // Will do so for the profile's parent if the user ID is a profile user.
         final @UserIdInt int parentId = mUmInternal.getProfileParentId(userId);
@@ -260,6 +279,10 @@ public class NotificationRuleManager {
     @GuardedBy("mLock")
     private Set<Integer> allowedClassificationTypesForUser(@UserIdInt int userId,
             boolean addIfNotPresent) {
+        if (nmContextualDisplayLaunch()) {
+            Slog.wtf(TAG, new IllegalStateException("Legacy method called with flag enabled"));
+            return null;
+        }
         // if userId does not refer to a profile user, parentId will just be the same as userId
         final @UserIdInt int parentId = mUmInternal.getProfileParentId(userId);
         if (addIfNotPresent) {
@@ -273,104 +296,270 @@ public class NotificationRuleManager {
 
     protected boolean isClassificationTypeAllowed(@UserIdInt int userId, int type) {
         synchronized (mLock) {
-            return allowedClassificationTypesForUser(userId, false).contains(type);
-        }
-    }
-
-    protected void writeLegacyBundleStorageTags(TypedXmlSerializer out) throws IOException {
-        for (int user : mAllowedClassificationTypes.keySet()) {
-            out.startTag(null, TAG_ENABLED_TYPES);
-            out.attributeInt(null, ATT_USER_ID, user);
-            out.attribute(null, ATT_TYPES,
-                    TextUtils.join(",", mAllowedClassificationTypes.get(user)));
-            out.endTag(null, TAG_ENABLED_TYPES);
-        }
-        out.startTag(null, TAG_SET_BY_USERS);
-        out.attribute(null, ATT_USER_LIST, TextUtils.join(",", mClassificationPrefSetByUsers));
-        out.endTag(null, TAG_SET_BY_USERS);
-
-        for (int user : mClassificationDeniedPackages.keySet()) {
-            Set<String> pkgs = mClassificationDeniedPackages.get(user);
-            if (pkgs != null && !pkgs.isEmpty()) {
-                out.startTag(null, TAG_DENIED_KEY);
-                out.attributeInt(null, ATT_USER_ID, user);
-                out.attribute(null, ATT_DENIED_KEY, KEY_TYPE);
-                out.attribute(null, ATT_DENIED_KEY_APPS, TextUtils.join(",", pkgs));
-                out.endTag(null, TAG_DENIED_KEY);
+            if (nmContextualDisplayLaunch()) {
+                NotificationRule staticBundleRule = getStaticBundleRule(userId);
+                return staticBundleRule.getFilters().getFirst()
+                        .getStaticBundleTypes().contains(type);
+            } else {
+                return allowedClassificationTypesForUser(userId, false).contains(type);
             }
         }
     }
 
-    protected void readAllowedClassificationTypes(TypedXmlPullParser parser) {
+    // TODO(b/438704204): this entire method should be removed when nmContextualDisplayLaunch is
+    // cleaned up
+    protected void writeLegacyBundleStorageTags(TypedXmlSerializer out) throws IOException {
+        if (nmContextualDisplayLaunch()) {
+            for (int user : mNotificationRules.keySet()) {
+                out.startTag(null, TAG_ENABLED_TYPES);
+                out.attributeInt(null, ATT_USER_ID, user);
+                out.attribute(null, ATT_TYPES,
+                        TextUtils.join(",", getAllowedClassificationTypes(user)));
+                out.endTag(null, TAG_ENABLED_TYPES);
+            }
+
+            List<Integer> classificationPrefSetByUsers = new ArrayList<>();
+            for (int user : mNotificationRules.keySet()) {
+                NotificationRule staticBundleRule = getStaticBundleRule(user);
+                List<UserHandle> users = staticBundleRule.getFilters().getFirst().getUsers();
+                if (users.isEmpty() || !users.contains(UserHandle.of(user))) {
+                    classificationPrefSetByUsers.add(user);
+                }
+                Optional<UserHandle> profileUser = users.stream().filter(userHandle ->
+                        !UserHandle.of(user).equals(userHandle)).findFirst();
+                if (profileUser.isPresent()) {
+                    classificationPrefSetByUsers.add(profileUser.get().getIdentifier());
+                }
+            }
+            out.startTag(null, TAG_SET_BY_USERS);
+            out.attribute(null, ATT_USER_LIST, TextUtils.join(",", classificationPrefSetByUsers));
+            out.endTag(null, TAG_SET_BY_USERS);
+
+            for (int user : mNotificationRules.keySet()) {
+                Set<String> pkgs = getClassificationDeniedPackages(user);
+                if (!pkgs.isEmpty()) {
+                    out.startTag(null, TAG_DENIED_KEY);
+                    out.attributeInt(null, ATT_USER_ID, user);
+                    out.attribute(null, ATT_DENIED_KEY, KEY_TYPE);
+                    out.attribute(null, ATT_DENIED_KEY_APPS, TextUtils.join(",", pkgs));
+                    out.endTag(null, TAG_DENIED_KEY);
+                }
+            }
+        } else {
+            for (int user : mAllowedClassificationTypes.keySet()) {
+                out.startTag(null, TAG_ENABLED_TYPES);
+                out.attributeInt(null, ATT_USER_ID, user);
+                out.attribute(null, ATT_TYPES,
+                        TextUtils.join(",", mAllowedClassificationTypes.get(user)));
+                out.endTag(null, TAG_ENABLED_TYPES);
+            }
+            out.startTag(null, TAG_SET_BY_USERS);
+            out.attribute(null, ATT_USER_LIST, TextUtils.join(",", mClassificationPrefSetByUsers));
+            out.endTag(null, TAG_SET_BY_USERS);
+
+            for (int user : mClassificationDeniedPackages.keySet()) {
+                Set<String> pkgs = mClassificationDeniedPackages.get(user);
+                if (pkgs != null && !pkgs.isEmpty()) {
+                    out.startTag(null, TAG_DENIED_KEY);
+                    out.attributeInt(null, ATT_USER_ID, user);
+                    out.attribute(null, ATT_DENIED_KEY, KEY_TYPE);
+                    out.attribute(null, ATT_DENIED_KEY_APPS, TextUtils.join(",", pkgs));
+                    out.endTag(null, TAG_DENIED_KEY);
+                }
+            }
+        }
+    }
+
+    /**
+     * Reads bundle information from the legacy notification_policy xml (or from a legacy restore).
+     *
+     * If the nmContextualDisplayLaunch flag is off, just read this into the legacy data structures
+     *
+     * If the flag is on, we need to consider whether this is a fresh install, upgrader, or a
+     * restore on a previous fresh install
+     *
+     * First boot:
+     * In the fresh install scenario, this method is never called, so the default bundle definition
+     * is created from {@link #onUserAdded(int)}.
+     *
+     * In the upgrade scenario, this method is called before {@link #onUserAdded(int)}. The bundle
+     * rule definition will be created from the user's previous settings. When we're initializing
+     * the system rules, the static bundle rule creation will be skipped because it already exists.
+     *
+     * In the B&R scenario, we have a default bundle rule from {@link #onUserAdded(int)}. We should
+     * overwrite any conflicting settings from this xml.
+     *
+     * On subsequent boots with the flag enabled, the bundle rule will be created from this legacy
+     * xml. However, that information might be replaced with newer user settings when we read the
+     * notification_rules xml.
+     */
+    protected void readLegacyBundleStorageTag(TypedXmlPullParser parser, String tag)
+            throws IOException {
+        if (TAG_ENABLED_TYPES.equals(tag)) {
+            readAllowedClassificationTypes(parser);
+        } else if (TAG_SET_BY_USERS.equals(tag)) {
+            readSetByUsersTag(parser);
+        } else if (TAG_DENIED.equals(tag)) {
+            readLegacyClassificationAdjustmentStateTags(parser);
+        } else if (TAG_DENIED_KEY.equals(tag)) {
+            readClassificationDeniedPkgsTag(parser);
+        }
+    }
+
+    private void readLegacyClassificationAdjustmentStateTags(TypedXmlPullParser parser) {
+        final int user = XmlUtils.readIntAttribute(parser, ATT_USER_ID,
+                mContext.getUserId());
+        final String keys = XmlUtils.readStringAttribute(parser, ATT_TYPES);
+        synchronized (mLock) {
+            boolean disabled = Arrays.asList(keys.split(",")).contains(KEY_TYPE);
+            getOrCreateStaticBundleRule(user);
+            for (int userId : mUmInternal.getProfileIds(user, false)) {
+                UserInfo userInfo = mUmInternal.getUserInfo(userId);
+                if (userInfo.isFull() || userInfo.isManagedProfile()) {
+                    setClassificationAdjustmentState(userId, !disabled);
+                }
+            }
+        }
+    }
+
+    private void readAllowedClassificationTypes(TypedXmlPullParser parser) {
         final int user = XmlUtils.readIntAttribute(parser, ATT_USER_ID,
                 mContext.getUserId());
         final String types = XmlUtils.readStringAttribute(parser, ATT_TYPES);
         synchronized (mLock) {
-            Set<Integer> userAllowedTypes = mAllowedClassificationTypes.getOrDefault(user,
-                    new ArraySet<>());
-            userAllowedTypes.clear();
-            if (!TextUtils.isEmpty(types)) {
-                List<String> typeList = Arrays.asList(types.split(","));
-                for (String type : typeList) {
-                    try {
-                        userAllowedTypes.add(Integer.parseInt(type));
-                    } catch (NumberFormatException e) {
-                        Slog.wtf(TAG, "Bad integer specified", e);
+            if (nmContextualDisplayLaunch()) {
+                NotificationRule staticBundleRule = getOrCreateStaticBundleRule(user);
+                List<Integer> staticBundleTypes =
+                        staticBundleRule.getFilters().getFirst().getStaticBundleTypes();
+                staticBundleTypes.clear();
+                if (!TextUtils.isEmpty(types)) {
+                    List<String> typeList = Arrays.asList(types.split(","));
+                    for (String type : typeList) {
+                        staticBundleTypes.add(Integer.parseInt(type));
                     }
                 }
-                mAllowedClassificationTypes.put(user, userAllowedTypes);
-            }
-        }
-    }
-
-    protected void readSetByUsersTag(TypedXmlPullParser parser) {
-        final String users = XmlUtils.readStringAttribute(parser, ATT_USER_LIST);
-        if (!TextUtils.isEmpty(users)) {
-            for (String userIdString : Arrays.asList(users.split(","))) {
-                try {
-                    setClassificationPrefSetByUser(Integer.parseInt(userIdString), true);
-                } catch (NumberFormatException e) {
-                    Slog.wtf(TAG, "Bad type specified", e);
+            } else {
+                Set<Integer> userAllowedTypes = mAllowedClassificationTypes.getOrDefault(user,
+                        new ArraySet<>());
+                userAllowedTypes.clear();
+                if (!TextUtils.isEmpty(types)) {
+                    List<String> typeList = Arrays.asList(types.split(","));
+                    for (String type : typeList) {
+                        try {
+                            userAllowedTypes.add(Integer.parseInt(type));
+                        } catch (NumberFormatException e) {
+                            Slog.wtf(TAG, "Bad integer specified", e);
+                        }
+                    }
+                    mAllowedClassificationTypes.put(user, userAllowedTypes);
                 }
             }
         }
     }
 
-    protected void readClassificationDeniedPkgsTag(TypedXmlPullParser parser) {
+    /**
+     * Contains a list of users where the user manually changed the 'classification allowed'
+     * setting.
+     *
+     * Although the values are written for all users, it's only used to determine if classification
+     * is disabled for work profile users. That is, if there is a work profile user, and it does not
+     * have an entry in this list, then classification should be disabled for that profile.
+     */
+    private void readSetByUsersTag(TypedXmlPullParser parser) {
+        final String users = XmlUtils.readStringAttribute(parser, ATT_USER_LIST);
+        if (!TextUtils.isEmpty(users)) {
+            if (nmContextualDisplayLaunch()) {
+                List<Integer> userSet = new ArrayList<>();
+                for (String userIdString : Arrays.asList(users.split(","))) {
+                    userSet.add(Integer.parseInt(userIdString));
+                }
+                for (UserInfo user : mUmInternal.getUsers(USER_FILTER_WITH_DYING_USERS)) {
+                    if (user.isManagedProfile() && !userSet.contains(user.id)) {
+                        int parent = mUmInternal.getProfileParentId(user.id);
+                        NotificationRule staticBundleRule = getOrCreateStaticBundleRule(parent);
+                        staticBundleRule.getFilters().getFirst().getUsers()
+                                .remove(UserHandle.of(user.id));
+                    }
+                }
+            } else {
+                for (String userIdString : Arrays.asList(users.split(","))) {
+                    try {
+                        setClassificationPrefSetByUser(Integer.parseInt(userIdString), true);
+                    } catch (NumberFormatException e) {
+                        Slog.wtf(TAG, "Bad type specified", e);
+                    }
+                }
+            }
+        }
+    }
+
+    private @NonNull NotificationRule getOrCreateStaticBundleRule(@UserIdInt int userId) {
+        if (!doesStaticBundleRuleExist(userId)) {
+            addNotificationRule(userId, getDefaultStaticBundleRule(userId));
+        }
+        return getStaticBundleRule(userId);
+    }
+
+    @NonNull NotificationRule getStaticBundleRule(@UserIdInt int userId) {
+        int parentOrSelf = mUmInternal.getProfileParentId(userId);
+        return getNotificationRule(parentOrSelf, RESERVED_ID_STATIC_BUNDLES);
+    }
+
+    private void readClassificationDeniedPkgsTag(TypedXmlPullParser parser) {
         final int user = XmlUtils.readIntAttribute(parser, ATT_USER_ID,
                 mContext.getUserId());
         final String key = XmlUtils.readStringAttribute(parser, ATT_DENIED_KEY);
-
         final String pkgs = XmlUtils.readStringAttribute(parser, ATT_DENIED_KEY_APPS);
         if (!TextUtils.isEmpty(key) && !TextUtils.isEmpty(pkgs)) {
-            Set<String> userDeniedPackages =
-                    mClassificationDeniedPackages.getOrDefault(user, new ArraySet<>());
-            List<String> pkgList = Arrays.asList(pkgs.split(","));
-            userDeniedPackages.addAll(pkgList);
-            mClassificationDeniedPackages.put(user, userDeniedPackages);
+            if (nmContextualDisplayLaunch()) {
+                NotificationRule staticBundleRule = getOrCreateStaticBundleRule(user);
+                List<Integer> excluded =
+                        staticBundleRule.getFilters().getFirst().getExcludedPackageUids();
+                excluded.clear();
+                for (String pkg : pkgs.split(",")) {
+                    setClassificationSupportedForPackage(user, pkg, false);
+                }
+            } else {
+                Set<String> userDeniedPackages =
+                        mClassificationDeniedPackages.getOrDefault(user, new ArraySet<>());
+                List<String> pkgList = Arrays.asList(pkgs.split(","));
+                userDeniedPackages.addAll(pkgList);
+                mClassificationDeniedPackages.put(user, userDeniedPackages);
+            }
         }
     }
 
-    protected @NonNull int[] getAllowedClassificationTypes(@UserIdInt int userId) {
+    public @NonNull List<Integer> getAllowedClassificationTypes(@UserIdInt int userId) {
         synchronized (mLock) {
-            return allowedClassificationTypesForUser(userId, false).stream()
-                    .mapToInt(Integer::intValue).toArray();
-        }
-    }
-
-    protected @NonNull List<Integer> getAllowedClassificationTypeList(@UserIdInt int userId) {
-        synchronized (mLock) {
-            return allowedClassificationTypesForUser(userId, false).stream().toList();
+            if (nmContextualDisplayLaunch()) {
+                NotificationRule staticBundleRule = getStaticBundleRule(userId);
+                return staticBundleRule.getFilters().getFirst().getStaticBundleTypes();
+            } else {
+                return allowedClassificationTypesForUser(userId, false).stream().toList();
+            }
         }
     }
 
     public void setAssistantClassificationTypeState(@UserIdInt int userId,
             int type, boolean enabled) {
         synchronized (mLock) {
-            if (enabled) {
-                allowedClassificationTypesForUser(userId, true).add(type);
+            if (nmContextualDisplayLaunch()) {
+                NotificationRule staticBundleRule = getStaticBundleRule(userId);
+                if (enabled) {
+                    if (!staticBundleRule.getFilters().getFirst().getStaticBundleTypes()
+                            .contains(type)) {
+                        staticBundleRule.getFilters().getFirst().getStaticBundleTypes().add(type);
+                    }
+                } else {
+                    staticBundleRule.getFilters().getFirst().getStaticBundleTypes().remove(
+                            new Integer(type));
+                }
             } else {
-                allowedClassificationTypesForUser(userId, true).remove(type);
+                if (enabled) {
+                    allowedClassificationTypesForUser(userId, true).add(type);
+                } else {
+                    allowedClassificationTypesForUser(userId, true).remove(type);
+                }
             }
         }
     }
@@ -385,70 +574,149 @@ public class NotificationRuleManager {
         }
     }
 
-    public boolean isClassificationPrefSetByUser(@UserIdInt int user) {
+    public boolean isClassificationAllowedForManagedProfile(@UserIdInt int userId) {
+        if (nmContextualDisplayLaunch()) {
+           Slog.wtf(TAG, new IllegalStateException("Legacy method called with flag enabled"));
+            return false;
+        }
         synchronized (mLock) {
-            return mClassificationPrefSetByUsers.contains(user);
+            return mClassificationPrefSetByUsers.contains(userId);
         }
     }
 
-    protected @NonNull String[] getClassificationDeniedPackages(@UserIdInt int userId) {
+    protected @NonNull Set<String> getClassificationDeniedPackages(@UserIdInt int userId) {
         synchronized (mLock) {
-            if (mClassificationDeniedPackages.containsKey(userId)) {
-                return mClassificationDeniedPackages.getOrDefault(userId,
-                        new ArraySet<>()).toArray(new String[0]);
+            if (nmContextualDisplayLaunch()) {
+                NotificationRule staticBundleRule = getStaticBundleRule(userId);
+                List<Integer> excludedUids =
+                        staticBundleRule.getFilters().getFirst().getExcludedPackageUids();
+                Set<String> excludedPackages = new ArraySet<>();
+                for (int excludedUid : excludedUids) {
+                    if (UserHandle.getUserId(excludedUid) == userId) {
+                        excludedPackages.add(mPmInternal.getPackage(excludedUid).getPackageName());
+                    }
+                }
+                return excludedPackages;
+            } else {
+                if (mClassificationDeniedPackages.containsKey(userId)) {
+                    return mClassificationDeniedPackages.getOrDefault(userId,
+                            new ArraySet<>());
+                }
             }
         }
-        return new String[]{};
+        return new ArraySet<>();
     }
 
     protected boolean isClassificationAllowedForPackage(@UserIdInt int userId, String pkg) {
         synchronized (mLock) {
-            if (mClassificationDeniedPackages.containsKey(userId)) {
-                return !mClassificationDeniedPackages.getOrDefault(userId,
-                        new ArraySet<>()).contains(pkg);
+            if (nmContextualDisplayLaunch()) {
+                NotificationRule staticBundleRule = getStaticBundleRule(userId);
+                List<Integer> excludedUids =
+                        staticBundleRule.getFilters().getFirst().getExcludedPackageUids();
+                int targetUid = mPmInternal.getPackageUid(pkg, 0L, userId);
+                return !excludedUids.contains(targetUid);
+            } else {
+                if (mClassificationDeniedPackages.containsKey(userId)) {
+                    return !mClassificationDeniedPackages.getOrDefault(userId,
+                            new ArraySet<>()).contains(pkg);
+                }
             }
         }
         return true;
     }
 
-    public void setClassificationSupportedForPackage(int userId, String pkg, boolean enabled) {
+    public void setClassificationSupportedForPackage(@UserIdInt int userId, String pkg,
+            boolean enabled) {
         synchronized (mLock) {
-            mClassificationDeniedPackages.putIfAbsent(userId, new ArraySet<>());
-            if (enabled) {
-                mClassificationDeniedPackages.get(userId).remove(pkg);
+            if (nmContextualDisplayLaunch()) {
+                NotificationRule staticBundleRule = getStaticBundleRule(userId);
+                List<Integer> excludedUids =
+                        staticBundleRule.getFilters().getFirst().getExcludedPackageUids();
+                int uid = mPmInternal.getPackageUid(pkg, 0L, userId);
+                if (enabled) {
+                    excludedUids.remove(new Integer(uid));
+                } else {
+                    excludedUids.add(uid);
+                }
             } else {
-                mClassificationDeniedPackages.get(userId).add(pkg);
+                mClassificationDeniedPackages.putIfAbsent(userId, new ArraySet<>());
+                if (enabled) {
+                    mClassificationDeniedPackages.get(userId).remove(pkg);
+                } else {
+                    mClassificationDeniedPackages.get(userId).add(pkg);
+                }
             }
         }
     }
 
-    protected void disallowClassificationAdjustment(@UserIdInt int userId) {
+    /**
+     * Enables or disables the static bundle rule for a user.
+     */
+    protected void setClassificationAdjustmentState(@UserIdInt int userId, boolean enabled) {
         synchronized (mLock) {
-            setClassificationPrefSetByUser(userId, true);
+            if (nmContextualDisplayLaunch()) {
+                int parentOrSelf = mUmInternal.getProfileParentId(userId);
+                NotificationRule staticBundleRule = getStaticBundleRule(parentOrSelf);
+                NotificationRule.Filter filter = staticBundleRule.getFilters().getFirst();
+                if (userId == parentOrSelf) {
+                    staticBundleRule.setEnabled(enabled);
+                }
+                UserHandle user = UserHandle.of(userId);
+                if (enabled && !filter.getUsers().contains(user)) {
+                    filter.getUsers().add(user);
+                }
+
+                if (!enabled) {
+                    filter.getUsers().remove(user);
+                    if (filter.getStaticBundleTypes().isEmpty()) {
+                        filter.getStaticBundleTypes().addAll(
+                                List.of(DEFAULT_ALLOWED_ADJUSTMENT_KEY_TYPES));
+                    }
+                }
+            } else {
+                setClassificationPrefSetByUser(userId, true);
+                if (!enabled) {
+                    addDefaultClassificationTypes(userId);
+                }
+            }
         }
     }
 
-    protected void allowClassificationAdjustment(@UserIdInt int userId) {
-        synchronized (mLock) {
-            setClassificationPrefSetByUser(userId, true);
-            addDefaultClassificationTypes(userId);
-        }
+    protected boolean isClassificationAdjustmentAllowed(@UserIdInt int userId) {
+        NotificationRule staticBundleRule = getStaticBundleRule(userId);
+        NotificationRule.Filter filter = staticBundleRule.getFilters().getFirst();
+        return staticBundleRule.isEnabled() && (filter.getUsers().isEmpty()
+                || filter.getUsers().contains(UserHandle.of(userId)));
     }
 
     // For logging preferences:
     // Add KEY_TYPE data to the map of user id -> package name -> list of denied keys
     // This is essentially a reconfiguration of the contents of mAdjustmentKeyDeniedPackages.
-    @NonNull void getClassificationDeniedPkgsForUsersAndPackages(Map<Integer, Map<String,
+    @NonNull
+    void getClassificationDeniedPkgsForUsersAndPackages(Map<Integer, Map<String,
             List<String>>> out) {
         synchronized (mLock) {
-            for (int userId : mClassificationDeniedPackages.keySet()) {
-                Set<String> pkgsByType = mClassificationDeniedPackages.get(userId);
-                if (!pkgsByType.isEmpty()) {
-                    out.putIfAbsent(userId, new ArrayMap<>());
-                    Map<String, List<String>> pkgMapForUser = out.get(userId);
-                    for (String pkgName : pkgsByType) {
-                        pkgMapForUser.putIfAbsent(pkgName, new ArrayList<>());
-                        pkgMapForUser.get(pkgName).add(KEY_TYPE);
+            if (nmContextualDisplayLaunch()) {
+                for (int userId : mNotificationRules.keySet()) {
+                    Set<String> deniedForUser = getClassificationDeniedPackages(userId);
+                    if (!deniedForUser.isEmpty()) {
+                        Map<String, List<String>> pkgMapForUser = out.get(userId);
+                        for (String pkgName : deniedForUser) {
+                            pkgMapForUser.putIfAbsent(pkgName, new ArrayList<>());
+                            pkgMapForUser.get(pkgName).add(KEY_TYPE);
+                        }
+                    }
+                }
+            } else {
+                for (int userId : mClassificationDeniedPackages.keySet()) {
+                    Set<String> pkgsByType = mClassificationDeniedPackages.get(userId);
+                    if (!pkgsByType.isEmpty()) {
+                        out.putIfAbsent(userId, new ArrayMap<>());
+                        Map<String, List<String>> pkgMapForUser = out.get(userId);
+                        for (String pkgName : pkgsByType) {
+                            pkgMapForUser.putIfAbsent(pkgName, new ArrayList<>());
+                            pkgMapForUser.get(pkgName).add(KEY_TYPE);
+                        }
                     }
                 }
             }
@@ -479,26 +747,37 @@ public class NotificationRuleManager {
         }
     }
 
+    private boolean doesStaticBundleRuleExist(@UserIdInt int user) {
+        List<NotificationRule> rulesForUser =
+                mNotificationRules.getOrDefault(user, new ArrayList<>());
+        return rulesForUser.stream().anyMatch(
+                notificationRule -> RESERVED_ID_STATIC_BUNDLES == notificationRule.getId());
+    }
+
     /**
      * Updates a notification rule without changing its position.
      * @return true if the rule was updated, false otherwise
      */
     boolean updateNotificationRule(@UserIdInt int user, NotificationRule rule) {
         // TODO(b/477961511): validate the rule first
-        AtomicReference<Boolean> appliedChange = new AtomicReference<>(false);
-        synchronized (mLock) {
-            List<NotificationRule> rulesForUser =
-                    mNotificationRules.getOrDefault(user, new ArrayList<>());
-            rulesForUser.replaceAll(notificationRule -> {
-                if (notificationRule.getId() == rule.getId()) {
-                    appliedChange.set(true);
-                    return rule;
-                }
-                return notificationRule;
-            });
-            mNotificationRules.put(user, rulesForUser);
+        int potentialParent = mUmInternal.getProfileParentId(user);
+        if (potentialParent == user) {
+            AtomicReference<Boolean> appliedChange = new AtomicReference<>(false);
+            synchronized (mLock) {
+                List<NotificationRule> rulesForUser =
+                        mNotificationRules.getOrDefault(user, new ArrayList<>());
+                rulesForUser.replaceAll(notificationRule -> {
+                    if (notificationRule.getId() == rule.getId()) {
+                        appliedChange.set(true);
+                        return rule;
+                    }
+                    return notificationRule;
+                });
+                mNotificationRules.put(user, rulesForUser);
+            }
+            return appliedChange.get();
         }
-        return appliedChange.get();
+        return false;
     }
 
     /**
@@ -506,20 +785,46 @@ public class NotificationRuleManager {
      */
     boolean addNotificationRule(@UserIdInt int user, int position, NotificationRule rule) {
         // TODO(b/477961511): validate the rule first
-        synchronized (mLock) {
-            List<NotificationRule> rulesForUser =
-                    mNotificationRules.getOrDefault(user, new ArrayList<>());
-            position = Math.clamp(position, 0, rulesForUser.size());
-            // duplicate ids are not allowed
-            if (!rulesForUser.stream().filter(
-                            notificationRule -> notificationRule.getId() == rule.getId())
-                    .findFirst().isEmpty()) {
-                return false;
+        int potentialParent = mUmInternal.getProfileParentId(user);
+        if (potentialParent == user) {
+            synchronized (mLock) {
+                List<NotificationRule> rulesForUser =
+                        mNotificationRules.getOrDefault(user, new ArrayList<>());
+                position = Math.clamp(position, 0, rulesForUser.size());
+                // duplicate ids are not allowed
+                if (!rulesForUser.stream().filter(
+                                notificationRule -> notificationRule.getId() == rule.getId())
+                        .findFirst().isEmpty()) {
+                    return false;
+                }
+                rulesForUser.add(position, rule);
+                mNotificationRules.put(user, rulesForUser);
             }
-            rulesForUser.add(position, rule);
-            mNotificationRules.put(user, rulesForUser);
+            return true;
+
         }
-        return true;
+        return false;
+    }
+
+    /**
+     * Inserts a new notification rule at the end of the list
+     */
+    private void addNotificationRule(@UserIdInt int user, NotificationRule rule) {
+        int potentialParent = mUmInternal.getProfileParentId(user);
+        if (potentialParent == user) {
+            synchronized (mLock) {
+                List<NotificationRule> rulesForUser =
+                        mNotificationRules.getOrDefault(user, new ArrayList<>());
+                // duplicate ids are not allowed
+                if (!rulesForUser.stream().filter(
+                                notificationRule -> notificationRule.getId() == rule.getId())
+                        .findFirst().isEmpty()) {
+                    return;
+                }
+                rulesForUser.add(rule);
+                mNotificationRules.put(user, rulesForUser);
+            }
+        }
     }
 
     /**
@@ -530,14 +835,19 @@ public class NotificationRuleManager {
         if (NotificationRule.isSystemRule(ruleId)) {
             return false;
         }
-        boolean removed = false;
-        synchronized (mLock) {
-            List<NotificationRule> rulesForUser =
-                    mNotificationRules.getOrDefault(user, new ArrayList<>());
-            removed = rulesForUser.removeIf(notificationRule -> ruleId == notificationRule.getId());
-            mNotificationRules.put(user, rulesForUser);
+        int potentialParent = mUmInternal.getProfileParentId(user);
+        if (potentialParent == user) {
+            boolean removed = false;
+            synchronized (mLock) {
+                List<NotificationRule> rulesForUser =
+                        mNotificationRules.getOrDefault(user, new ArrayList<>());
+                removed = rulesForUser.removeIf(
+                        notificationRule -> ruleId == notificationRule.getId());
+                mNotificationRules.put(user, rulesForUser);
+            }
+            return removed;
         }
-        return removed;
+        return false;
     }
 
     /**
@@ -547,7 +857,10 @@ public class NotificationRuleManager {
         // TODO(b/477961511): validate the rules first
         // TODO(b/477961511): don't remove system rules
         synchronized (mLock) {
-            mNotificationRules.put(user, new ArrayList<>(rules));
+            int potentialParent = mUmInternal.getProfileParentId(user);
+            if (potentialParent == user) {
+                mNotificationRules.put(user, new ArrayList<>(rules));
+            }
         }
     }
 
@@ -558,7 +871,10 @@ public class NotificationRuleManager {
         int potentialParent = mUmInternal.getProfileParentId(user);
         if (potentialParent == user) {
             synchronized (mLock) {
-                mNotificationRules.put(user, getDefaultSystemRules(user));
+                List<NotificationRule> rulesForUser =
+                        mNotificationRules.getOrDefault(user, new ArrayList<>());
+                rulesForUser.addAll(getDefaultSystemRules(user));
+                mNotificationRules.put(user, rulesForUser);
             }
         }
     }
@@ -642,12 +958,15 @@ public class NotificationRuleManager {
      */
     void onNotificationAssistantChanged(@UserIdInt int user) {
         synchronized (mLock) {
-            List<NotificationRule> rulesForUser =
-                    mNotificationRules.getOrDefault(user, new ArrayList<>());
-            rulesForUser.removeIf(notificationRule ->
-                    !(RESERVED_ID_PRIORITY_CONVERSATIONS == notificationRule.getId()
-                            || RESERVED_ID_PROMOTED == notificationRule.getId()));
-            mNotificationRules.put(user, rulesForUser);
+            int potentialParent = mUmInternal.getProfileParentId(user);
+            if (potentialParent == user) {
+                List<NotificationRule> rulesForUser =
+                        mNotificationRules.getOrDefault(user, new ArrayList<>());
+                rulesForUser.removeIf(notificationRule ->
+                        !(RESERVED_ID_PRIORITY_CONVERSATIONS == notificationRule.getId()
+                                || RESERVED_ID_PROMOTED == notificationRule.getId()));
+                mNotificationRules.put(user, rulesForUser);
+            }
         }
     }
 
@@ -670,7 +989,22 @@ public class NotificationRuleManager {
                         CONVERSATION_LEVEL_PRIORITY).build())
                 .build();
         rules.add(convos);
-        NotificationRule bundle = new NotificationRule.Builder(RESERVED_ID_STATIC_BUNDLES, "Bundle")
+        if (!doesStaticBundleRuleExist(userId)) {
+            rules.add(getDefaultStaticBundleRule(userId));
+        }
+        NotificationRule important = new NotificationRule.Builder(
+                RESERVED_ID_IMPORTANT_NOTIFICATIONS, "Important")
+                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build())
+                .setCanBeDisabled(true)
+                .build();
+        rules.add(important);
+
+        return rules;
+    }
+
+    private NotificationRule getDefaultStaticBundleRule(@UserIdInt int userId) {
+        return new NotificationRule.Builder(
+                RESERVED_ID_STATIC_BUNDLES, "Bundle")
                 .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE).build())
                 .setEditIntentAction("android.settings.NOTIFICATION_BUNDLES")
                 .addFilter(new NotificationRule.Filter.Builder()
@@ -680,14 +1014,5 @@ public class NotificationRuleManager {
                         .build())
                 .setCanBeDisabled(true)
                 .build();
-        rules.add(bundle);
-        NotificationRule important = new NotificationRule.Builder(
-                RESERVED_ID_IMPORTANT_NOTIFICATIONS, "Important")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT).build())
-                .setCanBeDisabled(true)
-                .build();
-        rules.add(important);
-
-        return rules;
     }
 }

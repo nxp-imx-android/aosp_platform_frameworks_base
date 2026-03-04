@@ -18,11 +18,9 @@ package com.android.systemui.qs.pipeline.data.startable
 
 import android.content.ComponentName
 import android.os.UserHandle
-import android.platform.test.annotations.EnableFlags
 import android.service.quicksettings.Tile
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags.FLAG_QS_DELETE_UNINSTALLED_TILE_SERVICE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.data.repository.fakePackageChangeRepository
 import com.android.systemui.common.data.repository.packageChangeRepository
@@ -44,7 +42,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
-@EnableFlags(FLAG_QS_DELETE_UNINSTALLED_TILE_SERVICE)
 class PackageUninstalledCoreStartableTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 

@@ -113,7 +113,7 @@ class EnterBubbleFromOverviewLiveTileTest : BubbleFlickerTestBase(), EnterBubble
         get() = recordTraceWithTransitionRule.reader
 
     override fun focusChanges() {
-        eventLogSubject.focusChanges(
+        focusEventSubject.focusChanges(
             testApp.toWindowName(), // LOST, test starts with app running in live tile
             TASK_BAR.toWindowName(), // GAINED, open taskbar app menu
             testApp.toWindowName(), // GAINED, open as bubble

@@ -290,6 +290,22 @@ public final class InsightSurfaceClientInfo implements Parcelable {
     }
 
     /**
+     * The given {@link SurfaceControlViewHost.SurfacePackage} has been updated.
+     *
+     * @param surfacePackage the updated {@link SurfaceControlViewHost.SurfacePackage}
+     *
+     * @hide
+     */
+    public void onSurfaceUpdated(@NonNull SurfaceControlViewHost.SurfacePackage surfacePackage) {
+        try {
+            mClient.onSurfaceUpdated(surfacePackage);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error updating SurfacePackage", e);
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * The given {@link SurfaceControlViewHost.SurfacePackage} has been released.
      *
      * @param surfacePackage the released {@link SurfaceControlViewHost.SurfacePackage}
@@ -301,6 +317,34 @@ public final class InsightSurfaceClientInfo implements Parcelable {
             mClient.onSurfaceReleased(surfacePackage);
         } catch (RemoteException e) {
             Log.e(TAG, "Error releasing SurfacePackage", e);
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Called when there has been a visualization error, such as no visualization was produced.
+     *
+     * @hide
+     */
+    public void onVisualizationError(@InsightSurfaceSessionException.ClientError int errorCode) {
+        try {
+            mClient.onVisualizationError(errorCode);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error calling onVisualizationError", e);
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * The client has been registered with the personal context engine.
+     *
+     * @hide
+     */
+    public void onRegistered() {
+        try {
+            mClient.onRegistered();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error calling onRegistered", e);
             throw e.rethrowFromSystemServer();
         }
     }

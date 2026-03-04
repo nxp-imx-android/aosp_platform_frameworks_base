@@ -25,6 +25,19 @@ import androidx.annotation.StringRes
 import com.android.settingslib.metadata.preferencesapi.ApiPreference
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
 
+/** Indicates how sensitive of the data. */
+@Retention(AnnotationRetention.SOURCE)
+@Target(AnnotationTarget.TYPE)
+annotation class SensitivityLevel {
+    companion object {
+        const val DO_NOT_EXPOSE = 0
+        const val NO_SENSITIVITY = 1
+        const val MUST_PROVIDE_UNDO = 2
+        const val REQUIRES_CONFIRMATION = 3
+        const val DEEP_LINK_ONLY = 4
+    }
+}
+
 /**
  * Interface provides preference metadata (title, summary, icon, etc.).
  *
@@ -89,6 +102,10 @@ interface PreferenceMetadata {
      */
     val title: Int
         @StringRes get() = 0
+
+    /** The sensitivity level of the preference. */
+    val sensitivityLevel: @SensitivityLevel Int
+        get() = SensitivityLevel.DO_NOT_EXPOSE
 
     /**
      * Preference summary resource id.
@@ -206,6 +223,14 @@ open class PreferenceCategory(
 
 /** Tag representing a preference that is ui only */
 const val UI_ONLY_PREFERENCE = "ui_only_preference"
+
+/**
+ * Tag representing a pure metadata object in a UI screen.
+ *
+ * Marking a preference with this tag will prevent it from being bound to a UI object, thus allowing
+ * for adding pure metadata objects in a fully migrated to the UI screen.
+ */
+const val METADATA_IN_UI="metadata_in_ui"
 
 /** Tag representing a preference that is considered `hero` and must be gettable*/
 const val HERO = "hero"

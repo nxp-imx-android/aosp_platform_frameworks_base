@@ -279,7 +279,7 @@ public class InsetsStateTest {
 
         Insets visibleInsets = mState.calculateVisibleInsets(
                 new Rect(0, 0, 100, 400), null, TYPE_APPLICATION, ACTIVITY_TYPE_UNDEFINED,
-                SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */);
+                SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */, 0 /* ignoringTypes */);
         assertEquals(Insets.of(0, 300, 0, 0), visibleInsets);
     }
 
@@ -291,7 +291,7 @@ public class InsetsStateTest {
 
         Insets visibleInsets = mState.calculateVisibleInsets(
                 new Rect(0, 0, 150, 400), null, TYPE_APPLICATION, ACTIVITY_TYPE_UNDEFINED,
-                SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */);
+                SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */, 0 /* ignoringTypes */);
         assertEquals(Insets.of(0, 300, 0, 0), visibleInsets);
     }
 
@@ -301,19 +301,20 @@ public class InsetsStateTest {
                 .setAttachedInsets(Insets.of(0, 100, 0, 0))
                 .setVisible(true);
 
-        Insets visibleInsets = mState.calculateVisibleInsets(
-                new Rect(100, 200, 200, 600), new Rect(100, 200, 200, 600), TYPE_APPLICATION,
-                ACTIVITY_TYPE_UNDEFINED, SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */);
+        Insets visibleInsets = mState.calculateVisibleInsets(new Rect(100, 200, 200, 600),
+                new Rect(100, 200, 200, 600), TYPE_APPLICATION, ACTIVITY_TYPE_UNDEFINED,
+                SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */, 0 /* ignoringTypes */);
         assertEquals(Insets.of(0, 100, 0, 0), visibleInsets);
 
-        Insets insideWindowInsets = mState.calculateVisibleInsets(
-                new Rect(110, 250, 190, 550), new Rect(100, 200, 200, 600), TYPE_APPLICATION,
-                ACTIVITY_TYPE_UNDEFINED, SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */);
+        Insets insideWindowInsets = mState.calculateVisibleInsets(new Rect(110, 250, 190, 550),
+                new Rect(100, 200, 200, 600), TYPE_APPLICATION, ACTIVITY_TYPE_UNDEFINED,
+                SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */, 0 /* ignoringTypes */);
         assertEquals(Insets.of(0, 50, 0, 0), insideWindowInsets);
 
         Insets insideNonOverlappingWindowInsets = mState.calculateVisibleInsets(
                 new Rect(110, 310, 190, 550), new Rect(100, 200, 200, 600), TYPE_APPLICATION,
-                ACTIVITY_TYPE_UNDEFINED, SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */);
+                ACTIVITY_TYPE_UNDEFINED, SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */,
+                0 /* ignoringTypes */);
         assertEquals(Insets.of(0, 0, 0, 0), insideNonOverlappingWindowInsets);
     }
 
@@ -783,7 +784,7 @@ public class InsetsStateTest {
                 .setVisible(true);
         Insets visibleInsets = mState.calculateVisibleInsets(
                 new Rect(0, 0, 100, 300), null, TYPE_APPLICATION, ACTIVITY_TYPE_UNDEFINED,
-                SOFT_INPUT_ADJUST_PAN, 0 /* windowFlags */);
+                SOFT_INPUT_ADJUST_PAN, 0 /* windowFlags */, 0 /* ignoringTypes */);
         assertEquals(Insets.of(0, 100, 0, 100), visibleInsets);
     }
 
@@ -802,7 +803,7 @@ public class InsetsStateTest {
                 .setVisible(true);
         Insets visibleInsets = mState.calculateVisibleInsets(
                 new Rect(0, 0, 100, 300), null, TYPE_APPLICATION, ACTIVITY_TYPE_UNDEFINED,
-                SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */);
+                SOFT_INPUT_ADJUST_NOTHING, 0 /* windowFlags */, 0 /* ignoringTypes */);
         assertEquals(Insets.of(0, 100, 0, 0), visibleInsets);
     }
 
@@ -821,8 +822,27 @@ public class InsetsStateTest {
                 .setVisible(true);
         Insets visibleInsets = mState.calculateVisibleInsets(
                 new Rect(0, 0, 100, 300), null, TYPE_APPLICATION, ACTIVITY_TYPE_UNDEFINED,
-                SOFT_INPUT_ADJUST_PAN, FLAG_LAYOUT_NO_LIMITS);
+                SOFT_INPUT_ADJUST_PAN, FLAG_LAYOUT_NO_LIMITS, 0 /* ignoringTypes */);
         assertEquals(Insets.NONE, visibleInsets);
+    }
+
+    @Test
+    public void testCalculateVisibleInsets_ignoringTypes() {
+        mState.getOrCreateSource(ID_STATUS_BAR, statusBars())
+                .setFrame(new Rect(0, 0, 100, 100))
+                .setVisible(true);
+        mState.getOrCreateSource(ID_IME, ime())
+                .setFrame(new Rect(0, 100, 100, 300))
+                .setVisible(true);
+        mState.getOrCreateSource(ID_NAVIGATION_BAR, navigationBars())
+                .setFrame(new Rect(50, 0, 100, 300))
+                .setVisible(true);
+
+        Insets visibleInsets = mState.calculateVisibleInsets(new Rect(0, 0, 100, 300), null,
+                TYPE_APPLICATION, ACTIVITY_TYPE_UNDEFINED, SOFT_INPUT_ADJUST_PAN,
+                0 /* windowFlags */, ime() | navigationBars() /* ignoringTypes */);
+        // Make sure that ignored types are not included
+        assertEquals(Insets.of(0, 100, 0, 0), visibleInsets);
     }
 
     @Test

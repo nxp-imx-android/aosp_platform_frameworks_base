@@ -6,6 +6,7 @@ java_defaults {
     name: "FrameworksServicesTests-jni-defaults",
     jni_libs: [
         "libservicestestjni",
+        "libbpf",
     ],
 }
 
@@ -230,7 +231,7 @@ android_ravenwood_test {
 }
 
 android_ravenwood_test {
-    name: "FrameworksServicesTestsRavenwood_ActivityManager",
+    name: "FrameworksServicesTestsRavenwood_PowerManager",
     defaults: ["FrameworksServicesTestsRavenwood-defaults"],
     static_libs: [
         "androidx.test.ext.junit",
@@ -241,7 +242,7 @@ android_ravenwood_test {
         "mockito-ravenwood-prebuilt",
     ],
     srcs: [
-        "src/com/android/server/am/PowerManagerBatchProxyTest.java",
+        "src/com/android/server/power/PowerManagerBatchProxyTest.java",
     ],
 }
 

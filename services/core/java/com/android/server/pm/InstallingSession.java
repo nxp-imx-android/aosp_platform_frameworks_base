@@ -438,9 +438,15 @@ class InstallingSession {
             // install reason correctly.
             return installReason;
         }
-        final String ownerPackage = mPm.mProtectedPackages.getDeviceOwnerOrProfileOwnerPackage(
-                UserHandle.getUserId(installerUid));
-        if (ownerPackage != null && ownerPackage.equals(installerPackageName)) {
+        String dpcPackage;
+        if (android.app.admin.flags.Flags.pushDpcPackagesToSystemServices()) {
+            dpcPackage = mPm.mProtectedPackages.getDevicePolicyControllerPackage(
+                    UserHandle.getUserId(installerUid));
+        } else {
+            dpcPackage = mPm.mProtectedPackages.getDeviceOwnerOrProfileOwnerPackage(
+                    UserHandle.getUserId(installerUid));
+        }
+        if (dpcPackage != null && dpcPackage.equals(installerPackageName)) {
             // If the install is being performed by a device or profile owner, the install
             // reason should be enterprise policy.
             return PackageManager.INSTALL_REASON_POLICY;

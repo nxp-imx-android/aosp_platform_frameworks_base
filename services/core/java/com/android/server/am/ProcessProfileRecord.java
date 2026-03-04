@@ -20,6 +20,7 @@ import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_EMPTY;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_STARTED_SERVICE;
 
+import android.app.ActivityManager;
 import android.app.IApplicationThread;
 import android.app.ProcessMemoryState.HostingComponentType;
 import android.content.pm.ApplicationInfo;
@@ -632,8 +633,10 @@ final class ProcessProfileRecord implements ProcessRecordInternal.StartedService
     }
 
     @GuardedBy({"mService", "mProfilerLock"})
-    void updateProcState(ProcessRecordInternal state) {
-        mSetProcState = state.getCurProcState();
+    void updateProcState(ProcessRecordInternal state,
+            @ActivityManager.ProcessState int newProcState) {
+        // TODO: b/489196673 - Switch to update the state from the state listener of the PSC.
+        mSetProcState = newProcState;
         mSetAdj = state.getCurAdj();
         mCurRawAdj = state.getCurRawAdj();
         mLastStateTime = state.getLastStateTime();

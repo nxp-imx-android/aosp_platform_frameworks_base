@@ -334,16 +334,6 @@ flag {
 }
 
 flag {
-  name: "display_aware_shade_controller_impl"
-  namespace: "systemui"
-  description: "Make ShadeControllerImpl display aware"
-  bug: "444658034"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "do_not_use_immediate_coroutine_dispatcher"
     namespace: "systemui"
     description: "Uses the Main coroutine dispatcher (not immediate) when enabled"
@@ -1292,16 +1282,6 @@ flag {
     namespace: "systemui"
     description: "Adds an intent action to the intent used to launch the QR code scanner from the quick settings tile."
     bug: "461701811"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "qs_delete_uninstalled_tile_service"
-    namespace: "systemui"
-    description: "When a TileService package is uninstalled, remove the tile completely and all associated data."
-    bug: "362234193"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

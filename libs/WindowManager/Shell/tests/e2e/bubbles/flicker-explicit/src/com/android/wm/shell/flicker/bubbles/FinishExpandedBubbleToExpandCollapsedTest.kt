@@ -114,7 +114,7 @@ class FinishExpandedBubbleToExpandCollapsedTest(navBar: NavBar) :
 
     @Test
     override fun focusChanges() {
-        eventLogSubject.focusChanges(
+        focusEventSubject.focusChanges(
             previousApp.toWindowName(), // LOST, previousApp finishes
             LAUNCHER.toWindowName(), // GAINED, launcher becomes the top focused
             testApp.toWindowName(), // GAINED, testApp gets expanded and gains focus

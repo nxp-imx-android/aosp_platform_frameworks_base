@@ -16,7 +16,6 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
-import android.content.res.Resources
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
@@ -32,8 +31,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -43,7 +40,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
-import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
@@ -76,15 +72,13 @@ fun NotificationRuleEdit(
     var isAddFieldDialogShowing by remember { mutableStateOf(false) }
 
     val textStyles = rememberTextStyles()
-    val resources = LocalResources.current
     val text =
-        remember(viewModel, onEnterEditField, onExitEditField, textStyles, resources) {
+        remember(viewModel, onEnterEditField, onExitEditField, textStyles) {
             buildAnnotatedText(
                 viewModel = viewModel,
                 onEnterEditField = onEnterEditField,
                 onExitEditField = onExitEditField,
                 textStyles = textStyles,
-                resources = resources,
             )
         }
 
@@ -97,6 +91,7 @@ fun NotificationRuleEdit(
             )
         }
 
+        EditableAction(viewModel, onEnterEditField = onEnterEditField)
         Text(text = text, style = MaterialTheme.typography.titleLargeEmphasized)
 
         AddButton(
@@ -122,25 +117,9 @@ private fun buildAnnotatedText(
     onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
     onExitEditField: () -> Unit,
     textStyles: TextStyles,
-    resources: Resources,
 ): AnnotatedString {
     return buildAnnotatedString {
-        clickableText(
-            text = viewModel.rule.action.toText(resources),
-            isAmbiguous = false,
-            onClick = {
-                onEnterEditField(
-                    RulesScreenViewState.EditField.Action(
-                        onActionSaved = { newAction ->
-                            viewModel.rule = viewModel.rule.copy(action = newAction)
-                        }
-                    )
-                )
-            },
-            textStyles = textStyles,
-        )
-
-        append(" all Conversation notifications [TK]")
+        append("Notifications [TK]")
 
         viewModel.rule.includedApps?.let {
             append(" from [TK]")

@@ -33,6 +33,7 @@ import com.android.systemui.actioncorner.ActionCornerModule;
 import com.android.systemui.battery.BatterySaverModule;
 import com.android.systemui.clipboardoverlay.dagger.ClipboardOverlayOverrideModule;
 import com.android.systemui.communal.posturing.dagger.PosturingModule;
+import com.android.systemui.cursorposition.CursorPositionModule;
 import com.android.systemui.display.dagger.ReferenceSysUIDisplaySubcomponent;
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.display.data.repository.DisplayPhoneModule;
@@ -184,6 +185,7 @@ import javax.inject.Provider;
         ShortcutHelperModule.class,
         ContextualEducationModule.class,
         ActionCornerModule.class,
+        CursorPositionModule.class,
 }, subcomponents = {
         ReferenceSysUIDisplaySubcomponent.class
 })

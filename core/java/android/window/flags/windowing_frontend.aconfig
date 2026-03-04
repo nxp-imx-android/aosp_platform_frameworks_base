@@ -84,16 +84,6 @@ flag {
 }
 
 flag {
-  name: "remove_legacy_orientation_report"
-  namespace: "windowing_frontend"
-  description: "Remove legacy task letterbox logic"
-  bug: "464110049"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "deprecate_make_task_launch_behind"
   namespace: "windowing_frontend"
   description: "Deprecate ActivityOptions#makeTaskLaunchBehind"
@@ -401,16 +391,6 @@ flag {
 }
 
 flag {
-    name: "simulate_touch_display_from_navigation_back"
-    namespace: "windowing_frontend"
-    description: "Trigger potential display focus change for non-gesture input because SystemUI won't inject input event."
-    bug: "461642122"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "improve_fluid_resizing_performance"
     namespace: "windowing_frontend"
     description: "Improve the performance during fluid resizing."
@@ -510,4 +490,11 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "sync_before_enabling_screen"
+    namespace: "windowing_frontend"
+    description: "Sync storage before enabling screen during boot"
+    bug: "467888558"
 }

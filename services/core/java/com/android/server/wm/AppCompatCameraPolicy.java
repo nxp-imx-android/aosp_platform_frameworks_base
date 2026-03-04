@@ -92,6 +92,15 @@ class AppCompatCameraPolicy {
                 ? activityRecord.mDisplayContent.mAppCompatCameraPolicy : null;
     }
 
+    static void onDisplayRotationChanged(@NonNull ActivityRecord activity,
+            @Surface.Rotation int newDisplayRotation) {
+        final AppCompatCameraPolicy cameraPolicy = getAppCompatCameraPolicy(activity);
+        if (cameraPolicy != null && cameraPolicy.mSimReqOrientationPolicy != null) {
+            cameraPolicy.mSimReqOrientationPolicy.onDisplayRotationChanged(activity,
+                    newDisplayRotation);
+        }
+    }
+
     /**
      * "Refreshes" activity by going through "stopped -> resumed" or "paused -> resumed" cycle.
      * This allows to clear cached values in apps (e.g. display or camera rotation) that influence

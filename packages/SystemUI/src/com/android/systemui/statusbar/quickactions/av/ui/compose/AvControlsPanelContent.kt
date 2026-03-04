@@ -226,6 +226,7 @@ private fun SectionButton(
     ListItem(
         modifier =
             modifier
+                .height(56.dp)
                 .clip(shape = RoundedCornerShape(if (viewModel.state.isEnabled) 16.dp else 360.dp))
                 .fillMaxWidth()
                 .clickable(onClick = { scope.launch { viewModel.onClick() } }),

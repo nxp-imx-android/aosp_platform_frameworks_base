@@ -20,6 +20,7 @@ import static android.annotation.SystemApi.Client.PRIVILEGED_APPS;
 
 import android.Manifest;
 import android.annotation.FlaggedApi;
+import android.annotation.IntDef;
 import android.annotation.RequiresPermission;
 import android.annotation.StyleRes;
 import android.annotation.SuppressLint;
@@ -41,7 +42,10 @@ import androidx.annotation.Nullable;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.Preconditions;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -143,6 +147,21 @@ public class InsightSurfaceClient implements AutoCloseable {
         }
     }
 
+    /** @hide */
+    @IntDef(
+            prefix = {"REGISTRATION_STATE_"},
+            value = {
+                    REGISTRATION_STATE_NOT_REGISTERED,
+                    REGISTRATION_STATE_REGISTERING,
+                    REGISTRATION_STATE_REGISTERED,
+            })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface RegistrationState {}
+
+    private static final int REGISTRATION_STATE_NOT_REGISTERED = 0;
+    private static final int REGISTRATION_STATE_REGISTERING = 1;
+    private static final int REGISTRATION_STATE_REGISTERED = 2;
+
     private InsightSurfaceClientInfo mClientInfo;
     private InsightSurfaceSession mSession;
 
@@ -151,7 +170,10 @@ public class InsightSurfaceClient implements AutoCloseable {
     private final List<InsightReceiver> mInsightReceivers;
     @Nullable
     private CallbackWrapper mCallbacks;
-    private boolean mIsRegistered;
+    @RegistrationState
+    private int mRegistrationState = REGISTRATION_STATE_NOT_REGISTERED;
+    private Set<ContextHint> mPendingHints;
+    private final Object mRegistrationLock = new Object();
 
     private record CallbackWrapper(
             @NonNull Executor executor,
@@ -187,7 +209,8 @@ public class InsightSurfaceClient implements AutoCloseable {
                     executeWithCallbacks(clientCallback -> {
                         if (mSession != null) {
                             Preconditions.checkState(
-                                    mSession.getSurfacePackage() == surfacePackage);
+                                    mSession.getSurfacePackage().getSurfaceControl()
+                                            .isSameSurface(surfacePackage.getSurfaceControl()));
                             clientCallback.onSessionDestroyed(mSession);
                             mSession.close();
                             mSession = null;
@@ -202,7 +225,8 @@ public class InsightSurfaceClient implements AutoCloseable {
                     }
                     executeWithCallbacks(clientCallback -> {
                         Preconditions.checkState(
-                                mSession != null && mSession.getSurfacePackage() == surfacePackage);
+                                mSession != null && mSession.getSurfacePackage().getSurfaceControl()
+                                        .isSameSurface(surfacePackage.getSurfaceControl()));
                         clientCallback.onSessionUpdated(mSession);
                     });
                 }
@@ -224,6 +248,36 @@ public class InsightSurfaceClient implements AutoCloseable {
                     }
                     executeWithCallbacks(clientCallback ->
                             clientCallback.onSizeChanged(width, height));
+                }
+
+                @Override
+                public void onVisualizationError(
+                        @InsightSurfaceSessionException.ClientError int errorCode) {
+                    if (DEBUG) {
+                        Log.d(TAG, "onVisualizationError: errorCode=" + errorCode);
+                    }
+                    executeWithCallbacks(clientCallback ->
+                            clientCallback.onError(
+                                    new InsightSurfaceSessionException(
+                                            errorCode, "failed to create a visualization")));
+                }
+
+                public void onRegistered() {
+                    if (DEBUG) {
+                        Log.d(TAG, "onRegistered");
+                    }
+
+                    synchronized (mRegistrationLock) {
+                        mRegistrationState = REGISTRATION_STATE_REGISTERED;
+
+                        if (mPendingHints != null) {
+                            if (DEBUG) {
+                                Log.d(TAG, "Sending " + mPendingHints.size() + " pending hints.");
+                            }
+                            publishHints(mPendingHints);
+                            mPendingHints = null;
+                        }
+                    }
                 }
             };
 
@@ -259,14 +313,29 @@ public class InsightSurfaceClient implements AutoCloseable {
      * Publish new hints to the context engine. This method can be called any time after the client
      * has been created to send new hints to the context engine. Hints published through this method
      * will cause any resulting {@link ContextInsight} to be delivered to this surface client.
+     * <p>
+     * If the client is not yet registered with the context engine, then the hints won't be
+     * published to the context engine until the client is successfully registered. Note that
+     * calling this method multiple times before the client is registered will result in only the
+     * last published hints being sent after client registration has finished. Hints across
+     * multiple calls will not be queued or combined.
+     *
+     * </p>
      *
      * @param hints a list of {@link ContextHint}s
      */
     public void publishHints(@NonNull Set<ContextHint> hints) {
         Objects.requireNonNull(hints);
-        final PersonalContextManager personalContextManager =
-                mContext.getSystemService(PersonalContextManager.class);
-        personalContextManager.publishInsightSurfaceHints(hints, mClientInfo);
+
+        synchronized (mRegistrationLock) {
+            if (mRegistrationState == REGISTRATION_STATE_REGISTERED) {
+                final PersonalContextManager personalContextManager =
+                        mContext.getSystemService(PersonalContextManager.class);
+                personalContextManager.publishInsightSurfaceHints(hints, mClientInfo);
+            } else {
+                mPendingHints = new HashSet<>(hints);
+            }
+        }
     }
 
     /**
@@ -361,20 +430,23 @@ public class InsightSurfaceClient implements AutoCloseable {
             Log.d(TAG, "registering client...");
         }
 
-        if (mIsRegistered) {
-            // Already registered.
-            Log.w(TAG, "client is already registered");
-            return;
+        synchronized (mRegistrationLock) {
+            if (mRegistrationState != REGISTRATION_STATE_NOT_REGISTERED) {
+                // Already registered or in the process of registering.
+                Log.w(TAG, "client is already registered or is registering");
+                return;
+            }
+
+            mRegistrationState = REGISTRATION_STATE_REGISTERING;
+
+            final PersonalContextManager personalContextManager =
+                    mContext.getSystemService(PersonalContextManager.class);
+            personalContextManager.registerInsightSurfaceClient(mClientInfo);
+
+            mCallbacks = new CallbackWrapper(
+                    callbacksExecutor != null ? callbacksExecutor : mContext.getMainExecutor(),
+                    callbacks);
         }
-
-        final PersonalContextManager personalContextManager =
-                mContext.getSystemService(PersonalContextManager.class);
-        personalContextManager.registerInsightSurfaceClient(mClientInfo);
-
-        mCallbacks = new CallbackWrapper(
-                callbacksExecutor != null ? callbacksExecutor : mContext.getMainExecutor(),
-                callbacks);
-        mIsRegistered = true;
     }
 
     /**
@@ -388,29 +460,34 @@ public class InsightSurfaceClient implements AutoCloseable {
             Log.d(TAG, "unregistering client...");
         }
 
-        if (!mIsRegistered) {
-            Log.w(TAG, "client not registered");
-            return;
+        synchronized (mRegistrationLock) {
+            if (mRegistrationState == REGISTRATION_STATE_NOT_REGISTERED) {
+                Log.w(TAG, "client not registered");
+                return;
+            }
+
+            final PersonalContextManager personalContextManager =
+                    mContext.getSystemService(PersonalContextManager.class);
+            personalContextManager.unregisterInsightSurfaceClient(mClientInfo);
+
+            if (mSession != null) {
+                // Closing the session releases the SurfacePackage it wraps.
+                mSession.close();
+                mSession = null;
+            }
+
+            mCallbacks = null;
+            mRegistrationState = REGISTRATION_STATE_NOT_REGISTERED;
+            mPendingHints = null;
         }
-
-        final PersonalContextManager personalContextManager =
-                mContext.getSystemService(PersonalContextManager.class);
-        personalContextManager.unregisterInsightSurfaceClient(mClientInfo);
-
-        if (mSession != null) {
-            // Closing the session releases the SurfacePackage it wraps.
-            mSession.close();
-            mSession = null;
-        }
-
-        mCallbacks = null;
-        mIsRegistered = false;
     }
 
     @Override
     public void close() {
-        if (mIsRegistered) {
-            unregister();
+        synchronized (mRegistrationLock) {
+            if (mRegistrationState != REGISTRATION_STATE_NOT_REGISTERED) {
+                unregister();
+            }
         }
     }
 

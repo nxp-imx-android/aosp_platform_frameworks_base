@@ -295,6 +295,7 @@ import com.android.server.am.BaseErrorDialog;
 import com.android.server.am.PendingIntentController;
 import com.android.server.am.PendingIntentRecord;
 import com.android.server.am.UserState;
+import com.android.server.am.psc.ProcessRecordInternal;
 import com.android.server.am.psc.ProcessStateController;
 import com.android.server.firewall.IntentFirewall;
 import com.android.server.grammaticalinflection.GrammaticalInflectionManagerInternal;
@@ -5909,7 +5910,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         } else {
             cancelExpandedShade = false;
         }
-        mActivityStateUpdater.setTopProcessAsync(topApp, clearPrevious, cancelExpandedShade);
+        final ProcessRecordInternal topAppRecord = topApp != null ? topApp.mOwner : null;
+        mActivityStateUpdater.setTopProcessAsync(topAppRecord, clearPrevious, cancelExpandedShade);
     }
 
     /**
@@ -5931,7 +5933,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             final WindowProcessController previousProcess = stoppedActivity.app;
             mPreviousProcess = previousProcess;
             mPreviousProcessVisibleTime = stoppedActivity.lastVisibleTime;
-            mActivityStateUpdater.setPreviousProcessAsync(previousProcess);
+            mActivityStateUpdater.setPreviousProcessAsync(previousProcess.mOwner);
         }
     }
 
@@ -6044,7 +6046,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 ActivityTaskManagerService::postHeavyWeightProcessNotification, this,
                 wpc, root.intent, root.mUserId);
         mH.sendMessage(m);
-        mActivityStateUpdater.setHeavyWeightProcessAsync(wpc);
+        mActivityStateUpdater.setHeavyWeightProcessAsync(wpc != null ? wpc.mOwner : null);
     }
 
     void clearHeavyWeightProcessIfEquals(WindowProcessController proc) {

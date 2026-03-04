@@ -77,6 +77,14 @@ fun PreferenceMetadata.isUiOnlyPreference(context: Context): Boolean =
     tags(context).contains(UI_ONLY_PREFERENCE)
 
 /**
+ * Returns whether the preference is a pure metadata object in a UI screen
+ *
+ * @return true if preference is a pure metadata object in a UI screen, false otherwise
+ */
+fun PreferenceMetadata.isMetadataInUi(context: Context): Boolean =
+    tags(context).contains(METADATA_IN_UI)
+
+/**
  * Performs preference hierarchy operation with a new [CoroutineScope].
  *
  * The coroutine scope will be cancelled automatically (when the block is finished) to cancel

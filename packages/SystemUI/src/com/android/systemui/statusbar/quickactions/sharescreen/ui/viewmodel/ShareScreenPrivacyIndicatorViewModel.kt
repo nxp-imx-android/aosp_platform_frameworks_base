@@ -22,11 +22,11 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
+import com.android.systemui.statusbar.quickactions.shared.model.ChipIcon
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.statusbar.quickactions.sharescreen.domain.interactor.ShareScreenPrivacyIndicatorInteractor
 import com.android.systemui.statusbar.quickactions.ui.compose.ChipColors
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipIcon
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
@@ -42,18 +42,18 @@ constructor(
     private val popupViewModelFactory: ShareScreenPrivacyIndicatorPopupViewModel.Factory,
 ) : StatusBarPopupChipViewModel, HydratedActivatable() {
 
-    override val chip: QuickActionChipUiState by
+    override val chip: QuickActionChipModel by
         shareScreenPrivacyIndicatorInteractor.isChipVisible
             .map { toPopupChipModel(it) }
             .hydratedStateOf(
                 traceName = "chip",
                 initialValue =
-                    QuickActionChipUiState.Hidden(QuickActionChipId.ShareScreenPrivacyIndicator),
+                    QuickActionChipModel.Hidden(QuickActionChipId.ShareScreenPrivacyIndicator),
             )
 
-    private fun toPopupChipModel(isVisible: Boolean): QuickActionChipUiState {
+    private fun toPopupChipModel(isVisible: Boolean): QuickActionChipModel {
         return if (isVisible) {
-            QuickActionChipUiState.PopupChip(
+            QuickActionChipModel.PopupChip(
                 chipId = QuickActionChipId.ShareScreenPrivacyIndicator,
                 icons = listOf(ChipIcon(Icon.Resource(R.drawable.ic_share_screen, null))),
                 chipContent = null,
@@ -66,7 +66,7 @@ constructor(
                 popupViewModelFactory = popupViewModelFactory,
             )
         } else {
-            QuickActionChipUiState.Hidden(QuickActionChipId.ShareScreenPrivacyIndicator)
+            QuickActionChipModel.Hidden(QuickActionChipId.ShareScreenPrivacyIndicator)
         }
     }
 

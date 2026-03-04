@@ -502,6 +502,15 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 setApplicationHiddenForUser(userId, packageName, false);
                 enablePendingNotificationStateLocked(userId, policy);
             }
+            case PackageUsagePolicy.TYPE_TIME_LIMIT -> {
+                if (Flags.enableSupervisionPackageUsageApis()) {
+                    setApplicationHiddenForUser(userId, packageName, false);
+                    Slogf.w(
+                            SupervisionLog.TAG,
+                            "Time usage limit policy not implemented yet for package: %s",
+                            packageName);
+                }
+            }
             default ->
                     Slogf.w(
                             SupervisionLog.TAG,
@@ -583,8 +592,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private void validatePackageUsagePolicy(@NonNull PackageUsagePolicy policy) {
         if (policy.getPackageName().isEmpty()
                 || policy.getPackageName().length() > MAX_PACKAGE_NAME_LENGTH
-                || (policy.getType() != PackageUsagePolicy.TYPE_BLOCKED
-                        && policy.getType() != PackageUsagePolicy.TYPE_ALLOWED)) {
+                || !PackageUsagePolicy.isTypeValid(policy.getType())) {
             throw new IllegalArgumentException("Invalid package policy");
         }
     }

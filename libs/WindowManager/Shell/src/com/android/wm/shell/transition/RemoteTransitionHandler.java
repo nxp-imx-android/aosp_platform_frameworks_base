@@ -128,7 +128,7 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
         // doesn't have the necessary permission to deal with such changes.
         final boolean ignoreTransition = !Transitions.SHELL_TRANSITIONS_ROTATION
                 && (Flags.enableCrossDisplaysAppLaunchTransition()
-                        ? TransitionUtil.hasNonOrderOnlyDisplayChange(info) :
+                        ? TransitionUtil.hasStationaryOnlyDisplayChange(info) :
                         TransitionUtil.hasDisplayChange(info));
         if (ignoreTransition) {
             // Note that if the remote doesn't have permission ACCESS_SURFACE_FLINGER, some

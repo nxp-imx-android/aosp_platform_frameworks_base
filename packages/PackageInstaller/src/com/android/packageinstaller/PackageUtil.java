@@ -183,6 +183,9 @@ public class PackageUtil {
         }
 
         @Override
+        // writeString8 is a hidden API, which is unavailable as this package does not use
+        // platform_apis.
+        @SuppressWarnings("AndroidFrameworkEfficientParcelable")
         public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeString(label.toString());
 

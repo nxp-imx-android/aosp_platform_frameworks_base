@@ -15,7 +15,6 @@
  */
 package com.android.settingslib.bluetooth;
 
-import static com.android.settingslib.flags.Flags.FLAG_ENABLE_ANDROID_AUTO_CHECK_BY_UI_MODE_MANAGER;
 import static com.android.settingslib.flags.Flags.FLAG_ENABLE_BLUETOOTH_DIAGNOSIS;
 import static com.android.settingslib.flags.Flags.FLAG_ENABLE_LE_AUDIO_SHARING;
 import static com.android.settingslib.flags.Flags.FLAG_REFACTOR_BATTERY_LEVEL_DISPLAY;
@@ -252,7 +251,6 @@ public class CachedBluetoothDeviceTest {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_ANDROID_AUTO_CHECK_BY_UI_MODE_MANAGER)
     public void onProfileStateChanged_a2dpDisconnected_isAndroidAuto_noConnectionFailure() {
         // Arrange
         when(mProfileManager.getA2dpProfile()).thenReturn(mA2dpProfile);
@@ -274,7 +272,6 @@ public class CachedBluetoothDeviceTest {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_ANDROID_AUTO_CHECK_BY_UI_MODE_MANAGER)
     public void onProfileStateChanged_a2dpDisconnected_notAndroidAuto_showsConnectionFailure() {
         // Arrange
         when(mProfileManager.getA2dpProfile()).thenReturn(mA2dpProfile);

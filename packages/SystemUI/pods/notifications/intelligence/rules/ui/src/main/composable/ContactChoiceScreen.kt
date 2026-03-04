@@ -16,9 +16,14 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.RulesScreenViewState
 import com.android.systemui.res.R
@@ -45,16 +50,25 @@ fun ContactChoiceScreen(
         onSelectionSaved = { viewState.onContactsSaved(it) },
         onDismissRequest = onDismissRequest,
         fetchSearchResults = { query -> viewModel.fetchContacts(query, contentResolver) },
-        sortKey = { it.name },
-        uniqueId = { it.lookupUri },
+        sortKey = { it.displayLabel },
+        uniqueId = { it.id },
         image = {
-            AsyncUriImage(
-                uri = it.photoUri,
-                contentDescription = it.name,
-                size = EditScreenDimens.imageSize,
-                viewModel = viewModel,
-            )
+            ContactImage(it, EditScreenDimens.imageSize, viewModel::loadContactBitmapFromUri)
         },
         text = { it.name },
+    )
+}
+
+@Composable
+private fun ContactImage(
+    model: ContactModel,
+    size: Dp,
+    loadBitmap: suspend (Uri, Context, Int) -> Bitmap?,
+) {
+    AsyncUriImage(
+        uri = model.photoUri,
+        loadBitmap = loadBitmap,
+        contentDescription = model.displayLabel,
+        size = size,
     )
 }

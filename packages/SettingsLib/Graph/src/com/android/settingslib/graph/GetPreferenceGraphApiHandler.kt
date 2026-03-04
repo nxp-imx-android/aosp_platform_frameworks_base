@@ -138,10 +138,10 @@ class GetPreferenceGraphRequestCodec : MessageCodec<GetPreferenceGraphRequest> {
 
 class PreferenceGraphProtoCodec : MessageCodec<PreferenceGraphProto> {
     override fun encode(data: PreferenceGraphProto): Bundle =
-        Bundle(1).apply { putByteArray(KEY_GRAPH, data.toByteArray()) }
+        Bundle(1).apply { putByteArray(KEY_GRAPH, PreferenceGraphCompressor.shrink(data).toByteArray()) }
 
     override fun decode(data: Bundle): PreferenceGraphProto =
-        PreferenceGraphProto.parseFrom(data.getByteArray(KEY_GRAPH)!!)
+        PreferenceGraphCompressor.expand(PreferenceGraphProto.parseFrom(data.getByteArray(KEY_GRAPH)!!))
 
     companion object {
         private const val KEY_GRAPH = "g"

@@ -49,7 +49,6 @@ import android.text.style.ReplacementSpan;
 import android.text.style.TabStopSpan;
 import android.widget.TextView;
 
-import com.android.graphics.hwui.flags.Flags;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.graphics.ColorUtils;
 import com.android.internal.util.ArrayUtils;
@@ -418,7 +417,7 @@ public abstract class Layout {
     }
 
     private void initSpanColors() {
-        if (mSpannedText && Flags.highContrastTextSmallTextRect()) {
+        if (mSpannedText) {
             if (mSpanColors == null) {
                 mSpanColors = new SpanColors();
             } else {
@@ -547,7 +546,7 @@ public abstract class Layout {
     }
 
     private static boolean shouldDrawHighlightsOnTop(Canvas canvas) {
-        return Flags.highContrastTextSmallTextRect() && canvas.isHighContrastTextEnabled();
+        return canvas.isHighContrastTextEnabled();
     }
 
     private static Paint setToHighlightPaint(Paint p, BlendMode blendMode, Paint outPaint) {

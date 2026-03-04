@@ -259,16 +259,6 @@ flag {
 }
 
 flag {
-    name: "enable_android_auto_check_by_ui_mode_manager"
-    namespace: "cross_device_experiences"
-    description: "Enable Android Audio check by UiModeManager"
-    bug: "435439323"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "add_extra_external_display_density_stops"
   namespace: "lse_desktop_experience"
   description: "Add 200% and 300% display density adjustments for external display"

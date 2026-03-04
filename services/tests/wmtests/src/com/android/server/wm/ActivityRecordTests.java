@@ -143,7 +143,6 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.provider.DeviceConfig;
@@ -151,7 +150,6 @@ import android.util.MutableBoolean;
 import android.view.DisplayInfo;
 import android.view.IRemoteAnimationFinishedCallback;
 import android.view.IRemoteAnimationRunner.Stub;
-import android.view.IWindowManager;
 import android.view.RemoteAnimationAdapter;
 import android.view.RemoteAnimationTarget;
 import android.view.Surface;
@@ -2780,6 +2778,33 @@ public class ActivityRecordTests extends WindowTestsBase {
         assertTrue(appWindow.mResizeReported);
     }
 
+    @SetupWindows(addWindows = W_ACTIVITY)
+    @Test
+    @EnableFlags({Flags.FLAG_CAMERA_COMPAT_UPDATE_TREATMENT_ON_ROTATION})
+    public void testDeviceRotated_notifiesCameraCompat() {
+        final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
+                /* isCameraRunning */ true, WINDOWING_MODE_FULLSCREEN);
+        final DisplayRotation displayRotation = mDisplayContent.getDisplayRotation();
+        spyOn(displayRotation);
+        // Set initial rotation.
+        performRotation(displayRotation, Surface.ROTATION_0);
+        final AppCompatCameraPolicy cameraPolicy = AppCompatCameraPolicy
+                .getAppCompatCameraPolicy(activity);
+        spyOn(cameraPolicy.mSimReqOrientationPolicy);
+
+        final WindowManager.LayoutParams attrs = new WindowManager.LayoutParams(
+                TYPE_BASE_APPLICATION);
+        attrs.setTitle("RotationByPolicy");
+        final TestWindowState appWindow = createWindowState(attrs, activity);
+        activity.addWindow(appWindow);
+        spyOn(appWindow);
+
+        // Rotate the display.
+        performRotation(displayRotation, Surface.ROTATION_90);
+        verify(cameraPolicy.mSimReqOrientationPolicy).onDisplayRotationChanged(activity,
+                Surface.ROTATION_90);
+    }
+
     private void performRotation(DisplayRotation spiedRotation, int rotationToReport) {
         doReturn(rotationToReport).when(spiedRotation).rotationForOrientation(anyInt(), anyInt());
         mWm.updateRotation(false, false);
@@ -2934,21 +2959,6 @@ public class ActivityRecordTests extends WindowTestsBase {
         // other screen configurations are in landscape, e.g. screenWidthDp, screenHeightDp, and
         // window configuration.
         assertEquals(Configuration.ORIENTATION_LANDSCAPE, activityConfig.orientation);
-    }
-
-    @DisableFlags(Flags.FLAG_REMOVE_LEGACY_ORIENTATION_REPORT)
-    @Test
-    public void testReportOrientationChange() {
-        final Task task = new TaskBuilder(mSupervisor)
-                .setDisplay(mDisplayContent).setCreateActivity(true).build();
-        final ActivityRecord activity = task.getTopNonFinishingActivity();
-        activity.setOrientation(SCREEN_ORIENTATION_LANDSCAPE);
-
-        mDisplayContent.getDisplayRotation().setFixedToUserRotation(
-                IWindowManager.FIXED_TO_USER_ROTATION_ENABLED);
-        reset(task);
-        activity.reportDescendantOrientationChangeIfNeeded();
-        verify(task, atLeast(1)).onConfigurationChanged(any(Configuration.class));
     }
 
     @Test

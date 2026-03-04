@@ -25,7 +25,7 @@ import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.media.dialog.MediaOutputDialog
+import com.android.systemui.media.dialog.MediaOutputDialogDelegate
 import com.android.systemui.media.dialog.MediaOutputDialogManager
 import com.android.systemui.media.dialog.MediaSwitchingType
 import com.android.systemui.qs.panels.data.repository.QSPanelAppearanceRepository
@@ -62,7 +62,7 @@ constructor(
     ) {
         val onDialogEventListener =
             if (expandedAudioTileDetailsFeatureInteractor.isEnabled()) {
-                object : MediaOutputDialog.OnDialogEventListener {
+                object : MediaOutputDialogDelegate.OnDialogEventListener {
                     private var job: Job? = null
                     private var onGlobalLayoutListener: ViewTreeObserver.OnGlobalLayoutListener? =
                         null

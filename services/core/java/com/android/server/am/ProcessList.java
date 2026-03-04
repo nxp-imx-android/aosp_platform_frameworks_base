@@ -2142,9 +2142,11 @@ public final class ProcessList extends ProcessListInternal
                     + " with non-zero pid:" + app.getPid());
         }
         app.setDisabledCompatChanges(null);
+        app.setEnabledCompatChanges(null);
         app.setLoggableCompatChanges(null);
         if (mPlatformCompat != null) {
             app.setDisabledCompatChanges(mPlatformCompat.getDisabledChanges(app.info));
+            app.setEnabledCompatChanges(mPlatformCompat.getEnabledChanges(app.info));
             app.setLoggableCompatChanges(mPlatformCompat.getLoggableChanges(app.info));
             app.setLogChangeChecksToStatsD(mPlatformCompat.isLogChangeChecksToStatsd());
         }
@@ -2618,7 +2620,8 @@ public final class ProcessList extends ProcessListInternal
                         app.processName, uid, uid, gids, runtimeFlags, mountExternal,
                         app.info.targetSdkVersion, seInfo, requiredAbi, instructionSet,
                         app.info.dataDir, null, app.info.packageName,
-                        app.getDisabledCompatChanges(), useDeliQueue, app.getStartSeq(),
+                        app.getDisabledCompatChanges(), app.getEnabledCompatChanges(),
+                        useDeliQueue, app.getStartSeq(),
                         new String[]{PROC_START_SEQ_IDENT + app.getStartSeq()});
             } else if (hostingRecord.usesAppZygote()) {
                 final AppZygote appZygote = createAppZygoteForProcessIfNeeded(app);
@@ -2639,7 +2642,8 @@ public final class ProcessList extends ProcessListInternal
                         app.processName, uid, gids, runtimeFlags, mountExternal,
                         app.info.targetSdkVersion, seInfo, requiredAbi, instructionSet,
                         app.info.dataDir, app.info.packageName, isTopApp,
-                        app.getDisabledCompatChanges(), useDeliQueue, pkgDataInfoMap,
+                        app.getDisabledCompatChanges(), app.getEnabledCompatChanges(),
+                        useDeliQueue, pkgDataInfoMap,
                         allowlistedAppDataInfoMap, app.getStartSeq(),
                         new String[]{PROC_START_SEQ_IDENT + app.getStartSeq()});
             } else {
@@ -2648,7 +2652,8 @@ public final class ProcessList extends ProcessListInternal
                         app.processName, uid, uid, gids, runtimeFlags, mountExternal,
                         app.info.targetSdkVersion, seInfo, requiredAbi, instructionSet,
                         app.info.dataDir, invokeWith, app.info.packageName, zygotePolicyFlags,
-                        isTopApp, app.getDisabledCompatChanges(), useDeliQueue, pkgDataInfoMap,
+                        isTopApp, app.getDisabledCompatChanges(), app.getEnabledCompatChanges(),
+                        useDeliQueue, pkgDataInfoMap,
                         allowlistedAppDataInfoMap, bindMountAppsData, bindMountAppStorageDirs,
                         bindOverrideSysprops, app.getStartSeq(),
                         new String[]{PROC_START_SEQ_IDENT + app.getStartSeq()});

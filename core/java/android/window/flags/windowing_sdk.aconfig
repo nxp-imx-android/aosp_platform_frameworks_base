@@ -96,16 +96,6 @@ flag {
 }
 
 flag {
-    namespace: "windowing_sdk"
-    name: "improve_occlusion_calculation"
-    description: "Fix the occlusion calculation that doesn't take care of embedded TaskFragment"
-    bug: "471370182"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "aaos_core_contrib"
     name: "home_activity_always_present"
     description: "Ensure home activity is always present in the system."
@@ -174,16 +164,6 @@ flag {
 }
 
 flag {
-    namespace: "windowing_sdk"
-    name: "use_caller_token_in_launcher_apps"
-    description: "Pass caller's activity token in LauncherApps to fix task property inheritance (e.g. launcher shortcut move bubbled task to fullscreen)"
-    bug: "389810202"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "large_screen_experiences_app_compat"
     name: "defer_resume_end_before_ensure_activity_configuration_bugfix"
     description: "End defer resume before ensureActivityConfiguration()."
@@ -195,9 +175,29 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "pause_activity_by_tf"
+    description: "Pause the activity via TF#startPausing"
+    bug: "445844186"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "inherit_consecutive_launch_caller_uid"
     description: "Allows the original caller UID to be inherited from a previous launching state when a consecutive launch is detected."
     bug: "477475375"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
+    name: "idempotent_wct_resolution"
+    description: "Decouples requested policy from resolved configuration to ensure WCT operations are order-independent."
+    bug: "487350507"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

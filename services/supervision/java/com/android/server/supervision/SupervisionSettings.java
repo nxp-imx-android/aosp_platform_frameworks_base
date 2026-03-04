@@ -36,7 +36,7 @@ import com.android.internal.util.IndentingPrintWriter;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
-
+import java.time.Duration;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.File;
@@ -54,7 +54,7 @@ import java.util.function.BiConsumer;
  */
 public class SupervisionSettings {
     /** Current version of the supervision settings XML file. */
-    public static final int VERSION = 1;
+    public static final int VERSION = 2;
 
     private static SupervisionSettings sInstance;
     private static final Object sLock = new Object();
@@ -95,6 +95,7 @@ public class SupervisionSettings {
     // PackageUsagePolicy related keys.
     private static final String KEY_PACKAGE_NAME = "package_name";
     private static final String KEY_PACKAGE_TYPE = "package_type";
+    private static final String KEY_PACKAGE_TIME_LIMIT_MILLIS = "time_limit_millis";
 
     private AtomicFile recoveryInfoFile =
             new AtomicFile(
@@ -415,6 +416,10 @@ public class SupervisionSettings {
                     xml.attributeLong(null, KEY_POLICY_VERSION, pp.getVersion());
                     xml.attribute(null, KEY_PACKAGE_NAME, pp.getPackageName());
                     xml.attributeInt(null, KEY_PACKAGE_TYPE, pp.getType());
+                    if (Flags.enableSupervisionPackageUsageApis() && pp.getTimeLimit() != null) {
+                        xml.attributeLong(
+                                null, KEY_PACKAGE_TIME_LIMIT_MILLIS, pp.getTimeLimit().toMillis());
+                    }
                 }
                 default -> {
                     Slog.e(
@@ -449,16 +454,42 @@ public class SupervisionSettings {
 
         switch (policyType) {
             case Policy.PACKAGE_POLICY_IDENTIFIER -> {
-                String packageName = parser.getAttributeValue(null, KEY_PACKAGE_NAME);
-                int type = parser.getAttributeInt(null, KEY_PACKAGE_TYPE);
-                return new PackageUsagePolicy.Builder(packageName, type)
-                        .setVersion(version)
-                        .build();
+                return parsePackageUsagePolicy(parser, version);
             }
             default -> {
                 Slog.e(SupervisionLog.TAG, "Unsupported policy type: " + policyType);
                 return null;
             }
+        }
+    }
+
+    @Nullable
+    private PackageUsagePolicy parsePackageUsagePolicy(
+            TypedXmlPullParser parser, long policyVersion)
+            throws XmlPullParserException, IOException {
+        String packageName = parser.getAttributeValue(null, KEY_PACKAGE_NAME);
+        int type = parser.getAttributeInt(null, KEY_PACKAGE_TYPE);
+
+        PackageUsagePolicy.Builder builder =
+                new PackageUsagePolicy.Builder(packageName, type).setVersion(policyVersion);
+
+        if (!Flags.enableSupervisionPackageUsageApis()) {
+            return builder.build();
+        }
+
+        Duration timeLimit = null;
+        int timeLimitIndex = parser.getAttributeIndex(null, KEY_PACKAGE_TIME_LIMIT_MILLIS);
+        if (timeLimitIndex != -1) {
+            timeLimit =
+                    Duration.ofMillis(parser.getAttributeLong(null, KEY_PACKAGE_TIME_LIMIT_MILLIS));
+        }
+        builder.setTimeLimit(timeLimit);
+
+        try {
+            return builder.build();
+        } catch (IllegalStateException e) {
+            Slog.e(SupervisionLog.TAG, "Failed to build package usage policy", e);
+            return null;
         }
     }
 

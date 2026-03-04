@@ -332,12 +332,6 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
 
     /** Whether the given activity is behind another occluded window. */
     private boolean isActivityBehindOccluded(@NonNull ActivityRecord current) {
-        if (!Flags.improveOcclusionCalculation()) {
-            final Task task = current.getTask();
-            return task == null || !task.shouldBeVisible(null /* starting */)
-                    || getOccludingActivityAbove(task, current) != null;
-        }
-
         final TaskFragment tf = current.getTaskFragment();
         if (tf == null || !tf.shouldBeVisible(null /* starting */)) {
             // Its parent is behind occluded.
@@ -359,55 +353,6 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
         return true;
     }
 
-    /**
-     * Returns the top-most activity that occludes the given {@code activity}, or {@code null} if
-     * none.
-     * @deprecated remove after {@link Flags#improveOcclusionCalculation}
-     */
-    @Deprecated
-    @Nullable
-    private static ActivityRecord getOccludingActivityAbove(@NonNull Task current,
-            @NonNull ActivityRecord activity) {
-        final ActivityRecord top = current.getActivity(r -> {
-            if (r == activity) {
-                // Reached the given activity, return the activity to stop searching.
-                return true;
-            }
-
-            if (!r.occludesParent()) {
-                return false;
-            }
-
-            TaskFragment parent = r.getTaskFragment();
-            if (parent == activity.getTaskFragment()) {
-                // Found it. This activity on top of the given activity on the same TaskFragment.
-                return true;
-            }
-            if (parent != null && parent.asTask() != null) {
-                // Found it. This activity is the direct child of a leaf Task.
-                return true;
-            }
-            // The candidate activity is being embedded. Checking if the bounds of the containing
-            // TaskFragment equals to the outer TaskFragment.
-            TaskFragment grandParent = parent.getParent().asTaskFragment();
-            while (grandParent != null) {
-                if (!parent.getBounds().equals(grandParent.getBounds())) {
-                    // Not occluding the grandparent.
-                    break;
-                }
-                if (grandParent.asTask() != null) {
-                    // Found it. The activity occludes its parent TaskFragment and the parent
-                    // TaskFragment also occludes its parent all the way up.
-                    return true;
-                }
-                parent = grandParent;
-                grandParent = parent.getParent().asTaskFragment();
-            }
-            return false;
-        });
-        return top != activity ? top : null;
-    }
-
     /** Whether all leaf Tasks in the same root Task are forced to be non-occluding. */
     private static boolean isForceNonOccludingByRootTask(@NonNull TaskFragment current) {
         final Task rootTask = current.getRootTask();
@@ -424,15 +369,6 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
         private boolean mIgnoringKeyguard;
         private boolean mIgnoringFinishing;
 
-        /**
-         * @deprecated remove after {@link Flags#improveOcclusionCalculation}
-         */
-        @Deprecated
-        private boolean isOpaque(@NonNull WindowContainer<?> container) {
-            return isOpaque(container, null /* starting */, true /* ignoringKeyguard */,
-                    false /* ignoringInvisibleActivity */, false /* ignoringFinishing */);
-        }
-
         /** Whether the container is opaque. */
         boolean isOpaque(
                 @NonNull WindowContainer<?> container, @Nullable ActivityRecord starting,
@@ -441,9 +377,7 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
             mStarting = starting;
             mIgnoringInvisibleActivity = ignoringInvisibleActivity;
             mIgnoringKeyguard = ignoringKeyguard;
-            mIgnoringFinishing = Flags.improveOcclusionCalculation()
-                    ? ignoringFinishing || ignoringInvisibleActivity
-                    : ignoringInvisibleActivity;
+            mIgnoringFinishing = ignoringFinishing || ignoringInvisibleActivity;
 
             final boolean isOpaque;
             if (!mEnableMultipleDesktopsBackend) {
@@ -488,19 +422,15 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
                     break;
                 }
 
-                if (child.fillsParent() && (Flags.improveOcclusionCalculation()
-                        ? isOpaqueInner(child)
-                        : isOpaque(child))) {
+                if (child.fillsParent() && isOpaqueInner(child)) {
                     return true;
                 }
 
                 final TaskFragment tf = child.asTaskFragment();
                 if (tf != null) {
                     if (tf.hasAdjacentTaskFragment() && adjacentVisibilityHelper == null) {
-                        adjacentVisibilityHelper = new AdjacentVisibilityHelper(tf,
-                                Flags.improveOcclusionCalculation()
-                                        ? this::isOpaqueInner
-                                        : this::isOpaque);
+                        adjacentVisibilityHelper =
+                                new AdjacentVisibilityHelper(tf, this::isOpaqueInner);
                     }
                     if (adjacentVisibilityHelper != null) {
                         adjacentVisibilityHelper.process(tf);
@@ -576,7 +506,7 @@ final class WindowContainerVisibilityHelperImpl implements WindowContainerVisibi
                 mTranslucentTaskFragments.removeIf(
                         t -> taskFragment.getBounds().contains(t.getBounds()));
             } else {
-                if (Flags.improveOcclusionCalculation() && !isAdjacent) {
+                if (!isAdjacent) {
                     if (!isBehindTranslucentTaskFragment(taskFragment)) {
                         // A non-adjacent TaskFragment should not be counted if it is not occluded
                         // by other translucent adjacent TaskFragment.

@@ -17,16 +17,6 @@ flag {
 }
 
 flag {
-  name: "remove_app_widget_service_io_from_critical_path"
-  namespace: "app_widgets"
-  description: "Move state file IO to non-critical path"
-  bug: "312949280"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "draw_data_parcel"
   is_exported: true
   namespace: "app_widgets"

@@ -617,6 +617,16 @@ flag {
 }
 
 flag {
+  name: "use_hardened_frp_active_check"
+  namespace: "enterprise"
+  description: "Use hardened FRP active check during ChooseLockGeneric creation"
+  bug: "481171742"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "policy_streamlining_maximum_time_to_lock"
   namespace: "enterprise"
   description: "Redirect set/getMaximumTimeToLock to the generic set/getPolicy APIs."
@@ -655,4 +665,19 @@ flag {
   namespace: "enterprise"
   description: "Enable the multi user management device provisioning APIs."
   bug: "390162247"
+}
+
+flag {
+  name: "push_dpc_packages_to_system_services"
+  namespace: "enterprise"
+  description: "Update the methods that push the device/profile owner packages to system services to use more generic names."
+  bug: "481619042"
+}
+
+flag {
+  name: "policy_streamlining_easter_eggs"
+  namespace: "enterprise"
+  description: "Redirect addUserRestriction/getUserRestriction for DISALLOW_FUN to the generic set/getPolicy APIs."
+  bug: "444381084"
+  is_exported: true
 }

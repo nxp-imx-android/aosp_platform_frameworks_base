@@ -19,6 +19,7 @@ package com.android.wm.shell.flicker.bubbles.utils
 import android.tools.io.Reader
 import android.tools.traces.monitors.PerfettoTraceMonitor
 import android.tools.traces.monitors.ScreenRecorder
+import android.tools.traces.monitors.TraceMonitor
 import android.tools.traces.monitors.events.EventLogMonitor
 import android.tools.traces.monitors.withTracing
 import androidx.test.platform.app.InstrumentationRegistry
@@ -75,16 +76,28 @@ class RecordTraceWithTransitionRule(
     private fun runTransitionWithTrace(transition: () -> Unit): Reader =
         withTracing(
             traceMonitors =
-                listOf(
-                    ScreenRecorder(InstrumentationRegistry.getInstrumentation().targetContext),
-                    PerfettoTraceMonitor.newBuilder()
-                        .enableTransitionsTrace()
-                        .enableLayersTrace()
-                        .enableWindowManagerTrace()
-                        .enableViewCaptureTrace()
-                        .build(),
-                    EventLogMonitor(),
-                ),
+                mutableListOf<TraceMonitor>(
+                    ScreenRecorder(InstrumentationRegistry.getInstrumentation().targetContext)
+                )
+                .apply {
+                    add(
+                        PerfettoTraceMonitor.newBuilder()
+                            .enableTransitionsTrace()
+                            .enableLayersTrace()
+                            .enableWindowManagerTrace()
+                            .enableViewCaptureTrace()
+                            .enableCujTrace()
+                            .enableProtoLog()
+                            .build()
+                    )
+
+                    if (!android.tracing.Flags.nativeProtoLogging()) {
+                        // If native protologging is enabled, then we collect the focus events in
+                        // Perfetto through ProtoLog and don't need to collect event logs separately
+                        // for that data.
+                        add(EventLogMonitor())
+                    }
+                },
             predicate = transition,
         )
 }

@@ -2428,9 +2428,7 @@ class UserController implements Handler.Callback {
      * Start user, if it's not already running, and bring it to foreground.
      */
     void startUserInForeground(@UserIdInt int targetUserId) {
-        if (android.multiuser.Flags.setPowerModeDuringUserSwitch()) {
-            mInjector.setPerformancePowerMode(true);
-        }
+        mInjector.setPerformancePowerMode(true);
         boolean success = startUser(targetUserId, USER_START_MODE_FOREGROUND);
         if (!success) {
             mInjector.getWindowManager().setSwitchingUser(false);
@@ -2679,9 +2677,7 @@ class UserController implements Handler.Callback {
     }
 
     private void endUserSwitch() {
-        if (android.multiuser.Flags.setPowerModeDuringUserSwitch()) {
-            mInjector.setPerformancePowerMode(false);
-        }
+        mInjector.setPerformancePowerMode(false);
         final int nextUserId;
         final int stopUserId;
         synchronized (mLock) {

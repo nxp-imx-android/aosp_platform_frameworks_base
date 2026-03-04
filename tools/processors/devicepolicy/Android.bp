@@ -54,11 +54,13 @@ java_test_host {
     srcs: ["test/src/**/*.kt"],
 
     static_libs: [
+        "DevicePolicyAnnotationProcessorHostLibrary",
         "compile-testing-prebuilt",
         "junit",
-        "truth",
         "kotlin-reflect",
-        "DevicePolicyAnnotationProcessorHostLibrary",
+        "truth",
+        "truth-liteproto-extension",
+        "truth-proto-extension",
     ],
 
     java_resources: [":DevicePolicyAnnotationProcessorTestSource"],

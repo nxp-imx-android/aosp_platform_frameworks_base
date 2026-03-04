@@ -82,7 +82,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipsViewModel
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import com.android.systemui.user.domain.interactor.UserLogoutInteractor
 import dagger.assisted.AssistedFactory
@@ -186,7 +186,7 @@ interface HomeStatusBarViewModel : Activatable {
     val operatorNameViewModel: StatusBarOperatorNameViewModel
 
     /** The popup chips that should be shown on the right-hand side of the status bar. */
-    val popupChips: List<QuickActionChipUiState>
+    val popupChips: List<QuickActionChipModel>
 
     /**
      * True if the status bar should be visible.

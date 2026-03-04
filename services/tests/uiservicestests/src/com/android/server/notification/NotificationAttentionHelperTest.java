@@ -99,6 +99,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.testing.TestWithLooperRule;
 import android.testing.TestableLooper;
 import android.util.Pair;
 import android.view.accessibility.AccessibilityEvent;
@@ -140,9 +141,12 @@ import java.util.Set;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @SuppressLint("GuardedBy")
+@TestableLooper.RunWithLooper
 public class NotificationAttentionHelperTest extends UiServiceTestCase {
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule(order = Integer.MAX_VALUE)
+    public TestWithLooperRule mLooperRule = new TestWithLooperRule();
 
     @Mock AudioManager mAudioManager;
     @Mock Vibrator mVibrator;
@@ -255,6 +259,7 @@ public class NotificationAttentionHelperTest extends UiServiceTestCase {
 
         mService = spy(new TestableNotificationManagerService(getContext(), 
                 TestableLooper.get(this)));
+        mService.init();
 
         initAttentionHelper(mTestFlagResolver);
 

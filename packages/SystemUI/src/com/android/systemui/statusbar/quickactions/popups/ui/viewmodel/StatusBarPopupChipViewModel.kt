@@ -17,7 +17,7 @@
 package com.android.systemui.statusbar.quickactions.popups.ui.viewmodel
 
 import com.android.systemui.lifecycle.Activatable
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 
 /**
  * Interface for a view model that knows the display requirements for a single type of status bar
@@ -25,5 +25,5 @@ import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipU
  */
 interface StatusBarPopupChipViewModel : Activatable {
     /** A snapshot [State] modeling the popup chip that should be shown (or not shown). */
-    val chip: QuickActionChipUiState
+    val chip: QuickActionChipModel
 }

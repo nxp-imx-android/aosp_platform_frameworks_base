@@ -860,7 +860,7 @@ public class DisplayPolicy {
                         mNotificationShade.getProcess();
                 mService.mAtmService.mVisibleDozeUiProcess = visibleDozeUiProcess;
                 mService.mAtmService.mActivityStateUpdater.setVisibleDozeUiProcessAsync(
-                        visibleDozeUiProcess);
+                        visibleDozeUiProcess.mOwner);
             }
             mService.mAtmService.mKeyguardController.updateDeferTransitionForAod(
                     mAwake /* waiting */);

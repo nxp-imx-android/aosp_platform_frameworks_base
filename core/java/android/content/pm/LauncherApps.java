@@ -21,8 +21,6 @@ import static android.Manifest.permission.ACCESS_HIDDEN_PROFILES;
 import static android.Manifest.permission.ACCESS_HIDDEN_PROFILES_FULL;
 import static android.Manifest.permission.READ_FRAME_BUFFER;
 
-import static com.android.window.flags.Flags.useCallerTokenInLauncherApps;
-
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
@@ -1044,7 +1042,7 @@ public class LauncherApps {
         if (DEBUG) {
             Log.i(TAG, "StartMainActivity " + component + " " + user.getIdentifier());
         }
-        final IBinder caller = useCallerTokenInLauncherApps() ? mContext.getActivityToken() : null;
+        final IBinder caller = mContext.getActivityToken();
         try {
             mService.startActivityAsUser(caller, mContext.getIApplicationThread(),
                     mContext.getPackageName(), mContext.getAttributionTag(),
@@ -1145,7 +1143,7 @@ public class LauncherApps {
      */
     public void startPackageInstallerSessionDetailsActivity(@NonNull SessionInfo sessionInfo,
             @Nullable Rect sourceBounds, @Nullable Bundle opts) {
-        final IBinder caller = useCallerTokenInLauncherApps() ? mContext.getActivityToken() : null;
+        final IBinder caller = mContext.getActivityToken();
         try {
             mService.startSessionDetailsActivityAsUser(caller, mContext.getIApplicationThread(),
                     mContext.getPackageName(), mContext.getAttributionTag(), sessionInfo,
@@ -1176,7 +1174,7 @@ public class LauncherApps {
     public void startAppDetailsActivity(ComponentName component, UserHandle user,
             Rect sourceBounds, Bundle opts) {
         logErrorForInvalidProfileAccess(user);
-        final IBinder caller = useCallerTokenInLauncherApps() ? mContext.getActivityToken() : null;
+        final IBinder caller = mContext.getActivityToken();
         try {
             mService.showAppDetailsAsUser(caller, mContext.getIApplicationThread(),
                     mContext.getPackageName(), mContext.getAttributionTag(),
@@ -1968,7 +1966,7 @@ public class LauncherApps {
     private void startShortcut(@NonNull String packageName, @NonNull String shortcutId,
             @Nullable Rect sourceBounds, @Nullable Bundle startActivityOptions,
             int userId) {
-        final IBinder caller = useCallerTokenInLauncherApps() ? mContext.getActivityToken() : null;
+        final IBinder caller = mContext.getActivityToken();
         try {
             final boolean success = mService.startShortcut(
                     caller, mContext.getPackageName(), packageName,

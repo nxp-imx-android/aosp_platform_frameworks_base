@@ -104,6 +104,42 @@ class PipDesktopStateTest : ShellTestCase() {
     }
 
     @Test
+    fun desktopWindowingPipDisabled_missingDesktopUserRepositories_returnsFalse() {
+        // Create a new instance with the dependency missing.
+        val pipDesktopStateNoRepos =
+            PipDesktopState(
+                mockPipDisplayLayoutState,
+                mockRecentsTransitionHandler,
+                Optional.empty(), // Missing dependency
+                Optional.of(mockDragToDesktopTransitionHandler),
+                mockRootTaskDisplayAreaOrganizer,
+            )
+
+        // Verify that the feature and dependent features are disabled.
+        assertThat(pipDesktopStateNoRepos.isDesktopWindowingPipEnabled()).isFalse()
+        assertThat(pipDesktopStateNoRepos.isPipInDesktopMode()).isFalse()
+        assertThat(pipDesktopStateNoRepos.isDragToDesktopInProgress()).isFalse()
+    }
+
+    @Test
+    fun desktopWindowingPipDisabled_missingDragToDesktopHandler_returnsFalse() {
+        // Create a new instance with the dependency missing.
+        val pipDesktopStateNoHandler =
+            PipDesktopState(
+                mockPipDisplayLayoutState,
+                mockRecentsTransitionHandler,
+                Optional.of(mockDesktopUserRepositories),
+                Optional.empty(), // Missing dependency
+                mockRootTaskDisplayAreaOrganizer,
+            )
+
+        // Verify that the feature and dependent features are disabled.
+        assertThat(pipDesktopStateNoHandler.isDesktopWindowingPipEnabled()).isFalse()
+        assertThat(pipDesktopStateNoHandler.isPipInDesktopMode()).isFalse()
+        assertThat(pipDesktopStateNoHandler.isDragToDesktopInProgress()).isFalse()
+    }
+
+    @Test
     fun isDraggingPipAcrossDisplaysEnabled_returnsTrue() {
         assertThat(pipDesktopState.isDraggingPipAcrossDisplaysEnabled()).isTrue()
     }
@@ -190,6 +226,27 @@ class PipDesktopStateTest : ShellTestCase() {
         )
 
         assertThat(pipDesktopState.getOutPipWindowingMode()).isEqualTo(WINDOWING_MODE_FULLSCREEN)
+    }
+
+    @Test
+    fun outPipWindowingMode_multiActivityChild_inDesktop_returnsUndefined() {
+        // When in desktop mode, a multi-activity child PiP should expand to an undefined
+        // windowing mode, so it can be resolved by the system (to freeform).
+        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true)
+
+        val windowingMode = pipDesktopState.getOutPipWindowingMode(isMultiActivityChild = true)
+
+        assertThat(windowingMode).isEqualTo(WINDOWING_MODE_UNDEFINED)
+    }
+
+    @Test
+    fun outPipWindowingMode_multiActivityChild_notInDesktop_returnsFullscreen() {
+        // When not in desktop mode, a multi-activity child PiP should expand to fullscreen.
+        whenever(mockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false)
+
+        val windowingMode = pipDesktopState.getOutPipWindowingMode(isMultiActivityChild = true)
+
+        assertThat(windowingMode).isEqualTo(WINDOWING_MODE_FULLSCREEN)
     }
 
     @Test

@@ -148,6 +148,20 @@ public class BasicToPwleSegmentAdapterTest {
         assertThat(segments).isEqualTo(expectedSegments);
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
+    public void testBasicPwleSegments_propagatesStartTime() {
+        long startTime = 1234L;
+        List<VibrationEffectSegment> segments = new ArrayList<>(Arrays.asList(
+                new BasicPwleSegment(0.0f, 1.0f, 0.0f, 1.0f, 100, startTime)));
+        VibratorInfo vibratorInfo = createVibratorInfo(
+                TEST_FREQUENCY_PROFILE, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
+
+        mAdapter.adaptToVibrator(vibratorInfo, segments, -1);
+
+        assertThat(segments.get(0).getStartTimeMillis()).isEqualTo(startTime);
+    }
+
     private static VibratorInfo createVibratorInfo(VibratorInfo.FrequencyProfile frequencyProfile,
             int... capabilities) {
         return new VibratorInfo.Builder(0)

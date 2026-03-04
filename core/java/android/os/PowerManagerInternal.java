@@ -16,6 +16,7 @@
 
 package android.os;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.PowerManager.GoToSleepReason;
 import android.os.PowerManager.UserActivityEvent;
@@ -507,4 +508,69 @@ public abstract class PowerManagerInternal {
      * Notifies PowerManager that settings have changed and that it should refresh its state.
      */
     public abstract void updateSettings();
+
+    /**
+     * A proxy for {@link PowerManagerInternal} that batches UID state change notifications and
+     * executes them asynchronously.
+     *
+     * <p>When {@link #startUidChanges()} is called, the proxy enters a batching mode. All
+     * subsequent UID state change notifications (e.g., {@link #uidActive}, {@link #uidIdle}) are
+     * buffered. When {@link #finishUidChanges()} is called, all buffered operations are posted to a
+     * handler for asynchronous execution. Calls made outside of a {@code
+     * startUidChanges/finishUidChanges} block are also executed asynchronously but are flushed
+     * immediately.
+     *
+     * <p>This class is thread-safe.
+     */
+    public interface UidChangesBatch {
+        /**
+         * Signals the beginning of a series of UID changes.
+         *
+         * <p>Subsequent calls to UID state modification methods will be buffered until {@link
+         * #finishUidChanges()} is called.
+         */
+        void startUidChanges();
+
+        /**
+         * Signals the end of a series of UID changes.
+         *
+         * <p>All buffered operations since the corresponding {@link #startUidChanges()} call are
+         * posted for asynchronous execution.
+         */
+        void finishUidChanges();
+
+        /**
+         * Notifies PowerManager that a UID has become active.
+         *
+         * <p>This operation is buffered if called within a {@code start/finishUidChanges} block.
+         */
+        void uidActive(int uid);
+
+        /**
+         * Notifies PowerManager that a UID has become idle.
+         *
+         * <p>This operation is buffered if called within a {@code start/finishUidChanges} block.
+         */
+        void uidIdle(int uid);
+
+        /**
+         * Notifies PowerManager that a UID is no longer active.
+         *
+         * <p>This operation is buffered if called within a {@code start/finishUidChanges} block.
+         */
+        void uidGone(int uid);
+
+        /**
+         * Notifies PowerManager of a process state change for a UID.
+         *
+         * <p>This operation is buffered if called within a {@code start/finishUidChanges} block.
+         */
+        void updateUidProcState(int uid, int procState);
+    }
+
+    /**
+     * Creates a proxy UidChangesBatch object that will do UID state change notifications on the
+     * given Looper.
+     */
+    public abstract UidChangesBatch getBatchProxy(@NonNull Looper looper);
 }

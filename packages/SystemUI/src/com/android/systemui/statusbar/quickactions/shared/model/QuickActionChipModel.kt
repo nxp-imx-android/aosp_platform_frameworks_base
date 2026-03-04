@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.quickactions.ui.viewmodel
+package com.android.systemui.statusbar.quickactions.shared.model
 
 import android.content.Context
 import com.android.systemui.common.shared.model.ContentDescription
@@ -57,12 +57,12 @@ sealed class ChipContent {
 }
 
 /** Model for individual status bar quick action chips. */
-sealed class QuickActionChipUiState {
+sealed class QuickActionChipModel {
     abstract val logName: String
     abstract val chipId: QuickActionChipId
 
     data class Hidden(override val chipId: QuickActionChipId, val shouldAnimate: Boolean = true) :
-        QuickActionChipUiState() {
+        QuickActionChipModel() {
         override val logName = "Hidden(id=$chipId, anim=$shouldAnimate)"
     }
 
@@ -72,7 +72,7 @@ sealed class QuickActionChipUiState {
         val onClick: (Context?) -> Unit = {},
         val isSelected: Boolean = false,
         val contentDescription: ContentDescription? = null,
-    ) : QuickActionChipUiState() {
+    ) : QuickActionChipModel() {
         override val logName = "Launch(id=$chipId, selected=$isSelected)"
     }
 
@@ -88,7 +88,7 @@ sealed class QuickActionChipUiState {
         val hidePopup: () -> Unit = {},
         val contentDescription: ContentDescription? = null,
         val popupViewModelFactory: StatusBarPopupViewModel.Factory? = null,
-    ) : QuickActionChipUiState() {
+    ) : QuickActionChipModel() {
         override val logName = "Shown(id=$chipId, toggled=$isPopupShown)"
     }
 }

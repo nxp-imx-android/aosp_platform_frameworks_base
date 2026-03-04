@@ -324,7 +324,8 @@ public class InsetsState implements Parcelable {
     @NonNull
     public Insets calculateVisibleInsets(@NonNull Rect frame, @Nullable Rect hostBounds,
             @WindowType int windowType, @ActivityType int activityType,
-            @SoftInputModeFlags int softInputMode, @Flags int windowFlags) {
+            @SoftInputModeFlags int softInputMode, @Flags int windowFlags,
+            @InsetsType int ignoringTypes) {
         final int softInputAdjustMode = softInputMode & SOFT_INPUT_MASK_ADJUST;
         final int visibleInsetsTypes = softInputAdjustMode != SOFT_INPUT_ADJUST_NOTHING
                 ? systemBars() | displayCutout() | ime()
@@ -335,6 +336,9 @@ public class InsetsState implements Parcelable {
         for (int i = mSources.size() - 1; i >= 0; i--) {
             final InsetsSource source = mSources.valueAt(i);
             if ((source.getType() & visibleInsetsTypes) == 0) {
+                continue;
+            }
+            if ((source.getType() & ignoringTypes) != 0) {
                 continue;
             }
             if (source.hasFlags(FLAG_FORCE_CONSUMING)) {

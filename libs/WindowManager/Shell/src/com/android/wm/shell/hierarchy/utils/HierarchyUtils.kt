@@ -163,6 +163,21 @@ class HierarchyUtils {
         }
 
         /**
+         * Returns the ancestor of the container that has a set mode, or null if no such ancestor
+         * exists.
+         */
+        fun getModeContainer(container: Container): Container? {
+            var c: Container? = container
+            while (c != null) {
+                if (c.mode != null) {
+                    return c
+                }
+                c = c.parent
+            }
+            return null
+        }
+
+        /**
          * Returns a list of containers in top-down breadth-first traversal order.
          * Includes the provided root container.
          */

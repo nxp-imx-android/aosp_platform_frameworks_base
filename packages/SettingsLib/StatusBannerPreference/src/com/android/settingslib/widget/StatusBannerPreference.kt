@@ -370,7 +370,7 @@ constructor(
             val enabledTextColor = currentTextColors.getColorForState(
                 intArrayOf(android.R.attr.state_enabled), currentTextColors.defaultColor
             )
-            val disabledTextColor = ColorUtils.setAlphaComponent(enabledTextColor, DISABLED_BUTTON_ALPHA)
+            val disabledTextColor = ColorUtils.setAlphaComponent(enabledTextColor, DISABLED_BUTTON_TEXT_ALPHA)
             setTextColor(ColorStateList(
                 arrayOf(
                     intArrayOf(android.R.attr.state_enabled),
@@ -717,6 +717,7 @@ constructor(
         const val DEFAULT_STIFFNESS = 800f
         const val BACKGROUND_TRANSITION_SPEED = 150
         const val DISABLED_BUTTON_ALPHA = 97
+        const val DISABLED_BUTTON_TEXT_ALPHA = 230
     }
 
     /**

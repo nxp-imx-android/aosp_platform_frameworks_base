@@ -29,9 +29,9 @@ import com.android.systemui.statusbar.quickactions.av.ui.viewmodel.AvControlsChi
 import com.android.systemui.statusbar.quickactions.ime.ui.viewmodel.ImeIndicatorChipViewModel
 import com.android.systemui.statusbar.quickactions.media.ui.viewmodel.MediaControlChipViewModel
 import com.android.systemui.statusbar.quickactions.popups.StatusBarPopupChips
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.statusbar.quickactions.sharescreen.ui.viewmodel.ShareScreenPrivacyIndicatorViewModel
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -42,7 +42,7 @@ import kotlinx.coroutines.launch
 
 /**
  * View model deciding which system process chips to show in the status bar. Emits a list of
- * [QuickActionChipUiState]s.
+ * [QuickActionChipModel]s.
  */
 class StatusBarPopupChipsViewModel
 @AssistedInject
@@ -74,12 +74,12 @@ constructor(
         )
     }
 
-    val shownQuickActionChips: List<QuickActionChipUiState> by derivedStateOf {
+    val shownQuickActionChips: List<QuickActionChipModel> by derivedStateOf {
         if (StatusBarPopupChips.isEnabled) {
             val bundle = incomingQuickActionChipBundle
 
             listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
-                .filterIsInstance<QuickActionChipUiState.PopupChip>()
+                .filterIsInstance<QuickActionChipModel.PopupChip>()
                 .map { chip ->
                     chip.copy(
                         isPopupShown = chip.chipId == currentActiveQuickActionId,
@@ -88,7 +88,7 @@ constructor(
                     )
                 } +
                 listOfNotNull(bundle.assistant, bundle.ime).filter {
-                    it !is QuickActionChipUiState.Hidden
+                    it !is QuickActionChipModel.Hidden
                 }
         } else {
             emptyList()
@@ -112,7 +112,7 @@ constructor(
                     .collect { bundle ->
                         if (
                             listOfNotNull(bundle.media, bundle.privacy, bundle.shareScreen)
-                                .filterIsInstance<QuickActionChipUiState.PopupChip>()
+                                .filterIsInstance<QuickActionChipModel.PopupChip>()
                                 .none { it.chipId == currentActiveQuickActionId }
                         ) {
                             currentActiveQuickActionId = null
@@ -124,16 +124,16 @@ constructor(
     }
 
     private data class QuickActionChipBundle(
-        val media: QuickActionChipUiState =
-            QuickActionChipUiState.Hidden(chipId = QuickActionChipId.MediaControl),
-        val privacy: QuickActionChipUiState =
-            QuickActionChipUiState.Hidden(chipId = QuickActionChipId.AvControlsIndicator),
-        val shareScreen: QuickActionChipUiState =
-            QuickActionChipUiState.Hidden(chipId = QuickActionChipId.ShareScreenPrivacyIndicator),
-        val assistant: QuickActionChipUiState =
-            QuickActionChipUiState.Hidden(chipId = QuickActionChipId.AssistantIcon),
-        val ime: QuickActionChipUiState =
-            QuickActionChipUiState.Hidden(chipId = QuickActionChipId.ImeIndicator),
+        val media: QuickActionChipModel =
+            QuickActionChipModel.Hidden(chipId = QuickActionChipId.MediaControl),
+        val privacy: QuickActionChipModel =
+            QuickActionChipModel.Hidden(chipId = QuickActionChipId.AvControlsIndicator),
+        val shareScreen: QuickActionChipModel =
+            QuickActionChipModel.Hidden(chipId = QuickActionChipId.ShareScreenPrivacyIndicator),
+        val assistant: QuickActionChipModel =
+            QuickActionChipModel.Hidden(chipId = QuickActionChipId.AssistantIcon),
+        val ime: QuickActionChipModel =
+            QuickActionChipModel.Hidden(chipId = QuickActionChipId.ImeIndicator),
     )
 
     @AssistedFactory

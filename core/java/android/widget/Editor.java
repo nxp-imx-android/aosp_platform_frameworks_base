@@ -19,7 +19,6 @@ package android.widget;
 import static android.view.ContentInfo.SOURCE_DRAG_AND_DROP;
 import static android.widget.TextView.ACCESSIBILITY_ACTION_SMART_START_ID;
 
-import static com.android.graphics.hwui.flags.Flags.highContrastTextSmallTextRect;
 import static com.android.text.flags.Flags.contextMenuHideUnavailableItems;
 
 import android.R;
@@ -2135,8 +2134,7 @@ public class Editor {
             }
         }
 
-        boolean shouldDrawHighlightsOnTop = highContrastTextSmallTextRect()
-                && canvas.isHighContrastTextEnabled();
+        boolean shouldDrawHighlightsOnTop = canvas.isHighContrastTextEnabled();
 
         // If high contrast text is drawing background rectangles behind the text, those cover up
         // the cursor and correction highlighter etc. So just draw the text first, then draw the

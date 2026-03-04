@@ -36,6 +36,7 @@ import com.android.systemui.bouncer.shared.model.LockoutMessageModel
 import com.android.systemui.bouncer.shared.model.Message
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricsAllowedInteractor
 import com.android.systemui.flags.SystemPropertiesHelper
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
@@ -56,10 +57,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 private const val SYS_BOOT_REASON_PROP = "sys.boot.reason.last"
 private const val REBOOT_MAINLINE_UPDATE = "reboot,mainline_update"
@@ -79,6 +83,7 @@ constructor(
     private val systemPropertiesHelper: SystemPropertiesHelper,
     primaryBouncerInteractor: PrimaryBouncerInteractor,
     @Application private val applicationScope: CoroutineScope,
+    @Background val backgroundScope: CoroutineScope,
     private val facePropertyRepository: FacePropertyRepository,
     private val securityModel: KeyguardSecurityModel,
     deviceEntryBiometricsAllowedInteractor: DeviceEntryBiometricsAllowedInteractor,
@@ -343,7 +348,21 @@ constructor(
                     )
                 }
             }
-        countDownTimerUtil.startTimer(secondsBeforeLockoutReset * 1000, 1000, callback)
+        val msBeforeReset = secondsBeforeLockoutReset * 1000
+        countDownTimerUtil.startTimer(msBeforeReset, 1000, callback)
+        val countdownUserId = currentUserId
+
+        // The timer should be canceled when the selected user is changed during the countdown, as
+        // the keyguard state is not reloaded. Otherwise, the countdown will incorrectly show for
+        // the other user.
+        backgroundScope.launch {
+            // The coroutine should always complete or cancel by the end of the timeout.
+            withTimeoutOrNull(msBeforeReset) {
+                userRepository.selectedUser.first { it.userInfo.id != countdownUserId }
+                countDownTimerUtil.cancelTimer()
+                setMessage(defaultMessage)
+            }
+        }
     }
 
     fun onPrimaryAuthIncorrectAttempt(isDuplicate: Boolean) {
@@ -551,6 +570,13 @@ open class CountDownTimerUtil @Inject constructor() {
                         .start()
             }
             return instance!!
+        }
+    }
+
+    fun cancelTimer() {
+        synchronized(this) {
+            instance?.cancel()
+            instance = null
         }
     }
 }

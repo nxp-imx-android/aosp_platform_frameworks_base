@@ -6577,4 +6577,7 @@
 
   <!-- Wallpaper Local Color Extraction configuration -->
   <java-symbol type="bool" name="config_enableWallpaperLocalColorExtraction"/>
+
+  <!-- Whether the Wear-specific charging experience is enabled -->
+  <java-symbol type="bool" name="config_wearChargingExperienceEnabled" />
 </resources>

@@ -28,6 +28,7 @@ import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.activity.data.repository.activityIntentRepository
 import com.android.systemui.activity.data.repository.fake
+import com.android.systemui.animation.dialogTransitionAnimator
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.bouncer.data.repository.bouncerRepository
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
@@ -295,6 +296,7 @@ class KosmosJavaAdapter() {
     val uiEventLoggerFake by lazy { kosmos.uiEventLoggerFake }
     val actionsDialogLiteDelegateFactory by lazy { kosmos.actionsDialogLiteDelegateFactory }
     val fakeGlobalSettings by lazy { kosmos.fakeGlobalSettings }
+    val dialogTransitionAnimator by lazy { kosmos.dialogTransitionAnimator }
     val systemUIDialogDotFactory by lazy { kosmos.systemUIDialogDotFactory }
 
     /** Use if you need a unique or mutate-able row */

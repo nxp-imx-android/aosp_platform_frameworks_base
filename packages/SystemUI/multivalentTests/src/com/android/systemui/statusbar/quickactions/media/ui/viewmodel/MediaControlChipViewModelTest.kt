@@ -31,7 +31,7 @@ import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.remedia.data.repository.mediaRepository
 import com.android.systemui.media.remedia.shared.flag.MediaControlsInComposeFlag
 import com.android.systemui.statusbar.quickactions.media.domain.interactor.mediaControlChipInteractor
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
@@ -76,7 +76,7 @@ class MediaControlChipViewModelTest(flags: FlagsParameterization) : SysuiTestCas
         kosmos.runTest {
             val chip = underTest.chip
 
-            assertThat(chip).isInstanceOf(QuickActionChipUiState.Hidden::class.java)
+            assertThat(chip).isInstanceOf(QuickActionChipModel.Hidden::class.java)
         }
 
     @Test
@@ -85,7 +85,7 @@ class MediaControlChipViewModelTest(flags: FlagsParameterization) : SysuiTestCas
             val userMedia = MediaData(active = true, song = "test")
             updateMedia(userMedia)
 
-            assertThat(underTest.chip).isInstanceOf(QuickActionChipUiState.PopupChip::class.java)
+            assertThat(underTest.chip).isInstanceOf(QuickActionChipModel.PopupChip::class.java)
         }
 
     private fun updateMedia(mediaData: MediaData) {

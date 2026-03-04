@@ -87,3 +87,13 @@ flag {
     description: "Enables AOA userspace implementation only for pixel 10 series devices"
     bug: "440091110"
 }
+
+flag {
+    name: "mtp_ffs_handle_close_concurrency_fix"
+    namespace: "usb"
+    description: "Fix a race condition when shutting down MtpFfsHandle while new events are being added."
+    bug: "372823688"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -95,8 +95,6 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
     public static final int STATE_DOT = 1;
     public static final int STATE_HIDDEN = 2;
 
-    public static final float APP_ICON_SCALE = .75f;
-
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({STATE_ICON, STATE_DOT, STATE_HIDDEN})
     public @interface VisibleState { }
@@ -295,7 +293,7 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
     private float getIconHeight() {
         Drawable d = getDrawable();
         if (d != null) {
-            return (float) getDrawable().getIntrinsicHeight();
+            return (float) d.getIntrinsicHeight();
         } else {
             return mSystemIconIntrinsicHeight;
         }
@@ -920,12 +918,6 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
         mDozeAmount = dozeAmount;
         updateDecorColor();
         updateIconColor();
-    }
-
-    private void updateAllowAnimation() {
-        if (mDozeAmount == 0 || mDozeAmount == 1) {
-            setAllowAnimation(mDozeAmount == 0);
-        }
     }
 
     /**

@@ -82,6 +82,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.AdditionalMatchers.or
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Captor
@@ -219,9 +220,10 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        kosmos.fakeUserRepository.setUserInfos(listOf(PRIMARY_USER))
+        kosmos.fakeUserRepository.setUserInfos(listOf(PRIMARY_USER, SECONDARY_USER))
         allowTestableLooperAsMainThread()
-        whenever(securityModel.getSecurityMode(eq(PRIMARY_USER_ID))).thenReturn(securityMode)
+        whenever(securityModel.getSecurityMode(or(eq(PRIMARY_USER_ID), eq(SECONDARY_USER_ID))))
+            .thenReturn(securityMode)
         biometricSettingsRepository.setIsFingerprintAuthCurrentlyAllowed(true)
         overrideResource(kg_trust_agent_disabled, "Trust agent is unavailable")
     }
@@ -817,6 +819,25 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun onPrimaryAuthLockout_selectingNewUserCancelsTimeout() =
+        testScope.runTest {
+            init()
+            val bouncerMessage by collectLastValue(underTest.bouncerMessage)
+
+            underTest.onPrimaryAuthLockedOut(3)
+
+            verify(countDownTimerUtil)
+                .startTimer(eq(3000L), eq(1000L), countDownTimerCallback.capture())
+
+            kosmos.fakeUserRepository.setSelectedUserInfo(SECONDARY_USER)
+            runCurrent()
+
+            verify(countDownTimerUtil).cancelTimer()
+            assertThat(primaryResMessage(bouncerMessage)).isEqualTo(fpOrCredString)
+            assertThat(bouncerMessage?.secondaryMessage?.message).isNull()
+        }
+
+    @Test
     fun onPrimaryAuthLockout_timerComplete_resetsRepositoryMessages() =
         testScope.runTest {
             init()
@@ -1381,6 +1402,13 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 /* id= */ PRIMARY_USER_ID,
                 /* name= */ "primary user",
                 /* flags= */ UserInfo.FLAG_PRIMARY,
+            )
+        private const val SECONDARY_USER_ID = 10
+        private val SECONDARY_USER =
+            UserInfo(
+                /* id= */ SECONDARY_USER_ID,
+                /* name= */ "secondary user",
+                /* flags= */ UserInfo.FLAG_FULL,
             )
 
         @JvmStatic

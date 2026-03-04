@@ -28,9 +28,9 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.quickactions.ime.domain.interactor.ImeIndicatorChipInteractor
 import com.android.systemui.statusbar.quickactions.ime.shared.model.ImeIndicatorChipModel
 import com.android.systemui.statusbar.quickactions.popups.ui.viewmodel.StatusBarPopupChipViewModel
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.ChipContent
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipId
-import com.android.systemui.statusbar.quickactions.ui.viewmodel.QuickActionChipUiState
+import com.android.systemui.statusbar.quickactions.shared.model.ChipContent
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipId
+import com.android.systemui.statusbar.quickactions.shared.model.QuickActionChipModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -45,17 +45,17 @@ constructor(
     private val imeIndicatorChipInteractor: ImeIndicatorChipInteractor,
 ) : StatusBarPopupChipViewModel, HydratedActivatable() {
 
-    override val chip: QuickActionChipUiState by
+    override val chip: QuickActionChipModel by
         imeIndicatorChipInteractor.chipModel
             .map { toChipModel(it) }
             .hydratedStateOf(
                 traceName = "imeIndicatorChip",
-                initialValue = QuickActionChipUiState.Hidden(QuickActionChipId.ImeIndicator),
+                initialValue = QuickActionChipModel.Hidden(QuickActionChipId.ImeIndicator),
             )
 
-    private fun toChipModel(model: ImeIndicatorChipModel): QuickActionChipUiState {
+    private fun toChipModel(model: ImeIndicatorChipModel): QuickActionChipModel {
         if (!model.isVisible) {
-            return QuickActionChipUiState.Hidden(QuickActionChipId.ImeIndicator)
+            return QuickActionChipModel.Hidden(QuickActionChipId.ImeIndicator)
         }
 
         val subtype = model.selectedSubtype
@@ -81,7 +81,7 @@ constructor(
                     )
             }
 
-        return QuickActionChipUiState.LaunchChip(
+        return QuickActionChipModel.LaunchChip(
             chipId = QuickActionChipId.ImeIndicator,
             chipContent = content,
             onClick = { imeIndicatorChipInteractor.showInputMethodPicker(displayId) },

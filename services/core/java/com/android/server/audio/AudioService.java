@@ -530,6 +530,7 @@ public class AudioService extends IAudioService.Stub
     private static final int MSG_UPDATE_CONTEXTUAL_VOLUMES = 56;
     private static final int MSG_PERSIST_VOLUME_MUTE = 57;
     private static final int MSG_PERSIST_VOLUME_GROUP_MUTE = 58;
+    private static final int MSG_UPDATE_CAMERA_SOUND_FORCED_METRICS = 59;
 
     /**
      * Messages handled by the {@link SoundDoseHelper}, do not exceed
@@ -991,7 +992,8 @@ public class AudioService extends IAudioService.Stub
                 "media_audio.value_audio_playback_hardening_strict_would_restrict";
         // oneway
         @Override
-        public void playbackHardeningEvent(int uid, byte type, boolean bypassed) {
+        public void playbackHardeningEvent(int uid, byte type, boolean bypassed, byte reason,
+                int usage) {
             if (Binder.getCallingUid() != Process.AUDIOSERVER_UID) {
                 return;
             }
@@ -1007,7 +1009,9 @@ public class AudioService extends IAudioService.Stub
                     + (bypassed ? "would be " : "")
                     + "muted for "
                     + getPackageNameForUid(uid) + " (" + uid + "), "
-                    + "level: " + (type == HardeningType.PARTIAL ? "partial" : "full");
+                    + "level: " + (type == HardeningType.PARTIAL ? "partial" : "full")
+                    + ", reason: " + reason
+                    + ", usage: " + AudioAttributes.usageToString(usage);
 
             AudioService.this.mHardeningLogger.enqueueAndSlog(msg,
                     bypassed ? EventLogger.Event.ALOGI : EventLogger.Event.ALOGW, TAG);
@@ -1368,6 +1372,8 @@ public class AudioService extends IAudioService.Stub
     private final LoudnessCodecHelper mLoudnessCodecHelper;
 
     private final HardeningEnforcer mHardeningEnforcer;
+
+    private final CameraMetricsHelper mCameraMetricsHelper;
 
     private final AudioVolumeGroupHelperBase mAudioVolumeGroupHelper;
 
@@ -1834,6 +1840,8 @@ public class AudioService extends IAudioService.Stub
 
         mMusicFxHelper = new MusicFxHelper(mContext, mAudioHandler);
 
+        mCameraMetricsHelper = new CameraMetricsHelper(mContext);
+
         mHardeningEnforcer = new HardeningEnforcer(mContext, isPlatformAutomotive(),
                 mHardeningOverride,
                 mAppOps,
@@ -1955,6 +1963,10 @@ public class AudioService extends IAudioService.Stub
                 @Override
                 public void onSubscriptionsChanged() {
                     Log.i(TAG, "onSubscriptionsChanged()");
+                    if (cameraShutterSound()) {
+                        sendMsg(mAudioHandler, MSG_UPDATE_CAMERA_SOUND_FORCED_METRICS,
+                                SENDMSG_REPLACE, 0, 0, null, 0);
+                    }
                     sendMsg(mAudioHandler, MSG_CONFIGURATION_CHANGED, SENDMSG_REPLACE,
                             0, 0, null, 0);
                 }
@@ -12138,6 +12150,10 @@ public class AudioService extends IAudioService.Stub
                     onUpdateContextualVolumes();
                     break;
 
+                case MSG_UPDATE_CAMERA_SOUND_FORCED_METRICS:
+                    mCameraMetricsHelper.updateCameraSoundForcedStatus();
+                    break;
+
                 case MusicFxHelper.MSG_EFFECT_CLIENT_GONE:
                     mMusicFxHelper.handleMessage(msg);
                     break;
@@ -13993,6 +14009,10 @@ public class AudioService extends IAudioService.Stub
      */
     private void onConfigurationChanged() {
         try {
+            if (cameraShutterSound()) {
+                sendMsg(mAudioHandler, MSG_UPDATE_CAMERA_SOUND_FORCED_METRICS,
+                        SENDMSG_REPLACE, 0, 0, null, 0);
+            }
             // reading new configuration "safely" (i.e. under try catch) in case anything
             // goes wrong.
             Configuration config = mContext.getResources().getConfiguration();

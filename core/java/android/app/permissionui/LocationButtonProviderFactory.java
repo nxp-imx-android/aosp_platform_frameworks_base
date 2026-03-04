@@ -25,8 +25,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.DeadObjectException;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.permission.flags.Flags;
 import android.util.Log;
 
@@ -70,15 +73,20 @@ public class LocationButtonProviderFactory {
     static final class LocationButtonProviderImpl implements LocationButtonProvider {
         // Retry attempts when binding is successful but the service is not able to open a session.
         private static final int OPEN_SESSION_ATTEMPTS_LIMIT = 5;
-        private static final boolean DEBUG = false;
+        private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+        private static final long UNBIND_SERVICE_DELAY_MILLIS = 5000;
 
         private final Context mContext;
         private final String mPackageName;
         private ServiceConnectionHandler mConnection;
         private ILocationButtonService mService;
+        private final Handler mHandler = new Handler(requireNonNull(Looper.myLooper()));
 
         private final SerialExecutor mSerialExecutor =
                 new SerialExecutor(Runnable::run);
+
+        private final Runnable mUnbindRunnable = () -> mSerialExecutor.execute(
+                this::unbindServiceInternalSerialized);
 
         private final Queue<OpenSessionRequest> mPendingOpenSessionRequests = new ArrayDeque<>();
         // TODO align with photo picker, just in case we want to abstract out this pattern
@@ -116,6 +124,9 @@ public class LocationButtonProviderFactory {
         private void openSessionSerialized(@NonNull Activity activity, @NonNull IBinder hostToken,
                 int displayId, @NonNull LocationButtonRequest request,
                 @NonNull Executor clientExecutor, @NonNull LocationButtonClient client) {
+            mHandler.removeCallbacks(mUnbindRunnable);
+            Trace.asyncTraceBegin(Trace.TRACE_TAG_APP, "LocationButton#openSessionAsync",
+                    System.identityHashCode(client));
             LocationButtonClientWrapper clientWrapper = new LocationButtonClientWrapper(activity,
                     this, client, new SerialExecutor(clientExecutor));
             OpenSessionRequest sessionRequest = new OpenSessionRequest(hostToken, displayId,
@@ -173,6 +184,8 @@ public class LocationButtonProviderFactory {
         }
 
         private boolean performBindServiceSerialized(Intent intent) {
+            Trace.asyncTraceBegin(Trace.TRACE_TAG_APP, "LocationButton#bindService",
+                    System.identityHashCode(mConnection));
             boolean bindRequested = true;
             try {
                 bindRequested = mContext.bindService(intent, Context.BIND_AUTO_CREATE,
@@ -187,6 +200,8 @@ public class LocationButtonProviderFactory {
                 removePendingRequestsAndNotifyClients(
                         new SecurityException("Unable to bind location button service."));
             } finally {
+                Trace.asyncTraceEnd(Trace.TRACE_TAG_APP, "LocationButton#bindService",
+                        System.identityHashCode(mConnection));
                 if (!bindRequested) {
                     mConnection.unbindAndDisposeConnectionSerialized();
                 }
@@ -262,6 +277,8 @@ public class LocationButtonProviderFactory {
                 Log.d(TAG, "addActiveSessionRecord received for client " + client);
             }
             mSerialExecutor.execute(() -> mOpenSessions.put(client, session));
+            Trace.asyncTraceEnd(Trace.TRACE_TAG_APP, "LocationButton#openSessionAsync",
+                    System.identityHashCode(client));
         }
 
         private void onSessionClosedSerialized(@NonNull LocationButtonClient client) {
@@ -272,6 +289,13 @@ public class LocationButtonProviderFactory {
                 return;
             }
 
+            if (mOpenSessions.isEmpty() && mPendingOpenSessionRequests.isEmpty()) {
+                mHandler.removeCallbacks(mUnbindRunnable);
+                mHandler.postDelayed(mUnbindRunnable, UNBIND_SERVICE_DELAY_MILLIS);
+            }
+        }
+
+        private void unbindServiceInternalSerialized() {
             if (mOpenSessions.isEmpty() && mPendingOpenSessionRequests.isEmpty()) {
                 if (DEBUG) {
                     Log.d(TAG, "Unbinding service as no active session open & pending request.");

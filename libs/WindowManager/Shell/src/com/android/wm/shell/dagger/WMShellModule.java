@@ -468,31 +468,19 @@ public abstract class WMShellModule {
     static FreeformTaskTransitionObserver provideFreeformTaskTransitionObserver(
             ShellInit shellInit,
             Transitions transitions,
-            Optional<DesktopImmersiveController> desktopImmersiveController,
             WindowDecorViewModel windowDecorViewModel,
             Optional<TaskChangeListener> taskChangeListener,
-            FocusTransitionObserver focusTransitionObserver,
             @DynamicOverride DesksOrganizer desksOrganizer,
-            Optional<DesksTransitionObserver> desksTransitionObserver,
             DesktopState desktopState,
-            Optional<DesktopImeHandler> desktopImeHandler,
-            Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver,
-            Optional<DesktopInOrderTransitionObserver> desktopInOrderTransitionObserver,
-            DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver) {
+            Optional<DesktopInOrderTransitionObserver> desktopInOrderTransitionObserver) {
         return new FreeformTaskTransitionObserver(
                 shellInit,
                 transitions,
-                desktopImmersiveController,
                 windowDecorViewModel,
                 taskChangeListener,
-                focusTransitionObserver,
                 desksOrganizer,
-                desksTransitionObserver,
                 desktopState,
-                desktopImeHandler,
-                desktopBackNavTransitionObserver,
-                desktopInOrderTransitionObserver,
-                desktopModeLoggerTransitionObserver);
+                desktopInOrderTransitionObserver);
     }
 
     @WMSingleton

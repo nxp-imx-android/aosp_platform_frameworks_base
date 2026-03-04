@@ -73,6 +73,10 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
     private companion object {
         const val SIMPLE_TYPE_INTEGER = "java.lang.Integer"
 
+        // These enum values are allowed to use 0 for backwards compatibility reasons.
+        val LEGACY_POLICY_ENUM_WITH_ZERO_VALUE_ALLOWED =
+            setOf("AUTO_TIME_USER_CHOICE", "AUTO_TIME_ZONE_USER_CHOICE")
+
         /** Find the first value matching a predicate on the key. */
         fun <K, V> Map<K, V>.firstValue(filter: (K) -> Boolean): V {
             return entries.first { (key, _) -> filter(key) }.value
@@ -135,6 +139,7 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
 
         // In the class-level example above, these would be ENUM_ENTRY_1 and ENUM_ENTRY_2.
         val entries = getIntDefIdentifiers(annotationMirror, intDefElement)
+        validateEnumValues(entries, intDefElement)
 
         val resolutionMechanism =
             getResolutionMechanism(enumPolicyAnnotation.resolutionMechanism, entries, element)
@@ -219,6 +224,26 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
                 .setIntValue(values[i])
                 .setDocumentation(docs[i])
                 .build()
+        }
+    }
+
+    /**
+     * Verify that enum should not be declared with 0 value which is reserved for *_UNSPECIFIED
+     * value (https://google.aip.dev/126).
+     */
+    private fun validateEnumValues(entries: List<EnumValueProto>, element: Element) {
+        entries.forEach { entry ->
+            if (
+                entry.getIntValue() == 0 &&
+                    !LEGACY_POLICY_ENUM_WITH_ZERO_VALUE_ALLOWED.contains(entry.getShortFieldName())
+            ) {
+                printError(
+                    element,
+                    "The Protobuf enum value '0' is reserved for the default *_UNSPECIFIED case " +
+                        "(https://google.aip.dev/126) and should not be used for any other enum " +
+                        "value. Found in: ${entry.getShortFieldName()}",
+                )
+            }
         }
     }
 
@@ -356,6 +381,8 @@ class EnumProcessor(processingEnv: ProcessingEnvironment) :
             // In our example this would be {"ExampleClass", "ENUM_ENTRY_1"}.
             getFullyQualifiedFieldName(element)
         }
+
+    private fun EnumValueProto.getShortFieldName(): String = getFieldName().getFieldName()
 
     private class IdentifierVisitor : SimpleTreeVisitor<Void, ArrayList<String>>() {
         override fun visitNewArray(node: NewArrayTree, identifiers: ArrayList<String>): Void? {

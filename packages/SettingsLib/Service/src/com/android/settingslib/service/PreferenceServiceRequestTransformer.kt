@@ -33,6 +33,7 @@ import com.android.settingslib.graph.PreferenceGetterRequest
 import com.android.settingslib.graph.PreferenceGetterResponse
 import com.android.settingslib.graph.PreferenceSetterRequest
 import com.android.settingslib.graph.PreferenceSetterResult
+import com.android.settingslib.graph.PreferenceGraphCompressor
 import com.android.settingslib.graph.getAllPermissions
 import com.android.settingslib.graph.getText
 import com.android.settingslib.graph.preferenceValueProto
@@ -53,6 +54,7 @@ fun transformCatalystGetMetadataResponse(
     context: Context,
     graph: PreferenceGraphProto
 ): MetadataResult {
+    val graph = PreferenceGraphCompressor.expand(graph)
     val preferences = mutableSetOf<PreferenceWithScreen>()
     // recursive function to visit all nodes in preference group
     fun traverseGroupOrPref(

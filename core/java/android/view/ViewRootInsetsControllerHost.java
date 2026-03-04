@@ -79,8 +79,13 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
     }
 
     @Override
-    public void dispatchWindowInsetsAnimationPrepare(@NonNull WindowInsetsAnimation animation) {
+    public void dispatchWindowInsetsAnimationPrepare(@NonNull WindowInsetsAnimation animation,
+            boolean isUserAnimation, boolean isResizeAnimation, boolean hasAnimationCallback) {
         if (mViewRoot.mView == null) {
+            return;
+        }
+        if (com.android.window.flags.Flags.syncedInsetsAnimation()
+                && !isUserAnimation && !isResizeAnimation && !hasAnimationCallback) {
             return;
         }
         mViewRoot.mView.dispatchWindowInsetsAnimationPrepare(animation);
@@ -90,36 +95,39 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
     @Override
     public WindowInsetsAnimation.Bounds dispatchWindowInsetsAnimationStart(
             @NonNull WindowInsetsAnimation animation,
-            @NonNull WindowInsetsAnimation.Bounds bounds) {
+            @NonNull WindowInsetsAnimation.Bounds bounds, boolean isUserAnimation,
+            boolean isResizeAnimation, boolean hasAnimationCallback) {
         if (mViewRoot.mView == null) {
             return null;
         }
         if (DEBUG) Log.d(TAG, "windowInsetsAnimation started");
+        if (com.android.window.flags.Flags.syncedInsetsAnimation()
+                && !isUserAnimation && !isResizeAnimation && !hasAnimationCallback) {
+            return null;
+        }
         return mViewRoot.mView.dispatchWindowInsetsAnimationStart(animation, bounds);
     }
 
     @Nullable
     @Override
     public WindowInsets dispatchWindowInsetsAnimationProgress(@NonNull WindowInsets insets,
-            @NonNull List<WindowInsetsAnimation> runningAnimations) {
-        if (mViewRoot.mView == null) {
-            // The view has already detached from window.
-            return null;
-        }
-        if (DEBUG) {
-            for (WindowInsetsAnimation anim : runningAnimations) {
-                Log.d(TAG, "windowInsetsAnimation progress: "
-                        + anim.getInterpolatedFraction());
-            }
-        }
-        return mViewRoot.mView.dispatchWindowInsetsAnimationProgress(insets, runningAnimations);
+            @NonNull InsetsState state, @NonNull List<WindowInsetsAnimation> runningAnimations,
+            boolean hasUserAnimation, boolean hasResizeAnimation, boolean hasAnimationCallback,
+            @WindowInsets.Type.InsetsType int hidingTypes) {
+        return mViewRoot.dispatchWindowInsetsAnimationProgress(insets, state, runningAnimations,
+                hasUserAnimation, hasResizeAnimation, hasAnimationCallback, hidingTypes);
     }
 
     @Override
-    public void dispatchWindowInsetsAnimationEnd(@NonNull WindowInsetsAnimation animation) {
+    public void dispatchWindowInsetsAnimationEnd(@NonNull WindowInsetsAnimation animation,
+            boolean isUserAnimation, boolean isResizeAnimation, boolean hasAnimationCallback) {
         if (DEBUG) Log.d(TAG, "windowInsetsAnimation ended");
         if (mViewRoot.mView == null) {
             // The view has already detached from window.
+            return;
+        }
+        if (com.android.window.flags.Flags.syncedInsetsAnimation()
+                && !isUserAnimation && !isResizeAnimation && !hasAnimationCallback) {
             return;
         }
         mViewRoot.mView.dispatchWindowInsetsAnimationEnd(animation);
@@ -184,6 +192,11 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
         ImeTracker.forLogging().onProgress(statsToken,
                 ImeTracker.PHASE_CLIENT_UPDATE_ANIMATING_TYPES);
         mViewRoot.updateAnimatingTypes(animatingTypes, statsToken);
+    }
+
+    @Override
+    public boolean allowsSyncedInsetsAnimation() {
+        return true;
     }
 
     @Override

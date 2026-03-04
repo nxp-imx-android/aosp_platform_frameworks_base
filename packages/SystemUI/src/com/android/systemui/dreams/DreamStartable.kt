@@ -110,12 +110,25 @@ constructor(
                     sceneFamilyResolvers.get()[SceneFamilies.Home]?.resolvedScene?.first {
                         it != Scenes.Dream
                     }
-
-                    sceneInteractor.changeScene(
-                        toScene = SceneFamilies.Home,
-                        loggingReason = "Dream stopped",
-                        hideAllOverlays = !keyguardInteractor.isKeyguardShowing.value,
-                    )
+                    if (
+                        sceneInteractor.currentScene.value == Scenes.Dream &&
+                            Overlays.Bouncer in sceneInteractor.currentOverlays.value
+                    ) {
+                        // If the bouncer is showing over the dream, we should snap to the home
+                        // scene while keeping the bouncer open, to avoid animating the lockscreen
+                        // underneath the bouncer.
+                        sceneInteractor.snapToScene(
+                            toScene = SceneFamilies.Home,
+                            loggingReason = "Snap to home behind bouncer",
+                            hideAllOverlays = false,
+                        )
+                    } else {
+                        sceneInteractor.changeScene(
+                            toScene = SceneFamilies.Home,
+                            loggingReason = "Dream stopped",
+                            hideAllOverlays = !keyguardInteractor.isKeyguardShowing.value,
+                        )
+                    }
                 }
             }
         }

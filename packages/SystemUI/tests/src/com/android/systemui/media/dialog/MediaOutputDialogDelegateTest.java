@@ -18,6 +18,8 @@ package com.android.systemui.media.dialog;
 
 import static android.permission.flags.Flags.FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -48,7 +50,9 @@ import com.android.media.flags.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastSender;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.res.R;
+import com.android.systemui.statusbar.phone.SystemUIDialog;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -57,20 +61,20 @@ import org.junit.runner.RunWith;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-public class MediaOutputDialogTest extends SysuiTestCase {
+public class MediaOutputDialogDelegateTest extends SysuiTestCase {
 
     private static final String TEST_PACKAGE = "test_package";
 
     // Mock
-    private MediaOutputAdapter mMediaOutputAdapter = mock(MediaOutputAdapter.class);
-    private BroadcastSender mBroadcastSender = mock(BroadcastSender.class);
-    private final DialogTransitionAnimator mDialogTransitionAnimator = mock(
-            DialogTransitionAnimator.class);
+    private final MediaOutputAdapter mMediaOutputAdapter = mock(MediaOutputAdapter.class);
+    private final BroadcastSender mBroadcastSender = mock(BroadcastSender.class);
     private final UiEventLogger mUiEventLogger = mock(UiEventLogger.class);
-
-    private MediaOutputDialog mMediaOutputDialog;
-    private MediaSwitchingController mMediaSwitchingController = mock(
+    private final MediaSwitchingController mMediaSwitchingController = mock(
             MediaSwitchingController.class);
+
+    private DialogTransitionAnimator mDialogTransitionAnimator;
+    private SystemUIDialog.Factory mSystemUIDialogDotFactory;
+    private MediaOutputDialogDelegate mMediaOutputDialogDelegate;
 
     @Before
     public void setUp() {
@@ -78,19 +82,20 @@ public class MediaOutputDialogTest extends SysuiTestCase {
         when(mMediaSwitchingController.getColorScheme()).thenReturn(mockedColorScheme);
         when(mMediaSwitchingController.getStopButtonStringRes()).thenReturn(
                 R.string.media_output_dialog_button_stop_casting);
-        mMediaOutputDialog = createDialog();
-        mMediaOutputDialog.mAdapter = mMediaOutputAdapter;
-        mMediaOutputDialog.onCreate(new Bundle());
+        KosmosJavaAdapter kosmos = new KosmosJavaAdapter(this);
+        mDialogTransitionAnimator = kosmos.getDialogTransitionAnimator();
+        mSystemUIDialogDotFactory = kosmos.getSystemUIDialogDotFactory();
     }
 
     @Test
     public void onCreate_noAppOpenIntent_metadataSectionNonClickable() {
         when(mMediaSwitchingController.getAppLaunchIntent()).thenReturn(null);
 
-        mMediaOutputDialog = createDialog();
-        mMediaOutputDialog.onCreate(new Bundle());
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
         final LinearLayout mediaMetadataSectionLayout =
-                mMediaOutputDialog.mDialogView.requireViewById(
+                mMediaOutputDialogDelegate.mDialogView.requireViewById(
                         R.id.media_metadata_section);
 
         assertThat(mediaMetadataSectionLayout.isClickable()).isFalse();
@@ -100,10 +105,11 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     public void onCreate_appOpenIntentAvailable_metadataSectionClickable() {
         when(mMediaSwitchingController.getAppLaunchIntent()).thenReturn(new Intent(TEST_PACKAGE));
 
-        mMediaOutputDialog = createDialog();
-        mMediaOutputDialog.onCreate(new Bundle());
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
         final LinearLayout mediaMetadataSectionLayout =
-                mMediaOutputDialog.mDialogView.requireViewById(
+                mMediaOutputDialogDelegate.mDialogView.requireViewById(
                         R.id.media_metadata_section);
 
         assertThat(mediaMetadataSectionLayout.isClickable()).isTrue();
@@ -114,8 +120,12 @@ public class MediaOutputDialogTest extends SysuiTestCase {
         when(mMediaSwitchingController.getHeaderIcon()).thenReturn(IconCompat.createWithBitmap(
                 Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)));
 
-        mMediaOutputDialog.refresh();
-        final ImageView view = mMediaOutputDialog.mDialogView.requireViewById(
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mMediaOutputDialogDelegate.refresh();
+        final ImageView view = mMediaOutputDialogDelegate.mDialogView.requireViewById(
                 R.id.header_icon);
 
         assertThat(view.getVisibility()).isEqualTo(View.VISIBLE);
@@ -125,8 +135,12 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     public void refresh_noIcon_iconLayoutNotVisible() {
         when(mMediaSwitchingController.getHeaderIcon()).thenReturn(null);
 
-        mMediaOutputDialog.refresh();
-        final ImageView view = mMediaOutputDialog.mDialogView.requireViewById(
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mMediaOutputDialogDelegate.refresh();
+        final ImageView view = mMediaOutputDialogDelegate.mDialogView.requireViewById(
                 R.id.header_icon);
 
         assertThat(view.getVisibility()).isEqualTo(View.GONE);
@@ -137,8 +151,12 @@ public class MediaOutputDialogTest extends SysuiTestCase {
         String headerTitle = "test_string";
         when(mMediaSwitchingController.getHeaderTitle()).thenReturn(headerTitle);
 
-        mMediaOutputDialog.refresh();
-        final TextView titleView = mMediaOutputDialog.mDialogView.requireViewById(
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mMediaOutputDialogDelegate.refresh();
+        final TextView titleView = mMediaOutputDialogDelegate.mDialogView.requireViewById(
                 R.id.header_title);
 
         assertThat(titleView.getVisibility()).isEqualTo(View.VISIBLE);
@@ -150,8 +168,12 @@ public class MediaOutputDialogTest extends SysuiTestCase {
         String headerSubtitle = "test_string";
         when(mMediaSwitchingController.getHeaderSubTitle()).thenReturn(headerSubtitle);
 
-        mMediaOutputDialog.refresh();
-        final TextView subtitleView = mMediaOutputDialog.mDialogView.requireViewById(
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mMediaOutputDialogDelegate.refresh();
+        final TextView subtitleView = mMediaOutputDialogDelegate.mDialogView.requireViewById(
                 R.id.header_subtitle);
 
         assertThat(subtitleView.getVisibility()).isEqualTo(View.VISIBLE);
@@ -160,8 +182,12 @@ public class MediaOutputDialogTest extends SysuiTestCase {
 
     @Test
     public void refresh_noSubtitle_checkSubtitle() {
-        mMediaOutputDialog.refresh();
-        final TextView subtitleView = mMediaOutputDialog.mDialogView.requireViewById(
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mMediaOutputDialogDelegate.refresh();
+        final TextView subtitleView = mMediaOutputDialogDelegate.mDialogView.requireViewById(
                 R.id.header_subtitle);
 
         assertThat(subtitleView.getVisibility()).isEqualTo(View.GONE);
@@ -170,7 +196,13 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     @Test
     public void refresh_inDragging_notUpdateAdapter() {
         when(mMediaOutputAdapter.isDragging()).thenReturn(true);
-        mMediaOutputDialog.refresh();
+
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.mAdapter = mMediaOutputAdapter;
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mMediaOutputDialogDelegate.refresh();
 
         verify(mMediaOutputAdapter, never()).notifyDataSetChanged();
     }
@@ -178,7 +210,13 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     @Test
     public void refresh_inDragging_directSetRefreshingToFalse() {
         when(mMediaOutputAdapter.isDragging()).thenReturn(true);
-        mMediaOutputDialog.refresh();
+
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.mAdapter = mMediaOutputAdapter;
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mMediaOutputDialogDelegate.refresh();
 
         assertThat(mMediaSwitchingController.isRefreshing()).isFalse();
     }
@@ -187,14 +225,24 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     public void refresh_notInDragging_verifyUpdateAdapter() {
         when(mMediaOutputAdapter.getCurrentActivePosition()).thenReturn(-1);
         when(mMediaOutputAdapter.isDragging()).thenReturn(false);
-        mMediaOutputDialog.refresh();
+
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.mAdapter = mMediaOutputAdapter;
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mMediaOutputDialogDelegate.refresh();
 
         verify(mMediaOutputAdapter).updateItems();
     }
 
     @Test
     public void dismissDialog_closesDialogByBroadcastSender() {
-        mMediaOutputDialog.dismissDialog();
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mMediaOutputDialogDelegate.dismissDialog();
 
         verify(mBroadcastSender).closeSystemDialogs();
     }
@@ -203,77 +251,104 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     public void refresh_checkStopText() {
         int stopResId = R.string.media_output_dialog_button_stop_casting;
         when(mMediaSwitchingController.getStopButtonStringRes()).thenReturn(stopResId);
-        mMediaOutputDialog.refresh();
-        final Button stop = mMediaOutputDialog.mDialogView.requireViewById(R.id.stop);
+
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mMediaOutputDialogDelegate.refresh();
+        final Button stop = mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.stop);
 
         assertThat(stop.getText().toString()).isEqualTo(mContext.getString(stopResId));
     }
 
     @Test
-    public void onCreate_normalScreenHeight_showsNormalIconAndMetadata () {
+    public void onCreate_normalScreenHeight_showsNormalIconAndMetadata() {
         when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
         mContext.getResources().getConfiguration().screenHeightDp = 500;
 
-        mMediaOutputDialog.refresh();
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
 
-        assertThat(mMediaOutputDialog.mDialogView
+        mMediaOutputDialogDelegate.refresh();
+
+        assertThat(mMediaOutputDialogDelegate.mDialogView
                 .requireViewById(R.id.app_source_icon_small_screen_height)
                 .getVisibility()).isEqualTo(View.GONE);
-        assertThat(mMediaOutputDialog.mDialogView.requireViewById(R.id.app_source_icon)
+        assertThat(mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.app_source_icon)
                 .getVisibility()).isEqualTo(View.VISIBLE);
     }
 
     @Test
-    public void onCreate_smallScreenHeight_showsSmallIconAndHidesMetadata () {
+    public void onCreate_smallScreenHeight_showsSmallIconAndHidesMetadata() {
         when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
         mContext.getResources().getConfiguration().screenHeightDp = 300;
 
-        mMediaOutputDialog.refresh();
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
 
-        assertThat(mMediaOutputDialog.mDialogView.requireViewById(R.id.app_source_icon)
+        mMediaOutputDialogDelegate.refresh();
+
+        assertThat(mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.app_source_icon)
                 .getVisibility()).isEqualTo(View.GONE);
-        assertThat(mMediaOutputDialog.mDialogView
-                .requireViewById(R.id.app_source_icon_small_screen_height)
-                .getVisibility()).isEqualTo(View.VISIBLE);
-    }
-
-    @Test
-    public void refresh_fromNormalToSmallScreenHeight_showsSmallIcon () {
-        when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
-        mContext.getResources().getConfiguration().screenHeightDp = 500;
-        mMediaOutputDialog.refresh();
-        mContext.getResources().getConfiguration().screenHeightDp = 300;
-
-        mMediaOutputDialog.refresh();
-
-        assertThat(mMediaOutputDialog.mDialogView.requireViewById(R.id.app_source_icon)
-                .getVisibility()).isEqualTo(View.GONE);
-        assertThat(mMediaOutputDialog.mDialogView
+        assertThat(mMediaOutputDialogDelegate.mDialogView
                 .requireViewById(R.id.app_source_icon_small_screen_height)
                 .getVisibility()).isEqualTo(View.VISIBLE);
     }
 
     @Test
-    public void refresh_fromSmallToNormalScreenHeight_showsNormalIcon () {
+    public void refresh_fromNormalToSmallScreenHeight_showsSmallIcon() {
         when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
-        mContext.getResources().getConfiguration().screenHeightDp = 300;
-        mMediaOutputDialog.refresh();
+
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
         mContext.getResources().getConfiguration().screenHeightDp = 500;
+        mMediaOutputDialogDelegate.refresh();
+        mContext.getResources().getConfiguration().screenHeightDp = 300;
+        mMediaOutputDialogDelegate.refresh();
 
-        mMediaOutputDialog.refresh();
+        assertThat(mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.app_source_icon)
+                .getVisibility()).isEqualTo(View.GONE);
+        assertThat(mMediaOutputDialogDelegate.mDialogView
+                .requireViewById(R.id.app_source_icon_small_screen_height)
+                .getVisibility()).isEqualTo(View.VISIBLE);
+    }
 
-        assertThat(mMediaOutputDialog.mDialogView
+    @Test
+    public void refresh_fromSmallToNormalScreenHeight_showsNormalIcon() {
+        when(mMediaSwitchingController.getAppIcon()).thenReturn(new BitmapDrawable());
+
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mContext.getResources().getConfiguration().screenHeightDp = 300;
+        mMediaOutputDialogDelegate.refresh();
+        mContext.getResources().getConfiguration().screenHeightDp = 500;
+        mMediaOutputDialogDelegate.refresh();
+
+        assertThat(mMediaOutputDialogDelegate.mDialogView
                 .requireViewById(R.id.app_source_icon_small_screen_height)
                 .getVisibility()).isEqualTo(View.GONE);
-        assertThat(mMediaOutputDialog.mDialogView.requireViewById(R.id.app_source_icon)
+        assertThat(mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.app_source_icon)
                 .getVisibility()).isEqualTo(View.VISIBLE);
     }
 
     @Test
     public void onStopButtonClick_releaseSession() {
+        spyOn(mDialogTransitionAnimator);
         when(mMediaSwitchingController.getStopButtonStringRes())
                 .thenReturn(R.string.media_output_dialog_button_stop_casting);
-        mMediaOutputDialog.onStopButtonClick();
+
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
+        mMediaOutputDialogDelegate.onStopButtonClick();
 
         verify(mMediaSwitchingController).releaseSession();
         verify(mDialogTransitionAnimator).disableAllCurrentDialogsExitAnimations();
@@ -281,8 +356,12 @@ public class MediaOutputDialogTest extends SysuiTestCase {
 
     @Test
     public void onCreate_ShouldLogVisibility() {
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
         verify(mUiEventLogger)
-                .log(MediaOutputDialog.MediaOutputEvent.MEDIA_OUTPUT_DIALOG_SHOW);
+                .log(MediaOutputDialogDelegate.MediaOutputEvent.MEDIA_OUTPUT_DIALOG_SHOW);
     }
 
     @Test
@@ -290,22 +369,29 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     public void refresh_noMissingPermissionsResolveIntent_warningSectionGone() {
         when(mMediaSwitchingController.getMissingPermissionsResolveIntent()).thenReturn(null);
 
-        mMediaOutputDialog.refresh();
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
 
-        assertThat(mMediaOutputDialog.mDialogView.requireViewById(R.id.warning_section)
+        mMediaOutputDialogDelegate.refresh();
+
+        assertThat(mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.warning_section)
                 .getVisibility()).isEqualTo(View.GONE);
     }
 
     @Test
     @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
     public void onWarningFixButtonClick_callsController() {
-        mMediaOutputDialog = createDialog();
-        mMediaOutputDialog.onCreate(new Bundle());
+        mMediaOutputDialogDelegate = createDelegate();
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
         Intent testIntent = new Intent("test.action.intent");
         when(mMediaSwitchingController.getMissingPermissionsResolveIntent()).thenReturn(testIntent);
 
-        mMediaOutputDialog.refresh();
-        mMediaOutputDialog.mDialogView.requireViewById(R.id.warning_fix_button).performClick();
+        mMediaOutputDialogDelegate.refresh();
+        mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.warning_fix_button)
+                .performClick();
 
         verify(mMediaSwitchingController).tryToLaunchMissingPermissionsResolveIntent();
     }
@@ -313,13 +399,15 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
     public void refresh_withoutUsingSystemColors_updatesColorScheme() {
-        mMediaOutputDialog = createDialog(/* useSystemColors= */ false);
-        mMediaOutputDialog.onCreate(new Bundle());
+        mMediaOutputDialogDelegate = createDelegate(/* useSystemColors= */ false);
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
         IconCompat icon = IconCompat.createWithBitmap(
                 Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888));
         when(mMediaSwitchingController.getHeaderIcon()).thenReturn(icon);
 
-        mMediaOutputDialog.refresh();
+        mMediaOutputDialogDelegate.refresh();
 
         verify(mMediaSwitchingController).updateCurrentColorScheme(any(), anyBoolean());
     }
@@ -327,32 +415,34 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MEDIA_OUTPUT_SWITCHER_ENTRY_POINT_THEMING)
     public void refresh_withUsingSystemColors_doesNotUpdateColorScheme() {
-        mMediaOutputDialog = createDialog(/* useSystemColors= */ true);
-        mMediaOutputDialog.onCreate(new Bundle());
+        mMediaOutputDialogDelegate = createDelegate(/* useSystemColors= */ true);
+        final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
+        mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
+
         IconCompat icon = IconCompat.createWithBitmap(
                 Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888));
         when(mMediaSwitchingController.getHeaderIcon()).thenReturn(icon);
 
-        mMediaOutputDialog.refresh();
+        mMediaOutputDialogDelegate.refresh();
 
         verify(mMediaSwitchingController, never()).updateCurrentColorScheme(any(), anyBoolean());
     }
 
-    private MediaOutputDialog createDialog(boolean useSystemColors) {
-        return new MediaOutputDialog(
-                mContext,
-                /* aboveStatusBar= */ false,
-                mBroadcastSender,
+    private MediaOutputDialogDelegate createDelegate(boolean useSystemColors) {
+        return new MediaOutputDialogDelegate(
+                false,
                 mMediaSwitchingController,
-                mDialogTransitionAnimator,
+                true,
+                null,
+                useSystemColors,
+                mContext,
+                mBroadcastSender,
                 mUiEventLogger,
-                /* mIncludePlaybackAndAppMetadata= */ true,
-                /* mOnDialogEventListener= */ null,
-                useSystemColors
+                mSystemUIDialogDotFactory
         );
     }
 
-    private MediaOutputDialog createDialog() {
-        return createDialog(/* useSystemColors= */ true);
+    private MediaOutputDialogDelegate createDelegate() {
+        return createDelegate(/* useSystemColors= */ true);
     }
 }
