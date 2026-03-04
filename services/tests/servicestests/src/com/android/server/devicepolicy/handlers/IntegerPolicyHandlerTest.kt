@@ -17,28 +17,17 @@
 package com.android.server.devicepolicy.handlers
 
 import android.app.admin.DevicePolicyManager.NOT_A_DPC
-import android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE
-import android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER
-import android.app.admin.DevicePolicyManager.RESOURCE_PER_USER
-import android.app.admin.NoArgsPolicyKey
-import android.app.admin.PolicyIdentifier
 import android.app.admin.PolicyValueTransport
 import android.app.admin.metadata.IntegerPolicyMetadata
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.server.devicepolicy.IPermissionChecker
-import com.android.server.devicepolicy.IntegerPolicySerializer
-import com.android.server.devicepolicy.MostRecent
-import com.android.server.devicepolicy.PolicyDefinition
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertFailsWith
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import com.android.server.devicepolicy.CallerIdentity
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import com.android.server.devicepolicy.handlers.anyCaller
-import com.android.server.devicepolicy.handlers.anyScope
 
 @RunWith(AndroidJUnit4::class)
 class IntegerPolicyHandlerTest {
@@ -49,34 +38,9 @@ class IntegerPolicyHandlerTest {
             on { getPermissionChecker() } doReturn mock<IPermissionChecker> {}
         }
 
-    object IntegerPolicy {
-        val name = "integerPolicy"
-        val key = PolicyIdentifier<Int>(name)
-        const val MIN = -100
-        const val MAX = 100
-
-        val metadata =
-            IntegerPolicyMetadata(
-                key,
-                /*allowedScopes=*/ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
-                /*affectedResource=*/ RESOURCE_PER_USER,
-                /*requiredPermission=*/ "testPermission",
-                /*requiredCrossUserPermission=*/ "testCrossUserPermission",
-                /*allowedDpcTypes=*/ setOf(),
-                MIN,
-                MAX,
-            )
-
-        val definition =
-            PolicyDefinition<Int>(
-                NoArgsPolicyKey(name),
-                MostRecent<Int>(),
-                NoOpPolicyEnforcerCallback<Int>(),
-                IntegerPolicySerializer(),
-            )
-    }
-
-    private fun createHandler(metadata: IntegerPolicyMetadata = IntegerPolicy.metadata): PolicyHandler<Int> =
+    private fun createHandler(
+        metadata: IntegerPolicyMetadata = IntegerPolicy.metadata
+    ): PolicyHandler<Int> =
         PolicyHandler<Int>(IntegerPolicy.key, metadata, IntegerPolicy.definition, mockDelegate)
 
     @Test
@@ -94,12 +58,12 @@ class IntegerPolicyHandlerTest {
         handler.setPolicyUnchecked(
             anyCaller,
             anyScope,
-            PolicyValueTransport.integerField(IntegerPolicy.MIN)
+            PolicyValueTransport.integerField(IntegerPolicy.MIN),
         )
         handler.setPolicyUnchecked(
             anyCaller,
             anyScope,
-            PolicyValueTransport.integerField(IntegerPolicy.MAX)
+            PolicyValueTransport.integerField(IntegerPolicy.MAX),
         )
     }
 
@@ -107,13 +71,14 @@ class IntegerPolicyHandlerTest {
     fun setPolicyUnchecked_belowRange_throws() {
         val handler = createHandler()
 
-        val exception = assertFailsWith<IllegalArgumentException> {
-            handler.setPolicyUnchecked(
-                anyCaller,
-                anyScope,
-                PolicyValueTransport.integerField(IntegerPolicy.MIN - 1)
-            )
-        }
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.integerField(IntegerPolicy.MIN - 1),
+                )
+            }
         assertThat(exception).hasMessageThat().contains("is not in the range")
     }
 
@@ -121,40 +86,32 @@ class IntegerPolicyHandlerTest {
     fun setPolicyUnchecked_aboveRange_throws() {
         val handler = createHandler()
 
-        val exception = assertFailsWith<IllegalArgumentException> {
-            handler.setPolicyUnchecked(
-                anyCaller,
-                anyScope,
-                PolicyValueTransport.integerField(IntegerPolicy.MAX + 1)
-            )
-        }
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                handler.setPolicyUnchecked(
+                    anyCaller,
+                    anyScope,
+                    PolicyValueTransport.integerField(IntegerPolicy.MAX + 1),
+                )
+            }
         assertThat(exception).hasMessageThat().contains("is not in the range")
     }
 
     @Test
     fun setPolicyUnchecked_noLimits_succeeds() {
         val noLimitMetadata =
-            IntegerPolicyMetadata(
-                IntegerPolicy.key,
-                /*allowedScopes=*/ setOf(POLICY_SCOPE_USER, POLICY_SCOPE_DEVICE),
-                /*affectedResource=*/ RESOURCE_PER_USER,
-                /*requiredPermission=*/ "testPermission",
-                /*requiredCrossUserPermission=*/ "testCrossUserPermission",
-                /*allowedDpcTypes=*/ setOf(),
-                Int.MIN_VALUE,
-                Int.MAX_VALUE,
-            )
+            IntegerPolicy.metadata.copy(minValue = Int.MIN_VALUE, maxValue = Int.MAX_VALUE)
         val handler = createHandler(noLimitMetadata)
 
         handler.setPolicyUnchecked(
             anyCaller,
             anyScope,
-            PolicyValueTransport.integerField(Int.MIN_VALUE)
+            PolicyValueTransport.integerField(Int.MIN_VALUE),
         )
         handler.setPolicyUnchecked(
             anyCaller,
             anyScope,
-            PolicyValueTransport.integerField(Int.MAX_VALUE)
+            PolicyValueTransport.integerField(Int.MAX_VALUE),
         )
     }
 }
