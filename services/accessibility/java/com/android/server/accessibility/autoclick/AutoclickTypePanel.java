@@ -41,6 +41,7 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.R;
 import com.android.internal.policy.SystemBarUtils;
+import com.android.server.accessibility.Flags;
 
 /**
  * Manages the UI panel for selecting autoclick types.
@@ -80,6 +81,9 @@ public class AutoclickTypePanel {
     // clicking position button on the panel that moves it to next corner.
     @VisibleForTesting
     static final int PANEL_VERTICAL_MARGIN = 30;
+
+    // The default visible height of the panel once filled with elements.
+    private static final int DEFAULT_PANEL_HEIGHT = 94;
 
     // Touch point when drag starts, it can be anywhere inside the panel.
     private float mTouchStartX, mTouchStartY;
@@ -305,8 +309,9 @@ public class AutoclickTypePanel {
 
         // Apply final position: set params.x to be edge margin, params.y to maintain vertical
         // position, with a minimal margin of PANEL_VERTICAL_MARGIN with taskbar and status bar.
-        final int bottomPosition = screenHeight - taskbarHeight - panelHeight - mStatusBarHeight
-                - PANEL_VERTICAL_MARGIN;
+        final int bottomPosition = Flags.enableAutoclickPanelBugFixes() ? getPanelBottomPosition() :
+                screenHeight - taskbarHeight - panelHeight - mStatusBarHeight
+                        - PANEL_VERTICAL_MARGIN;
         params.x = PANEL_HORIZONTAL_MARGIN;
         params.y = Math.min(Math.max(PANEL_VERTICAL_MARGIN + mStatusBarHeight, yPosition),
                 bottomPosition);
@@ -609,12 +614,22 @@ public class AutoclickTypePanel {
         int taskbarHeight = SystemBarUtils.getTaskbarHeight(mContext.getResources());
         switch (corner) {
             case CORNER_BOTTOM_RIGHT:
-                params.gravity = Gravity.END | Gravity.BOTTOM;
-                params.y += taskbarHeight;
+                if (Flags.enableAutoclickPanelBugFixes()) {
+                    params.gravity = Gravity.END | Gravity.TOP;
+                    params.y = getPanelBottomPosition();
+                } else {
+                    params.gravity = Gravity.END | Gravity.BOTTOM;
+                    params.y += taskbarHeight;
+                }
                 break;
             case CORNER_BOTTOM_LEFT:
-                params.gravity = Gravity.START | Gravity.BOTTOM;
-                params.y += taskbarHeight;
+                if (Flags.enableAutoclickPanelBugFixes()) {
+                    params.gravity = Gravity.START | Gravity.TOP;
+                    params.y = getPanelBottomPosition();
+                } else {
+                    params.gravity = Gravity.START | Gravity.BOTTOM;
+                    params.y += taskbarHeight;
+                }
                 break;
             case CORNER_TOP_LEFT:
                 params.gravity = Gravity.START | Gravity.TOP;
@@ -627,6 +642,18 @@ public class AutoclickTypePanel {
             default:
                 throw new IllegalArgumentException("Invalid corner: " + corner);
         }
+    }
+
+    // Get the lowest position the panel can be based on the current UI elements.
+    private int getPanelBottomPosition() {
+        // The default panel height is used when the panel's current height can't be evaluated at
+        // creation.
+        int panelHeight =
+                mContentView == null || mContentView.getMeasuredHeight() == 0 ? DEFAULT_PANEL_HEIGHT
+                        : mContentView.getMeasuredHeight();
+        int screenHeight = mContext.getResources().getDisplayMetrics().heightPixels;
+        int taskbarHeight = SystemBarUtils.getTaskbarHeight(mContext.getResources());
+        return screenHeight - taskbarHeight - panelHeight - PANEL_VERTICAL_MARGIN;
     }
 
     /**
@@ -999,6 +1026,11 @@ public class AutoclickTypePanel {
     @VisibleForTesting
     void setIsExpandedPanelWiderThanScreenForTesting(boolean isExpandedPanelWiderThanScreen) {
         mIsExpandedPanelWiderThanScreen = isExpandedPanelWiderThanScreen;
+    }
+
+    @VisibleForTesting
+    int getPanelBottomPositionForTesting() {
+        return getPanelBottomPosition();
     }
 
     /**
