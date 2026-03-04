@@ -25,6 +25,7 @@
 #include <minikin/SystemFonts.h>
 #include <nativehelper/ScopedPrimitiveArray.h>
 #include <nativehelper/ScopedUtfChars.h>
+#include <utils/TypefaceUtils.h>
 
 #include <mutex>
 #include <unordered_map>
@@ -385,6 +386,11 @@ static void Typeface_registerLocaleList(JNIEnv* env, jobject, jstring jLocales) 
     minikin::registerLocaleList(locales.c_str());
 }
 
+// Critical Native
+static jboolean Typeface_setFontRenderingBackend(CRITICAL_JNI_PARAMS_COMMA jint type) {
+    return setFontRenderingBackend(static_cast<uirenderer::SkTypefaceBackend>(type));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 static const JNINativeMethod gTypefaceMethods[] = {
@@ -409,6 +415,7 @@ static const JNINativeMethod gTypefaceMethods[] = {
         {"nativeWarmUpCache", "(Ljava/lang/String;)V", (void*)Typeface_warmUpCache},
         {"nativeAddFontCollections", "(J)V", (void*)Typeface_addFontCollection},
         {"nativeRegisterLocaleList", "(Ljava/lang/String;)V", (void*)Typeface_registerLocaleList},
+        {"nativeSetFontRenderingBackend", "(I)Z", (void*)Typeface_setFontRenderingBackend},
 };
 
 int register_android_graphics_Typeface(JNIEnv* env)

@@ -272,3 +272,10 @@ flag {
   description: "Fix Editor.startActionModeInternal will crash if the TextView is not attached to the window."
   bug: "481597603"
 }
+
+flag {
+  name: "per_app_fontation_settings"
+  namespace: "text"
+  description: "Make text renderer backend configurable per apps for updating screenshot test cases"
+  bug: "405267306"
+}
