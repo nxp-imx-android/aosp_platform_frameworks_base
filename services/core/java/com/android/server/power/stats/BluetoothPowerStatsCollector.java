@@ -18,6 +18,7 @@ package com.android.server.power.stats;
 import android.annotation.Nullable;
 import android.bluetooth.BluetoothActivityEnergyInfo;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothStatusCodes;
 import android.bluetooth.UidTraffic;
 import android.content.pm.PackageManager;
 import android.hardware.power.stats.EnergyConsumerType;
@@ -177,8 +178,13 @@ public class BluetoothPowerStatsCollector extends PowerStatsCollector {
 
                     @Override
                     public void onBluetoothActivityEnergyInfoError(int error) {
-                        immediateFuture.completeExceptionally(
-                                new RuntimeException("error: " + error));
+                        if (error == BluetoothStatusCodes.ERROR_PROFILE_SERVICE_NOT_BOUND) {
+                            Slog.i(TAG, "Bluetooth is off, skipping activity info request.");
+                            immediateFuture.complete(null);
+                        } else {
+                            immediateFuture.completeExceptionally(
+                                    new RuntimeException("error: " + error));
+                        }
                     }
                 });
 
