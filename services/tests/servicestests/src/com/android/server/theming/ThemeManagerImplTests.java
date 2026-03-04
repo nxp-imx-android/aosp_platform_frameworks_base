@@ -26,6 +26,8 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -86,6 +88,7 @@ public class ThemeManagerImplTests {
     private final int mUserId = 0;
     private ThemeManagerImpl mUnderTest;
     private Context mContext; // Spy
+    private TestableResources mTestableResources;
     @Mock
     private ThemeSettingsManager mThemeSettingsManager;
     private ThemeEnvironment mEnvironment;
@@ -131,13 +134,13 @@ public class ThemeManagerImplTests {
 
         TestableContext testableContext = new TestableContext(
                 InstrumentationRegistry.getTargetContext(), null);
-        TestableResources testableResources = testableContext.getOrCreateTestableResources();
-        testableResources.addOverride(R.array.theming_defaults, mHardwareColorRule.options);
+        mTestableResources = testableContext.getOrCreateTestableResources();
+        mTestableResources.addOverride(R.array.theming_defaults, mHardwareColorRule.options);
 
         testableContext.addMockSystemService(KeyguardManager.class, mKeyguardManager);
 
         // Create a spy of the context to handle createContextAsUser for non-existent users
-        mContext = org.mockito.Mockito.spy(testableContext);
+        mContext = spy(testableContext);
         doReturn(mContext).when(mContext).createContextAsUser(any(), anyInt());
 
         // Default device state to LOCKED to allow background updates to proceed immediately
@@ -154,19 +157,6 @@ public class ThemeManagerImplTests {
             return new int[]{requestedUserId};
         });
         when(mUserLifecycle.loadUserStateAndNotifyStateManager(anyInt())).thenReturn(true);
-
-        mEnvironment = new ThemeEnvironment(mContext, mHardwareColorRule.sysPropReader);
-        mEnvironment.setBootingComplete(mUserLifecycle);
-        mEnvironment.onServicesReady(mKeyguardManager);
-
-        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager();
-        mSchedulerExecutor = new FakeScheduledExecutorService();
-
-        mStateManager = new ThemeStateManager(mContext, mSchedulerExecutor, mEnvironment);
-        mUnderTest = new ThemeManagerImpl(mContext, mThemeSettingsManager,
-                mStateManager, mOverlayHelper, mEnvironment, themeWallpaperManager,
-                mHardwareColorRule.sysPropReader);
-        mUnderTest.setup(mUserLifecycle);
 
         // Fake ThemeSettingsManager behavior
         mFakeSettingsMap = new HashMap<>();
@@ -193,6 +183,23 @@ public class ThemeManagerImplTests {
             ThemeSettings s = mFakeSettingsMap.get(userId);
             return s != null ? s : mThemeSettingsManager.createDefaultThemeSettings(userId);
         });
+
+        setupUnderTest();
+    }
+
+    private void setupUnderTest() {
+        mEnvironment = new ThemeEnvironment(mContext, mHardwareColorRule.sysPropReader);
+        mEnvironment.setBootingComplete(mUserLifecycle);
+        mEnvironment.onServicesReady(mKeyguardManager);
+
+        ThemeWallpaperManager themeWallpaperManager = new ThemeWallpaperManager();
+        mSchedulerExecutor = new FakeScheduledExecutorService();
+
+        mStateManager = spy(new ThemeStateManager(mContext, mSchedulerExecutor, mEnvironment));
+        mUnderTest = new ThemeManagerImpl(mContext, mThemeSettingsManager,
+                mStateManager, mOverlayHelper, mEnvironment, themeWallpaperManager,
+                mHardwareColorRule.sysPropReader);
+        mUnderTest.setup(mUserLifecycle);
 
         mStateManager.onServicesReady();
         startUser(mUserId, true, TEST_SEED_COLOR, TEST_CONTRAST, TEST_STYLE);
@@ -702,5 +709,43 @@ public class ThemeManagerImplTests {
 
         ThemeSettings stored = mFakeSettingsMap.get(userId);
         assertThat(stored).isNotNull();
+    }
+
+    @Test
+    public void onUserSwitching_toSystemUserOniHSUM_processed() {
+        // Setup: Enable Headless System User Mode
+        when(mUserManager.isHeadlessSystemUserMode()).thenReturn(true);
+        // Setup: Enable "iHSUM" (allow switching to system user)
+        mTestableResources.addOverride(
+                com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser, true);
+        setupUnderTest();
+
+        int fromUser = 10;
+        int toUser = UserHandle.USER_SYSTEM;
+
+        // Action: Switch to system user
+        mUnderTest.onUserSwitching(fromUser, toUser);
+
+        // Verify: StateManager received the event (meaning it wasn't ignored)
+        verify(mStateManager).onUserSwitching(fromUser, toUser);
+    }
+
+    @Test
+    public void onUserSwitching_toSystemUserOnHSUM_notProcessed() {
+        // Setup: Enable Headless System User Mode
+        when(mUserManager.isHeadlessSystemUserMode()).thenReturn(true);
+        // Setup: Disable "iHSUM" (disallow switching to system user)
+        mTestableResources.addOverride(
+                com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser, false);
+        setupUnderTest();
+
+        int fromUser = 10;
+        int toUser = UserHandle.USER_SYSTEM;
+
+        // Action: Switch to system user
+        mUnderTest.onUserSwitching(fromUser, toUser);
+
+        // Verify: StateManager didn't receive the event (ignored)
+        verify(mStateManager, never()).onUserSwitching(fromUser, toUser);
     }
 }
