@@ -21,6 +21,7 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.android.internal.logging.InstanceId
@@ -56,7 +57,7 @@ constructor(
     override var shouldScrollToFirst = false
     override var isSwipedAway = false
     override var isUserInitiatedRemovalQueued = true
-    override var isGutsVisible = false
+    override var isGutsVisible by mutableStateOf(false)
     override val allowMediaOnLockscreen = true
     override val visualStabilityListenerFlow: Flow<Unit> = emptyFlow()
     override val isReorderingAllowed = true
