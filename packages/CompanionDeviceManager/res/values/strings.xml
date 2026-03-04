@@ -129,6 +129,9 @@
     <!-- Description of the privileges the application will get if associated with the companion device of unspecified profile (type) [CHAR LIMIT=NONE] -->
     <string name="summary_generic">This app will be able to sync info, like the name of someone calling, between your phone and the chosen device</string>
 
+    <!-- Description of the privileges the app will get if associated with remote AI agent capability [CHAR LIMIT=NONE] -->
+    <string name="summary_generic_with_remote_ai_capability">Allow &lt;strong&gt;<xliff:g id="companion_device_name" example="Test Device">%1$s</xliff:g>&lt;/strong&gt; to sync info such as caller info and run smart actions from your <xliff:g id="device_type" example="phone">%2$s</xliff:g></string>
+
     <!-- ================= Buttons ================= -->
 
     <!-- Positive button for the device-app association consent dialog [CHAR LIMIT=30] -->

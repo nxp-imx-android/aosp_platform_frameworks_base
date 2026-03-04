@@ -499,10 +499,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         }
 
         if (PROFILE_SUMMARIES.containsKey(deviceProfile)) {
-            final int summaryResourceId = PROFILE_SUMMARIES.get(deviceProfile);
-            final Spanned summary = getHtmlFromResources(this, summaryResourceId,
-                    mAppLabel, getString(R.string.device_type), mDeviceName);
-            mSummary.setText(summary);
+            mSummary.setText(getSummary(String.valueOf(mDeviceName)));
         } else {
             mSummary.setVisibility(View.GONE);
         }
@@ -645,38 +642,55 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         mCancelScanLayout.setVisibility(View.GONE);
 
         final String deviceProfile = mRequest.getDeviceProfile();
-        final int summaryResourceId = PROFILE_SUMMARIES.get(deviceProfile);
         final String remoteDeviceName = mSelectedDevice.getDisplayName();
         final Spanned title = getHtmlFromResources(
                 this, PROFILE_TITLES.get(deviceProfile), mAppLabel, remoteDeviceName,
                 getString(R.string.device_type));
-        final Spanned summary;
 
         if (deviceProfile == null && mRequest.isSingleDevice()) {
-            final int summaryResourceIdNonProfile =
-                    CollectionUtils.isEmpty(mRequest.getExtraPermissions())
-                            ? PROFILE_SUMMARIES.get(deviceProfile)
-                            : PROFILE_SUMMARIES.get(DEVICE_PROFILE_WATCH);
-            summary = getHtmlFromResources(
-                    this, summaryResourceIdNonProfile, getString(R.string.device_type));
             if (mRequest.getRequestedPerms() == null)  {
                 mConstraintList.setVisibility(View.GONE);
             } else {
                 setupPermissionList(mRequest.getRequestedPerms());
             }
         } else {
-            summary = getHtmlFromResources(
-                    this, summaryResourceId, getString(R.string.device_type), mAppLabel,
-                    remoteDeviceName);
             setupPermissionList(mRequest.getRequestedPerms());
         }
 
         mTitle.setText(title);
-        mSummary.setText(summary);
+        mSummary.setText(getSummary(remoteDeviceName));
 
         mSummary.setVisibility(View.VISIBLE);
         mButtonAllow.setVisibility(View.VISIBLE);
         mButtonNotAllow.setVisibility(View.VISIBLE);
+    }
+
+    private Spanned getSummary(String deviceName) {
+        if (mRequest.isRemoteAiAgentSupported()) {
+            return getHtmlFromResources(this,
+                    R.string.summary_generic_with_remote_ai_capability, deviceName,
+                    getString(R.string.device_type));
+        }
+
+        final String deviceProfile = mRequest.getDeviceProfile();
+
+        if (mRequest.isSelfManaged()) {
+            return getHtmlFromResources(this, PROFILE_SUMMARIES.get(deviceProfile),
+                    mAppLabel, getString(R.string.device_type), mDeviceName);
+        }
+
+        if (deviceProfile == null && mRequest.isSingleDevice()) {
+            final int summaryResourceIdNonProfile =
+                    CollectionUtils.isEmpty(mRequest.getExtraPermissions())
+                            ? PROFILE_SUMMARIES.get(null)
+                            : PROFILE_SUMMARIES.get(DEVICE_PROFILE_WATCH);
+            return getHtmlFromResources(
+                    this, summaryResourceIdNonProfile, getString(R.string.device_type));
+        } else {
+            return getHtmlFromResources(
+                    this, PROFILE_SUMMARIES.get(deviceProfile), getString(R.string.device_type),
+                    mAppLabel, deviceName);
+        }
     }
 
     private void onPositiveButtonClick(View v) {
