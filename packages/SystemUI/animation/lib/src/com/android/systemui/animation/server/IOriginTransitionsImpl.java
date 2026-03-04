@@ -514,13 +514,18 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                                 + "\n\tlaunchingTaskInfo=" + info.launchingTaskInfo
                                 + "\n\tlaunchingActivity=" + info.launchingActivity
                                 + "\n\tlaunchedTaskInfo=" + info.launchedTaskInfo
-                                + "\n\tlaunchedActivity=" + info.launchedActivity);
+                                + "\n\tlaunchedActivity=" + info.launchedActivity
+                                + "\n\tlaunchedWithTransparency=" + info.launchedWithTransparency
+
+                );
             }
-            if (info.launchingTaskInfo == null && info.launchingActivity == null) {
+            if (info.launchingTaskInfo == null
+                    && info.launchingActivity == null
+                    && !info.launchedWithTransparency) {
                 Log.w(
                         TAG,
                         "updateTransitionFilterForInfo: unable to find launching task or"
-                                + " launching activity!");
+                                + " launching activity (and no transparency in launch)!");
                 return null;
             }
             if (info.launchedTaskInfo == null && info.launchedActivity == null) {
@@ -555,6 +560,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
 
             boolean hasOpeningModeRequirement = false;
             boolean hasClosingChangeModeRequirement = false;
+            boolean hasTransparencyWithChangeModeRequirement = false;
             for (int i = 0; i < filter.mRequirements.length; i++) {
                 TransitionFilter.Requirement req = filter.mRequirements[i];
                 Log.d(TAG, "updateTransitionFilterForInfo: checking filter req: " + req);
@@ -565,11 +571,11 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                 }
                 if (isFilterRequirementOpening(req)) {
                     req.mTopActivity =
-                            info.launchingActivity == null
+                            (info.launchingActivity == null && info.launchingTaskInfo != null)
                                     ? info.launchingTaskInfo.topActivity : info.launchingActivity;
                     Log.d(TAG, "updateTransitionFilterForInfo: "
                             + "opening change expects topActivity: " + req.mTopActivity);
-                    hasOpeningModeRequirement = true;
+                    hasOpeningModeRequirement = req.mTopActivity != null;
                 } else if (isFilterRequirementClosingOrChange(req)) {
                     if (info.launchedTaskInfo != null) {
                         // For task transitions, the closing task's cookie must match the task we
@@ -585,12 +591,22 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                                 + "closing change expects top activity: " + req.mTopActivity);
                     }
                     hasClosingChangeModeRequirement = true;
+                    hasTransparencyWithChangeModeRequirement = info.launchedWithTransparency;
                 }
             }
             if (hasOpeningModeRequirement && hasClosingChangeModeRequirement) {
+                Log.d(TAG, "updateTransitionFilterForInfo SUCCESS"
+                        + " - filter has opening and closing: " + filter);
                 return filter;
             }
-            Log.w(TAG, "updateTransitionFilterForInfo failed - filter missing required modes");
+
+            if (hasClosingChangeModeRequirement && hasTransparencyWithChangeModeRequirement) {
+                Log.d(TAG, "updateTransitionFilterForInfo SUCCESS"
+                        + " - filter has transparent launch and closing: " + filter);
+                return filter;
+            }
+
+            Log.w(TAG, "updateTransitionFilterForInfo FAILED - filter missing required modes");
             return null;
         }
     }
@@ -671,14 +687,17 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
         public final TaskInfo launchingTaskInfo;
         public final ComponentName launchedActivity;
         public final ComponentName launchingActivity;
+        public final boolean launchedWithTransparency;
 
         @VisibleForTesting
         TransitionInfoContainer(TaskInfo launchedTaskInfo, TaskInfo launchingTaskInfo,
-                ComponentName launchedActivity, ComponentName launchingActivity) {
+                ComponentName launchedActivity, ComponentName launchingActivity,
+                boolean launchedWithTransparency) {
             this.launchedTaskInfo = launchedTaskInfo;
             this.launchingTaskInfo = launchingTaskInfo;
             this.launchedActivity = launchedActivity;
             this.launchingActivity = launchingActivity;
+            this.launchedWithTransparency = launchedWithTransparency;
         }
 
         /**
@@ -692,6 +711,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
             TaskInfo launchedTaskInfo = null;
             ComponentName launchingActivity = null;
             ComponentName launchedActivity = null;
+            boolean launchedWithTransparency = false;
 
             for (Change change : info.getChanges()) {
                 int mode = change.getMode();
@@ -704,6 +724,7 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
                 } else if (launchedTaskInfo == null && taskInfo != null
                         && TransitionUtil.isOpeningMode(mode)) {
                     launchedTaskInfo = taskInfo;
+                    launchedWithTransparency = taskInfo.isActivityStackTransparent;
                 } else if (launchingActivity == null && activity != null
                         && TransitionUtil.isClosingMode(mode)) {
                     launchingActivity = activity;
@@ -714,7 +735,11 @@ public class IOriginTransitionsImpl extends IOriginTransitions.Stub {
             }
 
             return new TransitionInfoContainer(
-                    launchedTaskInfo, launchingTaskInfo, launchedActivity, launchingActivity);
+                    launchedTaskInfo,
+                    launchingTaskInfo,
+                    launchedActivity,
+                    launchingActivity,
+                    launchedWithTransparency);
         }
     }
 }
