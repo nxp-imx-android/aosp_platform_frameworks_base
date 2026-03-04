@@ -70,6 +70,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.R;
 import com.android.internal.accessibility.dialog.AccessibilityShortcutChooserActivity;
+import com.android.internal.accessibility.dialog.AccessibilityTargetHelper;
 
 import org.junit.After;
 import org.junit.Before;
@@ -265,7 +266,7 @@ public class AccessibilityShortcutChooserActivityTest {
 
     @Test
     public void popEditShortcutMenuList_oneHandedModeEnabled_shouldBeInListView() {
-        TestUtils.setOneHandedModeEnabled(this, /* enabled= */ true);
+        AccessibilityTargetHelper.setSupportOneHandedMode(true);
         launchActivity();
         openShortcutsList();
 
@@ -277,7 +278,7 @@ public class AccessibilityShortcutChooserActivityTest {
 
     @Test
     public void popEditShortcutMenuList_oneHandedModeDisabled_shouldNotBeInListView() {
-        TestUtils.setOneHandedModeEnabled(this, /* enabled= */ false);
+        AccessibilityTargetHelper.setSupportOneHandedMode(false);
         launchActivity();
         openShortcutsList();
 
