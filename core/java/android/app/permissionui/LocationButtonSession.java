@@ -90,6 +90,9 @@ public interface LocationButtonSession extends AutoCloseable {
      *
      * <p>The remote service will re-layout the button to fit within the new dimensions.
      *
+     * <p>See {@link LocationButtonRequest.Builder#Builder(int, int, Configuration)}
+     * for width and height input constraints.
+     *
      * @param width  The new width of the button's container, in pixels.
      * @param height The new height of the button's container, in pixels.
      */
@@ -97,6 +100,9 @@ public interface LocationButtonSession extends AutoCloseable {
 
     /**
      * Sets the padding for the location button within its container.
+     *
+     * <p>See the padding setters
+     * (e.g., {@link LocationButtonRequest.Builder#setPaddingLeft(int)}) for input constraints.
      *
      * @param left   The left padding in pixels.
      * @param top    The top padding in pixels.
@@ -126,12 +132,17 @@ public interface LocationButtonSession extends AutoCloseable {
     /**
      * Sets the corner radius for the location button.
      *
+     * <p>See {@link LocationButtonRequest.Builder#setCornerRadius(float)} for input constraints.
+     *
      * @param cornerRadius The corner radius in pixels.
      */
     void setCornerRadius(float cornerRadius);
 
     /**
      * Sets the corner radius for the location button pressed state.
+     *
+     * <p>See {@link LocationButtonRequest.Builder#setPressedCornerRadius(float)}
+     * for input constraints.
      *
      * @param cornerRadius The corner radius in pixels.
      */
@@ -140,12 +151,16 @@ public interface LocationButtonSession extends AutoCloseable {
     /**
      * Sets the color of location button text.
      *
+     * <p>See {@link LocationButtonRequest.Builder#setTextColor(int)} for input constraints.
+     *
      * @param color The desired text color, as a {@link ColorInt}.
      */
     void setTextColor(@ColorInt int color);
 
     /**
      * Sets the background color of the location button.
+     *
+     * <p>See {@link LocationButtonRequest.Builder#setBackgroundColor(int)} for input constraints.
      *
      * @param color The desired background color, as a {@link ColorInt}.
      */
@@ -154,6 +169,8 @@ public interface LocationButtonSession extends AutoCloseable {
     /**
      * Sets the tint color of the icon within the location button.
      *
+     * <p>See {@link LocationButtonRequest.Builder#setIconTint(int)} for input constraints.
+     *
      * @param color The desired icon tint color, as a {@link ColorInt}.
      */
     void setIconTint(@ColorInt int color);
@@ -161,8 +178,7 @@ public interface LocationButtonSession extends AutoCloseable {
     /**
      * Sets the text to be displayed on the button.
      *
-     * <p>To maintain a trusted and consistent user experience, the text must be one of the
-     * predefined system strings. </p>
+     * <p>See {@link LocationButtonRequest.Builder#setTextType(int)} for input constraints.
      *
      * @param textType The text type for the button text.
      */
@@ -171,12 +187,16 @@ public interface LocationButtonSession extends AutoCloseable {
     /**
      * Sets the color of location button stroke/outline.
      *
+     * <p>See {@link LocationButtonRequest.Builder#setStrokeColor(int)} for input constraints.
+     *
      * @param color The desired outline color, as a {@link ColorInt}.
      */
     void setStrokeColor(@ColorInt int color);
 
     /**
      * Sets the width of location button stroke/outline.
+     *
+     * <p>See {@link LocationButtonRequest.Builder#setStrokeWidth(int)} for input constraints.
      *
      * @param width The desired stroke width.
      */
