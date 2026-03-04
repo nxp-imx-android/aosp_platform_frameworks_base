@@ -119,6 +119,8 @@ import org.mockito.junit.MockitoRule;
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -2387,5 +2389,14 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.updateSidePadding(1000);
         // THEN: side paddings are equal to minimum
         assertThat(mStackScroller.getSidePaddings()).isEqualTo(mMinimumPaddings);
+    }
+
+    @Test
+    public void dump_justCreatedNssl_noCrash() {
+        StringWriter stringWriter = new StringWriter();
+
+        mStackScroller.dump(new PrintWriter(stringWriter), new String[0]);
+
+        assertThat(stringWriter.toString()).isNotEmpty();
     }
 }
