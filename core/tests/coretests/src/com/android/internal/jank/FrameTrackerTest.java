@@ -844,7 +844,7 @@ public class FrameTrackerTest {
                 eq(SEVERE_JANK_FT) /* maxFrameTimeNanos */,
                 eq(1L) /* missedSfFramesCount (using legacy) */,
                 eq(1L) /* missedAppFramesCount (using legacy) */,
-                eq(2L) /* maxSuccessiveMissedFramesCount (using legacy) */,
+                eq(1L) /* maxSuccessiveMissedFramesCount (using exp) */,
                 eq(5 * FRAME_TIME_120Hz) /* totalAnimationTime */,
                 eq(2.0f) /* weightedJank */,
                 eq(0.0f) /* sfWeightedJank (using exp) */,
