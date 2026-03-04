@@ -36,6 +36,8 @@ import android.os.ResultReceiver;
 import android.service.personalcontext.Flags;
 import android.service.personalcontext.IOpCallback;
 import android.service.personalcontext.RenderToken;
+import android.service.personalcontext.hint.ContextHint;
+import android.service.personalcontext.insight.ContextInsight;
 import android.service.personalcontext.insight.PublishedContextInsight;
 import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.service.personalcontext.util.BinderRequestProcessor;

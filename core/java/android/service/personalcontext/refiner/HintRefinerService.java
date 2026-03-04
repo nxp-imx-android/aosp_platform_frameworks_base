@@ -67,11 +67,18 @@ import java.util.concurrent.Executor;
  * <p>You must declare the service in the AndroidManifest of the app hosting the service with the
  * {@link android.Manifest.permission#BIND_CONTEXT_COMPONENT_SERVICE} permission, and include an
  * intent filter with the necessary action indicating that it is a {@link HintRefinerService}
- * (android.service.personalcontext.RefinerService).
+ * (android.service.personalcontext.RefinerService). The application must have the {@link
+ * android.Manifest.permission#PERSONAL_CONTEXT_RECEIVE_HINTS} and {@link
+ * android.Manifest.permission#PERSONAL_CONTEXT_PUBLISH_HINTS} permissions.
  *
  * <p>For example:
  *
  * <pre>
+ *     &lt;uses-permission
+ *         android:name="android.permission.PERSONAL_CONTEXT_RECEIVE_HINTS"/&gt;
+ *     &lt;uses-permission
+ *         android:name="android.permission.PERSONAL_CONTEXT_PUBLISH_HINTS"/&gt;
+ *
  *     &lt;service android:name=".ExampleHintRefinerService"
  *             android:exported="true"
  *             android:permission="android.permission.BIND_CONTEXT_COMPONENT_SERVICE"&gt;

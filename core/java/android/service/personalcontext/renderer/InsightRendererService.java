@@ -53,7 +53,8 @@ import java.util.concurrent.Executor;
  * <p>You must declare the service in the AndroidManifest of the app hosting the service with the
  * {@link android.Manifest.permission#BIND_CONTEXT_COMPONENT_SERVICE} permission, and include an
  * intent filter with the necessary action indicating that it is an {@link InsightRendererService}
- * ({@link #SERVICE_INTERFACE}).
+ * ({@link #SERVICE_INTERFACE}). The application must have the {@link
+ * android.Manifest.permission#PERSONAL_CONTEXT_RECEIVE_INSIGHTS} permission.
  *
  * <p>You can indicate support for insights resulting from {@link
  * android.service.personalcontext.hint.NotificationHint}} by adding a meta-data tag named
@@ -64,6 +65,9 @@ import java.util.concurrent.Executor;
  * <p>For example:
  *
  * <pre>
+ *     &lt;uses-permission
+ *         android:name="android.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS"/&gt;
+ *
  *     &lt;service android:name=".ExampleInsightRendererService"
  *             android:exported="true"
  *             android:permission="android.permission.BIND_CONTEXT_COMPONENT_SERVICE"&gt;
