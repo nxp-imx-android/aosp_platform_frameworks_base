@@ -77,6 +77,7 @@ import com.android.compose.animation.scene.transitions
 import com.android.compose.gesture.effect.OffsetOverscrollEffect
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.gesture.gesturesDisabled
+import com.android.compose.lifecycle.DisposableEffectWithLifecycle
 import com.android.compose.lifecycle.LaunchedEffectWithLifecycle
 import com.android.compose.modifiers.animateContentSizeNoClip
 import com.android.compose.modifiers.height
@@ -575,6 +576,16 @@ private fun ContentScope.SplitShade(
                             )
 
                         val coroutineScope = rememberCoroutineScope()
+
+                        DisposableEffectWithLifecycle(
+                            key1 = qsContainerViewModel,
+                            key2 = sceneState,
+                        ) {
+                            onDispose {
+                                qsContainerViewModel.editModeViewModel.stopEditing()
+                                sceneState.snapTo(QS)
+                            }
+                        }
 
                         LaunchedEffect(sceneState, qsContainerViewModel.isEditing, coroutineScope) {
                             if (qsContainerViewModel.isEditing) {
