@@ -26,7 +26,6 @@ import android.graphics.PixelFormat
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
-import android.util.Log
 import com.android.internal.R
 import com.android.systemui.dagger.SysUISingleton
 import javax.inject.Inject
@@ -50,20 +49,7 @@ class BridgedIconProviderImpl @Inject constructor() : BridgedIconProvider {
         val baseIcon = bridgedMetadata.appIcon
         val baseDrawable = baseIcon.loadDrawable(context) ?: return null
         val layers = mutableListOf<Drawable>(baseDrawable, createPlateOverlayDrawable(context))
-        // TODO(b/467113198): Add support for other device types.
-        when (bridgedMetadata.originDeviceType) {
-            BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_PHONE -> {
-                layers.add(createPositionedPhoneIconDrawable(context))
-            }
-
-            else -> {
-                Log.w(
-                    TAG,
-                    "Unsupported device type for bridged notification icon: " +
-                        "${bridgedMetadata.originDeviceType}",
-                )
-            }
-        }
+        layers.add(createPositionedPhoneIconDrawable(context))
         return LayerDrawable(layers.toTypedArray())
     }
 
