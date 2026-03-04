@@ -85,7 +85,7 @@ class PreferenceGetterApiHandlerTest {
                     isEnabled = true,
                     isAvailable = true,
                     isRestricted = false,
-                    sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
+                    sensitivityLevel = SensitivityLevel.NO_SENSITIVITY,
                 ),
                 valueType = String::class.javaObjectType,
                 readPermission = INTERACT_ACROSS_USERS,
@@ -115,7 +115,8 @@ class PreferenceGetterApiHandlerTest {
             restricted = false
             purpose = R.string.preference_purpose
             persistent = true
-            sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO
+            sensitivityLevel = SensitivityLevel.NO_SENSITIVITY
+            writable = false
             readPermissions = Permissions.allOf(
                 INTERACT_ACROSS_USERS
             ).toProto()
