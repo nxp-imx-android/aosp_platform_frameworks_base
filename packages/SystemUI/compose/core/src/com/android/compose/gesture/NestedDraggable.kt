@@ -371,6 +371,7 @@ private class NestedDraggableNode(
             }
 
             var drag = awaitTouchSlopOrCancellation(down.id)
+            var isGesturePickupEvent = false
 
             if (Flags.nesteddraggableGesturePickup()) {
                 // If the pointer is still down, keep reading events in case we need to pick up the
@@ -388,6 +389,7 @@ private class NestedDraggableNode(
 
                     // An event was not consumed and there's still a pointer in the screen.
                     if (event.changes.fastAny { it.pressed }) {
+                        isGesturePickupEvent = true
                         // Await touch slop again, using the initial down as starting point.
                         // For most cases this should return immediately since we probably moved
                         // far enough from the initial down event.
@@ -418,7 +420,17 @@ private class NestedDraggableNode(
                 velocityTracker.resetTracking()
                 val sign =
                     if (Flags.nesteddraggableGesturePickup()) {
-                        (drag.position.toFloat() - down.position.toFloat()).sign
+                        // Check the direction of the latest movement.
+                        val latestMovementSign = drag.positionChangeIgnoreConsumed().toFloat().sign
+
+                        // During a gesture pickup, the latest event might not have moved in the
+                        // current orientation. If so, fallback to the total distance from the
+                        // initial position.
+                        if (latestMovementSign == 0f && isGesturePickupEvent) {
+                            (drag.position.toFloat() - down.position.toFloat()).sign
+                        } else {
+                            latestMovementSign
+                        }
                     } else {
                         drag.positionChangeIgnoreConsumed().toFloat().sign
                     }
@@ -429,6 +441,9 @@ private class NestedDraggableNode(
                         append("down.position ${down.position} ")
                         append("drag.position ${drag.position} ")
                         append("drag.previousPosition ${drag.previousPosition}")
+                        if (Flags.nesteddraggableGesturePickup()) {
+                            append("isGesturePickupEvent $isGesturePickupEvent")
+                        }
                     }
                 }
 
