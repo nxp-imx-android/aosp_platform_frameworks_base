@@ -528,23 +528,42 @@ private fun CutoutAwareShadeHeader(
         val height = max(cutoutHeight + (cutoutTop * 2), statusBarHeightPx)
         val childConstraints = Constraints.fixed(width, height)
 
-        val startPlaceable =
-            measurableStartContent[ShadeHeader.LayoutId.StartContent]!!.measure(childConstraints)
-        val endPlaceable =
-            measurableEndContent[ShadeHeader.LayoutId.EndContent]!!.measure(childConstraints)
+        fun measureStart(constraints: Constraints) =
+            measurableStartContent[ShadeHeader.LayoutId.StartContent]!!.measure(constraints)
+        fun measureEnd(constraints: Constraints) =
+            measurableEndContent[ShadeHeader.LayoutId.EndContent]!!.measure(constraints)
 
         layout(screenWidth, height) {
-            when (cutoutLocation) {
-                CutoutLocation.NONE,
-                CutoutLocation.RIGHT -> {
+            if (cutoutLocation == CutoutLocation.RIGHT) {
+                val isRightToLeftEnabled = layoutDirection == LayoutDirection.Rtl
+                if (isRightToLeftEnabled) {
+                    val rightCutoutChildConstraints =
+                        Constraints.fixed(screenWidth - cutoutWidth, height)
+                    val startPlaceable = measureStart(rightCutoutChildConstraints)
+                    val endPlaceable = measureEnd(rightCutoutChildConstraints)
+
+                    startPlaceable.place(
+                        x = screenWidth - cutoutWidth - startPlaceable.width,
+                        y = 0,
+                    )
+                    endPlaceable.place(x = 0, y = 0)
+                } else {
+                    val startPlaceable = measureStart(childConstraints)
+                    val endPlaceable = measureEnd(childConstraints)
                     startPlaceable.placeRelative(x = 0, y = 0)
                     endPlaceable.placeRelative(x = startPlaceable.width, y = 0)
                 }
-                CutoutLocation.CENTER -> {
+            } else {
+                val startPlaceable = measureStart(childConstraints)
+                val endPlaceable = measureEnd(childConstraints)
+                if (cutoutLocation == CutoutLocation.NONE) {
+                    startPlaceable.placeRelative(x = 0, y = 0)
+                    endPlaceable.placeRelative(x = startPlaceable.width, y = 0)
+                } else if (cutoutLocation == CutoutLocation.CENTER) {
                     startPlaceable.placeRelative(x = 0, y = 0)
                     endPlaceable.placeRelative(x = startPlaceable.width + cutoutWidth, y = 0)
-                }
-                CutoutLocation.LEFT -> {
+                } else {
+                    // CutoutLocation.LEFT
                     startPlaceable.placeRelative(x = cutoutWidth, y = 0)
                     endPlaceable.placeRelative(x = startPlaceable.width + cutoutWidth, y = 0)
                 }
