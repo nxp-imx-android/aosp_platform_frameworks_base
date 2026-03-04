@@ -203,6 +203,7 @@ public class ZenModeHelper {
     @VisibleForTesting protected ZenModeConfig mConfig;
     @VisibleForTesting protected AudioManagerInternal mAudioManager;
     protected PackageManager mPm;
+    private boolean mIsWatch;
     @GuardedBy("mConfigLock")
     private DeviceEffectsApplier mDeviceEffectsApplier;
     private long mSuppressedEffects;
@@ -257,9 +258,15 @@ public class ZenModeHelper {
         synchronized (mConfigLock) {
             if (filterCallOnListenerHint()
                     && (mSuppressedEffects & SUPPRESSED_EFFECT_CALLS) != 0) {
-                // equivalent to ZEN_MODE_NO_INTERRUPTION, nothing gets through
-                if (DEBUG) Log.d(TAG, "filtering call due to mSuppressedEffects");
-                return false;
+                // TODO: b/489939734 -- some watch users use listener hints when calls
+                // should still be shown to the user. Temporarily restrict from this
+                // form factor pending investigation
+                if (!mIsWatch) {
+                    if (DEBUG) {
+                        Log.d(TAG, "filtering call due to mSuppressedEffects");
+                    }
+                    return false;
+                }
             }
             return ZenModeFiltering.matchesCallFilter(mContext, mZenMode, mConsolidatedPolicy,
                     userHandle, extras, validator, contactsTimeoutMs, timeoutAffinity,
@@ -316,6 +323,7 @@ public class ZenModeHelper {
             mAudioManager.setRingerModeDelegate(mRingerModeDelegate);
         }
         mPm = mContext.getPackageManager();
+        mIsWatch = mPm.hasSystemFeature(PackageManager.FEATURE_WATCH);
         mHandler.postMetricsTimer();
         cleanUpZenRules();
         mIsSystemServicesReady = true;
