@@ -58,7 +58,6 @@ import android.util.Slog;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
 import android.view.Display;
-import android.view.WindowManager;
 
 import com.android.internal.policy.IKeyguardDismissCallback;
 import com.android.server.inputmethod.InputMethodManagerInternal;
@@ -639,15 +638,12 @@ class KeyguardController {
         // if AOD is showing, defer the wake transition until AOD state changed.
         if (waiting && isAodShowing(DEFAULT_DISPLAY)) {
             mWaitingForWakeTransition = true;
-            mWindowManager.mAtmService.getTransitionController().deferTransitionReady();
-            mWaitAodHide = new Transition.ReadyCondition("AOD hidden",
-                    !Flags.migrateBasicLegacyReady());
+            mWaitAodHide = new Transition.ReadyCondition("AOD hidden", false);
             mWindowManager.mAtmService.getTransitionController().waitFor(mWaitAodHide);
             mWindowManager.mH.postDelayed(mResetWaitTransition, DEFER_WAKE_TRANSITION_TIMEOUT_MS);
         } else if (!waiting) {
             // dismiss the deferring if the AOD state change or cancel awake.
             mWaitingForWakeTransition = false;
-            mWindowManager.mAtmService.getTransitionController().continueTransitionReady();
             mWindowManager.mH.removeCallbacks(mResetWaitTransition);
             final Transition.ReadyCondition waitAodHide = mWaitAodHide;
             mWaitAodHide = null;
