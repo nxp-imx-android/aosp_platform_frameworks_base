@@ -2057,22 +2057,26 @@ public class BubbleStackView extends FrameLayout
     void setupLocalMenu(AccessibilityNodeInfo info) {
         Resources res = mContext.getResources();
 
-        // Custom local actions.
-        AccessibilityAction moveTopLeft = new AccessibilityAction(R.id.action_move_top_left,
-                res.getString(R.string.bubble_accessibility_action_move_top_left));
-        info.addAction(moveTopLeft);
+        if (!Flags.fixAdjustAccessibilityActionsForStackViewState() || !mIsExpanded) {
+            // Custom local actions.
+            AccessibilityAction moveTopLeft = new AccessibilityAction(R.id.action_move_top_left,
+                    res.getString(R.string.bubble_accessibility_action_move_top_left));
+            info.addAction(moveTopLeft);
 
-        AccessibilityAction moveTopRight = new AccessibilityAction(R.id.action_move_top_right,
-                res.getString(R.string.bubble_accessibility_action_move_top_right));
-        info.addAction(moveTopRight);
+            AccessibilityAction moveTopRight = new AccessibilityAction(R.id.action_move_top_right,
+                    res.getString(R.string.bubble_accessibility_action_move_top_right));
+            info.addAction(moveTopRight);
 
-        AccessibilityAction moveBottomLeft = new AccessibilityAction(R.id.action_move_bottom_left,
-                res.getString(R.string.bubble_accessibility_action_move_bottom_left));
-        info.addAction(moveBottomLeft);
+            AccessibilityAction moveBottomLeft = new AccessibilityAction(
+                    R.id.action_move_bottom_left,
+                    res.getString(R.string.bubble_accessibility_action_move_bottom_left));
+            info.addAction(moveBottomLeft);
 
-        AccessibilityAction moveBottomRight = new AccessibilityAction(R.id.action_move_bottom_right,
-                res.getString(R.string.bubble_accessibility_action_move_bottom_right));
-        info.addAction(moveBottomRight);
+            AccessibilityAction moveBottomRight = new AccessibilityAction(
+                    R.id.action_move_bottom_right,
+                    res.getString(R.string.bubble_accessibility_action_move_bottom_right));
+            info.addAction(moveBottomRight);
+        }
 
         // Default actions.
         info.addAction(AccessibilityAction.ACTION_DISMISS);
