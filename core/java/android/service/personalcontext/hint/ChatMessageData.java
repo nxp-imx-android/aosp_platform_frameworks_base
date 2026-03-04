@@ -139,14 +139,10 @@ public final class ChatMessageData implements Parcelable {
 
     @Override
     public String toString() {
+        // mText and mAuthor purposefully omitted to prevent accidentally logging potentially
+        // sensitive data.
         return "ChatMessageData{"
-                + "mText='"
-                + mText
-                + "'"
-                + ", mAuthor='"
-                + mAuthor
-                + "'"
-                + ", mReferenceTime="
+                + "mReferenceTime="
                 + mReferenceTime
                 + ", mIsOutgoingMessage="
                 + mIsOutgoingMessage
