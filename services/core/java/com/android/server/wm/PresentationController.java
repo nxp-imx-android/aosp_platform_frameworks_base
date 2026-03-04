@@ -19,7 +19,6 @@ package com.android.server.wm;
 import static android.view.Display.TYPE_INTERNAL;
 import static android.view.WindowManager.LayoutParams.TYPE_PRESENTATION;
 import static android.view.WindowManager.LayoutParams.TYPE_PRIVATE_PRESENTATION;
-import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_ERROR;
 
@@ -115,9 +114,6 @@ class PresentationController implements DisplayManager.DisplayListener {
         // All the legacy static policies related to window types and presentation flags have
         // been checked at this point. Below are newer dynamic policies that check actual existence
         // of presentation windows and host tasks.
-        if (!ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue()) {
-            return true;
-        }
 
         boolean allDisplaysArePresenting = true;
         for (int i = 0; i < displayContent.mWmService.mRoot.mChildren.size(); i++) {
@@ -158,10 +154,6 @@ class PresentationController implements DisplayManager.DisplayListener {
     @Nullable
     private Task findHostTask(@Nullable WindowState win, @NonNull DisplayContent displayContent,
             int uid) {
-        if (!ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue()) {
-            return null;
-        }
-
         if (displayContent.isPrivate()) {
             // Other apps can't launch on private displays, so we don't need to apply the host-task
             // policies.
@@ -203,8 +195,7 @@ class PresentationController implements DisplayManager.DisplayListener {
         // be shown on them.
         // TODO(b/390481621): Disallow a presentation from covering its controlling activity so that
         // the presentation won't stop its controlling activity.
-        return ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue()
-                && isPresentationVisible(displayId);
+        return isPresentationVisible(displayId);
     }
 
     void onPresentationAdded(@NonNull WindowState win, int uid) {
@@ -259,7 +250,7 @@ class PresentationController implements DisplayManager.DisplayListener {
 
     void removePresentation(int displayId, @NonNull String reason) {
         final Presentation presentation = mPresentations.get(displayId);
-        if (ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue() && presentation != null) {
+        if (presentation != null) {
             final WindowState win = presentation.mWin;
             win.mWmService.mAtmService.mH.post(() -> {
                 synchronized (win.mWmService.mGlobalLock) {

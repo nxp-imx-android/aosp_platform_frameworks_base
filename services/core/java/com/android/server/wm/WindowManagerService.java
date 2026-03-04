@@ -111,7 +111,6 @@ import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_MULTIPLIER;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_MISSING_WINDOW;
 import static android.view.displayhash.DisplayHashResultCallback.DISPLAY_HASH_ERROR_NOT_VISIBLE_ON_SCREEN;
 import static android.view.flags.Flags.sensitiveContentAppProtection;
-import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 import static android.window.ScreenCapture.ScreenCaptureParams.CAPTURE_MODE_REQUIRE_OPTIMIZED;
 import static android.window.ScreenCapture.ScreenCaptureParams.PROTECTED_CONTENT_POLICY_THROW_EXCEPTION;
 import static android.window.ScreenCapture.ScreenCaptureParams.SECURE_CONTENT_POLICY_THROW_EXCEPTION;
@@ -1973,8 +1972,7 @@ public class WindowManagerService extends IWindowManager.Stub
 
             // A presentation window needs a transition because its visibility affects the lifecycle
             // apps below (b/390481865).
-            final boolean isPresentationWindow =
-                    ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue() && win.isPresentation();
+            final boolean isPresentationWindow = win.isPresentation();
             // WindowContainer#assignLayers() is blocked for the majority of window containers if
             // a transition is playing. If there are multiple children in the display area for
             // screenshot windows, we could miss the chance to set correct z-orders on layers

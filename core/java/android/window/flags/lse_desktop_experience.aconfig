@@ -789,13 +789,6 @@ flag {
 }
 
 flag {
-    name: "enable_presentation_for_connected_displays"
-    namespace: "lse_desktop_experience"
-    description: "Enables full support of presentation API for connected displays."
-    bug: "378503083"
-}
-
-flag {
     name: "enable_presentation_stops_top_task_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fix the bug where the top task is sometimes not stopped below a presentation"

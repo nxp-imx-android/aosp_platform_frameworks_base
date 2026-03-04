@@ -138,7 +138,6 @@ import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_MULTIPLIER;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_OFFSET;
-import static android.window.DesktopExperienceFlags.ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS;
 
 import static com.android.internal.policy.TransitionAnimation.MAX_ANIMATION_DURATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ADD_REMOVE;
@@ -2487,7 +2486,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
             // Only a presentation window needs a transition because its visibility affets the
             // lifecycle of apps below (b/390481865).
-            if (ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS.isTrue() && isPresentation()) {
+            if (isPresentation()) {
                 final ActionChain chain =
                         mWmService.mAtmService.mChainTracker.startTransit("removeWin");
                 final boolean wasTransitionOnDisplay = chain.isCollectingOnDisplay(displayContent);
