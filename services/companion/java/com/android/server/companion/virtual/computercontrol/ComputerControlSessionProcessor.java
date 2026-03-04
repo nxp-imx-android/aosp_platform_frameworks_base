@@ -65,12 +65,11 @@ import android.util.Slog;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
 import com.android.server.ServiceThread;
 import com.android.server.Watchdog;
-import com.android.server.appop.AppOpsManagerLocal;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
+import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -99,11 +98,11 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
     private final KeyguardManager mKeyguardManager;
     private final AuthenticationPolicyManager mAuthenticationPolicyManager;
     private final AppOpsManager mAppOpsManager;
-    private final AppOpsManagerLocal mAppOpsManagerLocal;
     private final PackageManager mPackageManager;
     private final UserManager mUserManager;
     private final DevicePolicyManager mDevicePolicyManager;
     private final DevicePolicyManagerInternal mDevicePolicyManagerInternal;
+    private final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     private final VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
     private final VirtualDeviceFactory mVirtualDeviceFactory;
     private final PendingIntentFactory mPendingIntentFactory;
@@ -142,11 +141,11 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
         mAuthenticationPolicyManager = context.getSystemService(AuthenticationPolicyManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
-        mAppOpsManagerLocal = LocalManagerRegistry.getManager(AppOpsManagerLocal.class);
         mPackageManager = context.getPackageManager();
         mUserManager = context.getSystemService(UserManager.class);
         mDevicePolicyManager = context.getSystemService(DevicePolicyManager.class);
         mDevicePolicyManagerInternal = LocalServices.getService(DevicePolicyManagerInternal.class);
+        mActivityTaskManagerInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
         mAllowlistController = allowlistController;
         mReferenceDisplayAddress = context.getString(
                 R.string.config_computerControlReferenceDisplayPhysicalAddress);
@@ -417,7 +416,10 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
             return false;
         }
         if (params.getTargetComputerControlVersion() >= MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17
-                && !mAppOpsManagerLocal.isUidInForeground(attributionSource.getUid())) {
+                // This returns true only if the uid has a visible non-toast window on any display.
+                && !mActivityTaskManagerInternal.isUidForeground(attributionSource.getUid())) {
+            Slog.e(TAG, "Agent app " + attributionSource.getPackageName()
+                    + " does not have a non-toast visible window on any display.");
             dispatchSessionCreationFailed(callback, attributionSource, params,
                     ComputerControlSession.ERROR_PERMISSION_DENIED);
             return false;
