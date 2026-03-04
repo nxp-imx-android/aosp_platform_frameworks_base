@@ -381,8 +381,7 @@ public final class Zygote {
         boolean useFifoUi = SystemProperties.getInt("sys.use_fifo_ui", 0) == 1;
         int pid = nativeForkAndSpecialize(
                 uid, gid, gids, runtimeFlags, rlimits, mountExternal, seInfo, niceName, fdsToClose,
-                fdsToIgnore, startChildZygote, instructionSet, appDataDir, isTopApp,
-                com.android.internal.os.Flags.zygoteEarlyFifoBoost() ? useFifoUi : false,
+                fdsToIgnore, startChildZygote, instructionSet, appDataDir, isTopApp, useFifoUi,
                 pkgDataInfoList, allowlistedDataInfoList, bindMountAppDataDirs,
                 bindMountAppStorageDirs, bindMountSyspropOverrides);
         if (pid == 0) {
