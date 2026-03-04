@@ -1103,6 +1103,17 @@ flag {
 }
 
 flag {
+    name: "prioritize_visible_task_display_over_source"
+    namespace: "lse_desktop_experience"
+    description: "When enabled enabled prioritizes the display of the visible task over the /n"
+                 "display the source orinated from"
+    bug: "478922443"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "protect_set_launch_windowing_mode_api"
     namespace: "lse_desktop_experience"
     description: "Protect setLaunchWindowingMode API from being called by 3P apps."
