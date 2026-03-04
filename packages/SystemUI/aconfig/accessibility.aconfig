@@ -95,16 +95,6 @@ flag {
 }
 
 flag {
-    name: "keyguard_interactor_for_floating_button"
-    namespace: "accessibility"
-    description: "Switches to using KeyguardInteractor for faster response time to changes"
-    bug: "353629777"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "launch_accessibility_quick_access_dialog_permission"
     namespace: "accessibility"
     description: "Adds a permission to allow applications to launch the accessibility quick access dialog."
