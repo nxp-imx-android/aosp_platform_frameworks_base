@@ -1849,7 +1849,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         mDisplayPowerProximityStateController.ignoreProximitySensorUntilChanged();
     }
 
-    public void setBrightnessConfiguration(BrightnessConfiguration c,
+    public void setBrightnessConfiguration(@Nullable BrightnessConfiguration c,
             boolean shouldResetShortTermModel) {
         Message msg = mHandler.obtainMessage(MSG_CONFIGURE_BRIGHTNESS,
                 shouldResetShortTermModel ? 1 : 0, /* unused */ 0, c);

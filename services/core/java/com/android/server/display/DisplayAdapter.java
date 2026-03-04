@@ -35,7 +35,7 @@ import java.io.PrintWriter;
  * Display adapters are guarded by the {@link DisplayManagerService.SyncRoot} lock.
  * </p>
  */
-abstract class DisplayAdapter {
+public abstract class DisplayAdapter {
     private final DisplayManagerService.SyncRoot mSyncRoot;
     private final Context mContext;
     private final Handler mHandler;

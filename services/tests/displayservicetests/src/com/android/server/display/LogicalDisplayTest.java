@@ -16,6 +16,8 @@
 
 package com.android.server.display;
 
+import static com.android.server.display.persistence.PersistentDataStoreTestUtilsKt.createInMemoryPersistentDataStore;
+
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -47,11 +49,8 @@ import androidx.test.filters.SmallTest;
 import com.android.server.display.layout.Layout;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
 
@@ -102,22 +101,8 @@ public class LogicalDisplayTest {
         // Disable binder caches in this process.
         PropertyInvalidatedCache.disableForTestMode();
 
-        mDeviceRepo = new DisplayDeviceRepository(
-                new DisplayManagerService.SyncRoot(),
-                new PersistentDataStore(new PersistentDataStore.Injector() {
-                    @Override
-                    public InputStream openRead() {
-                        return null;
-                    }
-
-                    @Override
-                    public OutputStream startWrite() {
-                        return null;
-                    }
-
-                    @Override
-                    public void finishWrite(OutputStream os, boolean success) {}
-                }), /* stableEdidsFlag= */ true);
+        mDeviceRepo = new DisplayDeviceRepository(new DisplayManagerService.SyncRoot(),
+                createInMemoryPersistentDataStore(), /* stableEdidsFlag= */ true);
         mDeviceRepo.onDisplayDeviceEvent(mDisplayDevice, DisplayAdapter.DISPLAY_DEVICE_EVENT_ADDED);
         mLogicalDisplay.updateLocked(mDeviceRepo);
     }

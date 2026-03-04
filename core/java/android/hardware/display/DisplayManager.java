@@ -650,6 +650,12 @@ public final class DisplayManager {
     public static final int EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_MIRROR = 2;
 
     /**
+     * @hide
+     */
+    public static final int EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DEFAULT =
+            EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK;
+
+    /**
      * Constants representing user options for external display connection. Each display can
      * have a unique connection preference, so there is no settings key, instead a displays's
      * unique id is the key, with one of the values below as the value. Default value is

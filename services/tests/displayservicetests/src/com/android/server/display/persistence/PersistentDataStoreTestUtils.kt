@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.server.display
+package com.android.server.display.persistence
 
+import com.android.server.display.DisplayAdapter
+import com.android.server.display.DisplayDevice
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
 import java.util.function.Consumer
 
 /**
@@ -102,5 +108,56 @@ internal class DisplayStateBuilder(private val uniqueId: String) {
             |${properties.toString().prependIndent("    ")}
             |</display>
         """.trimMargin()
+    }
+}
+
+internal fun createInMemoryPersistentDataStore(): PersistentDataStoreDelegate {
+    return PersistentDataStoreDelegate(object : PersistentDataStoreDelegate.Injector("") {
+        override fun openRead(): InputStream = InputStream.nullInputStream()
+        override fun startWrite(): OutputStream = OutputStream.nullOutputStream()
+        override fun finishWrite(os: OutputStream?, success: Boolean) {}
+    })
+}
+
+internal class TestInjector internal constructor() : PersistentDataStoreDelegate.Injector("") {
+    private var mReadStream: InputStream? = null
+    private var mWriteStream: OutputStream? = null
+
+    private var mWasSuccessful = false
+
+    override fun openRead(): InputStream {
+        if (mReadStream != null) {
+            return mReadStream!!
+        } else {
+            throw FileNotFoundException()
+        }
+    }
+
+    override fun startWrite(): OutputStream? {
+        return mWriteStream
+    }
+
+    override fun finishWrite(os: OutputStream, success: Boolean) {
+        mWasSuccessful = success
+        try {
+            os.close()
+        } catch (e: IOException) {
+            // This method can't throw IOException since the super implementation doesn't, so
+            // we just wrap it in a RuntimeException so we end up crashing the test all the
+            // same.
+            throw RuntimeException(e)
+        }
+    }
+
+    fun setReadStream(inputStream: InputStream) {
+        mReadStream = inputStream
+    }
+
+    fun setWriteStream(os: OutputStream) {
+        mWriteStream = os
+    }
+
+    fun wasWriteSuccessful(): Boolean {
+        return mWasSuccessful
     }
 }

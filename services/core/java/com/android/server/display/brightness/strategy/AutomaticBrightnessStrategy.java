@@ -230,7 +230,8 @@ public class AutomaticBrightnessStrategy implements DisplayBrightnessStrategy{
      * Updates the {@link BrightnessConfiguration} that is currently being used by the associated
      * display.
      */
-    public void setBrightnessConfiguration(BrightnessConfiguration brightnessConfiguration,
+    public void setBrightnessConfiguration(
+            @Nullable BrightnessConfiguration brightnessConfiguration,
             boolean shouldResetShortTermModel) {
         mBrightnessConfiguration = brightnessConfiguration;
         setShouldResetShortTermModel(shouldResetShortTermModel);
