@@ -344,6 +344,7 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
         assertFalse(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithCapturedLink))
     }
 
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_ENHANCED_APP_TO_WEB_TRANSITION)
     fun firstRunPrompt_browserApp() {
         val browserPackageName = "com.android.chrome"
@@ -365,16 +366,19 @@ class AppToWebRepositoryImplTests : ShellTestCase() {
         val taskInfoWithCapturedLink =
             createTaskInfo().apply {
                 taskId = taskInfo.taskId + 1
-                baseActivity = taskInfo.baseActivity
+                baseActivity = ComponentName(nonBrowserPackageName, "")
                 topActivity = ComponentName(nonBrowserPackageName, "")
                 capturedLink = TEST_CAPTURED_URI
             }
         assertTrue(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithCapturedLink))
 
+        // Verify when the base activity is browser
         taskInfoWithCapturedLink.baseActivity = ComponentName(browserPackageName, "")
+        taskInfoWithCapturedLink.topActivity = ComponentName(nonBrowserPackageName, "")
         assertFalse(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithCapturedLink))
 
-        taskInfoWithCapturedLink.baseActivity = taskInfo.baseActivity
+        // Verify when the top activity is browser
+        taskInfoWithCapturedLink.baseActivity = ComponentName(nonBrowserPackageName, "")
         taskInfoWithCapturedLink.topActivity = ComponentName(browserPackageName, "")
         assertFalse(appToWebRepository.shouldShowFirstRunPrompt(taskInfoWithCapturedLink))
     }
