@@ -1314,6 +1314,7 @@ public class Build {
         /**
          * Cinnamon Bun.
          */
+        @SuppressLint("UnflaggedApi")
         public static final int CINNAMON_BUN = 37;
     }
 
@@ -1540,6 +1541,7 @@ public class Build {
         /**
          * Android 17.
          */
+        @SuppressLint("UnflaggedApi")
         public static final int CINNAMON_BUN = VERSION_CODES.CINNAMON_BUN * SDK_INT_MULTIPLIER;
     }
 
