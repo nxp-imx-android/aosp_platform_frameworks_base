@@ -158,4 +158,4 @@ per-file flags.aconfig = file:/FF_LEADS_OWNERS
 per-file ITradeInMode.aidl = file:/TRADE_IN_MODE_OWNERS
 
 # Perfetto SDK
-per-file PerfettoTrace*.java = file:/PERFETTO_OWNERS
+per-file Perfetto*.java = file:/PERFETTO_OWNERS
