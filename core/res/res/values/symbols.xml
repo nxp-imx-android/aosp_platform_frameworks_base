@@ -274,6 +274,8 @@
   <java-symbol type="id" name="profile_tabhost" />
   <java-symbol type="id" name="tabs" />
   <java-symbol type="id" name="tabcontent" />
+  <java-symbol type="id" name="outer_container" />
+  <java-symbol type="id" name="inner_container" />
 
   <java-symbol type="attr" name="actionModeShareDrawable" />
   <java-symbol type="attr" name="alertDialogCenterButtons" />
