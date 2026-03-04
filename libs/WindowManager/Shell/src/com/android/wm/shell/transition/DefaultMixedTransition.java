@@ -45,6 +45,7 @@ import com.android.wm.shell.pinnedlayer.phone.PinnedLayerHandler;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
+import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
 import com.android.wm.shell.shared.pip.PipFlags;
 import com.android.wm.shell.splitscreen.SplitScreen;
 import com.android.wm.shell.splitscreen.SplitScreenController;
@@ -105,7 +106,9 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                             finishCallback, mPlayer, mMixedHandler, mPipHandler, mSplitHandler,
                             mPinnedLayerHandler, /*replacingPip*/ true);
             case TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE ->
-                    animateEnterBubbles(transition, info, startTransaction, finishTransaction,
+                    !BubbleFlagHelper.isBubbleTransitionPlannerEnabled()
+                            && animateEnterBubbles(transition, info, startTransaction,
+                            finishTransaction,
                             finishCallback, mBubbleTransitions);
             case TYPE_LAUNCH_OR_CONVERT_SPLIT_TASK_TO_BUBBLE ->
                     animateEnterBubblesFromSplit(this, transition, info, startTransaction,
@@ -784,6 +787,9 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 }
                 return;
             case TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE:
+                if (BubbleFlagHelper.isBubbleTransitionPlannerEnabled()) {
+                    return;
+                }
                 // The split-to-bubble trampoline transition will be split to a bubble enter
                 // transition followed by a split dismiss transition. Then we tried to merge them
                 // here.
@@ -872,6 +878,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             case TYPE_LAUNCH_OR_CONVERT_TO_BUBBLE_FROM_EXISTING_BUBBLE:
             case TYPE_LAUNCH_OR_CONVERT_PIP_TASK_TO_BUBBLE:
             case TYPE_LAUNCH_OR_CONVERT_DESKTOP_TASK_TO_BUBBLE:
+                //TODO(b/483107404) another place to consider removing
                 final Transitions.TransitionHandler handler =
                         mBubbleTransitions.getRunningEnterTransition(transition);
                 if (handler != null) {

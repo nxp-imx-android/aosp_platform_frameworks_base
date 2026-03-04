@@ -17,6 +17,7 @@
 package com.android.wm.shell.bubbles.transitions
 
 import android.os.IBinder
+import android.util.Log
 import android.view.SurfaceControl
 import android.window.TransitionInfo
 import com.android.wm.shell.transition.AnimationPlan
@@ -28,10 +29,6 @@ class BubbleTransitionsPlanner(
     transitions: Transitions,
     private val bubbleTransitions: BubbleTransitions,
 ) : ITransitionPlanner {
-
-    init {
-        android.util.Log.d(TAG, "init")
-    }
 
     override fun plan(
         plan: AnimationPlan,
@@ -55,7 +52,21 @@ class BubbleTransitionsPlanner(
         info: TransitionInfo,
         startTransaction: SurfaceControl.Transaction,
     ) {
-        // TODO: b/483107404
+        logTransitionChanges("fullInfo", fullInfo)
+        logTransitionChanges("info", info)
+        info.changes
+            .mapNotNull {
+                val planner =
+                    bubbleTransitions.getRunningEnterTransition(transition) as? ITransitionPlanner
+                Log.e(TAG, "found $planner for $transition")
+                planner
+            }
+            .forEach { handler -> handler.plan(plan, fullInfo, transition, info, startTransaction) }
+    }
+
+    private fun logTransitionChanges(transitionName: String = "", info: TransitionInfo) {
+        Log.v(TAG, "TransitionInfo $transitionName changes for ${info.debugId}:")
+        info.changes.forEachIndexed { index, change -> Log.v(TAG, "  #$index: $change") }
     }
 
     override fun getDebugName(): String = "BubbleTransitionsPlanner"
