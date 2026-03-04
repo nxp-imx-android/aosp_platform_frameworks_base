@@ -249,6 +249,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -1377,6 +1378,36 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 createdMillis, committedMillis, committed, childSessionIds, parentSessionId,
                 sessionErrorCode, mInitialVerificationPolicy);
 
+        final Computer snapshot = mPm.snapshotComputer();
+        // Check if installer has been granted permissions.
+        boolean installerHasInstallPackagesPermission = snapshot.checkUidPermission(
+                Manifest.permission.INSTALL_PACKAGES,
+                mInstallerUid) == PackageManager.PERMISSION_GRANTED;
+        boolean installerHasInstallPackageUpdatesPermission = snapshot.checkUidPermission(
+                Manifest.permission.INSTALL_PACKAGE_UPDATES,
+                mInstallerUid) == PackageManager.PERMISSION_GRANTED;
+        boolean installerHasInstallSelfUpdatesPermission = snapshot.checkUidPermission(
+                Manifest.permission.INSTALL_SELF_UPDATES,
+                mInstallerUid) == PackageManager.PERMISSION_GRANTED;
+        boolean installerHasUpdatePackagesWithoutUserActionPermission = snapshot.checkUidPermission(
+                Manifest.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION,
+                mInstallerUid) == PackageManager.PERMISSION_GRANTED;
+        // Check if REQUEST_INSTALL_PACKAGES permission has been requested in manifest.
+        boolean installerHasRequestInstallPackagesPermission = isInstallerRequestingPermission(
+                snapshot, Manifest.permission.REQUEST_INSTALL_PACKAGES);
+        // Populate installer permissions fields.
+        synchronized (mMetrics) {
+            mMetrics.onInstallerHasInstallPackagesPermission(installerHasInstallPackagesPermission);
+            mMetrics.onInstallerHasInstallPackageUpdatesPermission(
+                    installerHasInstallPackageUpdatesPermission);
+            mMetrics.onInstallerHasInstallSelfUpdatesPermission(
+                    installerHasInstallSelfUpdatesPermission);
+            mMetrics.onInstallerHasUpdatePackagesWithoutUserActionPermission(
+                    installerHasUpdatePackagesWithoutUserActionPermission);
+            mMetrics.onInstallerHasRequestInstallPackagesPermission(
+                    installerHasRequestInstallPackagesPermission);
+        }
+
         // Proactively bind to the verification service if it's not already bound, for newly
         // created sessions. Notify verifier about package name if it has been set in the session.
         // For a multi-package installation, only connect to the verifier for the child sessions and
@@ -1424,6 +1455,29 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
      */
     private boolean shouldScrubData(int callingUid) {
         return !(callingUid < Process.FIRST_APPLICATION_UID || getInstallerUid() == callingUid);
+    }
+
+    /**
+     * Returns if installer has requested permission in manifest.
+     */
+    private boolean isInstallerRequestingPermission(Computer snapshot, String permission) {
+        if (getInstallSource() != null) {
+            return false;
+        }
+        String installerPackageName = getInstallSource().mInstallerPackageName;
+        if (installerPackageName == null) {
+            return false;
+        }
+        PackageStateInternal installerPackageState =
+                snapshot.getPackageStateInternal(installerPackageName);
+        if (installerPackageState == null || installerPackageState.getPkg() == null) {
+            return false;
+        }
+        Map installerPermissionMapping = installerPackageState.getPkg().getUsesPermissionMapping();
+        if (installerPermissionMapping == null) {
+            return false;
+        }
+        return installerPermissionMapping.containsKey(permission);
     }
 
     /**
