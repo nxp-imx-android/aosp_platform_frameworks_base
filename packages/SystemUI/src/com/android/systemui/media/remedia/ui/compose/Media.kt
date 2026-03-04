@@ -701,8 +701,7 @@ private fun ContentScope.CardForegroundContent(
                                 layout(placeable.measuredWidth, placeable.measuredHeight) {
                                     placeable.place(0, 0)
                                 }
-                            }
-                            .animateContentSize(),
+                            },
                 ) {
                     AnimatedVisibility(
                         visible = viewModel.deviceSuggestionChip != null,
@@ -1536,7 +1535,6 @@ private fun DeviceChip(
                             )
                         }
                         .indication(clickInteractionSource, ripple())
-                        .animateContentSize()
                         .padding(horizontal = 8.dp, vertical = 4.dp),
             ) {
                 if (viewModel.isConnecting) {
