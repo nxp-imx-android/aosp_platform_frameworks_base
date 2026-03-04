@@ -3596,19 +3596,29 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
         List<IBinder> topActivityToken = new ArrayList<>();
         topActivityToken.add(tokens.getActivityToken());
-        requester.requestAssistData(
-                topActivityToken,
-                true /* fetchData */,
-                false /* fetchScreenshot */,
-                fetchStructure,
-                true /* fetchAssistStructureScreenContent */,
-                true /* allowFetchData */,
-                false /* allowFetchScreenshot*/,
-                true /* allowFetchAssistStructureScreenContent */,
-                true /* ignoreFocusCheck */,
-                Binder.getCallingUid(),
-                callingPackageName,
-                callingAttributionTag);
+
+        // It is possible for apps to return the result before this call finishes. The requester
+        // holds this lock when reporting results back to the receiver, but it doesn't hold it in
+        // the call that initiates the request. That means in rare cases the receiver may have
+        // finished before the request call finishes. At the end of the request call it doesn't
+        // differentiate between the case where no actual request is made and the case where all
+        // requests are done, leading to notifying the receiver job completion twice. Lock this lock
+        // here to prevent it.
+        synchronized (lock) {
+            requester.requestAssistData(
+                    topActivityToken,
+                    true /* fetchData */,
+                    false /* fetchScreenshot */,
+                    fetchStructure,
+                    true /* fetchAssistStructureScreenContent */,
+                    true /* allowFetchData */,
+                    false /* allowFetchScreenshot*/,
+                    true /* allowFetchAssistStructureScreenContent */,
+                    true /* ignoreFocusCheck */,
+                    Binder.getCallingUid(),
+                    callingPackageName,
+                    callingAttributionTag);
+        }
 
         return true;
     }
