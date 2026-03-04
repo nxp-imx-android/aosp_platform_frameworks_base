@@ -320,7 +320,8 @@ class AppCompatLetterboxPolicy {
         mLetterboxPolicyState.getLetterboxInnerBounds(mTmpRect);
         final int diff = parentAppBounds.height() - mTmpRect.height();
         // Compare bounds with tolerance of 1 px to account for rounding error calculations.
-        return task.getWindowingMode() == WINDOWING_MODE_FREEFORM && diff <= DIFF_TOLERANCE_PX;
+        return task.getWindowingMode() == WINDOWING_MODE_FREEFORM
+                && (diff <= DIFF_TOLERANCE_PX || task.getIsCaptionInsetsExcluded());
     }
 
     private static boolean shouldNotLayoutLetterbox(@Nullable WindowState w) {
