@@ -50,7 +50,7 @@ public final class DragResizeWindowGeometry {
     // The size of the handle inside the task window applied to the edges of the window, for the
     // user to drag resize.
     private final int mResizeHandleEdgeInset;
-    // The task corners to permit drag resizing with a course input, such as touch.
+    // The task corners to permit drag resizing with a coarse input, such as touch.
     private final @NonNull TaskCorners mLargeTaskCorners;
     // The task corners to permit drag resizing with a fine input, such as stylus or cursor.
     private final @NonNull TaskCorners mFineTaskCorners;
@@ -93,7 +93,7 @@ public final class DragResizeWindowGeometry {
     }
 
     /**
-     * Returns the resource value to use for course input, such as touch, that benefits from a large
+     * Returns the resource value to use for coarse input, such as touch, that benefits from a large
      * square on each of the window's corners.
      */
     static int getLargeResizeCornerSize(@NonNull Resources res) {
@@ -144,7 +144,7 @@ public final class DragResizeWindowGeometry {
 
         if (ENABLE_WINDOWING_EDGE_DRAG_RESIZE.isTrue()) {
             // First check if touch falls within a corner.
-            // Large corner bounds are used for course input like touch, otherwise fine bounds.
+            // Large corner bounds are used for coarse input like touch, otherwise fine bounds.
             boolean result = isEventFromTouchscreen(e)
                     ? isInCornerBounds(mLargeTaskCorners, x, y)
                     : isInCornerBounds(mFineTaskCorners, x, y);
@@ -202,7 +202,7 @@ public final class DragResizeWindowGeometry {
     int calculateCtrlType(boolean isTouchscreen, boolean isEdgeResizePermitted, float x, float y) {
         if (ENABLE_WINDOWING_EDGE_DRAG_RESIZE.isTrue()) {
             // First check if touch falls within a corner.
-            // Large corner bounds are used for course input like touch, otherwise fine bounds.
+            // Large corner bounds are used for coarse input like touch, otherwise fine bounds.
             int ctrlType = isTouchscreen
                     ? mLargeTaskCorners.calculateCornersCtrlType(x, y)
                     : mFineTaskCorners.calculateCornersCtrlType(x, y);
