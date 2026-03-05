@@ -47,8 +47,12 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_OPENED
+import com.android.wm.shell.desktopmode.DesktopTasksController
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
 import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
+import com.android.wm.shell.transition.FocusTransitionObserver
+import com.android.wm.shell.windowdecor.HandleMenuController
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
@@ -70,6 +74,10 @@ class AppHandleViewHolder(
     private val windowManagerWrapper: WindowManagerWrapper,
     private val handler: Handler,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
+    private val handleMenuController: HandleMenuController,
+    private val focusTransitionObserver: FocusTransitionObserver,
+    private val pinnedLayerController: PinnedLayerController?,
+    private val desktopTasksController: DesktopTasksController,
 ) : WindowDecorationViewHolder<AppHandleViewHolder.HandleData>() {
 
     data class HandleData(
@@ -109,6 +117,11 @@ class AppHandleViewHolder(
     init {
         captionView.setOnTouchListener(onCaptionTouchListener)
         captionHandle.throttleFirstClicks(CLICK_DELAY) { v ->
+            // Clicking the App Handle.
+            desktopModeUiEventLogger.log(
+                taskInfo,
+                DesktopModeUiEventLogger.DesktopUiEventEnum.DESKTOP_WINDOW_APP_HANDLE_TAP,
+            )
             windowDecorationActions.onOpenHandleMenu(taskInfo.taskId)
         }
         captionHandle.setOnTouchListener(onCaptionTouchListener)
@@ -256,8 +269,7 @@ class AppHandleViewHolder(
                     args: Bundle?,
                 ): Boolean {
                     // Passthrough the a11y click action so the caption handle, so that app handle
-                    // menu
-                    // is opened on a11y click, similar to a real click
+                    // menu is opened on a11y click, similar to a real click
                     if (action == AccessibilityAction.ACTION_CLICK.id) {
                         desktopModeUiEventLogger.log(taskInfo, A11Y_APP_HANDLE_MENU_OPENED)
                         captionHandle.performClick()
@@ -411,6 +423,10 @@ class AppHandleViewHolder(
             windowManagerWrapper: WindowManagerWrapper,
             handler: Handler,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            handleMenuController: HandleMenuController,
+            focusTransitionObserver: FocusTransitionObserver,
+            pinnedLayerController: PinnedLayerController?,
+            desktopTasksController: DesktopTasksController,
         ): AppHandleViewHolder =
             AppHandleViewHolder(
                 rootView,
@@ -420,6 +436,10 @@ class AppHandleViewHolder(
                 windowManagerWrapper,
                 handler,
                 desktopModeUiEventLogger,
+                handleMenuController,
+                focusTransitionObserver,
+                pinnedLayerController,
+                desktopTasksController,
             )
     }
 
