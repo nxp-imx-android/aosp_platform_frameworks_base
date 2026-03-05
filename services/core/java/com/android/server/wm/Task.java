@@ -2107,8 +2107,18 @@ class Task extends TaskFragment {
         taskDescription.setMinWidth(getMinWidth());
         taskDescription.setMinHeight(getMinHeight());
         setTaskDescription(taskDescription);
-        mAtmService.getTaskChangeNotificationController().notifyTaskDescriptionChanged(
-                getTaskInfo());
+        final ActivityManager.RunningTaskInfo taskInfo;
+        if (com.android.window.flags.Flags.liteTaskDescriptionChanged()) {
+            // Only populate essential fields.
+            taskInfo = new ActivityManager.RunningTaskInfo();
+            taskInfo.taskId = mTaskId;
+            taskInfo.displayId = getDisplayId();
+            taskInfo.taskDescription = taskDescription;
+            taskInfo.token = mRemoteToken.toWindowContainerToken();
+        } else {
+            taskInfo = getTaskInfo();
+        }
+        mAtmService.getTaskChangeNotificationController().notifyTaskDescriptionChanged(taskInfo);
 
         final WindowContainer parent = getParent();
         if (parent != null) {
