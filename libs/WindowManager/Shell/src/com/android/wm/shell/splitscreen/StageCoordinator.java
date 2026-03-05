@@ -987,7 +987,6 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                                 finishedCallback.onAnimationFinished();
                             }
                         };
-                Transitions.setRunningRemoteTransitionDelegate(adapter.getCallingApplication());
                 try {
                     adapter.getRunner().onAnimationStart(transit, apps, wallpapers,
                             ArrayUtils.appendElement(RemoteAnimationTarget.class, nonApps,
@@ -1052,7 +1051,6 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                                     finishedCallback.onAnimationFinished();
                                 }
                             };
-                    Transitions.setRunningRemoteTransitionDelegate(adapter.getCallingApplication());
                     try {
                         adapter.getRunner().onAnimationStart(
                                 transit, apps, wallpapers, nonApps, wrapCallback);
