@@ -1364,24 +1364,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         task.taskId);
             }
         }
-        final DesktopTasksController.CloseTaskResult result =
-                mDesktopTasksController.closeTask(task, forceKeepDesktop);
-        if (result != DesktopTasksController.CloseTaskResult.CLOSED_DESKTOP) {
-            return;
-        }
-
-        // TODO: b/448483994 - remove manual a11y announcement when it is handled by the decor
-        // internally.
-        final int nextFocusedTaskId =
-                mDesktopTasksController.getTopTask(
-                    task.getDisplayId(),
-                    task.userId,
-                    task.getTaskId());
-        final WindowDecorationWrapper nextFocusedWindow =
-                mWindowDecorationFinder.apply(nextFocusedTaskId);
-        if (nextFocusedWindow != null) {
-            nextFocusedWindow.a11yAnnounceNewFocusedWindow();
-        }
+        mDesktopTasksController.closeTask(task, forceKeepDesktop);
     }
 
     /**
@@ -1390,22 +1373,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
      * @param task The pinned task to be closed.
      */
     private void closePinnedTask(RunningTaskInfo task) {
-        if (!mPinnedLayerController.closeTask(task)) {
-            return;
-        }
-
-        // TODO: b/448483994 - remove manual a11y announcement when it is handled by the decor
-        // internally.
-        final int nextFocusedTaskId =
-                mDesktopTasksController.getTopTask(
-                    task.getDisplayId(),
-                    task.userId,
-                    /* excludingTaskId= */ null);
-        final WindowDecorationWrapper nextFocusedWindow =
-                mWindowDecorationFinder.apply(nextFocusedTaskId);
-        if (nextFocusedWindow != null) {
-            nextFocusedWindow.a11yAnnounceNewFocusedWindow();
-        }
+        mPinnedLayerController.closeTask(task);
     }
 
     /** Listener for caption touch events. */
@@ -2175,14 +2143,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         public void onMinimize(@NonNull RunningTaskInfo taskInfo) {
             WdLog.logD(TAG, "Using DefaultWindowDecorationActions to minimize task=%d",
                     taskInfo.taskId);
-            final int nextFocusedTaskId =
-                    mDesktopTasksController.getTopTask(
-                        taskInfo.getDisplayId(),
-                        taskInfo.userId,
-                        taskInfo.getTaskId());
-            WindowDecorationWrapper nextFocusedWindow =
-                    mViewModel.mWindowDecorByTaskId.get(nextFocusedTaskId);
-            if (nextFocusedWindow != null) nextFocusedWindow.a11yAnnounceNewFocusedWindow();
             mDesktopTasksController.minimizeTask(taskInfo, MinimizeReason.MINIMIZE_BUTTON);
         }
 

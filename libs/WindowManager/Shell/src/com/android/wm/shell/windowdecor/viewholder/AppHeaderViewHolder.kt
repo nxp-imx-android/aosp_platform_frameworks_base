@@ -149,7 +149,8 @@ class AppHeaderViewHolder(
         context.getString(R.string.desktop_mode_talkback_state_minimizing)
     private val a11yAnnounceTextClosing: String =
         context.getString(R.string.desktop_mode_talkback_state_closing)
-    private lateinit var a11yAnnounceTextFocused: String
+    private var a11yAnnounceTextFocused: String? = null
+    private var a11yAnnounceTextNotFocused: String? = null
 
     private lateinit var sizeToggleDirection: SizeToggleDirection
     private lateinit var a11yTextMaximize: String
@@ -446,8 +447,13 @@ class AppHeaderViewHolder(
         )
 
     /** Announces app window name as "focused" via Talkback */
-    fun a11yAnnounceFocused() {
-        captionHandle.stateDescription = a11yAnnounceTextFocused
+    private fun updateA11yFocus(isFocused: Boolean) {
+        captionHandle.stateDescription =
+            if (isFocused) {
+                a11yAnnounceTextFocused
+            } else {
+                a11yAnnounceTextNotFocused
+            }
     }
 
     /** Sets the app's name in the header. */
@@ -471,6 +477,8 @@ class AppHeaderViewHolder(
         a11yTextRestore = context.getString(R.string.restore_button_text, name)
         a11yAnnounceTextFocused =
             context.getString(R.string.desktop_mode_talkback_state_focused, name)
+        a11yAnnounceTextNotFocused =
+            context.getString(R.string.desktop_mode_talkback_state_not_focused, name)
     }
 
     private fun updateMaximizeButtonContentDescription() {
@@ -550,6 +558,8 @@ class AppHeaderViewHolder(
         if (DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()) {
             setCaptionVisibility(isCaptionVisible)
         }
+
+        updateA11yFocus(hasGlobalFocus)
 
         // Caption Background
         when (headerStyle.background) {
