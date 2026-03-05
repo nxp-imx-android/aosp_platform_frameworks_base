@@ -2783,18 +2783,16 @@ public class ComputerEngine implements Computer {
             }
         }
         if (android.security.Flags.appLockApis()
-                && (flags & (PackageManager.GET_APP_LOCK_INFO)) != 0
-                && !hasPermission(Manifest.permission.LOCK_APPS, Binder.getCallingUid())) {
+                && (flags & (PackageManager.GET_APP_LOCK_INFO)) != 0) {
             // If the caller specifies the GET_ATTRIBUTIONS int flag, when the flag gets converted
             // to a long, it will result in unintended sign extension, causing the first 32 bits of
             // the long to be set to 1. This means that the bit representing the GET_APP_LOCK_INFO
-            // flag will be set to 1, even if the caller did not specify the flag. For callers
-            // without the LOCK_APPS permission, the GET_APP_LOCK_INFO flag will be removed if sign
-            // extension is suspected, and a warning logged. For callers who specify the flag, but
-            // do not have the permission, an exception will be thrown.
-            // If a caller wants to both retrieve attributions and app lock info, they should use
-            // the long flag GET_ATTRIBUTIONS_LONG instead of GET_ATTRIBUTIONS, combined with
-            // whatever other flags the caller wants.
+            // flag will be set to 1, even if the caller did not specify the flag. If sign extension
+            // can be reasonably assumed to have happened, remove the GET_APP_LOCK_INFO flag since
+            // it was unintentionally added, and requires the LOCK_APPS permission to use. If a
+            // caller wants to both retrieve attributions and app lock info, they should use the
+            // long flag GET_ATTRIBUTIONS_LONG instead of GET_ATTRIBUTIONS, combined with whatever
+            // other flags the caller wants.
             final boolean isGetAttributionsBitSet =
                     (flags & PackageManager.GET_ATTRIBUTIONS_LONG) != 0;
             // Check if the upper 32 bits are all 1s
@@ -2807,7 +2805,7 @@ public class ComputerEngine implements Computer {
                         "updateFlags: Removing GET_APP_LOCK_INFO due to likely sign extension of "
                                 + "the deprecated GET_ATTRIBUTIONS flag. Please use "
                                 + "GET_ATTRIBUTIONS_LONG");
-            } else {
+            } else if (!hasPermission(Manifest.permission.LOCK_APPS, Binder.getCallingUid())) {
                 throw new SecurityException("Caller must hold the LOCK_APPS permission to use "
                         + "GET_APP_LOCK_INFO");
             }
