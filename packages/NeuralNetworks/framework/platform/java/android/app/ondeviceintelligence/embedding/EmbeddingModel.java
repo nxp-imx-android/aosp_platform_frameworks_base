@@ -155,6 +155,9 @@ public final class EmbeddingModel implements OnDeviceModel, Parcelable {
 
     /**
      * Returns the list of supported locales.
+     *
+     * <p>An empty {@link LocaleList} indicates that the model supports all locales or is
+     * language-agnostic.
      */
     @NonNull
     public LocaleList getSupportedLocales() {
