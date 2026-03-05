@@ -4946,14 +4946,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (mWinAnimator.mEnteringAnimation) {
             mWinAnimator.mEnteringAnimation = false;
             mWmService.requestTraversal();
-            // System windows don't have an activity and an app token as a result, but need a way
-            // to be informed about their entrance animation end.
-            if (mActivityRecord == null) {
-                try {
-                    mClient.dispatchWindowShown();
-                } catch (RemoteException e) {
-                }
-            }
         }
 
         if (isAnimating()) {
