@@ -178,7 +178,6 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaPlayPauseActionViewM
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSecondaryActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSettingsButtonViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.verticalSquish
 import com.android.systemui.res.R
 import kotlin.math.abs
@@ -1920,7 +1919,7 @@ object Media {
         val NextButton = ElementKey("next")
         val SeekBarSlider = ElementKey("seek_bar_slider")
         val OutputSwitcherButton = ElementKey("output_switcher")
-        val MediaCarousel = LockscreenElementKeys.MediaCarousel // Shared element with lock screen
+        val MediaCarousel = ElementKey("media_carousel")
 
         fun additionalActionButton(index: Int): ElementKey {
             val name = "additional_action_$index"
