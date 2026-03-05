@@ -26,6 +26,7 @@ import com.android.settingslib.metadata.PreferenceAvailabilityProvider
 import com.android.settingslib.metadata.PreferenceRestrictionProvider
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.settingslib.metadata.ReadWritePermit
+import com.android.settingslib.metadata.SensitivityLevel
 import com.android.settingslib.metadata.isUiOnlyPreference
 import com.android.settingslib.robotests.R
 import com.android.settingslib.testutils.GraphTestUtils
@@ -70,6 +71,36 @@ class GraphTestUtilsTest {
         assertThat(screen.key).isEqualTo("test_screen")
         assertThat(screen.title).isEqualTo(R.string.preference_screen_title)
         assertThat(screen.purpose).isEqualTo(R.string.preference_screen_purpose)
+    }
+
+    @Test
+    fun createScreen_withoutSpecifiedSensitivity_hasNoSensitivity() {
+        val screen = GraphTestUtils.createScreen(
+            GraphTestUtils.PreferenceScreenConfig(
+                "test_screen",
+                title = R.string.preference_screen_title,
+                purpose = R.string.preference_screen_purpose,
+                preferences = listOf()
+            )
+        )
+        assertThat(screen.sensitivityLevel).isEqualTo(SensitivityLevel.NO_SENSITIVITY)
+    }
+
+    @Test
+    fun createScreen_withSpecifiedSensitivity_hasSpecifiedSensitivity() {
+        val screen = GraphTestUtils.createScreen(
+            GraphTestUtils.PreferenceScreenConfig(
+                "test_screen",
+                title = R.string.preference_screen_title,
+                purpose = R.string.preference_screen_purpose,
+                preferences = listOf(),
+                sensitivityLevel = SensitivityLevel.DEEP_LINK_ONLY
+            )
+        )
+        assertThat(screen.key).isEqualTo("test_screen")
+        assertThat(screen.title).isEqualTo(R.string.preference_screen_title)
+        assertThat(screen.purpose).isEqualTo(R.string.preference_screen_purpose)
+        assertThat(screen.sensitivityLevel).isEqualTo(SensitivityLevel.DEEP_LINK_ONLY)
     }
 
     @Test
@@ -120,6 +151,71 @@ class GraphTestUtilsTest {
             .isEqualTo(false)
         assertThat((preference as PreferenceRestrictionProvider).isRestricted(context))
             .isEqualTo(true)
+    }
+
+    @Test
+    fun createSimplePreference_withoutSpecifiedSensitivity_hasNoSensitivity() {
+        val preference = GraphTestUtils.createSimplePreference(
+            GraphTestUtils.PreferenceConfig(
+                "test_preference",
+                purpose = R.string.preference_purpose,
+                isAvailable = false,
+                isRestricted = true,
+                isEnabled = false,
+            )
+        )
+        assertThat(preference.sensitivityLevel).isEqualTo(SensitivityLevel.NO_SENSITIVITY)
+    }
+
+    @Test
+    fun createSimplePreference_withSpecifiedSensitivity_hasSpecifiedSensitivity() {
+        val preference = GraphTestUtils.createSimplePreference(
+            GraphTestUtils.PreferenceConfig(
+                "test_preference",
+                purpose = R.string.preference_purpose,
+                isAvailable = false,
+                isRestricted = true,
+                isEnabled = false,
+                sensitivityLevel = SensitivityLevel.DEEP_LINK_ONLY
+            )
+        )
+        assertThat(preference.sensitivityLevel).isEqualTo(SensitivityLevel.DEEP_LINK_ONLY)
+    }
+
+    @Test
+    fun createPersistentPreference_withoutSpecifiedSensitivity_hasNoSensitivity() {
+        val persistentConfig = GraphTestUtils.PersistentPreferenceConfig(
+            preferenceConfig = GraphTestUtils.PreferenceConfig(
+                "test_preference",
+                purpose = R.string.preference_purpose,
+                isAvailable = false,
+                isRestricted = true,
+                isEnabled = false,
+                sensitivityLevel = SensitivityLevel.DEEP_LINK_ONLY
+            ),
+        )
+        val preference = GraphTestUtils.createPersistentPreference<Boolean>(
+            persistentConfig
+        )
+        assertThat(preference.sensitivityLevel).isEqualTo(SensitivityLevel.DEEP_LINK_ONLY)
+    }
+
+    @Test
+    fun createPersistentPreference_withSpecifiedSensitivity_hasSpecifiedSensitivity() {
+        val persistentConfig = GraphTestUtils.PersistentPreferenceConfig(
+            preferenceConfig = GraphTestUtils.PreferenceConfig(
+                "test_preference",
+                purpose = R.string.preference_purpose,
+                isAvailable = false,
+                isRestricted = true,
+                isEnabled = false,
+                sensitivityLevel = SensitivityLevel.DEEP_LINK_ONLY
+            ),
+        )
+        val preference = GraphTestUtils.createPersistentPreference<Boolean>(
+            persistentConfig
+        )
+        assertThat(preference.sensitivityLevel).isEqualTo(SensitivityLevel.DEEP_LINK_ONLY)
     }
 
     @Test
@@ -259,6 +355,27 @@ class GraphTestUtilsTest {
             )
         )
         assertThat(persistentPreference.isUiOnlyPreference(context)).isFalse()
+    }
+
+    fun createScreen_whenNoDefaultSensitivity_hasNoSensitivity() {
+        val screen = GraphTestUtils.createScreen(
+            screenConfig = GraphTestUtils.PreferenceScreenConfig(
+                screenKey = "preference_screen_key",
+                purpose = R.string.preference_screen_purpose,
+            )
+        )
+        assertThat(screen.sensitivityLevel).isEqualTo(SensitivityLevel.NO_SENSITIVITY)
+    }
+
+    fun createScreen_whenSpecifiedSensitivity_hasSpecifiedSensitivity() {
+        val screen = GraphTestUtils.createScreen(
+            screenConfig = GraphTestUtils.PreferenceScreenConfig(
+                screenKey = "preference_screen_key",
+                purpose = R.string.preference_screen_purpose,
+                sensitivityLevel = SensitivityLevel.DO_NOT_EXPOSE
+            )
+        )
+        assertThat(screen.sensitivityLevel).isEqualTo(SensitivityLevel.DO_NOT_EXPOSE)
     }
 
     @Test

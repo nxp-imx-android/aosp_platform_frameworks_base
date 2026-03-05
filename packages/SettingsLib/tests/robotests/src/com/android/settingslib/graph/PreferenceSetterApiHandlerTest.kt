@@ -300,10 +300,10 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.DEEP_LINK_ONLY,
                 ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
-                sensitivityLevel = SensitivityLevel.DEEP_LINK_ONLY,
             )
         )
         setRegistryFactories(
@@ -330,10 +330,10 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.DO_NOT_EXPOSE
                 ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
-                sensitivityLevel = SensitivityLevel.DO_NOT_EXPOSE
             )
         )
         setRegistryFactories(
@@ -360,10 +360,10 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.DO_NOT_EXPOSE
                 ),
                 valueType = Boolean::class.javaObjectType,
                 defaultValue = false,
-                sensitivityLevel = SensitivityLevel.DO_NOT_EXPOSE
             )
         )
         setRegistryFactories(
@@ -506,9 +506,9 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 ),
                 valueType = Boolean::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = false
@@ -537,9 +537,9 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 ),
                 valueType = Boolean::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = true
@@ -568,9 +568,9 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 ),
                 valueType = Int::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = 4
@@ -599,9 +599,9 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 ),
                 valueType = Int::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = 4
@@ -631,9 +631,9 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 ),
                 valueType = String::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = "hello"
@@ -734,9 +734,9 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 ),
                 valueType = Float::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.REQUIRES_CONFIRMATION,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = 4.5f
@@ -765,9 +765,9 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 ),
                 valueType = String::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = "hello"
@@ -796,9 +796,9 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 ),
                 valueType = String::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.REQUIRE_USER_AGREEMENT,
                 defaultValue = "hello"
@@ -829,9 +829,9 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 ),
                 valueType = String::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.ALLOW,
                 defaultValue = "hello"
@@ -861,9 +861,9 @@ class PreferenceSetterApiHandlerTest {
                 preferenceConfig = PreferenceConfig(
                     key = "preference_key",
                     purpose = R.string.preference_purpose,
+                    sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 ),
                 valueType = String::class.javaObjectType,
-                sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO,
                 writePermission = INTERACT_ACROSS_PROFILES,
                 writePermit = ReadWritePermit.REQUIRE_USER_AGREEMENT,
                 defaultValue = "hello",

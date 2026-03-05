@@ -66,7 +66,6 @@ object GraphTestUtils {
         val valueType: Class<*> = Boolean::class.java,
         val defaultValue: Any? = false,
         val storage: KeyValueStore = createStorage(defaultValue, preferenceConfig.key),
-        val sensitivityLevel: @SensitivityLevel Int = SensitivityLevel.MUST_PROVIDE_UNDO,
         val readPermission: String? = Manifest.permission.INTERACT_ACROSS_USERS,
         val readPermit: @ReadWritePermit Int = ReadWritePermit.ALLOW,
         val writePermission: String? = Manifest.permission.INTERACT_ACROSS_PROFILES,
@@ -83,6 +82,7 @@ object GraphTestUtils {
      * @property isRestricted Whether the preference is restricted.
      * @property isEnabled Whether the preference is enabled.
      * @property isUiOnly Whether the preference is UI-only
+     * @property sensitivityLevel the sensitivity level of the screen
      */
     data class PreferenceConfig(
         val key: String,
@@ -91,6 +91,7 @@ object GraphTestUtils {
         val isRestricted: Boolean = false,
         val isEnabled: Boolean = true,
         val isUiOnly: Boolean = false,
+        val sensitivityLevel: @SensitivityLevel Int = SensitivityLevel.NO_SENSITIVITY
     )
 
     /**
@@ -100,6 +101,7 @@ object GraphTestUtils {
      * @property purpose Screen purpose
      * @property preferences list of Preferences wrapped in this screen
      * @property isUiOnly if current screen is marked as UI-only
+     * @property sensitivityLevel the sensitivity level of the screen
      */
     data class PreferenceScreenConfig(
         val screenKey: String,
@@ -107,6 +109,7 @@ object GraphTestUtils {
         val title: Int = 0,
         val preferences: List<PreferenceMetadata> = listOf(),
         val isUiOnly: Boolean = false,
+        val sensitivityLevel: @SensitivityLevel Int = SensitivityLevel.NO_SENSITIVITY
     )
 
     /**
@@ -149,6 +152,7 @@ object GraphTestUtils {
         override val purpose: Int
             get() = screenConfig.purpose
         override val title = screenConfig.title
+        override val sensitivityLevel = screenConfig.sensitivityLevel
     }
 
     /**
@@ -168,6 +172,9 @@ object GraphTestUtils {
 
         override val purpose: Int
             get() = preferenceConfig.purpose
+
+        override val sensitivityLevel: Int
+            get() = preferenceConfig.sensitivityLevel
 
         override fun isEnabled(context: Context): Boolean =
             preferenceConfig.isEnabled
@@ -211,7 +218,7 @@ object GraphTestUtils {
 
         override fun storage(context: Context) = persistentPreferenceConfig.storage
 
-        override val sensitivityLevel = persistentPreferenceConfig.sensitivityLevel
+        override val sensitivityLevel = persistentPreferenceConfig.preferenceConfig.sensitivityLevel
 
         override fun getReadPermit(
             context: Context,
@@ -276,7 +283,7 @@ object GraphTestUtils {
     ) = object : IntRangeValuePreference {
         override fun getMinValue(context: Context): Int = minValue
         override fun getMaxValue(context: Context): Int = maxValue
-        override val sensitivityLevel = SensitivityLevel.MUST_PROVIDE_UNDO
+        override val sensitivityLevel = SensitivityLevel.NO_SENSITIVITY
         override fun getWritePermit(
             context: Context,
             callingPid: Int,
