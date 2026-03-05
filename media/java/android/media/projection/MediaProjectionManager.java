@@ -19,6 +19,7 @@ package android.media.projection;
 import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemService;
 import android.annotation.TestApi;
@@ -121,6 +122,9 @@ public final class MediaProjectionManager {
     public static final int TYPE_MIRRORING = 1;
     /** @hide */
     public static final int TYPE_PRESENTATION = 2;
+
+    /** @hide */
+    public static final int TYPE_APP_CONTENT = 3;
 
     private final Context mContext;
     @GuardedBy("mCallbacks")
@@ -253,6 +257,28 @@ public final class MediaProjectionManager {
         Intent i = createScreenCaptureIntent();
         i.putExtra(EXTRA_LAUNCH_COOKIE, launchCookie);
         return i;
+    }
+
+    /**
+     * Creates a new projection for app content, by setting the callback and notifying it that
+     * the projection has started.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MANAGE_MEDIA_PROJECTION)
+    public IMediaProjection createProjectionForAppContent(
+            int uid,
+            @NonNull String packageName,
+            @NonNull IAppContentProjectionSession session,
+            int contentId,
+            boolean isAudioRequested,
+            @NonNull IAppContentProjectionCallback callback) {
+        try {
+            IMediaProjection projection = mService.createProjectionForAppContent(
+                    uid, packageName, session, contentId, isAudioRequested, callback);
+            return projection;
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**
