@@ -1245,6 +1245,16 @@ flag {
 }
 
 flag {
+    name: "update_desktop_scrim_on_desktop_task_launch"
+    namespace: "lse_desktop_experience"
+    description: "Updates the desktop scrim when a desktop task is launched."
+    bug: "489912400"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "update_desktop_scrim_on_drag_resize_end"
     namespace: "lse_desktop_experience"
     description: "Updates the desktop scrim when drag resize is finihsed"

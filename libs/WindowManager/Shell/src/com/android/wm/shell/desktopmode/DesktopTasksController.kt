@@ -2449,15 +2449,12 @@ class DesktopTasksController(
         val displayId =
             if (ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue) repository.getDisplayForDesk(deskId)
             else DEFAULT_DISPLAY
-        wct.startTask(
-            taskId,
-            ActivityOptions.makeBasic()
-                .apply {
-                    launchWindowingMode = WINDOWING_MODE_FREEFORM
-                    launchDisplayId = displayId
-                }
-                .toBundle(),
-        )
+        val options =
+            ActivityOptions.makeBasic().apply {
+                launchWindowingMode = WINDOWING_MODE_FREEFORM
+                launchDisplayId = displayId
+            }
+        wct.startTask(taskId, options.toBundle())
         startLaunchTransition(
             TRANSIT_OPEN,
             wct,
@@ -2467,6 +2464,8 @@ class DesktopTasksController(
             userId = userId,
             remoteTransition = remoteTransition,
             unminimizeReason = unminimizeReason,
+            requestedTaskBounds = options.getLaunchBounds(),
+            flexibleLaunchSize = options.getFlexibleLaunchSize(),
         )
     }
 
@@ -2532,6 +2531,8 @@ class DesktopTasksController(
      *   fullscreen or split tasks are just moved to front.
      * @param displayId the display in which the launch is happening.
      * @param unminimizeReason the reason to unminimize.
+     * @param requestedTaskBounds the requested task bounds for the launching task. May be null.
+     * @param flexibleLaunchSize if the requested task bounds can be overridden by core.
      */
     @VisibleForTesting
     fun startLaunchTransition(
@@ -2544,14 +2545,19 @@ class DesktopTasksController(
         userId: Int,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
         dragEvent: DragEvent? = null,
+        requestedTaskBounds: Rect? = null,
+        flexibleLaunchSize: Boolean = false,
     ): IBinder {
         snapController.onTaskLaunchStarted()
         logV(
-            "startLaunchTransition type=%s launchingTaskId=%d deskId=%d displayId=%d",
+            "startLaunchTransition type=%s launchingTaskId=%d deskId=%d displayId=%d" +
+                " requestedTaskBounds=%s flexibleLaunchSize=%b",
             transitTypeToString(transitionType),
             launchingTaskId,
             deskId,
             displayId,
+            requestedTaskBounds,
+            flexibleLaunchSize,
         )
         val repository = userRepositories.getProfile(userId)
         // TODO: b/397619806 - Consolidate sharable logic with [handleFreeformTaskLaunch].
@@ -2652,6 +2658,32 @@ class DesktopTasksController(
             }
         if (deskId != null) {
             addPendingTaskLimitTransition(t, deskId, launchingTaskId)
+
+            // Update desktop scrim if the task bounds after launch can be predicted. This does not
+            // cover all scenarios, but addresses issues like b/489912400.
+            if (Flags.updateDesktopScrimOnDesktopTaskLaunch() && !flexibleLaunchSize) {
+                val finalTaskBounds =
+                    if (requestedTaskBounds != null && !requestedTaskBounds.isEmpty()) {
+                        requestedTaskBounds
+                    } else {
+                        launchingTaskId?.let { taskId ->
+                            shellTaskOrganizer
+                                .getRunningTaskInfo(taskId)
+                                ?.configuration
+                                ?.windowConfiguration
+                                ?.bounds
+                        }
+                    }
+                if (finalTaskBounds != null) {
+                    desktopScrimController.updateDesktopScrimIfNeeded(
+                        displayId,
+                        userId,
+                        excludeTaskId = launchingTaskId,
+                        targetDeskId = deskId,
+                        pendingTaskBounds = finalTaskBounds,
+                    )
+                }
+            }
         }
         if (launchingTaskId != null && repository.isMinimizedTask(launchingTaskId)) {
             addPendingUnminimizeTransition(t, displayId, launchingTaskId, unminimizeReason)
@@ -2874,6 +2906,8 @@ class DesktopTasksController(
             deskId = deskId,
             displayId = displayId,
             userId = userId,
+            requestedTaskBounds = ops.getLaunchBounds(),
+            flexibleLaunchSize = ops.getFlexibleLaunchSize(),
         )
     }
 
@@ -4224,6 +4258,8 @@ class DesktopTasksController(
                     deskId = deskId,
                     displayId = callingTaskInfo.displayId,
                     userId = userId,
+                    requestedTaskBounds = options.getLaunchBounds(),
+                    flexibleLaunchSize = options.getFlexibleLaunchSize(),
                 )
             }
         }
@@ -4713,6 +4749,17 @@ class DesktopTasksController(
                 )
             }
             addPendingTaskLimitTransition(transition, targetDeskId, task.taskId)
+
+            if (Flags.updateDesktopScrimOnDesktopTaskLaunch()) {
+                val finalTaskBounds = bounds ?: task.configuration.windowConfiguration.bounds
+                desktopScrimController.updateDesktopScrimIfNeeded(
+                    targetDisplayId,
+                    userId,
+                    excludeTaskId = task.taskId,
+                    targetDeskId = targetDeskId,
+                    pendingTaskBounds = finalTaskBounds,
+                )
+            }
         }
 
         if (!wct.isEmpty) {
@@ -6887,6 +6934,8 @@ class DesktopTasksController(
                 displayId = destinationDisplay,
                 userId = userId,
                 dragEvent = dragEvent,
+                requestedTaskBounds = opts.getLaunchBounds(),
+                flexibleLaunchSize = opts.getFlexibleLaunchSize(),
             )
         } else {
             transitions.startTransition(TRANSIT_OPEN, wct, null)

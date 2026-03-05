@@ -11213,6 +11213,128 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_UPDATE_DESKTOP_SCRIM_ON_DESKTOP_TASK_LAUNCH)
+    fun startLaunchTransition_maximizedTaskBounds_desktopScrimIsApplied() {
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        val task = setUpFreeformTask(bounds = stableBounds)
+
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = WindowContainerTransaction(),
+            launchingTaskId = task.taskId,
+            deskId = DEFAULT_DISPLAY,
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            requestedTaskBounds = null,
+            flexibleLaunchSize = false,
+        )
+
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(true, DEFAULT_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_UPDATE_DESKTOP_SCRIM_ON_DESKTOP_TASK_LAUNCH)
+    fun startLaunchTransition_unmaximizedTaskBounds_desktopScrimIsNotApplied() {
+        val task = setUpFreeformTask(bounds = TASK_BOUNDS)
+
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = WindowContainerTransaction(),
+            launchingTaskId = task.taskId,
+            deskId = DEFAULT_DISPLAY,
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            requestedTaskBounds = null,
+            flexibleLaunchSize = false,
+        )
+
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(false, DEFAULT_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_UPDATE_DESKTOP_SCRIM_ON_DESKTOP_TASK_LAUNCH)
+    fun startLaunchTransition_maximizedRequestedTaskBounds_desktopScrimIsApplied() {
+        val task = setUpFreeformTask(bounds = TASK_BOUNDS)
+
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = WindowContainerTransaction(),
+            launchingTaskId = task.taskId,
+            deskId = DEFAULT_DISPLAY,
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            requestedTaskBounds = stableBounds,
+            flexibleLaunchSize = false,
+        )
+
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(true, DEFAULT_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_UPDATE_DESKTOP_SCRIM_ON_DESKTOP_TASK_LAUNCH)
+    fun startLaunchTransition_unmaximizedRequestedTaskBounds_desktopScrimIsNotApplied() {
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        val task = setUpFreeformTask(bounds = stableBounds)
+
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = WindowContainerTransaction(),
+            launchingTaskId = task.taskId,
+            deskId = DEFAULT_DISPLAY,
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            requestedTaskBounds = TASK_BOUNDS,
+            flexibleLaunchSize = false,
+        )
+
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(false, DEFAULT_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_UPDATE_DESKTOP_SCRIM_ON_DESKTOP_TASK_LAUNCH)
+    fun startLaunchTransition_maximizedTaskExists_desktopScrimIsApplied() {
+        // Set up an existing maximized task.
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        setUpFreeformTask(bounds = stableBounds, addToRepository = true)
+
+        val task = setUpFreeformTask(bounds = TASK_BOUNDS)
+
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = WindowContainerTransaction(),
+            launchingTaskId = task.taskId,
+            deskId = DEFAULT_DISPLAY,
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            requestedTaskBounds = TASK_BOUNDS,
+            flexibleLaunchSize = false,
+        )
+
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(true, DEFAULT_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_UPDATE_DESKTOP_SCRIM_ON_DESKTOP_TASK_LAUNCH)
+    fun startLaunchTransition_flexibleLaunchSize_desktopScrimIsNotUpdated() {
+        val task = setUpFreeformTask(bounds = TASK_BOUNDS)
+
+        controller.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = WindowContainerTransaction(),
+            launchingTaskId = task.taskId,
+            deskId = DEFAULT_DISPLAY,
+            displayId = DEFAULT_DISPLAY,
+            userId = DEFAULT_USER_ID,
+            requestedTaskBounds = null,
+            flexibleLaunchSize = true,
+        )
+
+        // Desktop scrim is not updated since the task bounds are not predicted.
+        verify(desktopRemoteListener, never()).onTaskbarCornerRoundingUpdate(anyBoolean(), anyInt())
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_SHOW_HOME_BEHIND_DESKTOP)
     fun showHomeBehindDesktop_wallpaperNotPresent() {
         desktopState.shouldShowHomeBehindDesktop = true
@@ -12273,6 +12395,66 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     this is PendingMixedTransition.SwitchDesk && this.transition == transition
                 }
             )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_UPDATE_DESKTOP_SCRIM_ON_DESKTOP_TASK_LAUNCH)
+    fun handleFreeformTaskPlacement_launchingMaximizedTask_desktopScrimIsApplied() {
+        val task = setUpFreeformTask(bounds = TASK_BOUNDS, addToRepository = false)
+
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        controller.handleFreeformTaskPlacement(
+            task = task,
+            transition = Binder(),
+            targetDisplayId = DEFAULT_DISPLAY,
+            requestedTaskBounds = stableBounds,
+            requestType = TRANSIT_OPEN,
+            enterReason = EnterReason.TASK_LAUNCH,
+            forceBringTaskToFront = true,
+        )
+
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(true, DEFAULT_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_UPDATE_DESKTOP_SCRIM_ON_DESKTOP_TASK_LAUNCH)
+    fun handleFreeformTaskPlacement_launchingUnmaximizedTask_desktopScrimIsNotApplied() {
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        val task = setUpFreeformTask(bounds = stableBounds, addToRepository = false)
+
+        controller.handleFreeformTaskPlacement(
+            task = task,
+            transition = Binder(),
+            targetDisplayId = DEFAULT_DISPLAY,
+            requestedTaskBounds = TASK_BOUNDS,
+            requestType = TRANSIT_OPEN,
+            enterReason = EnterReason.TASK_LAUNCH,
+            forceBringTaskToFront = true,
+        )
+
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(false, DEFAULT_DISPLAY)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_UPDATE_DESKTOP_SCRIM_ON_DESKTOP_TASK_LAUNCH)
+    fun handleFreeformTaskPlacement_maximizedTaskExists_desktopScrimIsApplied() {
+        // Set up an existing maximized task.
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        setUpFreeformTask(bounds = stableBounds, addToRepository = true)
+
+        val task = setUpFreeformTask(bounds = TASK_BOUNDS, addToRepository = false)
+
+        controller.handleFreeformTaskPlacement(
+            task = task,
+            transition = Binder(),
+            targetDisplayId = DEFAULT_DISPLAY,
+            requestedTaskBounds = TASK_BOUNDS,
+            requestType = TRANSIT_OPEN,
+            enterReason = EnterReason.TASK_LAUNCH,
+            forceBringTaskToFront = true,
+        )
+
+        verify(desktopRemoteListener).onTaskbarCornerRoundingUpdate(true, DEFAULT_DISPLAY)
     }
 
     @Test
