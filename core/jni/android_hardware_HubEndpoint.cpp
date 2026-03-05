@@ -114,18 +114,12 @@ private:
 
 class SinkWrapper {
 public:
-    SinkWrapper(std::variant<UntypedConsumer, VariableDataConsumer>&& consumer,
-                DataFlowId dataFlowId)
-          : mConsumer(std::move(consumer)), mDataFlowId(dataFlowId) {}
-    SinkWrapper(SinkWrapper&& other)
-          : mConsumer(std::move(other.mConsumer)), mDataFlowId(other.mDataFlowId) {}
+    SinkWrapper(std::variant<UntypedConsumer, VariableDataConsumer>&& consumer)
+          : mConsumer(std::move(consumer)) {}
+    SinkWrapper(SinkWrapper&& other) : mConsumer(std::move(other.mConsumer)) {}
 
     std::variant<UntypedConsumer, VariableDataConsumer>& getConsumer() {
         return mConsumer;
-    }
-
-    DataFlowId getDataFlowId() {
-        return mDataFlowId;
     }
 
     ~SinkWrapper() {
@@ -138,7 +132,6 @@ public:
 
 private:
     std::variant<UntypedConsumer, VariableDataConsumer> mConsumer;
-    DataFlowId mDataFlowId;
 };
 
 class HubEndpointResource {
@@ -263,7 +256,7 @@ public:
         mSources.emplace(regionId, std::move(sourceWrapper));
     }
 
-    SinkWrapper* getSinkWrapper(int dataFlowId) {
+    SinkWrapper* getSinkWrapper(DataFlowId dataFlowId) {
         auto it = mSinks.find(dataFlowId);
         if (it == mSinks.end()) {
             return nullptr;
@@ -271,33 +264,37 @@ public:
         return &it->second;
     }
 
-    void removeSinkWrapper(int dataFlowId, SinkWrapper* sinkWrapper = nullptr,
+    void removeSinkWrapper(DataFlowId dataFlowId, SinkWrapper* sinkWrapper = nullptr,
                            bool doErase = false) {
         if (sinkWrapper == nullptr) {
             sinkWrapper = getSinkWrapper(dataFlowId);
             if (sinkWrapper == nullptr) {
-                ALOGE("removeSinkWrapper: sinkWrapper is null, dataFlowId=%d", dataFlowId);
+                ALOGE("removeSinkWrapper: sinkWrapper is null, dataFlowHubId=%" PRId64
+                      ", dataFlowId=%d",
+                      dataFlowId.hubId, dataFlowId.id);
                 return;
             }
         }
 
-        DataFlowId fullDataFlowId = sinkWrapper->getDataFlowId();
-        pw::Status status = mNotificationManager->disableHostConsumer(fullDataFlowId);
+        pw::Status status = mNotificationManager->disableHostConsumer(dataFlowId);
         if (!status.ok()) {
-            ALOGE("disableHostConsumer: dataFlowId=%d, status=%s", dataFlowId, status.str());
+            ALOGE("disableHostConsumer: dataFlowId.hubId=%" PRId64 ", dataFlowId.id=%d, status=%s",
+                  dataFlowId.hubId, dataFlowId.id, status.str());
         }
 
         if (doErase) {
             mSinks.erase(dataFlowId);
         }
 
-        status = mRegionManager.unlinkHostConsumerDataFlow(fullDataFlowId);
+        status = mRegionManager.unlinkHostConsumerDataFlow(dataFlowId);
         if (!status.ok()) {
-            ALOGE("unlinkHostConsumerDataFlow: dataFlowId=%d, status=%s", dataFlowId, status.str());
+            ALOGE("unlinkHostConsumerDataFlow: dataFlowId.hubId=%" PRId64
+                  ", dataFlowId.id=%d, status=%s",
+                  dataFlowId.hubId, dataFlowId.id, status.str());
         }
     }
 
-    void addSinkWrapper(int dataFlowId, SinkWrapper&& sinkWrapper) {
+    void addSinkWrapper(DataFlowId dataFlowId, SinkWrapper&& sinkWrapper) {
         mSinks.emplace(dataFlowId, std::move(sinkWrapper));
     }
 
@@ -312,7 +309,7 @@ private:
     // Key is the shared data region ID.
     std::map<int, SourceWrapper> mSources;
     // Key is the data flow ID.
-    std::map<int, SinkWrapper> mSinks;
+    std::map<DataFlowId, SinkWrapper> mSinks;
 };
 
 static jlong android_hardware_HubEndpoint_init(JNIEnv* env, jobject /* thiz */, jobject queueObject,
@@ -539,7 +536,7 @@ static jintArray android_hardware_HubEndpoint_enableHostSink(
     RETURN_ON_FALSE(javaArray != nullptr, nullptr, "Failed to create int array");
     env->SetIntArrayRegion(javaArray, 0, out.size(), out.data());
 
-    resource->addSinkWrapper(id.id, SinkWrapper(std::move(*consumer), id));
+    resource->addSinkWrapper(id, SinkWrapper(std::move(*consumer)));
 
     return javaArray;
 }
@@ -630,13 +627,13 @@ static jint android_hardware_HubEndpoint_sourceSize(JNIEnv* env, jobject /*thiz*
 }
 
 static jbyteArray android_hardware_HubEndpoint_sinkRequestData(JNIEnv* env, jobject /*thiz*/,
-                                                               jlong handle, jint dataFlowId,
-                                                               jint elementCount,
+                                                               jlong handle, jlong dataFlowHubId,
+                                                               jint dataFlowId, jint elementCount,
                                                                jboolean allOrNothing) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, nullptr, "Invalid handle");
 
-    SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
+    SinkWrapper* sinkWrapper = resource->getSinkWrapper({.hubId = dataFlowHubId, .id = dataFlowId});
     RETURN_ON_FALSE(sinkWrapper != nullptr, nullptr, "Sink not found for dataFlowId");
 
     std::variant<UntypedConsumer, VariableDataConsumer>& consumer = sinkWrapper->getConsumer();
@@ -697,12 +694,12 @@ static jbyteArray android_hardware_HubEndpoint_sinkRequestData(JNIEnv* env, jobj
 }
 
 static jboolean android_hardware_HubEndpoint_sinkSyncToSource(JNIEnv* env, jobject /*thiz*/,
-                                                              jlong handle, jint dataFlowId,
-                                                              jint offset) {
+                                                              jlong handle, jlong dataFlowHubId,
+                                                              jint dataFlowId, jint offset) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, JNI_FALSE, "Invalid handle");
 
-    SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
+    SinkWrapper* sinkWrapper = resource->getSinkWrapper({.hubId = dataFlowHubId, .id = dataFlowId});
     RETURN_ON_FALSE(sinkWrapper != nullptr, JNI_FALSE, "Sink not found for dataFlowId");
 
     std::variant<UntypedConsumer, VariableDataConsumer>& consumer = sinkWrapper->getConsumer();
@@ -720,14 +717,12 @@ static jboolean android_hardware_HubEndpoint_sinkSyncToSource(JNIEnv* env, jobje
     return JNI_TRUE;
 }
 
-static jboolean android_hardware_HubEndpoint_sinkSourceCanOverwriteReadPosition(JNIEnv* env,
-                                                                                jobject /*thiz*/,
-                                                                                jlong handle,
-                                                                                jint dataFlowId) {
+static jboolean android_hardware_HubEndpoint_sinkSourceCanOverwriteReadPosition(
+        JNIEnv* env, jobject /*thiz*/, jlong handle, jlong dataFlowHubId, jint dataFlowId) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, JNI_FALSE, "Invalid handle");
 
-    SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
+    SinkWrapper* sinkWrapper = resource->getSinkWrapper({.hubId = dataFlowHubId, .id = dataFlowId});
     RETURN_ON_FALSE(sinkWrapper != nullptr, JNI_FALSE, "Sink not found for dataFlowId");
 
     std::variant<UntypedConsumer, VariableDataConsumer>& consumer = sinkWrapper->getConsumer();
@@ -748,11 +743,11 @@ static jboolean android_hardware_HubEndpoint_sinkSourceCanOverwriteReadPosition(
 }
 
 static jint android_hardware_HubEndpoint_sinkSize(JNIEnv* env, jobject /*thiz*/, jlong handle,
-                                                  jint dataFlowId) {
+                                                  jlong dataFlowHubId, jint dataFlowId) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     RETURN_ON_FALSE(resource != nullptr, 0, "Invalid handle");
 
-    SinkWrapper* sinkWrapper = resource->getSinkWrapper(dataFlowId);
+    SinkWrapper* sinkWrapper = resource->getSinkWrapper({.hubId = dataFlowHubId, .id = dataFlowId});
     RETURN_ON_FALSE(sinkWrapper != nullptr, 0, "Sink not found for dataFlowId");
 
     std::variant<UntypedConsumer, VariableDataConsumer>& consumer = sinkWrapper->getConsumer();
@@ -943,10 +938,12 @@ static void android_hardware_HubEndpoint_removeHostSource(JNIEnv* env, jobject /
 }
 
 static void android_hardware_HubEndpoint_removeHostSink(JNIEnv* env, jobject /* thiz */,
-                                                        jlong handle, jint dataFlowId) {
+                                                        jlong handle, jlong dataFlowHubId,
+                                                        jint dataFlowId) {
     HubEndpointResource* resource = reinterpret_cast<HubEndpointResource*>(handle);
     if (resource != nullptr) {
-        resource->removeSinkWrapper(dataFlowId, /* sinkWrapper= */ nullptr, /* doErase= */ true);
+        resource->removeSinkWrapper({.hubId = dataFlowHubId, .id = dataFlowId},
+                                    /* sinkWrapper= */ nullptr, /* doErase= */ true);
     }
 }
 
@@ -971,11 +968,13 @@ static const JNINativeMethod method_table[] = {
         {"native_sourcePush", "(JI[BZ)I", (void*)android_hardware_HubEndpoint_sourcePush},
         {"native_sourceFull", "(JI)Z", (void*)android_hardware_HubEndpoint_sourceFull},
         {"native_sourceSize", "(JIZ)I", (void*)android_hardware_HubEndpoint_sourceSize},
-        {"native_sinkRequestData", "(JIIZ)[B", (void*)android_hardware_HubEndpoint_sinkRequestData},
-        {"native_sinkSyncToSource", "(JII)Z", (void*)android_hardware_HubEndpoint_sinkSyncToSource},
-        {"native_sinkSourceCanOverwriteReadPosition", "(JI)Z",
+        {"native_sinkRequestData", "(JJIIZ)[B",
+         (void*)android_hardware_HubEndpoint_sinkRequestData},
+        {"native_sinkSyncToSource", "(JJII)Z",
+         (void*)android_hardware_HubEndpoint_sinkSyncToSource},
+        {"native_sinkSourceCanOverwriteReadPosition", "(JJI)Z",
          (void*)android_hardware_HubEndpoint_sinkSourceCanOverwriteReadPosition},
-        {"native_sinkSize", "(JI)I", (void*)android_hardware_HubEndpoint_sinkSize},
+        {"native_sinkSize", "(JJI)I", (void*)android_hardware_HubEndpoint_sinkSize},
         {"native_addOffloadSink", "(JIJJ)[I", (void*)android_hardware_HubEndpoint_addOffloadSink},
         {"native_mapOffloadSinkRegion", "(JIIJJIJIIIZ)I",
          (void*)android_hardware_HubEndpoint_mapOffloadSinkRegion},
@@ -984,7 +983,7 @@ static const JNINativeMethod method_table[] = {
         {"native_removeOffloadSink", "(JIJJ)V",
          (void*)android_hardware_HubEndpoint_removeOffloadSink},
         {"native_removeHostSource", "(JI)V", (void*)android_hardware_HubEndpoint_removeHostSource},
-        {"native_removeHostSink", "(JI)V", (void*)android_hardware_HubEndpoint_removeHostSink},
+        {"native_removeHostSink", "(JJI)V", (void*)android_hardware_HubEndpoint_removeHostSink},
         {"native_deinit", "(J)V", (void*)android_hardware_HubEndpoint_deinit},
 };
 
