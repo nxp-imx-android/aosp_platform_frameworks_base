@@ -193,6 +193,17 @@ flag {
     }
 }
 
+
+flag {
+    namespace: "windowing_sdk"
+    name: "fix_multi_window_task_focus_change"
+    description: "Avoid changing focus to a lower z-ordering multi-window task"
+    bug: "479335798"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
 flag {
     namespace: "windowing_sdk"
     name: "idempotent_wct_resolution"

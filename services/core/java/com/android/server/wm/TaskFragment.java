@@ -1395,7 +1395,9 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             // same task because it can break focused state. (e.g. activity embedding)
             if (taskDisplayArea.inMultiWindowMode() && taskDisplayArea.mDisplayContent != null) {
                 final ActivityRecord focusedApp = taskDisplayArea.mDisplayContent.mFocusedApp;
-                if (focusedApp == null || focusedApp.getTask() != next.getTask()) {
+                if (focusedApp == null || (focusedApp.getTask() != next.getTask()
+                        && (!com.android.window.flags.Flags.fixMultiWindowTaskFocusChange()
+                                || next.getTask().compareTo(focusedApp.getTask()) > 0))) {
                     taskDisplayArea.mDisplayContent.setFocusedApp(next);
                 }
             }
