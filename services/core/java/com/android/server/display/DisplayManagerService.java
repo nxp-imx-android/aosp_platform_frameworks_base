@@ -4578,6 +4578,8 @@ public final class DisplayManagerService extends SystemService {
             }
 
             if (mPersistentDataStore.setConnectionPreference(displayDevice, preference)) {
+                Slog.d(TAG, "Updating connection preference to" + preference
+                        + " for display with uniqueId: " + uniqueId);
                 mPersistentDataStore.saveIfNeeded();
             }
         }
@@ -4587,11 +4589,15 @@ public final class DisplayManagerService extends SystemService {
         synchronized (mSyncRoot) {
             DisplayDevice displayDevice = mDisplayDeviceRepo.getByUniqueIdLocked(uniqueId);
             if (displayDevice == null) {
+                Slog.w(TAG, "No display device found with uniqueId: " + uniqueId
+                        + ", returning default connection preference");
                 return DEFAULT_CONNECTION_PREFERENCE;
             }
 
             int persistedConnectionPreference =
                     mPersistentDataStore.getConnectionPreference(displayDevice);
+            Slog.d(TAG, "Returning saved connection preference " + persistedConnectionPreference
+                    + " for display with uniqueId: " + uniqueId);
             return mSecondaryDisplayPolicy.getPolicyAwareConnectionPreference(
                     persistedConnectionPreference);
         }
