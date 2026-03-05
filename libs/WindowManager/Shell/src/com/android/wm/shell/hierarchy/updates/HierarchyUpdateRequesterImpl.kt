@@ -53,21 +53,12 @@ class HierarchyUpdateRequesterImpl(
             throw IllegalArgumentException("Root task must have an associated name")
         }
         val appearedInfo = shellTaskOrganizer.createTask(params, null)
-        val snapshot = HierarchySnapshot(hierarchy.toContainerList())
 
         val task = hierarchy.getTask(appearedInfo!!.taskInfo.taskId)!!
         if (mode != null) {
-            // Create task will synchronously call the updater's handleCreatedTask(), so we just need
-            // to update the mode after the container is created
+            // Create task will synchronously call the updater's handleCreatedTask(), so we just
+            // need to update the mode after the container is created
             task.mode = mode
-
-            updater.notifyModes(
-                Mode.UpdateContext(
-                    reason = "Set root task=${task.name} to mode=${mode.getId()}",
-                    dumpOnlyContainer = task
-                ),
-                snapshot
-            )
         }
         return task
     }

@@ -21,6 +21,7 @@ import android.content.pm.UserInfo
 import android.hardware.devicestate.DeviceStateManager
 import android.os.Handler
 import android.os.IBinder
+import android.util.Log
 import android.view.InsetsState
 import android.view.SurfaceControl
 import android.view.WindowManager
@@ -57,6 +58,8 @@ import com.android.wm.shell.sysui.KeyguardChangeListener
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
+import com.android.wm.shell.transition.AnimationPlan
+import com.android.wm.shell.transition.ITransitionPlanner
 import com.android.wm.shell.transition.Transitions
 
 /**
@@ -91,8 +94,12 @@ class HierarchyUpdater(
     }
 
     private fun onInit() {
+        if (!com.android.window.flags.Flags.transitMixpatcherBase()) {
+            Log.e("ShellModes", "Expected mixpatcher base flag to be enabled")
+        }
         shellController.addUserChangeListener(UserChangeUpdater())
         shellController.addKeyguardChangeListener(KeyguardStateUpdater())
+        transitions.addPlanner(ContainerHierarchyMixpatcherHandler())
         shellTaskOrganizer.setContainerHierarchyCreateRootTaskListener(
             ContainerHierarchyRootTaskHook()
         )
@@ -102,10 +109,6 @@ class HierarchyUpdater(
         deviceStateManager.registerCallback(mainExecutor, DeviceStateUpdater())
         val foldSettings = FoldSettingsUpdater(appContext, mainHandler)
         foldSettings.register()
-        if (!com.android.window.flags.Flags.transitMixpatcherBase()) {
-            // The planner will update the hierarchy in lieu of the observer with mixpatcher
-            transitions.registerObserver(ContainerHierarchyTransitionObserver())
-        }
     }
 
     /**
@@ -114,6 +117,7 @@ class HierarchyUpdater(
     fun notifyModes(
         updateContext: Mode.UpdateContext,
         snapshot: HierarchySnapshot,
+        animationPlan: AnimationPlan? = null,
     ) {
         ProtoLog.v(WM_SHELL_MODES, "Hierarchy updated requested: %s", updateContext.reason)
         updaterTestHook?.onHierarchyUpdated()
@@ -121,23 +125,28 @@ class HierarchyUpdater(
         // Iterate the pre-existing containers from bottom-up to notify old modes that their
         // descendants have been removed
         val postUpdateContainers = hierarchy.toContainerList()
-        val removedContainers =
-            snapshot.preUpdateContainers.asReversed() - postUpdateContainers.toSet()
-        val removedContainersByMode = removedContainers
+        val postUpdateContainersSet = postUpdateContainers.toSet()
+        val leavingContainersByMode = snapshot.preUpdateContainers
             // Ignore containers that aren't in a mode (should generally not happen unless there
             // is no root)
-            .filter { snapshot.snapshots[it]!!.mode != null }
-            .groupBy { snapshot.snapshots[it]!!.modeContainer }
-        for ((oldModeContainer, removed) in removedContainersByMode) {
-            val oldMode = oldModeContainer!!.mode!!
-            ProtoLog.v(
-                WM_SHELL_MODES,
-                "\tRemoving: %s from %s (%s)",
+            .filter {
+                val oldMode = snapshot.snapshots[it]!!.mode
+                oldMode != null && oldMode != HierarchyUtils.getMode(it)
+            }
+            .groupBy { snapshot.snapshots[it]!!.mode!! }
+        for ((oldMode, leaving) in leavingContainersByMode) {
+            val removed = leaving.filter { it !in postUpdateContainersSet }
+            ProtoLog.v(WM_SHELL_MODES, "\tLeaving: %s from %s", leaving, oldMode.getId())
+            if (removed.isNotEmpty()) {
+                ProtoLog.v(WM_SHELL_MODES, "\tRemoving: %s from %s", removed, oldMode.getId())
+            }
+            oldMode.containersRemoved(
+                updateContext,
+                leaving,
                 removed,
-                oldModeContainer,
-                oldMode.getId()
+                snapshot,
+                animationPlan
             )
-            oldMode.containersRemoved(updateContext, oldModeContainer, removed, snapshot)
         }
 
         // After pre-existing containers' modes have been notified, notify the modes globally for
@@ -174,34 +183,37 @@ class HierarchyUpdater(
             // Ignore containers that aren't in a mode (should generally not happen unless there
             // is no root)
             .filter { HierarchyUtils.getMode(it) != null }
-            .groupBy { HierarchyUtils.getModeContainer(it) }
-        for ((modeContainer, containers) in postUpdateContainersByMode) {
-            val mode = modeContainer!!.mode!!
-            // Notify changed ancestors first to this mode, but only do so if the mode has already
-            // been notified of the root
-            if (snapshot.snapshots.containsKey(modeContainer)) {
-                val ancestors = snapshot.getChangedAncestors(modeContainer)
-                if (!ancestors.isEmpty()) {
-                    ProtoLog.v(
-                        WM_SHELL_MODES,
-                        "\tGlobal state changed: %s for %s",
-                        modeContainer, mode.getId()
-                    )
-                    mode.globalStateChanged(updateContext, modeContainer, snapshot)
+            .groupBy { HierarchyUtils.getMode(it)!! }
+        for ((mode, containers) in postUpdateContainersByMode) {
+            val modeContainers = containers.groupBy { HierarchyUtils.getModeContainer(it) }.keys
+            val globalStateChanged = modeContainers
+                .any {
+                    snapshot.snapshots.containsKey(it!!) &&
+                            snapshot.getChangedAncestors(it).isNotEmpty()
                 }
+            val entering = containers.filter {
+                val oldMode = snapshot.snapshots[it]?.mode
+                oldMode == null || oldMode != mode
             }
-
-            // Notify added or changed containers in this mode
-            val added = containers.filter { !snapshot.snapshots.containsKey(it) }
-            val changed = containers.filter { snapshot.hasChanges(it) }
-            if (!added.isEmpty() || !changed.isEmpty()) {
-                if (!added.isEmpty()) {
-                    ProtoLog.v(WM_SHELL_MODES, "\tAdding: %s to %s", added, mode.getId())
+            val changed = (containers - entering.toSet()).filter { snapshot.hasChanges(it) }
+            if (!entering.isEmpty() || !changed.isEmpty() || globalStateChanged) {
+                if (!entering.isEmpty()) {
+                    ProtoLog.v(WM_SHELL_MODES, "\tAdding: %s to %s", entering, mode.getId())
                 }
                 if (!changed.isEmpty()) {
                     ProtoLog.v(WM_SHELL_MODES, "\tChanged: %s in %s", changed, mode.getId())
                 }
-                mode.containersChanged(updateContext, modeContainer, added, changed, snapshot)
+                if (globalStateChanged) {
+                    ProtoLog.v(WM_SHELL_MODES, "\tGlobal state changed")
+                }
+                mode.containersChanged(
+                    updateContext,
+                    entering,
+                    changed,
+                    globalStateChanged,
+                    snapshot,
+                    animationPlan
+                )
             }
         }
         updaterTestHook?.onModesNotified()
@@ -231,21 +243,21 @@ class HierarchyUpdater(
             appearedInfo.taskInfo.taskId
         )
 
-        val snapshot = HierarchySnapshot(hierarchy.toContainerList())
-
         // Create the task in the hierarchy
-        val displayArea = hierarchy.getTaskDisplayArea(appearedInfo.taskInfo.displayId)
+        val parentTaskId = appearedInfo.taskInfo.parentTaskId
+        val displayId = appearedInfo.taskInfo.displayId
+        val parentContainer = if (parentTaskId > 0) hierarchy.getTask(parentTaskId)
+            else hierarchy.getTaskDisplayArea(displayId)
         val createdTask =
             Container(token, TaskContainerProperties(appearedInfo.taskInfo)).apply {
                 this.name += " ($name)"
-                parent = displayArea
+                parent = parentContainer
                 leash = appearedInfo.leash
+                props.config.setTo(appearedInfo.taskInfo.configuration)
                 if (mode != null) {
                     this.mode = mode
                 }
             }
-
-        notifyModes(Mode.UpdateContext(reason = "Create root task: $name"), snapshot)
         return createdTask
     }
 
@@ -256,17 +268,10 @@ class HierarchyUpdater(
             token
         )
 
-        val snapshot = HierarchySnapshot(hierarchy.toContainerList())
-
         // Remove the task from the hierarchy
         val container = hierarchy.getContainer(token)
         if (container != null) {
             container.parent = null
-
-            notifyModes(
-                Mode.UpdateContext(reason = "Remove root task: ${container.name}"),
-                snapshot
-            )
         }
     }
 
@@ -291,6 +296,7 @@ class HierarchyUpdater(
 
     fun handleTransition(
         transition: IBinder,
+        plan: AnimationPlan,
         info: TransitionInfo,
         startTransaction: SurfaceControl.Transaction
     ): HierarchySnapshot {
@@ -319,7 +325,8 @@ class HierarchyUpdater(
                 reason = "Transition #${info.debugId}",
                 preTransitionTx = startTransaction
             ),
-            snapshot
+            snapshot,
+            plan
         )
 
         if (HierarchyUtils.hasTemporaryAnimatingContainers(hierarchy.root)) {
@@ -433,19 +440,17 @@ class HierarchyUpdater(
                 change.container!!,
                 TaskContainerProperties(change.taskInfo!!)
             )
-        }
-
-        // Other container types are temporary in the hierarchy
-        // TODO: Certain containers (like wallpaper) don't have valid tokens yet, we should either
-        //       fix that or map those specific containers by flag
-        if ((change.flags and TransitionInfo.FLAG_IS_WALLPAPER) != 0) {
+        } else if ((change.flags and TransitionInfo.FLAG_IS_WALLPAPER) != 0) {
+            // TODO: Certain containers (like wallpaper) don't have valid tokens yet, we should
+            //  either fix that or map those specific containers by flag
             return Container(
                 change.container!!,
                 WallpaperContainerProperties()
-            ).apply {
-                isTemporaryAnimatingContainer = true
-            }
-        } else if (change.activityTransitionInfo != null) {
+            )
+        }
+
+        // Other container types are temporary in the hierarchy
+        if (change.activityTransitionInfo != null) {
             return Container(
                 change.container!!,
                 ActivityContainerProperties(change.activityTransitionInfo!!.taskId)
@@ -563,6 +568,23 @@ class HierarchyUpdater(
     // Hooks
     //
 
+    /** Hooks into Mixpatcher transition planning. */
+    private inner class ContainerHierarchyMixpatcherHandler : ITransitionPlanner {
+        override fun plan(
+            plan: AnimationPlan,
+            fullInfo: TransitionInfo,
+            transition: IBinder,
+            plannableInfo: TransitionInfo,
+            startTransaction: SurfaceControl.Transaction
+        ) {
+            handleTransition(transition, plan, fullInfo, startTransaction)
+        }
+
+        override fun getDebugName(): String {
+            return "ContainerHierarchy"
+        }
+    }
+
     /** Hooks into ShellTaskOrganizer to listen for changes to root tasks. */
     private inner class ContainerHierarchyRootTaskHook
         : ShellTaskOrganizer.ContainerHierarchyRootTaskListener {
@@ -579,18 +601,6 @@ class HierarchyUpdater(
     private inner class ContainerHierarchyTaskInfoListener : ShellTaskOrganizer.TaskInfoChangedListener {
         override fun onTaskInfoChanged(taskInfo: ActivityManager.RunningTaskInfo?) {
             handleTaskInfoChanged(taskInfo!!)
-        }
-    }
-
-    /** Hooks into transitions to listen for, and update from, incoming transitions. */
-    private inner class ContainerHierarchyTransitionObserver : Transitions.TransitionObserver {
-        override fun onTransitionReady(
-            transition: IBinder,
-            info: TransitionInfo,
-            startTransaction: SurfaceControl.Transaction,
-            finishTransaction: SurfaceControl.Transaction
-        ) {
-            handleTransition(transition, info, startTransaction)
         }
     }
 

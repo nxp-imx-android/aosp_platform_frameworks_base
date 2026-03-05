@@ -38,7 +38,6 @@ import android.window.DisplayAreaOrganizer.FEATURE_DEFAULT_TASK_CONTAINER
 import android.window.TaskAppearedInfo
 import android.window.TransitionInfo
 import android.window.TransitionInfo.FLAG_IS_DISPLAY
-import android.window.TransitionInfo.FLAG_IS_WALLPAPER
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -66,12 +65,14 @@ import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGE
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot.Companion.CHANGED_USER_PROFILES
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.transition.AnimationPlan
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -177,6 +178,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
         // Notify the transition
         updater.handleTransition(
             mock<IBinder>(),
+            mock<AnimationPlan>(),
             info,
             mock<SurfaceControl.Transaction>(),
         )
@@ -203,6 +205,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
         // Notify the transition
         updater.handleTransition(
             mock<IBinder>(),
+            mock<AnimationPlan>(),
             info,
             mock<SurfaceControl.Transaction>(),
         )
@@ -234,6 +237,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
         // Notify the transition
         updater.handleTransition(
             mock<IBinder>(),
+            mock<AnimationPlan>(),
             info,
             mock<SurfaceControl.Transaction>(),
         )
@@ -268,6 +272,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
         // Notify the transition
         updater.handleTransition(
             mock<IBinder>(),
+            mock<AnimationPlan>(),
             info,
             mock<SurfaceControl.Transaction>(),
         )
@@ -297,9 +302,17 @@ class HierarchyUpdaterTest : ShellTestCase() {
         updater.notifyModes(Mode.UpdateContext(), snapshot)
 
         // Verify the container was attached to the associated ancestor mode
-        verify(child2Mode).containersChanged(any(), eq(child2), any(), any(), any())
-        assertThat(child2Mode.addedContainers).contains(newChild)
-        verify(child1Mode, never()).containersChanged(any(), any(), any(), any(), any())
+        verify(child2Mode).containersChanged(any(), any(), any(), any(), any(), anyOrNull())
+        assertThat(child2Mode.enteringContainers).contains(newChild)
+        assertThat(child2Mode.changedContainers).contains(child2)
+        verify(child1Mode, never()).containersChanged(
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            anyOrNull()
+        )
     }
 
     @Test
@@ -327,9 +340,43 @@ class HierarchyUpdaterTest : ShellTestCase() {
         updater.notifyModes(Mode.UpdateContext(), snapshot2)
 
         // Verify the container was detached from the associated ancestor mode
-        verify(child2Mode).containersRemoved(any(), any(), any(), any())
+        verify(child2Mode).containersRemoved(any(), any(), any(), any(), anyOrNull())
         assertThat(child2Mode.removedContainers).contains(newChild)
-        verify(child1Mode, never()).containersRemoved(any(), any(), any(), any())
+        verify(child1Mode, never()).containersRemoved(any(), any(), any(), any(), anyOrNull())
+    }
+
+    @Test
+    fun testNotifyMode_onChildReparented() {
+        // Create a new child
+        val newChild =
+            Container(
+                WindowContainerToken.createProxy("new child"),
+                TaskContainerProperties(ActivityManager.RunningTaskInfo().apply {
+                    taskId = 1234
+                })
+            )
+
+        // Add it to the hierarchy under child1 and notify
+        val snapshot1 = HierarchySnapshot(hierarchy.toContainerList())
+        newChild.parent = child1
+        updater.notifyModes(Mode.UpdateContext(), snapshot1)
+
+        reset(child1Mode)
+        reset(child2Mode)
+
+        // Move it the child under child2 and notify
+        val snapshot2 = HierarchySnapshot(hierarchy.toContainerList())
+        newChild.parent = child2
+        updater.notifyModes(Mode.UpdateContext(), snapshot2)
+
+        // Verify the container was detached from the previous mode, and attached to the new mode
+        verify(child2Mode).containersChanged(any(), any(), any(), any(), any(), anyOrNull())
+        assertThat(child2Mode.enteringContainers).contains(newChild)
+        assertThat(child2Mode.changedContainers).contains(child2)
+        assertThat(child2Mode.changedContainers).doesNotContain(newChild)
+        verify(child1Mode).containersRemoved(any(), any(), any(), any(), anyOrNull())
+        assertThat(child1Mode.leavingContainers).contains(newChild)
+        assertThat(child1Mode.removedContainers).isEmpty()
     }
 
     @Test
@@ -364,12 +411,13 @@ class HierarchyUpdaterTest : ShellTestCase() {
         // Notify the transition
         updater.handleTransition(
             mock<IBinder>(),
+            mock<AnimationPlan>(),
             info,
             mock<SurfaceControl.Transaction>(),
         )
 
         // Verify that child2 mode is updated (because ancestor changed)
-        assertThat(mode2.ancestorsChangedContainers).isNotEmpty()
+        assertThat(mode2.globalStateSnapshot).isNotNull()
     }
 
     @Test
@@ -456,13 +504,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
         task.parent = display
 
         // Create a transition with a wallpaper and activity change
-        val displayId = display.displayProps().displayId
-        val wallpaperToken = WindowContainerToken.createProxy("test")
-        val wallpaperChange = TransitionInfo.Change(wallpaperToken, mock<SurfaceControl>()).apply {
-            mode = TRANSIT_OPEN
-            flags = FLAG_IS_WALLPAPER
-            setDisplayId(displayId, displayId)
-        }
         val activityToken = WindowContainerToken.createProxy("test")
         val activityChange = TransitionInfo.Change(activityToken, mock<SurfaceControl>()).apply {
             mode = TRANSIT_OPEN
@@ -474,7 +515,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
             parent = task.token
         }
         val info = TransitionInfo(TRANSIT_OPEN, 0).apply {
-            addChange(wallpaperChange)
             addChange(activityChange)
         }
 
@@ -485,9 +525,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
                 updater.updaterTestHook = null
                 hookCalled = true
                 // Verify transient containers exist
-                val wallpaper = hierarchy.getContainer(wallpaperToken)
-                assertThat(wallpaper).isNotNull()
-                assertThat(wallpaper!!.isWallpaper()).isTrue()
                 val activity = hierarchy.getContainer(activityToken)
                 assertThat(activity).isNotNull()
                 assertThat(activity!!.isActivity()).isTrue()
@@ -505,6 +542,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
         // Notify the transition
         updater.handleTransition(
             mock<IBinder>(),
+            mock<AnimationPlan>(),
             info,
             mock<SurfaceControl.Transaction>(),
         )
@@ -513,7 +551,6 @@ class HierarchyUpdaterTest : ShellTestCase() {
         assertThat(hookCalled).isTrue()
 
         // Verify transient containers are removed
-        assertThat(hierarchy.getContainer(wallpaperToken)).isNull()
         assertThat(hierarchy.getContainer(activityToken)).isNull()
     }
 
@@ -538,6 +575,7 @@ class HierarchyUpdaterTest : ShellTestCase() {
         // Notify the transition
         updater.handleTransition(
             mock<IBinder>(),
+            mock<AnimationPlan>(),
             info,
             mock<SurfaceControl.Transaction>(),
         )
@@ -675,9 +713,9 @@ class HierarchyUpdaterTest : ShellTestCase() {
         expectedContainer: Container,
         expectedChangeFlag: Int,
     ) {
-        assertThat(child1Mode.ancestorsChangedContainers).isNotEmpty()
+        assertThat(child1Mode.globalStateSnapshot).isNotNull()
         assertThat(child1Mode.changedContainers).isEmpty()
-        assertThat(child2Mode.ancestorsChangedContainers).isNotEmpty()
+        assertThat(child2Mode.globalStateSnapshot).isNotNull()
         assertThat(child2Mode.changedContainers).isEmpty()
 
         val expectedContainerChgs = child1Mode.globalStateSnapshot!!.getChanges(expectedContainer)

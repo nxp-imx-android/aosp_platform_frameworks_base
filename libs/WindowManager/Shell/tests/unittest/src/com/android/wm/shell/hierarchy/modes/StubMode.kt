@@ -15,16 +15,11 @@
  */
 package com.android.wm.shell.hierarchy.modes
 
-import android.window.WindowAnimationState
 import android.window.WindowContainerTransaction
 import com.android.wm.shell.hierarchy.containers.Container
 import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
-import com.android.wm.shell.hierarchy.updates.HierarchyChangeFlags
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
-import com.android.wm.shell.transition.DetachResult
-import com.android.wm.shell.transition.ITransitionAnimation
-import com.google.common.truth.Truth.assertThat
-import org.mockito.kotlin.mock
+import com.android.wm.shell.transition.AnimationPlan
 
 /**
  * A test Mode for a container in the ContainerHierarchy.
@@ -32,52 +27,40 @@ import org.mockito.kotlin.mock
 open class StubMode(
     private val name: String=""
 ) : Mode {
-    val addedContainers = mutableListOf<Container>()
+    val enteringContainers = mutableListOf<Container>()
+    val leavingContainers = mutableListOf<Container>()
     val removedContainers = mutableListOf<Container>()
     val changedContainers = mutableListOf<Container>()
-    val ancestorsChangedContainers = mutableListOf<Container>()
     val displayChanges = mutableListOf<DisplayContainerProperties>()
     var globalStateSnapshot: HierarchySnapshot? = null
-
-    // The containers to compare againest those provided in the next prepareForAnimation() call
-    var expectedPrepareForAnimationContainers: List<Container>? = null
-    // If true, will "consume" the next prepareForAnimation() call
-    var consumePrepareForAnimation = false
-    // The containers to compare againest those provided in the next createAnimation() call
-    var expectedCreateAnimationContainers: List<Container>? = null
-    // If true, will "consume" the next createAnimation() call
-    var consumeCreateAnimation = false
 
     override fun getId(): String {
         return "TestMode_$name"
     }
 
-    override fun globalStateChanged(
-        updateContext: Mode.UpdateContext,
-        modeContainer: Container,
-        snapshot: HierarchySnapshot
-    ) {
-        ancestorsChangedContainers.add(modeContainer)
-        globalStateSnapshot = snapshot
-    }
-
     override fun containersChanged(
         updateContext: Mode.UpdateContext,
-        modeContainer: Container,
-        addedContainers: List<Container>,
+        enteringContainers: List<Container>,
         changedContainers: List<Container>,
-        snapshot: HierarchySnapshot
+        globalStateChanged: Boolean,
+        snapshot: HierarchySnapshot,
+        animationPlan: AnimationPlan?
     ) {
-        this.addedContainers.addAll(addedContainers)
+        this.enteringContainers.addAll(enteringContainers)
         this.changedContainers.addAll(changedContainers)
+        if (globalStateChanged) {
+            this.globalStateSnapshot = snapshot
+        }
     }
 
     override fun containersRemoved(
         updateContext: Mode.UpdateContext,
-        modeContainer: Container,
+        leavingContainers: List<Container>,
         removedContainers: List<Container>,
-        snapshot: HierarchySnapshot
+        snapshot: HierarchySnapshot,
+        animationPlan: AnimationPlan?
     ) {
+        this.leavingContainers.addAll(leavingContainers)
         this.removedContainers.addAll(removedContainers)
     }
 
@@ -88,35 +71,5 @@ open class StubMode(
         wct: WindowContainerTransaction
     ) {
         displayChanges.add(newProps)
-    }
-
-    override fun prepareForAnimation(containers: List<Container>): List<DetachResult>? {
-        val expectedContainers = expectedPrepareForAnimationContainers
-        if (expectedContainers != null) {
-            assertThat(expectedContainers.toSet() == containers.toSet()).isTrue()
-        }
-        if (consumePrepareForAnimation) {
-            val results = mutableListOf<DetachResult>()
-            for (container in containers) {
-                results.add(DetachResult(listOf(WindowAnimationState())))
-            }
-            return results
-        }
-        return null
-    }
-
-    override fun createAnimation(
-        animContext: Mode.AnimationContext,
-        containers: List<Container>,
-        snapshot: HierarchySnapshot
-    ): ITransitionAnimation? {
-        val expectedContainers = expectedCreateAnimationContainers
-        if (expectedContainers != null) {
-            assertThat(expectedContainers.toSet() == containers.toSet()).isTrue()
-        }
-        if (consumeCreateAnimation) {
-            return mock<ITransitionAnimation>()
-        }
-        return null
     }
 }
