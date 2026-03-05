@@ -490,6 +490,16 @@ flag {
 }
 
 flag {
+    name: "enable_qs_tile_tooltips"
+    namespace: "systemui"
+    description: "Enables tooltips for QuickSettings tiles"
+    bug: "459961514"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_suggested_device_ui"
     namespace: "systemui"
     description: "Enables the UI for the suggested devices feature."
