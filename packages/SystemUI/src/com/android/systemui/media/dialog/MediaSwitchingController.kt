@@ -386,24 +386,27 @@ constructor(
         }
     }
 
+    private fun getAppName(pm: PackageManager, packageName: String, defaultName: String): String {
+        val applicationInfo =
+            try {
+                pm.getApplicationInfo(packageName, PackageManager.ApplicationInfoFlags.of(0))
+            } catch (_: PackageManager.NameNotFoundException) {
+                null
+            }
+        return if (applicationInfo != null) pm.getApplicationLabel(applicationInfo).toString()
+        else defaultName
+    }
+
     fun getAppSourceName(): String? {
         val packageName = mPackageName
         if (packageName.isNullOrEmpty()) {
             return null
         }
-        val packageManager = mContext.getPackageManager()
-        val applicationInfo =
-            try {
-                packageManager.getApplicationInfo(
-                    packageName,
-                    PackageManager.ApplicationInfoFlags.of(0),
-                )
-            } catch (_: PackageManager.NameNotFoundException) {
-                null
-            }
-        return if (applicationInfo != null)
-            packageManager.getApplicationLabel(applicationInfo) as String
-        else mContext.getString(R.string.media_output_dialog_unknown_launch_app_name)
+        return getAppName(
+            mContext.packageManager,
+            packageName,
+            defaultName = mContext.getString(R.string.media_output_dialog_unknown_launch_app_name),
+        )
     }
 
     fun getAppLaunchIntent(): Intent? {
@@ -448,7 +451,7 @@ constructor(
                 Log.e(
                     TAG,
                     "No activity found to handle intent $this on user " +
-                            mLocalMediaManager.userHandle
+                        mLocalMediaManager.userHandle,
                 )
             }
         }
@@ -711,11 +714,7 @@ constructor(
         }
     }
 
-    /**
-     * Returns an intent to resolve missing permissions if UI should be shown to prompt the user to
-     * resolve permissions, or null if the UI should not be shown.
-     */
-    fun getMissingPermissionsResolveIntent(): Intent? {
+    private fun getMissingPermissionsInfo(): MissingPermissionsInfo? {
         if (!accessLocalNetworkPermissionEnabled()) {
             return null
         }
@@ -723,8 +722,30 @@ constructor(
         if (permissionsInfo == null || permissionsInfo.permissions.isEmpty()) {
             return null
         }
+        return permissionsInfo
+    }
+
+    /**
+     * Returns info on a warning message to resolve missing permissions if UI should be shown to
+     * prompt the user to resolve permissions, or null if the UI should not be shown.
+     */
+    fun getMissingPermissionsWarning(): MissingPermissionsWarning? {
+        val permissionsInfo = getMissingPermissionsInfo() ?: return null
+        val userHandle = mLocalMediaManager.userHandle
+        val pm = mContext.createContextAsUser(userHandle, 0).packageManager
+        val appName =
+            getAppName(
+                pm,
+                permissionsInfo.componentName.packageName,
+                defaultName = permissionsInfo.componentName.packageName,
+            )
+        return MissingPermissionsWarning(appName)
+    }
+
+    private fun getMissingPermissionsResolveIntent(): Intent? {
+        val permissionsInfo = getMissingPermissionsInfo() ?: return null
         return Intent(RouteListingPreference.ACTION_RESOLVE_MISSING_PERMISSIONS).apply {
-            setComponent(permissionsInfo.componentName)
+            component = permissionsInfo.componentName
             putStringArrayListExtra(
                 RouteListingPreference.EXTRA_MISSING_PERMISSIONS,
                 ArrayList<String?>(permissionsInfo.permissions),
