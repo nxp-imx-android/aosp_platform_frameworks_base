@@ -716,17 +716,28 @@ public class StageCoordinatorTests extends ShellTestCase {
         verify(mSyncQueue).queue(wctCaptor.capture());
 
         WindowContainerTransaction capturedWct = wctCaptor.getValue();
-        List<HierarchyOp> disableChildBoundsOps = capturedWct.getHierarchyOps().stream()
-                .filter(op -> op.getType()
-                        == HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN)
-                .toList();
-        assertThat(disableChildBoundsOps).hasSize(2);
-        HierarchyOp op = disableChildBoundsOps.getFirst();
-        assertThat(op.getContainer()).isEqualTo(mMainStage.mRootTaskInfo.token.asBinder());
-        assertThat(op.getDisallowOverrideBoundsForChildren()).isTrue();
-        op = disableChildBoundsOps.get(1);
-        assertThat(op.getContainer()).isEqualTo(mSideStage.mRootTaskInfo.token.asBinder());
-        assertThat(op.getDisallowOverrideBoundsForChildren()).isTrue();
+        if (Flags.idempotentWctResolution()) {
+            assertThat(capturedWct.getChanges()).containsKey(mMainStage.mRootTaskInfo.token
+                    .asBinder());
+            assertThat(capturedWct.getChanges().get(mMainStage.mRootTaskInfo.token.asBinder())
+                    .getDisallowOverrideBoundsForChildren()).isTrue();
+            assertThat(capturedWct.getChanges()).containsKey(mSideStage.mRootTaskInfo.token
+                    .asBinder());
+            assertThat(capturedWct.getChanges().get(mSideStage.mRootTaskInfo.token.asBinder())
+                    .getDisallowOverrideBoundsForChildren()).isTrue();
+        } else {
+            List<HierarchyOp> disableChildBoundsOps = capturedWct.getHierarchyOps().stream()
+                    .filter(op -> op.getType()
+                            == HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_BOUNDS_FOR_CHILDREN)
+                    .toList();
+            assertThat(disableChildBoundsOps).hasSize(2);
+            HierarchyOp op = disableChildBoundsOps.getFirst();
+            assertThat(op.getContainer()).isEqualTo(mMainStage.mRootTaskInfo.token.asBinder());
+            assertThat(op.getDisallowOverrideBoundsForChildren()).isTrue();
+            op = disableChildBoundsOps.get(1);
+            assertThat(op.getContainer()).isEqualTo(mSideStage.mRootTaskInfo.token.asBinder());
+            assertThat(op.getDisallowOverrideBoundsForChildren()).isTrue();
+        }
     }
 
     @Test(expected = IllegalStateException.class)
