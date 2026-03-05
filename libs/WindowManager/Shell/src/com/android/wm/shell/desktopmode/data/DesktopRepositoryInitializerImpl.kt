@@ -21,7 +21,6 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.util.ArrayMap
 import android.view.Display.DEFAULT_DISPLAY
-import android.view.Display.INVALID_DISPLAY
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import com.android.internal.protolog.ProtoLog
@@ -172,9 +171,9 @@ class DesktopRepositoryInitializerImpl(
             logV("desk=%d is going to the default display, skipping", deskId)
             return
         }
-        if (newDisplayId == INVALID_DISPLAY) {
+        if (newDisplayId != DEFAULT_DISPLAY) {
             val result =
-                handleInvalidDisplay(
+                handleNonDefaultDisplay(
                     deskId,
                     uniqueDisplayId,
                     uniqueIdToDisplayIdMap,
@@ -291,28 +290,17 @@ class DesktopRepositoryInitializerImpl(
                 desktopRepositoryState.preservedDisplayByUniqueIdMap[
                         persistentDesktop.uniqueDisplayId]
                     ?.activeDeskId == deskId
-        val shouldActivate = isActiveDesk || wasActiveDesk
-        if (newDisplayId != DEFAULT_DISPLAY && shouldActivate) {
-            // TODO: b/443876652 - Investigate solution for devices that don't
-            //  disable external display on boot.
-            repository.setActiveDesk(newDisplayId, newDeskId)
-        }
         if (preserveDesk) {
             repository.preserveDesk(
                 deskId = newDeskId,
                 uniqueDisplayId = persistentDesktop.uniqueDisplayId,
-                preserveAsActive = shouldActivate,
+                preserveAsActive = isActiveDesk || wasActiveDesk,
             )
         }
         if (transientDesk) {
             // The transient desk is preserved and has served its purpose, it can be removed now.
             repository.removeDesk(newDeskId)
-            deskRootRemovalRequests.add(
-                DesktopRepositoryInitializer.DeskRootHelper.DeskRootRemovalRequest(
-                    newDeskId,
-                    userId,
-                )
-            )
+            deskRootRemovalRequests.add(DeskRootHelper.DeskRootRemovalRequest(newDeskId, userId))
         }
     }
 
@@ -347,16 +335,22 @@ class DesktopRepositoryInitializerImpl(
     }
 
     /**
-     * Handles the case where the initial display ID is invalid. Redirects the desk to
+     * Handles the case where the initial display ID is not the default. Redirects the desk to
      * DEFAULT_DISPLAY, marking it to be preserved and marking as transient if desktops are not
      * supported on the default display or if it was originally a preserved desk.
+     *
+     * This is to work around the fact that some devices disable displays during boot while others
+     * don't. This way, all external displays are treated the same and will go through the same
+     * flow: they will be initialized on default display, they will be preserved, and they will be
+     * marked as transient if appropriate. If the display is present when device boot is complete,
+     * the preserved desks will be restored.
      *
      * @param deskId The ID of the desk being processed.
      * @param currentUniqueDisplayId The current unique display ID.
      * @return A [DisplayRedirectResult] containing the updated display ID, unique display ID, and
      *   whether the display should be preserved or transient.
      */
-    private fun handleInvalidDisplay(
+    private fun handleNonDefaultDisplay(
         deskId: Int,
         currentUniqueDisplayId: String?,
         uniqueIdToDisplayIdMap: Map<String, Int>?,
