@@ -117,6 +117,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeKeyGestureHandler;
 import com.android.wm.shell.desktopmode.DesktopModeLoggerTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopModeMoveToDisplayTransitionHandler;
+import com.android.wm.shell.desktopmode.DesktopModeShellCommandHandler;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
 import com.android.wm.shell.desktopmode.DesktopRemoteListener;
 import com.android.wm.shell.desktopmode.DesktopTaskChangeListener;
@@ -160,7 +161,6 @@ import com.android.wm.shell.desktopmode.education.AppToWebEducationController;
 import com.android.wm.shell.desktopmode.education.AppToWebEducationFilter;
 import com.android.wm.shell.desktopmode.education.data.AppHandleEducationDatastoreRepository;
 import com.android.wm.shell.desktopmode.education.data.AppToWebEducationDatastoreRepository;
-import com.android.wm.shell.desktopmode.homescreenpeeking.DesktopHomeScreenPeekController;
 import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler;
 import com.android.wm.shell.desktopmode.multidesks.DesksController;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
@@ -2292,7 +2292,7 @@ public abstract class WMShellModule {
             BubbleRootTask bubbleRootTask,
             IDesktopModeProvider desktopModeProvider,
             DesktopTasksTransitionHandler desktopTasksTransitionHandler,
-            DesktopHomeScreenPeekController desktopHomeScreenPeekController) {
+            DesktopModeShellCommandHandler desktopModeShellCommandHandler) {
         return new Object();
     }
 

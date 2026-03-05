@@ -291,13 +291,6 @@ class DesktopTasksController(
     UserChangeListener {
 
     private var visualIndicator: DesktopModeVisualIndicator? = null
-    private val desktopModeShellCommandHandler: DesktopModeShellCommandHandler =
-        DesktopModeShellCommandHandler(
-            this,
-            focusTransitionObserver,
-            userRepositories,
-            shellController,
-        )
 
     private val wallpaperTouchReceiver =
         object : BroadcastReceiver() {
@@ -415,7 +408,6 @@ class DesktopTasksController(
             launcherApps.registerCallback(launcherAppsCallback)
         }
         shellCommandHandler.addDumpCallback(this::dump, this)
-        shellCommandHandler.addCommandCallback("desktopmode", desktopModeShellCommandHandler, this)
         shellController.addUserChangeListener(this)
         if (Flags.changeDisplayFocusOnWallpaperTouch()) {
             context.registerReceiver(
@@ -4654,11 +4646,12 @@ class DesktopTasksController(
             }
         }
 
-        val shouldActivateDesk = !isTargetDeskActive
-                // It's possible that we don't need to activate the desk even though it's not
-                // active now, for example, when the task requests repositining within an inactive
-                // desk.
-                && bringTaskToFront
+        val shouldActivateDesk =
+            !isTargetDeskActive
+            // It's possible that we don't need to activate the desk even though it's not
+            // active now, for example, when the task requests repositining within an inactive
+            // desk.
+            && bringTaskToFront
         if (shouldActivateDesk) {
             val runOnTransitStart =
                 addDeskActivationChanges(
