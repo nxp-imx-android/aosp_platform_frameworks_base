@@ -15,6 +15,8 @@
  */
 package com.android.server.audio;
 
+import static android.Manifest.permission.USE_EXACT_ALARM;
+import static android.Manifest.permission.SCHEDULE_EXACT_ALARM;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static com.android.media.audio.Flags.hardeningPartial;
 import static com.android.media.audio.Flags.hardeningPartialVolume;
@@ -22,8 +24,27 @@ import static com.android.media.audio.Flags.hardeningStrict;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_FOCUS;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_RINGER;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_VOLUME;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_ALARM;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ALARM;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ANNOUNCEMENT;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ASSISTANCE_ACCESSIBILITY;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ASSISTANCE_SONIFICATION;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ASSISTANT;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_CALL_ASSISTANT;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_EMERGENCY;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_GAME;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_MEDIA;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_NOTIFICATION;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_NOTIFICATION_EVENT;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_NOTIFICATION_TELEPHONY_RINGTONE;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_SAFETY;
 import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_VEHICLE_STATUS;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_VIRTUAL_SOURCE;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_VOICE_COMMUNICATION;
+import static com.android.media.audio.metrics.AudioAtomsLog.AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -31,7 +52,9 @@ import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.AppOpsManager;
 import android.content.Context;
+import android.content.PermissionChecker;
 import android.content.pm.PackageManager;
+import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.IAudioPolicyService.HardeningOverride;
@@ -135,6 +158,56 @@ public class HardeningEnforcer {
     }
 
     /**
+     * Translates the AudioAttributes usage to the corresponding proto usage enum
+     * @param usage the usage from AudioAttributes
+     * @return the proto usage enum
+     */
+    public static int getUsageForProtoLog(int usage) {
+        return switch (usage) {
+            case AudioAttributes.USAGE_MEDIA -> AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_MEDIA;
+            case AudioAttributes.USAGE_VOICE_COMMUNICATION ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_VOICE_COMMUNICATION;
+            case AudioAttributes.USAGE_VOICE_COMMUNICATION_SIGNALLING ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_VOICE_COMMUNICATION_SIGNALLING;
+            case AudioAttributes.USAGE_ALARM -> AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ALARM;
+            case AudioAttributes.USAGE_NOTIFICATION ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_NOTIFICATION;
+            case AudioAttributes.USAGE_NOTIFICATION_RINGTONE ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_NOTIFICATION_TELEPHONY_RINGTONE;
+            case AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_REQUEST ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN;
+            case AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_INSTANT ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN;
+            case AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_DELAYED ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN;
+            case AudioAttributes.USAGE_NOTIFICATION_EVENT ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_NOTIFICATION_EVENT;
+            case AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ASSISTANCE_ACCESSIBILITY;
+            case AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ASSISTANCE_NAVIGATION_GUIDANCE;
+            case AudioAttributes.USAGE_ASSISTANCE_SONIFICATION ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ASSISTANCE_SONIFICATION;
+            case AudioAttributes.USAGE_GAME -> AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_GAME;
+            case AudioAttributes.USAGE_VIRTUAL_SOURCE ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_VIRTUAL_SOURCE;
+            case AudioAttributes.USAGE_ASSISTANT ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ASSISTANT;
+            case AudioAttributes.USAGE_CALL_ASSISTANT ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_CALL_ASSISTANT;
+            case AudioAttributes.USAGE_EMERGENCY ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_EMERGENCY;
+            case AudioAttributes.USAGE_SAFETY ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_SAFETY;
+            case AudioAttributes.USAGE_VEHICLE_STATUS ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_VEHICLE_STATUS;
+            case AudioAttributes.USAGE_ANNOUNCEMENT ->
+                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_ANNOUNCEMENT;
+            default -> AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN;
+        };
+    }
+
+    /**
      * Checks whether the call in the current thread should be allowed or blocked
      * @param volumeMethod name of the method to check, for logging purposes
      * @return false if the method call is allowed, true if it should be a no-op
@@ -222,11 +295,13 @@ public class HardeningEnforcer {
      * @param focusReqType focus type being requested
      * @param attributionTag attribution of the caller
      * @param targetSdk target SDK of the caller
+     * @param aa attributes of the request
      * @return false if the method call is allowed, true if it should be a no-op
      */
     @SuppressWarnings("AndroidFrameworkCompatChange")
     protected boolean blockFocusMethod(int callingUid, int focusMethod, @NonNull String clientId,
-            int focusReqType, @NonNull String packageName, String attributionTag, int targetSdk) {
+            int focusReqType, @NonNull String packageName, String attributionTag, int targetSdk,
+            @NonNull AudioAttributes aa) {
         if (packageName.isEmpty()) {
             packageName = getPackNameForUid(callingUid);
         }
@@ -251,6 +326,18 @@ public class HardeningEnforcer {
             default -> hardeningStrict();
         };
 
+        int exemption = AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE;
+        if (aa.getUsage() == AudioAttributes.USAGE_ALARM) {
+            if (holdsPermission(USE_EXACT_ALARM)
+                    || PermissionChecker.checkPermissionForPreflight(mContext,
+                            SCHEDULE_EXACT_ALARM, PermissionChecker.PID_UNKNOWN,
+                            callingUid, packageName) == PermissionChecker.PERMISSION_GRANTED) {
+                enforcedFull = false;
+                exemption = AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_ALARM;
+            }
+        }
+
+        int usage = getUsageForProtoLog(aa.getUsage());
         if (blockLevel == DENIED_IF_PARTIAL) {
             String msg = "AudioHardening focus request for req "
                     + focusReqType
@@ -263,8 +350,7 @@ public class HardeningEnforcer {
             AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, callingUid,
                     AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_FOCUS,
                     false /*isStrict*/, enforcedPartial,
-                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN,
-                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE);
+                    usage, exemption);
         } else if (blockLevel == DENIED_IF_FULL) {
             String msg = "AudioHardening focus request for req "
                     + focusReqType
@@ -277,8 +363,7 @@ public class HardeningEnforcer {
             AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, callingUid,
                     AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_FOCUS,
                     true /*isStrict*/, enforcedFull,
-                    AUDIO_HARDENING_REPORTED__USAGE__AUDIO_USAGE_UNKNOWN,
-                    AUDIO_HARDENING_REPORTED__EXEMPTION_REASON__HARDENING_EXEMPTION_NONE);
+                    usage, exemption);
         }
         boolean blocked = (blockLevel == DENIED_IF_PARTIAL) && enforcedPartial ||
                               (blockLevel == DENIED_IF_FULL) && enforcedFull;
