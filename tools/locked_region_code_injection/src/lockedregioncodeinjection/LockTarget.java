@@ -68,6 +68,9 @@ public class LockTarget {
     }
 
     public String getPreOwner() {
+        if (mPre == null) {
+            return null;
+        }
         if (mScoped) {
             return mTargetDesc.substring(1, mTargetDesc.length() - 1);
         } else {
@@ -76,7 +79,7 @@ public class LockTarget {
     }
 
     public String getPreMethod() {
-        return mPre.substring(mPre.lastIndexOf('.') + 1);
+        return mPre == null ? null : mPre.substring(mPre.lastIndexOf('.') + 1);
     }
 
     public String getPost() {
@@ -84,6 +87,9 @@ public class LockTarget {
     }
 
     public String getPostOwner() {
+        if (mPost == null) {
+            return null;
+        }
         if (mScoped) {
             return mTargetDesc.substring(1, mTargetDesc.length() - 1);
         } else {
@@ -92,7 +98,7 @@ public class LockTarget {
     }
 
     public String getPostMethod() {
-        return mPost.substring(mPost.lastIndexOf('.') + 1);
+        return mPost == null ? null : mPost.substring(mPost.lastIndexOf('.') + 1);
     }
 
     public String getTraceBeforeAcquire() {
@@ -100,11 +106,13 @@ public class LockTarget {
     }
 
     public String getTraceBeforeAcquireOwner() {
-        return mTraceBeforeAcquire.substring(0, mTraceBeforeAcquire.lastIndexOf('.'));
+        return mTraceBeforeAcquire == null ? null
+                : mTraceBeforeAcquire.substring(0, mTraceBeforeAcquire.lastIndexOf('.'));
     }
 
     public String getTraceBeforeAcquireMethod() {
-        return mTraceBeforeAcquire.substring(mTraceBeforeAcquire.lastIndexOf('.') + 1);
+        return mTraceBeforeAcquire == null ? null
+                : mTraceBeforeAcquire.substring(mTraceBeforeAcquire.lastIndexOf('.') + 1);
     }
 
     public String getTraceAfterAcquire() {
@@ -112,11 +120,13 @@ public class LockTarget {
     }
 
     public String getTraceAfterAcquireOwner() {
-        return mTraceAfterAcquire.substring(0, mTraceAfterAcquire.lastIndexOf('.'));
+        return mTraceAfterAcquire == null ? null
+                : mTraceAfterAcquire.substring(0, mTraceAfterAcquire.lastIndexOf('.'));
     }
 
     public String getTraceAfterAcquireMethod() {
-        return mTraceAfterAcquire.substring(mTraceAfterAcquire.lastIndexOf('.') + 1);
+        return mTraceAfterAcquire == null ? null
+                : mTraceAfterAcquire.substring(mTraceAfterAcquire.lastIndexOf('.') + 1);
     }
 
     public String getTraceBeforeRelease() {
@@ -124,11 +134,13 @@ public class LockTarget {
     }
 
     public String getTraceBeforeReleaseOwner() {
-        return mTraceBeforeRelease.substring(0, mTraceBeforeRelease.lastIndexOf('.'));
+        return mTraceBeforeRelease == null ? null
+                : mTraceBeforeRelease.substring(0, mTraceBeforeRelease.lastIndexOf('.'));
     }
 
     public String getTraceBeforeReleaseMethod() {
-        return mTraceBeforeRelease.substring(mTraceBeforeRelease.lastIndexOf('.') + 1);
+        return mTraceBeforeRelease == null ? null
+                : mTraceBeforeRelease.substring(mTraceBeforeRelease.lastIndexOf('.') + 1);
     }
 
     public String getTraceAfterRelease() {
@@ -136,11 +148,13 @@ public class LockTarget {
     }
 
     public String getTraceAfterReleaseOwner() {
-        return mTraceAfterRelease.substring(0, mTraceAfterRelease.lastIndexOf('.'));
+        return mTraceAfterRelease == null ? null
+                : mTraceAfterRelease.substring(0, mTraceAfterRelease.lastIndexOf('.'));
     }
 
     public String getTraceAfterReleaseMethod() {
-        return mTraceAfterRelease.substring(mTraceAfterRelease.lastIndexOf('.') + 1);
+        return mTraceAfterRelease == null ? null
+                : mTraceAfterRelease.substring(mTraceAfterRelease.lastIndexOf('.') + 1);
     }
 
     public boolean getScoped() {

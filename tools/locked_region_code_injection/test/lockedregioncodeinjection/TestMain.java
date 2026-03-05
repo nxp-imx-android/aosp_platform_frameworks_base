@@ -432,4 +432,27 @@ public class TestMain {
         // because the exception is re-thrown immediately after the unlock.
         Assert.assertEquals(1, TestTarget.traceAfterReleaseCount);
     }
+
+    @Test
+    public void testOnlyTraceInjection() {
+        TestOnlyTraceTarget.resetCount();
+        TestOnlyTraceTarget t = new TestOnlyTraceTarget();
+
+        Assert.assertEquals(TestOnlyTraceTarget.traceBeforeAcquireCount, 0);
+        Assert.assertEquals(TestOnlyTraceTarget.traceAfterAcquireCount, 0);
+        Assert.assertEquals(TestOnlyTraceTarget.traceBeforeReleaseCount, 0);
+        Assert.assertEquals(TestOnlyTraceTarget.traceAfterReleaseCount, 0);
+
+        synchronized (t) {
+            Assert.assertEquals(TestOnlyTraceTarget.traceBeforeAcquireCount, 1);
+            Assert.assertEquals(TestOnlyTraceTarget.traceAfterAcquireCount, 1);
+            Assert.assertEquals(TestOnlyTraceTarget.traceBeforeReleaseCount, 0);
+            Assert.assertEquals(TestOnlyTraceTarget.traceAfterReleaseCount, 0);
+        }
+
+        Assert.assertEquals(TestOnlyTraceTarget.traceBeforeAcquireCount, 1);
+        Assert.assertEquals(TestOnlyTraceTarget.traceAfterAcquireCount, 1);
+        Assert.assertEquals(TestOnlyTraceTarget.traceBeforeReleaseCount, 1);
+        Assert.assertEquals(TestOnlyTraceTarget.traceAfterReleaseCount, 1);
+    }
 }
