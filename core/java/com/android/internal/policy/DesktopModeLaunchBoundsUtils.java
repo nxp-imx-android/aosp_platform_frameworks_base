@@ -185,6 +185,24 @@ public final class DesktopModeLaunchBoundsUtils {
     }
 
     /**
+     * Checks whether the given bounds are maximized or snapped to the left or right edge of the
+     * frame.
+     *
+     * @param frame the bounds of the display/screen frame
+     * @param bounds the bounds to check
+     * @return {@code true} if the bounds are maximized or snapped, {@code false} otherwise
+     */
+    public static boolean isMaximizedOrSnapped(@NonNull Rect frame, @NonNull Rect bounds) {
+        if (frame.equals(bounds)) {
+            return true;
+        }
+        if (frame.height() == bounds.height() && frame.top == bounds.top) {
+            return frame.left == bounds.left || frame.right == bounds.right;
+        }
+        return false;
+    }
+
+    /**
      * Calculates the stepped cascading bounds for a new window.
      * If the existing windows form a valid cascading sequence, the destination bounds
      * will be offset by one step from the newest window.
@@ -196,6 +214,10 @@ public final class DesktopModeLaunchBoundsUtils {
      */
     public static void cascadeWindowStepped(@NonNull Rect frame, @NonNull Rect dest,
             @NonNull List<Rect> prevBoundsList, @NonNull Resources res) {
+
+        if (isMaximizedOrSnapped(frame, dest)) {
+            return;
+        }
 
         if (prevBoundsList.isEmpty()) {
             return;
