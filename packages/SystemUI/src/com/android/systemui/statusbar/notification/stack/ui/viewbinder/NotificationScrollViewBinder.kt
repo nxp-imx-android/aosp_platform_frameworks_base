@@ -21,7 +21,6 @@ import com.android.app.tracing.coroutines.flow.collectLatestTraced
 import com.android.app.tracing.coroutines.flow.collectTraced
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags
-import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.view.onLayoutChanged
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.AndroidUi
@@ -29,8 +28,6 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.viewModel
-import com.android.systemui.res.R
-import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationScrollViewModel
 import com.android.systemui.util.kotlin.FlowDumperImpl
@@ -39,7 +36,6 @@ import com.android.systemui.util.kotlin.launchAndDispose
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.DisposableHandle
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 
@@ -52,7 +48,6 @@ constructor(
     @AndroidUi private val androidUiDispatcher: CoroutineContext,
     private val view: NotificationScrollView,
     private val viewModelFactory: NotificationScrollViewModel.Factory,
-    @ShadeDisplayAware private val configuration: ConfigurationState,
 ) : FlowDumperImpl(dumpManager) {
 
     private val viewLeftOffset = MutableStateFlow(0).dumpValue("viewLeftOffset")
@@ -83,7 +78,7 @@ constructor(
             launch {
                 viewModel
                     .notificationScrimShape(
-                        cornerRadius = scrimRadius,
+                        cornerRadius = viewModel.scrimClippingRadius,
                         viewLeftOffset = viewLeftOffset,
                     )
                     .collectTraced { view.setClippingShape(it) }
@@ -96,7 +91,7 @@ constructor(
             launch { viewModel.expandFraction.collectTraced { view.setExpandFraction(it) } }
             launch { viewModel.qsExpandFraction.collectTraced { view.setQsExpandFraction(it) } }
             if (Flags.notificationShadeBlur()) {
-                launch { viewModel.blurRadius(maxBlurRadius).collect(view::setBlurRadius) }
+                launch { viewModel.blurRadius.collect(view::setBlurRadius) }
             }
             if (Flags.notificationShadeBlur() || Flags.fixNsslBlockingQs()) {
                 launch { viewModel.interactive.collectTraced(view::setInteractive) }
@@ -188,12 +183,4 @@ constructor(
                 }
             }
         }
-
-    /** blur radius to be applied when the QS panel is fully expanded */
-    private val maxBlurRadius: Flow<Int> =
-        configuration.getDimensionPixelSize(R.dimen.max_shade_content_blur_radius)
-
-    /** flow of the scrim clipping radius */
-    private val scrimRadius: Flow<Int>
-        get() = configuration.getDimensionPixelOffset(R.dimen.notification_scrim_corner_radius)
 }

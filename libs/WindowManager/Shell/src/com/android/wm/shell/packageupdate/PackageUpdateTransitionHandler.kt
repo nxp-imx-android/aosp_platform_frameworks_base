@@ -20,6 +20,7 @@ import android.animation.Animator
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import android.content.Context
+import android.os.Handler
 import android.os.IBinder
 import android.view.Choreographer
 import android.view.SurfaceControl
@@ -27,6 +28,8 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import androidx.core.animation.addListener
+import com.android.internal.jank.Cuj.CUJ_APP_UPDATE
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.suppliers.TransactionSupplier
 import com.android.wm.shell.shared.R
@@ -38,9 +41,11 @@ import com.android.wm.shell.transition.Transitions
 /** [Transitions.TransitionHandler] responsible for animating package update transitions. */
 class PackageUpdateTransitionHandler(
     private val transactionProvider: TransactionSupplier,
-    context: Context,
+    private val context: Context,
     private val animExecutor: ShellExecutor,
     private val mainExecutor: ShellExecutor,
+    private val shellMainHandler: Handler,
+    private val interactionJankMonitor: InteractionJankMonitor,
 ) : Transitions.TransitionHandler {
 
     private val cornerRadius =
@@ -57,6 +62,15 @@ class PackageUpdateTransitionHandler(
     ): Boolean {
         val changes = getUpdateChanges(info)
 
+        // Nothing to animate
+        if(changes.totalTasks == 0) {
+            startTransaction.apply()
+            finishCallback.onTransitionFinished(/* wct */ null)
+            return true
+        }
+
+        startJankInstrumentation(changes)
+
         setUpInitialSurfaces(changes, startTransaction)
 
         val fadeInAnimator = createFadeInAnimator(changes)
@@ -67,7 +81,10 @@ class PackageUpdateTransitionHandler(
                 changes.openingChanges.forEach { c -> setAlpha(c.leash, 1f) }
                 changes.closingChanges.forEach { c -> setAlpha(c.leash, 0f) }
             }
-            mainExecutor.execute { finishCallback.onTransitionFinished(/* wct */ null) }
+            mainExecutor.execute {
+                finishCallback.onTransitionFinished(/* wct */ null)
+                interactionJankMonitor.end(CUJ_APP_UPDATE)
+            }
         }
 
         animExecutor.execute {
@@ -79,6 +96,27 @@ class PackageUpdateTransitionHandler(
                 .start()
         }
         return true
+    }
+
+    private fun startJankInstrumentation(changes: UpdateChanges) {
+        var change = changes.openingChanges[0]
+        var surface = change.leash
+        var tag = "Opening"
+
+        // If the opening activity is not the PackageUpdateActivity then track the closing activity.
+        if (!PackageUpdateActivity.isPackageUpdateActivityComponent(change.activityComponent)) {
+            change = changes.closingChanges[0]
+            surface = change.leash
+            tag = "Closing"
+        }
+
+        interactionJankMonitor.begin(
+            surface,
+            context,
+            shellMainHandler,
+            CUJ_APP_UPDATE,
+            tag
+        )
     }
 
     override fun handleRequest(

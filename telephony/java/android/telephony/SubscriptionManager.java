@@ -3839,6 +3839,7 @@ public class SubscriptionManager {
      * @see android.telephony.TelephonyManager#hasCarrierPrivileges
      */
     public boolean canManageSubscription(SubscriptionInfo info) {
+        if (info == null) return false;
         return canManageSubscription(info, mContext.getPackageName());
     }
 
@@ -3885,27 +3886,40 @@ public class SubscriptionManager {
      */
     public boolean canManageSubscriptionAsUser(@NonNull SubscriptionInfo info,
             @NonNull String packageName, @NonNull UserHandle user) {
-        if (info == null || info.getAccessRules() == null || packageName == null) {
-            return false;
-        }
-        PackageManager pm = mContext.getUser().equals(user)
-                ? mContext.getPackageManager()
-                : mContext.createContextAsUser(user, 0).getPackageManager();
-        PackageInfo packageInfo;
-        try {
-            packageInfo = pm.getPackageInfo(packageName,
-                    PackageManager.GET_SIGNING_CERTIFICATES);
-        } catch (PackageManager.NameNotFoundException e) {
-            logd("Unknown package: " + packageName);
-            return false;
-        }
-        for (UiccAccessRule rule : info.getAccessRules()) {
-            if (rule.getCarrierPrivilegeStatus(packageInfo)
-                    == TelephonyManager.CARRIER_PRIVILEGE_STATUS_HAS_ACCESS) {
-                return true;
+        if (!Flags.downloadableSubscriptionIncludeCarrierIdentifierInternal()) {
+            if (info == null || info.getAccessRules() == null || packageName == null) {
+                return false;
+            }
+            PackageManager pm = getContextAsUser(user).getPackageManager();
+            PackageInfo packageInfo;
+            try {
+                packageInfo = pm.getPackageInfo(packageName,
+                        PackageManager.GET_SIGNING_CERTIFICATES);
+            } catch (PackageManager.NameNotFoundException e) {
+                logd("Unknown package: " + packageName);
+                return false;
+            }
+            for (UiccAccessRule rule : info.getAccessRules()) {
+                if (rule.getCarrierPrivilegeStatus(packageInfo)
+                        == TelephonyManager.CARRIER_PRIVILEGE_STATUS_HAS_ACCESS) {
+                    return true;
+                }
+            }
+        } else {
+            ISub iSub = TelephonyManager.getSubscriptionService();
+            if (iSub == null) return false; // this should possibly throw
+            try {
+                return iSub.canManageSubscriptionAsUser(info, packageName, user);
+            } catch (RemoteException ex) {
+                loge("canManageSubscription RemoteException=" + ex);
+                ex.rethrowFromSystemServer();
             }
         }
         return false;
+    }
+
+    private @NonNull Context getContextAsUser(@NonNull UserHandle user) {
+        return mContext.getUser().equals(user) ? mContext : mContext.createContextAsUser(user, 0);
     }
 
     /**

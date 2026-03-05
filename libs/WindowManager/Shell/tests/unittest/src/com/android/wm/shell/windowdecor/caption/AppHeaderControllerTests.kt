@@ -42,6 +42,8 @@ import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.HandleMenu
+import com.android.wm.shell.windowdecor.LayoutMenu
+import com.android.wm.shell.windowdecor.LayoutMenuFactory
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
 import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestWindowDecorTaskResourceLoader
@@ -61,6 +63,8 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -88,6 +92,7 @@ class AppHeaderControllerTests : ShellTestCase() {
     private val mockWindowManagerWrapper = mock<WindowManagerWrapper>()
     private val mockMultiInstanceHelper = mock<MultiInstanceHelper>()
     private val mockHandleMenuFactory = spy(HandleMenu.HandleMenuFactory)
+    private val mockLayoutMenuFactory = mock<LayoutMenuFactory>()
     private val mockDisplay = mock<Display>()
     private val mockViewHost = mock<WindowDecorViewHost>()
     private val mockViewHostSupplier = mock<WindowDecorViewHostSupplier<WindowDecorViewHost>>()
@@ -108,6 +113,7 @@ class AppHeaderControllerTests : ShellTestCase() {
     private lateinit var userRepositories: DesktopUserRepositories
     private lateinit var appToWebRepository: AppToWebRepositoryImpl
     private lateinit var appHeaderController: AppHeaderController
+    private lateinit var taskInfo: RunningTaskInfo
 
     @Before
     fun setup() {
@@ -147,7 +153,7 @@ class AppHeaderControllerTests : ShellTestCase() {
         whenever(mockViewHostSupplier.acquire(any(), any())).thenReturn(mockViewHost)
         shellInit.init()
 
-        val taskInfo = createOpaqueAppHeaderTask()
+        taskInfo = createOpaqueAppHeaderTask()
         appHeaderController = createAppHeaderController(taskInfo).apply { relayout(taskInfo) }
     }
 
@@ -167,6 +173,67 @@ class AppHeaderControllerTests : ShellTestCase() {
 
         // Verify menu was only created once
         mockHandleMenuFactory.verifyHandleMenuCreated()
+    }
+
+    @Test
+    fun relayout_taskLosesFocus_closesMenus() = runTest {
+        // Start focused
+        val paramsFocused =
+            RelayoutParams(
+                runningTaskInfo = taskInfo,
+                captionType = CaptionType.APP_HEADER,
+                hasGlobalFocus = true,
+                isCaptionVisible = true,
+            )
+        appHeaderController.relayout(
+            paramsFocused,
+            decorationSurface,
+            mockDisplay,
+            context,
+            StubTransaction(),
+            StubTransaction(),
+            WindowContainerTransaction(),
+        )
+
+        // Open layout menu
+        val mockLayoutMenu = mock<LayoutMenu>()
+        whenever(
+                mockLayoutMenuFactory.create(
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                    any(),
+                )
+            )
+            .thenReturn(mockLayoutMenu)
+        appHeaderController.createLayoutMenu()
+        assertTrue(appHeaderController.isLayoutMenuActive)
+
+        // Lose focus
+        val paramsUnfocused =
+            RelayoutParams(
+                runningTaskInfo = taskInfo,
+                captionType = CaptionType.APP_HEADER,
+                hasGlobalFocus = false,
+                isCaptionVisible = true,
+            )
+        appHeaderController.relayout(
+            paramsUnfocused,
+            decorationSurface,
+            mockDisplay,
+            context,
+            StubTransaction(),
+            StubTransaction(),
+            WindowContainerTransaction(),
+        )
+
+        // Verify menu is closed
+        assertFalse(appHeaderController.isLayoutMenuActive)
     }
 
     private fun createAppHeaderController(taskInfo: RunningTaskInfo) =
@@ -195,6 +262,7 @@ class AppHeaderControllerTests : ShellTestCase() {
             gestureInterceptor = mock(),
             appToWebRepository = appToWebRepository,
             handleMenuFactory = mockHandleMenuFactory,
+            layoutMenuFactory = mockLayoutMenuFactory,
             rootTaskDisplayAreaOrganizer = mock(),
             windowDecorCaptionRepository = mock(),
             onLongClickListener = mock(),

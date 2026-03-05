@@ -102,12 +102,14 @@ public final class ThemeEnvironment {
 
     /**
      * Returns true if the user is a valid target for theme updates based on system policy.
-     * <p>
-     * Returns false for the system user in HSUM, or for profiles (which are handled via their
-     * parents).
+     *
+     * <p>Returns false for the system user in HSUM (except iHSUM), or for profiles (which are
+     * handled via their parents).
      */
     boolean isManagedUser(int userId) {
-        if (mUserManager.isHeadlessSystemUserMode() && userId == UserHandle.USER_SYSTEM) {
+        if (mUserManager.isHeadlessSystemUserMode()
+                && userId == UserHandle.USER_SYSTEM
+                && !mConfig.canSwitchToHeadlessSystemUser()) {
             return false;
         }
 

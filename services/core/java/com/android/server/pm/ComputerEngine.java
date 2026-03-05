@@ -87,6 +87,7 @@ import android.content.pm.InstantAppResolveInfo;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.KeySet;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageInfoList;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ParceledListSlice;
@@ -1698,12 +1699,12 @@ public class ComputerEngine implements Computer {
         }
     }
 
-    public final ParceledListSlice<PackageInfo> getInstalledPackages(long flags, int userId) {
+    public final PackageInfoList getInstalledPackages(long flags, int userId) {
         final int callingUid = Binder.getCallingUid();
         if (getInstantAppPackageName(callingUid) != null) {
-            return ParceledListSlice.emptyList();
+            return PackageInfoList.emptyList();
         }
-        if (!mUserManager.exists(userId)) return ParceledListSlice.emptyList();
+        if (!mUserManager.exists(userId)) return PackageInfoList.emptyList();
         flags = updateFlagsForPackage(flags, userId);
 
         enforceCrossUserPermission(callingUid, userId, false /* requireFullPermission */,
@@ -1712,8 +1713,7 @@ public class ComputerEngine implements Computer {
         return getInstalledPackagesBody(flags, userId, callingUid);
     }
 
-    protected ParceledListSlice<PackageInfo> getInstalledPackagesBody(long flags, int userId,
-            int callingUid) {
+    protected PackageInfoList getInstalledPackagesBody(long flags, int userId, int callingUid) {
         // writer
         final boolean listUninstalled = (flags & MATCH_KNOWN_PACKAGES) != 0;
         final boolean listApex = (flags & MATCH_APEX) != 0;
@@ -1783,7 +1783,7 @@ public class ComputerEngine implements Computer {
                 }
             }
         }
-        return new ParceledListSlice<>(list);
+        return new PackageInfoList(list);
     }
 
     public final ResolveInfo createForwardingResolveInfoUnchecked(WatchedIntentFilter filter,

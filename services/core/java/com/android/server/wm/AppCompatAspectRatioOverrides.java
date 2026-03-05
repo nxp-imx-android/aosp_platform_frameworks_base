@@ -182,16 +182,12 @@ class AppCompatAspectRatioOverrides {
             return mIsSystemFullscreenOverrideEnabled;
         }
         final boolean baseOverride = isSystemFullscreenOverrideEnabled();
-        if (dc != null) {
-            // If attached to display, cache full-screen override to maintain consistent
-            // override behaviour when activity is moved between displays.
-            // Only apply full-screen override if activity was started in default display.
-            mIsSystemFullscreenOverrideEnabled = baseOverride
-                    && dc.getDisplayId() == DEFAULT_DISPLAY;
-            return mIsSystemFullscreenOverrideEnabled;
-        }
+        // If attached to display, cache full-screen override to maintain consistent
+        // override behaviour when activity is moved between displays.
+        // Only apply full-screen override if activity was started in default display.
+        mIsSystemFullscreenOverrideEnabled = baseOverride && dc.getDisplayId() == DEFAULT_DISPLAY;
+        return mIsSystemFullscreenOverrideEnabled;
 
-        return baseOverride;
     }
 
     private boolean isSystemFullscreenOverrideEnabled() {

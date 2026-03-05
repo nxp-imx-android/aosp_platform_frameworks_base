@@ -58,7 +58,7 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 
-import com.android.server.am.psc.TestGraphElements.TestNode;
+import com.android.server.am.psc.TestGraphElements.TestProcessNode;
 import com.android.server.am.psc.TestGraphElements.TestProviderBindingEdge;
 import com.android.server.am.psc.TestGraphElements.TestServiceBindingEdge;
 import com.android.server.am.psc.TestGraphElements.TestServiceRecord;
@@ -80,7 +80,7 @@ public class CapabilityControllerTest {
 
     @Test
     public void testDefaultNode_GrantsNoCapabilities() {
-        TestNode node = new TestNode.Builder().build();
+        TestProcessNode node = new TestProcessNode.Builder().build();
         ProcessEdge edge = new ProcessEdge(node);
 
         assertEquals(PROCESS_CAPABILITY_NONE, edge.evaluateCapabilityFilter());
@@ -91,7 +91,7 @@ public class CapabilityControllerTest {
     public void testEvaluateProcessEdgeFilter_NonRunningProcess_GrantsNoCapabilities() {
         // A non-running process should never have any capabilities, even if other conditions for
         // granting capabilities are met.
-        TestNode node = new TestNode.Builder()
+        TestProcessNode node = new TestProcessNode.Builder()
                 .withProcessRunning(false)
                 .withMaxAdj(FOREGROUND_APP_ADJ) // This would normally grant all capabilities.
                 .withHasActiveInstrumentation(true) // This would normally grant BFSL.
@@ -103,7 +103,7 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateMaxAdjPolicy_MaxAdjForeground_GrantsAllCapabilities() {
-        TestNode node = new TestNode.Builder().withMaxAdj(FOREGROUND_APP_ADJ).build();
+        TestProcessNode node = new TestProcessNode.Builder().withMaxAdj(FOREGROUND_APP_ADJ).build();
         ProcessEdge edge = new ProcessEdge(node);
 
         assertEquals(PROCESS_CAPABILITY_ALL, edge.evaluateCapabilityFilter());
@@ -112,7 +112,7 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateForegroundServicePolicy_RegularFgs_GrantsBfsl() {
-        final TestNode node = new TestNode.Builder()
+        final TestProcessNode node = new TestProcessNode.Builder()
                 .withHasForegroundServices(true)
                 .withHasNonShortForegroundServices(true)
                 .build();
@@ -123,7 +123,7 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateForegroundServicePolicy_ShortFgs_DoesNotGrantBfsl() {
-        final TestNode node = new TestNode.Builder()
+        final TestProcessNode node = new TestProcessNode.Builder()
                 .withHasForegroundServices(true)
                 .withHasNonShortForegroundServices(false)
                 .build();
@@ -136,7 +136,7 @@ public class CapabilityControllerTest {
     @RequiresFlagsEnabled(android.media.audio.Flags.FLAG_RO_FOREGROUND_AUDIO_CONTROL)
     public void testEvaluateForegroundServicePolicy_Fgs_GrantsAudioControl() {
         final TestServiceRecord service = new TestServiceRecord.Builder().build();
-        final TestNode node = new TestNode.Builder()
+        final TestProcessNode node = new TestProcessNode.Builder()
                 .withHasForegroundServices(true)
                 .addService(service)
                 .build();
@@ -151,7 +151,7 @@ public class CapabilityControllerTest {
         final TestServiceRecord service = new TestServiceRecord.Builder()
                 .withForegroundServiceType(FOREGROUND_SERVICE_TYPE_LOCATION)
                 .build();
-        final TestNode node = new TestNode.Builder()
+        final TestProcessNode node = new TestProcessNode.Builder()
                 .withHasForegroundServices(true)
                 .addService(service)
                 .build();
@@ -167,7 +167,7 @@ public class CapabilityControllerTest {
                 .withForegroundServiceType(
                         FOREGROUND_SERVICE_TYPE_CAMERA | FOREGROUND_SERVICE_TYPE_MICROPHONE)
                 .build();
-        final TestNode node = new TestNode.Builder()
+        final TestProcessNode node = new TestProcessNode.Builder()
                 .withHasForegroundServices(true)
                 .addService(service)
                 .withCachedCompatChangeCameraMicrophoneCapability(true)
@@ -182,7 +182,7 @@ public class CapabilityControllerTest {
     public void testEvaluateForegroundServicePolicy_FgsWithCompatDisabled_GrantsCameraMic() {
         // No specific FGS type, but compat change is off.
         final TestServiceRecord service = new TestServiceRecord.Builder().build();
-        final TestNode node = new TestNode.Builder()
+        final TestProcessNode node = new TestProcessNode.Builder()
                 .withHasForegroundServices(true)
                 .addService(service)
                 .withCachedCompatChangeCameraMicrophoneCapability(false)
@@ -211,7 +211,7 @@ public class CapabilityControllerTest {
                 .withForegroundServiceType(FOREGROUND_SERVICE_TYPE_MICROPHONE)
                 .build();
 
-        final TestNode node = new TestNode.Builder()
+        final TestProcessNode node = new TestProcessNode.Builder()
                 .withHasForegroundServices(true)
                 .addService(service1)
                 .addService(service2)
@@ -229,7 +229,9 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateProcStatePolicy_HasActiveInstrumentation_GrantsBfSl() {
-        final TestNode node = new TestNode.Builder().withHasActiveInstrumentation(true).build();
+        final TestProcessNode node = new TestProcessNode.Builder()
+                .withHasActiveInstrumentation(true)
+                .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_BFSL);
@@ -244,7 +246,7 @@ public class CapabilityControllerTest {
                 PROCESS_STATE_TOP,
         };
         for (final @ProcessState int state : states) {
-            final TestNode node = new TestNode.Builder().withProcState(state).build();
+            final TestProcessNode node = new TestProcessNode.Builder().withProcState(state).build();
             final ProcessEdge edge = new ProcessEdge(node);
 
             assertEquals(PROCESS_CAPABILITY_ALL, edge.evaluateCapabilityFilter());
@@ -255,7 +257,9 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateProcStatePolicy_BtopNoInstrumentation_GrantsBfsl() {
-        final TestNode node = new TestNode.Builder().withProcState(PROCESS_STATE_BOUND_TOP).build();
+        final TestProcessNode node = new TestProcessNode.Builder()
+                .withProcState(PROCESS_STATE_BOUND_TOP)
+                .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_BFSL);
@@ -263,7 +267,7 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateProcStatePolicy_BtopWithInstrumentation_GrantsInstrDefaults() {
-        final TestNode node = new TestNode.Builder()
+        final TestProcessNode node = new TestProcessNode.Builder()
                 .withProcState(PROCESS_STATE_BOUND_TOP)
                 .withHasActiveInstrumentation(true)
                 .build();
@@ -275,7 +279,7 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateProcStatePolicy_FgsWithInstrumentation_GrantsInstrDefaults() {
-        final TestNode node = new TestNode.Builder()
+        final TestProcessNode node = new TestProcessNode.Builder()
                 .withProcState(PROCESS_STATE_FOREGROUND_SERVICE)
                 .withHasActiveInstrumentation(true)
                 .build();
@@ -300,14 +304,14 @@ public class CapabilityControllerTest {
                 PROCESS_STATE_BOUND_FOREGROUND_SERVICE,
         };
         for (final @ProcessState int state : states) {
-            final TestNode node = new TestNode.Builder().withProcState(state).build();
+            final TestProcessNode node = new TestProcessNode.Builder().withProcState(state).build();
             final ProcessEdge edge = new ProcessEdge(node);
 
             FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(networkCapabilities);
         }
 
         // Network capabilities should not be granted for other states.
-        final TestNode node = new TestNode.Builder()
+        final TestProcessNode node = new TestProcessNode.Builder()
                 .withProcState(PROCESS_STATE_IMPORTANT_FOREGROUND)
                 .build();
         final ProcessEdge edge = new ProcessEdge(node);
@@ -317,7 +321,7 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateCpuTimePolicy_AllowListed_GrantsCpuTime() {
-        final TestNode node = new TestNode.Builder().withCurAllowListed(true).build();
+        final TestProcessNode node = new TestProcessNode.Builder().withCurAllowListed(true).build();
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
@@ -326,7 +330,9 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateCpuTimePolicy_HasForegroundActivities_GrantsCpuTime() {
-        final TestNode node = new TestNode.Builder().withHasForegroundActivities(true).build();
+        final TestProcessNode node = new TestProcessNode.Builder()
+                .withHasForegroundActivities(true)
+                .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
@@ -335,7 +341,9 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateCpuTimePolicy_HasExecutingServices_GrantsCpuTime() {
-        final TestNode node = new TestNode.Builder().withHasExecutingServices(true).build();
+        final TestProcessNode node = new TestProcessNode.Builder()
+                .withHasExecutingServices(true)
+                .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
@@ -344,7 +352,9 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateCpuTimePolicy_HasForegroundServices_GrantsCpuTime() {
-        final TestNode node = new TestNode.Builder().withHasForegroundServices(true).build();
+        final TestProcessNode node = new TestProcessNode.Builder()
+                .withHasForegroundServices(true)
+                .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
@@ -353,7 +363,9 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateCpuTimePolicy_IsReceivingBroadcast_GrantsCpuTime() {
-        final TestNode node = new TestNode.Builder().withReceivingBroadcast(true).build();
+        final TestProcessNode node = new TestProcessNode.Builder()
+                .withReceivingBroadcast(true)
+                .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
@@ -362,7 +374,9 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateCpuTimePolicy_HasActiveInstrumentation_GrantsCpuTime() {
-        final TestNode node = new TestNode.Builder().withHasActiveInstrumentation(true).build();
+        final TestProcessNode node = new TestProcessNode.Builder()
+                .withHasActiveInstrumentation(true)
+                .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(PROCESS_CAPABILITY_CPU_TIME);
@@ -374,7 +388,7 @@ public class CapabilityControllerTest {
         final TestServiceRecord service = new TestServiceRecord.Builder()
                 .withForegroundService(false)
                 .build();
-        final TestNode node = new TestNode.Builder()
+        final TestProcessNode node = new TestProcessNode.Builder()
                 .addService(service)
                 .withHasForegroundServices(false)
                 .withProcState(PROCESS_STATE_SERVICE)
@@ -388,7 +402,9 @@ public class CapabilityControllerTest {
 
     @Test
     public void testEvaluateImplicitCpuTimePolicy_IntrinsicImplicitCpuTime_GrantsImplicitCpuTime() {
-        final TestNode node = new TestNode.Builder().withHasIntrinsicImplicitCpuTime(true).build();
+        final TestProcessNode node = new TestProcessNode.Builder()
+                .withHasIntrinsicImplicitCpuTime(true)
+                .build();
         final ProcessEdge edge = new ProcessEdge(node);
 
         FlagAssert.assertThat(edge.evaluateCapabilityFilter()).hasSet(

@@ -554,6 +554,10 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"See rakendus saab kaameraga pildistada ja videoid salvestada mis tahes ajal."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Rakendusel või teenusel lubatakse süsteemi kaameratele juurde pääseda, et pilte ja videoid jäädvustada"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"See privileegidega või süsteemirakendus saab süsteemi kaameraga alati pilte ja videoid jäädvustada. Rakendusel peab olema ka luba android.permission.CAMERA"</string>
+    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
+    <skip />
+    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
+    <skip />
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Lubab rakendusel või teenusel kaameraseadmete avamise või sulgemise kohta tagasikutseid vastu võtta."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"See rakendus saab mis tahes kaameraseadme avamisel (vastava rakendusega) või sulgemisel tagasikutseid vastu võtta."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Lubage rakendusel või teenusel pääseda kaamerale juurde päiseta süsteemikasutajana."</string>
@@ -715,11 +719,11 @@
     <string name="biometric_error_generic" msgid="6784371929985434439">"Viga autentimisel"</string>
     <string name="screen_lock_app_setting_name" msgid="6054944352976789228">"Ekraaniluku kasutamine"</string>
     <string name="screen_lock_dialog_default_subtitle" msgid="120359538048533695">"Jätkamiseks sisestage oma ekraanilukk"</string>
-    <string name="fingerprint_acquired_partial" msgid="4323789264604479684">"Vajutage kindlalt andurile"</string>
+    <string name="fingerprint_acquired_partial" msgid="4323789264604479684">"Vajutage kindlalt andurile."</string>
     <string name="fingerprint_acquired_insufficient" msgid="2410176550915730974">"Sõrmejälge ei tuvastatud. Proovige uuesti."</string>
     <string name="fingerprint_acquired_imager_dirty" msgid="1770676120848224250">"Puhastage sõrmejäljeandur ja proovige uuesti"</string>
     <string name="fingerprint_acquired_imager_dirty_alt" msgid="9169582140486372897">"Puhastage andur ja proovige uuesti"</string>
-    <string name="fingerprint_acquired_too_fast" msgid="1628459767349116104">"Vajutage kindlalt andurile"</string>
+    <string name="fingerprint_acquired_too_fast" msgid="1628459767349116104">"Vajutage kindlalt andurile."</string>
     <string name="fingerprint_acquired_too_slow" msgid="6683510291554497580">"Sõrm liikus liiga aeglaselt. Proovige uuesti."</string>
     <string name="fingerprint_acquired_already_enrolled" msgid="2285166003936206785">"Proovige teist sõrmejälge"</string>
     <string name="fingerprint_acquired_too_bright" msgid="3863560181670915607">"Liiga ere"</string>
@@ -2152,21 +2156,21 @@
     <string name="disable_app_lock_success_toast_message" msgid="360172251656799346">"Rakenduselukk on eemaldatud."</string>
     <string name="enable_app_lock_biometric_prompt_subtitle" msgid="8215241065630017088">"Rakenduselukk lisatakse rakendusele <xliff:g id="APP_NAME">%1$s</xliff:g>."</string>
     <string name="disable_app_lock_biometric_prompt_subtitle" msgid="3963064765974508170">"Rakenduselukk eemaldatakse rakenduselt <xliff:g id="APP_NAME">%1$s</xliff:g>."</string>
-    <string name="locked_app_biometric_prompt_description" msgid="5892653396104581919">"See rakendus on kaitstud rakenduselukuga"</string>
+    <string name="locked_app_biometric_prompt_description" msgid="5892653396104581919">"See rakendus on kaitstud rakenduselukuga."</string>
     <string name="locked_app_external_display_message" msgid="5483884799685545338">"Kui soovite sellele rakendusele juurde pääseda sellel ekraanil, kinnitage esmalt teises seadmes oma isik."</string>
-    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Kas lisada rakendusele <xliff:g id="APP_NAME">%1$s</xliff:g> rakenduse lukk?"</string>
+    <string name="app_lock_edu_dialog_enable_app_lock_title" msgid="283314042336592322">"Kas lisada rakendusele <xliff:g id="APP_NAME">%1$s</xliff:g> rakenduselukk?"</string>
     <string name="app_lock_edu_dialog_description_template" msgid="8563718120753342530">"Teie turvalisuse huvides pääsete ainult teie sellele rakendusele juurde järgmiste avamisviiside abil: %1$s või %2$s."</string>
     <string name="app_lock_edu_dialog_description_template_no_biometrics" msgid="7122017109150633691">"Teie turvalisuse huvides pääsete ainult teie sellele rakendusele juurde järgmise avamisviisi abil: %1$s."</string>
-    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Rakenduse lukuga"</string>
+    <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"Rakenduselukuga"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Märguande sisu peidetakse."</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Vidinad ja otseteed eemaldatakse."</string>
-    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"AI-agentidel ja -teenustel, millele olete lubanud juurdepääsu kontole %1$s, on endiselt juurdepääs selle andmetele"</string>
-    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Lisa rakenduse lukk"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Näoga avamine"</string>
+    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"AI-agentidel ja -teenustel, millele olete lubanud juurdepääsu teenusele %1$s, on endiselt juurdepääs selle andmetele."</string>
+    <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Lisa rakenduselukk"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"näoga avamine"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"Näoga avamine"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"Sõrmejäljega avamine"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"Sõrmejäljega avamine, näoga avamine"</string>
-    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"Sõrmejäljega avamine, näoga avamine"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint" msgid="5206107469561561455">"sõrmejäljega avamine"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="default" msgid="6551410616110497401">"sõrmejäljega avamine, näoga avamine"</string>
+    <string name="app_lock_edu_dialog_biometric_description_has_fingerprint_and_face" product="desktop" msgid="4797005135507921547">"sõrmejäljega avamine, näoga avamine"</string>
     <string name="app_lock_edu_dialog_lockscreen_password_name" msgid="6019284267033007445">"parool"</string>
     <string name="app_lock_edu_dialog_lockscreen_pattern_name" msgid="2370939002644936965">"muster"</string>
     <string name="app_lock_edu_dialog_lockscreen_pin_name" msgid="6458607126966304795">"PIN-kood"</string>

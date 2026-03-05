@@ -37,6 +37,7 @@ import com.android.settingslib.graph.proto.PreferenceValueDescriptorProto
 import com.android.settingslib.graph.proto.PreferenceValueProto
 import com.android.settingslib.graph.proto.PossibleValueProto
 import com.android.settingslib.graph.proto.RangeValueProto
+import com.android.settingslib.graph.proto.SetWarningProto
 import com.android.settingslib.graph.proto.TextProto
 import com.android.settingslib.metadata.KeyParameters
 
@@ -220,3 +221,8 @@ fun PreferenceGraphProto.Builder.mergeForLazyMode(
 @JvmSynthetic
 inline fun keyParametersProto(init: KeyParametersProto.Builder.() -> Unit): KeyParametersProto =
     KeyParametersProto.newBuilder().also(init).build()
+
+/** Kotlin DSL-style builder for [com.android.settingslib.graph.proto.SetWarningProto]. */
+@JvmSynthetic
+inline fun setWarningProto(init: SetWarningProto.Builder.() -> Unit): SetWarningProto =
+    SetWarningProto.newBuilder().also(init).build()

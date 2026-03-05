@@ -91,7 +91,7 @@
     <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"Već ste isprobali tu zaporku. Pokušajte s drugom."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Previše pokušaja s netočnim uzorkom"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Previše pokušaja s netočnom zaporkom"</string>
-    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Previše pokušaja s netočnim PIN-om\nSaznajte više na web-lokaciji <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Previše pokušaja s netočnim PIN-om\nSaznajte više na stranici <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"Previše pokušaja s netočnim uzorkom\nSaznajte više na stranici <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"Previše pokušaja s netočnom zaporkom\nSaznajte više na web-lokaciji <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{Pokušajte ponovo za # s.}one{Pokušajte ponovo za # s.}few{Pokušajte ponovo za # s.}other{Pokušajte ponovo za # s.}}"</string>

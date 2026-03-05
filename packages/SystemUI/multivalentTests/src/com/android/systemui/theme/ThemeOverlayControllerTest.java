@@ -1034,7 +1034,7 @@ public class ThemeOverlayControllerTest extends SysuiTestCase {
         // All custom dynamic tokens added twice
         verify(dynamic, times(
                 DynamicColors.getAllDynamicColorsMapped().size() * 2
-                        + DynamicColors.getFixedColorsMapped().size()
+                        + DynamicColors.getFixedColorsMapped().size() * 2
                         + DynamicColors.getCustomColorsMapped().size() * 2)
         ).setResourceValue(any(String.class), eq(TYPE_INT_COLOR_ARGB8), anyInt(), eq(null));
     }

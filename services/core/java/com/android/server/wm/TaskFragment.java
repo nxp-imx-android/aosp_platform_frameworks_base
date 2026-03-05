@@ -2270,6 +2270,33 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 rootActivity != null ? rootActivity.info : null);
     }
 
+    /**
+     * @return whether this task supports multi-window in the given {@link TaskDisplayArea}
+     *         based on its resize mode, ignoring appCompat overrides and minimum size constraints.
+     *
+     * This is a more permissive version of {@link #supportsMultiWindowInDisplayArea} that
+     * only validates if the task's {@code mResizeMode} is compatible with the display
+     * area's policy on non-resizable apps.
+     */
+    boolean supportsMultiWindowWithoutConstraintsInDisplayArea(@Nullable TaskDisplayArea tda) {
+        if (!mAtmService.mSupportsMultiWindow) {
+            return false;
+        }
+        if (tda == null) {
+            return false;
+        }
+        final Task task = getTask();
+        if (task == null) {
+            return false;
+        }
+        if (!ActivityInfo.isResizeableMode(task.mResizeMode)
+                && !tda.supportsNonResizableMultiWindow()) {
+            return false;
+        }
+
+        return true;
+    }
+
     private int getTaskId() {
         return getTask() != null ? getTask().mTaskId : INVALID_TASK_ID;
     }

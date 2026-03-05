@@ -623,6 +623,74 @@ class MediaRepositoryTest : SysuiTestCase() {
         }
     }
 
+    @Test
+    fun pausedAndResumeOff_active_orderingAllowed_noImmediateRemoval() {
+        testScope.runTest {
+            whenever(kosmos.visualStabilityProvider.isReorderingAllowed).thenReturn(false)
+            val instanceId = InstanceId.fakeInstanceId(123)
+            val mediaData = createMediaData("app1", false, LOCAL, false, instanceId)
+            Settings.Secure.putInt(
+                context.contentResolver,
+                Settings.Secure.MEDIA_CONTROLS_RESUME,
+                0,
+            )
+
+            addCurrentUserMediaEntry(mediaData)
+
+            assertThat(
+                    underTest.currentMedia
+                        .find { it.instanceId == instanceId }
+                        ?.needsImmediateRemoval
+                )
+                .isFalse()
+
+            whenever(kosmos.visualStabilityProvider.isReorderingAllowed).thenReturn(true)
+
+            addCurrentUserMediaEntry(mediaData)
+
+            assertThat(
+                    underTest.currentMedia
+                        .find { it.instanceId == instanceId }
+                        ?.needsImmediateRemoval
+                )
+                .isFalse()
+        }
+    }
+
+    @Test
+    fun isPlayingNullAndResumeOff_active_orderingAllowed_noImmediateRemoval() {
+        testScope.runTest {
+            whenever(kosmos.visualStabilityProvider.isReorderingAllowed).thenReturn(false)
+            val instanceId = InstanceId.fakeInstanceId(123)
+            val mediaData = createMediaData("app1", null, LOCAL, false, instanceId)
+            Settings.Secure.putInt(
+                context.contentResolver,
+                Settings.Secure.MEDIA_CONTROLS_RESUME,
+                0,
+            )
+
+            addCurrentUserMediaEntry(mediaData)
+
+            assertThat(
+                    underTest.currentMedia
+                        .find { it.instanceId == instanceId }
+                        ?.needsImmediateRemoval
+                )
+                .isFalse()
+
+            whenever(kosmos.visualStabilityProvider.isReorderingAllowed).thenReturn(true)
+
+            addCurrentUserMediaEntry(mediaData)
+
+            assertThat(
+                    underTest.currentMedia
+                        .find { it.instanceId == instanceId }
+                        ?.needsImmediateRemoval
+                )
+                .isFalse()
+        }
+    }
+
     private fun TestScope.addCurrentUserMediaEntry(data: MediaData) {
         underTest.addCurrentUserMediaEntry(data)
         runCurrent()
@@ -630,7 +698,7 @@ class MediaRepositoryTest : SysuiTestCase() {
 
     private fun createMediaData(
         app: String,
-        playing: Boolean,
+        playing: Boolean?,
         playbackLocation: Int,
         isResume: Boolean,
         instanceId: InstanceId,

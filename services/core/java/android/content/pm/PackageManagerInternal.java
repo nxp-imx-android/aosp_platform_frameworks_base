@@ -1522,10 +1522,11 @@ public abstract class PackageManagerInternal {
      * @param packageName The package for which to modify the setting.
      * @param userId The user ID for which to write the package setting.
      * @param mode The new setting value.
+     * @return true if the value was changed, else false.
      * @throws PackageManager.NameNotFoundException if the package is not found
      * @see PersonalContextManager#setPersonalContextModeEnabled(String, boolean)
      */
-    public abstract void setPersonalContextMode(
+    public abstract boolean setPersonalContextMode(
             String packageName,
             int callingUid,
             int userId,

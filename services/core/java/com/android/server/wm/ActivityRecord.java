@@ -3174,7 +3174,7 @@ final class ActivityRecord extends WindowToken {
         if (appInfo.category == ApplicationInfo.CATEGORY_GAME) {
             return false;
         }
-        final boolean compatEnabled = isLargeScreen && Flags.universalResizableByDefault()
+        final boolean compatEnabled = isLargeScreen
                 && appInfo.isChangeEnabled(ActivityInfo.UNIVERSAL_RESIZABLE_BY_DEFAULT);
         final boolean configEnabled = (isLargeScreen
                 ? wms.mConstants.mIgnoreActivityOrientationRequestLargeScreen
@@ -4544,7 +4544,7 @@ final class ActivityRecord extends WindowToken {
             // starting window.
             if (fromActivity.hasFixedRotationTransform()) {
                 mDisplayContent.handleTopActivityLaunchingInDifferentOrientation(this,
-                        false /* checkOpening */);
+                        false /* checkOpening */, ROTATION_UNDEFINED);
             }
             // Do not transfer if the orientation doesn't match, redraw starting window while it is
             // on top will cause flicker.
@@ -6003,31 +6003,28 @@ final class ActivityRecord extends WindowToken {
 
             switch (mState) {
                 case RESUMED:
-                    if (com.android.window.flags.Flags.pauseInvisibleActivity()) {
-                        // Do nothing if currently in the process of resuming the activity.
-                        if (task.mInResumeTopActivity
-                                && task.topRunningActivity(true /* focusableOnly */) == this) {
-                            break;
-                        }
-
-                        // Checks if the activity can enter pip
-                        boolean inPip = false;
-                        final Transition finishingTransition =
-                                mTransitionController.mFinishingTransition;
-                        if (finishingTransition != null
-                                && finishingTransition.isInTransientHide(task)) {
-                            inPip = finishingTransition.checkEnterPipOnFinish(this);
-                        }
-
-                        // If the activity is not entering pip and is still in RESUMED state,
-                        // starting to pause it since it is no longer visible.
-                        if (!inPip && mState == RESUMED) {
-                            getTaskFragment().startPausing(mTaskSupervisor.mUserLeaving,
-                                    false /* uiSleeping */, null /* resuming */, "makeInvisible");
-                        }
+                    // Do nothing if currently in the process of resuming the activity.
+                    if (task.mInResumeTopActivity
+                            && task.topRunningActivity(true /* focusableOnly */) == this) {
                         break;
                     }
-                    // fall through
+
+                    // Checks if the activity can enter pip
+                    boolean inPip = false;
+                    final Transition finishingTransition =
+                            mTransitionController.mFinishingTransition;
+                    if (finishingTransition != null
+                            && finishingTransition.isInTransientHide(task)) {
+                        inPip = finishingTransition.checkEnterPipOnFinish(this);
+                    }
+
+                    // If the activity is not entering pip and is still in RESUMED state,
+                    // starting to pause it since it is no longer visible.
+                    if (!inPip && mState == RESUMED) {
+                        getTaskFragment().startPausing(mTaskSupervisor.mUserLeaving,
+                                false /* uiSleeping */, null /* resuming */, "makeInvisible");
+                    }
+                    break;
                 case INITIALIZING:
                 case PAUSING:
                 case PAUSED:

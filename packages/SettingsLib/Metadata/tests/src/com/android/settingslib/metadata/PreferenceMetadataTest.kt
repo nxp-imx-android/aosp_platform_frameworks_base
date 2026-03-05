@@ -26,11 +26,12 @@ import com.android.settingslib.metadata.preferencesapi.GetConfig
 import com.android.settingslib.metadata.preferencesapi.PreconditionsConfig
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
 import com.android.settingslib.metadata.preferencesapi.SetConfig
+import com.android.settingslib.metadata.preferencesapi.ValuePreconditionsConfig
+import com.android.settingslib.metadata.preferencesapi.WarningConfig
 import com.android.settingslib.metadata.preferencesapi.category.Category
 import com.android.settingslib.metadata.preferencesapi.multiusers.PreferenceTarget
 import com.android.settingslib.metadata.preferencesapi.preconditions.Allowed
 import com.android.settingslib.metadata.preferencesapi.types.AnyString
-import com.android.settingslib.metadata.preferencesapi.types.ApiType
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -186,6 +187,73 @@ class PreferenceMetadataTest {
         assertThat(result).isNull()
     }
 
+    @Test
+    fun setWarningAsString_apiPreference_withSetWarningWithoutPreconditions() {
+        val setWarning = WarningConfig<String>(
+            warning = "Set warning"
+        )
+
+        val preference = TestApiPreference(
+            set = SetConfig(warning = setWarning, execute = { })
+        )
+
+        val result = preference.setWarningAsString(context)
+
+        assertThat(result).isEqualTo("Warning before writing: Set warning (must be shown).")
+    }
+
+    @Test
+    fun setWarningAsString_apiPreference_withSetWarningWithPreconditions() {
+        val setWarning = WarningConfig<String>(
+            warning = "Set warning",
+            preconditions = PreconditionsConfig("Set preconditions") { Allowed }
+        )
+
+        val preference = TestApiPreference(
+            set = SetConfig(warning = setWarning, execute = { })
+        )
+
+        val result = preference.setWarningAsString(context)
+
+        assertThat(result).isEqualTo("Warning before writing: Set warning (must be shown if preconditions are met: Set preconditions).")
+    }
+
+    @Test
+    fun setWarningAsString_apiPreference_withSetWarningWithValuePreconditions() {
+        val setWarning = WarningConfig<String>(
+            warning = "Set warning",
+            valuePreconditions = ValuePreconditionsConfig("Set value preconditions") { _ -> Allowed }
+        )
+
+        val preference = TestApiPreference(
+            set = SetConfig(warning = setWarning, execute = { })
+        )
+
+        val result = preference.setWarningAsString(context)
+
+        assertThat(result).isEqualTo("Warning before writing: Set warning (must be shown if preconditions are met: Set value preconditions).")
+    }
+
+    @Test
+    fun setWarningAsString_apiPreference_noSetWarning() {
+        val preference = TestApiPreference()
+
+        val result = preference.setWarningAsString(context)
+
+        assertThat(result).isNull()
+    }
+
+    @Test
+    fun setWarningAsString_nonApiPreference() {
+        val preference = object : PreferenceMetadata {
+            override val key = "key"
+            override val purpose = 0
+        }
+
+        val result = preference.setWarningAsString(context)
+
+        assertThat(result).isNull()
+    }
 
     open class TestApiPreference(
         override val key: String = "key",

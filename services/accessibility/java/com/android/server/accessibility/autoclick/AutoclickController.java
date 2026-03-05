@@ -562,10 +562,16 @@ public class AutoclickController extends BaseEventStreamTransformation implement
                 }
             }
             break;
-            // Ignore hover enter and exit.
+            // Ignore hover enter and exit. Ignore ACTION_MOVE because the mouse is currently
+            // performing a dragging action.
             case MotionEvent.ACTION_HOVER_ENTER:
             case MotionEvent.ACTION_HOVER_EXIT:
                 break;
+            case MotionEvent.ACTION_MOVE:
+                if (Flags.enableAutoclickPanelBugFixes()) {
+                    break;
+                }
+                // Fall through if flag not enabled.
             default:
                 cancelPendingClick();
         }

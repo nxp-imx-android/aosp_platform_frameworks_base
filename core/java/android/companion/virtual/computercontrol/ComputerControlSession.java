@@ -716,27 +716,10 @@ public final class ComputerControlSession implements AutoCloseable {
             if (mRegisteredLifecycleCallback != null) {
                 throw new IllegalStateException("Lifecycle callback was already registered!");
             }
-            mRegisteredLifecycleCallback = new LifecycleCallback() {
-                @Override
-                public void onActive() {
-                    Binder.withCleanCallingIdentity(() -> executor.execute(callback::onActive));
-                }
-
-                @Override
-                public void onBlocked(@SessionBlockReason int reason,
-                        @Nullable String blockingPackage) {
-                    Binder.withCleanCallingIdentity(
-                            () -> executor.execute(
-                                    () -> callback.onBlocked(reason, blockingPackage)));
-                }
-
-                @Override
-                public void onClosed(@SessionCloseReason int reason) {
-                    Binder.withCleanCallingIdentity(
-                            () -> executor.execute(() -> callback.onClosed(reason)));
-                }
-            };
-            mLifecycle.addCallback(mRegisteredLifecycleCallback);
+            mRegisteredLifecycleCallback = callback;
+            mLifecycle.addCallback(
+                    (cmd) -> Binder.withCleanCallingIdentity(() -> executor.execute(cmd)),
+                    mRegisteredLifecycleCallback);
         }
     }
 

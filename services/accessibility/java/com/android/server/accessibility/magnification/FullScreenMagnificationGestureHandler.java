@@ -1150,17 +1150,11 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                 MotionEventInfo info = mDelayedEventQueue;
                 mDelayedEventQueue = info.mNext;
 
-                if (Flags.enableMagnificationRebasedDelayedMotionEvent()) {
-                    MotionEvent newEvent = AccessibilityMotionEventBuilder.fromBaseEvent(info.event)
-                            .setTimeOffset(offset).build();
-                    handleTouchEventWith(mDelegatingState, newEvent, info.rawEvent,
-                            info.policyFlags);
-                    newEvent.recycle();
-                } else {
-                    info.event.setDownTime(info.event.getDownTime() + offset);
-                    handleTouchEventWith(mDelegatingState,
-                            info.event, info.rawEvent, info.policyFlags);
-                }
+                MotionEvent newEvent = AccessibilityMotionEventBuilder.fromBaseEvent(info.event)
+                        .setTimeOffset(offset).build();
+                handleTouchEventWith(mDelegatingState, newEvent, info.rawEvent,
+                        info.policyFlags);
+                newEvent.recycle();
 
                 info.recycle();
             } while (mDelayedEventQueue != null);

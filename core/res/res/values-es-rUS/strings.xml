@@ -555,6 +555,10 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"Esta app puede tomar fotos y grabar videos con la cámara en cualquier momento."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Permitir que una aplicación o un servicio accedan a las cámaras del sistema para tomar fotos y grabar videos"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"Esta app del sistema o con privilegios puede tomar fotografías y grabar videos con una cámara del sistema en cualquier momento. Para ello, requiere tener el permiso android.permission.CAMERA."</string>
+    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
+    <skip />
+    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
+    <skip />
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Permite que una aplicación o un servicio reciba devoluciones de llamada cuando se abren o cierran dispositivos de cámara."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"Esta app puede recibir devoluciones de llamada cuando se cierra o se abre cualquier dispositivo de cámara (y qué aplicación lo hace)."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Permite que una aplicación o servicio acceda a la cámara como un usuario del sistema sin interfaz gráfica"</string>

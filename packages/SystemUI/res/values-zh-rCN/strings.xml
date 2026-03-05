@@ -248,10 +248,8 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"前置摄像头"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"选择"</string>
-    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
-    <skip />
-    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
-    <skip />
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"菜单已展开"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"菜单已收起"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"停止分享"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"屏幕共享已开启，使用隐私保护指示器可结束共享。"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"正在共享屏幕"</string>
@@ -320,12 +318,12 @@
     <string name="biometric_dialog_content_view_more_options_button" msgid="2663810393874865475">"更多选项"</string>
     <string name="biometric_dialog_fallback_title" msgid="2337887849267443214">"换种验证方式"</string>
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"换种验证方式"</string>
-    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"管理“身份检查”"</string>
+    <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"管理身份检查"</string>
     <string name="biometric_dialog_identity_check_footer_link_text" msgid="5445804502968287214">"详细了解身份检查"</string>
-    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"身份检查功能已开启，仅支持通过指纹或面孔来验证您的身份。%1$s"</string>
+    <string name="biometric_dialog_identity_check_footer" msgid="4176895548458429932">"已开启身份检查，仅支持通过指纹或面孔来验证身份。%1$s"</string>
     <string name="biometric_dialog_identity_check_watch_ranging" msgid="2994378079915744485">"正在评估风险…"</string>
     <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"不可用"</string>
-    <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"使用 PIN 码"</string>
+    <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"使用数字密码"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"使用解锁图案"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"使用密码"</string>
     <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"输入数字密码"</string>
@@ -473,7 +471,7 @@
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"自动屏幕旋转"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"自动旋转屏幕"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"位置信息"</string>
-    <string name="quick_settings_camera_label" msgid="5612076679385269339">"摄像头权限"</string>
+    <string name="quick_settings_camera_label" msgid="5612076679385269339">"相机权限"</string>
     <string name="quick_settings_mic_label" msgid="8392773746295266375">"麦克风权限"</string>
     <string name="quick_settings_camera_mic_available" msgid="1453719768420394314">"已允许"</string>
     <string name="quick_settings_camera_mic_blocked" msgid="4710884905006788281">"已禁用"</string>
@@ -561,7 +559,7 @@
     <string name="restore_default" msgid="5259420807486239755">"恢复默认设置"</string>
     <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"单手模式"</string>
     <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"助听装置"</string>
-    <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"已连接"</string>
+    <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"正在使用"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"已断开连接"</string>
     <string name="quick_settings_hearing_devices_dialog_title" msgid="9004774017688484981">"助听装置"</string>
     <string name="quick_settings_pair_hearing_devices" msgid="5987105102207447322">"与新设备配对"</string>
@@ -708,6 +706,18 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"可在设备充电期间展示您喜爱的微件和屏保。"</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"现在就试试吧"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"在充电时显示您喜爱的屏保"</string>
+    <!-- no translation found for dream_switcher_select_dream_title (2784437029616150736) -->
+    <skip />
+    <!-- no translation found for dream_switcher_choose_screensaver (3073471555365511227) -->
+    <skip />
+    <!-- no translation found for dream_switcher_edit_button_text (2152516873780618659) -->
+    <skip />
+    <!-- no translation found for dream_switcher_go_to_app_button_text (6043693674135654080) -->
+    <skip />
+    <!-- no translation found for dream_switcher_more_screensavers (6672017768044989604) -->
+    <skip />
+    <!-- no translation found for dreams_switcher_accessibility_action (2910870945341642369) -->
+    <skip />
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"切换用户"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"下拉菜单"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"此会话中的所有应用和数据都将被删除。"</string>
@@ -881,7 +891,7 @@
     <string name="stream_notification_unavailable" msgid="4313854556205836435">"不可用，因为铃声被静音"</string>
     <string name="stream_alarm_unavailable" msgid="4059817189292197839">"“勿扰”模式已开启，因此无法调整音量"</string>
     <string name="stream_media_unavailable" msgid="6823020894438959853">"“勿扰”模式已开启，因此无法调整音量"</string>
-    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"不可用，因为已开启<xliff:g id="MODE">%s</xliff:g>"</string>
+    <string name="stream_unavailable_by_modes" msgid="3674139029490353683">"不可用，因为已开启<xliff:g id="MODE">%s</xliff:g>模式"</string>
     <string name="stream_unavailable_by_unknown" msgid="6908434629318171588">"不可用"</string>
     <string name="volume_stream_content_description_unmute" msgid="7729576371406792977">"%1$s。点按即可取消静音。"</string>
     <string name="volume_stream_content_description_vibrate" msgid="4858111994183089761">"%1$s。点按即可设为振动，但可能会同时将无障碍服务设为静音。"</string>
@@ -1044,8 +1054,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# 小时}=2{# 小时}other{# 小时}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# 分钟}other{# 分钟}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"用于打开降级选项菜单"</string>
-    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
-    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"省电模式"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"<xliff:g id="NAME">%1$s</xliff:g>按钮"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1104,6 +1112,8 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"打开设置"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"打开数字助理"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"内容相关搜索"</string>
+    <!-- no translation found for group_system_access_contextual_cursor (200587108400598774) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"锁定屏幕"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"添加记事"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"多任务处理"</string>
@@ -1143,7 +1153,7 @@
     <string name="group_accessibility_toggle_voice_access" msgid="5436708239015479017">"开启/关闭语音操控"</string>
     <string name="group_accessibility_toggle_talkback" msgid="5017967056006325713">"开启/关闭 TalkBack"</string>
     <string name="group_accessibility_toggle_magnification" msgid="3892267763383743128">"开启/关闭放大功能"</string>
-    <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"启用“随选朗读”"</string>
+    <string name="group_accessibility_activate_select_to_speak" msgid="9157775915495428592">"启用随选朗读"</string>
     <string name="volume_and_do_not_disturb" msgid="502044092739382832">"勿扰"</string>
     <string name="volume_dnd_silent" msgid="4154597281458298093">"音量按钮快捷键"</string>
     <string name="battery" msgid="769686279459897127">"电池"</string>
@@ -1226,6 +1236,10 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"打开<xliff:g id="ID_1">%s</xliff:g>设置。"</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"修改快捷设置的顺序。"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"电源菜单"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"第 <xliff:g id="ID_1">%1$d</xliff:g> 页，共 <xliff:g id="ID_2">%2$d</xliff:g> 页"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"要开启<xliff:g id="ID_1">%1$s</xliff:g>吗？"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"“<xliff:g id="ID_1">^1</xliff:g>”"<annotation id="action_key_icon">"图标"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> 是使用 <xliff:g id="ID_4">^4</xliff:g> 的键盘快捷键。<xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1599,6 +1613,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"图片预览"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"修改"</string>
     <string name="add" msgid="81036585205287996">"添加"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"管理用户"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"此通知不支持拖动到分屏中"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"正在使用位置信息"</string>
@@ -1675,7 +1691,7 @@
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"显示屏已连接"</string>
     <string name="connected_display_connection_text" msgid="6787771675124372815">"已连接到外接显示屏"</string>
     <string name="connected_display_removal_text" msgid="8270253839172935318">"外接显示屏已断开连接"</string>
-    <string name="privacy_dialog_title" msgid="5201413527644766025">"麦克风、摄像头和位置信息"</string>
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"麦克风、相机和位置信息"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"近期被应用使用的情况"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"查看近期使用情况"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"完成"</string>
@@ -1844,7 +1860,7 @@
     <string name="privacy_chip_use_string_with_app" msgid="6807216002072346877">"<xliff:g id="APP">%2$s</xliff:g> 正在使用 <xliff:g id="SENSOR">%1$s</xliff:g>"</string>
     <string name="privacy_chip_camera_and_mic_text" msgid="6254449489859255607">"相机和麦克风"</string>
     <string name="av_panel_title" msgid="455230832870768515">"隐私权"</string>
-    <string name="sensor_activity_header" msgid="2145727448786698035">"查看正积极使用（或最近使用过）这些权限的应用。"</string>
+    <string name="sensor_activity_header" msgid="2145727448786698035">"查看正在使用或最近使用过这些权限的应用。"</string>
     <string name="sensor_activity_see_all_access_button" msgid="8005330122289549048">"查看所有访问权限"</string>
     <string name="sensor_activity_camera_label" msgid="4260675418606211259">"相机"</string>
     <string name="sensor_activity_microphone_label" msgid="4012136402420177411">"麦克风"</string>

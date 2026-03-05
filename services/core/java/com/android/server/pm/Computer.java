@@ -30,6 +30,7 @@ import android.content.pm.InstallSourceInfo;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.KeySet;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageInfoList;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ParceledListSlice;
@@ -201,7 +202,7 @@ public interface Computer extends PackageDataSnapshot {
     PackageStateInternal getPackageStateInternal(String packageName, int callingUid);
     PackageStateInternal getPackageStateFiltered(@NonNull String packageName, int callingUid,
             @UserIdInt int userId);
-    ParceledListSlice<PackageInfo> getInstalledPackages(long flags, int userId);
+    PackageInfoList getInstalledPackages(long flags, int userId);
     ResolveInfo createForwardingResolveInfoUnchecked(WatchedIntentFilter filter,
             int sourceUserId, int targetUserId);
     ServiceInfo getServiceInfo(ComponentName component, long flags, int userId);

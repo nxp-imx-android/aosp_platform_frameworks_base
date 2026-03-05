@@ -21,6 +21,7 @@ import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.util.ArrayMap;
 import android.util.Log;
+import android.util.TimeUtils;
 import android.view.Choreographer;
 
 import java.lang.ref.WeakReference;
@@ -101,7 +102,7 @@ public class AnimationHandler {
     private final Choreographer.FrameCallback mFrameCallback = new Choreographer.FrameCallback() {
         @Override
         public void doFrame(long frameTimeNanos) {
-            doAnimationFrame(getProvider().getFrameTime());
+            doAnimationFrame(frameTimeNanos / TimeUtils.NANOS_PER_MS);
             if (mAnimationCallbacks.size() > 0) {
                 getProvider().postFrameCallback(this);
             }
@@ -474,11 +475,6 @@ public class AnimationHandler {
         }
 
         @Override
-        public long getFrameTime() {
-            return mChoreographer.getFrameTime();
-        }
-
-        @Override
         public long getFrameDelay() {
             return Choreographer.getFrameDelay();
         }
@@ -513,7 +509,6 @@ public class AnimationHandler {
      */
     public interface AnimationFrameCallbackProvider {
         void postFrameCallback(Choreographer.FrameCallback callback);
-        long getFrameTime();
         long getFrameDelay();
         void setFrameDelay(long delay);
     }

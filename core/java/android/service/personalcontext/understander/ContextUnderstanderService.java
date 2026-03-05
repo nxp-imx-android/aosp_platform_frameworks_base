@@ -63,13 +63,20 @@ import java.util.concurrent.Executor;
  * latency in the Personal Context workflow.
  *
  * <p>You must declare the service in the AndroidManifest of the app hosting the service with the
- * {@link android.Manifest.permission#BIND_CONTEXT_COMPONENT_SERVICE} permission, and include an
- * intent filter with the necessary action indicating that it is a {@link
- * ContextUnderstanderService} (android.service.personalcontext.UnderstanderService).
+ * {@link Manifest.permission#BIND_CONTEXT_COMPONENT_SERVICE} permission, and include an intent
+ * filter with the necessary action indicating that it is a {@link ContextUnderstanderService}
+ * (android.service.personalcontext.UnderstanderService). The application must have the {@link
+ * Manifest.permission#PERSONAL_CONTEXT_RECEIVE_HINTS} and {@link
+ * Manifest.permission#PERSONAL_CONTEXT_PUBLISH_INSIGHTS} permissions.
  *
  * <p>For example:
  *
  * <pre>
+ *     &lt;uses-permission
+ *         android:name="android.permission.PERSONAL_CONTEXT_RECEIVE_HINTS"/&gt;
+ *     &lt;uses-permission
+ *         android:name="android.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS"/&gt;
+ *
  *     &lt;service android:name=".ExampleContextUnderstanderService"
  *             android:exported="true"
  *             android:permission="android.permission.BIND_CONTEXT_COMPONENT_SERVICE"&gt;

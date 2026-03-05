@@ -95,7 +95,7 @@ class CapabilityController {
      */
     private static @ProcessCapability int evaluateForegroundServicePolicy(
             @NonNull ProcessEdge edge) {
-        final GraphNode node = edge.getTarget();
+        final ProcessNode node = edge.getTarget();
         if (!node.hasForegroundServices()) {
             return PROCESS_CAPABILITY_NONE;
         }
@@ -117,7 +117,7 @@ class CapabilityController {
      * Gets foreground service capabilities from the node's service record at index {@code index}.
      */
     // LINT.IfChange(getForegroundServiceCapability)
-    private static @ProcessCapability int getForegroundServiceCapability(@NonNull GraphNode node,
+    private static @ProcessCapability int getForegroundServiceCapability(@NonNull ProcessNode node,
             int index) {
         if (!node.isForegroundService(index) || !node.isFgsAllowedWiuForCapabilities(index)) {
             return PROCESS_CAPABILITY_NONE;
@@ -155,7 +155,7 @@ class CapabilityController {
     /** Evaluates process capabilities based on its process state. */
     // LINT.IfChange(evaluateProcStatePolicy)
     private static @ProcessCapability int evaluateProcStatePolicy(@NonNull ProcessEdge edge) {
-        final GraphNode node = edge.getTarget();
+        final ProcessNode node = edge.getTarget();
         final @ProcessState int procState = node.getProcState();
         final @ProcessCapability int networkCapabilities =
                 NetworkPolicyManager.getDefaultProcessNetworkCapabilities(procState);
@@ -203,7 +203,7 @@ class CapabilityController {
     /** Evaluates process CPU time capability and updates CPU time reasons on the process edge. */
     // LINT.IfChange(evaluateCpuTimePolicy)
     private static @ProcessCapability int evaluateCpuTimePolicy(@NonNull ProcessEdge edge) {
-        final GraphNode node = edge.getTarget();
+        final ProcessNode node = edge.getTarget();
         if (node.isCurAllowListed()) {
             edge.addCpuTimeReasons(CPU_TIME_REASON_ALLOW_LIST);
             return PROCESS_CAPABILITY_CPU_TIME;

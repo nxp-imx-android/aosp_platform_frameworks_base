@@ -61,6 +61,8 @@ import java.util.function.Consumer;
  * @hide
  */
 public class ServiceClientRefiner extends BaseServiceClientComponent<IRefiner> implements Refiner {
+    private static final String TAG = "ServiceClientRefiner";
+
     private HintFilter mFilter = null;
 
     public ServiceClientRefiner(Context context, UUID componentId, ServiceInfo serviceInfo,

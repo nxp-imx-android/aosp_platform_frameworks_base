@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,13 +29,13 @@ import java.util.Objects;
  * Represents a process within the process graph. Each node is embedded within a
  * {@link ProcessRecordInternal}.
  *
- * This class stores the calculated importance values such as capabilities and the process state
+ * <p>This class stores the calculated importance values such as capabilities and the process state
  * for the process. The calculated values are used by specialized controllers such as
  * {@link CapabilityController} to evaluate the node's outgoing edges, which are service or provider
  * bindings, to determine the importance of the edges' target processes during graph traversal.
  */
 @RavenwoodKeepWholeClass
-class GraphNode {
+class ProcessNode {
     /** A reference to the underlying ProcessRecordInternal. */
     private final @NonNull ProcessRecordInternal mProc;
 
@@ -43,14 +43,14 @@ class GraphNode {
      * Whether this process node has {@link ActivityManager#PROCESS_CAPABILITY_IMPLICIT_CPU_TIME}
      * intrinsically (i.e., not propagated from other processes).
      *
-     * If it is true, this process will get {@link OomAdjuster#IMPLICIT_CPU_TIME_REASON_OTHER}.
+     * <p>If it is true, this process will get {@link OomAdjuster#IMPLICIT_CPU_TIME_REASON_OTHER}.
      */
     // TODO(b/479393330): Remove this property and evaluate implicit CPU time directly from
     //  ProcessRecordInternal once the computation can be decoupled from oomadj.
     private boolean mHasIntrinsicImplicitCpuTime;
 
-    GraphNode(@NonNull ProcessRecordInternal app) {
-        mProc = Objects.requireNonNull(app);
+    ProcessNode(@NonNull ProcessRecordInternal proc) {
+        mProc = Objects.requireNonNull(proc);
     }
 
     // TODO: b/483182189 - Move state getters below to ProcessEdge.

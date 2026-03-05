@@ -21,8 +21,11 @@ import static java.util.Collections.emptySet;
 import android.annotation.EnforcePermission;
 import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresNoPermission;
+import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityManagerInternal;
+import android.app.BroadcastOptions;
+import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -64,6 +67,7 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.util.DumpUtils;
 import com.android.server.SystemService;
+import com.android.server.contentcapture.ContentCaptureManagerInternal;
 import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.personalcontext.component.Refiner;
 import com.android.server.personalcontext.component.Renderer;
@@ -102,6 +106,9 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class PersonalContextManagerService extends SystemService {
     private static final String TAG = "PersonalContext";
+
+    @VisibleForTesting
+    static final String ROLE_SYSTEM_UI_INTELLIGENCE = "android.app.role.SYSTEM_UI_INTELLIGENCE";
 
     static final SecretKeySpec HINT_SIGNING_KEY;
 
@@ -160,8 +167,10 @@ public class PersonalContextManagerService extends SystemService {
     private final SparseArray<UserState> mUserStates = new SparseArray<>();
     private final ContextLogger mLogger = new ContextLogger();
 
+    private final RoleManager mRoleManager;
     private final ActivityManagerInternal mActivityManager;
     private final PackageManagerInternal mPackageManager;
+    private final ContentCaptureManagerInternal mContentCaptureManagerInternal;
 
     private final AccessController mAccessController;
     private final PersonalContextManagerInternal mInternalService = new LocalService();
@@ -173,8 +182,10 @@ public class PersonalContextManagerService extends SystemService {
     protected PersonalContextManagerService(Context context, AccessController controller) {
         super(context);
 
+        mRoleManager = context.getSystemService(RoleManager.class);
         mActivityManager = getLocalService(ActivityManagerInternal.class);
         mPackageManager = getLocalService(PackageManagerInternal.class);
+        mContentCaptureManagerInternal = getLocalService(ContentCaptureManagerInternal.class);
         mAccessController = controller;
     }
 
@@ -462,6 +473,57 @@ public class PersonalContextManagerService extends SystemService {
         startRefinerWorkflow(userId, callingUid, hints, Set.of(renderToken), emptySet());
     }
 
+    @SuppressLint("MissingPermission")
+    private void sendPersonalContextModeChangedBroadcasts(
+            String packageName, @UserIdInt int userId) {
+        Intent broadcastIntent =
+                new Intent(Intent.ACTION_PERSONAL_CONTEXT_MODE_CHANGED)
+                        .addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY)
+                        .setPackage(packageName);
+        broadcastIntent.putExtra(Intent.EXTRA_PACKAGE_NAME, packageName);
+
+        // Send broadcast to the application the setting changed for.
+        UserHandle userHandle = UserHandle.getUserHandleForUid(userId);
+        final BroadcastOptions options = BroadcastOptions.makeBasic();
+        // This allows the broadcasting system to discard any older broadcasts waiting to be
+        // delivered. This is okay as the intent doesn't contain any info the application for which
+        // the setting changed cares about. They only need to know that the setting changed.
+        options.setDeliveryGroupPolicy(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT);
+        getContext().sendBroadcastAsUser(broadcastIntent, userHandle, null, options.toBundle());
+
+        // TODO(b/482458833): send change notification directly to content capture framework
+
+        // Send broadcast to the user's content capture service, if any.
+        String contentCaptureServicePackageName = null;
+        if (mContentCaptureManagerInternal != null) {
+            contentCaptureServicePackageName =
+                    mContentCaptureManagerInternal.getContentCaptureServicePackageNameForUser(
+                            userId);
+            if (contentCaptureServicePackageName != null) {
+                Intent contentCaptureServiceBroadcastIntent =
+                        new Intent(broadcastIntent).setPackage(contentCaptureServicePackageName);
+                getContext()
+                        .sendBroadcastAsUser(
+                                contentCaptureServiceBroadcastIntent, userHandle, null, null);
+            }
+        }
+
+        // Send broadcast to the system UI intelligence app, if any.
+        if (mRoleManager != null) {
+            List<String> roleHolderPackageNames =
+                    mRoleManager.getRoleHoldersAsUser(ROLE_SYSTEM_UI_INTELLIGENCE, userHandle);
+            for (String rolePackageName : roleHolderPackageNames) {
+                if (rolePackageName == contentCaptureServicePackageName) {
+                    // The content capture service may also be a system UI intelligence app.
+                    continue;
+                }
+                Intent roleBroadcastIntent =
+                        new Intent(broadcastIntent).setPackage(rolePackageName);
+                getContext().sendBroadcastAsUser(roleBroadcastIntent, userHandle, null, null);
+            }
+        }
+    }
+
     private void reportEvent(
             int userId,
             int callingUid,
@@ -556,7 +618,7 @@ public class PersonalContextManagerService extends SystemService {
 
         @PermissionManuallyEnforced
         @Override
-        public boolean isPersonalContextModeEnabled(String packageName, int userId) {
+        public boolean isPersonalContextModeEnabled(String packageName, @UserIdInt int userId) {
             final int callingUid = Binder.getCallingUid();
 
             // Manifest.permission.QUERY_ALL_PACKAGES permission is enforced inside package manager.
@@ -575,7 +637,8 @@ public class PersonalContextManagerService extends SystemService {
 
         @EnforcePermission(android.Manifest.permission.CHANGE_PERSONAL_CONTEXT_MODE)
         @Override
-        public void setPersonalContextModeEnabled(String packageName, int userId, boolean enabled) {
+        public void setPersonalContextModeEnabled(
+                String packageName, @UserIdInt int userId, boolean enabled) {
             setPersonalContextModeEnabled_enforcePermission();
             final int callingUid = Binder.getCallingUid();
             Binder.withCleanCallingIdentity(
@@ -584,8 +647,11 @@ public class PersonalContextManagerService extends SystemService {
                                 enabled
                                         ? PackageManager.PERSONAL_CONTEXT_MODE_USER_ON
                                         : PackageManager.PERSONAL_CONTEXT_MODE_USER_OFF;
-                        mPackageManager.setPersonalContextMode(
-                                packageName, callingUid, userId, mode);
+                        if (mPackageManager.setPersonalContextMode(
+                                packageName, callingUid, userId, mode)) {
+                            getService()
+                                    .sendPersonalContextModeChangedBroadcasts(packageName, userId);
+                        }
                     });
         }
 

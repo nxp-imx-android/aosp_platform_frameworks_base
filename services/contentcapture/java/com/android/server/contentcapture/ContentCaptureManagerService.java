@@ -1471,6 +1471,18 @@ public class ContentCaptureManagerService extends
             return false;
         }
 
+        @Nullable
+        @Override
+        public String getContentCaptureServicePackageNameForUser(int userId) {
+            synchronized (mLock) {
+                final ContentCapturePerUserService service = peekServiceForUserLocked(userId);
+                if (service != null) {
+                    return service.getServicePackageName();
+                }
+            }
+            return null;
+        }
+
         @Override
         @SuppressWarnings("GuardedBy")
         public boolean sendActivityStartAssistData(@UserIdInt int userId,

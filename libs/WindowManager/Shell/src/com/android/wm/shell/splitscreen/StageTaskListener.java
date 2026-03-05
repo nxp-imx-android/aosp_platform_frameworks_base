@@ -300,7 +300,7 @@ public class StageTaskListener implements ShellTaskOrganizer.TaskListener {
         if (mRootTaskInfo.taskId == taskInfo.taskId) {
             mRootTaskInfo = taskInfo;
         } else if (taskInfo.parentTaskId == mRootTaskInfo.taskId) {
-            if (!taskInfo.supportsMultiWindow
+            if (!taskInfo.supportsMultiWindowWithoutConstraints
                     || !ArrayUtils.contains(CONTROLLED_ACTIVITY_TYPES, taskInfo.getActivityType())
                     || !ArrayUtils.contains(CONTROLLED_WINDOWING_MODES_WHEN_ACTIVE,
                     taskInfo.getWindowingMode())) {

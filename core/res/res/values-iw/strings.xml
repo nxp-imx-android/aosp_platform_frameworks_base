@@ -555,6 +555,10 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"האפליקציה הזו יכולה להשתמש במצלמה כדי לצלם תמונות וסרטונים בכל זמן."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"הרשאת גישה למצלמות המערכת עבור אפליקציה או שירות כדי לצלם תמונות וסרטונים"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"‏האפליקציה הזו בעלת ההרשאות, או אפליקציית המערכת הזו, יכולה לצלם תמונות ולהקליט סרטונים באמצעות מצלמת מערכת בכל זמן. בנוסף, לאפליקציה נדרשת ההרשאה android.permission.CAMERA"</string>
+    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
+    <skip />
+    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
+    <skip />
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"‏אפליקציה או שירות יוכלו לקבל קריאות חוזרות (callback) כשמכשירי מצלמה ייפתחו או ייסגרו."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"‏האפליקציה הזו יכולה לקבל קריאות חוזרות (callback) כשמכשיר מצלמה כלשהו נפתח (באמצעות אפליקציה) או נסגר."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"מתן גישה למצלמת המערכת עבור אפליקציה או שירות כמשתמש באפליקציית מערכת ללא ממשק גרפי"</string>
@@ -726,7 +730,7 @@
     <string name="fingerprint_acquired_too_bright" msgid="3863560181670915607">"בהיר מדי"</string>
     <string name="fingerprint_acquired_power_press" msgid="3107864151278434961">"זוהתה לחיצה על כפתור ההפעלה"</string>
     <string name="fingerprint_acquired_try_adjusting" msgid="3667006071003809364">"יש לנסות ולשנות את תנוחת האצבע"</string>
-    <string name="fingerprint_acquired_immobile" msgid="1621891895241888048">"צריך לשנות מעט את תנוחת האצבע בכל פעם"</string>
+    <string name="fingerprint_acquired_immobile" msgid="1621891895241888048">"כל פעם צריך לשנות קצת את תנוחת האצבע"</string>
   <string-array name="fingerprint_acquired_vendor">
   </string-array>
     <string name="fingerprint_error_not_match" msgid="4599441812893438961">"טביעת האצבע לא זוהתה"</string>
@@ -1506,7 +1510,7 @@
     <string name="usb_unsupported_audio_accessory_title" msgid="2335775548086533065">"המכשיר זיהה התקן אודיו אנלוגי"</string>
     <string name="usb_unsupported_audio_accessory_message" msgid="1300168007129796621">"ההתקן שחיברת לא תואם לטלפון הזה. יש ללחוץ לקבלת מידע נוסף."</string>
     <string name="adb_active_notification_title" msgid="408390247354560331">"‏ניפוי באגים ב-USB מחובר"</string>
-    <string name="adb_active_notification_message" msgid="5617264033476778211">"להשבתה צריך ללחוץ כאן"</string>
+    <string name="adb_active_notification_message" msgid="5617264033476778211">"כדי להשבית צריך ללחוץ כאן"</string>
     <string name="adb_active_notification_message" product="tv" msgid="6624498401272780855">"‏יש ללחוץ על ההתראה כדי להשבית ניפוי באגים ב-USB."</string>
     <string name="adbwifi_active_notification_title" msgid="6147343659168302473">"ניפוי הבאגים האלחוטי מחובר"</string>
     <string name="adbwifi_active_notification_message" msgid="930987922852867972">"יש ללחוץ כדי להשבית ניפוי באגים אלחוטי"</string>
@@ -1851,9 +1855,9 @@
     <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"כבוי"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"להעניק לשירות \'<xliff:g id="SERVICE">%1$s</xliff:g>\' שליטה מלאה במכשיר?"</string>
     <string name="accessibility_service_warning_description" msgid="291674995220940133">"האפשרות לשליטה מלאה במכשיר לא מתאימה לרוב האפליקציות, אלא רק לאפליקציות שעוזרות עם צורכי הנגישות שלך."</string>
-    <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"הצגת המסך ושליטה בו"</string>
+    <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"צפייה ושליטה במסך"</string>
     <string name="accessibility_service_screen_control_description" msgid="6946315917771791525">"התכונה תוכל לקרוא את כל התוכן במסך ולהציג תוכן מעל אפליקציות אחרות."</string>
-    <string name="accessibility_service_action_perform_title" msgid="779670378951658160">"הצגה וביצוע של פעולות"</string>
+    <string name="accessibility_service_action_perform_title" msgid="779670378951658160">"צפייה וביצוע פעולות"</string>
     <string name="accessibility_service_action_perform_description" msgid="2718852014003170558">"התכונה יכולה לעקוב אחרי הפעילות שלך באפליקציות או עם חיישני חומרה, ולבצע בשבילך פעולות."</string>
     <string name="accessibility_dialog_button_allow" msgid="2092558122987144530">"אישור"</string>
     <string name="accessibility_dialog_button_deny" msgid="4129575637812472671">"עדיף שלא"</string>

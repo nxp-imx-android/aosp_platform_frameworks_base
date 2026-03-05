@@ -275,3 +275,28 @@ fun PreferenceMetadata.setPreconditionsAsString(context: Context): String? {
         "Preconditions to writing: $it."
     }
 }
+
+/** Returns a string describing the warning for writing the preference. */
+fun PreferenceMetadata.setWarningAsString(context: Context): String? {
+    return (this as? ApiPreference<*>)?.set?.warning?.let { warningConfig ->
+        val warningMessage = warningConfig.getWarning(context)
+
+        val preconditionsDescription = when {
+            warningConfig.preconditions != null ->
+                warningConfig.preconditions.getDescription(context)
+
+            warningConfig.valuePreconditions != null ->
+                warningConfig.valuePreconditions.getDescription(context)
+
+            else -> null
+        }
+
+        // Compute the set warning as a string message
+        val conditionalText =
+            preconditionsDescription?.takeIf { it.isNotBlank() }?.let { description ->
+                " if preconditions are met: $description"
+            } ?: ""
+
+        "Warning before writing: $warningMessage (must be shown$conditionalText)."
+    }
+}

@@ -25,7 +25,8 @@ import android.media.tv.extension.rating.RatingRegionInfo;
  */
 interface IRatingInterface {
     /**
-     * Gets the current RRT (Regional Rating Table) information.
+     * Gets the current RRT (Regional Rating Table) information. This should be called after the
+     * listener notified that there is an update to the RRT table.
      *
      * @return The RRT Rating list.
      */

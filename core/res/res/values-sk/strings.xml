@@ -362,7 +362,7 @@
     <string name="permgroupdesc_microphone" msgid="1047786732792487722">"nahrávanie zvuku"</string>
     <string name="permgrouplab_activityRecognition" msgid="3324466667921775766">"Fyzická aktivita"</string>
     <string name="permgroupdesc_activityRecognition" msgid="4725624819457670704">"prístup k vašej fyzickej aktivite"</string>
-    <string name="permgrouplab_camera" msgid="9090413408963547706">"Fotoaparát"</string>
+    <string name="permgrouplab_camera" msgid="9090413408963547706">"Kamera"</string>
     <string name="permgroupdesc_camera" msgid="7585150538459320326">"fotenie a natáčanie videí"</string>
     <string name="permgrouplab_nearby_devices" msgid="5529147543651181991">"Zariadenia v okolí"</string>
     <string name="permgroupdesc_nearby_devices" msgid="3213561597116913508">"objavovať a pripájať zariadenia v okolí"</string>
@@ -556,6 +556,10 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"Táto aplikácia môže kedykoľvek fotiť a nahrávať videá pomocou fotoaparátu."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Povoľte aplikácii alebo službe prístup k fotoaparátom systému na snímanie fotiek a videí"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"Táto oprávnená alebo systémová aplikácia môže kedykoľvek fotiť a nahrávať videá fotoaparátom systému. Aplikácia musí mať tiež povolenie android.permission.CAMERA."</string>
+    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
+    <skip />
+    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
+    <skip />
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Povoliť aplikácii alebo službe prijímať spätné volanie, keď sú zariadenia s kamerou otvorené alebo zatvorené."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"Táto aplikácia môže prijímať spätné volania pri otváraní alebo zatváraní ľubovoľného fotoaparátu (s infomáciou o aplikácii, ktorá to robí)."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Povoľte aplikácii alebo službe prístup ku kamere ako systém bez grafického rozhrania."</string>
@@ -2162,7 +2166,7 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"So zámkou aplikácie"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"Obsah upozornení bude skrytý"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"Miniaplikácie a odkazy budú odstránené"</string>
-    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"Agenty a služby umelej inteligencie, ktorým ste povolili prístup k službe %1$s, budú mať naďalej prístup k jej údajom"</string>
+    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"Agenti a služby umelej inteligencie, ktorým ste povolili prístup k službe %1$s, budú mať naďalej prístup k jej údajom"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"Pridať zámku aplikácie"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"Odomknutie tvárou"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"Odomknúť tvárou"</string>

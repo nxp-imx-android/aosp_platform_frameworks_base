@@ -30,6 +30,7 @@ import static android.hardware.SyncFence.SIGNAL_TIME_PENDING;
 import static android.os.Trace.TRACE_TAG_WINDOW_MANAGER;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
+import static android.view.DisplayAddress.INVALID_DISPLAY_ID;
 import static android.view.WindowManager.INPUT_CONSUMER_RECENTS_ANIMATION;
 import static android.view.WindowManager.KEYGUARD_VISIBILITY_TRANSIT_FLAGS;
 import static android.view.WindowManager.LayoutParams.ROTATION_ANIMATION_SEAMLESS;
@@ -2232,7 +2233,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
 
         if (mLogger.mInfo != null) {
             mLogger.logOnSendAsync(mController.mLoggerHandler);
-            mController.mTransitionTracer.logSentTransition(this, mTargets);
+            mController.mTransitionTracer.logSentTransition(this, mLogger.mInfo);
         }
         removeStartingWindowIfAny();
     }
@@ -3278,8 +3279,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             if (dc == null) continue;
             final int endDisplayId = dc.getDisplayId();
             final int startDisplayId = change.mDisplayId;
-
-            if (startDisplayId != endDisplayId && outInfo.findRootIndex(startDisplayId) < 0) {
+            if (startDisplayId != INVALID_DISPLAY_ID && startDisplayId != endDisplayId
+                    && outInfo.findRootIndex(startDisplayId) < 0) {
                 final DisplayContent startDc = wc.mTransitionController.mAtm.mRootWindowContainer
                         .getDisplayContent(startDisplayId);
                 if (startDc != null) {
@@ -3681,7 +3682,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             final int startDisplayId = change.mDisplayId;
             final WindowContainer wc = change.mContainer;
             final int endDisplayId = getDisplayId(wc);
-            if (startDisplayId != endDisplayId) {
+            if (startDisplayId != INVALID_DISPLAY_ID && startDisplayId != endDisplayId) {
                 // There is a display change. If either start or end is on the current
                 // display, then we need to use the display as root.
                 if (startDisplayId == displayId || endDisplayId == displayId) {

@@ -64,6 +64,16 @@ flag {
 }
 
 flag {
+  name: "use_snapshot_fixed_rotation"
+  namespace: "windowing_frontend"
+  description: "Use known rotation of snapshot to apply fixed rotation"
+  bug: "488963381"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "avoid_intermediate_destroying_state"
   namespace: "windowing_frontend"
   description: "Prevent intermediate destroying state from affecting visibility"
@@ -120,10 +130,13 @@ flag {
 }
 
 flag {
-  name: "universal_resizable_by_default"
-  namespace: "windowing_frontend"
-  description: "The orientation, aspect ratio, resizability of activity will follow system behavior by default"
-  bug: "357141415"
+    name: "enable_split_dismiss_animation"
+    namespace: "windowing_frontend"
+    description: "Resize animation for expanding and collapsing surfaces when split screen is dismissed"
+    bug: "481965406"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -365,16 +378,6 @@ flag {
     namespace: "windowing_frontend"
     description: "Display state should be a deferrable WM property"
     bug: "423701190"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "defer_snapshot_removal_for_predictive_back_with_ime"
-    namespace: "windowing_frontend"
-    description: "Prevents flicker by keeping the snapshot visible until the input method has drawn"
-    bug: "435285991"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -706,6 +706,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"ચાર્જ કરતી વખતે તમારા મનપસંદ વિજેટ અને સ્ક્રીન સેવર ઍક્સેસ કરો."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"ચાલો પ્રારંભ કરીએ"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"ચાર્જ વખતે તમારું મનપસંદ સ્ક્રીનસેવર બતાવો"</string>
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"ડ્રીમ પસંદ કરો"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"સ્ક્રીનસેવર પસંદ કરો"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"<xliff:g id="DREAM_NAME">%1$s</xliff:g>માં ફેરફાર કરો"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"<xliff:g id="APP_NAME">%1$s</xliff:g> પર જાઓ"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"વધુ સ્ક્રીનસેવર"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"ડ્રીમ પસંદગી મેનૂ ખોલો"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"વપરાશકર્તા સ્વિચ કરો"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"પુલડાઉન મેનૂ"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"આ સત્રમાંની તમામ ઍપ અને ડેટા કાઢી નાખવામાં આવશે."</string>
@@ -1042,7 +1048,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# કલાક}=2{# કલાક}one{# કલાક}other{# કલાક}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# મિનિટ}one{# મિનિટ}other{# મિનિટ}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"ડિમોશન મેનૂ ખોલવા માટે"</string>
-    <string name="notification_rules_activity_title" msgid="3580318899872813414">"નોટિફિકેશન માટેના નિયમો"</string>
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"બૅટરી સેવર"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"બટન <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1101,6 +1106,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"સેટિંગ ખોલો"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"ડિજિટલ આસિસ્ટંટ ખોલો"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"સાંદર્ભિક શોધ"</string>
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"સાંદર્ભિક કર્સર"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"લૉક સ્ક્રીન"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"નોંધ લો"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"એકસાથે એકથી વધુ કાર્યો કરવા"</string>
@@ -1223,6 +1229,10 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"<xliff:g id="ID_1">%s</xliff:g> સેટિંગ ખોલો."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"ઝડપી સેટિંગના ક્રમમાં ફેરફાર કરો."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"પાવર મેનૂ"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>માંથી <xliff:g id="ID_1">%1$d</xliff:g> પેજ"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g>ને ચાલુ કરીએ?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"આઇકન"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> એ <xliff:g id="ID_4">^4</xliff:g>નો ઉપયોગ કરવા માટે કીબોર્ડ શૉર્ટકટ છે. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1596,6 +1606,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"છબીનો પ્રીવ્યૂ"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"ફેરફાર કરો"</string>
     <string name="add" msgid="81036585205287996">"ઉમેરો"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"વપરાશકર્તાઓને મેનેજ કરો"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"આ નોટિફિકેશન તેને વિભાજિત સ્ક્રીનમાં ખેંચવાની સુવિધાને સપોર્ટ કરતું નથી"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"લોકેશન સક્રિય"</string>

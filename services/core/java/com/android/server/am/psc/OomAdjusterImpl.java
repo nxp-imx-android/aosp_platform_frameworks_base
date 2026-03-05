@@ -1160,7 +1160,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         if (Flags.enableCapabilityControllerComputation()) {
             // We'll set this later when evaluating implicit CPU time capability.
-            app.getGraphNode().setHasIntrinsicImplicitCpuTime(false);
+            app.getProcessNode().setHasIntrinsicImplicitCpuTime(false);
         }
 
         // Remove any follow up update this process might have. It will be rescheduled if still
@@ -1202,7 +1202,7 @@ public class OomAdjusterImpl extends OomAdjuster {
             app.addCurCpuTimeReasons(CPU_TIME_REASON_OTHER);
             app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
             if (Flags.enableCapabilityControllerComputation()) {
-                app.getGraphNode().setHasIntrinsicImplicitCpuTime(true);
+                app.getProcessNode().setHasIntrinsicImplicitCpuTime(true);
             }
             app.setCurProcState(ActivityManager.PROCESS_STATE_PERSISTENT);
             // System processes can do UI, and when they do we want to have

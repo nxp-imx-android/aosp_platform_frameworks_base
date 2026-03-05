@@ -129,6 +129,8 @@ import com.android.wm.shell.desktopmode.DisplayDisconnectTransitionHandler;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler;
+import com.android.wm.shell.desktopmode.FreeformFallbackTransitionHandler;
+import com.android.wm.shell.desktopmode.FreeformFallbackTransitionObserver;
 import com.android.wm.shell.desktopmode.NormalAppLayerController;
 import com.android.wm.shell.desktopmode.NormalAppLayerHandler;
 import com.android.wm.shell.desktopmode.OverviewToDesktopTransitionObserver;
@@ -472,7 +474,8 @@ public abstract class WMShellModule {
             Optional<TaskChangeListener> taskChangeListener,
             @DynamicOverride DesksOrganizer desksOrganizer,
             DesktopState desktopState,
-            Optional<DesktopInOrderTransitionObserver> desktopInOrderTransitionObserver) {
+            Optional<DesktopInOrderTransitionObserver> desktopInOrderTransitionObserver,
+            Optional<FreeformFallbackTransitionObserver> freeformFallbackTransitionObserver) {
         return new FreeformTaskTransitionObserver(
                 shellInit,
                 transitions,
@@ -480,7 +483,8 @@ public abstract class WMShellModule {
                 taskChangeListener,
                 desksOrganizer,
                 desktopState,
-                desktopInOrderTransitionObserver);
+                desktopInOrderTransitionObserver,
+                freeformFallbackTransitionObserver);
     }
 
     @WMSingleton
@@ -1513,6 +1517,18 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
+    static Optional<FreeformFallbackTransitionHandler> provideFreeformFallbackTransitionHandler(
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+            DesktopState desktopState) {
+        if (!desktopState.canEnterDesktopMode()) {
+            return Optional.empty();
+        }
+        return Optional.of(
+                new FreeformFallbackTransitionHandler(desktopUserRepositories));
+    }
+
+    @WMSingleton
+    @Provides
     static EnterDesktopTaskTransitionHandler provideEnterDesktopModeTaskTransitionHandler(
             Transitions transitions,
             Context context,
@@ -1693,6 +1709,38 @@ public abstract class WMShellModule {
                     new DesksTransitionObserver(desktopUserRepositories, desksOrganizer,
                             transitions, desktopWallpaperActivityTokenProvider, mainScope,
                             desktopModeEventLogger, shellController, displayController));
+        }
+        return Optional.empty();
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<FreeformFallbackTransitionObserver> provideFreeformFallbackTransitionObserver(
+            @NonNull Transitions transitions,
+            @ShellMainThreadImmediate CoroutineScope mainScopeImmediate,
+            Optional<PinnedLayerController> pinnedLayerController,
+            dagger.Lazy<Optional<DesktopTasksController>> desktopTasksControllerLazy,
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+            @DynamicOverride DesksOrganizer desksOrganizer,
+            DesksController desksController,
+            DesktopConfig desktopConfig,
+            Optional<FreeformFallbackTransitionHandler> freeformFallbackTransitionHandler,
+            DesktopState desktopState
+    ) {
+        if (desktopState.canEnterDesktopModeOrShowAppHandle()) {
+            return Optional.of(
+                    new FreeformFallbackTransitionObserver(
+                            transitions,
+                            mainScopeImmediate,
+                            pinnedLayerController,
+                            desktopTasksControllerLazy,
+                            desktopUserRepositories,
+                            desksOrganizer,
+                            desksController,
+                            desktopConfig,
+                            freeformFallbackTransitionHandler
+                    )
+            );
         }
         return Optional.empty();
     }
@@ -2140,10 +2188,12 @@ public abstract class WMShellModule {
             TransactionSupplier transactionSupplier,
             Context context,
             @ShellAnimationThread ShellExecutor animExecutor,
-            @ShellMainThread ShellExecutor mainExecutor
+            @ShellMainThread ShellExecutor mainExecutor,
+            @ShellMainThread Handler shellMainHandler,
+            InteractionJankMonitor interactionJankMonitor
     ) {
         return new PackageUpdateTransitionHandler(transactionSupplier, context, animExecutor,
-                mainExecutor);
+                mainExecutor, shellMainHandler, interactionJankMonitor);
     }
     //
     // App zoom out

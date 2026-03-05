@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.packageupdate
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -70,6 +71,7 @@ class PackageUpdateActivity : FragmentActivity() {
     companion object {
         private const val ICON = "icon"
         private const val UPDATING_APP = "updating app"
+        private const val SYSTEM_UI_PACKAGE_NAME = "com.android.systemui"
 
         /** Creates an intent to launch [PackageUpdateActivity]. */
         fun createIntent(
@@ -89,5 +91,13 @@ class PackageUpdateActivity : FragmentActivity() {
 
             return intent
         }
+
+        @JvmStatic
+        val activityComponent =
+            ComponentName(SYSTEM_UI_PACKAGE_NAME, PackageUpdateActivity::class.java.name)
+
+        @JvmStatic
+        fun isPackageUpdateActivityComponent(component: ComponentName?) =
+            component == activityComponent
     }
 }

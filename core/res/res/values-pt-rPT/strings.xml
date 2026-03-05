@@ -555,6 +555,8 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"Esta app pode tirar fotos e gravar vídeos através da câmara em qualquer altura."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Permitir que uma app ou um serviço aceda às câmaras do sistema para tirar fotos e vídeos"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"Esta app do sistema ou privilegiada pode tirar fotos e gravar vídeos através de uma câmara do sistema em qualquer altura. Também necessita da autorização android.permission.CAMERA para a app."</string>
+    <string name="permlab_warmUpCamera" msgid="6135692056406854923">"Permitir que uma aplicação ou um serviço envie um sinal de aquecimento para o subsistema da câmara"</string>
+    <string name="permdesc_warmUpCamera" msgid="925343364567764736">"Esta app do sistema ou privilegiada pode enviar um sinal para o subsistema da câmara de forma a aquecer um dispositivo de câmara para ajudar no desempenho, entre outras vantagens"</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Permitir que uma app ou um serviço receba chamadas de retorno sobre dispositivos de câmara que estão a ser abertos ou fechados"</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"Esta app pode receber chamadas de retorno quando qualquer dispositivo de câmara está a ser aberto (e por que app) ou fechado."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Permita que uma aplicação ou um serviço aceda à câmara como utilizador do sistema sem interface."</string>

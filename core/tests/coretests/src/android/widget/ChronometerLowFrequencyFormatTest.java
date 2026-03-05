@@ -116,9 +116,4 @@ public class ChronometerLowFrequencyFormatTest {
                 () -> ChronometerLowFrequencyFormat.format(Duration.ofMinutes(-1), true)
         );
     }
-
-    @Test
-    public void testGetTickPeriod() {
-        assertThat(ChronometerLowFrequencyFormat.getTickPeriod()).isEqualTo(60000);
-    }
 }

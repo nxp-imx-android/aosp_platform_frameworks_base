@@ -16,9 +16,11 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.Flags.FLAG_DUAL_SHADE
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.authentication.data.repository.FakeAuthenticationRepository
 import com.android.systemui.authentication.domain.interactor.authenticationInteractor
@@ -50,6 +52,7 @@ import com.android.systemui.scene.domain.interactor.sceneBackInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.statusbar.policy.data.repository.fakeDeviceProvisioningRepository
 import com.android.systemui.testKosmos
@@ -1512,8 +1515,10 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
+    @EnableFlags(FLAG_DUAL_SHADE)
     fun lockscreenVisibility_overlayOnDreamAndUnlocked_isNotVisible() =
         kosmos.runTest {
+            enableDualShade()
             val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)
             val currentScene by collectLastValue(sceneInteractor.currentScene)
             val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
@@ -1535,7 +1540,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             setSceneTransition(
                 ObservableTransitionState.Transition.showOverlay(
                     fromScene = Scenes.Dream,
-                    overlay = Overlays.Bouncer,
+                    overlay = Overlays.QuickSettingsShade,
                     currentOverlays = flowOf(setOf()),
                     progress = flowOf(0.5f),
                     isInitiatedByUserInput = false,
@@ -1545,18 +1550,18 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
             assertThat(lockscreenVisibility).isFalse()
 
             // Settle on dream with overlay.
-            setSceneTransition(Idle(Scenes.Dream, setOf(Overlays.Bouncer)))
-            sceneInteractor.showOverlay(Overlays.Bouncer, "")
+            setSceneTransition(Idle(Scenes.Dream, setOf(Overlays.QuickSettingsShade)))
+            sceneInteractor.showOverlay(Overlays.QuickSettingsShade, "")
             assertThat(currentScene).isEqualTo(Scenes.Dream)
-            assertThat(currentOverlays).contains(Overlays.Bouncer)
+            assertThat(currentOverlays).contains(Overlays.QuickSettingsShade)
             assertThat(lockscreenVisibility).isFalse()
 
             // Hide the overlay.
             setSceneTransition(
                 ObservableTransitionState.Transition.hideOverlay(
-                    overlay = Overlays.Bouncer,
+                    overlay = Overlays.QuickSettingsShade,
                     toScene = Scenes.Dream,
-                    currentOverlays = flowOf(setOf(Overlays.Bouncer)),
+                    currentOverlays = flowOf(setOf(Overlays.QuickSettingsShade)),
                     progress = flowOf(0.5f),
                     isInitiatedByUserInput = false,
                     isUserInputOngoing = flowOf(false),

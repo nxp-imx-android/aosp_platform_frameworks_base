@@ -610,11 +610,9 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
         }
 
         if (!state.shouldProcessMotionEvent(event)) {
-            if (Flags.passThroughUnprocessedMotionEvents()) {
-                // Fix: If the filter doesn't track this event (e.g. mid-gesture enable),
-                // pass it down to prevent dropping ACTION_UP and freezing the screen.
-                super.onInputEvent(event, policyFlags);
-            }
+            // Fix: If the filter doesn't track this event (e.g. mid-gesture enable),
+            // pass it down to prevent dropping ACTION_UP and freezing the screen.
+            super.onInputEvent(event, policyFlags);
             return;
         }
 

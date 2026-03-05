@@ -91,7 +91,7 @@
     <string name="kg_primary_auth_duplicate_guess_password" msgid="3153406042812407458">"Tätä salasanaa on jo kokeiltu. Kokeile toista."</string>
     <string name="kg_primary_auth_locked_out_pattern" msgid="8266214607346180952">"Liian monta yritystä väärällä kuviolla"</string>
     <string name="kg_primary_auth_locked_out_password" msgid="6170245108400198659">"Liian monta yritystä väärällä salasanalla"</string>
-    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Liian monta yritystä väärällä PIN-koodilla.\nLue lisää osoitteessa <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
+    <string name="kg_primary_auth_locked_out_pin_shortlink" msgid="1294871994741389848">"Liian monta yritystä väärällä PIN-koodilla.\nLue lisää osoitteesta <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_pattern_shortlink" msgid="5998598232858156495">"Liian monta yritystä väärällä kuviolla\nLue lisää osoitteessa <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_primary_auth_locked_out_password_shortlink" msgid="7035847891707609104">"Liian monta yritystä väärällä salasanalla\nLue lisää osoitteessa <xliff:g id="SHORTLINK">{shortlink}</xliff:g>"</string>
     <string name="kg_too_many_failed_attempts_countdown" msgid="2038195171919795529">"{count,plural, =1{Yritä uudelleen # sekunnin kuluttua.}other{Yritä uudelleen # sekunnin kuluttua.}}"</string>

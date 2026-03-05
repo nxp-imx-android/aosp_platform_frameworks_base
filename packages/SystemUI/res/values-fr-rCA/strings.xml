@@ -248,10 +248,8 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Appareil photo avant"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"sélectionner"</string>
-    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
-    <skip />
-    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
-    <skip />
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"Menu développé"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"Menu réduit"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Arrêter le partage"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"La fonctionnalité Partage d\'écran est activée. Utilisez l\'indicateur de confidentialité pour mettre fin au partage."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Partage d\'écran en cours…"</string>
@@ -561,7 +559,7 @@
     <string name="restore_default" msgid="5259420807486239755">"Restaurer la valeur par défaut"</string>
     <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"Mode Une main"</string>
     <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"Appareils auditifs"</string>
-    <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"Actives"</string>
+    <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"Actifs"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"Déconnectées"</string>
     <string name="quick_settings_hearing_devices_dialog_title" msgid="9004774017688484981">"Appareils auditifs"</string>
     <string name="quick_settings_pair_hearing_devices" msgid="5987105102207447322">"Associer un nouvel appareil"</string>
@@ -708,6 +706,18 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Accéder à vos widgets et écrans de veille préférés pendant le chargement."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Allons-y"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Affichez vos écrans de veille préférés pendant le chargement"</string>
+    <!-- no translation found for dream_switcher_select_dream_title (2784437029616150736) -->
+    <skip />
+    <!-- no translation found for dream_switcher_choose_screensaver (3073471555365511227) -->
+    <skip />
+    <!-- no translation found for dream_switcher_edit_button_text (2152516873780618659) -->
+    <skip />
+    <!-- no translation found for dream_switcher_go_to_app_button_text (6043693674135654080) -->
+    <skip />
+    <!-- no translation found for dream_switcher_more_screensavers (6672017768044989604) -->
+    <skip />
+    <!-- no translation found for dreams_switcher_accessibility_action (2910870945341642369) -->
+    <skip />
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Changer d\'utilisateur"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"menu déroulant"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Toutes les applis et les données de cette session seront supprimées."</string>
@@ -1044,8 +1054,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# heure}=2{# heures}one{# heure}many{# d\'heures}other{# heures}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# minute}one{# minute}many{# de minutes}other{# minutes}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"pour ouvrir le menu de rétrogradation"</string>
-    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
-    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Économiseur de pile"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Bouton <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Accueil"</string>
@@ -1092,7 +1100,7 @@
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"Affichage des raccourcis de l\'appli actuelle en cours…"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Afficher les notifications"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Afficher les Paramètres rapides"</string>
-    <string name="group_system_full_screenshot" msgid="5742204844232667785">"Prendre une capture d\'écran"</string>
+    <string name="group_system_full_screenshot" msgid="5742204844232667785">"Effectuer une capture d\'écran"</string>
     <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Effectuer une capture d\'écran partielle"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Afficher les raccourcis"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Retour"</string>
@@ -1104,6 +1112,8 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Ouvrir les paramètres"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Ouvrir l\'assistant numérique"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"Recherche contextuelle"</string>
+    <!-- no translation found for group_system_access_contextual_cursor (200587108400598774) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Verrouiller l\'écran"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Prendre une note"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitâche"</string>
@@ -1226,6 +1236,10 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Ouvrir les paramètres <xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Modifier l\'ordre des Paramètres rapides."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu de l\'interrupteur"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Page <xliff:g id="ID_1">%1$d</xliff:g> sur <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Activer <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"Raccourci-clavier pour utiliser <xliff:g id="ID_4">^4</xliff:g> : "<annotation id="action_key_icon">"icône"</annotation>" <xliff:g id="ID_1">^1</xliff:g>+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1599,6 +1613,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Aperçu de l\'image"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"modifier"</string>
     <string name="add" msgid="81036585205287996">"Ajouter"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"Gérer utilisateurs"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Cette notification ne prend pas en charge l\'écran partagé par glissement"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"Position active"</string>

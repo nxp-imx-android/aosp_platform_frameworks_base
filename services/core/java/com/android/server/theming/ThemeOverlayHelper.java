@@ -295,40 +295,32 @@ public class ThemeOverlayHelper {
 
         // Neutral palette
         assignColorsToOverlay(overlay, DynamicColors.getAllNeutralPalette(),
-                false, lightColorScheme, darkColorScheme);
+                lightColorScheme, darkColorScheme);
 
         // Accent palette
         assignColorsToOverlay(overlay, DynamicColors.getAllAccentPalette(),
-                false, lightColorScheme, darkColorScheme);
+                lightColorScheme, darkColorScheme);
 
         //Themed Colors
         assignColorsToOverlay(overlay, DynamicColors.getAllDynamicColorsMapped(),
-                false, lightColorScheme, darkColorScheme);
+                lightColorScheme, darkColorScheme);
 
-        // Fixed colors intentionally use only the lightscheme, hence the "fixed" in name.
-        // However, on Wear, legacy behavior used the dark scheme. We expect the caller to pass
-        // the dark scheme as lightColorScheme if this is desired.
-        ColorScheme fixedScheme = lightColorScheme;
-        assignColorsToOverlay(overlay, DynamicColors.getFixedColorsMapped(), true,
-                fixedScheme, fixedScheme);
+        //Fixed Colors
+        assignColorsToOverlay(overlay, DynamicColors.getFixedColorsMapped(),
+                lightColorScheme, darkColorScheme);
 
         //Custom Colors
-        assignColorsToOverlay(overlay, DynamicColors.getCustomColorsMapped(), false,
+        assignColorsToOverlay(overlay, DynamicColors.getCustomColorsMapped(),
                 lightColorScheme, darkColorScheme);
 
         return overlay;
     }
 
     private void assignColorsToOverlay(FabricatedOverlay overlay,
-            List<Pair<String, DynamicColor>> colors, Boolean isFixed, ColorScheme lightColorScheme,
+            List<Pair<String, DynamicColor>> colors, ColorScheme lightColorScheme,
             ColorScheme darkColorScheme) {
         for (Pair<String, DynamicColor> p : colors) {
             String prefix = "android:color/system_" + p.first;
-            if (isFixed) {
-                overlay.setResourceValue(prefix, TYPE_INT_COLOR_ARGB8,
-                        p.second.getArgb(darkColorScheme.getMaterialScheme()), null);
-                continue;
-            }
             overlay.setResourceValue(prefix + "_light", TYPE_INT_COLOR_ARGB8,
                     p.second.getArgb(lightColorScheme.getMaterialScheme()), null);
             overlay.setResourceValue(prefix + "_dark", TYPE_INT_COLOR_ARGB8,

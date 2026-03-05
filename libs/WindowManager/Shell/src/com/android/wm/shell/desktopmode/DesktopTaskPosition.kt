@@ -20,11 +20,13 @@ import android.app.TaskInfo
 import android.content.res.Resources
 import android.graphics.Point
 import android.graphics.Rect
+import android.util.Size
 import android.view.Gravity
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.DesktopModeCompatUtils.applyLayoutGravity
 import com.android.internal.policy.DesktopModeLaunchBoundsUtils
 import com.android.internal.policy.DesktopModeLaunchBoundsUtils.WINDOW_HEIGHT_PROPORTION
+import com.android.internal.policy.DesktopModeLaunchBoundsUtils.centerInScreen
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.DesktopTaskPosition.BottomLeft
@@ -168,54 +170,26 @@ internal fun cascadeWindow(
 }
 
 fun cascadeWindowStepped(
-    res: Resources,
     frame: Rect,
-    prev: Rect,
     dest: Rect,
+    prevBoundsList: List<Rect>,
     isRememberedBounds: Boolean,
-) {
-    val offset = res.getDimensionPixelSize(R.dimen.desktop_mode_cascading_offset)
-
-    if (Flags.enableRememberedBounds() && isRememberedBounds) {
-        cascadeWindowSteppedForRememberedBounds(offset, frame, prev, dest)
-        return
-    }
-
-    if (DesktopModeLaunchBoundsUtils.haveSameBoundsWithThreshold(offset, prev, dest)) {
-        // TODO(b/410787173): Implement multi-step cascading and screen wrapping.
-        DesktopModeLaunchBoundsUtils.cascadeOneStep(offset, dest)
-    } else {
-        // Default to center
-        val centerPos = Center.getTopLeftCoordinates(frame, dest)
-        dest.offsetTo(centerPos.x, centerPos.y)
-    }
-}
-
-private fun cascadeWindowSteppedForRememberedBounds(
-    offset: Int,
-    frame: Rect,
-    prev: Rect,
-    dest: Rect,
+    res: Resources,
 ) {
     val candidatePos = frame.getDesktopTaskPosition(dest)
     if (candidatePos == Maximized || candidatePos == LeftSnapped || candidatePos == RightSnapped) {
         // No need to cascade if the destination bounds is maximized or snapped.
         return
     }
-    if (!DesktopModeLaunchBoundsUtils.haveSameBoundsWithThreshold(offset, prev, dest)) {
-        // If the remembered bounds is different enough from the bounds of the focused window,
-        // we can use the remembered bounds as is.
-        return
-    }
 
-    if (
-        dest.left + offset + dest.width() <= frame.right &&
-            dest.top + offset + dest.height() <= frame.bottom
-    ) {
-        // Successfully resolves collision with one-step cascading preserving general size and
-        // location (no wrapping)
-        DesktopModeLaunchBoundsUtils.cascadeOneStep(offset, dest)
-    }
+    val boundsToCascade =
+        if (isRememberedBounds) {
+            dest
+        } else {
+            centerInScreen(Size(dest.width(), dest.height()), frame)
+        }
+    DesktopModeLaunchBoundsUtils.cascadeWindowStepped(frame, boundsToCascade, prevBoundsList, res)
+    dest.set(boundsToCascade)
 }
 
 fun cascadeWindowForRememberedBounds(res: Resources, frame: Rect, prev: Rect, dest: Rect) {

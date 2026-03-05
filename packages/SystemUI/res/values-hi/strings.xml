@@ -248,10 +248,8 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"फ़्रंट कैमरा"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"चुनें"</string>
-    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
-    <skip />
-    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
-    <skip />
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"मेन्यू को बड़ा किया गया"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"मेन्यू को छोटा किया गया"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"शेयर करना बंद करें"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"स्क्रीन शेयर करने की सुविधा चालू है. इसे बंद करने के लिए, प्राइवसी इंडिकेटर का इस्तेमाल करें."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"स्क्रीन शेयर की जा रही है"</string>
@@ -561,7 +559,7 @@
     <string name="restore_default" msgid="5259420807486239755">"डिफ़ॉल्ट सेटिंग वापस लाएं"</string>
     <string name="quick_settings_onehanded_label" msgid="2416537930246274991">"एक हाथ से इस्तेमाल करने की सुविधा"</string>
     <string name="quick_settings_hearing_devices_label" msgid="7277170419679404129">"कान की मशीनें"</string>
-    <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"ऐक्टिव"</string>
+    <string name="quick_settings_hearing_devices_connected" msgid="6519069502397037781">"चालू है"</string>
     <string name="quick_settings_hearing_devices_disconnected" msgid="8907061223998176187">"डिसकनेक्ट हो गया"</string>
     <string name="quick_settings_hearing_devices_dialog_title" msgid="9004774017688484981">"कान की मशीनें"</string>
     <string name="quick_settings_pair_hearing_devices" msgid="5987105102207447322">"कान की नई मशीन जोड़ें"</string>
@@ -708,6 +706,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"चार्जिंग के दौरान, अपने पसंदीदा विजेट और स्क्रीन सेवर को ऐक्सेस करें."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"आइए शुरू करें"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"चार्ज करते समय अपने पसंदीदा स्क्रीन सेवर दिखाएं"</string>
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"ड्रीम मोड की सेटिंग चुनें"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"कोई स्क्रीन सेवर चुनें"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"<xliff:g id="DREAM_NAME">%1$s</xliff:g> में बदलाव करें"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"<xliff:g id="APP_NAME">%1$s</xliff:g> पर जाएं"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"अन्य स्क्रीन सेवर"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"ड्रीम मोड की सेटिंग चुनने का मेन्यू खोलें"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"दूसरे खाते पर स्विच करें"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"पुलडाउन मेन्यू"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"इस सेशन के सभी ऐप्लिकेशन और डेटा को हटा दिया जाएगा."</string>
@@ -1044,8 +1048,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# घंटा}=2{# घंटे}one{# घंटा}other{# घंटे}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# मिनट}one{# मिनट}other{# मिनट}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"डिमोशन मेन्यू खोलने के लिए"</string>
-    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
-    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"बैटरी सेवर"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"बटन <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Home"</string>
@@ -1093,7 +1095,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"सूचनाएं देखने के लिए"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"क्विक सेटिंग देखने के लिए"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"स्क्रीनशॉट लेने के लिए"</string>
-    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"किसी खास हिस्से का स्क्रीनशॉट लें"</string>
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"किसी खास हिस्से का स्क्रीनशॉट लेने के लिए"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"शॉर्टकट देखने के लिए"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"वापस जाने के लिए"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"होम स्क्रीन पर जाने के लिए"</string>
@@ -1104,6 +1106,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"सेटिंग खोलने के लिए"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"डिजिटल असिस्टेंट खोलने के लिए"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"कॉन्टेक्स्ट के हिसाब से खोज"</string>
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"कॉन्टेक्स्ट के हिसाब से काम करने वाला कर्सर"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"स्क्रीन लॉक करने के लिए"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"नोट बनाने के लिए"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"मल्टीटास्किंग (एक साथ कई काम करना)"</string>
@@ -1182,7 +1185,7 @@
     <string name="right_keycode" msgid="2480715509844798438">"दायां कुंजी कोड"</string>
     <string name="left_icon" msgid="5036278531966897006">"बायां आइकॉन"</string>
     <string name="right_icon" msgid="1103955040645237425">"दायां आइकॉन"</string>
-    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"उन टाइल को चुनें जिन्हें फिर से व्यवस्थित करना है और जिनका साइज़ बदलना है"</string>
+    <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"वे टाइल चुनें जिन्हें छोटा-बड़ा और व्यवस्थित करना है"</string>
     <string name="tap_to_remove_tiles" msgid="76564688376603718">"टाइलें हटाने के लिए टैप करें"</string>
     <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"लेआउट का साइज़ बदलें और उसे फिर से क्रम में लगाएं"</string>
     <string name="qs_edit_edit_tab" msgid="467315123555871860">"बदलाव करें"</string>
@@ -1226,6 +1229,10 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"<xliff:g id="ID_1">%s</xliff:g> सेटिंग खोलें."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"क्विक सेटिंग के क्रम में बदलाव करें."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"पावर मेन्यू"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"पेज <xliff:g id="ID_2">%2$d</xliff:g> में से <xliff:g id="ID_1">%1$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"क्या <xliff:g id="ID_1">%1$s</xliff:g> को चालू करना है?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_4">^4</xliff:g> का इस्तेमाल करने के लिए कीबोर्ड शॉर्टकट, <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"आइकॉन"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> है. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1599,6 +1606,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"इमेज की झलक"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"बदलाव करें"</string>
     <string name="add" msgid="81036585205287996">"जोड़ें"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"उपयोगकर्ताओं को मैनेज करें"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"इस सूचना को स्प्लिट स्क्रीन मोड में, खींचा और छोड़ा नहीं जा सकता"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"जगह की जानकारी की सेटिंग चालू है"</string>
@@ -1864,7 +1873,7 @@
     <string name="av_camera_blur_full" msgid="3276351992811619332">"पूरा धुंधला करें"</string>
     <string name="av_camera_improve_lighting" msgid="1540549414296669133">"रोशनी बढ़ाएं"</string>
     <string name="av_camera_face_retouch" msgid="45890971969486224">"लुक को बेहतर बनाने की सुविधा"</string>
-    <string name="av_camera_framing" msgid="5108462267843042492">"कैमरे में सब्जेक्ट की पोज़िशन ठीक करें"</string>
+    <string name="av_camera_framing" msgid="5108462267843042492">"कैमरा फ़्रेमिंग"</string>
     <string name="av_studio_mic" msgid="2614843492629357766">"स्टूडियो माइक"</string>
     <string name="av_studio_look" msgid="621893522645557619">"स्टूडियो लुक"</string>
     <string name="av_studio_look_effects" msgid="4105109585851068415">"%d इफ़ेक्ट"</string>

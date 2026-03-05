@@ -248,10 +248,8 @@
     <string name="screen_capture_front_camera" msgid="1214647538302639358">"Prednja kamera"</string>
     <string name="screen_capture_region_dimensions" msgid="2317064050253056256">"<xliff:g id="WIDTH">%1$d</xliff:g> x <xliff:g id="HEIGHT">%2$d</xliff:g>"</string>
     <string name="screen_capture_a11y_toolbar_radio_button_action" msgid="978101981178584140">"odaberi"</string>
-    <!-- no translation found for screen_capture_a11y_settings_menu_expanded (3063066229912137755) -->
-    <skip />
-    <!-- no translation found for screen_capture_a11y_settings_menu_collapsed (3669791857195646127) -->
-    <skip />
+    <string name="screen_capture_a11y_settings_menu_expanded" msgid="3063066229912137755">"Izbornik je proširen"</string>
+    <string name="screen_capture_a11y_settings_menu_collapsed" msgid="3669791857195646127">"Izbornik je sažet"</string>
     <string name="screen_share_privacy_indicator_stop_sharing" msgid="2297045039651417274">"Zaustavi dijeljenje"</string>
     <string name="share_screen_privacy_indicator_accessibility_label" msgid="8748931450480306816">"Dijeljenje zaslona je uključeno. Upotrijebite pokazivač za privatnost da biste zaustavili dijeljenje."</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Dijeljenje zaslona"</string>
@@ -306,7 +304,7 @@
     <string name="cancel" msgid="1089011503403416730">"Odustani"</string>
     <string name="biometric_dialog_logo" msgid="7681107853070774595">"Logotip aplikacije"</string>
     <string name="biometric_dialog_confirm" msgid="2005978443007344895">"Potvrdi"</string>
-    <string name="biometric_dialog_try_again" msgid="8575345628117768844">"Pokušaj ponovo"</string>
+    <string name="biometric_dialog_try_again" msgid="8575345628117768844">"Pokušaj ponovno"</string>
     <string name="biometric_dialog_empty_space_description" msgid="3330555462071453396">"Dodirnite da biste otkazali autentifikaciju"</string>
     <string name="biometric_dialog_face_icon_description_idle" msgid="4351777022315116816">"Pokušajte ponovno"</string>
     <string name="biometric_dialog_face_icon_description_authenticating" msgid="3401633342366146535">"Traženje lica"</string>
@@ -708,6 +706,18 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Pristupite omiljenim widgetima i čuvarima zaslona tijekom punjenja."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Započnimo"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Prikaz vaših omiljenih čuvara zaslona tijekom punjenja"</string>
+    <!-- no translation found for dream_switcher_select_dream_title (2784437029616150736) -->
+    <skip />
+    <!-- no translation found for dream_switcher_choose_screensaver (3073471555365511227) -->
+    <skip />
+    <!-- no translation found for dream_switcher_edit_button_text (2152516873780618659) -->
+    <skip />
+    <!-- no translation found for dream_switcher_go_to_app_button_text (6043693674135654080) -->
+    <skip />
+    <!-- no translation found for dream_switcher_more_screensavers (6672017768044989604) -->
+    <skip />
+    <!-- no translation found for dreams_switcher_accessibility_action (2910870945341642369) -->
+    <skip />
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Promjena korisnika"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"padajući izbornik"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Izbrisat će se sve aplikacije i podaci u ovoj sesiji."</string>
@@ -1044,8 +1054,6 @@
     <string name="snoozeHourOptions" msgid="2332819756222425558">"{count,plural, =1{# h}=2{# h}one{# h}few{# h}other{# h}}"</string>
     <string name="snoozeMinuteOptions" msgid="2222082405822030979">"{count,plural, =1{# min}one{# min}few{# min}other{# min}}"</string>
     <string name="notification_promoted_ongoing_long_click" msgid="7199288520206554592">"za otvaranje izbornika za degradiranje"</string>
-    <!-- no translation found for notification_rules_activity_title (3580318899872813414) -->
-    <skip />
     <string name="battery_detail_switch_title" msgid="6940976502957380405">"Štednja baterije"</string>
     <string name="keyboard_key_button_template" msgid="8005673627272051429">"Tipka <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="keyboard_key_home" msgid="3734400625170020657">"Početak"</string>
@@ -1093,7 +1101,7 @@
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Prikaz obavijesti"</string>
     <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Prikaz brzih postavki"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Snimanje zaslona"</string>
-    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Snimanje djelomične snimke zaslona"</string>
+    <string name="group_system_partial_screenshot" msgid="2114314797127648010">"Djelomično snimanje zaslona"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Prikaz prečaca"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Natrag"</string>
     <string name="group_system_access_home_screen" msgid="4130366993484706483">"Otvaranje početnog zaslona"</string>
@@ -1104,6 +1112,8 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Otvaranje postavki"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Otvaranje digitalnog asistenta"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"Kontekstualno pretraživanje"</string>
+    <!-- no translation found for group_system_access_contextual_cursor (200587108400598774) -->
+    <skip />
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Zaključavanje zaslona"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Pisanje bilješke"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Obavljanje više zadataka"</string>
@@ -1226,26 +1236,30 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Otvaranje postavki za <xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Uredite redoslijed brzih postavki."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Izbornik tipke za uključivanje/isključivanje"</string>
+    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
+    <skip />
+    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
+    <skip />
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Stranica <xliff:g id="ID_1">%1$d</xliff:g> od <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Želite li uključiti značajku <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
-    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612"><annotation id="action_key_icon">"Ikona"</annotation>" radnje <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu značajke <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu značajke <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_screen_reader_tts" msgid="6466269887128043486">"Ponovno pritisnite <xliff:g id="ID_1">%1$s</xliff:g> + <xliff:g id="ID_2">%2$s</xliff:g> + <xliff:g id="ID_3">%3$s</xliff:g> da biste omogućili <xliff:g id="ID_4">%4$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_dialog_title" msgid="5331043821287212071">"Želite li uključiti tipkovni prečac značajke <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_negative_button_text" msgid="6711239406914231612">"Nemoj uključiti"</string>
     <string name="accessibility_key_gesture_shortcut_not_yet_enabled_positive_button_text" msgid="7748487028569821131">"Uključi prečac"</string>
-    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikona"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu inverzije boja. Uz inverziju boja svijetli zasloni postaju tamni. Isto tako, tamni zasloni postaju svijetli."</string>
+    <string name="accessibility_key_gesture_color_inversion_dialog_content" msgid="8831745570619953566">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu inverzije boja. Uz inverziju boja svijetli zasloni postaju tamni. Isto tako, tamni zasloni postaju svijetli."</string>
     <string name="accessibility_key_gesture_magnification_dialog_title" msgid="5770691510738701250">"Uključen je tipkovni prečac <xliff:g id="ID_1">%1$s</xliff:g>"</string>
     <string name="accessibility_key_gesture_magnification_dialog_content" msgid="1647246652170256645">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu značajke pristupačnosti <xliff:g id="ID_4">^4</xliff:g>. Omogućuje vam da brzo povećate prikaz na zaslonu kako biste bolje vidjeli sadržaj. Kad je povećavanje uključeno, pritisnite <xliff:g id="ID_5">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_6">^2</xliff:g> i \"+\" ili \"-\" da biste prilagodili zumiranje."</string>
     <string name="accessibility_key_gesture_magnification_dialog_negative_button_text" msgid="8393469413785600834">"Isključi prečac"</string>
     <string name="accessibility_key_gesture_magnification_dialog_positive_button_text" msgid="895076240681888057">"Ostavi uključeno"</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751"><annotation id="action_key_icon">"Ikona"</annotation>" radnje <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu značajke <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> je čitač zaslona koji vam omogućuje da čujete stavke izgovorene naglas. To može biti korisno za osobe koje imaju poteškoća s vidom. Time se može promijeniti način na koji vaš uređaj radi."</string>
-    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Ako uključite tipkovni prečac, TalkBacku ćete dopustiti potpunu kontrolu nad vašim uređajem."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_content" msgid="2322728522389883751">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu značajke <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^4</xliff:g> je čitač zaslona koji vam omogućuje da čujete stavke izgovorene naglas. To može biti korisno za osobe koje imaju poteškoća s vidom. Time se može promijeniti način na koji vaš uređaj radi."</string>
+    <string name="accessibility_key_gesture_screen_reader_dialog_warning_heading" msgid="5958960812509429136">"Ako uključite tipkovni prečac, TalkBacku ćete dopustiti potpunu kontrolu nad svojim uređajem."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_message" msgid="2026368922103788492">"Potpuna kontrola prikladna je za aplikacije koje vam pomažu s potrebama pristupačnosti, ali ne i za većinu aplikacija."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_heading" msgid="5346128898440400425">"Prikaz zaslona i upravljanje njime"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_view_control_screen_message" msgid="5810348116536082139">"Može čitati sav sadržaj na zaslonu i prikazati sadržaj povrh drugih aplikacija."</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_heading" msgid="6032379987970298008">"Prikaz i izvršavanje radnji"</string>
     <string name="accessibility_key_gesture_screen_reader_dialog_warning_perform_actions_message" msgid="4565304881759944542">"Može pratiti vaše interakcije s aplikacijama ili senzorom uređaja i stupati u interakciju s aplikacijama u vaše ime."</string>
-    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861"><annotation id="action_key_icon">"Ikona"</annotation>" radnje <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu značajke <xliff:g id="ID_4">^4</xliff:g>. To vam omogućuje da prilagodite font i razmake te da čujete tekst koji će se čitati naglas izravno na vašem uređaju."</string>
+    <string name="accessibility_key_gesture_select_to_speak_dialog_content" msgid="2241403419620826861">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"icon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> tipkovni je prečac za upotrebu značajke <xliff:g id="ID_4">^4</xliff:g>. To vam omogućuje da prilagodite font i razmake te da čujete tekst koji će se čitati naglas izravno na vašem uređaju."</string>
     <string name="accessibility_key_gesture_voice_access_dialog_content" msgid="8539054865187379687">"Pritiskom na "<annotation id="action_key_icon">"ikonu"</annotation>" radnje <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> uključuje se značajka pristupačnosti <xliff:g id="ID_4">^4</xliff:g>. To vam omogućuje da upravljate uređajem bez upotrebe ruku."</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_title" msgid="4659318395231105188">"Tipka za pristupačnost"</string>
     <string name="accessibility_shortcutchooser_toprow_tutorial_dialog_content" msgid="7058726404278534674">"Možete pritisnuti tipku za pristupačnost da biste počeli upotrebljavati značajke pristupačnosti."</string>
@@ -1599,6 +1613,8 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Pregled slike"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"uredi"</string>
     <string name="add" msgid="81036585205287996">"Dodaj"</string>
+    <!-- no translation found for remove (7031760447233505700) -->
+    <skip />
     <string name="manage_users" msgid="1823875311934643849">"Upravljajte korisnicima"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Ova obavijest ne podržava povlačenje na podijeljeni zaslon."</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"Lokacija je aktivna"</string>

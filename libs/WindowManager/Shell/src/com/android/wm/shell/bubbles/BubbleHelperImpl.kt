@@ -72,11 +72,23 @@ class BubbleHelperImpl @Inject constructor(private val bubbleRootTask: BubbleRoo
             taskInfo != null &&
                 taskInfo.activityType == ACTIVITY_TYPE_STANDARD &&
                 // Only process opening or change transitions
-                (isOpeningMode(change.mode) || change.mode == TRANSIT_CHANGE) &&
+                // For CHANGE type change, only the one that is reparented to the Bubble root Task
+                // should be considered as "entering" Bubble.
+                (isOpeningMode(change.mode) || isReparentChange(change)) &&
                 // Skip non-app-bubble tasks (e.g., a reused task in a bubble-to-fullscreen
                 // scenario).
                 isAppBubbleTask(taskInfo)
         }
+
+    private fun isReparentChange(change: TransitionInfo.Change): Boolean {
+        if (
+            BubbleFlagHelper.enableRootTaskForBubble() &&
+                com.android.window.flags.Flags.quickBubbleSwitch()
+        ) {
+            return change.mode == TRANSIT_CHANGE && change.lastParent != null
+        }
+        return change.mode == TRANSIT_CHANGE
+    }
 
     override fun getClosingBubbleTask(info: TransitionInfo): TransitionInfo.Change? =
         info.changes.firstOrNull { change ->

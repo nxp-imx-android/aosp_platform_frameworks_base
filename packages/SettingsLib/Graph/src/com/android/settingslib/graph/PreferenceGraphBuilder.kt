@@ -44,6 +44,7 @@ import com.android.settingslib.graph.proto.PreferenceProto
 import com.android.settingslib.graph.proto.PreferenceProto.ActionTarget
 import com.android.settingslib.graph.proto.PreferenceScreenProto
 import com.android.settingslib.graph.proto.PreferenceValueDescriptorProto
+import com.android.settingslib.graph.proto.SetWarningProto
 import com.android.settingslib.graph.proto.TextProto
 import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
@@ -668,6 +669,24 @@ fun PreferenceMetadata.toProto(
         metadata.get.preconditions?.getDescription(context)?.let { addGetPreconditions(it) }
         metadata.set?.preconditions?.getDescription(context)?.let { addSetPreconditions(it) }
         metadata.set?.valuePreconditions?.getDescription(context)?.let { addSetPreconditions(it) }
+        metadata.set?.warning?.let { warningConfig ->
+            setWarning = setWarningProto {
+                warning = warningConfig.getWarning(context)
+                val preconditionsDescription =
+                    when {
+                        warningConfig.preconditions != null -> {
+                            warningConfig.preconditions!!.getDescription(context)
+                        }
+
+                        warningConfig.valuePreconditions != null -> {
+                            warningConfig.valuePreconditions!!.getDescription(context)
+                        }
+
+                        else -> null
+                    }
+                preconditionsDescription?.let { addPreconditions(it) }
+            }
+        }
     } else if (metadata is PreferencesApiScreen) {
         metadata.screenPreconditions?.getDescription(context)?.let { addGetPreconditions(it) }
     }

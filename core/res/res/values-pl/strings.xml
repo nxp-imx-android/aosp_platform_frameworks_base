@@ -556,6 +556,10 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"Ta aplikacja może w dowolnym momencie robić zdjęcia i nagrywać filmy przy użyciu aparatu."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Zezwól na dostęp aplikacji lub usługi do aparatów systemu i robienie zdjęć oraz nagrywanie filmów"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"Ta aplikacja systemowa z podwyższonymi uprawnieniami może w dowolnym momencie robić zdjęcia i nagrywać filmy przy użyciu aparatu systemowego. Wymaga przyznania uprawnień android.permission.CAMERA również aplikacji."</string>
+    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
+    <skip />
+    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
+    <skip />
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Zezwól na dostęp aplikacji lub usługi na otrzymywanie wywoływania zwrotnego o urządzeniach z aparatem, kiedy są one uruchamiane lub zamykane."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"Ta aplikacja może otrzymywać wywołania zwrotne, kiedy urządzenie z aparatem jest uruchamiane (przez jaką aplikację) albo zamykane."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Zezwól na dostęp aplikacji lub usługi do aparatu jako użytkownik systemowy bez interfejsu graficznego."</string>

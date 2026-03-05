@@ -555,6 +555,10 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"Această aplicație poate să fotografieze și să înregistreze videoclipuri folosind camera foto oricând."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Permite unei aplicații sau unui serviciu accesul la camerele de sistem, ca să fotografieze și să înregistreze videoclipuri"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"Această aplicație de sistem privilegiată poate să fotografieze și să înregistreze videoclipuri folosind o cameră de sistem în orice moment. Necesită și permisiunea android.permission.CAMERA pentru aplicație"</string>
+    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
+    <skip />
+    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
+    <skip />
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Permite unei aplicații sau unui serviciu să primească apeluri inverse atunci când sunt deschise sau închise dispozitive cu cameră."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"Această aplicație poate primi apeluri inverse atunci când este deschis (de aplicație) sau închis orice dispozitiv cu cameră."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Permite unei aplicații sau unui serviciu să acceseze camera ca utilizator de sistem fără interfață grafică."</string>
@@ -731,7 +735,7 @@
   </string-array>
     <string name="fingerprint_error_not_match" msgid="4599441812893438961">"Amprenta nu a fost recunoscută"</string>
     <string name="fingerprint_udfps_error_not_match" msgid="8236930793223158856">"Amprenta nu a fost recunoscută"</string>
-    <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5590293588784953188">"Fața nu a fost recunoscută. Folosește amprenta."</string>
+    <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5590293588784953188">"Chipul nu a fost recunoscut. Folosește amprenta."</string>
     <string name="fingerprint_authenticated" msgid="2024862866860283100">"Amprentă autentificată"</string>
     <string name="face_authenticated_no_confirmation_required" msgid="8867889115112348167">"Chip autentificat"</string>
     <string name="face_authenticated_confirmation_required" msgid="6872632732508013755">"Chip autentificat, apasă pe Confirmă"</string>

@@ -25,8 +25,6 @@ import android.media.tv.extension.rating.RatingRegionInfo;
 interface IRatingUpdateListener {
     /**
      * Called when a new RRT table is available or has been updated.
-     *
-     * @param regions The updated list of RatingRegionInfo.
      */
-    void onRrtTableUpdated(in List<RatingRegionInfo> regions);
+    void onRrtTableUpdated();
 }

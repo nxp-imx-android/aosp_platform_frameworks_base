@@ -742,7 +742,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         if (transitionInfo == null || transitionInfo.getChanges().isEmpty()) {
             PendingTransition pending = findPending(transition);
             if (pending != null) {
-                BubbleLog.e("TaskViewTransitions.startAnimation(): found a transition with"
+                BubbleLog.e("TaskViewTransitions.startAnimation(): found a transition with "
                                 + "no changes that is managed by TaskViewTransitions. taskView=%d "
                                 + "type=%s transition=%s", pending.mTaskView.hashCode(),
                         transitTypeToString(pending.mType), transition);
@@ -759,6 +759,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                 mPending.remove(pending);
                 startNextTransition();
             }
+            BubbleLog.d("TaskViewTransitions.startAnimation(): found a transition with "
+                            + "Bubble switch, so leave it to the BubbleTransitions");
             return false;
         }
 

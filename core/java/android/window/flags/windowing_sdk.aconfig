@@ -131,16 +131,6 @@ flag {
 }
 
 flag {
-    name: "pause_invisible_activity"
-    namespace: "windowing_sdk"
-    description: "Pause the invisible activity vs. stopping it after idle."
-    bug: "457585218"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "assist_display_id_public"
     namespace: "windowing_sdk"
     description: "Make the preferred display id extra for launching assistant public."
@@ -198,6 +188,16 @@ flag {
     name: "idempotent_wct_resolution"
     description: "Decouples requested policy from resolved configuration to ensure WCT operations are order-independent."
     bug: "487350507"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
+    name: "quick_bubble_switch"
+    description: "Fix the animation when doing quick bubble switch"
+    bug: "488433153"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

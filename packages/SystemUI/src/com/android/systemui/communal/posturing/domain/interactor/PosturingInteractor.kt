@@ -61,10 +61,10 @@ class PosturingInteractor
 constructor(
     repository: PosturingRepository,
     private val asyncSensorManager: AsyncSensorManager,
-    @Application private val applicationScope: CoroutineScope,
-    @Background private val bgDispatcher: CoroutineDispatcher,
-    @CommunalLog private val logBuffer: LogBuffer,
-    @CommunalTableLog private val tableLogBuffer: TableLogBuffer,
+    @param:Application private val applicationScope: CoroutineScope,
+    @param:Background private val bgDispatcher: CoroutineDispatcher,
+    @param:CommunalLog private val logBuffer: LogBuffer,
+    @param:CommunalTableLog private val tableLogBuffer: TableLogBuffer,
     private val clock: SystemClock,
 ) {
     private val logger = Logger(logBuffer, TAG)
@@ -114,13 +114,6 @@ constructor(
             .map { (stationaryConfidence, orientationConfidence) ->
                 val isStationary = stationaryConfidence.isStationary()
                 val isInOrientation = orientationConfidence.isInOrientation()
-
-                logger.i({ "stationary ($bool1): $str1 | orientation ($bool2): $str2" }) {
-                    bool1 = isStationary
-                    str1 = stationaryConfidence.toString()
-                    bool2 = isInOrientation
-                    str2 = orientationConfidence.toString()
-                }
 
                 if (isStationary && isInOrientation) {
                     PosturedState.Postured

@@ -25,6 +25,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,6 +51,14 @@ public class MtpDatabaseDevicePropertyTest {
         // MtpDatabase is usually created with MtpService context in the bug scenario.
         // Application context is also a non-visual context.
         mDatabase = new MtpDatabase(mContext, null);
+    }
+
+    @After
+    public void tearDown() {
+        if (mDatabase != null) {
+            mDatabase.close();
+            mDatabase = null;
+        }
     }
 
     @Test

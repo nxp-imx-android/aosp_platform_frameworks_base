@@ -45,11 +45,6 @@ public final class SfVsyncFrameCallbackProvider implements AnimationFrameCallbac
     }
 
     @Override
-    public long getFrameTime() {
-        return mChoreographer.getFrameTime();
-    }
-
-    @Override
     public long getFrameDelay() {
         return Choreographer.getFrameDelay();
     }

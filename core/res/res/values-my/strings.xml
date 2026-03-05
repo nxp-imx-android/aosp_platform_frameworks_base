@@ -554,6 +554,10 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"ဤအက်ပ်သည် ကင်မရာကို အသုံးပြု၍ ဓာတ်ပုံနှင့် ဗီဒီယိုများကို အချိန်မရွေး ရိုက်ကူးနိုင်သည်။"</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"ဓာတ်ပုံနှင့် ဗီဒီယိုများရိုက်ရန်အတွက် စနစ်ကင်မရာများကို အက်ပ် သို့မဟုတ် ဝန်‌ဆောင်မှုအား အသုံးပြုခွင့်ပေးခြင်း"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"ဤခွင့်ပြုထားသည့် သို့မဟုတ် စနစ်အက်ပ်က စနစ်ကင်မရာအသုံးပြုပြီး ဓာတ်ပုံနှင့် ဗီဒီယိုများကို အချိန်မရွေး ရိုက်ကူးနိုင်သည်။ အက်ပ်ကလည်း android.permission.CAMERA ခွင့်ပြုချက် ရှိရပါမည်"</string>
+    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
+    <skip />
+    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
+    <skip />
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"ကင်မရာစက်များ ပွင့်နေခြင်း သို့မဟုတ် ပိတ်နေခြင်းနှင့် ပတ်သက်ပြီး ပြန်လည်ခေါ်ဆိုမှုများ ရယူရန် အပလီကေးရှင်း သို့မဟုတ် ဝန်ဆောင်မှုကို ခွင့်ပြုခြင်း။"</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"(မည်သည့် အပလီကေးရှင်းကြောင့်) ကင်မရာစက်တစ်ခုခု ပွင့်နေသည့်အခါ သို့မဟုတ် ပိတ်နေသည့်အခါ ဤအက်ပ်က ပြန်လည်ခေါ်ဆိုမှုများ ရယူနိုင်သည်။"</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"‘မမြင်နိုင်သော စနစ်အသုံးပြုသူ’ အဖြစ် ကင်မရာသုံးရန် အပလီကေးရှင်း (သို့) ဝန်ဆောင်မှုကို ခွင့်ပြုပါ။"</string>
@@ -1077,7 +1081,7 @@
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"ပင်နံပါတ်မှားနေပါသည်"</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"သော့ဖွင့်ရန် Menu ထိုနောက်0ကိုနှိပ်ပါ"</string>
     <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"အရေးပေါ်နံပါတ်"</string>
-    <string name="lockscreen_carrier_default" msgid="6192313772955399160">"ဝန်ဆောင်မှု မရှိပါ"</string>
+    <string name="lockscreen_carrier_default" msgid="6192313772955399160">"ကွန်ရက် မရှိပါ"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"မျက်နှာပြင်အားသော့ချထားသည်"</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"ဖွင့်ရန်သို့မဟုတ်အရေးပေါ်ခေါ်ဆိုခြင်းပြုလုပ်ရန် မီနူးကိုနှိပ်ပါ"</string>
     <string name="lockscreen_instructions_when_pattern_disabled" msgid="7434061749374801753">"မီးနူးကို နှိပ်ခြင်းဖြင့် သော့ဖွင့်ပါ"</string>

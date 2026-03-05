@@ -1440,39 +1440,44 @@ class PreferencesApiScreenTest {
     }
 
     @Test
-    fun createPreferencesApiScreenPreferenceWithSetter_withNoPreconditionsInWarning_fails() {
+    fun createPreferencesApiScreenPreferenceWithSetter_withNoPreconditionsInWarning_succeeds() {
         var preferenceValue = false
         val preferenceKey = "ApiPreference"
 
-        val exception =
-            assertThrows(IllegalStateException::class.java) {
-                object :
-                    PreferencesApiScreen(
-                        key = SCREEN_KEY,
-                        topLevelSettingsCategory = Category.SYSTEM,
-                        fragment = PreferenceFragment::class,
-                        purpose = R.string.preference_screen_purpose,
+        val preferenceScreen =
+            object :
+                PreferencesApiScreen(
+                    key = SCREEN_KEY,
+                    topLevelSettingsCategory = Category.SYSTEM,
+                    fragment = PreferenceFragment::class,
+                    purpose = R.string.preference_screen_purpose,
+                ) {
+                init {
+                    preference(
+                        key = preferenceKey,
+                        purpose = R.string.preference_purpose1,
+                        type = AnyBoolean,
                     ) {
-                    init {
-                        preference(
-                            key = preferenceKey,
-                            purpose = R.string.preference_purpose1,
-                            type = AnyBoolean,
-                        ) {
-                            set {
-                                warning {
-                                    warn(R.string.warning_message1)
-                                }
-
-                                execute { value -> preferenceValue = value }
+                        get {
+                            execute { preferenceValue }
+                        }
+                        set {
+                            warning {
+                                warn(R.string.warning_message1)
                             }
+
+                            execute { value -> preferenceValue = value }
                         }
                     }
                 }
             }
 
-        assertThat(exception.message)
-            .isEqualTo("Exactly one of warning 'preconditions' or 'valuePreconditions' block is required")
+        // Check we only have 1 preference in the list
+        assertThat(preferenceScreen.preferences.size).isEqualTo(1)
+
+        // Check preference's set operation has the correct warning message
+        val preference = preferenceScreen.preferences[0] as ApiPreference<Boolean>
+        assertThat(preference.set?.warning?.getWarning(context)).isEqualTo(context.getString(R.string.warning_message1))
     }
 
     @Test

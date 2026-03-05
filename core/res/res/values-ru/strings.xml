@@ -556,6 +556,8 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"Приложение может в любое время делать фотографии и снимать видео с помощью камеры."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Доступ приложения или сервиса к системным камерам для съемки фото и видео"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"Это привилегированное или системное приложение может в любое время делать фотографии и записывать видео с помощью камеры. Для этого приложению также требуется разрешение android.permission.CAMERA."</string>
+    <string name="permlab_warmUpCamera" msgid="6135692056406854923">"Разрешить приложению или сервису отправлять сигнал в подсистему камеры"</string>
+    <string name="permdesc_warmUpCamera" msgid="925343364567764736">"Это привилегированное или системное приложение может отправлять сигнал в подсистему камеры, чтобы разогревать камеру, повышать ее производительность и не только."</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Получение приложением или сервисом обратных вызовов при открытии и закрытии камер"</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"Это приложение сможет получать обратные вызовы при открытии (с указанием открывающего приложения) и закрытии любых камер."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Доступ к камере для приложения или сервиса на правах консольного системного пользователя"</string>
@@ -710,18 +712,18 @@
     <string name="biometric_dialog_secondary_display_toast" product="tablet" msgid="2855203015454795660">"Чтобы продолжить, подтвердите свою личность на планшете."</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"Биометрическое оборудование недоступно"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"Аутентификация отменена"</string>
-    <string name="biometric_not_recognized" msgid="5106687642694635888">"Не распознано"</string>
+    <string name="biometric_not_recognized" msgid="5106687642694635888">"Не распознано."</string>
     <string name="biometric_face_not_recognized" msgid="5535599455744525200">"Лицо не распознано."</string>
     <string name="biometric_error_canceled" msgid="8266582404844179778">"Аутентификация отменена"</string>
     <string name="biometric_error_device_not_secured" msgid="3129845065043995924">"Укажите PIN-код, пароль или графический ключ"</string>
     <string name="biometric_error_generic" msgid="6784371929985434439">"Ошибка аутентификации."</string>
     <string name="screen_lock_app_setting_name" msgid="6054944352976789228">"Использовать блокировку экрана"</string>
     <string name="screen_lock_dialog_default_subtitle" msgid="120359538048533695">"Чтобы продолжить, разблокируйте экран."</string>
-    <string name="fingerprint_acquired_partial" msgid="4323789264604479684">"Плотно прижмите палец к сканеру"</string>
+    <string name="fingerprint_acquired_partial" msgid="4323789264604479684">"Плотно прижмите палец к сканеру."</string>
     <string name="fingerprint_acquired_insufficient" msgid="2410176550915730974">"Отпечаток пальца не распознан. Повторите попытку."</string>
     <string name="fingerprint_acquired_imager_dirty" msgid="1770676120848224250">"Очистите сканер отпечатков пальцев и повторите попытку."</string>
     <string name="fingerprint_acquired_imager_dirty_alt" msgid="9169582140486372897">"Очистите сканер и повторите попытку."</string>
-    <string name="fingerprint_acquired_too_fast" msgid="1628459767349116104">"Плотно прижмите палец к сканеру"</string>
+    <string name="fingerprint_acquired_too_fast" msgid="1628459767349116104">"Плотно прижмите палец к сканеру."</string>
     <string name="fingerprint_acquired_too_slow" msgid="6683510291554497580">"Вы перемещали палец слишком медленно. Повторите попытку."</string>
     <string name="fingerprint_acquired_already_enrolled" msgid="2285166003936206785">"Попробуйте сохранить отпечаток другого пальца."</string>
     <string name="fingerprint_acquired_too_bright" msgid="3863560181670915607">"Слишком светло."</string>
@@ -732,7 +734,7 @@
   </string-array>
     <string name="fingerprint_error_not_match" msgid="4599441812893438961">"Отпечаток не распознан."</string>
     <string name="fingerprint_udfps_error_not_match" msgid="8236930793223158856">"Отпечаток не распознан."</string>
-    <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5590293588784953188">"Лицо не распознано. Сканируйте отпечаток пальца."</string>
+    <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5590293588784953188">"Лицо не распознано. Отсканируйте отпечаток пальца."</string>
     <string name="fingerprint_authenticated" msgid="2024862866860283100">"Отпечаток пальца проверен"</string>
     <string name="face_authenticated_no_confirmation_required" msgid="8867889115112348167">"Лицо распознано"</string>
     <string name="face_authenticated_confirmation_required" msgid="6872632732508013755">"Лицо распознано, нажмите кнопку \"Подтвердить\""</string>

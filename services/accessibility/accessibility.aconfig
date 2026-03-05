@@ -13,6 +13,16 @@ flag {
 }
 
 flag {
+    name: "enable_autoclick_panel_bug_fixes"
+    namespace: "accessibility"
+    description: "Fix autoclick panel to move and drag properly."
+    bug: "486977188"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_a11y_checker_logging"
     namespace: "accessibility"
     description: "Whether to identify and log app a11y issues."
@@ -76,16 +86,6 @@ flag {
     namespace: "accessibility"
     description: "Whether to allow easy-mode (one finger panning gesture) for magnification"
     bug: "282039824"
-}
-
-flag {
-    name: "enable_magnification_rebased_delayed_motion_event"
-    namespace: "accessibility"
-    description: "Whether to dispatch rebased MotionEvents for Magnification delayed events to fix timestamp synchronization issues"
-    bug: "279211403"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -177,16 +177,6 @@ flag {
     namespace: "accessibility"
     description: "Use A11yManagerService's Lifecycle to change users, instead of listening for user changed events."
     bug: "393626471"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "pass_through_unprocessed_motion_events"
-    namespace: "accessibility"
-    description: "Fixes screen freeze by passing through motion events that AccessibilityInputFilter declines to process (e.g. during mid-gesture feature enables)."
-    bug: "397138372"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

@@ -120,7 +120,6 @@ import android.app.ActivityOptions;
 import android.app.AlarmManager;
 import android.app.AppOpsManager;
 import android.app.BroadcastOptions;
-import android.app.Flags;
 import android.app.IActivityManager;
 import android.app.IAlarmCompleteListener;
 import android.app.IAlarmListener;
@@ -2155,81 +2154,6 @@ public final class AlarmManagerServiceTest {
 
         testQuotasNoDeferral(trigger -> setAllowWhileIdleAlarm(ELAPSED_REALTIME_WAKEUP, trigger,
                 getNewMockPendingIntent(), false, false), quota, mAllowWhileIdleWindow);
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ALLOW_ALARMS_WITH_RELAXED_QUOTA)
-    public void exactAllowWhileIdleListenerAlarm_ignoresDozeAndBatterySaver() throws Exception {
-        setDeviceConfigLong(KEY_MAX_DEVICE_IDLE_FUZZ, 0);
-        setIdleUntilAlarm(ELAPSED_REALTIME_WAKEUP, mNowElapsedTest + mAllowWhileIdleWindow + 1000,
-                getNewMockPendingIntent());
-        assertNotNull(mService.mPendingIdleUntil);
-        when(mAppStateTracker.areAlarmsRestrictedByBatterySaver(TEST_CALLING_UID,
-                TEST_CALLING_PACKAGE)).thenReturn(true);
-
-        final int numAlarms = mService.mConstants.ALLOW_WHILE_IDLE_COMPAT_QUOTA + 20;
-        final long firstTrigger = mNowElapsedTest + 10;
-        for (int i = 0; i < numAlarms; i++) {
-            setTestAlarmWithListener(ELAPSED_REALTIME_WAKEUP, firstTrigger + i,
-                    getNewListener(() -> {
-                    }), FLAG_STANDALONE | FLAG_ALLOW_WHILE_IDLE, 0, TEST_CALLING_UID);
-        }
-
-        // All of them should fire as expected.
-        for (int i = 0; i < numAlarms; i++) {
-            mNowElapsedTest = mTestTimer.getElapsed();
-            assertEquals("Incorrect trigger at i=" + i, firstTrigger + i, mNowElapsedTest);
-            mTestTimer.expire();
-        }
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ALLOW_ALARMS_WITH_RELAXED_QUOTA)
-    public void exactAllowWhileIdleListenerAlarm_deferredByAppStandByQuota() throws Exception {
-        setDeviceConfigLong(KEY_MAX_DEVICE_IDLE_FUZZ, 0);
-        setIdleUntilAlarm(ELAPSED_REALTIME_WAKEUP, mNowElapsedTest + mAllowWhileIdleWindow + 1000,
-                getNewMockPendingIntent());
-        assertNotNull(mService.mPendingIdleUntil);
-        when(mAppStateTracker.areAlarmsRestrictedByBatterySaver(TEST_CALLING_UID,
-                TEST_CALLING_PACKAGE)).thenReturn(true);
-
-        final int standByQuota = mService.getQuotaForBucketLocked(STANDBY_BUCKET_ACTIVE);
-        when(mUsageStatsManagerInternal.getAppStandbyBucket(eq(TEST_CALLING_PACKAGE), anyInt(),
-                anyLong())).thenReturn(STANDBY_BUCKET_ACTIVE);
-
-        testQuotasDeferralOnSet(
-                trigger -> setTestAlarmWithListener(ELAPSED_REALTIME_WAKEUP, trigger,
-                        getNewListener(() -> {
-                        }), FLAG_STANDALONE | FLAG_ALLOW_WHILE_IDLE, 0, TEST_CALLING_UID),
-                standByQuota,
-                mAppStandbyWindow);
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ALLOW_ALARMS_WITH_RELAXED_QUOTA)
-    public void exactAllowWhileIdleListenerAlarm_deferredByDozeWhenFlagDisabled() throws Exception {
-        setDeviceConfigLong(KEY_MAX_DEVICE_IDLE_FUZZ, 0);
-        setIdleUntilAlarm(ELAPSED_REALTIME_WAKEUP, mNowElapsedTest + mAllowWhileIdleWindow + 1000,
-                getNewMockPendingIntent());
-        assertNotNull(mService.mPendingIdleUntil);
-
-        final int quota = mService.mConstants.ALLOW_WHILE_IDLE_COMPAT_QUOTA;
-        final long firstTrigger = mNowElapsedTest + 10;
-        for (int i = 0; i < quota; i++) {
-            setTestAlarmWithListener(ELAPSED_REALTIME_WAKEUP, firstTrigger + i,
-                    getNewListener(() -> {
-                    }), FLAG_STANDALONE | FLAG_ALLOW_WHILE_IDLE_COMPAT, 0, TEST_CALLING_UID);
-            mNowElapsedTest = mTestTimer.getElapsed();
-            mTestTimer.expire();
-        }
-
-        // This one should get deferred on set.
-        setTestAlarmWithListener(ELAPSED_REALTIME_WAKEUP, firstTrigger + quota,
-                getNewListener(() -> {
-                }), FLAG_STANDALONE | FLAG_ALLOW_WHILE_IDLE_COMPAT, 0, TEST_CALLING_UID);
-        final long expectedNextTrigger = firstTrigger + mAllowWhileIdleWindow;
-        assertEquals("Incorrect trigger when no quota left", expectedNextTrigger,
-                mTestTimer.getElapsed());
     }
 
     @Test

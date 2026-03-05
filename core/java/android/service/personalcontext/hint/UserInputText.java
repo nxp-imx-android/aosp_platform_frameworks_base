@@ -174,11 +174,9 @@ public final class UserInputText implements Parcelable {
 
     @Override
     public String toString() {
+        // mText purposefully omitted to prevent accidentally logging potentially sensitive data.
         return "UserInputText{"
-                + "mText='"
-                + mText
-                + '\''
-                + ", mViewNodeBoundingBox="
+                + "mViewNodeBoundingBox="
                 + mViewNodeBoundingBox
                 + ", mFieldType="
                 + mFieldType

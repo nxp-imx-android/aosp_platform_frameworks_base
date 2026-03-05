@@ -156,6 +156,44 @@ val Kosmos.fakePausedMediaWithCustomActions by
         )
     }
 
+val Kosmos.fakeResumableMedia by
+    Kosmos.Fixture {
+        MediaDataModel(
+            instanceId = InstanceId.fakeInstanceId(3),
+            appUid = 3,
+            packageName = "com.fake.podcast.app",
+            appName = "Fake_Podcast_Player",
+            appIcon = Icon.Resource(resId = R.drawable.ic_cast, contentDescription = null),
+            background = null,
+            title = "Fake Pinned Title",
+            subtitle = "Fake Pinned Subtitle",
+            colorScheme = null,
+            notificationActions = emptyList(),
+            notificationActionsCompressed = listOf(0),
+            playbackStateActions =
+                MediaButton(
+                    playOrPause = mediaPlayActionButton,
+                    nextOrCustom = null,
+                    prevOrCustom = null,
+                ),
+            outputDevice = null,
+            clickIntent = null,
+            state = MediaSessionState.Paused,
+            durationMs = 0,
+            positionMs = 0,
+            canShowSeekbar = false,
+            canBeScrubbed = false,
+            canBeDismissed = true,
+            isActive = false,
+            isResume = true,
+            resumeAction = {},
+            isExplicit = false,
+            suggestionData = null,
+            token = null,
+            needsImmediateRemoval = false,
+        )
+    }
+
 val Kosmos.mediaPlayActionButton: MediaAction
     get() =
         MediaAction(
@@ -173,6 +211,7 @@ val Kosmos.mediaPlayActionButton: MediaAction
                 ),
             rebindId = 1,
         )
+
 val Kosmos.mediaPauseActionButton: MediaAction
     get() =
         MediaAction(

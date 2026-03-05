@@ -28,7 +28,6 @@ import android.view.SurfaceControl
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.view.WindowInsets
-import android.window.DesktopExperienceFlags
 import android.window.TaskSnapshot
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
@@ -210,6 +209,12 @@ class AppHeaderController(
                 onLayoutButtonHoverExit()
             }
 
+            if (hasGlobalFocus && !params.hasGlobalFocus) {
+                closeHandleMenu()
+                closeManageWindowsMenu()
+                closeLayoutMenu()
+            }
+
             val captionLayout =
                 super.relayout(
                     params,
@@ -233,12 +238,6 @@ class AppHeaderController(
             updateLayoutMenu(startT)
 
             updateViewHolder(params.hasGlobalFocus)
-
-            if (!params.hasGlobalFocus) {
-                closeHandleMenu()
-                closeManageWindowsMenu()
-                closeLayoutMenu()
-            }
 
             notifyCaptionStateChanged()
             return captionLayout
@@ -527,13 +526,7 @@ class AppHeaderController(
                         openInAppOrBrowserClickListener = { intent ->
                             windowDecorationActions.onOpenInBrowser(taskInfo.taskId, intent)
                             appToWebRepository.onCapturedLinkUsed(taskInfo.taskId)
-                            if (
-                                DesktopExperienceFlags
-                                    .ENABLE_DESKTOP_WINDOWING_APP_TO_WEB_EDUCATION_INTEGRATION
-                                    .isTrue
-                            ) {
-                                windowDecorCaptionRepository.onAppToWebUsage()
-                            }
+                            windowDecorCaptionRepository.onAppToWebUsage()
                         },
                         onOpenByDefaultClickListener = { createOpenByDefaultDialog() },
                         onCloseMenuClickListener = { closeHandleMenu() },

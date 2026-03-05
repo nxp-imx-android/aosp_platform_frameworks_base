@@ -16,14 +16,12 @@
 
 package com.android.systemui.deviceentry.domain.interactor
 
-import android.util.Log
+import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
-import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.internal.logging.UiEventLogger
 import com.android.internal.policy.IKeyguardDismissCallback
-import com.android.keyguard.KeyguardConstants
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
@@ -32,12 +30,12 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.data.repository.DeviceEntryRepository
 import com.android.systemui.deviceentry.shared.model.DeviceUnlockSource
-import com.android.systemui.deviceentry.shared.model.DeviceUnlockStatus
 import com.android.systemui.keyguard.DismissCallbackRegistry
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardEnabledInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
+import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.AodToGoneTransition
 import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.WithAnimationOverLockscreen
 import com.android.systemui.log.table.TableLogBuffer
@@ -47,6 +45,8 @@ import com.android.systemui.scene.data.model.peek
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.domain.startable.SceneContainerStartable.HideOverlayCommand
+import com.android.systemui.scene.domain.startable.SceneContainerStartable.SwitchSceneCommand
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.SceneFamilies
 import com.android.systemui.scene.shared.model.Scenes
@@ -302,22 +302,21 @@ constructor(
                     // If the device doesn't need to animate to Gone, the current scene is Shade or
                     // QS, and the back stack is not empty, replacing the Lockscreen scene at
                     // the bottom of the stack triggers device entry without dismissing the Shade.
-                    attemptToEnterDeviceByReplacingLockscreenOnBackStack(
-                        reason =
-                            "unlocking while on shade or qs, and animation isn't needed," +
-                                " original reason for request: $loggingReason"
-                    )
+                    sceneBackInteractor
+                        .get()
+                        .replaceLockscreenSceneOnBackStack(
+                            reason =
+                                "unlocking while on shade or qs, and animation isn't needed," +
+                                    " original reason for request: $loggingReason"
+                        )
                 } else if (statusBarStateController.leaveOpenOnKeyguardHide()) {
                     enterDeviceAndShowShade(
+                        isPrimaryBouncerShowing = false,
                         loggingReason =
                             "request to unlock and transition to shade (leaveOpenOnKeyguardHide)" +
                                 " while authentication isn't required, original reason for" +
                                 " request: $loggingReason",
-                        willAnimateDismissActionOnLockscreen = willAnimateToGone,
-                        isDualShade = shadeModeInteractor.isDualShade,
-                        currentOverlays = sceneInteractor.get().currentOverlays.value,
-                        targetScene = sceneInteractor.get().currentScene.value,
-                        isAnyShadeFullyExpanded = shadeInteractor.get().isAnyFullyExpanded.value,
+                        willAnimateDismissAction = willAnimateToGone,
                     )
                 } else {
                     sceneInteractor
@@ -381,287 +380,359 @@ constructor(
     }
 
     /**
-     * Handles scene transitions whenever the unlocked state changes. On unlock state changes:
-     * 1. Captures the latest [DeviceEntryState]
-     * 2. Handles scene, overlay and backstack based on the latest [DeviceEntryState]
+     * Handles scene transitions based on the latest unlock status, backStack and
+     * leaveOpenOnKeyguardHide state.
      */
-    fun handleDeviceUnlockStatusChange() {
+    fun handleDeviceUnlockStatus(
+        switchToScene:
+            (
+                targetSceneKey: SceneKey,
+                loggingReason: String,
+                transitionKey: TransitionKey?,
+                keyguardState: KeyguardState?,
+                freezeAndAnimateToCurrentState: Boolean,
+                hideOveralays: HideOverlayCommand,
+                instantlySnapScenes: Boolean,
+                forDoubleTapPowerGesture: Boolean,
+            ) -> Unit
+    ) {
         applicationScope.launch {
-            deviceUnlockedInteractor.get().deviceUnlockStatus.collect { unlockStatus ->
-                // Capture the latest DeviceEntryState
-                val state = captureCurrentState(unlockStatus)
-
-                if (KeyguardConstants.DEBUG) {
-                    Log.d("DeviceEntryInteractor", "$unlockStatus $state")
-                }
-
-                // Handle scene, overlay, and backstack changes based on latest DeviceEntryState
-                if (state.unlockStatus.isUnlocked) {
-                    // UNLOCKED
-                    when {
-                        state.isAlternateBouncerVisible -> handleUnlockOnAlternateBouncer(state)
-                        state.isOnPrimaryBouncer -> handleUnlockOnPrimaryBouncer(state)
-                        state.isOnCommunalOrLockscreen -> handleUnlockOnLockscreenOrCommunal(state)
-                        state.isOnSingleOrSplitShade -> handleUnlockOnShadeScene(state)
-                        else ->
-                            attemptToEnterDeviceByReplacingLockscreenOnBackStack(
-                                "unlocked on other scene"
+            // Track the previous scene, so that we know where to go when the device is unlocked
+            // whilst on the bouncer.
+            val previousScene =
+                sceneBackInteractor
+                    .get()
+                    .backScene
+                    .stateIn(this, SharingStarted.Eagerly, initialValue = null)
+            deviceUnlockedInteractor
+                .get()
+                .deviceUnlockStatus
+                .map { deviceUnlockStatus ->
+                    val (renderedScenes: List<SceneKey>, renderedOverlays: Set<OverlayKey>) =
+                        when (
+                            val transitionState = sceneInteractor.get().transitionStateFlow.value
+                        ) {
+                            is ObservableTransitionState.Idle ->
+                                listOf(transitionState.currentScene) to
+                                    transitionState.currentOverlays
+                            is ObservableTransitionState.Transition.ChangeScene ->
+                                listOf(transitionState.fromScene, transitionState.toScene) to
+                                    transitionState.currentOverlays
+                            is ObservableTransitionState.Transition.OverlayTransition ->
+                                listOf(transitionState.currentScene) to
+                                    setOfNotNull(
+                                        transitionState.toContent as? OverlayKey,
+                                        transitionState.fromContent as? OverlayKey,
+                                    )
+                        }
+                    val isOnLockscreen = renderedScenes.contains(Scenes.Lockscreen)
+                    val isOnShade = renderedScenes.contains(Scenes.Shade)
+                    val isOnCommunal = renderedScenes.contains(Scenes.Communal)
+                    val isAlternateBouncerVisible =
+                        alternateBouncerInteractor.get().isVisibleState()
+                    val isOnPrimaryBouncer = Overlays.Bouncer in renderedOverlays
+                    if (!deviceUnlockStatus.isUnlocked) {
+                        return@map if (
+                            renderedScenes.any { it.isKeyguardScene() } ||
+                                Overlays.Bouncer in renderedOverlays
+                        ) {
+                            // The device locked while already on a keyguard scene or bouncer, no
+                            // need to change scenes. But make sure to replace the Gone scene in
+                            // the back stack with Lockscreen.
+                            sceneBackInteractor
+                                .get()
+                                .replaceGoneSceneOnBackStack(
+                                    reason = "device locked while on a keyguard scene or bouncer"
+                                )
+                            SwitchSceneCommand.NoOp
+                        } else {
+                            // The device locked while on a scene that's not a keyguard scene, go
+                            // to Lockscreen.
+                            SwitchSceneCommand.SwitchToScene(
+                                targetSceneKey = Scenes.Lockscreen,
+                                loggingReason = "device locked in a non-keyguard scene",
                             )
+                        }
                     }
-                } else {
-                    // LOCKED
-                    if (
-                        state.renderedScenes.any { it.isKeyguardScene() } ||
-                            state.isOnPrimaryBouncer
-                    ) {
-                        sceneBackInteractor
-                            .get()
-                            .replaceGoneSceneOnBackStack("locked on scenes=${state.renderedScenes}")
-                    } else {
-                        switchToScene(
-                            Scenes.Lockscreen,
-                            "locked on scenes=${state.renderedScenes} & not on primary bouncer",
-                        )
-                    }
-                }
-            }
-        }
-    }
 
-    fun handleDeviceEntryMetricsLogging() {
-        applicationScope.launch {
-            isDeviceEntered
-                .filter { it }
-                .collect {
                     if (
-                        deviceUnlockedInteractor
-                            .get()
-                            .deviceUnlockStatus
-                            .value
-                            .deviceUnlockSource == DeviceUnlockSource.TrustAgent
+                        isOnPrimaryBouncer &&
+                            deviceUnlockStatus.deviceUnlockSource == DeviceUnlockSource.TrustAgent
                     ) {
                         uiEventLogger.log(BouncerUiEvent.BOUNCER_DISMISS_EXTENDED_ACCESS)
                     }
-                }
-        }
-    }
 
-    private fun handleUnlockOnShadeScene(state: DeviceEntryState) {
-        if (state.unlockStatus.deviceUnlockSource is DeviceUnlockSource.Fingerprint) {
-            // This represents the case when the fingerprint will cause the
-            // device to enter while the shade is expanded.
-            switchToScene(
-                targetSceneKey = Scenes.Gone,
-                loggingReason = "unlocked on shade from fingerprint",
-            )
-        } else {
-            // Remain in the shade but replace the Lockscreen scene from
-            // the bottom of the navigation with the Gone scene since the
-            // device is unlocked.
-            attemptToEnterDeviceByReplacingLockscreenOnBackStack(reason = "unlocked on shade")
-        }
-    }
+                    val enterDeviceAndShowShade = statusBarStateController.leaveOpenOnKeyguardHide()
+                    val willAnimateDismissAction =
+                        keyguardDismissActionInteractor
+                            .get()
+                            .willAnimateDismissActionOnLockscreen
+                            .value
 
-    private fun handleUnlockOnLockscreenOrCommunal(state: DeviceEntryState) {
-        // The lockscreen should be dismissed automatically when:
-        // 1. Face auth bypass is enabled and authentication happens while
-        //    the user is on the lockscreen.
-        // 2. The user authenticates using an active authentication
-        //    mechanism like fingerprint auth.
-        if (state.unlockStatus.deviceUnlockSource?.dismissesLockscreen == true) {
-            switchToScene(
-                targetSceneKey = Scenes.Gone,
-                transitionKey =
                     when {
-                        state.willAnimateDismissActionOnLockscreen -> WithAnimationOverLockscreen
-                        BiometricUnlockMode.isWakeAndDismiss(state.biometricUnlockMode) ->
-                            AodToGoneTransition
-                        else -> null
-                    },
-                loggingReason =
-                    "unlocked on lockscreen using an active authentication mechanism: " +
-                        "${state.unlockStatus.deviceUnlockSource}",
-            )
-        }
-    }
+                        isAlternateBouncerVisible -> {
+                            // When the device becomes unlocked when the alternate bouncer is
+                            // showing, always hide the alternate bouncer
+                            alternateBouncerInteractor.get().hide()
 
-    private fun handleUnlockOnPrimaryBouncer(state: DeviceEntryState) {
-        // When the device becomes unlocked in primary bouncer, transition to
-        // Gone, Shade, or remain in the current scene.
-        // If the transition is a scene change, take the targetScene or Shade.
-        val targetScene = state.renderedScenes.last()
-        val enterDeviceAndShowShade = state.shouldShowShadeAfterEntry
-        val loggingReason =
-            buildLoggingReasonString(
-                "primary bouncer",
-                state.shouldShowShadeAfterEntry,
-                state.willAnimateDismissActionOnLockscreen,
-            )
+                            // ... and go to Shade, Gone or stay on the current scene
+                            if (enterDeviceAndShowShade) {
+                                enterDeviceAndShowShade(
+                                    isPrimaryBouncerShowing = false,
+                                    loggingReason =
+                                        "device was unlocked while alternate bouncer" +
+                                            " was showing and shade should show",
+                                    willAnimateDismissAction = willAnimateDismissAction,
+                                )
+                                SwitchSceneCommand.NoOp
+                            } else if (isOnCommunal || isOnLockscreen) {
+                                SwitchSceneCommand.SwitchToScene(
+                                    targetSceneKey = Scenes.Gone,
+                                    transitionKey =
+                                        WithAnimationOverLockscreen.takeIf {
+                                            willAnimateDismissAction
+                                        },
+                                    loggingReason =
+                                        "device was unlocked while alternate bouncer" +
+                                            " was showing and shade didn't need to be show",
+                                )
+                            } else {
+                                sceneBackInteractor
+                                    .get()
+                                    .replaceLockscreenSceneOnBackStack(
+                                        reason = "unlocked while alternate bouncer is showing"
+                                    )
+                                SwitchSceneCommand.NoOp
+                            }
+                        }
+                        isOnPrimaryBouncer -> {
+                            // When the device becomes unlocked in primary bouncer, transition to
+                            // Gone or remain in the current scene. If transition is a scene change,
+                            // take the destination scene.
+                            val targetScene = renderedScenes.last()
+                            if (
+                                targetScene == Scenes.Lockscreen ||
+                                    targetScene == Scenes.Communal ||
+                                    !enterDeviceAndShowShade
+                            ) {
+                                val loggingReason = buildString {
+                                    append(
+                                        "device was unlocked while the primary bouncer was showing"
+                                    )
+                                    if (enterDeviceAndShowShade) {
+                                        append(" and shade needs to show")
+                                    } else {
+                                        append(" and shade doesn't need to show")
 
-        if (enterDeviceAndShowShade) {
-            enterDeviceAndShowShade(loggingReason = loggingReason, state = state)
-        } else if (
-            targetScene == Scenes.Lockscreen ||
-                targetScene == Scenes.Communal ||
-                targetScene == Scenes.QuickSettings ||
-                targetScene == Scenes.Shade
-        ) {
-            if (
-                state.willAnimateDismissActionOnLockscreen ||
-                    // If the device is switching to Gone mid-transition from
-                    // Ls -> Bouncer, animate the scene change to
-                    // avoid a jump-cut from partially visible LS/Bouncer to
-                    // Gone.
-                    state.isTransitioningFromLsToBouncer
-            ) {
-                // Do not snap to scene here or this will break the notification
-                // animation on lockscreen, but instantly hide the bouncer to prevent any
-                // unwanted overlap.
-                if (targetScene == Scenes.Lockscreen) {
-                    sceneInteractor
-                        .get()
-                        .instantlyHideOverlay(
-                            Overlays.Bouncer,
-                            "Instant hide bouncer for animation",
-                        )
+                                        if (willAnimateDismissAction) {
+                                            append(" and will animate dismiss action")
+                                        } else {
+                                            append(" and will not animate dismiss action")
+                                        }
+                                    }
+                                }
+                                if (enterDeviceAndShowShade) {
+                                    enterDeviceAndShowShade(
+                                        isPrimaryBouncerShowing = true,
+                                        loggingReason = loggingReason,
+                                        willAnimateDismissAction = willAnimateDismissAction,
+                                    )
+                                    SwitchSceneCommand.NoOp
+                                } else if (
+                                    willAnimateDismissAction ||
+                                        // If the device is switching to Gone mid-transition from
+                                        // Ls -> Bouncer, animate the scene change to
+                                        // avoid a jump-cut from partially visible LS/Bouncer to
+                                        // Gone.
+                                        sceneInteractor
+                                            .get()
+                                            .transitionStateFlow
+                                            .value
+                                            .isTransitioning(
+                                                from = Scenes.Lockscreen,
+                                                to = Overlays.Bouncer,
+                                            )
+                                ) {
+                                    // Do not snap to scene here or this will break the notification
+                                    // animation, but instantly hide the bouncer to prevent any
+                                    // unwanted overlap
+                                    sceneInteractor
+                                        .get()
+                                        .instantlyHideOverlay(
+                                            Overlays.Bouncer,
+                                            "Instant hide bouncer for animation",
+                                        )
+                                    SwitchSceneCommand.SwitchToScene(
+                                        targetSceneKey = Scenes.Gone,
+                                        hideOverlays = HideOverlayCommand.HideAll,
+                                        transitionKey =
+                                            WithAnimationOverLockscreen.takeIf {
+                                                willAnimateDismissAction
+                                            },
+                                        loggingReason = loggingReason,
+                                        instantlySnapScenes = false,
+                                    )
+                                } else {
+                                    // Snap to scene to avoid any flicker of the current scene
+                                    // This is intentionally not using [SwitchToScene] as the
+                                    // scene transition needs to happen before the overlay is
+                                    // hidden.
+                                    sceneInteractor
+                                        .get()
+                                        .snapToScene(
+                                            toScene = Scenes.Gone,
+                                            loggingReason = loggingReason,
+                                            hideAllOverlays = false,
+                                        )
+                                    sceneInteractor
+                                        .get()
+                                        .hideOverlay(Overlays.Bouncer, loggingReason)
+                                    SwitchSceneCommand.NoOp
+                                }
+                            } else if (targetScene == Scenes.Shade && willAnimateDismissAction) {
+                                SwitchSceneCommand.SwitchToScene(
+                                    targetSceneKey = Scenes.Gone,
+                                    loggingReason =
+                                        "device was unlocked with primary bouncer" +
+                                            " showing, from shade, and device is animating the" +
+                                            " dismiss (from Shade -> Gone)",
+                                    instantlySnapScenes = false,
+                                )
+                            } else {
+                                if (previousScene.value != Scenes.Gone) {
+                                    sceneBackInteractor
+                                        .get()
+                                        .replaceLockscreenSceneOnBackStack(
+                                            reason = "previous scene is not gone"
+                                        )
+                                }
+                                SwitchSceneCommand.SwitchToScene(
+                                    targetSceneKey = targetScene,
+                                    loggingReason =
+                                        "device was unlocked with primary bouncer" +
+                                            " showing, from sceneKey=${targetScene.debugName}",
+                                    instantlySnapScenes = true,
+                                )
+                            }
+                        }
+                        isOnLockscreen || isOnCommunal ->
+                            // The lockscreen should be dismissed automatically in 2 scenarios:
+                            // 1. When face auth bypass is enabled and authentication happens while
+                            //    the user is on the lockscreen.
+                            // 2. Whenever the user authenticates using an active authentication
+                            //    mechanism like fingerprint auth. Since canSwipeToEnter is true
+                            //    when the user is passively authenticated, the false value here
+                            //    when the unlock state changes indicates this is an active
+                            //    authentication attempt.
+                            when {
+                                deviceUnlockStatus.deviceUnlockSource?.dismissesLockscreen ==
+                                    true ->
+                                    SwitchSceneCommand.SwitchToScene(
+                                        targetSceneKey = Scenes.Gone,
+                                        transitionKey =
+                                            when {
+                                                willAnimateDismissAction ->
+                                                    WithAnimationOverLockscreen
+                                                BiometricUnlockMode.isWakeAndDismiss(
+                                                    keyguardInteractor.biometricUnlockState.value
+                                                        .mode
+                                                ) -> AodToGoneTransition
+                                                else -> null
+                                            },
+                                        loggingReason =
+                                            "device was unlocked while lockscreen" +
+                                                " with bypass enabled or using an active" +
+                                                " authentication mechanism:" +
+                                                " ${deviceUnlockStatus.deviceUnlockSource}",
+                                    )
+                                else -> SwitchSceneCommand.NoOp
+                            }
+                        isOnShade -> {
+                            val unlockSourceDismissesLockscreen =
+                                deviceUnlockStatus.deviceUnlockSource?.dismissesLockscreen == true
+                            val unlockSourceIsFingerPrint =
+                                deviceUnlockStatus.deviceUnlockSource is
+                                    DeviceUnlockSource.Fingerprint
+                            when {
+                                // This represents the case when the fingerprint will cause the
+                                // device to enter while the shade is expanded.
+                                unlockSourceDismissesLockscreen && unlockSourceIsFingerPrint ->
+                                    SwitchSceneCommand.SwitchToScene(
+                                        targetSceneKey = Scenes.Gone,
+                                        loggingReason =
+                                            "device was entered while in shade by using the" +
+                                                " Fingerprint",
+                                    )
+                                else -> {
+                                    // Remain in the shade but replace the Lockscreen scene from
+                                    // the bottom of the navigation with the Gone scene since the
+                                    // device is unlocked.
+                                    sceneBackInteractor
+                                        .get()
+                                        .replaceLockscreenSceneOnBackStack(
+                                            reason = "unlocked while shade is open"
+                                        )
+                                    SwitchSceneCommand.NoOp
+                                }
+                            }
+                        }
+                        // Not on lockscreen or bouncer, so remain in the current scene but since
+                        // unlocked, replace the Lockscreen scene from the bottom of the navigation
+                        // back stack with the Gone scene.
+                        else -> {
+                            sceneBackInteractor
+                                .get()
+                                .replaceLockscreenSceneOnBackStack(
+                                    reason = "unlocked on a scene other than lockscreen or bouncer"
+                                )
+                            SwitchSceneCommand.NoOp
+                        }
+                    }
                 }
-                switchToScene(
-                    targetSceneKey = Scenes.Gone,
-                    transitionKey =
-                        WithAnimationOverLockscreen.takeIf {
-                            state.willAnimateDismissActionOnLockscreen
-                        },
-                    loggingReason = loggingReason,
-                    instantlySnapScenes = false,
-                )
-            } else {
-                // Snap to scene to avoid any flicker of the current scene
-                // This is intentionally not using `switchToScene` as the
-                // scene transition needs to happen before the overlay is
-                // hidden.
-                sceneInteractor
-                    .get()
-                    .snapToScene(
-                        toScene = Scenes.Gone,
-                        loggingReason = loggingReason,
-                        hideAllOverlays = false,
-                    )
-                sceneInteractor.get().hideOverlay(Overlays.Bouncer, loggingReason)
-            }
-        } else {
-            attemptToEnterDeviceByReplacingLockscreenOnBackStack(
-                reason = "unlocked on primary bouncer"
-            )
-            switchToScene(
-                targetSceneKey = targetScene,
-                loggingReason =
-                    "unlocked on primary bouncer from sceneKey=${targetScene.debugName}",
-                instantlySnapScenes = true,
-            )
+                .collect { command: SwitchSceneCommand ->
+                    when (command) {
+                        is SwitchSceneCommand.SwitchToScene -> {
+                            switchToScene(
+                                command.targetSceneKey,
+                                command.loggingReason,
+                                command.transitionKey,
+                                /* keyguardState */ null,
+                                /* freezeAndAnimateToCurrentState */ false,
+                                command.hideOverlays,
+                                command.instantlySnapScenes,
+                                /* forDoubleTapPowerGesture */ false,
+                            )
+                        }
+                        is SwitchSceneCommand.NoOp -> Unit
+                    }
+                }
         }
     }
 
-    private fun handleUnlockOnAlternateBouncer(state: DeviceEntryState) {
-        // When the device becomes unlocked on the alternate bouncer, always immediately hide the
-        // alternate bouncer
-        alternateBouncerInteractor.get().hide()
-
-        // ... and go to Shade, Gone or stay on the current scene
-        if (state.shouldShowShadeAfterEntry) {
-            enterDeviceAndShowShade(
-                loggingReason =
-                    buildLoggingReasonString(
-                        currentState = "alternate bouncer",
-                        showShade = true,
-                        willAnimateDismissAction = state.willAnimateDismissActionOnLockscreen,
-                    ),
-                state = state,
-            )
-        } else if (state.isOnCommunalOrLockscreen || state.isOnSingleOrSplitShade) {
-            switchToScene(
-                targetSceneKey = Scenes.Gone,
-                transitionKey =
-                    WithAnimationOverLockscreen.takeIf {
-                        state.willAnimateDismissActionOnLockscreen
-                    },
-                loggingReason =
-                    buildLoggingReasonString(
-                        currentState = "alternate bouncer over communal, lockscreen or shade scene",
-                        showShade = false,
-                        willAnimateDismissAction = state.willAnimateDismissActionOnLockscreen,
-                    ),
-            )
+    private fun willShadeShowOnBouncerHide(): Boolean {
+        return if (shadeModeInteractor.isDualShade) {
+            val currentOverlays = sceneInteractor.get().currentOverlays.value
+            Overlays.QuickSettingsShade in currentOverlays ||
+                Overlays.NotificationsShade in currentOverlays
         } else {
-            // Remain on the current scene
-            attemptToEnterDeviceByReplacingLockscreenOnBackStack(
-                reason =
-                    buildLoggingReasonString(
-                        currentState =
-                            "alternate bouncer over other scene " + "!(communal or lockscreen)",
-                        showShade = false,
-                        willAnimateDismissAction = state.willAnimateDismissActionOnLockscreen,
-                    )
-            )
+            val topOfBackStack = sceneBackInteractor.get().backStack.value.peek()
+            topOfBackStack == Scenes.Shade || topOfBackStack == Scenes.QuickSettings
         }
     }
 
-    private fun captureCurrentState(deviceUnlockStatus: DeviceUnlockStatus): DeviceEntryState {
-        val transitionState = sceneInteractor.get().transitionState
-        val (renderedScenes, renderedOverlays) = getRenderedContent(transitionState)
-
-        return DeviceEntryState(
-            unlockStatus = deviceUnlockStatus,
-            renderedScenes = renderedScenes,
-            renderedOverlays = renderedOverlays,
-            isAlternateBouncerVisible = alternateBouncerInteractor.get().isVisibleState(),
-            shouldShowShadeAfterEntry = statusBarStateController.leaveOpenOnKeyguardHide(),
-            willAnimateDismissActionOnLockscreen =
-                keyguardDismissActionInteractor.get().willAnimateDismissActionOnLockscreen.value,
-            isDualShade = shadeModeInteractor.isDualShade,
-            isTransitioningFromLsToBouncer =
-                transitionState.isTransitioning(from = Scenes.Lockscreen, to = Overlays.Bouncer),
-            biometricUnlockMode = keyguardInteractor.biometricUnlockState.value.mode,
-            isAnyShadeFullyExpanded = shadeInteractor.get().isAnyFullyExpanded.value,
-        )
-    }
-
-    private fun enterDeviceAndShowShade(loggingReason: String, state: DeviceEntryState) {
-        enterDeviceAndShowShade(
-            loggingReason = loggingReason,
-            willAnimateDismissActionOnLockscreen = state.willAnimateDismissActionOnLockscreen,
-            isDualShade = state.isDualShade,
-            currentOverlays = state.renderedOverlays,
-            targetScene = state.renderedScenes.last(),
-            isAnyShadeFullyExpanded = state.isAnyShadeFullyExpanded,
-        )
-    }
-
-    /**
-     * Performs scene, overlay and backstack changes to enter the device. On device entry, this
-     * method ensures the shade will be showing if it isn't already.
-     */
     private fun enterDeviceAndShowShade(
+        isPrimaryBouncerShowing: Boolean,
         loggingReason: String,
-        willAnimateDismissActionOnLockscreen: Boolean,
-        isDualShade: Boolean,
-        currentOverlays: Set<OverlayKey>,
-        targetScene: SceneKey?, // currentScene or scene currently being transitioned to
-        isAnyShadeFullyExpanded: Boolean,
+        willAnimateDismissAction: Boolean,
     ) {
-        val isPrimaryBouncerShowing = Overlays.Bouncer in currentOverlays
-
         // Once the device is entered, will the shade be visible without intervention?
         val shadeWillShowOnDeviceEntry =
             if (isPrimaryBouncerShowing) {
-                if (isDualShade) {
-                    Overlays.QuickSettingsShade in currentOverlays ||
-                        Overlays.NotificationsShade in currentOverlays
-                } else {
-                    targetScene == Scenes.Shade || targetScene == Scenes.QuickSettings
-                }
+                willShadeShowOnBouncerHide()
             } else {
-                isAnyShadeFullyExpanded
+                shadeInteractor.get().isAnyFullyExpanded.value
             }
+        val isDualShade = shadeModeInteractor.isDualShade
 
         if (isDualShade) {
             // For DualShade:
@@ -680,8 +751,7 @@ constructor(
                 .changeScene(
                     toScene = Scenes.Gone,
                     loggingReason = loggingReason,
-                    transitionKey =
-                        WithAnimationOverLockscreen.takeIf { willAnimateDismissActionOnLockscreen },
+                    transitionKey = WithAnimationOverLockscreen.takeIf { willAnimateDismissAction },
                     hideAllOverlays = false,
                 )
         } else {
@@ -689,7 +759,7 @@ constructor(
             //     Shade is a Scene.
             //     To enter the device, call replaceLockscreenSceneOnBackStack.
             if (shadeWillShowOnDeviceEntry) {
-                attemptToEnterDeviceByReplacingLockscreenOnBackStack(reason = loggingReason)
+                sceneBackInteractor.get().replaceLockscreenSceneOnBackStack(reason = loggingReason)
                 sceneInteractor.get().hideOverlay(Overlays.Bouncer, loggingReason)
             } else {
                 // SceneContainerStartable#hydrateBackStack will replaceLockscreenSceneOnBackStack
@@ -702,108 +772,10 @@ constructor(
                         toScene = Scenes.Shade,
                         loggingReason = loggingReason,
                         transitionKey =
-                            WithAnimationOverLockscreen.takeIf {
-                                willAnimateDismissActionOnLockscreen
-                            },
+                            WithAnimationOverLockscreen.takeIf { willAnimateDismissAction },
                         hideAllOverlays = true, // hides bouncer overlay if showing
                     )
             }
         }
     }
-
-    private fun buildLoggingReasonString(
-        currentState: String,
-        showShade: Boolean,
-        willAnimateDismissAction: Boolean,
-    ): String {
-        return buildString {
-            append("unlocked on $currentState")
-            if (showShade) {
-                append(" and shade needs to show")
-            } else {
-                append(" and shade doesn't need to show")
-                if (willAnimateDismissAction) {
-                    append(" and will animate dismiss action")
-                } else {
-                    append(" and will not animate dismiss action")
-                }
-            }
-        }
-    }
-
-    private fun getRenderedContent(
-        transitionState: TransitionState
-    ): Pair<List<SceneKey>, Set<OverlayKey>> {
-        return when (transitionState) {
-            is TransitionState.Idle ->
-                listOf(transitionState.currentScene) to transitionState.currentOverlays
-            is TransitionState.Transition.ChangeScene ->
-                listOf(transitionState.fromScene, transitionState.toScene) to
-                    transitionState.currentOverlays
-            is TransitionState.Transition.OverlayTransition ->
-                listOf(transitionState.currentScene) to
-                    setOfNotNull(
-                        transitionState.toContent as? OverlayKey,
-                        transitionState.fromContent as? OverlayKey,
-                    )
-        }
-    }
-
-    /**
-     * Attempts to enter the device by replacing the lockscreen on the backStack with Scenes.Gone.
-     * If the lockscreen is not on the backStack (for example, if Scenes.Lockscreen is the
-     * currentScene), then this is a NoOp and [isDeviceEntered] won't change.
-     */
-    private fun attemptToEnterDeviceByReplacingLockscreenOnBackStack(reason: String) {
-        sceneBackInteractor.get().replaceLockscreenSceneOnBackStack(reason = reason)
-    }
-
-    private fun switchToScene(
-        targetSceneKey: SceneKey,
-        loggingReason: String,
-        transitionKey: TransitionKey? = null,
-        instantlySnapScenes: Boolean = false,
-    ) {
-        if (instantlySnapScenes) {
-            sceneInteractor
-                .get()
-                .snapToScene(toScene = targetSceneKey, loggingReason = loggingReason)
-        } else {
-            sceneInteractor
-                .get()
-                .changeScene(
-                    toScene = targetSceneKey,
-                    loggingReason = loggingReason,
-                    transitionKey = transitionKey,
-                )
-        }
-    }
-
-    private data class DeviceEntryState(
-        val unlockStatus: DeviceUnlockStatus,
-        val renderedScenes: List<SceneKey>,
-        val renderedOverlays: Set<OverlayKey>,
-        val isAlternateBouncerVisible: Boolean,
-        val shouldShowShadeAfterEntry: Boolean, // leaveOpenOnKeyguardHide
-        val willAnimateDismissActionOnLockscreen: Boolean,
-        val isDualShade: Boolean,
-        val isTransitioningFromLsToBouncer: Boolean,
-        val biometricUnlockMode: BiometricUnlockMode,
-        val isAnyShadeFullyExpanded: Boolean,
-    )
-
-    private val DeviceEntryState.isOnPrimaryBouncer: Boolean
-        get() = Overlays.Bouncer in renderedOverlays
-
-    private val DeviceEntryState.isOnLockscreen: Boolean
-        get() = Scenes.Lockscreen in renderedScenes
-
-    private val DeviceEntryState.isOnSingleOrSplitShade: Boolean
-        get() = Scenes.Shade in renderedScenes || Scenes.QuickSettings in renderedScenes
-
-    private val DeviceEntryState.isOnCommunal: Boolean
-        get() = Scenes.Communal in renderedScenes
-
-    private val DeviceEntryState.isOnCommunalOrLockscreen: Boolean
-        get() = isOnCommunal || isOnLockscreen
 }

@@ -114,7 +114,7 @@
     <string name="tv_bluetooth_battery_level_untethered_right" msgid="8610019317279155595">"‏مستوى شحن البطارية في سماعة الرأس اليمنى: ‎<xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="bluetooth_active_no_battery_level" msgid="4155462233006205630">"نشط"</string>
     <string name="bluetooth_saved_device" msgid="4895871321722311428">"محفوظ"</string>
-    <string name="bluetooth_hearing_aid_left_active" msgid="8330226430756799572">"سماعة الأذن الطبية نشطة (اليسرى فقط)"</string>
+    <string name="bluetooth_hearing_aid_left_active" msgid="8330226430756799572">"السماعة نشطة (اليسرى فقط)"</string>
     <string name="bluetooth_hearing_aid_right_active" msgid="2244728507170385397">"سماعة الأذن الطبية نشطة (اليمنى فقط)"</string>
     <string name="bluetooth_hearing_aid_left_and_right_active" msgid="4294571497939983181">"سماعتا الأذن الطبيتان نشطتان (اليسرى واليمنى)"</string>
     <string name="bluetooth_hearing_device_ambient_error" msgid="6035857289108813878">"تعذَّر تعديل حالة الأصوات المحيطة"</string>

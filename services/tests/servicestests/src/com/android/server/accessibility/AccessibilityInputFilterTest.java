@@ -545,7 +545,6 @@ public class AccessibilityInputFilterTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_PASS_THROUGH_UNPROCESSED_MOTION_EVENTS)
     public void testMotionEvents_midGestureFeatureEnable_shouldPassOrphanedUpToSuper() {
         mA11yInputFilter = spy(
                 new AccessibilityInputFilter(InstrumentationRegistry.getContext(), mAms,

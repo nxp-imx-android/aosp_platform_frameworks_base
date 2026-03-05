@@ -71,6 +71,8 @@ import com.android.systemui.log.SessionTracker
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
+import com.android.systemui.scene.data.repository.lockDevice
+import com.android.systemui.scene.data.repository.unlockDevice
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -1008,6 +1010,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
             // Upon init, we have never dismisses the keyguard.
             underTest.onInit()
             runCurrent()
+            kosmos.lockDevice()
             verify(primaryBouncerInteractor, never())
                 .notifyKeyguardAuthenticatedPrimaryAuth(anyInt())
 
@@ -1071,6 +1074,7 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
             sceneInteractor.snapToScene(Scenes.Shade, "reason")
             runCurrent()
 
+            kosmos.lockDevice()
             fakeSceneDataSource.pause()
             sceneInteractor.showOverlay(Overlays.Bouncer, "reason")
             sceneTransitionStateFlow.value =
@@ -1094,9 +1098,9 @@ class KeyguardSecurityContainerControllerTest : SysuiTestCase() {
                 .notifyKeyguardAuthenticatedPrimaryAuth(anyInt())
 
             // Detaching the view stops listening, so moving from the bouncer scene to the gone
-            // scene
-            // does not dismiss the keyguard while we're not listening.
+            // scene does not dismiss the keyguard while we're not listening.
             underTest.onViewDetached()
+            kosmos.unlockDevice()
             fakeSceneDataSource.pause()
             sceneInteractor.changeScene(Scenes.Gone, "reason")
             sceneInteractor.hideOverlay(Overlays.Bouncer, "reason")

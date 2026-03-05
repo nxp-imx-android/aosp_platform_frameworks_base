@@ -287,10 +287,10 @@ flag {
 }
 
 flag {
-    name: "material_colors_2025_03"
+    name: "material_colors_2026_03"
     namespace: "systemui"
-    description: "Adding new Material Tokens as of March 2025"
-    bug: "394371316"
+    description: "Adding new Fixed Color Tokens as of March 2026"
+    bug: "487965330"
     is_exported: true
     metadata {
         purpose: PURPOSE_FEATURE

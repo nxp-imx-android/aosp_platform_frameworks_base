@@ -20,6 +20,7 @@ import android.testing.TestableLooper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -34,7 +35,9 @@ import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.data.repository.fakeActiveMedia
+import com.android.systemui.media.remedia.data.repository.fakeResumableMedia
 import com.android.systemui.media.remedia.data.repository.setFakeCurrentMedia
 import com.android.systemui.media.remedia.data.repository.setHasMedia
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.notificationRulesParentViewModelFactory
@@ -62,7 +65,6 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificati
 import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -114,15 +116,11 @@ class MediaTransitionTest : SysuiTestCase() {
             jankMonitor = kosmos.interactionJankMonitor,
         )
 
-    @Before
-    fun setup() {
-        kosmos.setFakeCurrentMedia(listOf(kosmos.fakeActiveMedia))
-    }
-
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
     @Test
     fun transitFromShadeToQuickSettings() {
         kosmos.runTest {
+            setFakeCurrentMedia(listOf(kosmos.fakeActiveMedia))
             usingMediaInComposeFragment = true
             enableSingleShade()
             setHasMedia(true)
@@ -146,6 +144,29 @@ class MediaTransitionTest : SysuiTestCase() {
         }
     }
 
+    @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Test
+    fun resumableMediaPersistsInQuickSettings() =
+        kosmos.runTest {
+            setFakeCurrentMedia(listOf(kosmos.fakeResumableMedia))
+            usingMediaInComposeFragment = true
+            enableSingleShade()
+
+            composeTestRule.setContent { shadeSceneToQuickSettingsSceneContainer() }
+            composeTestRule.waitForIdle()
+
+            composeTestRule
+                .onNodeWithContentDescription(EXPECTED_RESUMABLE_UMO_CONTENT_DESC, substring = true)
+                .assertIsNotDisplayed()
+
+            composeTestRule.swipeDownFromTopCenter()
+            runCurrent()
+
+            composeTestRule
+                .onNodeWithContentDescription(EXPECTED_RESUMABLE_UMO_CONTENT_DESC, substring = true)
+                .assertIsDisplayed()
+        }
+
     @Composable
     private fun shadeSceneToQuickSettingsSceneContainer() {
         val transitionState =
@@ -157,9 +178,11 @@ class MediaTransitionTest : SysuiTestCase() {
             ObserveReadsRoot {
                 WithStatusIconContext(kosmos.tintedIconManagerFactory) {
                     val vm =
-                        kosmos.sceneContainerViewModelFactory
-                            .create() {}
-                            .apply { setTransitionState(transitionState = transitionState) }
+                        rememberViewModel("MediaTransitionTest") {
+                            kosmos.sceneContainerViewModelFactory
+                                .create() {}
+                                .apply { setTransitionState(transitionState = transitionState) }
+                        }
 
                     SceneContainer(
                         viewModel = vm,
@@ -184,5 +207,6 @@ class MediaTransitionTest : SysuiTestCase() {
 
     private companion object {
         const val EXPECTED_UMO_CONTENT_DESC = "Fake_Music_Player"
+        const val EXPECTED_RESUMABLE_UMO_CONTENT_DESC = "Fake_Podcast_Player"
     }
 }

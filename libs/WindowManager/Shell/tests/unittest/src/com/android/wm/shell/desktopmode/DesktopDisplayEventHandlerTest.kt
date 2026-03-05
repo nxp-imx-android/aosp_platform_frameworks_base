@@ -579,6 +579,26 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION)
     fun testDisplayReconnected_tasksFocusedOnDefaultDisplay_skipsReconnect() {
+        desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+        desktopState.overrideDesktopModeSupportPerDisplay[externalDisplayId] = true
+        val mockPreservedDisplay = mock<DesktopDisplay>()
+        whenever(mockDesktopRepository.removePreservedDisplay(any()))
+            .thenReturn(mockPreservedDisplay)
+        val preservedFocusedTaskIds = listOf(1)
+        whenever(mockDesktopRepository.getPreservedTasks(mockPreservedDisplay))
+            .thenReturn(preservedFocusedTaskIds)
+        whenever(mockDesktopTasksController.getExcludedFromProjectedRestoreTasks(any(), any()))
+            .thenReturn(listOf())
+
+        addDisplay(SECOND_DISPLAY)
+
+        verify(mockDesktopTasksController, never())
+            .restoreDisplay(eq(externalDisplayId), eq(mockPreservedDisplay), eq(PRIMARY_USER_ID))
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION)
+    fun handlePotentialReconnect_displayRestored_displayWindowingModeUpdated() {
         desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
         desktopState.overrideDesktopModeSupportPerDisplay[externalDisplayId] = true
         val mockPreservedDisplay = mock<DesktopDisplay>()
@@ -593,8 +613,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
 
         addDisplay(SECOND_DISPLAY)
 
-        verify(mockDesktopTasksController, never())
-            .restoreDisplay(eq(externalDisplayId), eq(mockPreservedDisplay), eq(PRIMARY_USER_ID))
+        verify(mockDesktopDisplayModeController).updateExternalDisplayWindowingMode(SECOND_DISPLAY)
     }
 
     @Test
@@ -672,19 +691,20 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
         DisplayAreaInfo(/* token= */ mock(), displayId, /* featureId= */ 0)
 
     private class FakeDesktopRepositoryInitializer : DesktopRepositoryInitializer {
-        override var deskRootHelper: DeskRootHelper = object : DeskRootHelper {
-            override suspend fun recreateDeskRoot(
-                userId: Int,
-                destinationDisplayId: Int,
-                deskId: Int,
-            ): Int? = deskId
+        override var deskRootHelper: DeskRootHelper =
+            object : DeskRootHelper {
+                override suspend fun recreateDeskRoot(
+                    userId: Int,
+                    destinationDisplayId: Int,
+                    deskId: Int,
+                ): Int? = deskId
 
-            override suspend fun removeDeskRoots(
-                requests: List<DeskRootHelper.DeskRootRemovalRequest>
-            ) {
-                // Do nothing.
+                override suspend fun removeDeskRoots(
+                    requests: List<DeskRootHelper.DeskRootRemovalRequest>
+                ) {
+                    // Do nothing.
+                }
             }
-        }
 
         override val isInitialized: MutableStateFlow<Boolean> = MutableStateFlow(false)
 

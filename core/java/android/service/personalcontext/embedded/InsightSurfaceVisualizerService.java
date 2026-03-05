@@ -87,15 +87,19 @@ import java.util.concurrent.Executor;
  * information about the properties that a client can report to a visualizer.
  *
  * <p>You must declare the service in the AndroidManifest of the app hosting the service with the
- * {@link Manifest.permission#BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE} permission,
- * and include an intent filter with the necessary action indicating that it is an
- * {@link InsightSurfaceVisualizerService} ({@link #SERVICE_INTERFACE}).
+ * {@link Manifest.permission#BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE} permission, and include an
+ * intent filter with the necessary action indicating that it is an {@link
+ * InsightSurfaceVisualizerService} ({@link #SERVICE_INTERFACE}). The application must have the
+ * {@link Manifest.permission#PERSONAL_CONTEXT_RECEIVE_INSIGHTS} permission.
  *
  * <p>For example:
  * <pre>
+ *     &lt;uses-permission
+ *         android:name="android.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS"/&gt;
+ *
  *     &lt;service android:name=".ExampleInsightSurfaceVisualizerService"
- *             android:exported="true"
- *             android:permission="android.permission.BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE"&gt;
+ *         android:exported="true"
+ *         android:permission="android.permission.BIND_INSIGHT_SURFACE_VISUALIZER_SERVICE"&gt;
  *         &lt;intent-filter&gt;
  *             &lt;action
  *           android:name="android.service.personalcontext.embedded.InsightSurfaceVisualizerService"

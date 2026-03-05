@@ -1855,14 +1855,9 @@ public class TransitionTests extends WindowTestsBase {
         // When the transition finished, the recent can still be notified to pause and stop.
         controller.flushRunningTransitions();
         mDisplayContent.ensureActivitiesVisible(null /* starting */, true /* notifyClients */);
-        if (com.android.window.flags.Flags.pauseInvisibleActivity()) {
-            // The invisible recent is immediately paused
-            assertEquals(null, taskRecent.getResumedActivity());
-            assertEquals(ActivityRecord.State.PAUSING, recent.getState());
-        } else {
-            // ActivityRecord#makeInvisible will add the invisible recent to the stopping list.
-            assertTrue(mSupervisor.mStoppingActivities.contains(recent));
-        }
+        // The invisible recent is immediately paused
+        assertEquals(null, taskRecent.getResumedActivity());
+        assertEquals(ActivityRecord.State.PAUSING, recent.getState());
     }
 
     @Test

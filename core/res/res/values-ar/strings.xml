@@ -558,6 +558,10 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"يمكن لهذا التطبيق التقاط صور وتسجيل فيديوهات باستخدام الكاميرا في أي وقت."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"السماح لتطبيق أو خدمة بالوصول إلى كاميرات النظام لالتقاط صور وتسجيل فيديوهات"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"‏إنّ تطبيق النظام هذا، أو التطبيق المزوّد بأذونات مميّزة، يمكنه التقاط صور وتسجيل فيديوهات باستخدام كاميرا النظام في أي وقت. ويجب أن يحصل التطبيق أيضًا على الإذن android.permission.CAMERA."</string>
+    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
+    <skip />
+    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
+    <skip />
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"يسمح الإذن لتطبيق أو خدمة بتلقّي استدعاءات عما إذا كانت أجهزة الكاميرات مفتوحة أو مغلقة."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"يمكن أن يتلقّى هذا التطبيق استدعاءات عندما تكون هناك كاميرا مفتوحة (بواسطة هذا التطبيق) أو مغلقة."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"السماح لتطبيق أو خدمة بالوصول إلى الكاميرا بصفة مستخدِم لنظام بلا واجهة مستخدم رسومية"</string>
@@ -712,7 +716,7 @@
     <string name="biometric_dialog_secondary_display_toast" product="tablet" msgid="2855203015454795660">"يجب إثبات هويتك على جهازك اللوحي للمتابعة"</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"معدّات المقاييس الحيوية غير متاحة."</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"تم إلغاء المصادقة."</string>
-    <string name="biometric_not_recognized" msgid="5106687642694635888">"لم يتم التعرف عليها."</string>
+    <string name="biometric_not_recognized" msgid="5106687642694635888">"لم يتم التعرف على مقاييسك الحيوية"</string>
     <string name="biometric_face_not_recognized" msgid="5535599455744525200">"لم يتم التعرّف على الوجه."</string>
     <string name="biometric_error_canceled" msgid="8266582404844179778">"تم إلغاء المصادقة."</string>
     <string name="biometric_error_device_not_secured" msgid="3129845065043995924">"لم يتم ضبط رقم تعريف شخصي أو نقش أو كلمة مرور."</string>
@@ -734,7 +738,7 @@
   </string-array>
     <string name="fingerprint_error_not_match" msgid="4599441812893438961">"لم يتمّ التعرّف على البصمة."</string>
     <string name="fingerprint_udfps_error_not_match" msgid="8236930793223158856">"لم يتمّ التعرّف على بصمة الإصبع."</string>
-    <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5590293588784953188">"لم يتم التعرّف على الوجه. استخدِم بصمة إصبعك."</string>
+    <string name="fingerprint_dialog_use_fingerprint_instead" msgid="5590293588784953188">"لم يتم التعرّف على وجهك. يُرجى استخدام بصمة إصبعك."</string>
     <string name="fingerprint_authenticated" msgid="2024862866860283100">"تم مصادقة بصمة الإصبع"</string>
     <string name="face_authenticated_no_confirmation_required" msgid="8867889115112348167">"تمّت مصادقة الوجه"</string>
     <string name="face_authenticated_confirmation_required" msgid="6872632732508013755">"تمّت مصادقة الوجه، يُرجى الضغط على \"تأكيد\"."</string>
@@ -1081,7 +1085,7 @@
     <string name="keyguard_password_wrong_pin_code" msgid="8583732939138432793">"‏رمز PIN غير صحيح."</string>
     <string name="keyguard_label_text" msgid="3841953694564168384">"لإلغاء التأمين، اضغط على \"القائمة\" ثم على 0."</string>
     <string name="emergency_call_dialog_number_for_display" msgid="2978165477085612673">"رقم الطوارئ"</string>
-    <string name="lockscreen_carrier_default" msgid="6192313772955399160">"لا خدمة"</string>
+    <string name="lockscreen_carrier_default" msgid="6192313772955399160">"لا توجد خدمة"</string>
     <string name="lockscreen_screen_locked" msgid="7364905540516041817">"الشاشة مؤمّنة."</string>
     <string name="lockscreen_instructions_when_pattern_enabled" msgid="7982445492532123308">"اضغط على \"القائمة\" لإلغاء التأمين أو إجراء اتصال بالطوارئ."</string>
     <string name="lockscreen_instructions_when_pattern_disabled" msgid="7434061749374801753">"اضغط على \"القائمة\" لإلغاء التأمين."</string>

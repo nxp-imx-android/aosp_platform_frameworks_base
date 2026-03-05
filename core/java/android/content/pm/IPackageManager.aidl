@@ -42,6 +42,7 @@ import android.content.pm.InstrumentationInfo;
 import android.content.pm.KeySet;
 import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageInfoList;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ComponentEnabledSetting;
 import android.content.pm.ParceledListSlice;
@@ -157,13 +158,7 @@ interface IPackageManager {
     ParceledListSlice queryIntentContentProviders(in Intent intent,
             String resolvedType, long flags, int userId);
 
-    /**
-     * This implements getInstalledPackages via a "last returned row"
-     * mechanism that is not exposed in the API. This is to get around the IPC
-     * limit that kicks in when flags are included that bloat up the data
-     * returned.
-     */
-    ParceledListSlice getInstalledPackages(long flags, in int userId);
+    PackageInfoList getInstalledPackages(long flags, in int userId);
 
     @EnforcePermission("GET_APP_METADATA")
     @nullable ParcelFileDescriptor getAppMetadataFd(String packageName,

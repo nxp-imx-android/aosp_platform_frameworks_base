@@ -33,6 +33,8 @@ import java.util.UUID;
  * @hide
  */
 public class ServiceClientUnderstander extends ServiceClientRefiner {
+    private static final String TAG = "ServiceClientUnderstander";
+
     public ServiceClientUnderstander(Context context, UUID componentId, ServiceInfo serviceInfo,
             UserHandle userHandle) {
         super(context, componentId, serviceInfo, userHandle);

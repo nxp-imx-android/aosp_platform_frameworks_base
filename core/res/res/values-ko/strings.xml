@@ -554,6 +554,10 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"언제든지 앱에서 카메라를 사용하여 사진을 촬영하고 동영상을 녹화할 수 있습니다."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"사진 및 동영상 촬영을 위해 애플리케이션 또는 서비스에서 시스템 카메라에 액세스하도록 허용"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"이 권한이 있는 시스템 앱은 언제든지 시스템 카메라를 사용하여 사진을 촬영하고 동영상을 녹화할 수 있습니다. 또한 앱에 android.permission.CAMERA 권한이 필요합니다."</string>
+    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
+    <skip />
+    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
+    <skip />
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"애플리케이션 또는 서비스에서 카메라 기기 열림 또는 닫힘에 대한 콜백을 수신하도록 허용"</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"이 앱은 애플리케이션이 카메라 기기를 열거나 닫을 때 콜백을 수신할 수 있습니다."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"애플리케이션 또는 서비스에서 헤드리스 시스템 사용자로 카메라에 액세스하도록 허용"</string>
@@ -708,18 +712,18 @@
     <string name="biometric_dialog_secondary_display_toast" product="tablet" msgid="2855203015454795660">"계속하려면 태블릿에서 본인 인증을 진행하세요."</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"생체 인식 하드웨어를 사용할 수 없음"</string>
     <string name="biometric_error_user_canceled" msgid="6732303949695293730">"인증이 취소되었습니다."</string>
-    <string name="biometric_not_recognized" msgid="5106687642694635888">"인식할 수 없음"</string>
+    <string name="biometric_not_recognized" msgid="5106687642694635888">"인식할 수 없습니다."</string>
     <string name="biometric_face_not_recognized" msgid="5535599455744525200">"얼굴을 인식할 수 없습니다."</string>
     <string name="biometric_error_canceled" msgid="8266582404844179778">"인증이 취소되었습니다."</string>
     <string name="biometric_error_device_not_secured" msgid="3129845065043995924">"PIN, 패턴, 비밀번호가 설정되지 않음"</string>
     <string name="biometric_error_generic" msgid="6784371929985434439">"인증 오류"</string>
     <string name="screen_lock_app_setting_name" msgid="6054944352976789228">"화면 잠금 사용"</string>
     <string name="screen_lock_dialog_default_subtitle" msgid="120359538048533695">"계속하려면 화면 잠금용 사용자 인증 정보를 입력하세요"</string>
-    <string name="fingerprint_acquired_partial" msgid="4323789264604479684">"센서를 세게 누르세요"</string>
+    <string name="fingerprint_acquired_partial" msgid="4323789264604479684">"센서를 세게 누르세요."</string>
     <string name="fingerprint_acquired_insufficient" msgid="2410176550915730974">"지문을 인식할 수 없습니다. 다시 시도해 주세요"</string>
     <string name="fingerprint_acquired_imager_dirty" msgid="1770676120848224250">"지문 센서를 닦은 후 다시 시도해 보세요."</string>
     <string name="fingerprint_acquired_imager_dirty_alt" msgid="9169582140486372897">"센서를 닦은 후 다시 시도해 보세요."</string>
-    <string name="fingerprint_acquired_too_fast" msgid="1628459767349116104">"센서를 세게 누르세요"</string>
+    <string name="fingerprint_acquired_too_fast" msgid="1628459767349116104">"센서를 세게 누르세요."</string>
     <string name="fingerprint_acquired_too_slow" msgid="6683510291554497580">"손가락을 너무 느리게 움직였습니다. 다시 시도해 주세요."</string>
     <string name="fingerprint_acquired_already_enrolled" msgid="2285166003936206785">"다른 지문으로 시도"</string>
     <string name="fingerprint_acquired_too_bright" msgid="3863560181670915607">"너무 밝음"</string>
@@ -1849,7 +1853,7 @@
     <string name="accessibility_shortcut_menu_item_status_on" msgid="6162756705754654002">"사용"</string>
     <string name="accessibility_shortcut_menu_item_status_off" msgid="6274512913017713543">"사용 안함"</string>
     <string name="accessibility_enable_service_title" msgid="3931558336268541484">"<xliff:g id="SERVICE">%1$s</xliff:g>에서 기기를 완전히 제어하도록 허용하시겠습니까?"</string>
-    <string name="accessibility_service_warning_description" msgid="291674995220940133">"접근성 관련 지원을 제공하는 앱에는 완벽한 제어권을 부여하는 것이 좋으나, 대부분의 앱에는 적합하지 않습니다."</string>
+    <string name="accessibility_service_warning_description" msgid="291674995220940133">"완전한 제어권을 부여하는 것은 접근성 관련 지원을 제공하는 앱에는 적합하나, 대부분의 앱에는 적합하지 않습니다."</string>
     <string name="accessibility_service_screen_control_title" msgid="190017412626919776">"화면 확인 및 제어"</string>
     <string name="accessibility_service_screen_control_description" msgid="6946315917771791525">"화면에 표시된 모든 콘텐츠를 읽고 다른 앱 위에 콘텐츠를 표시할 수 있습니다."</string>
     <string name="accessibility_service_action_perform_title" msgid="779670378951658160">"작업 확인 및 실행"</string>
@@ -1877,7 +1881,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"한 손 모드"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"더 어둡게"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"청각 보조 기기"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"자동 클릭(포인터 정지 시간)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"자동 클릭"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"마우스 키"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"연결 끊김"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"연결됨"</string>

@@ -63,6 +63,7 @@ import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UID_IDLE;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UI_VISIBILITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UNBIND_SERVICE;
 import static android.os.PerfettoTrace.PROC_STATE_CATEGORY;
+import static android.os.PerfettoCategories.PROC_STATE_COUNTER_CATEGORY;
 import static android.os.Process.THREAD_GROUP_BACKGROUND;
 import static android.os.Process.THREAD_GROUP_DEFAULT;
 import static android.os.Process.THREAD_GROUP_FOREGROUND_WINDOW;
@@ -1522,8 +1523,9 @@ public abstract class OomAdjuster {
             }
         }
 
-        if (android.os.Flags.perfettoSdkTracingV3() && PROC_STATE_CATEGORY != null
-                && PROC_STATE_CATEGORY.isEnabled()) {
+        if (android.os.Flags.perfettoSdkTracingV3()
+                && PROC_STATE_COUNTER_CATEGORY != null
+                && PROC_STATE_COUNTER_CATEGORY.isEnabled()) {
             for (int i = 0; i < STATE_COUNT; i++) {
                 try {
                     int count;
@@ -1539,7 +1541,7 @@ public abstract class OomAdjuster {
 
                     final String trackName = STATE_PERFETTO_TRACK_NAMES[i];
                     if (trackName != null) {
-                        PerfettoTrace.counter(PROC_STATE_CATEGORY, count)
+                        PerfettoTrace.counter(PROC_STATE_COUNTER_CATEGORY, count)
                                 .usingProcessCounterTrack(trackName)
                                 .emit();
                     }
@@ -2195,7 +2197,7 @@ public abstract class OomAdjuster {
                 || app.getMaxAdj() < mOomConstants.mFreezerCutoffAdj) {
             app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
             if (Flags.enableCapabilityControllerComputation()) {
-                app.getGraphNode().setHasIntrinsicImplicitCpuTime(true);
+                app.getProcessNode().setHasIntrinsicImplicitCpuTime(true);
             }
             return PROCESS_CAPABILITY_IMPLICIT_CPU_TIME;
         }
@@ -2583,7 +2585,7 @@ public abstract class OomAdjuster {
         app.addCurCpuTimeReasons(CPU_TIME_REASON_OTHER);
         app.addCurImplicitCpuTimeReasons(IMPLICIT_CPU_TIME_REASON_OTHER);
         if (Flags.enableCapabilityControllerComputation()) {
-            app.getGraphNode().setHasIntrinsicImplicitCpuTime(true);
+            app.getProcessNode().setHasIntrinsicImplicitCpuTime(true);
         }
 
         if (!Flags.setInitialOomScoreAdj()) {

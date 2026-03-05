@@ -126,6 +126,7 @@ import android.view.IRemoteAnimationFinishedCallback;
 import android.view.IRemoteAnimationRunner;
 import android.view.RemoteAnimationAdapter;
 import android.view.RemoteAnimationTarget;
+import android.view.RoundedCorner;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -4059,8 +4060,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             sideToken = mSideStage.mRootTaskInfo.token;
         }
         mSplitTransitions.playAnimation(transition, info, startTransaction, finishTransaction,
-                finishCallback, mainToken, sideToken,
-                mSplitRootTaskInfo.token);
+                finishCallback, mainToken, sideToken, mSplitRootTaskInfo.token);
         return true;
     }
 
@@ -4905,6 +4905,10 @@ public class StageCoordinator extends StageCoordinatorAbstract {
     @Override
     public boolean hasEmptyStage() {
         return mMainStage.getChildCount() == 0 || mSideStage.getChildCount() == 0;
+    }
+
+    RoundedCorner getRoundedCorner() {
+        return mContext.getDisplay().getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT);
     }
 
     /**

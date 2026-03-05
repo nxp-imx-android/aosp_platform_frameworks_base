@@ -29,6 +29,7 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
 /**
@@ -44,6 +45,8 @@ final class SessionLifecycle {
     private boolean mIsRemoteCallbackAdded = false;
     @GuardedBy("mLifecycle")
     private final LifecycleConfig mLifecycleConfig = new LifecycleConfig();
+
+    private final Executor mCallbackExecutor;
 
     /** Configuration args that fully determine the lifecycle state of the session. */
     static final class LifecycleConfig {
@@ -84,8 +87,10 @@ final class SessionLifecycle {
         }
     }
 
-    SessionLifecycle(@NonNull ComputerControlSession.LifecycleCallback localCallback) {
-        mLifecycle.addCallback(localCallback);
+    SessionLifecycle(@NonNull Executor callbackExecutor,
+            @NonNull ComputerControlSession.LifecycleCallback localCallback) {
+        mCallbackExecutor = callbackExecutor;
+        mLifecycle.addCallback(callbackExecutor, localCallback);
     }
 
     /**
@@ -168,7 +173,8 @@ final class SessionLifecycle {
             updateLifecycleState((config) -> {});
 
             // Adding the remote callback will immediately notify it of the initial state.
-            mLifecycle.addCallback(new ComputerControlSession.LifecycleCallback() {
+            mLifecycle.addCallback(mCallbackExecutor,
+                    new ComputerControlSession.LifecycleCallback() {
                 @Override
                 public void onActive() {
                     try {

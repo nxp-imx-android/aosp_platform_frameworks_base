@@ -25,7 +25,6 @@ import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
 
 import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.getInputMethodType;
-import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION;
 import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.getInputMethodFromMotionEvent;
 
 import android.annotation.NonNull;
@@ -37,7 +36,6 @@ import android.graphics.Rect;
 import android.graphics.Region;
 import android.hardware.input.InputManager;
 import android.os.IBinder;
-import android.os.SystemProperties;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
@@ -48,7 +46,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
-import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
@@ -78,9 +75,6 @@ public class DesktopModeTouchEventListener
     private static final String TAG = "DesktopModeTouchEventListener";
     private static final long APP_HANDLE_HOLD_TO_DRAG_DURATION_MS = 100;
     private static final long APP_HEADER_HOLD_TO_DRAG_DURATION_MS = 0;
-
-    private static final boolean DEBUG_MOTION_EVENTS = SystemProperties.getBoolean(
-            "persist.wm.debug.window_decoration_motion_events_debug", false);
 
     private final @NonNull Context mContext;
     private final int mTaskId;
@@ -193,15 +187,15 @@ public class DesktopModeTouchEventListener
     @Override
     public void onClick(View v) {
         final String viewName = getResourceName(v);
-        logD("onClick(%s)", viewName);
+        WdLog.logD(TAG, mTaskId, "onClick(%s)", viewName);
         if (mIsDragging) {
-            logD("onClick(%s) while dragging in progress, ignoring", viewName);
+            WdLog.logD(TAG, mTaskId, "onClick(%s) while dragging in progress, ignoring", viewName);
             mIsDragging = false;
             return;
         }
         final WindowDecorationWrapper decoration = mWindowDecorationFinder.apply(mTaskId);
         if (decoration == null) {
-            logD("onClick(%s) but decoration is null, ignoring", viewName);
+            WdLog.logD(TAG, mTaskId, "onClick(%s) but decoration is null, ignoring", viewName);
             return;
         }
         final int id = v.getId();
@@ -254,11 +248,13 @@ public class DesktopModeTouchEventListener
     private WindowDecorationWrapper updateStateOnTouchEvent(View v, MotionEvent e, String tag) {
         mInputMethod = getInputMethod(e);
         final String viewName = getResourceName(v);
-        debugLogD("%s(%s) action=%s", tag, viewName, MotionEvent.actionToString(e.getAction()));
+        WdLog.motionEventLogD(TAG, mTaskId, "%s(%s) action=%s", tag, viewName,
+                MotionEvent.actionToString(e.getAction()));
         final int id = v.getId();
         final WindowDecorationWrapper decoration = mWindowDecorationFinder.apply(mTaskId);
         if (decoration == null) {
-            debugLogD("%s(%s) but decoration is null, ignoring", tag, viewName);
+            WdLog.motionEventLogD(TAG, mTaskId, "%s(%s) but decoration is null, ignoring", tag,
+                    viewName);
             return null;
         }
         final boolean touchscreenSource =
@@ -266,18 +262,20 @@ public class DesktopModeTouchEventListener
         // Disable long click during events from a non-touchscreen source
         mLongClickDisabled = !touchscreenSource && e.getActionMasked() != ACTION_UP
                 && e.getActionMasked() != ACTION_CANCEL;
-        debugLogD("%s(%s) isTouchscreen=%b longClickDisabled=%b",
+        WdLog.motionEventLogD(TAG, mTaskId, "%s(%s) isTouchscreen=%b longClickDisabled=%b",
                 tag, viewName, touchscreenSource, mLongClickDisabled);
 
         if (id != R.id.caption_handle && id != R.id.desktop_mode_caption
                 && id != R.id.open_menu_button && id != R.id.close_window
                 && id != R.id.maximize_window && id != R.id.minimize_window) {
-            debugLogD("%s(%s) unsupported view, ignoring", tag, viewName);
+            WdLog.motionEventLogD(TAG, mTaskId, "%s(%s) unsupported view, ignoring", tag,
+                    viewName);
             return null;
         }
         if (e.isSynthesizedTouchpadGesture()) {
             // Touchpad finger gestures are ignored.
-            debugLogD("%s(%s) but is touchpad gesture, ignoring", tag, viewName);
+            WdLog.motionEventLogD(TAG, mTaskId, "%s(%s) but is touchpad gesture, ignoring",
+                    tag, viewName);
             return null;
         }
 
@@ -310,11 +308,11 @@ public class DesktopModeTouchEventListener
             mIsCustomHeaderGesture = downInCustomizableCaptionRegion
                     && downInExclusionRegion && isTransparentCaption;
 
-            debugLogD(
+            WdLog.motionEventLogD(TAG, mTaskId,
                     "%s(%s) handling DOWN(%d, %d) - mIsCustomHeaderGesture=%b, "
                             + "downInCustomizableCaptionRegion=%b, downInExclusionRegion=%b, "
                             + "isTransparentCaption=%b, mIsResizeGesture=%b",
-                    tag, getResourceName(v), rawX, rawY, mIsCustomHeaderGesture,
+                    tag, viewName, rawX, rawY, mIsCustomHeaderGesture,
                     downInCustomizableCaptionRegion, downInExclusionRegion, isTransparentCaption,
                     mIsResizeGesture);
         }
@@ -337,8 +335,9 @@ public class DesktopModeTouchEventListener
         if (mIsCustomHeaderGesture || mIsResizeGesture) {
             // The event will be handled by the custom window below or intercepted by resize
             // handler.
-            debugLogD("onInterceptTouchEvent(%s) but mIsCustomHeaderGesture=%b "
-                            + "mIsResizeGesture=%b, ignoring",
+            WdLog.motionEventLogD(TAG, mTaskId,
+                    "onInterceptTouchEvent(%s) but "
+                            + "mIsCustomHeaderGesture=%b IsResizeGesture=%b, ignoring",
                     viewName, mIsCustomHeaderGesture, mIsResizeGesture);
             return false;
         }
@@ -375,8 +374,8 @@ public class DesktopModeTouchEventListener
         if (mIsCustomHeaderGesture || mIsResizeGesture) {
             // The event will be handled by the custom window below or intercepted by resize
             // handler.
-            debugLogD("onInterceptTouchEvent(%s) but mIsCustomHeaderGesture=%b "
-                            + "mIsResizeGesture=%b, ignoring",
+            WdLog.motionEventLogD(TAG, mTaskId,
+                    "onTouch(%s) but mIsCustomHeaderGesture=%b mIsResizeGesture=%b, ignoring",
                     viewName, mIsCustomHeaderGesture, mIsResizeGesture);
             return false;
         }
@@ -394,29 +393,31 @@ public class DesktopModeTouchEventListener
     @Override
     public boolean onLongClick(View v) {
         final String viewName = getResourceName(v);
-        logD("onLongClick(%s)", viewName);
+        WdLog.logD(TAG, mTaskId, "onLongClick(%s)", viewName);
         final int id = v.getId();
         if (id != R.id.maximize_window) {
-            logD("onLongClick(%s) but view is unsupported, ignoring", viewName);
+            WdLog.logD(TAG, mTaskId, "onLongClick(%s) but view is unsupported, ignoring", viewName);
             return false;
         }
         if (mLongClickDisabled) {
-            logD("onLongClick(%s) but long click is disabled, ignoring", viewName);
+            WdLog.logD(TAG, mTaskId, "onLongClick(%s) but long click is disabled, ignoring",
+                    viewName);
             return false;
         }
         final WindowDecorationWrapper decoration = mWindowDecorationFinder.apply(mTaskId);
         if (decoration == null) {
-            logD("onLongClick(%s) but decoration is null, ignoring", viewName);
+            WdLog.logD(TAG, mTaskId, "onLongClick(%s) but decoration is null, ignoring", viewName);
             return false;
         }
         moveTaskToFront(decoration.getTaskInfo());
         if (decoration.getIsDragging()) {
-            logD("onLongClick(%s) but is dragging, skip creating layout menu", viewName);
+            WdLog.logD(TAG, mTaskId, "onLongClick(%s) but is dragging, skip creating layout menu",
+                    viewName);
             return true;
         }
         if (decoration.getLayoutMenuController() != null
                 && !decoration.getLayoutMenuController().isLayoutMenuActive()) {
-            logD("onLongClick(%s) creating layout menu", viewName);
+            WdLog.logD(TAG, mTaskId, "onLongClick(%s) creating layout menu", viewName);
             decoration.getLayoutMenuController().createLayoutMenu();
         }
         return true;
@@ -456,7 +457,10 @@ public class DesktopModeTouchEventListener
 
     private void moveTaskToFront(ActivityManager.RunningTaskInfo taskInfo) {
         if (!mFocusTransitionObserver.hasGlobalFocus(taskInfo)) {
-            logD("moveTaskToFront display=%d "
+            WdLog.logD(
+                    TAG,
+                    mTaskId,
+                    "moveTaskToFront display=%d "
                             + "globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
                     taskInfo.displayId,
                     mFocusTransitionObserver.getGloballyFocusedTaskId(),
@@ -469,7 +473,10 @@ public class DesktopModeTouchEventListener
                 mDesktopTasksController.moveTaskToFront(taskInfo);
             }
         } else {
-            debugLogD("moveTaskToFront already had global focus, skipping "
+            WdLog.motionEventLogD(
+                    TAG,
+                    mTaskId,
+                    "moveTaskToFront already had global focus, skipping "
                             + " display=%d globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
                     taskInfo.displayId,
                     mFocusTransitionObserver.getGloballyFocusedTaskId(),
@@ -484,11 +491,12 @@ public class DesktopModeTouchEventListener
     @Override
     public boolean handleMotionEvent(@Nullable View v, MotionEvent e) {
         final String viewName = getResourceName(v);
-        debugLogD("handleMotionEvent(%s) action=%s",
-                viewName, MotionEvent.actionToString(e.getAction()));
+        WdLog.motionEventLogD(TAG, mTaskId, "handleMotionEvent(%s) action=%s", viewName,
+                MotionEvent.actionToString(e.getAction()));
         final WindowDecorationWrapper decoration = mWindowDecorationFinder.apply(mTaskId);
         if (decoration == null) {
-            debugLogD("handleMotionEvent(%s) but decoration is null, ignoring", viewName);
+            WdLog.motionEventLogD(TAG, mTaskId, "handleMotionEvent(%s) but decoration is null,"
+                            + " ignoring", viewName);
             return false;
         }
         final ActivityManager.RunningTaskInfo taskInfo = decoration.getTaskInfo();
@@ -504,16 +512,17 @@ public class DesktopModeTouchEventListener
             View v, MotionEvent e) {
         final int id = v.getId();
         final String viewName = getResourceName(v);
-        debugLogD("handleNonFreeformMotionEvent(%s)", viewName);
+        WdLog.motionEventLogD(TAG, mTaskId, "handleNonFreeformMotionEvent(%s)", viewName);
         if (id != R.id.caption_handle) {
-            debugLogD("handleNonFreeformMotionEvent(%s) unsupported view, ignoring",
-                    viewName);
+            WdLog.motionEventLogD(TAG, mTaskId,
+                    "handleNonFreeformMotionEvent(%s) unsupported view, ignoring", viewName);
             return false;
         }
         mAppHandleMotionEventHandler.onMotionEvent(e, decoration,
                 /* interruptDragCallback= */
                 () -> {
-                    logD("handleNonFreeformMotionEvent(%s) drag interrupted", viewName);
+                    WdLog.logD(TAG, mTaskId, "handleNonFreeformMotionEvent(%s) drag interrupted",
+                            viewName);
                     mDragInterrupted = true;
                     setIsDragging(decoration, /* isDragging= */ false);
                 });
@@ -521,8 +530,9 @@ public class DesktopModeTouchEventListener
         updateDragStatus(decoration, e);
         final boolean upOrCancel = e.getActionMasked() == ACTION_UP
                 || e.getActionMasked() == ACTION_CANCEL;
-        debugLogD("handleNonFreeformMotionEvent(%s) wasDragging=%b isDragging=%b upOrCancel=%b",
-                viewName, wasDragging, mIsDragging, upOrCancel);
+        WdLog.motionEventLogD(TAG, mTaskId, "handleNonFreeformMotionEvent(%s) wasDragging=%b "
+                        + "isDragging=%b upOrCancel=%b", viewName, wasDragging, mIsDragging,
+                upOrCancel);
         if (wasDragging && upOrCancel) {
             // When finishing a drag the event will be consumed, which means the pressed
             // state of the App Handle must be manually reset to scale its drawable back to
@@ -543,13 +553,15 @@ public class DesktopModeTouchEventListener
     private boolean handleFreeformMotionEvent(WindowDecorationWrapper decoration,
             ActivityManager.RunningTaskInfo taskInfo, View v, MotionEvent e) {
         final String viewName = getResourceName(v);
-        debugLogD("handleFreeformMotionEvent(%s)", viewName);
+        WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s)", viewName);
         updateTouchStatus(e);
         final int id = v.getId();
         if (mGestureDetector.onTouchEvent(e)) {
-            debugLogD("handleFreeformMotionEvent(%s) handled by gesture detector", viewName);
+            WdLog.motionEventLogD(TAG, mTaskId,
+                    "handleFreeformMotionEvent(%s) handled by gesture detector", viewName);
             return true;
         }
+
         final boolean touchingButton = (id == R.id.close_window || id == R.id.maximize_window
                 || id == R.id.open_menu_button || id == R.id.minimize_window);
         final DesktopRepository desktopRepository = mDesktopUserRepositories.getProfile(
@@ -566,17 +578,18 @@ public class DesktopModeTouchEventListener
                     updateDragStatus(decoration, e);
                     mOnDragStartInitialBounds.set(initialBounds);
                     mCurrentBounds.set(initialBounds);
-                    debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                    + "dispatched |onDragPositioningStart| dragAllowed=%b "
-                                    + "isDragging=%b mOnDragStartInitialBounds=%s "
+                    WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s) "
+                                    + "action=%s dispatched |onDragPositioningStart| "
+                                    + "dragAllowed=%b isDragging=%b mOnDragStartInitialBounds=%s "
                                     + "mCurrentBounds=%s touchingButton=%b",
                             viewName, MotionEvent.actionToString(e.getAction()), dragAllowed,
                             mIsDragging, mOnDragStartInitialBounds, mCurrentBounds,
                             touchingButton);
                 } else {
-                    debugLogD("handleFreeformMotionEvent(%s) action=%s dragAllowed=%b "
-                                    + "isDragging=%b mOnDragStartInitialBounds=%s "
-                                    + "mCurrentBounds=%s touchingButton=%b",
+                    WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s) "
+                                    + "action=%s dragAllowed=%b isDragging=%b "
+                                    + "mOnDragStartInitialBounds=%s mCurrentBounds=%s "
+                                    + "touchingButton=%b",
                             viewName, MotionEvent.actionToString(e.getAction()), dragAllowed,
                             mIsDragging, mOnDragStartInitialBounds, mCurrentBounds,
                             touchingButton);
@@ -588,18 +601,20 @@ public class DesktopModeTouchEventListener
             case ACTION_MOVE: {
                 // If a decor's resize drag zone is active, don't also try to reposition it.
                 if (decoration.isHandlingDragResize()) {
-                    debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                    + "handling drag resize, ignore",
+                    WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s) "
+                                    + "action=%s handling drag resize, ignore",
                             viewName, MotionEvent.actionToString(e.getAction()));
                     break;
                 }
+
                 // Dragging the header isn't allowed, so skip the positioning work.
                 if (!dragAllowed) {
-                    debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                    + "drag is not allowed, ignore",
+                    WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s) "
+                                    + "action=%s drag is not allowed, ignore",
                             viewName, MotionEvent.actionToString(e.getAction()));
                     break;
                 }
+
 
                 if (e.findPointerIndex(mDragPointerId) == -1) {
                     mDragPointerId = e.getPointerId(0);
@@ -620,14 +635,14 @@ public class DesktopModeTouchEventListener
                     mCurrentBounds.set(mDragPositioningCallback.onDragPositioningMove(
                             e.getDisplayId(),
                             e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx)));
-                    debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                    + "inDesktopModeDisplay=%b dispatched "
+                    WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s) "
+                                    + "action=%s inDesktopModeDisplay=%b dispatched "
                                     + "|onDragPositioningMove| mCurrentBounds=%s",
                             viewName, MotionEvent.actionToString(e.getAction()),
                             inDesktopModeDisplay, mCurrentBounds);
                 } else {
-                    debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                    + "not a desktop mode display, ignore",
+                    WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s) "
+                                    + "action=%s not a desktop mode display, ignore",
                             viewName, MotionEvent.actionToString(e.getAction()));
                 }
 
@@ -640,8 +655,8 @@ public class DesktopModeTouchEventListener
                             e.getRawY(dragPointerIdx),
                             mCurrentBounds);
                 }
-                debugLogD("handleFreeformMotionEvent(%s) action=%s updated controller "
-                                + "mIsDragging=%b mCurrentBounds=%s "
+                WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s) action=%s "
+                                + "updated controller mIsDragging=%b mCurrentBounds=%s "
                                 + "mOnDragStartInitialBounds=%s",
                         viewName, MotionEvent.actionToString(e.getAction()), mIsDragging,
                         mCurrentBounds, mOnDragStartInitialBounds);
@@ -663,8 +678,8 @@ public class DesktopModeTouchEventListener
                 }
                 final int dragPointerIdx = e.findPointerIndex(mDragPointerId);
                 if (!dragAllowed) {
-                    debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                    + "drag is not allowed, ignore",
+                    WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s) "
+                                    + "action=%s drag is not allowed, ignore",
                             viewName, MotionEvent.actionToString(e.getAction()));
                     return false;
                 }
@@ -672,8 +687,8 @@ public class DesktopModeTouchEventListener
                 final Rect newTaskBounds = mDragPositioningCallback.onDragPositioningEnd(
                         e.getDisplayId(),
                         e.getRawX(dragPointerIdx), e.getRawY(dragPointerIdx));
-                debugLogD("handleFreeformMotionEvent(%s) action=%s dispatched "
-                                + "|onDragPositioningEnd| newTaskBounds=%s",
+                WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s) action=%s "
+                                + "dispatched |onDragPositioningEnd| newTaskBounds=%s",
                         viewName, MotionEvent.actionToString(e.getAction()), newTaskBounds);
 
                 final IBinder inputToken = v.getViewRootImpl() != null
@@ -706,8 +721,8 @@ public class DesktopModeTouchEventListener
                                     new Rect(mOnDragStartInitialBounds),
                                     e);
                 }
-                debugLogD("handleFreeformMotionEvent(%s) action=%s updated controller "
-                                + "newTaskBounds%s validDragArea=%s "
+                WdLog.logD(TAG, mTaskId, "handleFreeformMotionEvent(%s) action=%s "
+                                + "updated controller newTaskBounds%s validDragArea=%s "
                                 + "mOnDragStartInitialBounds=%s touchingButton=%b "
                                 + "needDragIndicatorCleanup=%b",
                         viewName, MotionEvent.actionToString(e.getAction()), newTaskBounds,
@@ -719,8 +734,8 @@ public class DesktopModeTouchEventListener
                     t.apply();
                 }
                 if (!wasDragging) {
-                    debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                    + "was not dragging, ignore",
+                    WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s) "
+                                    + "action=%s was not dragging, ignore",
                             viewName, MotionEvent.actionToString(e.getAction()));
                     return false;
                 }
@@ -728,8 +743,8 @@ public class DesktopModeTouchEventListener
                     // We need the input event to not be consumed here to end the ripple
                     // effect on the touched button. We will reset drag state in the ensuing
                     // onClick call that results.
-                    debugLogD("handleFreeformMotionEvent(%s) action=%s "
-                                    + "touching button, ignore",
+                    WdLog.motionEventLogD(TAG, mTaskId, "handleFreeformMotionEvent(%s) "
+                                    + "action=%s touching button, ignore",
                             viewName, MotionEvent.actionToString(e.getAction()));
                     return false;
                 }
@@ -745,6 +760,8 @@ public class DesktopModeTouchEventListener
         if (mCurrentPointerIconType == iconType) {
             return;
         }
+        WdLog.logD(TAG, mTaskId, "updatePointerIcon: iconType=%d, displayId=%d", iconType,
+                e.getDisplayId());
         mInputManager.setPointerIcon(PointerIcon.getSystemIcon(mContext, iconType),
                 e.getDisplayId(), e.getDeviceId(), e.getPointerId(dragPointerIdx), inputToken);
         mCurrentPointerIconType = iconType;
@@ -766,8 +783,9 @@ public class DesktopModeTouchEventListener
                 break;
             }
         }
-        debugLogD("updateDragStatus action=%s updated mIsDragging=%b mDragInterrupted=%b",
-                MotionEvent.actionToString(e.getAction()), mIsDragging, mDragInterrupted);
+        WdLog.motionEventLogD(TAG, mTaskId, "updateDragStatus action=%s updated mIsDragging=%b"
+                        + " mDragInterrupted=%b", MotionEvent.actionToString(e.getAction()),
+                mIsDragging, mDragInterrupted);
     }
 
     private void updateTouchStatus(MotionEvent e) {
@@ -820,16 +838,5 @@ public class DesktopModeTouchEventListener
 
     private boolean isPinned(ActivityManager.RunningTaskInfo taskInfo) {
         return mPinnedLayerController != null && mPinnedLayerController.isPinned(taskInfo.taskId);
-    }
-
-    private void debugLogD(@NonNull String msg, @NonNull Object... args) {
-        if (DEBUG_MOTION_EVENTS) {
-            logD(msg, args);
-        }
-    }
-
-    private void logD(@NonNull String msg, @NonNull Object... args) {
-        ProtoLog.d(WM_SHELL_WINDOW_DECORATION, "%s: (taskId=%d) %s",
-                TAG, mTaskId, String.format(msg, args));
     }
 }

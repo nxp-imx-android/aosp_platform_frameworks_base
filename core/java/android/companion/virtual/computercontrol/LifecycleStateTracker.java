@@ -18,16 +18,20 @@ package android.companion.virtual.computercontrol;
 
 import static android.companion.virtual.computercontrol.LifecycleState.ACTIVE;
 
+import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.companion.virtual.computercontrol.LifecycleState.Active;
 import android.companion.virtual.computercontrol.LifecycleState.Blocked;
 import android.companion.virtual.computercontrol.LifecycleState.Closed;
+import android.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 /**
  * Tracks the lifecycle state transitions for a ComputerControlSession. It is used to notify
@@ -47,7 +51,8 @@ public final class LifecycleStateTracker implements ComputerControlSession.Lifec
     // Callbacks will start in an "uninitialized" state.
     private static final LifecycleState INITIAL_STATE = null;
 
-    private final List<ComputerControlSession.LifecycleCallback> mCallbacks = new ArrayList<>();
+    private final List<Pair<ComputerControlSession.LifecycleCallback, Executor>> mCallbacks =
+            new ArrayList<>();
     private final AtomicBoolean mIsNotifyingCallbacks = new AtomicBoolean(false);
 
     private LifecycleState mState = INITIAL_STATE;
@@ -58,22 +63,24 @@ public final class LifecycleStateTracker implements ComputerControlSession.Lifec
      *
      * <p>This tracker's state must NOT be updated from inside one of the callbacks.
      */
-    public void addCallback(@NonNull ComputerControlSession.LifecycleCallback callback) {
-        if (mCallbacks.contains(callback)) {
+    public void addCallback(@NonNull @CallbackExecutor Executor executor,
+            @NonNull ComputerControlSession.LifecycleCallback callback) {
+        if (containsIf(mCallbacks, record -> record.first == callback)) {
             throw new IllegalStateException("Callback already registered");
         }
-        mCallbacks.add(callback);
+        final var record = new Pair<>(callback, executor);
+        mCallbacks.add(record);
         if (Objects.equals(mState, INITIAL_STATE)) {
             return;
         }
-        notifyCallback(callback);
+        notifyCallback(mState, record);
     }
 
     /**
      * Removes a lifecycle callback.
      */
     public void removeCallback(@NonNull ComputerControlSession.LifecycleCallback callback) {
-        if (!mCallbacks.remove(callback)) {
+        if (!mCallbacks.removeIf(record -> record.first == callback)) {
             throw new IllegalStateException("Callback not registered");
         }
     }
@@ -94,18 +101,24 @@ public final class LifecycleStateTracker implements ComputerControlSession.Lifec
                             + "The state must not be updated from inside a callback!");
         }
 
-        for (ComputerControlSession.LifecycleCallback callback : new ArrayList<>(mCallbacks)) {
-            notifyCallback(callback);
+        for (var callback : new ArrayList<>(mCallbacks)) {
+            notifyCallback(mState, callback);
         }
         mIsNotifyingCallbacks.set(false);
     }
 
-    private void notifyCallback(@NonNull ComputerControlSession.LifecycleCallback callback) {
-        switch (mState) {
-            case Active active -> callback.onActive();
-            case Blocked blocked -> callback.onBlocked(blocked.reason, blocked.blockingPackage);
-            case Closed closed -> callback.onClosed(closed.reason);
-        }
+    private static void notifyCallback(LifecycleState state,
+            Pair<ComputerControlSession.LifecycleCallback, Executor> record) {
+        final var callback = record.first;
+        record.second.execute(() -> {
+                    switch (state) {
+                        case Active active -> callback.onActive();
+                        case Blocked blocked -> callback.onBlocked(blocked.reason,
+                                blocked.blockingPackage);
+                        case Closed closed -> callback.onClosed(closed.reason);
+                    }
+                }
+        );
     }
 
     @Override
@@ -136,5 +149,14 @@ public final class LifecycleStateTracker implements ComputerControlSession.Lifec
         }
         mState = state;
         notifyAllCallbacks();
+    }
+
+    private static <T> boolean containsIf(List<T> list, Predicate<T> predicate) {
+        for (int i = 0; i < list.size(); i++) {
+            if (predicate.test(list.get(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -59,7 +59,7 @@
     <string name="keyboard_layout_romanian" msgid="8698989892731726903">"rumunčina"</string>
     <string name="keyboard_layout_english_india" msgid="7962353311188603367">"angličtina (India)"</string>
     <string name="default_game_controller_down_button" msgid="230251187173899352">"Tlačidlo Nadol"</string>
-    <string name="default_game_controller_left_button" msgid="230625759940755272">"Ľavé tlačidlo"</string>
-    <string name="default_game_controller_right_button" msgid="6973117058284059868">"Pravé tlačidlo"</string>
+    <string name="default_game_controller_left_button" msgid="230625759940755272">"Tlačidlo Doľava"</string>
+    <string name="default_game_controller_right_button" msgid="6973117058284059868">"Tlačidlo Doprava"</string>
     <string name="default_game_controller_up_button" msgid="793659885012306267">"Tlačidlo Nahor"</string>
 </resources>
