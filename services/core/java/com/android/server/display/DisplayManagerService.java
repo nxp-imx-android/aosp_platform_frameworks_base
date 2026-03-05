@@ -815,7 +815,7 @@ public final class DisplayManagerService extends SystemService {
                 }
             }
         } else if (phase == PHASE_SYSTEM_SERVICES_READY &&
-                Flags.enableChargingExperienceByDefault()) {
+                Flags.autoBrightnessModeCharging()) {
             ContentResolver contentResolver = mContext.getContentResolver();
             if (Settings.Global.getInt(contentResolver,
                     Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, -1) == -1) {

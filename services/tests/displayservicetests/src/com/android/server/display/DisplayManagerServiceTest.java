@@ -6245,7 +6245,7 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CHARGING_EXPERIENCE_BY_DEFAULT)
+    @EnableFlags(Flags.FLAG_AUTO_BRIGHTNESS_MODE_CHARGING)
     public void testWearChargingExperienceEnabled_hasExpectedDefaultValue() {
         mDisplayManager = new DisplayManagerService(mContext, mShortMockedInjector);
         ContentResolver contentResolver = mContext.getContentResolver();
@@ -6264,7 +6264,7 @@ public class DisplayManagerServiceTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_CHARGING_EXPERIENCE_BY_DEFAULT)
+    @EnableFlags(Flags.FLAG_AUTO_BRIGHTNESS_MODE_CHARGING)
     public void testWearChargingExperienceEnabled_preservesExistingUserValue() {
         mDisplayManager = new DisplayManagerService(mContext, mShortMockedInjector);
         ContentResolver contentResolver = mContext.getContentResolver();
