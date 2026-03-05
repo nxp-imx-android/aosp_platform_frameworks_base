@@ -35,7 +35,7 @@ internal fun buildReadOnlyRuleText(rule: RuleModel, resources: Resources): RuleD
         rule.filter.contacts?.let {
             createReadOnlyContactsText(selectedContacts = it, resources = resources)
         }
-    return buildRuleText(appsText = appsText, contactsText = contactsText)
+    return buildRuleText(appsText = appsText, contactsText = contactsText, resources = resources)
 }
 
 /** Creates text representation for the included apps filter field. */
