@@ -105,22 +105,9 @@ public final class TvInteractiveAppManager {
             INTERACTIVE_APP_STATE_STOPPED,
             INTERACTIVE_APP_STATE_RUNNING,
             INTERACTIVE_APP_STATE_ERROR,
-            INTERACTIVE_APP_STATE_UNKNOWN,
-            INTERACTIVE_APP_STATE_SIGNALED,
-            INTERACTIVE_APP_STATE_LOADING,
-            INTERACTIVE_APP_STATE_READY,
-            INTERACTIVE_APP_STATE_STARTING,
-            INTERACTIVE_APP_STATE_STARTED,
-            INTERACTIVE_APP_STATE_STOPPING,
-            INTERACTIVE_APP_STATE_UNLOADED
     })
     public @interface InteractiveAppState {}
 
-    /**
-     * Unknown state of interactive application.
-     * @hide
-     */
-    public static final int INTERACTIVE_APP_STATE_UNKNOWN = 0;
     /**
      * Stopped (or not started) state of interactive application.
      */
@@ -133,49 +120,6 @@ public final class TvInteractiveAppManager {
      * Error state of interactive application.
      */
     public static final int INTERACTIVE_APP_STATE_ERROR = 3;
-    // -- Extended interactive app states that covers a more detailed lifecycle.
-    /**
-     * Signaled state of interactive application before it is loaded.
-     * Sub-state of {@code INTERACTIVE_APP_STATE_STOPPED}
-     * @hide
-     */
-    public static final int INTERACTIVE_APP_STATE_SIGNALED = 4;
-    /**
-     * Loading state of interactive application before it is ready.
-     * Sub-state of {@code INTERACTIVE_APP_STATE_STOPPED}
-     * @hide
-     */
-    public static final int INTERACTIVE_APP_STATE_LOADING = 5;
-    /**
-     * Ready state of interactive application, indicate app is ready to start.
-     * Sub-state of {@code INTERACTIVE_APP_STATE_STOPPED}
-     * @hide
-     */
-    public static final int INTERACTIVE_APP_STATE_READY = 6;
-    /**
-     * Starting state of interactive application.
-     * Sub-state of {@code INTERACTIVE_APP_STATE_RUNNING}
-     * @hide
-     */
-    public static final int INTERACTIVE_APP_STATE_STARTING = 7;
-    /**
-     * Started state of interactive application.
-     * Sub-state of {@code INTERACTIVE_APP_STATE_RUNNING}
-     * @hide
-     */
-    public static final int INTERACTIVE_APP_STATE_STARTED = 8;
-    /**
-     * Stopping state of interactive application, app has not been fully stopped yet.
-     * Sub-state of {@code INTERACTIVE_APP_STATE_RUNNING}
-     * @hide
-     */
-    public static final int INTERACTIVE_APP_STATE_STOPPING = 9;
-    /**
-     * Unloaded state of interactive application.
-     * Sub-state of {@code INTERACTIVE_APP_STATE_STOPPED}
-     * @hide
-     */
-    public static final int INTERACTIVE_APP_STATE_UNLOADED = 10;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
@@ -757,7 +701,7 @@ public final class TvInteractiveAppManager {
                         Log.e(TAG, "Callback not found for seq " + seq);
                         return;
                     }
-                    record.postInteractiveAppStateChanged(appInfo);
+                    record.postInteractiveAppInfoChanged(appInfo);
                 }
             }
 
@@ -2464,7 +2408,7 @@ public final class TvInteractiveAppManager {
             });
         }
 
-        void postInteractiveAppStateChanged(TvInteractiveAppInfo appInfo) {
+        void postInteractiveAppInfoChanged(TvInteractiveAppInfo appInfo) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
