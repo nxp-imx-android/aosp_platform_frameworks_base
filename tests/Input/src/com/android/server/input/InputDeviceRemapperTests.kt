@@ -605,6 +605,98 @@ class InputDeviceRemapperTests {
         )
     }
 
+    @Test
+    fun testDeviceTypeChanged_appliesKeyRemappings() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        // Device starts with a non-keyboard source
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_MOUSE,
+            )
+        addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
+        reset(native)
+
+        // This should not be applied yet
+        inputDeviceRemapper.remapKey(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_1,
+            KeyEvent.KEYCODE_2,
+        )
+        verify(native, never()).setKeyRemappingForDevice(any(), any(), any())
+
+        // Device changes to a keyboard source
+        val updatedDevice =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_KEYBOARD,
+            )
+        changeInputDevice(deviceId, device.descriptor, updatedDevice)
+        inputDeviceRemapper.onInputDeviceChanged(deviceId)
+        TestUtils.flushLoopers(mainLooperManager)
+
+        // Verify that the key remapping was applied
+        verify(native)
+            .setKeyRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(KeyEvent.KEYCODE_1)),
+                eq(intArrayOf(KeyEvent.KEYCODE_2)),
+            )
+    }
+
+    @Test
+    fun testDeviceTypeChanged_appliesAxisRemappings() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val deviceId = 1
+        // Device starts with a non-joystick source
+        val device =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_MOUSE,
+            )
+        addInputDevice(deviceId, device.descriptor, device)
+        inputDeviceRemapper.onInputDeviceAdded(deviceId)
+        reset(native)
+
+        // This should not be applied yet
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
+            device.identifier,
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_Y,
+        )
+        verify(native, never()).setAxisRemappingForDevice(any(), any(), any())
+
+        // Device changes to a joystick source
+        val updatedDevice =
+            createDevice(
+                deviceId,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK,
+            )
+        changeInputDevice(deviceId, device.descriptor, updatedDevice)
+        inputDeviceRemapper.onInputDeviceChanged(deviceId)
+        TestUtils.flushLoopers(mainLooperManager)
+
+        // Verify that the axis remapping was applied
+        verify(native)
+            .setAxisRemappingForDevice(
+                eq(deviceId),
+                eq(intArrayOf(MotionEvent.AXIS_X)),
+                eq(intArrayOf(MotionEvent.AXIS_Y)),
+            )
+    }
+
     private fun addInputDevice(deviceId: Int, descriptor: String, device: InputDevice) {
         inputDeviceIds.add(deviceId)
         whenever(inputManager.getInputDevice(deviceId)).thenReturn(device)
@@ -615,6 +707,11 @@ class InputDeviceRemapperTests {
         inputDeviceIds.remove(deviceId)
         whenever(inputManager.getInputDevice(deviceId)).thenReturn(null)
         whenever(inputManager.getInputDeviceByDescriptor(descriptor)).thenReturn(null)
+    }
+
+    private fun changeInputDevice(deviceId: Int, descriptor: String, device: InputDevice) {
+        whenever(inputManager.getInputDevice(deviceId)).thenReturn(device)
+        whenever(inputManager.getInputDeviceByDescriptor(descriptor)).thenReturn(device)
     }
 
     private fun createDevice(
