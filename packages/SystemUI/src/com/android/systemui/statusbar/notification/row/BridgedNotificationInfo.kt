@@ -109,22 +109,21 @@ class BridgedNotificationInfo(context: Context?, attrs: AttributeSet?) :
             return
         }
 
-        var deviceTypeString = getDeviceTypeString(notification, mContext)
+        var deviceTypeString = context.getString(R.string.bridged_source_device)
         bridgedOpenSettingsButton.setText(
             mContext.getString(
                 R.string.inline_bridged_open_associated_device_settings,
                 deviceTypeString,
             )
         )
+        val deviceName =
+            notification?.bridgedNotificationMetadata?.originDeviceName ?: deviceTypeString
         val bridgedLabelTextView = findViewById<TextView>(R.id.bridged_label)
         bridgedLabelTextView.setText(
-            mContext.getString(R.string.notification_bridged_title, deviceTypeString)
+            mContext.getString(R.string.notification_bridged_title, deviceName)
         )
 
         val bridgedSummaryTextView = findViewById<TextView>(R.id.bridged_summary)
-        val deviceName =
-            notification?.bridgedNotificationMetadata?.originDeviceName ?: deviceTypeString
-
         bridgedSummaryTextView.setText(
             mContext.getString(R.string.notification_channel_summary_bridged, deviceName)
         )
@@ -132,24 +131,5 @@ class BridgedNotificationInfo(context: Context?, attrs: AttributeSet?) :
 
     companion object {
         private const val TAG = "BridgedNotificationInfo"
-
-        /**
-         * Returns a human-readable string for the device type from the bridged notification
-         * metadata.
-         */
-        private fun getDeviceTypeString(notification: Notification, context: Context): String =
-            when (notification.bridgedNotificationMetadata?.originDeviceType) {
-                Notification.BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_PHONE ->
-                    context.getString(R.string.bridged_device_type_phone)
-                Notification.BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_TABLET ->
-                    context.getString(R.string.bridged_device_type_tablet)
-                Notification.BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_LAPTOP ->
-                    context.getString(R.string.bridged_device_type_laptop)
-                Notification.BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_WATCH ->
-                    context.getString(R.string.bridged_device_type_watch)
-                Notification.BridgedNotificationMetadata.BRIDGED_METADATA_TYPE_TV ->
-                    context.getString(R.string.bridged_device_type_tv)
-                else -> context.getString(R.string.bridged_device_type_unknown)
-            }
     }
 }
