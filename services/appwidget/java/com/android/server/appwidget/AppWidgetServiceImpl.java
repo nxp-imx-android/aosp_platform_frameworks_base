@@ -110,6 +110,7 @@ import android.os.Message;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.StrictMode;
 import android.os.SystemClock;
 import android.os.Trace;
 import android.os.UserHandle;
@@ -5597,28 +5598,36 @@ class AppWidgetServiceImpl extends IAppWidgetService.Stub implements WidgetBacku
     @FlaggedApi(android.appwidget.flags.Flags.FLAG_REMOTE_VIEWS_PROTO)
     @GuardedBy("mLock")
     private void loadGeneratedPreviewCategoriesLocked(int profileId) throws IOException {
-        for (Provider provider : mProviders) {
-            if (provider.id.getProfile().getIdentifier() != profileId) {
-                continue;
+        // Per Javadoc, this method intentionally performs synchronous Disk I/O during
+        // profile initialization, unlike other preview operations that use mSavePreviewsHandler.
+        // To prevent StrictMode crashes/logging in dev builds, temporarily allow disk reads.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            for (Provider provider : mProviders) {
+                if (provider.id.getProfile().getIdentifier() != profileId) {
+                    continue;
+                }
+                AtomicFile previewsFile = getWidgetPreviewsFile(provider);
+                if (!previewsFile.exists()) {
+                    continue;
+                }
+                ProtoInputStream input = new ProtoInputStream(previewsFile.readFully());
+                try {
+                    provider.info.generatedPreviewCategories =
+                            readGeneratedPreviewCategoriesFromProto(input);
+                } catch (Exception e) {
+                    Slog.e(TAG, "Failed to read generated previews from file for " + provider, e);
+                    previewsFile.delete();
+                    provider.info.generatedPreviewCategories = 0;
+                }
+                if (DEBUG) {
+                    Slog.i(TAG, TextUtils.formatSimple(
+                            "loadGeneratedPreviewCategoriesLocked %d %s categories %d", profileId,
+                            provider, provider.info.generatedPreviewCategories));
+                }
             }
-            AtomicFile previewsFile = getWidgetPreviewsFile(provider);
-            if (!previewsFile.exists()) {
-                continue;
-            }
-            ProtoInputStream input = new ProtoInputStream(previewsFile.readFully());
-            try {
-                provider.info.generatedPreviewCategories = readGeneratedPreviewCategoriesFromProto(
-                        input);
-            } catch (Exception e) {
-                Slog.e(TAG, "Failed to read generated previews from file for " + provider, e);
-                previewsFile.delete();
-                provider.info.generatedPreviewCategories = 0;
-            }
-            if (DEBUG) {
-                Slog.i(TAG, TextUtils.formatSimple(
-                        "loadGeneratedPreviewCategoriesLocked %d %s categories %d", profileId,
-                        provider, provider.info.generatedPreviewCategories));
-            }
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
     }
 
