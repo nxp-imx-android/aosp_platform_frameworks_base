@@ -11,3 +11,6 @@ per-file ClientListenerMultiplexer.java = file:/services/core/java/com/android/s
 # Haptics
 per-file *Vibrat*.java = file:/services/core/java/com/android/server/vibrator/OWNERS
 per-file MemInfoReader.java = file:/MEMORY_OWNERS
+
+# Perfetto
+per-file Perfetto*.java = file:/PERFETTO_OWNERS
