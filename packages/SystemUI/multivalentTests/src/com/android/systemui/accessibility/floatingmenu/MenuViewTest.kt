@@ -39,6 +39,7 @@ import com.android.systemui.Flags
 import com.android.systemui.Prefs
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.floatingmenu.MenuView.OnTargetFeaturesChangeListener
+import com.android.systemui.inputdevice.data.repository.fake
 import com.android.systemui.inputdevice.data.repository.pointerDeviceRepository
 import com.android.systemui.keyboard.data.repository.keyboardRepository
 import com.android.systemui.kosmos.runTest
@@ -73,11 +74,9 @@ class MenuViewTest : SysuiTestCase() {
     private val kosmos = testKosmosNew()
     private lateinit var menuView: MenuView
 
-    private val fakeKeyboardRepository
-        get() = kosmos.keyboardRepository
+    private val fakeKeyboardRepository = kosmos.keyboardRepository
 
-    private val fakePointerDeviceRepository
-        get() = kosmos.pointerDeviceRepository
+    private val fakePointerDeviceRepository = kosmos.pointerDeviceRepository.fake
 
     @SuppressLint("MissingPermission")
     @Before
