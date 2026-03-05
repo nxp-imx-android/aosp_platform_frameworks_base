@@ -6543,6 +6543,9 @@
   <!-- Whether user information setup is enabled in SuW. -->
   <java-symbol type="bool" name="config_enableUserInfoSetupInSuw" />
 
+  <!-- Whether inset focus rings are enabled in SuW. -->
+  <java-symbol type="bool" name="config_enableInsetFocusRingsInSuw" />
+
   <!-- Whether to keep the task on back pressed. -->
   <java-symbol type="bool" name="config_alwaysMoveTaskToBackOnBackPressed" />
 
