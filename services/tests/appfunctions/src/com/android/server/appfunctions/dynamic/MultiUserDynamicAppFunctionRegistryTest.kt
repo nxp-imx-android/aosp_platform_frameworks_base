@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server.appfunctions
+package com.android.server.appfunctions.dynamic
 
 import android.app.appfunctions.AppFunctionException
 import android.app.appfunctions.ExecuteAppFunctionAidlRequest
@@ -26,7 +26,6 @@ import android.os.ICancellationSignal
 import android.os.UserHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.server.SystemService.TargetUser
-import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
@@ -43,15 +42,15 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 class MultiUserDynamicAppFunctionRegistryTest {
     private lateinit var registry: MultiUserDynamicAppFunctionRegistry
-    private val mockMetadataObserver = mock<AppFunctionMetadataObserver>()
+    private val mockRegistrationListener = mock<OnRegistrationStateChangedListener>()
 
     private val globalScope: List<RegistrationScopeId> = listOf(RegistrationScopeId(null))
 
     @Before
     fun setUp() {
         registry = MultiUserDynamicAppFunctionRegistry()
-        registry.onUserUnlocked(mockMetadataObserver, TARGET_USER_10)
-        registry.onUserUnlocked(mockMetadataObserver, TARGET_USER_11)
+        registry.onUserUnlocked(mockRegistrationListener, TARGET_USER_10)
+        registry.onUserUnlocked(mockRegistrationListener, TARGET_USER_11)
     }
 
     @Test
@@ -139,7 +138,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
         val executor = createExecutorMock()
         registry.registerAppFunctions(TEST_PACKAGE, listOf(TEST_FUNCTION), executor, USER_10, globalScope)
 
-        registry.onUserUnlocked(mockMetadataObserver, TARGET_USER_10)
+        registry.onUserUnlocked(mockRegistrationListener, TARGET_USER_10)
 
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10)).isTrue()
     }
@@ -158,7 +157,7 @@ class MultiUserDynamicAppFunctionRegistryTest {
 
         // Stop and re-unlock the user
         registry.onUserStopped(TARGET_USER_10)
-        registry.onUserUnlocked(mockMetadataObserver, TARGET_USER_10)
+        registry.onUserUnlocked(mockRegistrationListener, TARGET_USER_10)
 
         // Verify the old registration is gone
         assertThat(registry.hasRegistrations(TEST_PACKAGE, TEST_FUNCTION, USER_10))

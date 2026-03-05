@@ -114,7 +114,8 @@ import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
 import com.android.server.IoThread;
 import com.android.server.SystemService.TargetUser;
-import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId;
+import com.android.server.appfunctions.dynamic.MultiUserDynamicAppFunctionRegistry;
+import com.android.server.appfunctions.dynamic.RegistrationScopeId;
 import com.android.server.appfunctions.allowlist.AppFunctionAllowlistReader;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.uri.UriGrantsManagerInternal;
@@ -285,7 +286,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         }
 
         if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
-            mDynamicAppFunctionRegistry.onUserUnlocked(mAppFunctionMetadataObserver, user);
+            mDynamicAppFunctionRegistry.onUserUnlocked(
+                    changedFunctionNames ->
+                            mAppFunctionMetadataObserver.onEnabledStatesChanged(
+                                    user.getUserHandle(), changedFunctionNames),
+                    user);
         }
 
         if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
