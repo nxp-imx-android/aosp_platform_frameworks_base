@@ -1319,7 +1319,7 @@ public class RootWindowContainerTests extends WindowTestsBase {
         launchParams.mWindowingMode = WINDOWING_MODE_FREEFORM;
         Task root = mRootWindowContainer.getOrCreateRootTask(null /* r */, null /* options */,
                 null /* candidateTask */, null /* sourceTask */, true /* onTop */, launchParams,
-                0 /* launchParams */);
+                0 /* launchParams */, 0 /* originalCallerUid */);
         assertEquals(taskDisplayArea, root.getTaskDisplayArea());
         assertEquals(WINDOWING_MODE_FREEFORM, root.getWindowingMode());
 
@@ -1328,7 +1328,7 @@ public class RootWindowContainerTests extends WindowTestsBase {
         ActivityRecord r = new ActivityBuilder(mAtm).build();
         root = mRootWindowContainer.getOrCreateRootTask(r, null /* options */,
                 null /* candidateTask */, null /* sourceTask */, true /* onTop */, launchParams,
-                0 /* launchParams */);
+                0 /* launchParams */, 0 /* originalCallerUid */);
         assertEquals(taskDisplayArea, root.getTaskDisplayArea());
         assertEquals(WINDOWING_MODE_FREEFORM, root.getWindowingMode());
     }
@@ -1345,7 +1345,8 @@ public class RootWindowContainerTests extends WindowTestsBase {
         // Make sure the root task is valid and can be reused on default display.
         final Task rootTask = mRootWindowContainer.getDefaultTaskDisplayArea().getOrCreateRootTask(
                 activity, null /* options */, task, null /* sourceTask */, null /* launchParams */,
-                0 /* launchFlags */, ACTIVITY_TYPE_STANDARD, true /* onTop */);
+                0 /* launchFlags */, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                0 /* originalCallerUid */);
         assertEquals(task, rootTask);
     }
 
@@ -1367,7 +1368,8 @@ public class RootWindowContainerTests extends WindowTestsBase {
                 null /* sourceTask */,
                 true /* onTop */,
                 launchParams,
-                0 /* launchFlags */);
+                0 /* launchFlags */,
+                0 /* originalCallerUid */);
 
         // Assert: Verify that the returned task is the preferred one.
         assertEquals(preferredRootTask, resultTask);

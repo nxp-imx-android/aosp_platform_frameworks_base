@@ -168,7 +168,8 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
 
         final Task actualRootTask = taskDisplayArea.getOrCreateRootTask(
                 activity, null /* options */, candidateRootTask, null /* sourceTask */,
-                launchParams, 0 /* launchFlags */, ACTIVITY_TYPE_STANDARD, true /* onTop */);
+                launchParams, 0 /* launchFlags */, ACTIVITY_TYPE_STANDARD, true /* onTop */,
+                0 /* originalCallerUid */);
         assertSame(rootTask, actualRootTask.getRootTask());
     }
 
@@ -190,7 +191,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         final Task actualRootTask = taskDisplayArea.getOrCreateRootTask(
                 activity, options, candidateRootTask, null /* sourceTask */,
                 null /* launchParams */, 0 /* launchFlags */, ACTIVITY_TYPE_STANDARD,
-                true /* onTop */);
+                true /* onTop */, 0 /* originalCallerUid */);
         assertSame(rootTask, actualRootTask.getRootTask());
         assertEquals(WINDOWING_MODE_FREEFORM, candidateRootTask.getWindowingMode());
     }
@@ -384,7 +385,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         final Task resultRootTask = tda.getOrCreateRootTask(
                 candidateTask.getTopNonFinishingActivity(), null /* options */, candidateTask,
                 null /* sourceTask */, params, 0 /* launchFlags */, candidateTask.getActivityType(),
-                true /* onTop */);
+                true /* onTop */, 0 /* originalCallerUid */);
 
         assertNotEquals("Candidate task should be reparented to TDA", existingRoot, resultRootTask);
     }
@@ -629,7 +630,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         final Task rootTask = taskDisplayArea.getOrCreateRootTask(windowingMode, activityType,
                 false /* onTop */, candidateTask /* candidateTask */, null /* sourceTask */,
                 null /* activityOptions */, 0 /* launchFlags */,
-                false /* forceReparentLeafTaskToTda */);
+                false /* forceReparentLeafTaskToTda */, 0 /* originalCallerUid */);
         assertEquals(reuseCandidate, rootTask == candidateTask);
     }
 
@@ -842,7 +843,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         // Verify the launch root with candidate task
         Task actualRootTask = taskDisplayArea.getLaunchRootTask(WINDOWING_MODE_UNDEFINED,
                 ACTIVITY_TYPE_STANDARD, null /* options */, adjacentRootTask /* sourceTask */,
-                0 /* launchFlags */, candidateTask);
+                0 /* launchFlags */, candidateTask, 0 /* originalCallerUid */);
         assertSame(rootTask, actualRootTask);
 
         // Verify the launch root task without candidate task
@@ -856,7 +857,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         // Verify not adjusting launch target for pinned candidate task
         actualRootTask = taskDisplayArea.getLaunchRootTask(WINDOWING_MODE_UNDEFINED,
                 ACTIVITY_TYPE_STANDARD, null /* options */, adjacentRootTask /* sourceTask */,
-                0 /* launchFlags */, pinnedTask /* candidateTask */);
+                0 /* launchFlags */, pinnedTask /* candidateTask */, 0 /* originalCallerUid */);
         assertNull(actualRootTask);
     }
 
@@ -922,7 +923,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
 
         final Task launchRootTask = tda.getLaunchRootTask(WINDOWING_MODE_MULTI_WINDOW,
                 ACTIVITY_TYPE_STANDARD, null /* options */, sourceTask, 0 /* launchFlags */,
-                candidateTask);
+                candidateTask, 0 /* originalCallerUid */);
 
         assertThat(launchRootTask).isEqualTo(candidateRoot);
     }
@@ -948,9 +949,35 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
 
         final Task launchRootTask = tda.getLaunchRootTask(WINDOWING_MODE_UNDEFINED,
                 ACTIVITY_TYPE_STANDARD, null /* options */, sourceTask, 0 /* launchFlags */,
-                candidateTask);
+                candidateTask, 1000 /* originalCallerUid */);
 
         assertThat(launchRootTask).isEqualTo(candidateRoot);
+    }
+
+    @Test
+    public void testGetLaunchRootTask_preserveLeafTaskSameAppSplitRelaunch_returnsSourceRoot() {
+        final TaskDisplayArea tda = mDisplayContent.getDefaultTaskDisplayArea();
+        final Task sourceRoot = createTask(
+                mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);
+        sourceRoot.mCreatedByOrganizer = true;
+        final Task adjacentRoot = createTask(
+                mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);
+        adjacentRoot.mCreatedByOrganizer = true;
+        adjacentRoot.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(adjacentRoot, sourceRoot));
+        final Task sourceTask = createTaskInRootTask(sourceRoot, 0 /* userId */);
+
+        final Task candidateRoot = createTask(
+                mDisplayContent, WINDOWING_MODE_MULTI_WINDOW, ACTIVITY_TYPE_STANDARD);
+        candidateRoot.mCreatedByOrganizer = true;
+        candidateRoot.mPreserveLeafTaskIfRelaunch = true;
+        final Task candidateTask = createTaskInRootTask(candidateRoot, 0 /* userId */);
+
+        final Task launchRootTask = tda.getLaunchRootTask(WINDOWING_MODE_UNDEFINED,
+                ACTIVITY_TYPE_STANDARD, null /* options */, sourceTask, 0 /* launchFlags */,
+                candidateTask, candidateTask.effectiveUid /* originalCallerUid */);
+
+        assertThat(launchRootTask).isEqualTo(sourceRoot);
     }
 
     @Test
@@ -986,7 +1013,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
 
         final Task launchRootTask = tda.getLaunchRootTask(WINDOWING_MODE_UNDEFINED,
                 ACTIVITY_TYPE_STANDARD, null /* options */, null /* sourceTask */,
-                0 /* launchFlags */, candidateTask);
+                0 /* launchFlags */, candidateTask, 0 /* originalCallerUid */);
 
         assertThat(launchRootTask).isNull();
     }
@@ -1011,7 +1038,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
 
         final Task launchRootTask = tda.getLaunchRootTask(WINDOWING_MODE_UNDEFINED,
                 ACTIVITY_TYPE_STANDARD, null /* options */, sourceTask, 0 /* launchFlags */,
-                candidateTask);
+                candidateTask, 0 /* originalCallerUid */);
 
         // The launch root should fall back to the source's organizer task because the candidate
         // is not in an adjacent task and does not need to be preserved.
@@ -1029,7 +1056,7 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
 
         final Task launchRootTask = tda.getLaunchRootTask(WINDOWING_MODE_UNDEFINED,
                 ACTIVITY_TYPE_STANDARD, null /* options */, sourceTask, 0 /* launchFlags */,
-                null /* candidateTask */);
+                null /* candidateTask */, 0 /* originalCallerUid */);
 
         // The launch root should be the source task's parent because it's an organizer-created
         // task in the same TaskDisplayArea.

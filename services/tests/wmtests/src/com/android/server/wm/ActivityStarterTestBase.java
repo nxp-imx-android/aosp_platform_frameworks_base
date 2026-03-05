@@ -138,7 +138,7 @@ abstract class ActivityStarterTestBase extends WindowTestsBase {
             doReturn(stack).when(mRootWindowContainer)
                     .getOrCreateRootTask(any(), any(), any(), anyBoolean());
             doReturn(stack).when(mRootWindowContainer).getOrCreateRootTask(any(), any(), any(),
-                    any(), anyBoolean(), any(), anyInt());
+                    any(), anyBoolean(), any(), anyInt(), anyInt());
         }
 
         // Set up mock package manager internal and make sure no unmocked methods are called
