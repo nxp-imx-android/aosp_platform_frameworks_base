@@ -1821,8 +1821,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     mFocusTransitionObserver,
                     mRecentsTransitionStateListener,
                     mLockTaskChangeListener,
-                    mPinnedLayerController,
-                    mDesktopTasksController);
+                    mPinnedLayerController);
             windowDecoration =
                     mWindowDecoratioWrapperFactory.fromDefaultDecoration(defaultWindowDecoration);
         } else {

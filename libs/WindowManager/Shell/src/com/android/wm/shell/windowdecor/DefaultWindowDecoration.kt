@@ -63,7 +63,6 @@ import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
-import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
@@ -158,7 +157,6 @@ constructor(
     private val appHeaderViewHolderFactory: AppHeaderViewHolder.Factory =
         AppHeaderViewHolder.DefaultFactory(),
     val pinnedLayerController: PinnedLayerController?,
-    private val desktopTasksController: DesktopTasksController,
 ) :
     WindowDecoration2<WindowDecorLinearLayout>(
         taskInfo,
@@ -1103,9 +1101,6 @@ constructor(
                     gestureInterceptor,
                     appToWebRepository,
                     recentsTransitionStateListener,
-                    focusTransitionObserver,
-                    pinnedLayerController,
-                    desktopTasksController,
                 )
             }
 

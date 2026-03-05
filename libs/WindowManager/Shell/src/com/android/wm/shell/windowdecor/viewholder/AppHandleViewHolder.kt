@@ -47,12 +47,8 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_OPENED
-import com.android.wm.shell.desktopmode.DesktopTasksController
-import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
 import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
-import com.android.wm.shell.transition.FocusTransitionObserver
-import com.android.wm.shell.windowdecor.HandleMenuController
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
@@ -74,10 +70,6 @@ class AppHandleViewHolder(
     private val windowManagerWrapper: WindowManagerWrapper,
     private val handler: Handler,
     private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
-    private val handleMenuController: HandleMenuController,
-    private val focusTransitionObserver: FocusTransitionObserver,
-    private val pinnedLayerController: PinnedLayerController?,
-    private val desktopTasksController: DesktopTasksController,
 ) : WindowDecorationViewHolder<AppHandleViewHolder.HandleData>() {
 
     data class HandleData(
@@ -423,10 +415,6 @@ class AppHandleViewHolder(
             windowManagerWrapper: WindowManagerWrapper,
             handler: Handler,
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
-            handleMenuController: HandleMenuController,
-            focusTransitionObserver: FocusTransitionObserver,
-            pinnedLayerController: PinnedLayerController?,
-            desktopTasksController: DesktopTasksController,
         ): AppHandleViewHolder =
             AppHandleViewHolder(
                 rootView,
@@ -436,10 +424,6 @@ class AppHandleViewHolder(
                 windowManagerWrapper,
                 handler,
                 desktopModeUiEventLogger,
-                handleMenuController,
-                focusTransitionObserver,
-                pinnedLayerController,
-                desktopTasksController,
             )
     }
 
