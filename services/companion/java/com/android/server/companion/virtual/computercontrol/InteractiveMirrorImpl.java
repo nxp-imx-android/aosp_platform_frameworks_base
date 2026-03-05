@@ -88,6 +88,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
         mMirrorLeash = new SurfaceControl.Builder()
                 .setName("InteractiveMirrorImpl#mMirrorLeash$" + mMirror.hashCode())
                 .setContainerLayer()
+                .setHidden(true)
                 .build();
         mCallback = callback;
 
@@ -96,8 +97,7 @@ final class InteractiveMirrorImpl extends IInteractiveMirror.Stub {
         try (var transaction = mTransactionSupplier.get()) {
             transaction
                     .reparent(mMirror.getMirrorSurfaceControl(), mMirrorLeash)
-                    .show(mMirror.getMirrorSurfaceControl())
-                    .hide(mMirrorLeash);
+                    .show(mMirror.getMirrorSurfaceControl());
             updateInteractivity(isInteractivityAllowed, transaction);
             transaction.apply();
         }
