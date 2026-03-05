@@ -27,10 +27,9 @@ namespace android {
 
 // --- SpriteController ---
 
-SpriteController::SpriteController(const sp<Looper>& looper, int32_t overlayLayer,
+SpriteController::SpriteController(const sp<Looper>& looper,
                                    ParentSurfaceProvider parentSurfaceProvider)
       : mLooper(looper),
-        mOverlayLayer(overlayLayer),
         mHandler(sp<Handler>::make()),
         mParentSurfaceProvider(std::move(parentSurfaceProvider)) {
     mLocked.transactionNestingCount = 0;
@@ -254,10 +253,9 @@ void SpriteController::doUpdateSprites() {
                 t.setMetadata(update.state.surfaceControl, gui::METADATA_MOUSE_CURSOR, p);
             }
 
-            int32_t surfaceLayer = mOverlayLayer + update.state.layer;
             if (wantSurfaceVisibleAndDrawn
                     && (becomingVisible || (update.state.dirty & DIRTY_LAYER))) {
-                t.setLayer(update.state.surfaceControl, surfaceLayer);
+                t.setLayer(update.state.surfaceControl, update.state.layer);
             }
 
             if (wantSurfaceVisibleAndDrawn &&
