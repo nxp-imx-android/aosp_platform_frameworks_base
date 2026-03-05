@@ -32,8 +32,6 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.FocusTransitionObserver
-import com.android.wm.shell.transition.InteractiveTasksRepository
-import java.util.Optional
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.Before
@@ -59,7 +57,6 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     private val mockFocusTransitionObserver = mock<FocusTransitionObserver>()
     private val mockShellController = mock<ShellController>()
     private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
-    private val mockInteractiveTasksRepository = mock<InteractiveTasksRepository>()
 
     private lateinit var mShellDesktopState: ShellDesktopStateImpl
 
@@ -75,7 +72,6 @@ class ShellDesktopStateImplTest : ShellTestCase() {
                 mockFocusTransitionObserver,
                 mockShellController,
                 mockShellTaskOrganizer,
-                Optional.of(mockInteractiveTasksRepository),
             )
     }
 
@@ -143,10 +139,10 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
     fun testIsEligibleWindowDropTarget_deskInteractive_returnsTrue() {
+        val taskInfo = TestRunningTaskInfoBuilder().setTaskId(DESK_ID).build()
+        taskInfo.isInteractive = true
         mockDesktopRepository.stub { on { getActiveDeskId(DISPLAY_ID) } doReturn DESK_ID }
-        mockInteractiveTasksRepository.stub {
-            on { isTaskInteractiveOnDisplay(DISPLAY_ID, DESK_ID) } doReturn true
-        }
+        mockShellTaskOrganizer.stub { on { getRunningTaskInfo(DESK_ID) } doReturn taskInfo }
 
         assertTrue(mShellDesktopState.isEligibleWindowDropTarget(DISPLAY_ID))
     }
@@ -155,11 +151,9 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
     fun testIsEligibleWindowDropTarget_homeInteractiveOnDesktopSupportedDisplay_returnsTrue() {
         val taskInfo = createTask(ACTIVITY_TYPE_HOME)
+        taskInfo.isInteractive = true
         desktopState.canEnterDesktopMode = true
         mockDesktopRepository.stub { on { getActiveDeskId(DISPLAY_ID) } doReturn null }
-        mockInteractiveTasksRepository.stub {
-            on { isTaskInteractiveOnDisplay(DISPLAY_ID, taskInfo.taskId) } doReturn true
-        }
         mockShellTaskOrganizer.stub {
             on { getRunningTasks(DISPLAY_ID) } doReturn arrayListOf(taskInfo)
         }
@@ -173,11 +167,9 @@ class ShellDesktopStateImplTest : ShellTestCase() {
         val intent =
             Intent().apply { component = DesktopWallpaperActivity.wallpaperActivityComponent }
         val taskInfo = TestRunningTaskInfoBuilder().setBaseIntent(intent).build()
+        taskInfo.isInteractive = true
         desktopState.canEnterDesktopMode = true
         mockDesktopRepository.stub { on { getActiveDeskId(DISPLAY_ID) } doReturn null }
-        mockInteractiveTasksRepository.stub {
-            on { isTaskInteractiveOnDisplay(DISPLAY_ID, taskInfo.taskId) } doReturn true
-        }
         mockShellTaskOrganizer.stub {
             on { getRunningTasks(DISPLAY_ID) } doReturn arrayListOf(taskInfo)
         }
@@ -188,11 +180,11 @@ class ShellDesktopStateImplTest : ShellTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_ALLOW_DRAG_AND_DROP_WHEN_INTERACTIVE_BUGFIX)
     fun testIsEligibleWindowDropTarget_deskAndHomeNotResumed_returnsFalse() {
+        val taskInfo = TestRunningTaskInfoBuilder().setTaskId(DESK_ID).build()
+        taskInfo.isInteractive = false
         mockDesktopRepository.stub { on { getActiveDeskId(DISPLAY_ID) } doReturn DESK_ID }
         mockShellTaskOrganizer.stub { on { getRunningTasks(DISPLAY_ID) } doReturn arrayListOf() }
-        mockInteractiveTasksRepository.stub {
-            on { isTaskInteractiveOnDisplay(DISPLAY_ID, DESK_ID) } doReturn false
-        }
+        mockShellTaskOrganizer.stub { on { getRunningTaskInfo(DESK_ID) } doReturn taskInfo }
 
         assertFalse(mShellDesktopState.isEligibleWindowDropTarget(DISPLAY_ID))
     }

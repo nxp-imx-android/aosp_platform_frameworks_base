@@ -982,6 +982,24 @@ public class ShellTaskOrganizer extends TaskOrganizer {
         }
     }
 
+    /** A hook to notify about task info updates from external sources */
+    public void onTaskInfoUpdated(RunningTaskInfo transitionTaskInfo) {
+        synchronized (mLock) {
+            int taskId = transitionTaskInfo.taskId;
+            TaskAppearedInfo info = mTasks.get(taskId);
+            if (info == null) {
+                ProtoLog.v(WM_SHELL_TASK_ORG_NOISY,
+                        "Task info taskId=%d is updated from transition, but it haven't appeared "
+                                + "yet.",
+                        transitionTaskInfo.taskId);
+                return;
+            }
+
+            RunningTaskInfo cachedTaskInfo = info.getTaskInfo();
+            cachedTaskInfo.isInteractive = transitionTaskInfo.isInteractive;
+        }
+    }
+
     @Override
     public void onTaskInfoChanged(RunningTaskInfo taskInfo) {
         synchronized (mLock) {
@@ -995,6 +1013,11 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             final TaskListener oldListener = getTaskListener(data.getTaskInfo());
             final TaskListener newListener = getTaskListener(taskInfo,
                     true /* removeLaunchCookieIfNeeded */);
+
+            // Interactivity is updated via transitions and onTaskInfoChanged may contain stale
+            // data. Preserve the cached value.
+            taskInfo.isInteractive = data.getTaskInfo().isInteractive;
+
             mTasks.put(taskInfo.taskId, new TaskAppearedInfo(taskInfo, data.getLeash()));
             final boolean updated = updateTaskListenerIfNeeded(
                     taskInfo, data.getLeash(), oldListener, newListener);
