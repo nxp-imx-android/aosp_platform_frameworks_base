@@ -338,6 +338,13 @@ flag {
 }
 
 flag {
+    name: "enable_explicit_static_overlay_allowlisting"
+    namespace: "multiuser"
+    description: "Allow explicit allowlisting for static overlays."
+    bug: "487778300"
+}
+
+flag {
      name: "user_filter_refactoring"
      namespace: "multiuser"
      description: "Refactored some getUsers() methods to use a UserFilter object"
