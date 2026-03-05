@@ -44,7 +44,6 @@ import com.android.settingslib.graph.proto.PreferenceProto
 import com.android.settingslib.graph.proto.PreferenceProto.ActionTarget
 import com.android.settingslib.graph.proto.PreferenceScreenProto
 import com.android.settingslib.graph.proto.PreferenceValueDescriptorProto
-import com.android.settingslib.graph.proto.SetWarningProto
 import com.android.settingslib.graph.proto.TextProto
 import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
@@ -767,6 +766,7 @@ fun <T> PersistentPreference<T>.evalReadPermit(
     callingUid: Int,
 ): Int =
     when {
+        sensitivityLevel == DO_NOT_EXPOSE -> ReadWritePermit.DISALLOW
         getReadPermissions(context)?.check(context, callingPid, callingUid) == false ->
             ReadWritePermit.REQUIRE_APP_PERMISSION
         else -> getReadPermit(context, callingPid, callingUid)
