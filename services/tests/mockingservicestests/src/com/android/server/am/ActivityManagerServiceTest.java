@@ -313,6 +313,7 @@ public class ActivityManagerServiceTest {
 
         doReturn(new ComponentName("", "")).when(mPackageManagerInternal)
                 .getSystemUiServiceComponent();
+        doReturn(true).when(mPackageManagerInternal).isSameApp(anyString(), anyInt(), anyInt());
 
         doReturn(mPackageManager).when(AppGlobals::getPackageManager);
         doReturn(mPermissionManager).when(AppGlobals::getPermissionManager);

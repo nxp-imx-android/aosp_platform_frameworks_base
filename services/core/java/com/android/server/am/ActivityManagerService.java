@@ -7831,16 +7831,10 @@ public class ActivityManagerService extends IActivityManager.Stub
     @Override
     public boolean isBackgroundRestricted(String packageName) {
         final int callingUid = Binder.getCallingUid();
-        final IPackageManager pm = AppGlobals.getPackageManager();
-        try {
-            final int packageUid = pm.getPackageUid(packageName, MATCH_DEBUG_TRIAGED_MISSING,
-                    UserHandle.getUserId(callingUid));
-            if (packageUid != callingUid) {
-                throw new IllegalArgumentException("Uid " + callingUid
-                        + " cannot query restriction state for package " + packageName);
-            }
-        } catch (RemoteException exc) {
-            // Ignore.
+        if (!getPackageManagerInternal().isSameApp(packageName, callingUid,
+                UserHandle.getUserId(callingUid))) {
+            throw new IllegalArgumentException("Uid " + callingUid
+                    + " cannot query restriction state for package " + packageName);
         }
         return isBackgroundRestrictedNoCheck(callingUid, packageName);
     }
@@ -20102,8 +20096,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     public void setActivityLocusContext(ComponentName activity, LocusId locusId, IBinder appToken) {
         final int callingUid = Binder.getCallingUid();
         final int userId = UserHandle.getCallingUserId();
-        if (getPackageManagerInternal().getPackageUid(activity.getPackageName(),
-                /*flags=*/ 0, userId) != callingUid) {
+        if (!getPackageManagerInternal().isSameApp(activity.getPackageName(), callingUid, userId)) {
             throw new SecurityException("Calling uid " + callingUid + " cannot set locusId"
                     + "for package " + activity.getPackageName());
         }
