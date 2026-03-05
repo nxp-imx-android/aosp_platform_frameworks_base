@@ -634,9 +634,14 @@ public class Cuj {
      */
     public static final int CUJ_APP_UPDATE = 165;
 
+    /**
+     * Tracks the Launcher transition from Overview to home.
+     */
+    public static final int CUJ_LAUNCHER_RECENTS_TO_HOME = 166;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
     @VisibleForTesting static final int LAST_CUJ =
-            CUJ_APP_UPDATE;
+            CUJ_LAUNCHER_RECENTS_TO_HOME;
 
     /** @hide */
     @IntDef({
@@ -793,7 +798,8 @@ public class Cuj {
             CUJ_DESKTOP_MODE_TASKBAR_INDICATOR_UPDATE,
             CUJ_DESKTOP_MODE_TASKBAR_MULTI_INSTANCE_MENU_OPEN,
             CUJ_TASKBAR_ICON_APPEAR,
-            CUJ_APP_UPDATE
+            CUJ_APP_UPDATE,
+            CUJ_LAUNCHER_RECENTS_TO_HOME
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -961,6 +967,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_TASKBAR_MULTI_INSTANCE_MENU_OPEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_TASKBAR_MULTI_INSTANCE_MENU_OPEN;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_TASKBAR_ICON_APPEAR] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__TASKBAR_ICON_APPEAR;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_APP_UPDATE] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__APP_UPDATE;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_RECENTS_TO_HOME] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_RECENTS_TO_HOME;
     }
 
     private Cuj() {
@@ -1287,6 +1294,8 @@ public class Cuj {
                 return "TASKBAR_ICON_APPEAR";
             case CUJ_APP_UPDATE:
                 return "APP_UPDATE";
+            case CUJ_LAUNCHER_RECENTS_TO_HOME:
+                return "LAUNCHER_RECENTS_TO_HOME";
         }
         return "UNKNOWN";
     }
