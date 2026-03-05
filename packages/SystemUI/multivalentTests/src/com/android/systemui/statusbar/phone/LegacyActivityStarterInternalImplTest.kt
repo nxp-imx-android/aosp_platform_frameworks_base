@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.phone
 import android.app.ActivityOptions
 import android.app.IActivityTaskManager
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -890,7 +891,32 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
     }
 
     @Test
-    fun startActivity_noUserHandleProvided_getUserHandle() {
+    fun startActivity_noUserHandleProvided_getUserHandle_systemPackage_returnsMyUserId() {
+        val intent =
+            Intent().apply {
+                component = ComponentName(context.packageName, "com.android.systemui.SomeActivity")
+            }
+
+        underTest.startActivity(intent, false, null, false, null)
+
+        verify(userTracker, never()).userHandle
+    }
+
+    @Test
+    fun startActivity_noUserHandleProvided_getUserHandle_nonSystemPackage_returnsUserHandle() {
+        val intent =
+            Intent().apply {
+                component =
+                    ComponentName("com.android.keyguard", "com.android.systemui.SomeActivity")
+            }
+
+        underTest.startActivity(intent, false, null, false, null)
+
+        verify(userTracker).userHandle
+    }
+
+    @Test
+    fun startActivity_noUserHandleProvided_getUserHandle_returnsUserTrackerHandle() {
         val intent = mock(Intent::class.java)
 
         underTest.startActivity(intent, false, null, false, null)

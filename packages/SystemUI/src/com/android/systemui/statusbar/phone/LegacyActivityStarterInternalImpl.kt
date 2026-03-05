@@ -50,7 +50,6 @@ import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.model.SysUiState
 import com.android.systemui.plugins.ActivityStartOptions
 import com.android.systemui.plugins.ActivityStarter
-import com.android.systemui.res.R
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeController
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractor
@@ -778,15 +777,11 @@ constructor(
 
     /** Retrieves the current user handle to start the Activity. */
     private fun getActivityUserHandle(intent: Intent): UserHandle {
-        val packages: Array<String> =
-            currentShadeContext.resources.getStringArray(R.array.system_ui_packages)
-        for (pkg in packages) {
-            val componentName = intent.component ?: break
-            if (pkg == componentName.packageName) {
-                return UserHandle(UserHandle.myUserId())
-            }
+        return if (currentShadeContext.packageName == intent.component?.packageName) {
+            UserHandle(UserHandle.myUserId())
+        } else {
+            userTracker.userHandle
         }
-        return userTracker.userHandle
     }
 
     /**
