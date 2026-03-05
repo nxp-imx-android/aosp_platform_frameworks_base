@@ -1245,6 +1245,16 @@ flag {
 }
 
 flag {
+    name: "update_desktop_scrim_on_drag_resize_end"
+    namespace: "lse_desktop_experience"
+    description: "Updates the desktop scrim when drag resize is finihsed"
+    bug: "484100709"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "update_desktop_scrim_when_locked_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes the issue that desktop scrim effect not get updated when device locked and unlocked."
