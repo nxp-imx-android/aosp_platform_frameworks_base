@@ -4906,12 +4906,21 @@
         android:protectionLevel="signature|privileged|development"
         android:permissionFlags="allowedInPrivateComputeCore" />
 
-    <!-- Allows use of PendingIntent.getIntent(), .
+    <!-- Allows use of PendingIntent.getIntent().
          @hide @SystemApi(client=android.annotation.SystemApi.Client.MODULE_LIBRARIES)
          -->
     <permission android:name="android.permission.GET_INTENT_SENDER_INTENT"
         android:protectionLevel="signature"
-        android:permissionFlags="allowedInPrivateComputeCore" />
+        android:permissionFlags="allowedInPrivateComputeCore"
+        android:featureFlag="!android.companion.virtualdevice.flags.remove_start_mode_from_blocked_intents" />
+
+    <!-- Allows use of PendingIntent.getIntent().
+         @hide @SystemApi(client=android.annotation.SystemApi.Client.MODULE_LIBRARIES)
+         -->
+    <permission android:name="android.permission.GET_INTENT_SENDER_INTENT"
+        android:protectionLevel="signature|role"
+        android:permissionFlags="allowedInPrivateComputeCore"
+        android:featureFlag="android.companion.virtualdevice.flags.remove_start_mode_from_blocked_intents" />
 
     <!-- ================================== -->
     <!-- Permissions affecting the display of other applications  -->
