@@ -48,6 +48,7 @@ import android.companion.virtual.audio.AudioInjection;
 import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.computercontrol.ComputerControlSession;
 import android.companion.virtual.computercontrol.ComputerControlSessionParams;
+import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IComputerControlSessionCallback;
 import android.content.AttributionSource;
@@ -70,6 +71,7 @@ import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.security.authenticationpolicy.IAuthenticationPolicyService;
 import android.util.ArraySet;
 import android.view.Display;
+import android.view.Surface;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -169,6 +171,10 @@ public class ComputerControlSessionProcessorTest {
     private IComputerControlSessionCallback mComputerControlSessionCallback;
     @Mock
     private ComputerControlAllowlistController mAllowlistController;
+    @Mock
+    private IComputerControlLifecycleCallback mLifecycleCallback;
+    @Mock
+    private Surface mSurface;
     @Captor
     private ArgumentCaptor<Intent> mIntentArgumentCaptor;
     @Captor
@@ -436,7 +442,10 @@ public class ComputerControlSessionProcessorTest {
                     .onSessionCreationFailed(ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
 
             // Close the first session.
-            mSessionArgumentCaptor.getAllValues().getFirst().close();
+            var firstSession = mSessionArgumentCaptor.getAllValues().getFirst();
+            firstSession.initialize(mLifecycleCallback, mSurface);
+            firstSession.close();
+            verify(mLifecycleCallback, timeout(SESSION_CLOSE_TIMEOUT_MS)).onClosed(anyInt());
 
             mProcessor.processNewSessionRequest(
                     mAppThread, ATTRIBUTION_SOURCE, generateUniqueParams(-1),
