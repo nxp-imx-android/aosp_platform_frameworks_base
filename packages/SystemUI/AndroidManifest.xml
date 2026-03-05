@@ -571,6 +571,7 @@
             android:exported="false"
             android:showForAllUsers="true"
             android:windowSoftInputMode="adjustResize"
+            android:taskAffinity="com.android.systemui.screencapture"
             android:theme="@style/ScreenCapture.PostRecord" />
 
         <activity
