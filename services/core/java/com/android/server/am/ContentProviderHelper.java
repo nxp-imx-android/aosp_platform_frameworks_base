@@ -16,6 +16,7 @@
 package com.android.server.am;
 
 import static android.Manifest.permission.GET_ANY_PROVIDER_TYPE;
+import static android.app.ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_GET_PROVIDER;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_REMOVE_PROVIDER;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_PROVIDER;
@@ -270,7 +271,7 @@ public class ContentProviderHelper {
             }
 
             final int callingProcessState = r != null
-                    ? r.getCurProcState() : ActivityManager.PROCESS_STATE_UNKNOWN;
+                    ? r.getProcState() : ActivityManager.PROCESS_STATE_UNKNOWN;
 
             if (providerRunning) {
                 cpi = cpr.mProviderInfo;
@@ -311,7 +312,7 @@ public class ContentProviderHelper {
                 checkAssociationAndPermissionLocked(r, cpi, callingUid, userId, checkCrossUser,
                         cpr.name.flattenToShortString(), startTime);
 
-                final int providerProcessState = cpr.mProc.getCurProcState();
+                final int providerProcessState = cpr.mProc.getProcState();
 
                 final long origId = Binder.clearCallingIdentity();
                 try {
@@ -550,7 +551,7 @@ public class ContentProviderHelper {
                                     PROVIDER_ACQUISITION_EVENT_REPORTED__PROC_START_TYPE__PROCESS_START_TYPE_WARM,
                                     PROVIDER_ACQUISITION_EVENT_REPORTED__PACKAGE_STOPPED_STATE__PACKAGE_STATE_NORMAL,
                                     cpi.packageName, callingPackage,
-                                    callingProcessState, proc.getCurProcState(),
+                                    callingProcessState, proc.getProcState(),
                                     false, 0L);
                         } else {
                             final boolean stopped = cpr.mAppInfo.isStopped();
@@ -1488,7 +1489,7 @@ public class ContentProviderHelper {
             cpr.mProc.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_PROVIDER);
         }
         mService.mProcessStateController.addProviderConnection(r, conn);
-        mService.startAssociationLocked(r.uid, r.processName, r.getCurProcState(),
+        mService.startAssociationLocked(r.uid, r.processName, r.getProcState(),
                 cpr.mUid, cpr.mAppInfo.longVersionCode, cpr.name, cpr.mProviderInfo.processName);
         if (updateLru && cpr.mProc != null && r.getSetAdj() <= PERCEPTIBLE_LOW_APP_ADJ) {
             // If this is a perceptible app accessing the provider, make
@@ -1692,8 +1693,7 @@ public class ContentProviderHelper {
 
     private void maybeUpdateProviderUsageStatsLocked(ProcessRecord app, String providerPkgName,
             String authority) {
-        if (app == null
-                || app.getCurProcState() > ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND) {
+        if (app == null || app.getProcState() > PROCESS_STATE_IMPORTANT_FOREGROUND) {
             return;
         }
 

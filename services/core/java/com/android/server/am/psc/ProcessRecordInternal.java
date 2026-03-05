@@ -20,6 +20,7 @@ import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
 import static android.app.ActivityManager.PROCESS_STATE_CACHED_EMPTY;
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 
+import static com.android.server.am.ProcessList.makeProcStateProtoEnum;
 import static com.android.server.am.psc.Constants.CACHED_APP_MIN_ADJ;
 import static com.android.server.am.psc.Constants.INVALID_ADJ;
 import static com.android.server.am.psc.Constants.SCHED_GROUP_BACKGROUND;
@@ -32,8 +33,10 @@ import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
 
 import android.annotation.ElapsedRealtimeLong;
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessCapability;
 import android.app.ApplicationExitInfo;
 import android.app.ProcessMemoryState.HostingComponentType;
 import android.os.Process;
@@ -41,10 +44,12 @@ import android.os.SystemClock;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.util.TimeUtils;
+import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.am.Flags;
+import com.android.server.am.ProcessOomProto;
 import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.Constants.SchedGroup;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
@@ -1083,7 +1088,21 @@ public abstract class ProcessRecordInternal {
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public int getCurProcState() {
+    int getCurProcState() {
+        return mCurProcState;
+    }
+
+    /**
+     * Returns the process state for usage outside the psc package.
+     *
+     * <p>If {@link Flags#encapsulateCurProcState()} is enabled, it returns the stable
+     * {@link #getSetProcState()}; otherwise, it returns the transient {@link #getCurProcState()}.
+     */
+    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
+    public int getProcState() {
+        if (Flags.encapsulateCurProcState()) {
+            return mSetProcState;
+        }
         return mCurProcState;
     }
 
@@ -1110,6 +1129,9 @@ public abstract class ProcessRecordInternal {
         return false;
     }
 
+    /**
+     * TODO: b/485394632 - Make this method package-private.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public int getCurRawProcState() {
         return mCurRawProcState;
@@ -1122,6 +1144,10 @@ public abstract class ProcessRecordInternal {
         mObserver.onReportedProcStateChanged(mRepProcState);
     }
 
+    /**
+     * TODO: b/485394632 - Migrate to the {@link #getProcState()} method after the
+     *                     {@link Flags#encapsulateCurProcState()} is enabled.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public int getReportedProcState() {
         return mRepProcState;
@@ -1137,6 +1163,10 @@ public abstract class ProcessRecordInternal {
         mSetProcState = setProcState;
     }
 
+    /**
+     * TODO: b/485394632 - Switch to the {@link #getProcState()} method after the
+     *                     {@link Flags#encapsulateCurProcState()} is enabled.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public int getSetProcState() {
         return mSetProcState;
@@ -1370,6 +1400,10 @@ public abstract class ProcessRecordInternal {
         mAdjSourceProcState = adjSourceProcState;
     }
 
+    /**
+     * TODO: b/485394632 - Migrate to the {@link #getProcState()} method after the
+     *                     {@link Flags#encapsulateCurProcState()} is enabled.
+     */
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
     public int getAdjSourceProcState() {
         return mAdjSourceProcState;
@@ -1489,6 +1523,9 @@ public abstract class ProcessRecordInternal {
         mCachedForegroundActivities = cachedForegroundActivities;
     }
 
+    /**
+     * TODO: b/485394632 - Make this method package-private.
+     */
     @GuardedBy("mServiceLock")
     public int getCachedProcState() {
         return mCachedProcState;
@@ -1797,6 +1834,48 @@ public abstract class ProcessRecordInternal {
         }
         if (mHasStartedServices) {
             pw.print(prefix); pw.print("hasStartedServices="); pw.println(mHasStartedServices);
+        }
+    }
+
+    /**
+     * Writes the OOM adjustment and process state details to the {@link ProcessOomProto.Detail}
+     * message of the given proto stream.
+     *
+     * @param proto The proto stream to write to.
+     */
+    public final void writeDetailToProto(@NonNull ProtoOutputStream proto) {
+        final ProcessServiceRecordInternal psr = getServices();
+
+        proto.write(ProcessOomProto.Detail.MAX_ADJ, getMaxAdj());
+        proto.write(ProcessOomProto.Detail.CUR_RAW_ADJ, getCurRawAdj());
+        proto.write(ProcessOomProto.Detail.SET_RAW_ADJ, getSetRawAdj());
+        proto.write(ProcessOomProto.Detail.CUR_ADJ, getCurAdj());
+        proto.write(ProcessOomProto.Detail.SET_ADJ, getSetAdj());
+        proto.write(ProcessOomProto.Detail.CURRENT_STATE,
+                makeProcStateProtoEnum(getCurProcState()));
+        proto.write(ProcessOomProto.Detail.SET_STATE,
+                makeProcStateProtoEnum(getSetProcState()));
+        writeProcessCapabilitiesListToProto(proto, getCurCapability());
+        proto.write(ProcessOomProto.Detail.CACHED, isCached());
+        proto.write(ProcessOomProto.Detail.EMPTY, isEmpty());
+        proto.write(ProcessOomProto.Detail.HAS_ABOVE_CLIENT, psr.hasBindAboveClient());
+    }
+
+    /**
+     * Writes the process capabilities to the {@link ProcessOomProto.Detail#CAPABILITY_FLAGS} field
+     * of the given proto stream.
+     *
+     * @param proto The proto stream to write to.
+     * @param cap   The capabilities bitmask.
+     */
+    private static void writeProcessCapabilitiesListToProto(@NonNull ProtoOutputStream proto,
+            @ProcessCapability int cap) {
+        for (int i = 0; i < 32; i++) {
+            final int capability = 1 << i;
+            if ((cap & capability) != 0) {
+                final int protoCapability = ActivityManager.processCapabilityAmToProto(capability);
+                proto.write(ProcessOomProto.Detail.CAPABILITY_FLAGS, protoCapability);
+            }
         }
     }
 }

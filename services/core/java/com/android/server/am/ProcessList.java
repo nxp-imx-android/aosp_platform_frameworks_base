@@ -1232,17 +1232,6 @@ public final class ProcessList extends ProcessListInternal
         }
     }
 
-    // write a process capabilities to the proto
-    private static void writeProcessCapabilitiesListToProto(ProtoOutputStream proto, int cap) {
-        for (int i = 0; i < 32; i++) {
-            final int capability = 1 << i;
-            if ((cap & capability) != 0) {
-                final int protoCapability = ActivityManager.processCapabilityAmToProto(capability);
-                proto.write(ProcessOomProto.Detail.CAPABILITY_FLAGS, protoCapability);
-            }
-        }
-    }
-
     public static void appendRamKb(StringBuilder sb, long ramKb) {
         for (int j = 0, fact = 10; j < 6; j++, fact *= 10) {
             if (ramKb < fact) {
@@ -4356,7 +4345,7 @@ public final class ProcessList extends ProcessListInternal
         }
         outInfo.lastTrimLevel = app.mProfile.getTrimMemoryLevel();
         final ProcessRecordInternal state = app;
-        final int procState = state.getCurProcState();
+        final int procState = state.getProcState();
         outInfo.importance = ActivityManager.RunningAppProcessInfo
                                 .procStateToImportanceForTargetSdk(procState, clientTargetSdk);
         if (outInfo.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_BACKGROUND) {
@@ -4531,7 +4520,7 @@ public final class ProcessList extends ProcessListInternal
         pw.print(": ");
         pw.print(makeOomAdjString(proc.getSetAdj(), false));
         pw.print(' ');
-        pw.print(makeProcStateString(proc.getCurProcState()));
+        pw.print(makeProcStateString(proc.getProcState()));
         pw.print(' ');
         ActivityManager.printCapabilitiesSummary(pw, proc.getCurCapability());
         pw.print(' ');
@@ -4856,7 +4845,7 @@ public final class ProcessList extends ProcessListInternal
                 proto.write(ProcessOomProto.SERVICES, true);
             }
             proto.write(ProcessOomProto.STATE,
-                    makeProcStateProtoEnum(state.getCurProcState()));
+                    makeProcStateProtoEnum(state.getProcState()));
             proto.write(ProcessOomProto.TRIM_MEMORY_LEVEL, r.mProfile.getTrimMemoryLevel());
             r.dumpDebug(proto, ProcessOomProto.PROC);
             proto.write(ProcessOomProto.ADJ_TYPE, state.getAdjType());
@@ -4876,16 +4865,8 @@ public final class ProcessList extends ProcessListInternal
             }
             if (inclDetails) {
                 long detailToken = proto.start(ProcessOomProto.DETAIL);
-                proto.write(ProcessOomProto.Detail.MAX_ADJ, state.getMaxAdj());
-                proto.write(ProcessOomProto.Detail.CUR_RAW_ADJ, state.getCurRawAdj());
-                proto.write(ProcessOomProto.Detail.SET_RAW_ADJ, state.getSetRawAdj());
-                proto.write(ProcessOomProto.Detail.CUR_ADJ, state.getCurAdj());
-                proto.write(ProcessOomProto.Detail.SET_ADJ, state.getSetAdj());
-                proto.write(ProcessOomProto.Detail.CURRENT_STATE,
-                        makeProcStateProtoEnum(state.getCurProcState()));
-                proto.write(ProcessOomProto.Detail.SET_STATE,
-                        makeProcStateProtoEnum(state.getSetProcState()));
-                writeProcessCapabilitiesListToProto(proto, state.getCurCapability());
+                state.writeDetailToProto(proto);
+
                 proto.write(ProcessOomProto.Detail.LAST_PSS, DebugUtils.sizeValueToString(
                         r.mProfile.getLastPss() * BYTES_IN_KB, new StringBuilder()));
                 proto.write(ProcessOomProto.Detail.LAST_SWAP_PSS, DebugUtils.sizeValueToString(
@@ -4894,9 +4875,6 @@ public final class ProcessList extends ProcessListInternal
                 // AppProfiler is no longer collecting PSS.
                 proto.write(ProcessOomProto.Detail.LAST_CACHED_PSS, DebugUtils.sizeValueToString(
                         r.mProfile.getLastCachedPss() * BYTES_IN_KB, new StringBuilder()));
-                proto.write(ProcessOomProto.Detail.CACHED, state.isCached());
-                proto.write(ProcessOomProto.Detail.EMPTY, state.isEmpty());
-                proto.write(ProcessOomProto.Detail.HAS_ABOVE_CLIENT, psr.hasBindAboveClient());
 
                 if (state.getSetProcState() >= ActivityManager.PROCESS_STATE_SERVICE) {
                     long lastCpuTime = r.mProfile.mLastCpuTime.get();
@@ -4964,7 +4942,7 @@ public final class ProcessList extends ProcessListInternal
             } else {
                 foreground = ' ';
             }
-            String procState = makeProcStateString(state.getCurProcState());
+            String procState = makeProcStateString(state.getProcState());
             pw.print(prefix);
             pw.print(r.isPersistent() ? persistentLabel : normalLabel);
             pw.print(" #");
@@ -5023,7 +5001,7 @@ public final class ProcessList extends ProcessListInternal
                 pw.print(" set="); pw.println(state.getSetAdj());
                 pw.print(prefix);
                 pw.print("    ");
-                pw.print("state: cur="); pw.print(makeProcStateString(state.getCurProcState()));
+                pw.print("state: cur="); pw.print(makeProcStateString(state.getProcState()));
                 pw.print(" set="); pw.print(makeProcStateString(state.getSetProcState()));
                 // These values won't be collected if the flag is enabled.
                 if (service.mAppProfiler.isProfilingPss()) {

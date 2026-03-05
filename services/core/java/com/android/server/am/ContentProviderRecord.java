@@ -101,7 +101,7 @@ final class ContentProviderRecord extends ContentProviderRecordInternal
         if (conn == null || conn.provider == null || conn.provider.mProc == null) {
             return holder;
         }
-        final int procState = conn.provider.mProc.getCurProcState();
+        final int procState = conn.provider.mProc.getProcState();
         if (procState == PROCESS_STATE_PERSISTENT || procState == PROCESS_STATE_PERSISTENT_UI) {
             holder.noReleaseNeededIfUnstable = true;
         }
