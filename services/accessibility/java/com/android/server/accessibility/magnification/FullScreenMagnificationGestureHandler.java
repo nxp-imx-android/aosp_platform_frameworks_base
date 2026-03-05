@@ -793,8 +793,21 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                 // by stale events. After the cached events, which always have a down, are
                 // injected we need to also update the down time of all subsequent non cached
                 // events. All delegated events cached and non-cached are delivered here.
-                event.setDownTime(mLastDelegatedDownEventTime);
-                dispatchTransformedEvent(event, rawEvent, policyFlags);
+                if (Flags.fixFullScreenMagnificationEventTimeCorruption()) {
+                    long eventDownTime = event.getDownTime();
+                    long diff = mLastDelegatedDownEventTime - eventDownTime;
+                    if (diff != 0) {
+                        MotionEvent adjusted = AccessibilityMotionEventBuilder.fromBaseEvent(event)
+                                .setTimeOffset(diff).build();
+                        dispatchTransformedEvent(adjusted, rawEvent, policyFlags);
+                        adjusted.recycle();
+                    } else {
+                        dispatchTransformedEvent(event, rawEvent, policyFlags);
+                    }
+                } else {
+                    event.setDownTime(mLastDelegatedDownEventTime);
+                    dispatchTransformedEvent(event, rawEvent, policyFlags);
+                }
             }
         }
     }
