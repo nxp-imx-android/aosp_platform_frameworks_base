@@ -225,19 +225,31 @@
     <assign-permission name="android.permission.INTERACT_ACROSS_USERS_FULL" uid="uprobestats" />
     <assign-permission name="android.permission.REAL_GET_TASKS" uid="uprobestats" />
 
-    <!-- These UIDs need unrestricted network access, even if they don't in general need
-         local network access permission. -->
+    <!-- These UIDs need unrestricted network access, even if they don't in general need local
+     network access permission. And when adding a UID here for the first time we also have to
+     add the INTERNET permission to maintain the previous behavior of allowing INTERNET for
+     system UIDs without any entries here. -->
     <assign-permission name="android.permission.ACCESS_LOCAL_NETWORK" uid="bluetooth"
+        featureFlag="android.permission.flags.access_local_network_permission_enabled" />
+    <assign-permission name="android.permission.INTERNET" uid="bluetooth"
         featureFlag="android.permission.flags.access_local_network_permission_enabled" />
     <assign-permission name="android.permission.ACCESS_LOCAL_NETWORK" uid="clat"
         featureFlag="android.permission.flags.access_local_network_permission_enabled" />
+    <assign-permission name="android.permission.INTERNET" uid="clat"
+        featureFlag="android.permission.flags.access_local_network_permission_enabled" />
     <assign-permission name="android.permission.ACCESS_LOCAL_NETWORK" uid="dns"
         featureFlag="android.permission.flags.access_local_network_permission_enabled" />
+    <assign-permission name="android.permission.INTERNET" uid="dns"
+        featureFlag="android.permission.flags.access_local_network_permission_enabled" />
     <assign-permission name="android.permission.ACCESS_LOCAL_NETWORK" uid="dns_tether"
+        featureFlag="android.permission.flags.access_local_network_permission_enabled" />
+    <assign-permission name="android.permission.INTERNET" uid="dns_tether"
         featureFlag="android.permission.flags.access_local_network_permission_enabled" />
     <assign-permission name="android.permission.ACCESS_LOCAL_NETWORK" uid="shell"
         featureFlag="android.permission.flags.access_local_network_permission_enabled" />
     <assign-permission name="android.permission.ACCESS_LOCAL_NETWORK" uid="wifi"
+        featureFlag="android.permission.flags.access_local_network_permission_enabled" />
+    <assign-permission name="android.permission.INTERNET" uid="wifi"
         featureFlag="android.permission.flags.access_local_network_permission_enabled" />
 
     <split-permission name="android.permission.ACCESS_FINE_LOCATION">
