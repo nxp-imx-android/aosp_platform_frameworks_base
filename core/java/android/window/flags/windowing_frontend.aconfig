@@ -309,13 +309,6 @@ flag {
 }
 
 flag {
-    name: "migrate_basic_legacy_ready"
-    namespace: "windowing_frontend"
-    description: "Migrate basic legacy ready-conditions to new ready tracking"
-    bug: "294925498"
-}
-
-flag {
     name: "always_seq_id_layout_wear"
     namespace: "windowing_frontend"
     description: "Use seq-id for all client config changes (wearOS)"
