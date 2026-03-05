@@ -349,7 +349,7 @@
     </style>
 
     <style name="AuthNonCredentialPanelStyle">
-        <item name="android:background">@color/materialColorSurfaceBright</item>
+        <item name="android:background">@color/materialColorSurfaceContainerLow</item>
     </style>
 
     <style name="AuthCredentialPanelStyle" parent="AuthNonCredentialPanelStyle">
@@ -393,8 +393,16 @@
         <item name="android:layout_width">@dimen/biometric_auth_back_button_size</item>
         <item name="android:layout_height">@dimen/biometric_auth_back_button_size</item>
         <item name="android:background">@drawable/auth_credential_back_button_background</item>
-        <item name="android:tint">@color/materialColorOnSurface</item>
-        <item name="android:padding">4dp</item>
+        <item name="android:tint">@color/materialColorOnSurfaceVariant</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="AuthCredentialCloseButton">
+        <item name="android:layout_width">@dimen/biometric_auth_close_button_size</item>
+        <item name="android:layout_height">@dimen/biometric_auth_close_button_size</item>
+        <item name="android:background">@drawable/auth_credential_back_button_background</item>
+        <item name="android:tint">@color/materialColorOnSurfaceVariant</item>
+        <item name="android:padding">8dp</item>
     </style>
 
     <style name="DeviceManagementDialogTitle">

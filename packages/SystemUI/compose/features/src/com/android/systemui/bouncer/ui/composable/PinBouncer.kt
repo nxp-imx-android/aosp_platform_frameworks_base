@@ -191,11 +191,12 @@ fun DigitButton(
     onPointerDown: () -> Unit,
     scaling: () -> Float,
     isAnimationEnabled: Boolean,
+    backgroundColor: Color = LocalAndroidColorScheme.current.surfaceEffect1,
 ) {
     PinPadButton(
         onClicked = { onClicked(digit) },
         isEnabled = isInputEnabled,
-        backgroundColor = LocalAndroidColorScheme.current.surfaceEffect1,
+        backgroundColor = backgroundColor,
         foregroundColor = MaterialTheme.colorScheme.onSurface,
         isAnimationEnabled = isAnimationEnabled,
         onPointerDown = onPointerDown,
@@ -225,15 +226,16 @@ fun ActionButton(
     onLongClickLabel: String? = null,
     appearance: ActionButtonAppearance,
     scaling: () -> Float,
+    backgroundColor: Color = LocalAndroidColorScheme.current.surfaceEffect0,
 ) {
     val isHidden = appearance == ActionButtonAppearance.Hidden
     val hiddenAlpha by animateFloatAsState(if (isHidden) 0f else 1f, label = "Action button alpha")
 
     val foregroundColor = MaterialTheme.colorScheme.onSurface
 
-    val backgroundColor =
+    val color =
         when (appearance) {
-            ActionButtonAppearance.Shown -> LocalAndroidColorScheme.current.surfaceEffect0
+            ActionButtonAppearance.Shown -> backgroundColor
             else -> Color.Transparent
         }
 
@@ -241,7 +243,7 @@ fun ActionButton(
         onClicked = onClicked,
         onLongPressed = onLongPressed,
         isEnabled = isInputEnabled && !isHidden,
-        backgroundColor = backgroundColor,
+        backgroundColor = color,
         foregroundColor = foregroundColor,
         isAnimationEnabled = true,
         elementId = elementId,
