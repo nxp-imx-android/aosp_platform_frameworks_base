@@ -257,9 +257,8 @@ constructor(
         hideUi()
         backgroundScope.launch {
             // Temporary fix to allow enough time for the pre-capture UI to dismiss.
-            // TODO(b/435225255) Implement a more reliable way to ensure the UI is hidden prior to
-            // taking the screenshot.
-            delay(100)
+            // TODO(b/435225255) Exclude the screen capture UI window type from the captured image.
+            delay(200)
             screenshotInteractor.requestFullscreenScreenshot(
                 displayId = displayId,
                 customSaveUri = toolbarViewModel.currentSaveLocationUri,
@@ -275,9 +274,8 @@ constructor(
         hideUi()
         backgroundScope.launch {
             // Temporary fix to allow enough time for the pre-capture UI to dismiss.
-            // TODO(b/435225255) Implement a more reliable way to ensure the UI is hidden prior to
-            // taking the screenshot.
-            delay(100)
+            // TODO(b/435225255) Exclude the screen capture UI window type from the captured image.
+            delay(200)
             screenshotInteractor.requestPartialScreenshot(
                 regionBounds = regionBoxRect,
                 displayId = displayId,

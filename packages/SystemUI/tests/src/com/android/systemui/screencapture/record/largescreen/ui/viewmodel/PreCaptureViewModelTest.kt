@@ -430,7 +430,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             viewModel.beginCapture()
 
             // Account for the delay (temporary fix b/435225255)
-            advanceTimeBy(100)
+            advanceTimeBy(200)
             runCurrent()
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
@@ -454,7 +454,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             viewModel.beginCapture()
 
             // Account for the delay (temporary fix b/435225255)
-            advanceTimeBy(100)
+            advanceTimeBy(200)
             runCurrent()
 
             assertUiClosed()
@@ -477,7 +477,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             viewModel.beginCapture()
 
             // Account for the delay (temporary fix b/435225255)
-            advanceTimeBy(100)
+            advanceTimeBy(200)
             runCurrent()
 
             val screenshotRequestCaptor = argumentCaptor<ScreenshotRequest>()
@@ -509,7 +509,7 @@ class PreCaptureViewModelTest : SysuiTestCase() {
             viewModel.beginCapture()
 
             // Account for the delay (temporary fix b/435225255)
-            advanceTimeBy(100)
+            advanceTimeBy(200)
             runCurrent()
 
             assertUiClosed()
