@@ -16,7 +16,9 @@
 
 package com.android.wm.shell.scenarios
 
+import android.app.ActivityOptions
 import android.app.Instrumentation
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.hardware.display.DisplayManager
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
@@ -34,6 +36,7 @@ import androidx.test.uiautomator.UiDevice
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
+import com.android.settings.flags.Flags
 import com.android.settings.flags.Flags.FLAG_SHOW_TABBED_CONNECTED_DISPLAY_SETTING
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.wm.shell.Utils
@@ -74,14 +77,14 @@ abstract class SettingsConnectedDisplayTestBase {
         val desktopState = DesktopState.fromContext(instrumentation.context)
         assumeTrue(desktopState.isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY))
 
-        settingsApp.enterDesktopMode(wmHelper, device)
-        // Window should be maximized to ensure all components are visible
-        settingsApp.maximizeAppWithDragToTopDragZone(wmHelper, device)
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        // Start with fullscreen to ensure all components are visible
+        val options = ActivityOptions.makeBasic()
+        options.setLaunchWindowingMode(WINDOWING_MODE_FULLSCREEN)
+        settingsApp.launchViaIntent(wmHelper, options = options)
 
         val displayId = connectedDisplayRule.setupTestDisplay()
         wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(displayId).waitForAndVerify()
-        openExternalDisplayPage()
+        openExternalDisplayPage(displayId)
     }
 
     @After
@@ -90,10 +93,13 @@ abstract class SettingsConnectedDisplayTestBase {
     }
 
     /**
-     * Display settings are split per-display which can be navigated by clicking on toolbar (named
-     * based on displayName)
+     * Display settings are split per-display which can be navigated differently:
+     * - config_show_top_level_device_category (true): Specific external display page can be
+     *   navigated directly from the display list
+     * - config_show_top_level_device_category (false): External display page is navigated through
+     *   floating toolbar selection
      */
-    fun navigateToolbarToSelectedDisplaySettings(displayId: Int) {
+    fun selectDisplay(displayId: Int) {
         val displayName =
             if (displayId == DEFAULT_DISPLAY) {
                 BUILTIN_DISPLAY_NAME
@@ -106,23 +112,7 @@ abstract class SettingsConnectedDisplayTestBase {
             .click()
     }
 
-    fun getRotationPreference() =
-        waitForObj(
-            By.clazz("android.widget.RelativeLayout").hasDescendant(By.text(ROTATION_TEXT))
-        ) {
-            "Could not find the 'Rotation' preference, have " +
-                "`navigateToolbarToSelectedDisplaySettings(displayId)` been called and " +
-                "display is external display?"
-        }
-
-    fun getMirroringPreference() =
-        waitForObj(By.res(MIRROR_BUILT_IN_DISPLAY_SWITCH_ID)) {
-            "Could not find the 'Mirroring' preference, have " +
-                "`navigateToolbarToSelectedDisplaySettings(displayId)` been called and " +
-                "display is DEFAULT_DISPLAY?"
-        }
-
-    private fun openExternalDisplayPage() {
+    private fun openExternalDisplayPageFromConnectedDevicesPage() {
         waitForObj(By.text(CONNECTED_DEVICES_TEXT), UIAUTOMATOR_TIMEOUT) {
                 "Can't find 'Connected devices' setting"
             }
@@ -133,12 +123,35 @@ abstract class SettingsConnectedDisplayTestBase {
             .click()
     }
 
+    private fun openExternalDisplayPageDesktopFromDevicePage() {
+        waitForObj(By.text(DEVICE_TEXT), UIAUTOMATOR_TIMEOUT) { "Can't find 'Device' setting" }
+            .click()
+        waitForObj(By.text(DISPLAY_TEXT), UIAUTOMATOR_TIMEOUT) { "Can't find 'Display' setting" }
+            .click()
+    }
+
+    private fun openExternalDisplayPage(displayId: Int) {
+        if (shouldShowTopLevelDeviceCategory()) {
+            openExternalDisplayPageDesktopFromDevicePage()
+        } else {
+            openExternalDisplayPageFromConnectedDevicesPage()
+        }
+        selectDisplay(displayId)
+    }
+
+    private fun shouldShowTopLevelDeviceCategory(): Boolean {
+        val flagValue = Flags.showTopLevelDeviceCategory()
+        val showCategory = Utils.getSettingsBoolean(CONFIG_SHOW_TOP_LEVEL_DEVICE) ?: false
+        return flagValue && showCategory
+    }
+
     companion object {
         const val BUILTIN_DISPLAY_NAME = "Built-in display"
+        const val CONFIG_SHOW_TOP_LEVEL_DEVICE = "config_show_top_level_device_category"
         const val CONNECTED_DEVICES_TEXT = "Connected devices"
         const val EXTERNAL_DISPLAY_TEXT = "External displays"
-        const val ROTATION_TEXT = "Rotation"
-        const val MIRROR_BUILT_IN_DISPLAY_SWITCH_ID = "com.android.settings:id/switchWidget"
+        const val DEVICE_TEXT = "Device"
+        const val DISPLAY_TEXT = "Display"
         val UIAUTOMATOR_TIMEOUT = Duration.ofSeconds(10).platformAdjust()
     }
 }
