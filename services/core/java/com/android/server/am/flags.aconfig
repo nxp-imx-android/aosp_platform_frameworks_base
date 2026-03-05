@@ -410,3 +410,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "encapsulate_cur_oom_adj"
+    namespace: "backstage_power"
+    description: "Use setAdj instead of curAdj and curRawAdj outside of psc package."
+    bug: "489901078"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

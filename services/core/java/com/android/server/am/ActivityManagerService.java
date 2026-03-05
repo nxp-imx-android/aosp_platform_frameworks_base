@@ -20214,7 +20214,8 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         @Override
         public void onProcessFreezabilityChanged(ProcessRecordInternal app, boolean freezePolicy,
-                @OomAdjReason int oomAdjReason, boolean immediate, @OomAdjust int oldOomAdj) {
+                @OomAdjReason int oomAdjReason, boolean immediate, @OomAdjust int oldOomAdj,
+                @OomAdjust int newOomAdj) {
             if (!mCachedAppOptimizer.useFreezer()) {
                 return;
             }
@@ -20222,7 +20223,7 @@ public class ActivityManagerService extends IActivityManager.Stub
             // TODO: b/441879937 - Pass useFreezer() information to OomAdjuster and move the trace
             // logging back to OomAdjuster.
             if (Flags.traceUpdateAppFreezeStateLsp()) {
-                final boolean oomAdjChanged = (app.getCurAdj() >= mConstants.mFreezerCutoffAdj
+                final boolean oomAdjChanged = (newOomAdj >= mConstants.mFreezerCutoffAdj
                         ^ oldOomAdj >= mConstants.mFreezerCutoffAdj) || oldOomAdj == UNKNOWN_ADJ;
                 final boolean hasCpuCapability =
                         (PROCESS_CAPABILITY_CPU_TIME & app.getCurCapability())
@@ -20257,7 +20258,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                                     + "t" // Bit for denoting CPU_TIME based freeze policy
                                     + (Flags.prototypeAggressiveFreezing() ? "a" : "-")
                                     + "/" + app.getPid()
-                                    + "/" + app.getCurAdj()
+                                    + "/" + newOomAdj
                                     + "/" + oldOomAdj
                                     + /* Always SHOULD_NOT_FREEZE_REASON_NONE */ "/1"
                                     + "/" + cpuTimeReasons
@@ -20270,7 +20271,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                                     + " isFrozen: " + app.isFrozen()
                                     + " shouldNotFreeze: false"
                                     + " shouldNotFreezeReason: 1"
-                                    + " curAdj: " + app.getCurAdj()
+                                    + " newOomAdj: " + newOomAdj
                                     + " oldOomAdj: " + oldOomAdj
                                     + " immediate: " + immediate
                                     + " cpuCapability: " + hasCpuCapability
@@ -20283,10 +20284,10 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             if (freezePolicy) {
                 if (!com.android.server.notification.Flags.allowFreezingIdleNls()
-                        && app.getCurAdj() < CACHED_APP_MIN_ADJ) {
+                        && newOomAdj < CACHED_APP_MIN_ADJ) {
                     Slog.wtfStack(TAG, "Unexpected non-cached process may get frozen soon: "
                             + " name: " + app.processName
-                            + " curAdj: " + app.getCurAdj()
+                            + " newOomAdj: " + newOomAdj
                             + " oldOomAdj: " + oldOomAdj
                             + " curRawAdj: " + app.getCurRawAdj()
                             + " maxAdj: " + app.getMaxAdj()
