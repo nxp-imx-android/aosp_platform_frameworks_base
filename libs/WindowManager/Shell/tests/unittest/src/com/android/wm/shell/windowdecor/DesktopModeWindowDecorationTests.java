@@ -205,8 +205,6 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Mock
     private CoroutineScope mMockMainCoroutineScope;
     @Mock
-    private CoroutineScope mMockBgCoroutineScope;
-    @Mock
     private SyncTransactionQueue mMockSyncQueue;
     @Mock
     private AppHeaderViewHolder.Factory mMockAppHeaderViewHolderFactory;
