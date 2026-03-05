@@ -4386,10 +4386,13 @@ public class StatsPullAtomService extends SystemService {
 
     static void unpackStreamedData(int atomTag, List<StatsEvent> pulledData,
             List<ParcelFileDescriptor> statsFiles) throws IOException {
-        InputStream stream = new ParcelFileDescriptor.AutoCloseInputStream(statsFiles.get(0));
-        int[] len = new int[1];
-        byte[] stats = readFully(stream, len);
-        pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, Arrays.copyOf(stats, len[0])));
+        try (InputStream stream =
+                new ParcelFileDescriptor.AutoCloseInputStream(statsFiles.get(0))) {
+            int[] len = new int[1];
+            byte[] stats = readFully(stream, len);
+            pulledData.add(
+                    FrameworkStatsLog.buildStatsEvent(atomTag, Arrays.copyOf(stats, len[0])));
+        }
     }
 
     static byte[] readFully(InputStream stream, int[] outLen) throws IOException {
