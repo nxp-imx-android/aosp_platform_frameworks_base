@@ -1709,8 +1709,7 @@ please see styles_device_defaults.xml.
         <item name="ellipsize">end</item>
         <item name="maxLines">1</item>
         <item name="textSize">14sp</item>
-        <item name="fontFamily">variable-display-small-emphasized-narrow</item>
-        <item name="android:fontFeatureSettings">tnum</item>
+        <item name="fontFamily">variable-body-medium</item>
     </style>
 
     <!-- @hide -->
@@ -1719,6 +1718,8 @@ please see styles_device_defaults.xml.
     <!-- @hide -->
     <style name="NotificationExpandedMetricValue" parent="NotificationMetricValue">
         <item name="textSize">28sp</item>
+        <item name="fontFamily">variable-display-small-emphasized-narrow</item>
+        <item name="android:fontFeatureSettings">tnum</item>
     </style>
 
     <!-- @hide -->
