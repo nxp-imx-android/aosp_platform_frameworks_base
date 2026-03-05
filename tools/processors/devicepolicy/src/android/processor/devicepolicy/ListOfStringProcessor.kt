@@ -17,6 +17,7 @@
 package android.processor.devicepolicy
 
 import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata
+import android.processor.devicepolicy.protos.TypeSpecificPolicyMetadata.ListPolicyMetadata.ResolutionMechanism as ListResolutionMechanismProto
 import javax.annotation.processing.ProcessingEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
@@ -70,6 +71,8 @@ class ListOfStringProcessor(processingEnv: ProcessingEnvironment) :
             )
         }
 
+        val resolutionMechanism = getResolutionMechanism(listOfStringDefinition, element)
+
         val typeSpecificMetadata =
             TypeSpecificPolicyMetadata.newBuilder()
                 .setListMetadata(
@@ -78,13 +81,57 @@ class ListOfStringProcessor(processingEnv: ProcessingEnvironment) :
                             stringProcessor.extractTypeSpecificMetadata(listOfStringDefinition.base)
                         )
                         .setEmptyListAllowed(listOfStringDefinition.emptyListAllowed)
+                        .setResolutionMechanism(resolutionMechanism)
                 )
                 .build()
 
         return Pair(typeSpecificMetadata, listOfStringDefinition.base.base)
     }
 
+    private fun getResolutionMechanism(annotation: ListOfStringPolicyDefinition, element: Element) =
+        ListResolutionMechanismProcessor(errorPrinter = { message -> printError(element, message) })
+            .getResolutionMechanism(annotation.resolutionMechanism)
+
     override fun annotationClass(): Class<ListOfStringPolicyDefinition> {
         return ListOfStringPolicyDefinition::class.java
+    }
+}
+
+// Helper class that processes a [ListResolutionMechanism] annotation.
+class ListResolutionMechanismProcessor(val errorPrinter: (message: String) -> Unit) {
+    private fun printError(message: String) = errorPrinter(message)
+
+    public fun getResolutionMechanism(
+        annotationValue: ListResolutionMechanism
+    ): ListResolutionMechanismProto {
+        if (!verifyResolutionMechanism(annotationValue)) {
+            // Error is already printed
+            return ListResolutionMechanismProto.newBuilder().build()
+        }
+
+        val builder = ListResolutionMechanismProto.newBuilder()
+        if (annotationValue.custom) {
+            builder.setCustom(true)
+        } else {
+            builder.setUnion(true)
+        }
+        return builder.build()
+    }
+
+    private fun verifyResolutionMechanism(annotationValue: ListResolutionMechanism): Boolean {
+        val isCustom = annotationValue.custom
+        val isUnion = annotationValue.union
+
+        if (isCustom && isUnion) {
+            printError( "Only one resolution mechanism can be selected")
+            return false
+        }
+
+        if (!isCustom && !isUnion) {
+            printError("Resolution mechanism can not be empty")
+            return false
+        }
+
+        return true
     }
 }

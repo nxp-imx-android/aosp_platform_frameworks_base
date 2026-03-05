@@ -331,6 +331,9 @@ policy_metadata {
     list_metadata {
       string_metadata {
       }
+      resolution_mechanism {
+        custom: true
+      }
     }
   }
   allowed_scopes: POLICY_SCOPE_USER

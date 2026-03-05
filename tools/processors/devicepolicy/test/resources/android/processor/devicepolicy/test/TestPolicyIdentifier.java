@@ -26,8 +26,9 @@ import android.processor.devicepolicy.BooleanPolicyDefinition;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.EnumResolutionMechanism;
 import android.processor.devicepolicy.IntegerPolicyDefinition;
-import android.processor.devicepolicy.LongPolicyDefinition;
 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
+import android.processor.devicepolicy.ListResolutionMechanism;
+import android.processor.devicepolicy.LongPolicyDefinition;
 import android.processor.devicepolicy.PolicyDefinition;
 import android.processor.devicepolicy.StringPolicyDefinition;
 
@@ -47,8 +48,11 @@ public final class PolicyIdentifier<T> {
         return mId;
     }
 
-    /** Test policy 1
-     * Second line */
+    /**
+     * Test policy 1
+     *
+     * <p>Second line
+     */
     @BooleanPolicyDefinition(
             base =
                     @PolicyDefinition(
@@ -195,8 +199,7 @@ public final class PolicyIdentifier<T> {
                                             managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
                                             unaffiliatedFullUserProfileOwner = DISALLOWED)),
             minValue = 10,
-            maxValue = 100
-    )
+            maxValue = 100)
     public static final PolicyIdentifier<Long> SIMPLE_LONG_POLICY_WITH_RANGE =
             new PolicyIdentifier<>("SIMPLE_LONG_POLICY_WITH_RANGE");
 
@@ -242,7 +245,8 @@ public final class PolicyIdentifier<T> {
                                                                     DISALLOWED,
                                                             unaffiliatedFullUserProfileOwner =
                                                                     DISALLOWED)),
-                            emptyStringAllowed = true))
+                            emptyStringAllowed = true),
+            resolutionMechanism = @ListResolutionMechanism(custom = true))
     public static final PolicyIdentifier<List<String>> SIMPLE_STRING_LIST_POLICY =
             new PolicyIdentifier<>("SIMPLE_STRING_LIST_POLICY");
 

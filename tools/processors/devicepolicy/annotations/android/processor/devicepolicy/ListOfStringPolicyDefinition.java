@@ -37,4 +37,9 @@ public @interface ListOfStringPolicyDefinition {
      * be allowed.
      */
     boolean emptyListAllowed() default false;
+
+    /**
+     * Indicates the conflict resolution mechanism used by this policy.
+     */
+    ListResolutionMechanism resolutionMechanism();
 }
