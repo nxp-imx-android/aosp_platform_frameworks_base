@@ -213,6 +213,8 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         device: UiDevice,
         trigger: MaximizeDesktopAppTrigger = MaximizeDesktopAppTrigger.LAYOUT_MENU,
     ) {
+        val window = wmHelper.getWindow(innerHelper) ?: error("Unable to find the window\n")
+        val displayId = window.displayId
         val caption = getCaptionForTheApp(wmHelper, device)!!
         val maximizeButton = getMaximizeButtonForTheApp(caption)
 
@@ -231,7 +233,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
 
             MaximizeDesktopAppTrigger.MAXIMIZE_BUTTON_IN_MENU -> {
                 maximizeButton.longClick()
-                wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+                wmHelper.StateSyncBuilder().withAppTransitionIdle(displayId).waitForAndVerify()
                 val buttonResId = MAXIMIZE_BUTTON_IN_MENU
                 val layoutMenu = getDesktopAppViewByRes(LAYOUT_MENU)
                 val maximizeButtonInMenu =
@@ -244,7 +246,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
                 maximizeButtonInMenu.click()
             }
         }
-        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle(displayId).waitForAndVerify()
     }
 
     private fun getMinimizeButtonForTheApp(caption: UiObject2?): UiObject2 {
