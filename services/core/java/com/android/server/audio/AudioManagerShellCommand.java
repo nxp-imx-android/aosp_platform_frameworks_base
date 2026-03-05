@@ -179,8 +179,8 @@ class AudioManagerShellCommand extends ShellCommand {
         pw.println("    Sets the volume for GROUP_ID to VOLUME_INDEX");
         pw.println("  adj-group-volume GROUP_ID <RAISE|LOWER|MUTE|UNMUTE>");
         pw.println("    Adjusts the group volume for GROUP_ID given the specified direction");
-        pw.println("  set-hardening <1|enable|0|disable>");
-        pw.println("    Enables (1) or disables (0) full audio hardening enforcement");
+        pw.println("  set-hardening <1|enable|0|disable|throw>");
+        pw.println("    Enables (1), disables (0) or throws on audio hardening enforcement");
         pw.println("  clear-hardening");
         pw.println("    Clears the hardening override, returning to default behavior");
         pw.println("  set-preferred-output-device AUDIO_DEVICE_TYPE [ADDRESS]");
@@ -530,6 +530,10 @@ class AudioManagerShellCommand extends ShellCommand {
             case "disable", "false", "0" -> {
                 mode = AudioManager.HARDENING_DISABLE;
                 modeName = "HARDENING_DISABLE";
+            }
+            case "throw" -> {
+                mode = AudioManager.HARDENING_THROW;
+                modeName = "HARDENING_THROW";
             }
             case "default" -> {
                 mode = AudioManager.HARDENING_DEFAULT;

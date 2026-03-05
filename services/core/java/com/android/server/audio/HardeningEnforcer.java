@@ -241,7 +241,7 @@ public class HardeningEnforcer {
             // given we don't want to encourage apps modify volume regardless.
             var overrideState = mHardeningOverride.get();
             boolean enforced = switch (overrideState) {
-                case HardeningOverride.ENABLE -> true;
+                case HardeningOverride.ENABLE, AudioManager.HARDENING_THROW -> true;
                 case HardeningOverride.DISABLE -> false;
                 default -> hardeningPartialVolume();
             };
@@ -269,6 +269,9 @@ public class HardeningEnforcer {
                         + getPackNameForUid(uid) + " (" + uid + "), "
                         + "level: " + (allowed == DENIED_IF_PARTIAL ? "partial" : "full");
                 mEventLogger.enqueueAndSlog(msg, EventLogger.Event.ALOGW, TAG);
+                if (overrideState == AudioManager.HARDENING_THROW) {
+                    throw new IllegalStateException(msg);
+                }
                 boolean isStrict = allowed == DENIED_IF_FULL;
                 if (volumeMethod == METHOD_AUDIO_MANAGER_SET_RINGER_MODE) {
                     AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, uid,
@@ -316,12 +319,12 @@ public class HardeningEnforcer {
         var overrideState = mHardeningOverride.get();
         boolean isPreVic = targetSdk < Build.VERSION_CODES.VANILLA_ICE_CREAM;
         boolean enforcedPartial = switch (overrideState) {
-            case HardeningOverride.ENABLE -> true;
+            case HardeningOverride.ENABLE, AudioManager.HARDENING_THROW -> true;
             case HardeningOverride.DISABLE -> false;
             default -> hardeningPartial() || !isPreVic;
         };
         boolean enforcedFull = switch (overrideState) {
-            case HardeningOverride.ENABLE -> true;
+            case HardeningOverride.ENABLE, AudioManager.HARDENING_THROW -> true;
             case HardeningOverride.DISABLE -> false;
             default -> hardeningStrict();
         };
@@ -347,6 +350,9 @@ public class HardeningEnforcer {
                     + clientId
                     + ", level: partial";
             mEventLogger.enqueueAndSlog(msg, EventLogger.Event.ALOGW, TAG);
+            if (overrideState == AudioManager.HARDENING_THROW) {
+                throw new IllegalStateException(msg);
+            }
             AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, callingUid,
                     AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_FOCUS,
                     false /*isStrict*/, enforcedPartial,
@@ -360,6 +366,9 @@ public class HardeningEnforcer {
                     + clientId
                     + ", level: full";
             mEventLogger.enqueueAndSlog(msg, EventLogger.Event.ALOGW, TAG);
+            if (overrideState == AudioManager.HARDENING_THROW) {
+                throw new IllegalStateException(msg);
+            }
             AudioAtomsLog.write(AudioAtomsLog.AUDIO_HARDENING_REPORTED, callingUid,
                     AUDIO_HARDENING_REPORTED__API_TYPE__AUDIO_HARDENING_API_TYPE_FOCUS,
                     true /*isStrict*/, enforcedFull,

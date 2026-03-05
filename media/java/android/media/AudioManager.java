@@ -11201,11 +11201,18 @@ public class AudioManager {
      */
     public static final int HARDENING_DISABLE = IAudioPolicyService.HardeningOverride.DISABLE;
 
+    /**
+     * @hide
+     * Throw hardening mode: throws an IllegalStateException when restrictions are encountered.
+     */
+    public static final int HARDENING_THROW = IAudioPolicyService.HardeningOverride.THROW;
+
     /** @hide */
     @IntDef(prefix = { "HARDENING_" }, value = {
             HARDENING_DEFAULT,
             HARDENING_ENABLE,
-            HARDENING_DISABLE
+            HARDENING_DISABLE,
+            HARDENING_THROW
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface HardeningMode {}
