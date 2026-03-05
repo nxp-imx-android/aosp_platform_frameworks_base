@@ -177,6 +177,7 @@ public class AccessibilityUserStateTest {
         String componentNameString = COMPONENT_NAME.flattenToString();
         mUserState.getBoundServicesLocked().add(mMockConnection);
         mUserState.getBindingServicesLocked().add(COMPONENT_NAME);
+        mUserState.getServiceConnections().add(mMockConnection);
         mUserState.setLastSentClientStateLocked(
                 STATE_FLAG_ACCESSIBILITY_ENABLED
                         | STATE_FLAG_TOUCH_EXPLORATION_ENABLED

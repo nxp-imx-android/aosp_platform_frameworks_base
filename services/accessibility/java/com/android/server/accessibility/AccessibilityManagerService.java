@@ -3395,13 +3395,17 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 continue;
             }
 
-            // Skip the component since it may be in process or crashed.
-            if (userState.getBindingServicesLocked().contains(componentName)
-                    || userState.getCrashedServicesLocked().contains(componentName)) {
+            // Skip the component since it may be in process.
+            if (userState.getBindingServicesLocked().contains(componentName)) {
                 continue;
             }
+
             if (userState.mEnabledServices.contains(componentName)
                     && !mUiAutomationManager.suppressingAccessibilityServicesLocked()) {
+                // Skip the component since it may be crashed.
+                if (userState.getCrashedServicesLocked().contains(componentName)) {
+                    continue;
+                }
                 // Skip the enabling service disallowed by device admin policy.
                 if (!isAccessibilityTargetAllowed(componentName.getPackageName(),
                         installedService.getResolveInfo().serviceInfo.applicationInfo.uid,
@@ -3426,6 +3430,26 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     service.unbindLocked();
                     removeShortcutTargetForUnboundServiceLocked(userState, service);
                 }
+                // Ensure any crashed connections are also cleaned up when disabled
+                final Set<AccessibilityServiceConnection> connections =
+                        new HashSet<>(userState.getServiceConnections());
+                for (AccessibilityServiceConnection c : connections) {
+                    if (c.getComponentName().equals(componentName)) {
+                        c.unbindLocked();
+                        removeShortcutTargetForUnboundServiceLocked(userState, c);
+                    }
+                }
+            }
+        }
+
+        // Unbind any tracked connections that are no longer in the installed services list.
+        // This ensures crashed connections are unbound when their packages are uninstalled.
+        final Set<AccessibilityServiceConnection> connections =
+                new HashSet<>(userState.getServiceConnections());
+        for (AccessibilityServiceConnection service : connections) {
+            if (!mTempComponentNameSet.contains(service.getComponentName())) {
+                service.unbindLocked();
+                removeShortcutTargetForUnboundServiceLocked(userState, service);
             }
         }
 
