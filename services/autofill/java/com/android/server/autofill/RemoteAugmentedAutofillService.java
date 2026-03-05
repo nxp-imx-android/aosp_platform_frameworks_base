@@ -33,7 +33,6 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -179,57 +178,66 @@ final class RemoteAugmentedAutofillService {
             @Nullable Function<InlineFillUi, Boolean> inlineSuggestionsCallback,
             @NonNull Runnable onErrorCallback,
             @Nullable RemoteInlineSuggestionRenderService remoteRenderService, int userId) {
-        CompletableFuture<AugmentedAutofillInlineSuggestionsResponseData> personalContextFuture =
-                sendRequestToPersonalContext(
-                        sessionId,
-                        taskId,
-                        activityComponent,
-                        focusedId,
-                        focusedValue,
-                        inlineSuggestionsRequest);
+        getAugmentedAutofillClient(client)
+                .thenComposeAsync(
+                        augmentedAutofillClient -> {
+                            CompletableFuture<AugmentedAutofillInlineSuggestionsResponseData>
+                                    personalContextFuture =
+                                            sendRequestToPersonalContext(
+                                                    sessionId,
+                                                    taskId,
+                                                    activityComponent,
+                                                    focusedId,
+                                                    augmentedAutofillClient,
+                                                    focusedValue,
+                                                    inlineSuggestionsRequest);
 
-        CompletableFuture<AugmentedAutofillInlineSuggestionsResponseData>
-                augmentedAutofillInlineFuture =
-                        sendRequestToAugmentedAutofillService(
-                                sessionId,
-                                client,
-                                taskId,
-                                activityComponent,
-                                focusedId,
-                                focusedValue,
-                                inlineSuggestionsRequest,
-                                SystemClock.elapsedRealtime());
+                            CompletableFuture<AugmentedAutofillInlineSuggestionsResponseData>
+                                    augmentedAutofillInlineFuture =
+                                            sendRequestToAugmentedAutofillService(
+                                                    sessionId,
+                                                    taskId,
+                                                    activityComponent,
+                                                    focusedId,
+                                                    augmentedAutofillClient,
+                                                    focusedValue,
+                                                    inlineSuggestionsRequest,
+                                                    SystemClock.elapsedRealtime());
 
-        // TODO(b/456768621): don't need to wait for personal context depending on config value
-        CompletableFuture<Void> mergeFuture = CompletableFuture.allOf(personalContextFuture,
-                        augmentedAutofillInlineFuture)
-                .whenComplete(
-                        (res, err) -> {
-                            AugmentedAutofillInlineSuggestionsResponseData
-                                    augmentedAutofillResponse = null;
-                            if (augmentedAutofillInlineFuture.isDone()
-                                    && !augmentedAutofillInlineFuture.isCompletedExceptionally()) {
-                                augmentedAutofillResponse = augmentedAutofillInlineFuture.join();
-                            }
-
-                            if (augmentedAutofillResponse == null) {
-                                // If augmented autofill didn't return a response, it
-                                // may have timed out, been cancelled, or a fill window
-                                // was active. Don't bother showing inline suggestions.
-                                return;
-                            }
-
-                            // TODO: allow choosing priority for which future to look at the result
-                            //  of first.
-                            AugmentedAutofillInlineSuggestionsResponseData result = null;
-                            if (personalContextFuture.isDone()
-                                    && !personalContextFuture.isCompletedExceptionally()) {
-                                result = personalContextFuture.join();
-                            }
-                            if (result == null) {
-                                result = augmentedAutofillResponse;
-                            }
-
+                            // TODO(b/456768621): don't need to wait for personal context depending
+                            //  on config value
+                            return augmentedAutofillInlineFuture.thenCombine(
+                                    personalContextFuture,
+                                    (augmentedAutofillResponse, personalContextResponse) -> {
+                                        if (augmentedAutofillResponse == null) {
+                                            // If augmented autofill didn't return a response, it
+                                            // may have timed out, been cancelled, or a fill window
+                                            // was active. Don't bother showing inline suggestions.
+                                            return null;
+                                        }
+                                        // TODO(b/478044353): allow choosing priority for which
+                                        //  future to look at the result of first.
+                                        if (personalContextResponse != null) {
+                                            if (sDebug) {
+                                                Slog.d(
+                                                        TAG,
+                                                        "Choosing personal context" + " response");
+                                            }
+                                            return personalContextResponse;
+                                        } else {
+                                            if (sDebug) {
+                                                Slog.d(
+                                                        TAG,
+                                                        "Choosing augmented autofill"
+                                                                + " response");
+                                            }
+                                            return augmentedAutofillResponse;
+                                        }
+                                    });
+                        },
+                        mExecutor)
+                .thenAcceptAsync(
+                        result -> {
                             if (result == null) {
                                 Slog.e(
                                         TAG,
@@ -237,8 +245,6 @@ final class RemoteAugmentedAutofillService {
                                                 + "autofill service or personal context");
                                 return;
                             }
-
-                            // Show suggestions.
                             maybeRequestShowInlineSuggestions(
                                     sessionId,
                                     inlineSuggestionsRequest,
@@ -253,9 +259,38 @@ final class RemoteAugmentedAutofillService {
                                     userId,
                                     activityComponent,
                                     activityToken);
+                        },
+                        mExecutor)
+                .exceptionally(
+                        err -> {
+                            Slog.e(
+                                    TAG,
+                                    "exception during onRequestAutofillLocked() for " + sessionId,
+                                    err);
+                            return null;
                         });
+    }
 
-        mExecutor.execute(mergeFuture::join);
+    private CompletableFuture<IBinder> getAugmentedAutofillClient(
+            @NonNull IAutoFillManagerClient client) {
+        AndroidFuture<IBinder> clientFuture = new AndroidFuture<>();
+        try {
+            client.getAugmentedAutofillClient(
+                    new IResultReceiver.Stub() {
+                        @Override
+                        public void send(int resultCode, Bundle resultData) {
+                            final IBinder realClient =
+                                    resultData.getBinder(
+                                            AutofillManager
+                                                    .EXTRA_AUGMENTED_AUTOFILL_CLIENT);
+                            clientFuture.complete(realClient);
+                        }
+                    });
+        } catch (RemoteException e) {
+            clientFuture.complete(null);
+            throw new RuntimeException(e);
+        }
+        return clientFuture;
     }
 
     /**
@@ -263,16 +298,18 @@ final class RemoteAugmentedAutofillService {
      *
      * <p>The returned future will timeout after {@link #mRequestTimeoutMs}.
      *
+     * @param augmentedAutofillClient augmented autofill client fetched from {@link
+     *     IAutoFillManagerClient#getAugmentedAutofillClient(IResultReceiver)}
      * @return a future that contains the response from the augmented autofill service, or null if a
      *     fill window is showing, the request timed out, was cancelled, or otherwise failed.
      */
     private CompletableFuture<AugmentedAutofillInlineSuggestionsResponseData>
             sendRequestToAugmentedAutofillService(
                     int sessionId,
-                    @NonNull IAutoFillManagerClient client,
                     int taskId,
                     @NonNull ComponentName activityComponent,
                     @NonNull AutofillId focusedId,
+                    @NonNull IBinder augmentedAutofillClient,
                     @Nullable AutofillValue focusedValue,
                     @Nullable InlineSuggestionsRequest inlineSuggestionsRequest,
                     long requestTime) {
@@ -280,83 +317,69 @@ final class RemoteAugmentedAutofillService {
         AndroidFuture<AugmentedAutofillInlineSuggestionsResponseData> autofillResponse =
                 new AndroidFuture<>();
 
-        mServiceConnector.run(service -> {
-            client.getAugmentedAutofillClient(new IResultReceiver.Stub() {
-                @Override
-                public void send(int resultCode, Bundle resultData)
-                        throws RemoteException {
-                    final IBinder realClient = resultData
-                            .getBinder(AutofillManager.EXTRA_AUGMENTED_AUTOFILL_CLIENT);
-                    service.onFillRequest(
-                            sessionId,
-                            realClient,
-                            taskId,
-                            activityComponent,
-                            focusedId,
-                            focusedValue,
-                            requestTime,
-                            inlineSuggestionsRequest,
-                            new IFillCallback.Stub() {
-                                @Override
-                                public void onSuccess(
-                                        @Nullable List<Dataset> inlineSuggestionsData,
-                                        @Nullable Bundle clientState,
-                                        boolean showingFillWindow) {
-                                    mCallbacks.resetLastResponse();
+        mServiceConnector.run(service -> service.onFillRequest(
+                sessionId,
+                augmentedAutofillClient,
+                taskId,
+                activityComponent,
+                focusedId,
+                focusedValue,
+                requestTime,
+                inlineSuggestionsRequest,
+                new IFillCallback.Stub() {
+                    @Override
+                    public void onSuccess(
+                            @Nullable List<Dataset> inlineSuggestionsData,
+                            @Nullable Bundle clientState,
+                            boolean showingFillWindow) {
+                        mCallbacks.resetLastResponse();
 
-                                    if (showingFillWindow) {
-                                        // When fill window is showing, current request is expected
-                                        // to be cancellable and also inline suggestions won't be
-                                        // shown anyway, so don't complete the future. This is done
-                                        // as AugmentedAutofillService checks isCompleted before
-                                        // cancelling. In addition, cancelling a completed future is
-                                        // a no-op and will result in the cancellation not being
-                                        // dispatched.
-                                        Slog.w(
-                                                TAG,
-                                                "Not showing augmented autofill result due "
-                                                        + "to fill window");
-                                    } else {
-                                        if (sDebug) {
-                                            Slog.d(TAG, "Augmented autofill returned response");
-                                        }
-                                        autofillResponse.complete(
-                                                new AugmentedAutofillInlineSuggestionsResponseData(
-                                                        inlineSuggestionsData, clientState));
-                                    }
-                                }
+                        if (showingFillWindow) {
+                            // When fill window is showing, current request is expected to be
+                            // cancellable and also inline suggestions won't be shown anyway, so
+                            // don't complete the future. This is done as
+                            // AugmentedAutofillService checks isCompleted before cancelling. In
+                            // addition, cancelling a completed future is a no-op and will
+                            // result in the cancellation not being dispatched.
+                            Slog.w(
+                                    TAG,
+                                    "Not showing augmented autofill result due to fill "
+                                            + "window");
+                        } else {
+                            if (sDebug) {
+                                Slog.d(TAG, "Augmented autofill returned response");
+                            }
+                            autofillResponse.complete(
+                                    new AugmentedAutofillInlineSuggestionsResponseData(
+                                            inlineSuggestionsData, clientState));
+                        }
+                    }
 
-                                @Override
-                                public boolean isCompleted() {
-                                    return autofillResponse.isDone()
-                                            && !autofillResponse.isCancelled();
-                                }
+                    @Override
+                    public boolean isCompleted() {
+                        return autofillResponse.isDone() && !autofillResponse.isCancelled();
+                    }
 
-                                @Override
-                                public void onCancellable(ICancellationSignal cancellation) {
-                                    if (autofillResponse.isCancelled()) {
-                                        dispatchCancellation(cancellation);
-                                    } else {
-                                        cancellationRef.set(cancellation);
-                                    }
-                                }
+                    @Override
+                    public void onCancellable(ICancellationSignal cancellation) {
+                        if (autofillResponse.isCancelled()) {
+                            dispatchCancellation(cancellation);
+                        } else {
+                            cancellationRef.set(cancellation);
+                        }
+                    }
 
-                                @Override
-                                public void cancel() {
-                                    if (sDebug) {
-                                        Slog.d(TAG, "Augmented autofill request cancelled");
-                                    }
-                                    autofillResponse.cancel(true);
-                                }
-                            });
-                }
-            });
-        });
+                    @Override
+                    public void cancel() {
+                        if (sDebug) {
+                            Slog.d(TAG, "Augmented autofill request cancelled");
+                        }
+                        autofillResponse.cancel(true);
+                    }
+                }));
 
-        return mInjector.orTimeout(
-                    autofillResponse,
-                    mRequestTimeoutMs,
-                    TimeUnit.MILLISECONDS)
+        return mInjector
+                .orTimeout(autofillResponse, mRequestTimeoutMs, TimeUnit.MILLISECONDS)
                 .exceptionally(
                     err -> {
                         if (err instanceof CancellationException) {
@@ -406,8 +429,13 @@ final class RemoteAugmentedAutofillService {
      * Sends the inline suggestions request to the personal context manager as a {@link
      * AutofillInlineRequestHint}.
      *
+     * <p>The returned future will timeout after {@link #mRequestTimeoutMs}. If the future fails, it
+     * will clear out the {@link #mPersonalContextResultFuture} and {@link #mAutofillHint} fields.
+     *
+     * @param augmentedAutofillClient augmented autofill client fetched from {@link
+     *     IAutoFillManagerClient#getAugmentedAutofillClient(IResultReceiver)}
      * @return a future that will be completed when the personal context manager returns a matching
-     *     insight
+     *     insight. The result may be null if the request times out or otherwise fails.
      */
     private CompletableFuture<AugmentedAutofillInlineSuggestionsResponseData>
             sendRequestToPersonalContext(
@@ -415,22 +443,28 @@ final class RemoteAugmentedAutofillService {
                     int taskId,
                     @NonNull ComponentName activityComponent,
                     @NonNull AutofillId focusedId,
-                    @Nullable AutofillValue focusedValue,
+                    @NonNull IBinder augmentedAutofillClient,
+            @Nullable AutofillValue focusedValue,
                     @Nullable InlineSuggestionsRequest inlineSuggestionsRequest) {
         CompletableFuture<AugmentedAutofillInlineSuggestionsResponseData> future =
                 new CompletableFuture<>();
         if (!enablePersonalContextService() || mPersonalContextManagerInternal == null) {
-            Slog.d(TAG, "Personal context trigger ignored due to flag being disabled");
+            if (sDebug) {
+                Slog.d(TAG, "Personal context trigger ignored due to flag being disabled");
+            }
             future.complete(null);
             return future;
         }
         if (focusedValue == null || inlineSuggestionsRequest == null) {
-            Slog.d(TAG, "No inline suggestions request, not sending personal context trigger");
+            if (sDebug) {
+                Slog.d(TAG, "No inline suggestions request, not sending personal context trigger");
+            }
             future.complete(null);
             return future;
         }
-        Slog.d(TAG, "Triggering personal context manager with autofill inline request hint");
-        // TODO(b/475318851): attach a real binder
+        if (sDebug) {
+            Slog.d(TAG, "Triggering personal context manager with autofill inline request hint");
+        }
         AutofillInlineRequestHint hint =
                 new AutofillInlineRequestHint.Builder(
                         sessionId,
@@ -440,7 +474,7 @@ final class RemoteAugmentedAutofillService {
                         focusedId,
                         focusedValue,
                         inlineSuggestionsRequest,
-                        new Binder())
+                        augmentedAutofillClient)
                         .build();
         mAutofillHint = hint;
         mPersonalContextManagerInternal.publishTriggeringHint(

@@ -36,6 +36,7 @@ import android.app.slice.Slice;
 import android.app.slice.SliceSpec;
 import android.content.ComponentName;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -48,9 +49,12 @@ import android.service.autofill.InlinePresentation;
 import android.service.autofill.InlineSuggestionRenderService;
 import android.service.autofill.augmented.IAugmentedAutofillService;
 import android.service.autofill.augmented.IFillCallback;
+import android.service.personalcontext.hint.AutofillInlineRequestHint;
+import android.service.personalcontext.hint.ContextHint;
 import android.testing.TestableContext;
 import android.util.Size;
 import android.view.autofill.AutofillId;
+import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 import android.view.autofill.IAutoFillManagerClient;
 import android.view.inputmethod.InlineSuggestionsRequest;
@@ -76,11 +80,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
@@ -130,7 +136,7 @@ public class RemoteAugmentedAutofillServiceTest {
     private AutoCloseable mMockitoSession;
     private RemoteInlineSuggestionRenderService mRemoteInlineSuggestionRenderService;
     private RemoteAugmentedAutofillService mService;
-    private Executor mTestExecutor;
+    private FakeExecutor mTestExecutor;
 
     /**
      * Captured futures from {@link
@@ -142,7 +148,7 @@ public class RemoteAugmentedAutofillServiceTest {
     @Before
     public void setUp() throws Exception {
         mMockitoSession = MockitoAnnotations.openMocks(this);
-        mTestExecutor = Executors.newSingleThreadExecutor();
+        mTestExecutor = new FakeExecutor();
 
         // Immediately run any jobs posted to the service connector.
         when(mServiceConnector.run(any()))
@@ -526,11 +532,74 @@ public class RemoteAugmentedAutofillServiceTest {
                 mRemoteInlineSuggestionRenderService, // render service?
                 USER_ID);
 
+        // Augmented autofill service receives fill request.
+        triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+        mTestExecutor.runAll();
+
         // Neither result is sent, time out futures.
         timeoutFutures();
+        mTestExecutor.runAll();
 
         // Verify no result is provided.
         assertThat(mInlineFillUiResult).isNull();
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
+    public void onRequestAutofillLocked_augmentedAutofillBinderMatchesHint() throws Exception {
+        final int sessionId = 1234;
+        final int taskId = 4567;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                taskId,
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE, // focusedValue
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService, // render service?
+                USER_ID);
+
+        ArgumentCaptor<IResultReceiver.Stub> resultReceiverCaptor =
+                ArgumentCaptor.forClass(IResultReceiver.Stub.class);
+        verify(mClient).getAugmentedAutofillClient(resultReceiverCaptor.capture());
+
+        Bundle resultData = new Bundle();
+        Binder augmentedAutofillBinder = new Binder();
+        resultData.putBinder(
+                AutofillManager.EXTRA_AUGMENTED_AUTOFILL_CLIENT, augmentedAutofillBinder);
+        resultReceiverCaptor.getValue().send(0, resultData);
+
+        mTestExecutor.runAll();
+
+        // Triggering hint is sent to context engine.
+        ArgumentCaptor<Set<ContextHint>> hintCaptor = ArgumentCaptor.forClass(Set.class);
+        verify(mContextManagerInternal)
+                .publishTriggeringHint(hintCaptor.capture(), any(), eq(USER_ID));
+        assertThat(hintCaptor.getValue()).hasSize(1);
+
+        // The binder inside the autofill hint matches the one provided by the service.
+        ContextHint triggeringHint = hintCaptor.getValue().stream().findFirst().get();
+        assertThat(triggeringHint).isInstanceOf(AutofillInlineRequestHint.class);
+        AutofillInlineRequestHint autofillHint = (AutofillInlineRequestHint) triggeringHint;
+        assertThat(autofillHint.getAugmentedAutofillProxy().asBinder())
+                .isEqualTo(augmentedAutofillBinder);
+
+        // Verify other data matches the request to onRequestAutofillLocked.
+        assertThat(autofillHint.getSessionId()).isEqualTo(sessionId);
+        assertThat(autofillHint.getTaskId()).isEqualTo(taskId);
+        assertThat(autofillHint.getActivityComponent()).isEqualTo(ACTIVITY_COMPONENT_NAME);
+        assertThat(autofillHint.getFocusedId()).isEqualTo(focusedId);
+        assertThat(autofillHint.getAutofillValue()).isEqualTo(AUTOFILL_VALUE);
+        assertThat(autofillHint.getInlineSuggestionsRequest()).isEqualTo(inlineSuggestionsRequest);
     }
 
     private IFillCallback triggerAugmentedAutofillRequest(
@@ -540,7 +609,11 @@ public class RemoteAugmentedAutofillServiceTest {
                 ArgumentCaptor.forClass(IResultReceiver.Stub.class);
         verify(mClient).getAugmentedAutofillClient(resultReceiverCaptor.capture());
 
-        resultReceiverCaptor.getValue().send(0, new Bundle());
+        Bundle resultData = new Bundle();
+        resultData.putBinder(AutofillManager.EXTRA_AUGMENTED_AUTOFILL_CLIENT, new Binder());
+        resultReceiverCaptor.getValue().send(0, resultData);
+
+        mTestExecutor.runAll();
 
         ArgumentCaptor<IFillCallback> callbackCaptor = ArgumentCaptor.forClass(IFillCallback.class);
         verify(mAugmentedService)
@@ -569,10 +642,12 @@ public class RemoteAugmentedAutofillServiceTest {
                         .setField(focusedId, new Field.Builder().setValue(AUTOFILL_VALUE).build())
                         .build());
         callback.onSuccess(datasets, null, showingFillWindow);
+        mTestExecutor.runAll();
     }
 
     private void sendEmptyAutofillResponse(IFillCallback callback) throws RemoteException {
         callback.onSuccess(null, null, false);
+        mTestExecutor.runAll();
     }
 
     private void sendPersonalContextResponse(int sessionId, AutofillId focusedId) {
@@ -585,17 +660,21 @@ public class RemoteAugmentedAutofillServiceTest {
                         .setField(focusedId, new Field.Builder().setValue(AUTOFILL_VALUE).build())
                         .build());
         mService.notifySystemInlineSuggestions(sessionId, datasets2);
+        mTestExecutor.runAll();
     }
 
     private void timeoutFutures() {
-        if (mAutofillResponseFutures.stream().allMatch(CompletableFuture::isDone)) {
-            throw new IllegalStateException("no futures to timeout");
-        }
-        for (CompletableFuture future : mAutofillResponseFutures) {
+        boolean timedOutAny = false;
+        for (CompletableFuture<?> future : mAutofillResponseFutures) {
             if (!future.isDone()) {
                 future.completeExceptionally(new TimeoutException("timing out for test"));
+                timedOutAny = true;
             }
         }
+        if (!timedOutAny) {
+            throw new IllegalStateException("no futures to timeout");
+        }
+        mTestExecutor.runAll();
     }
 
     /**
@@ -616,5 +695,29 @@ public class RemoteAugmentedAutofillServiceTest {
                         .getInfo()
                         .getInlinePresentationSpec();
         assertThat(resultSpec).isEqualTo(expected);
+    }
+
+    /** Helper class for using {@link Executor} in tests. */
+    public static class FakeExecutor implements Executor {
+        private final Queue<Runnable> mQueue = new ArrayDeque<>();
+
+        @Override
+        public void execute(Runnable command) {
+            mQueue.add(command);
+        }
+
+        /** Runs all pending {@link Runnable}s */
+        public void runAll() {
+            while (!mQueue.isEmpty()) {
+                mQueue.remove().run();
+            }
+        }
+
+        /** Removes all queued {@link Runnable}s */
+        public void clearAll() {
+            while (!mQueue.isEmpty()) {
+                mQueue.remove();
+            }
+        }
     }
 }
