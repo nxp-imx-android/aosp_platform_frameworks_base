@@ -33,6 +33,7 @@ import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_AUTO_TIME_ZONE;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_EASTER_EGGS;
+import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING_LOCKSCREEN_MESSAGE;
 import static android.processor.devicepolicy.AllowedDpcTypes.ALLOWED;
 import static android.processor.devicepolicy.AllowedDpcTypes.DISALLOWED;
 
@@ -310,7 +311,7 @@ public final class PolicyIdentifier<T> {
      * DeviceAdminReceiver} to listen to the {@link Intent#ACTION_LOCALE_CHANGED} broadcast and set
      * a new version of this string accordingly.
      */
-    @FlaggedApi(FLAG_POLICY_STREAMLINING)
+    @FlaggedApi(FLAG_POLICY_STREAMLINING_LOCKSCREEN_MESSAGE)
     @NonNull
     @StringPolicyDefinition(
             base =

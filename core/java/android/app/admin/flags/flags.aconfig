@@ -691,6 +691,14 @@ flag {
 }
 
 flag {
+  name: "policy_streamlining_lockscreen_message"
+  namespace: "enterprise"
+  description: "Implement setDeviceOwnerLockScreenInfo as a generic setPolicy API"
+  bug: "491048428"
+  is_exported: true
+}
+
+flag {
   name: "policy_streamlining_keyguard_status"
   namespace: "enterprise"
   description: "Redirect setKeyguardDisabled to the generic setPolicy APIs"
