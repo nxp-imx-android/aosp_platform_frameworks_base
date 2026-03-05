@@ -319,6 +319,7 @@ android.os.ParcelFormatException
 android.os.ParcelUuid
 android.os.Parcelable
 android.os.PatternMatcher
+android.os.PerfettoCategories
 android.os.PerfettoTrace
 android.os.PerfettoTrackEventExtra
 android.os.PermissionEnforcer

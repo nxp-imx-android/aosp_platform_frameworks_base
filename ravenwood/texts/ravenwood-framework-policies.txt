@@ -178,7 +178,7 @@ class com.android.internal.dev.perfetto.sdk.PerfettoTrace keepclass
     method native_register ignore
     method native_start_session ignore
     method native_stop_session @native_stop_session$ravenwood
-class com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
+class com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category keepclass
     method native_init ignore
     method native_delete ignore
     method native_register ignore
