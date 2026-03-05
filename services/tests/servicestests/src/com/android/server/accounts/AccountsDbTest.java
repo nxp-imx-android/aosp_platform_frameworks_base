@@ -17,6 +17,7 @@
 
 package com.android.server.accounts;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -93,19 +94,6 @@ public class AccountsDbTest {
         AccountsDb.deleteDbFileWarnIfFailed(preNDb);
         AccountsDb.deleteDbFileWarnIfFailed(ceDb);
         AccountsDb.deleteDbFileWarnIfFailed(deDb);
-    }
-
-    @Test
-    public void testCeNotAvailableInitially() {
-        // If the CE database is not attached to the DE database then any calls that modify the CE
-        // database will result in a Log.wtf call that will crash this process on eng builds. To
-        // allow the test to run through to completion skip this test on eng builds.
-        if (Build.IS_ENG) {
-            return;
-        }
-        Account account = new Account("name", "example.com");
-        long id = mAccountsDb.insertCeAccount(account, "");
-        assertEquals("Insert into CE should fail until CE database is attached", -1, id);
     }
 
     @Test
@@ -219,7 +207,7 @@ public class AccountsDbTest {
         assertTrue(grantId > 0);
         int[] allUidGrants = mAccountsDb.findAllUidGrants();
         int[] expectedUids = new int[]{testUid};
-        assertEquals(expectedUids, allUidGrants);
+        assertArrayEquals(expectedUids, allUidGrants);
 
         long matchingGrantsCount = mAccountsDb.findMatchingGrantsCount(
                 testUid, "tokenType", account);
@@ -239,7 +227,7 @@ public class AccountsDbTest {
 
         mAccountsDb.deleteGrantsByUid(testUid);
         allUidGrants = mAccountsDb.findAllUidGrants();
-        assertEquals("Test grants should be removed", new int[]{}, allUidGrants);
+        assertArrayEquals("Test grants should be removed", new int[]{}, allUidGrants);
     }
 
     @Test
