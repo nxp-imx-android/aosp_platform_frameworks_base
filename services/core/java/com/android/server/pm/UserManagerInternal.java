@@ -663,8 +663,8 @@ public abstract class UserManagerInternal {
     public abstract void logActivityLaunchStatus(ComponentName activity, @UserIdInt int userId,
             @AllowlistStatus int status);
 
-    /** Logs the status of trying to show a notification in the given user.*/
-    public abstract void logNotificationShownStatus(StatusBarNotification sbn,
+    /** Logs the status of trying to post a notification in the given user.*/
+    public abstract void logNotificationPostStatus(StatusBarNotification sbn,
             @UserIdInt int userId, @AllowlistStatus int status);
 
     /**
