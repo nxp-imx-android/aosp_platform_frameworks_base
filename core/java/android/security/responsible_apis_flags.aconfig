@@ -28,6 +28,13 @@ flag {
 }
 
 flag {
+    name: "aapm_feature_disable_insecure_wifi_autojoin_v2"
+    namespace: "responsible_apis"
+    description: "Android Advanced Protection Mode Feature: Disable Insecure Wifi Autojoin V2"
+    bug: "424512082"
+}
+
+flag {
     name: "aapm_feature_usb_data_protection"
     namespace: "preload_safety"
     description: "Android Advanced Protection Mode Feature: Usb Data Protection"
