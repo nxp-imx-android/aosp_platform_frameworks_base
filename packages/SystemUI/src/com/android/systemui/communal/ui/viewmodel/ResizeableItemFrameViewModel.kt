@@ -33,6 +33,7 @@ import dagger.assisted.AssistedInject
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.roundToInt
 import kotlin.math.sign
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
@@ -131,10 +132,13 @@ constructor(
         fun getPxOffsetForResize(spans: Int): Int =
             (spans * (heightPerSpanPx + verticalItemSpacingPx)).toInt()
 
-        private fun getSpansForPx(height: Int): Int =
-            ceil((height + verticalItemSpacingPx) / (heightPerSpanPx + verticalItemSpacingPx))
-                .toInt()
-                .coerceIn(resizeMultiple, totalSpans)
+        private fun getSpansForPx(height: Int): Int {
+            val spanHeightInt = heightPerSpanPx.roundToInt()
+            val spacingInt = verticalItemSpacingPx.roundToInt()
+            val exactSpans =
+                (height + spacingInt).toFloat() / (spanHeightInt + spacingInt).toFloat()
+            return ceil(exactSpans).toInt().coerceIn(resizeMultiple, totalSpans)
+        }
 
         private fun roundDownToMultiple(spans: Int): Int =
             floor(spans.toDouble() / resizeMultiple).toInt() * resizeMultiple

@@ -620,6 +620,28 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun testMinHeightRounding_absorbsSubPixelDiscrepancy() =
+        testScope.runTest {
+            // Replicates the scenario on Rango devices where 651px min height is slightly larger
+            // than the 650.5px height per span, which previously caused rounding up to 2 spans.
+            // With the rounding fix, it should round down to 1 span.
+            val grid =
+                singleSpanGrid.copy(
+                    viewportHeightPx = 1301,
+                    verticalContentPaddingPx = 0f,
+                    verticalItemSpacingPx = 0f,
+                    totalSpans = 2,
+                    minHeightPx = 651,
+                    currentSpan = 2,
+                )
+            updateGridLayout(grid)
+
+            // If rounding works correctly (1 span min), we should be able to shrink.
+            // If it fails (2 span min), we would be stuck at min size and unable to shrink.
+            assertThat(underTest.canShrink()).isTrue()
+        }
+
+    @Test
     @EnableFlags(FLAG_COMMUNAL_ACCESSIBILITY_RESIZE)
     fun toggleAccessibilityResizeHandle_togglesState() {
         assertThat(underTest.visibleAccessibilityResizeHandle.value).isNull()
@@ -657,8 +679,6 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
         assertThat(uiEventLogger.logs[1].packageName).isEqualTo(componentName.packageName)
     }
 
-
-
     @Test
     @OptIn(ExperimentalCoroutinesApi::class)
     @EnableFlags(FLAG_COMMUNAL_ACCESSIBILITY_RESIZE)
@@ -667,7 +687,8 @@ class ResizeableItemFrameViewModelTest : SysuiTestCase() {
             // Set up some state
             underTest.toggleAccessibilityResizeHandle(ResizeHandle.BOTTOM)
 
-            // Simulate drag state (cannot easily simulate drag without anchors, but we can verify it calls snapTo(0))
+            // Simulate drag state (cannot easily simulate drag without anchors, but we can verify
+            // it calls snapTo(0))
             // Actually, we can update anchors and drag to simulate non-zero state.
             updateGridLayout(singleSpanGrid.copy(totalSpans = 2))
             underTest.bottomDragState.anchoredDrag { dragTo(45f) }
