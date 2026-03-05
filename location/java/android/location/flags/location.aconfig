@@ -216,3 +216,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "gnss_restart_location_request_on_resume"
+    namespace: "location"
+    description: "Restart GNSS provider on resume to synchronize stale intervals."
+    bug: "475877334"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
