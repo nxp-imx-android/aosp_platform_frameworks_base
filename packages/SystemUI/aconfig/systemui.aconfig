@@ -1328,6 +1328,13 @@ flag {
 }
 
 flag {
+    name: "qs_layout_mode"
+    namespace: "systemui"
+    description: "Adds a layout page to QS Edit mode to reorder QS Components"
+    bug: "485262315"
+}
+
+flag {
    name: "qs_new_tiles"
    namespace: "systemui"
    description: "Use the new tiles in the Quick Settings. Should have no behavior changes."
