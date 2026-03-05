@@ -43,6 +43,7 @@ import android.bluetooth.BluetoothStatusCodes;
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.AudioManager;
+import android.os.ParcelUuid;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -83,6 +84,8 @@ public class CachedBluetoothDeviceTest {
     private static final String DEVICE_ADDRESS = "AA:BB:CC:DD:EE:FF";
     private static final String DEVICE_ALIAS_NEW = "TestAliasNew";
     private static final String TWS_BATTERY_LEFT = "15";
+    private static final ParcelUuid ANDROID_AUTO_UUID =
+            ParcelUuid.fromString("4de17a00-52cb-11e6-bdf4-0800200c9a66");
     private static final String TWS_BATTERY_RIGHT = "25";
     private static final String TWS_BATTERY_CASE = "10";
     private static final String TWS_LOW_BATTERY_THRESHOLD_LOW = "10";
@@ -3058,6 +3061,57 @@ public class CachedBluetoothDeviceTest {
                 BluetoothDevice.BOND_BONDED, BluetoothDevice.BOND_BONDING);
 
         assertThat(mCachedDevice.getBondFailureTimeMillis()).isEqualTo(-1);
+    }
+
+    @Test
+    public void isAndroidAuto_withUuid_returnsTrue() {
+        ParcelUuid[] uuids = {ANDROID_AUTO_UUID};
+        when(mDevice.getUuids()).thenReturn(uuids);
+
+        assertThat(mCachedDevice.isAndroidAuto()).isTrue();
+        verify(mUiModeManager, never()).getActiveProjectionTypes();
+    }
+
+    @Test
+    public void isAndroidAuto_withAutomotiveProjection_returnsTrue() {
+        when(mDevice.getUuids()).thenReturn(new ParcelUuid[0]);
+        when(mUiModeManager.getActiveProjectionTypes())
+                .thenReturn(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE);
+
+        assertThat(mCachedDevice.isAndroidAuto()).isTrue();
+    }
+
+    @Test
+    public void isAndroidAuto_noUuidAndNoProjection_returnsFalse() {
+        when(mDevice.getUuids()).thenReturn(new ParcelUuid[0]);
+        when(mUiModeManager.getActiveProjectionTypes())
+                .thenReturn(UiModeManager.PROJECTION_TYPE_NONE);
+
+        assertThat(mCachedDevice.isAndroidAuto()).isFalse();
+    }
+
+    @Test
+    public void isAndroidAuto_getUuidsThrowsException_fallsBackToProjectionCheck() {
+        when(mDevice.getUuids()).thenThrow(new RuntimeException("Test Exception"));
+        when(mUiModeManager.getActiveProjectionTypes())
+                .thenReturn(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE);
+
+        assertThat(mCachedDevice.isAndroidAuto()).isTrue();
+
+
+        when(mUiModeManager.getActiveProjectionTypes())
+                .thenReturn(UiModeManager.PROJECTION_TYPE_NONE);
+
+        assertThat(mCachedDevice.isAndroidAuto()).isFalse();
+    }
+
+    @Test
+    public void isAndroidAuto_nullUuids_fallsBackToProjectionCheck() {
+        when(mDevice.getUuids()).thenReturn(null);
+        when(mUiModeManager.getActiveProjectionTypes())
+                .thenReturn(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE);
+
+        assertThat(mCachedDevice.isAndroidAuto()).isTrue();
     }
 
     private void updateProfileStatus(LocalBluetoothProfile profile, int status) {
