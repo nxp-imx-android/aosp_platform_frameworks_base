@@ -722,3 +722,13 @@ flag {
   description: "Policy streamlining for the SCREEN_CAPTURE API."
   bug: "434919316"
 }
+
+flag {
+  name: "wipe_device_when_wiped_user_is_last_admin"
+  namespace: "enterprise"
+  description: "Wipe the device instead of the user when the latter is the last admin in the device."
+  bug: "480237028"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
