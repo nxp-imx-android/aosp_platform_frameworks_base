@@ -22,8 +22,6 @@ import android.content.Context;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.server.SystemService;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,10 +36,8 @@ public class MultisensoryServiceTest {
     @Before
     public void setUp() {
         Context testContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        MultisensoryService.Lifecycle lifecycle = new MultisensoryService.Lifecycle(testContext);
-        lifecycle.onStart();
-        lifecycle.onBootPhase(SystemService.PHASE_DEVICE_SPECIFIC_SERVICES_READY);
-        mUnderTest = lifecycle.getService();
+        mUnderTest = new MultisensoryService(testContext);
+        mUnderTest.initialize();
     }
 
     @Test

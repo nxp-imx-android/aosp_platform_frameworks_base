@@ -60,6 +60,7 @@ public class MultisensoryService extends IMultisensoryService.Stub {
         @Override
         public void onStart() {
             mService = new MultisensoryService(getContext());
+            publishBinderService(Context.MULTISENSORY_MANAGER_SERVICE, mService);
         }
 
         @VisibleForTesting
@@ -78,11 +79,12 @@ public class MultisensoryService extends IMultisensoryService.Stub {
     private final Context mContext;
     private MultisensoryServiceScope mServiceScope;
 
-    private MultisensoryService(Context context) {
+    MultisensoryService(Context context) {
         mContext = context;
     }
 
-    private void initialize() {
+    @VisibleForTesting
+    void initialize() {
         Trace.traceBegin(TRACE_TAG_VIBRATOR, "MultisensoryService#initialize");
         try {
             VibratorManager vibratorManager = mContext.getSystemService(VibratorManager.class);

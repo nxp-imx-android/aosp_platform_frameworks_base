@@ -11973,6 +11973,7 @@ package android.content {
     field public static final int MODE_PRIVATE = 0; // 0x0
     field @Deprecated public static final int MODE_WORLD_READABLE = 1; // 0x1
     field @Deprecated public static final int MODE_WORLD_WRITEABLE = 2; // 0x2
+    field @FlaggedApi("android.os.multisensory.enable_multisensory_feedback") public static final String MULTISENSORY_MANAGER_SERVICE = "multisensory_manager";
     field public static final String NETWORK_STATS_SERVICE = "netstats";
     field public static final String NFC_SERVICE = "nfc";
     field public static final String NOTIFICATION_SERVICE = "notification";
@@ -36875,6 +36876,34 @@ package android.os.multisensory {
     field @NonNull public static final android.os.Parcelable.Creator<android.os.multisensory.MultisensoryContinuousEffectModifier> CREATOR;
     field public static final int TARGET_PARAMETER_INTENSITY = 0; // 0x0
     field public static final int TARGET_PARAMETER_SHARPNESS = 1; // 0x1
+  }
+
+  @FlaggedApi("android.os.multisensory.enable_multisensory_feedback") public class MultisensoryManager {
+    method @NonNull public static int[] getMultisensoryTokens();
+    method public void playToken(int);
+    field public static final int TOKEN_CANCEL = 6; // 0x6
+    field public static final int TOKEN_DRAG_INDICATOR_CONTINUOUS = 17; // 0x11
+    field public static final int TOKEN_DRAG_INDICATOR_DISCRETE = 18; // 0x12
+    field public static final int TOKEN_DRAG_INDICATOR_THRESHOLD_LIMIT = 16; // 0x10
+    field public static final int TOKEN_FAILURE = 1; // 0x1
+    field public static final int TOKEN_FAILURE_HIGH_EMPHASIS = 0; // 0x0
+    field public static final int TOKEN_KEYPRESS_DELETE = 22; // 0x16
+    field public static final int TOKEN_KEYPRESS_RETURN = 21; // 0x15
+    field public static final int TOKEN_KEYPRESS_SPACEBAR = 20; // 0x14
+    field public static final int TOKEN_KEYPRESS_STANDARD = 19; // 0x13
+    field public static final int TOKEN_LOCK = 10; // 0xa
+    field public static final int TOKEN_LONG_PRESS = 11; // 0xb
+    field public static final int TOKEN_PAUSE = 4; // 0x4
+    field public static final int TOKEN_START = 3; // 0x3
+    field public static final int TOKEN_STOP = 5; // 0x5
+    field public static final int TOKEN_SUCCESS = 2; // 0x2
+    field public static final int TOKEN_SWIPE_INDICATOR_THRESHOLD_LIMIT = 12; // 0xc
+    field public static final int TOKEN_SWITCH_OFF = 8; // 0x8
+    field public static final int TOKEN_SWITCH_ON = 7; // 0x7
+    field public static final int TOKEN_TAP_HIGH_EMPHASIS = 13; // 0xd
+    field public static final int TOKEN_TAP_LOW_EMPHASIS = 15; // 0xf
+    field public static final int TOKEN_TAP_MEDIUM_EMPHASIS = 14; // 0xe
+    field public static final int TOKEN_UNLOCK = 9; // 0x9
   }
 
   @FlaggedApi("android.os.multisensory.enable_multisensory_feedback") public final class MultisensoryToken {

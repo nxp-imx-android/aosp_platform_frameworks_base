@@ -4554,6 +4554,7 @@ public abstract class Context {
                 STORAGE_STATS_SERVICE,
                 WALLPAPER_SERVICE,
                 VIBRATOR_MANAGER_SERVICE,
+                MULTISENSORY_MANAGER_SERVICE,
                 VIBRATOR_SERVICE,
                 // @hide: STATUS_BAR_SERVICE,
                 THREAD_NETWORK_SERVICE,
@@ -4689,116 +4690,111 @@ public abstract class Context {
     public @interface ServiceName {}
 
     /**
-     * Return the handle to a system-level service by name. The class of the
-     * returned object varies by the requested name. Currently available names
-     * are:
+     * Return the handle to a system-level service by name. The class of the returned object varies
+     * by the requested name. Currently available names are:
      *
      * <dl>
-     *  <dt> {@link #WINDOW_SERVICE} ("window")
-     *  <dd> The top-level window manager in which you can place custom
-     *  windows.  The returned object is a {@link android.view.WindowManager}. Must only be obtained
-     *  from a visual context such as Activity or a Context created with
-     *  {@link #createWindowContext(int, Bundle)}, which are adjusted to the configuration and
-     *  visual bounds of an area on screen.
-     *  <dt> {@link #LAYOUT_INFLATER_SERVICE} ("layout_inflater")
-     *  <dd> A {@link android.view.LayoutInflater} for inflating layout resources
-     *  in this context. Must only be obtained from a visual context such as Activity or a Context
-     *  created with {@link #createWindowContext(int, Bundle)}, which are adjusted to the
-     *  configuration and visual bounds of an area on screen.
-     *  <dt> {@link #ACTIVITY_SERVICE} ("activity")
-     *  <dd> A {@link android.app.ActivityManager} for interacting with the
-     *  global activity state of the system.
-     *  <dt> {@link #WALLPAPER_SERVICE} ("wallpaper")
-     *  <dd> A {@link android.service.wallpaper.WallpaperService} for accessing wallpapers in this
-     *  context. Must only be obtained from a visual context such as Activity or a Context created
-     *  with {@link #createWindowContext(int, Bundle)}, which are adjusted to the configuration and
-     *  visual bounds of an area on screen.
-     *  <dt> {@link #POWER_SERVICE} ("power")
-     *  <dd> A {@link android.os.PowerManager} for controlling power
-     *  management.
-     *  <dt> {@link #ALARM_SERVICE} ("alarm")
-     *  <dd> A {@link android.app.AlarmManager} for receiving intents at the
-     *  time of your choosing.
-     *  <dt> {@link #NOTIFICATION_SERVICE} ("notification")
-     *  <dd> A {@link android.app.NotificationManager} for informing the user
-     *   of background events.
-     *  <dt> {@link #KEYGUARD_SERVICE} ("keyguard")
-     *  <dd> A {@link android.app.KeyguardManager} for controlling keyguard.
-     *  <dt> {@link #LOCATION_SERVICE} ("location")
-     *  <dd> A {@link android.location.LocationManager} for controlling location
-     *   (e.g., GPS) updates.
-     *  <dt> {@link #SEARCH_SERVICE} ("search")
-     *  <dd> A {@link android.app.SearchManager} for handling search.
-     *  <dt> {@link #VIBRATOR_MANAGER_SERVICE} ("vibrator_manager")
-     *  <dd> A {@link android.os.VibratorManager} for accessing the device vibrators, interacting
-     *  with individual ones and playing synchronized effects on multiple vibrators.
-     *  <dt> {@link #VIBRATOR_SERVICE} ("vibrator")
-     *  <dd> A {@link android.os.Vibrator} for interacting with the vibrator hardware.
-     *  <dt> {@link #CONNECTIVITY_SERVICE} ("connectivity")
-     *  <dd> A {@link android.net.ConnectivityManager ConnectivityManager} for
-     *  handling management of network connections.
-     *  <dt> {@link #IPSEC_SERVICE} ("ipsec")
-     *  <dd> A {@link android.net.IpSecManager IpSecManager} for managing IPSec on
-     *  sockets and networks.
-     *  <dt> {@link #WIFI_SERVICE} ("wifi")
-     *  <dd> A {@link android.net.wifi.WifiManager WifiManager} for management of Wi-Fi
-     *  connectivity.  On releases before Android 7, it should only be obtained from an application
-     *  context, and not from any other derived context to avoid memory leaks within the calling
-     *  process.
-     *  <dt> {@link #WIFI_AWARE_SERVICE} ("wifiaware")
-     *  <dd> A {@link android.net.wifi.aware.WifiAwareManager WifiAwareManager} for management of
-     * Wi-Fi Aware discovery and connectivity.
-     *  <dt> {@link #WIFI_P2P_SERVICE} ("wifip2p")
-     *  <dd> A {@link android.net.wifi.p2p.WifiP2pManager WifiP2pManager} for management of
-     * Wi-Fi Direct connectivity.
-     * <dt> {@link #INPUT_METHOD_SERVICE} ("input_method")
-     * <dd> An {@link android.view.inputmethod.InputMethodManager InputMethodManager}
-     * for management of input methods.
-     * <dt> {@link #UI_MODE_SERVICE} ("uimode")
-     * <dd> An {@link android.app.UiModeManager} for controlling UI modes.
-     * <dt> {@link #DOWNLOAD_SERVICE} ("download")
-     * <dd> A {@link android.app.DownloadManager} for requesting HTTP downloads
-     * <dt> {@link #BATTERY_SERVICE} ("batterymanager")
-     * <dd> A {@link android.os.BatteryManager} for managing battery state
-     * <dt> {@link #JOB_SCHEDULER_SERVICE} ("taskmanager")
-     * <dd>  A {@link android.app.job.JobScheduler} for managing scheduled tasks
-     * <dt> {@link #NETWORK_STATS_SERVICE} ("netstats")
-     * <dd> A {@link android.app.usage.NetworkStatsManager NetworkStatsManager} for querying network
-     * usage statistics.
-     * <dt> {@link #HARDWARE_PROPERTIES_SERVICE} ("hardware_properties")
-     * <dd> A {@link android.os.HardwarePropertiesManager} for accessing hardware properties.
-     * <dt> {@link #DOMAIN_VERIFICATION_SERVICE} ("domain_verification")
-     * <dd> A {@link android.content.pm.verify.domain.DomainVerificationManager} for accessing
-     * web domain approval state.
-     * <dt> {@link #DISPLAY_HASH_SERVICE} ("display_hash")
-     * <dd> A {@link android.view.displayhash.DisplayHashManager} for management of display hashes.
-     * <dt> {@link #AUTHENTICATION_POLICY_SERVICE} ("authentication_policy")
-     * <dd> A {@link android.security.authenticationpolicy.AuthenticationPolicyManager}
-     * for managing authentication related policies on the device.
+     *   <dt>{@link #WINDOW_SERVICE} ("window")
+     *   <dd>The top-level window manager in which you can place custom windows. The returned object
+     *       is a {@link android.view.WindowManager}. Must only be obtained from a visual context
+     *       such as Activity or a Context created with {@link #createWindowContext(int, Bundle)},
+     *       which are adjusted to the configuration and visual bounds of an area on screen.
+     *   <dt>{@link #LAYOUT_INFLATER_SERVICE} ("layout_inflater")
+     *   <dd>A {@link android.view.LayoutInflater} for inflating layout resources in this context.
+     *       Must only be obtained from a visual context such as Activity or a Context created with
+     *       {@link #createWindowContext(int, Bundle)}, which are adjusted to the configuration and
+     *       visual bounds of an area on screen.
+     *   <dt>{@link #ACTIVITY_SERVICE} ("activity")
+     *   <dd>A {@link android.app.ActivityManager} for interacting with the global activity state of
+     *       the system.
+     *   <dt>{@link #WALLPAPER_SERVICE} ("wallpaper")
+     *   <dd>A {@link android.service.wallpaper.WallpaperService} for accessing wallpapers in this
+     *       context. Must only be obtained from a visual context such as Activity or a Context
+     *       created with {@link #createWindowContext(int, Bundle)}, which are adjusted to the
+     *       configuration and visual bounds of an area on screen.
+     *   <dt>{@link #POWER_SERVICE} ("power")
+     *   <dd>A {@link android.os.PowerManager} for controlling power management.
+     *   <dt>{@link #ALARM_SERVICE} ("alarm")
+     *   <dd>A {@link android.app.AlarmManager} for receiving intents at the time of your choosing.
+     *   <dt>{@link #NOTIFICATION_SERVICE} ("notification")
+     *   <dd>A {@link android.app.NotificationManager} for informing the user of background events.
+     *   <dt>{@link #KEYGUARD_SERVICE} ("keyguard")
+     *   <dd>A {@link android.app.KeyguardManager} for controlling keyguard.
+     *   <dt>{@link #LOCATION_SERVICE} ("location")
+     *   <dd>A {@link android.location.LocationManager} for controlling location (e.g., GPS)
+     *       updates.
+     *   <dt>{@link #SEARCH_SERVICE} ("search")
+     *   <dd>A {@link android.app.SearchManager} for handling search.
+     *   <dt>{@link #VIBRATOR_MANAGER_SERVICE} ("vibrator_manager")
+     *   <dd>A {@link android.os.VibratorManager} for accessing the device vibrators, interacting
+     *       with individual ones and playing synchronized effects on multiple vibrators.
+     *   <dt>{@link #MULTISENSORY_MANAGER_SERVICE} ("multisensory_manager")
+     *   <dd>A {@link android.os.multisensory.MultisensoryManager} for delivering audio-haptic
+     *       feedback in the Multisensory Design System
+     *   <dt>{@link #VIBRATOR_SERVICE} ("vibrator")
+     *   <dd>A {@link android.os.Vibrator} for interacting with the vibrator hardware.
+     *   <dt>{@link #CONNECTIVITY_SERVICE} ("connectivity")
+     *   <dd>A {@link android.net.ConnectivityManager ConnectivityManager} for handling management
+     *       of network connections.
+     *   <dt>{@link #IPSEC_SERVICE} ("ipsec")
+     *   <dd>A {@link android.net.IpSecManager IpSecManager} for managing IPSec on sockets and
+     *       networks.
+     *   <dt>{@link #WIFI_SERVICE} ("wifi")
+     *   <dd>A {@link android.net.wifi.WifiManager WifiManager} for management of Wi-Fi
+     *       connectivity. On releases before Android 7, it should only be obtained from an
+     *       application context, and not from any other derived context to avoid memory leaks
+     *       within the calling process.
+     *   <dt>{@link #WIFI_AWARE_SERVICE} ("wifiaware")
+     *   <dd>A {@link android.net.wifi.aware.WifiAwareManager WifiAwareManager} for management of
+     *       Wi-Fi Aware discovery and connectivity.
+     *   <dt>{@link #WIFI_P2P_SERVICE} ("wifip2p")
+     *   <dd>A {@link android.net.wifi.p2p.WifiP2pManager WifiP2pManager} for management of Wi-Fi
+     *       Direct connectivity.
+     *   <dt>{@link #INPUT_METHOD_SERVICE} ("input_method")
+     *   <dd>An {@link android.view.inputmethod.InputMethodManager InputMethodManager} for
+     *       management of input methods.
+     *   <dt>{@link #UI_MODE_SERVICE} ("uimode")
+     *   <dd>An {@link android.app.UiModeManager} for controlling UI modes.
+     *   <dt>{@link #DOWNLOAD_SERVICE} ("download")
+     *   <dd>A {@link android.app.DownloadManager} for requesting HTTP downloads
+     *   <dt>{@link #BATTERY_SERVICE} ("batterymanager")
+     *   <dd>A {@link android.os.BatteryManager} for managing battery state
+     *   <dt>{@link #JOB_SCHEDULER_SERVICE} ("taskmanager")
+     *   <dd>A {@link android.app.job.JobScheduler} for managing scheduled tasks
+     *   <dt>{@link #NETWORK_STATS_SERVICE} ("netstats")
+     *   <dd>A {@link android.app.usage.NetworkStatsManager NetworkStatsManager} for querying
+     *       network usage statistics.
+     *   <dt>{@link #HARDWARE_PROPERTIES_SERVICE} ("hardware_properties")
+     *   <dd>A {@link android.os.HardwarePropertiesManager} for accessing hardware properties.
+     *   <dt>{@link #DOMAIN_VERIFICATION_SERVICE} ("domain_verification")
+     *   <dd>A {@link android.content.pm.verify.domain.DomainVerificationManager} for accessing web
+     *       domain approval state.
+     *   <dt>{@link #DISPLAY_HASH_SERVICE} ("display_hash")
+     *   <dd>A {@link android.view.displayhash.DisplayHashManager} for management of display hashes.
+     *   <dt>{@link #AUTHENTICATION_POLICY_SERVICE} ("authentication_policy")
+     *   <dd>A {@link android.security.authenticationpolicy.AuthenticationPolicyManager} for
+     *       managing authentication related policies on the device.
      * </dl>
      *
-     * <p>Note:  System services obtained via this API may be closely associated with
-     * the Context in which they are obtained from.  In general, do not share the
-     * service objects between various different contexts (Activities, Applications,
-     * Services, Providers, etc.)
+     * <p>Note: System services obtained via this API may be closely associated with the Context in
+     * which they are obtained from. In general, do not share the service objects between various
+     * different contexts (Activities, Applications, Services, Providers, etc.)
      *
-     * <p>Note: Instant apps, for which {@link PackageManager#isInstantApp()} returns true,
-     * don't have access to the following system services: {@link #DEVICE_POLICY_SERVICE},
-     * {@link #FINGERPRINT_SERVICE}, {@link #KEYGUARD_SERVICE}, {@link #SHORTCUT_SERVICE},
-     * {@link #USB_SERVICE}, {@link #WALLPAPER_SERVICE}, {@link #WIFI_P2P_SERVICE},
-     * {@link #WIFI_SERVICE}, {@link #WIFI_AWARE_SERVICE}. For these services this method will
-     * return <code>null</code>.  Generally, if you are running as an instant app you should always
-     * check whether the result of this method is {@code null}.
+     * <p>Note: Instant apps, for which {@link PackageManager#isInstantApp()} returns true, don't
+     * have access to the following system services: {@link #DEVICE_POLICY_SERVICE}, {@link
+     * #FINGERPRINT_SERVICE}, {@link #KEYGUARD_SERVICE}, {@link #SHORTCUT_SERVICE}, {@link
+     * #USB_SERVICE}, {@link #WALLPAPER_SERVICE}, {@link #WIFI_P2P_SERVICE}, {@link #WIFI_SERVICE},
+     * {@link #WIFI_AWARE_SERVICE}. For these services this method will return <code>null</code>.
+     * Generally, if you are running as an instant app you should always check whether the result of
+     * this method is {@code null}.
      *
      * <p>Note: When implementing this method, keep in mind that new services can be added on newer
      * Android releases, so if you're looking for just the explicit names mentioned above, make sure
-     * to return {@code null} when you don't recognize the name &mdash; if you throw a
-     * {@link RuntimeException} exception instead, your app might break on new Android releases.
+     * to return {@code null} when you don't recognize the name &mdash; if you throw a {@link
+     * RuntimeException} exception instead, your app might break on new Android releases.
      *
      * @param name The name of the desired service.
-     *
      * @return The service or {@code null} if the name does not exist.
-     *
      * @see #WINDOW_SERVICE
      * @see android.view.WindowManager
      * @see #LAYOUT_INFLATER_SERVICE
@@ -4823,6 +4819,8 @@ public abstract class Context {
      * @see android.os.storage.StorageManager
      * @see #VIBRATOR_MANAGER_SERVICE
      * @see android.os.VibratorManager
+     * @see #MULTISENSORY_MANAGER_SERVICE
+     * @see android.os.multisensory.MultisensoryManager
      * @see #VIBRATOR_SERVICE
      * @see android.os.Vibrator
      * @see #CONNECTIVITY_SERVICE
@@ -5214,6 +5212,14 @@ public abstract class Context {
      */
     @SuppressLint("ServiceName")
     public static final String VIBRATOR_MANAGER_SERVICE = "vibrator_manager";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve the service that plays multisensory
+     * feedback.
+     */
+    @FlaggedApi(android.os.multisensory.Flags.FLAG_ENABLE_MULTISENSORY_FEEDBACK)
+    @SuppressLint("ServiceName")
+    public static final String MULTISENSORY_MANAGER_SERVICE = "multisensory_manager";
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a {@link android.os.Vibrator} for
