@@ -6573,6 +6573,7 @@
 
   <!-- PersonalContext TextClassifier configuration -->
   <java-symbol type="integer" name="config_textClassifierPersonalContextTimeoutMillis" />
+  <java-symbol type="integer" name="config_textClassifierPersonalContextMergeStrategy" />
 
   <!-- TV Watchdog configuration -->
   <java-symbol type="integer" name="config_tvWatchdogUidIoUsageSummaryTopCount" />

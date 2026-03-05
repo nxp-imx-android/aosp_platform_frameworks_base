@@ -27,6 +27,7 @@ import android.util.Log;
 import android.util.Slog;
 import android.view.textclassifier.TextClassification;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.LocalServices;
 import com.android.server.personalcontext.PersonalContextManagerInternal;
 
@@ -49,7 +50,7 @@ public class PersonalContextBridgeImpl extends PersonalContextBridge {
         PersonalContextManagerInternal pcmi =
                 LocalServices.getService(PersonalContextManagerInternal.class);
         if (pcmi == null) {
-            Log.w(TAG, "Did not find PersonalContextManagerInternal system service");
+            Slog.w(TAG, "Did not find PersonalContextManagerInternal system service");
             return;
         }
         pcmi.onTextClassifyRequest(userId, sessionId, request);
@@ -104,17 +105,11 @@ public class PersonalContextBridgeImpl extends PersonalContextBridge {
                     new OutcomeReceiver<>() {
                         @Override
                         public void onResult(TextClassification personalContextResult) {
-                            // TODO: b/461931986 - Make ordering of personal context result
-                            // configurable.
                             List<RemoteAction> mergedActions =
-                                    new ArrayList<>(personalContextResult.getActions());
-                            final List<RemoteAction> originalActions = originalResult.getActions();
-                            for (RemoteAction action : originalActions) {
-                                if (personalContextResult.getActions().contains(action)) {
-                                    continue;
-                                }
-                                mergedActions.add(action);
-                            }
+                                    mergeResults(
+                                            originalResult.getActions(),
+                                            personalContextResult.getActions(),
+                                            mConfig.mMergeStrategy());
                             try {
                                 TextClassifierService.putResponse(
                                         result,
@@ -126,6 +121,46 @@ public class PersonalContextBridgeImpl extends PersonalContextBridge {
                             } catch (RemoteException e) {
                                 Slog.e(TAG, "Failed to forward success callback.");
                             }
+                        }
+
+                        private static List<RemoteAction> mergeResults(
+                                List<RemoteAction> originalActions,
+                                List<RemoteAction> personalContextActions,
+                                @MergeStrategy int mergeStrategy) {
+                            List<RemoteAction> mergedActions = new ArrayList<>();
+                            switch (mergeStrategy) {
+                                case DEFAULT_PRIORITY:
+                                    mergedActions.addAll(originalActions);
+                                    mergedActions.addAll(
+                                            dedupeActions(originalActions, personalContextActions));
+                                    break;
+                                case PERSONAL_CONTEXT_PRIORITY:
+                                    mergedActions.addAll(personalContextActions);
+                                    mergedActions.addAll(
+                                            dedupeActions(personalContextActions, originalActions));
+                                    break;
+                                case PERSONAL_CONTEXT_OVERRIDE:
+                                    if (personalContextActions.isEmpty()) {
+                                        mergedActions.addAll(originalActions);
+                                    } else {
+                                        mergedActions.addAll(personalContextActions);
+                                    }
+                                    break;
+                            }
+                            return mergedActions;
+                        }
+
+                        private static List<RemoteAction> dedupeActions(
+                                List<RemoteAction> prioritizedActions,
+                                List<RemoteAction> actionsToDedupe) {
+                            List<RemoteAction> dedupedActions = new ArrayList<>();
+                            for (RemoteAction action : actionsToDedupe) {
+                                if (prioritizedActions.contains(action)) {
+                                    continue;
+                                }
+                                dedupedActions.add(action);
+                            }
+                            return dedupedActions;
                         }
 
                         @Override
@@ -147,5 +182,15 @@ public class PersonalContextBridgeImpl extends PersonalContextBridge {
         mReceiver =
                 new PersonalContextAsyncReceiver(
                         mScheduledExecutorService, mConfig.mTimeoutInMillis());
+        if (Log.isLoggable(TAG, Log.DEBUG)) {
+            Slog.d(TAG, "Initialized with config: " + mConfig);
+        }
+    }
+
+    @VisibleForTesting
+    PersonalContextBridgeImpl(
+            Config config, PersonalContextAsyncReceiver personalContextAsyncReceiver) {
+        mConfig = config;
+        mReceiver = personalContextAsyncReceiver;
     }
 }
