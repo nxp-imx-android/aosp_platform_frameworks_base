@@ -18,6 +18,7 @@ package com.android.wm.shell.windowdecor.common
 
 import android.app.WindowConfiguration
 import android.content.Intent
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableContext
@@ -138,6 +139,7 @@ class CaptionVisibilityHelperTests : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun shouldCreateCaption_taskRootOrStage_returnsFalse() {
         val task = createSplitScreenTask()
         whenever(mockSplitScreenController.isTaskRootOrStageRoot(task.taskId)).thenReturn(true)
@@ -213,6 +215,7 @@ class CaptionVisibilityHelperTests : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun shouldCreateCaption_isWallpaperTask_returnsFalse() {
         val task =
             createFullscreenTaskWithBaseActivity(DEFAULT_DISPLAY_ID).apply {
@@ -232,6 +235,7 @@ class CaptionVisibilityHelperTests : ShellTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
     fun shouldCreateCaption_isNonStandardActivity_returnsFalse() {
         val task =
             createFullscreenTaskWithBaseActivity(DEFAULT_DISPLAY_ID).apply {
