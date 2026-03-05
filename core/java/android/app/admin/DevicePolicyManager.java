@@ -58,6 +58,7 @@ import static android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIM
 import static android.app.admin.DeviceAdminInfo.HEADLESS_DEVICE_OWNER_MODE_UNSUPPORTED;
 import static android.app.admin.flags.Flags.FLAG_CROSS_PROFILE_WIDGET_PROVIDER_BULK_APIS;
 import static android.app.admin.flags.Flags.FLAG_DEVICE_THEFT_API_ENABLED;
+import static android.app.admin.flags.Flags.FLAG_ENABLE_NULLABLE_ADMIN_COMPONENT;
 import static android.app.admin.flags.Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING;
 import static android.app.admin.flags.Flags.FLAG_MULTI_USER_MANAGEMENT_USER_PROVISIONING;
 import static android.app.admin.flags.Flags.FLAG_POLICY_STREAMLINING;
@@ -65,7 +66,6 @@ import static android.app.admin.flags.Flags.FLAG_REMOVE_MANAGED_PROFILE_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_SECONDARY_LOCKSCREEN_API_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_SECURE_ADB_ROLE_BYPASSING;
 import static android.app.admin.flags.Flags.FLAG_SPLIT_CREATE_MANAGED_PROFILE_ENABLED;
-import static android.app.admin.flags.Flags.FLAG_ENABLE_NULLABLE_ADMIN_COMPONENT;
 import static android.app.admin.flags.Flags.onboardingBugreportV2Enabled;
 import static android.app.admin.flags.Flags.onboardingConsentlessBugreports;
 import static android.content.Intent.LOCAL_FLAG_FROM_SYSTEM;
@@ -4652,6 +4652,36 @@ public class DevicePolicyManager {
             }
         }
         return APP_FUNCTIONS_NOT_CONTROLLED_BY_POLICY;
+    }
+
+    /**
+     * Returns whether an outgoing transfer is allowed for a specific subscription.
+     *
+     * A transfer is disallowed if the subscription is managed and the transfer is disallowed by
+     * policy.
+     *
+     * @param subscriptionId The ID of the subscription to check.
+     * @return {@code true} if the transfer is allowed, {@code false} otherwise.
+     * @throws SecurityException if the caller has neither
+     *         MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS nor WRITE_EMBEDDED_SUBSCRIPTIONS
+     *         and is not a device owner or a profile owner.
+     */
+    @FlaggedApi(Flags.FLAG_MANAGED_ESIM_OUTGOING_TRANSFER_POLICY)
+    @RequiresPermission(anyOf = {
+            android.Manifest.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS,
+            android.Manifest.permission.WRITE_EMBEDDED_SUBSCRIPTIONS
+    }, conditional = true)
+    public boolean isOutgoingTransferAllowedForSubscription(int subscriptionId) {
+        if (mService != null) {
+            try {
+                return mService.isOutgoingTransferAllowedForSubscription(
+                        mContext.getPackageName(), subscriptionId
+                );
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return true;
     }
 
     /**

@@ -87,7 +87,6 @@ import static android.app.admin.DevicePolicyManager.ACTION_MANAGED_PROFILE_PROVI
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_USER;
-import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTIUSER_MANAGED_DEVICE;
 import static android.app.admin.DevicePolicyManager.ACTION_PROVISION_MULTIUSER_MANAGED_USER;
 import static android.app.admin.DevicePolicyManager.ACTION_SYSTEM_UPDATE_POLICY_CHANGED;
 import static android.app.admin.DevicePolicyManager.APP_FUNCTIONS_NOT_CONTROLLED_BY_POLICY;
@@ -104,7 +103,6 @@ import static android.app.admin.DevicePolicyManager.DELEGATION_NETWORK_LOGGING;
 import static android.app.admin.DevicePolicyManager.DELEGATION_PACKAGE_ACCESS;
 import static android.app.admin.DevicePolicyManager.DELEGATION_PERMISSION_GRANT;
 import static android.app.admin.DevicePolicyManager.DELEGATION_SECURITY_LOGGING;
-import static android.app.admin.DevicePolicyManager.DEVICE_OWNER;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_DEFAULT;
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_FINANCED;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER;
@@ -132,8 +130,6 @@ import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATI
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_QUICK_SETTINGS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_SYSTEM_INFO;
-import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_ORGANIZATION_OWNED_DEVICE;
-import static android.app.admin.DevicePolicyManager.MANAGED_PROFILE_OWNER_OF_PERSONAL_OWNED_DEVICE;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.NON_ORG_OWNED_PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
 import static android.app.admin.DevicePolicyManager.OPERATION_SAFETY_REASON_NONE;
@@ -190,7 +186,6 @@ import static android.app.admin.DevicePolicyManager.STATUS_USER_HAS_PROFILE;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_HAS_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_NOT_RUNNING;
 import static android.app.admin.DevicePolicyManager.STATUS_USER_SETUP_COMPLETED;
-import static android.app.admin.DevicePolicyManager.UNAFFILIATED_FULL_USER_PROFILE_OWNER;
 import static android.app.admin.DevicePolicyManager.WIPE_EUICC;
 import static android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE;
 import static android.app.admin.DevicePolicyManager.WIPE_RESET_PROTECTION_DATA;
@@ -212,6 +207,7 @@ import static android.app.admin.DevicePolicyResources.Strings.Core.WORK_PROFILE_
 import static android.app.admin.DevicePolicyResources.Strings.Core.WORK_PROFILE_TELEPHONY_PAUSED_BODY;
 import static android.app.admin.DevicePolicyResources.Strings.Core.WORK_PROFILE_TELEPHONY_PAUSED_TITLE;
 import static android.app.admin.DevicePolicyResources.Strings.Core.WORK_PROFILE_TELEPHONY_PAUSED_TURN_ON_BUTTON;
+import static android.app.admin.PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED;
 import static android.app.admin.PolicySizeVerifier.MAX_LONG_SUPPORT_MESSAGE_LENGTH;
 import static android.app.admin.PolicySizeVerifier.MAX_ORG_NAME_LENGTH;
 import static android.app.admin.PolicySizeVerifier.MAX_PROFILE_NAME_LENGTH;
@@ -520,8 +516,8 @@ import com.android.server.SystemServiceManager;
 import com.android.server.accounts.AccountManagerService;
 import com.android.server.devicepolicy.ActiveAdmin.TrustAgentInfo;
 import com.android.server.devicepolicy.handlers.EnumStoredAsBooleanPolicyHandler;
-import com.android.server.devicepolicy.handlers.PolicyHandler;
 import com.android.server.devicepolicy.handlers.PolicyDefinitionFactory;
+import com.android.server.devicepolicy.handlers.PolicyHandler;
 import com.android.server.devicepolicy.handlers.PolicyHandlerFactory;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.locksettings.LockSettingsInternal;
@@ -23169,6 +23165,126 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                 mDevicePolicyEngine.getResolvedPolicy(PolicyDefinition.CONTENT_PROTECTION, userId));
     }
 
+    /**
+     * Checks if outgoing transfer is permitted for a given managed eSIM subscription.
+     *
+     * <p>This method verifies if the {@code MANAGED_ESIM_OUTGOING_TRANSFER_POLICY} policu allows
+     * the transfer of the specified subscription.
+     *
+     * <p>The transfer is allowed by default if the subscription is not managed.
+     *
+     * <p>If the subscription is managed but the owner cannot be determined ar a
+     * matching {@link EnforcingAdmin} cannot be found, the outcome is determined by
+     * {@code resolveOutgoingTransferPolicyForUnknownSubscriptionOwner}. Otherwise, the method
+     * checks the policy set by the admin associated with the subscription's owner.
+     *
+     * @param callerPackageName The package name of the calling application.
+     * @param subscriptionId The ID of the subscription to check.
+     * @return {@code true} if the outgoing transfer is allowed for the subscription,
+     *         {@code false} otherwise.
+     * @throws SecurityException if the caller does not hold either
+     *         {@link android.Manifest.permission#MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS} or
+     *         {@link android.Manifest.permission#WRITE_EMBEDDED_SUBSCRIPTIONS}.
+     */
+    @Override
+    public boolean isOutgoingTransferAllowedForSubscription(
+            String callerPackageName, int subscriptionId) {
+        if (!android.app.admin.flags.Flags.managedEsimOutgoingTransferPolicy()) {
+            return true;
+        }
+
+        CallerIdentity caller = getCallerIdentity(callerPackageName);
+
+        mPermissions.enforce(
+                new String[] {
+                        Manifest.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS,
+                        Manifest.permission.WRITE_EMBEDDED_SUBSCRIPTIONS
+                },
+                caller
+        );
+
+        SubscriptionInfo subInfo = getSubscriptionInfoInternal(subscriptionId);
+        if (subInfo == null || !isSubscriptionManagedInternal(subInfo)) {
+            return true;
+        }
+
+        String subscriptionOwner = subInfo.getGroupOwner();
+        if (TextUtils.isEmpty(subscriptionOwner)) {
+            return resolveOutgoingTransferPolicyForUnknownSubscriptionOwner();
+        }
+
+        EnforcingAdmin managingAdmin = getManagedEsimTransferPolicyEnforcer(subscriptionOwner);
+        if (managingAdmin == null) {
+            return resolveOutgoingTransferPolicyForUnknownSubscriptionOwner();
+        }
+        Integer policy = mDevicePolicyEngine
+                .getGlobalPolicySetByAdmin(getPolicyDefinitionForIdentifier(
+                        PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_POLICY), managingAdmin);
+
+        if (policy == null) {
+            return true;
+        }
+        return policy == MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED;
+    }
+
+    /**
+     * Retrieves the specific {@link EnforcingAdmin} that has set the
+     * {@code MANAGED_ESIM_OUTGOING_TRANSFER_POLICY} for the given subscription owner.
+     *
+     * <p>This method iterates through all admins who have set the
+     * {@code MANAGED_ESIM_OUTGOING_TRANSFER_POLICY} globally and returns the one
+     * whose package name matches the provided {@code subscriptionOwner}.
+     *
+     * <p>This logic is heuristic. The framework does not record the user ID of the DPC package
+     * that manages the subscription. Consequently, this method might return an
+     * {@link EnforcingAdmin} for a different user if the same DPC package enforces
+     * {@code MANAGED_ESIM_OUTGOING_TRANSFER_POLICY} across multiple users.
+     *
+     * @param subscriptionOwner The package name of the entity owning the subscription,
+     *        used to identify the relevant {@link EnforcingAdmin}.
+     * @return The matching {@link EnforcingAdmin}, or {@code null} if no admin
+     *         has set this policy for the given owner, or if the owner
+     *         is not found among the policy setters.
+     */
+    private @Nullable EnforcingAdmin getManagedEsimTransferPolicyEnforcer(
+            String subscriptionOwner) {
+        Set<EnforcingAdmin> enforcingAdmins = mDevicePolicyEngine.getGlobalPoliciesSetByAdmins(
+                getPolicyDefinitionForIdentifier(
+                        PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_POLICY
+                )
+        ).keySet();
+
+        for (EnforcingAdmin enforcingAdmin : enforcingAdmins) {
+            if (enforcingAdmin.getPackageName().equals(subscriptionOwner)) {
+                return enforcingAdmin;
+            }
+        }
+        return null;
+    }
+    private boolean isSubscriptionManagedInternal(SubscriptionInfo subInfo) {
+        String subscriptionOwner = subInfo.getGroupOwner();
+        if (!TextUtils.isEmpty(subscriptionOwner)) {
+            return true;
+        }
+        if (Flags.enterpriseEsimUsingCarrierPrivileges()) {
+            return enterpriseMarkerExistsInAccessRules(subInfo);
+        }
+        return false;
+    }
+
+    private boolean resolveOutgoingTransferPolicyForUnknownSubscriptionOwner() {
+        Integer currentPolicy = mDevicePolicyEngine.getResolvedPolicy(
+                getPolicyDefinitionForIdentifier(
+                        PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_POLICY
+                ),
+                USER_ALL
+        );
+        if (currentPolicy == null) {
+            return true;
+        }
+        return currentPolicy == MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED;
+    }
+
     @Override
     public ManagedSubscriptionsPolicy getManagedSubscriptionsPolicy() {
         ActiveAdmin admin = mDeviceAdmins.getProfileOwnerOfOrganizationOwnedDevice();
@@ -23481,6 +23597,25 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
                     }
                     return adminOwnedSubscriptions;
                 });
+    }
+
+    private @Nullable SubscriptionInfo getSubscriptionInfoInternal(int subscriptionId) {
+        SubscriptionManager subscriptionManager =
+                mContext.getSystemService(SubscriptionManager.class);
+        return Binder.withCleanCallingIdentity(
+                () -> {
+                    List<SubscriptionInfo> subs =
+                            subscriptionManager.getAvailableSubscriptionInfoList();
+                    if (subs == null) {
+                        return null;
+                    }
+                    return subs.stream()
+                            .filter(subscription -> subscription.getSubscriptionId()
+                                    == subscriptionId)
+                            .findFirst()
+                            .orElse(null);
+                }
+        );
     }
 
     @Override

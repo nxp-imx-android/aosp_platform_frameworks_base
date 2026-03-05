@@ -17,10 +17,11 @@
 package com.android.server.devicepolicy.handlers;
 
 import android.app.admin.PolicyIdentifier;
+
 import com.android.server.devicepolicy.PolicyDefinition;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /** {@code PolicyHandlerFactory} constructs all the supported {@link PolicyHandler} instances. */
 public class PolicyHandlerFactory {
@@ -42,8 +43,9 @@ public class PolicyHandlerFactory {
                         /* falseValue= */ PolicyIdentifier.SCREEN_CAPTURE_ALLOWED));
         handlers.add(new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME));
         handlers.add(new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME_ZONE));
+        handlers.add(
+                new PolicyHandler<Integer>(PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_POLICY));
         handlers.add(new PolicyHandler<String>(PolicyIdentifier.LOCKSCREEN_MESSAGE));
-
         // go/keep-sorted end
 
         return handlers;

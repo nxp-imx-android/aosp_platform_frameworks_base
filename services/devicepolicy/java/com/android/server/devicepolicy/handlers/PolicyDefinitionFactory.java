@@ -19,14 +19,18 @@ package com.android.server.devicepolicy.handlers;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_DEVICE;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_PARENT_USER;
 import static android.app.admin.DevicePolicyManager.POLICY_SCOPE_USER;
+import static android.app.admin.PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED;
+import static android.app.admin.PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED;
 import static android.app.role.RoleManager.ROLE_SYSTEM_FINANCED_DEVICE_CONTROLLER;
 import static android.app.role.RoleManager.ROLE_SYSTEM_SUPERVISION;
+
 import static com.android.server.devicepolicy.PolicyDefinition.POLICY_FLAG_GLOBAL_ONLY_POLICY;
 import static com.android.server.devicepolicy.PolicyDefinition.POLICY_FLAG_LOCAL_ONLY_POLICY;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.admin.DevicePolicyIdentifiers;
+import android.app.admin.IntegerPolicyValue;
 import android.app.admin.NoArgsPolicyKey;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValue;
@@ -38,7 +42,9 @@ import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.ResolutionMechanismMetadata;
 import android.app.admin.metadata.StringPolicyMetadata;
 import android.util.Pair;
+
 import androidx.annotation.VisibleForTesting;
+
 import com.android.server.devicepolicy.EnforcingAdmin;
 import com.android.server.devicepolicy.IntegerPolicySerializer;
 import com.android.server.devicepolicy.ListOfStringPolicySerializer;
@@ -51,6 +57,7 @@ import com.android.server.devicepolicy.PolicySerializer;
 import com.android.server.devicepolicy.ResolutionMechanism;
 import com.android.server.devicepolicy.StringPolicySerializer;
 import com.android.server.devicepolicy.TopPriority;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -151,6 +158,20 @@ public class PolicyDefinitionFactory {
                             .setResolutionMechanism(new MostRecent<>())
                             .setEnforcerCallback(PolicyEnforcerCallbacks::setLockScreenInfoPolicy)
                             .build();
+                });
+        addFactory(
+                PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_POLICY,
+                builder -> {
+                    return builder.setResolutionMechanism(
+                            new MostRestrictive<>(
+                                    List.of(
+                                           new IntegerPolicyValue(
+                                                   MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED),
+                                           new IntegerPolicyValue(
+                                                   MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED)
+                                    )
+                            )
+                    ).build();
                 });
         addFactory(
                 PolicyIdentifier.CONTENT_RESTRICTION_APPS,

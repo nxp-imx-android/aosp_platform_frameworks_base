@@ -21,6 +21,7 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_CONTENT_RESTRICTION_APPS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_FUN;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_LOCKSCREEN_MESSAGE;
+import static android.Manifest.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_SCREEN_CAPTURE;
 import static android.Manifest.permission.SET_TIME;
 import static android.Manifest.permission.SET_TIME_ZONE;
@@ -38,6 +39,7 @@ import static android.processor.devicepolicy.AllowedDpcTypes.DISALLOWED;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.app.admin.flags.Flags;
 import android.content.Intent;
 import android.os.UserManager;
 import android.processor.devicepolicy.AllowedDpcTypes;
@@ -242,6 +244,54 @@ public final class PolicyIdentifier<T> {
             defaultValue = AUTO_TIME_USER_CHOICE,
             resolutionMechanism = @EnumResolutionMechanism(custom = true))
     public static final PolicyIdentifier<Integer> AUTO_TIME = new PolicyIdentifier<>("AUTO_TIME");
+
+    /**
+     * Specifies that the user is allowed to transfer managed eSIMs from the device.
+     */
+    @FlaggedApi(Flags.FLAG_MANAGED_ESIM_OUTGOING_TRANSFER_POLICY)
+    public static final int MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED = 1;
+
+    /**
+     * Specifies that the user is not allowed to transfer managed eSIMs from the device.
+     */
+    @FlaggedApi(Flags.FLAG_MANAGED_ESIM_OUTGOING_TRANSFER_POLICY)
+    public static final int MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED = 2;
+
+    /** @hide */
+    @IntDef(prefix = { "MANAGED_ESIM_OUTGOING_TRANSFER_" }, value = {
+            MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED,
+            MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ManagedEsimOutgoingTransferPolicy {}
+
+    /**
+     * Policy that controls whether outgoing transfer is allowed for managed embedded subscriptions.
+     */
+    @FlaggedApi(Flags.FLAG_MANAGED_ESIM_OUTGOING_TRANSFER_POLICY)
+    @NonNull
+    @EnumPolicyDefinition(
+            base =
+            @PolicyDefinition(
+                    allowedScopes = {POLICY_SCOPE_DEVICE},
+                    affectedResource = RESOURCE_DEVICE_WIDE,
+                    requiredPermission = MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS,
+                    allowedDpcTypes =
+                    @AllowedDpcTypes(
+                            deviceOwner = ALLOWED,
+                            managedProfileOwnerOfOrganizationOwnedDevice = ALLOWED,
+                            managedProfileOwnerOfPersonalOwnedDevice = ALLOWED,
+                            unaffiliatedFullUserProfileOwner = ALLOWED,
+                            profileOwnerOnUser0 = ALLOWED)),
+            intDef = ManagedEsimOutgoingTransferPolicy.class,
+            defaultValue = MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED,
+            resolutionMechanism = @EnumResolutionMechanism(mostRestrictive = {
+                    MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED,
+                    MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED
+            })
+    )
+    public static final PolicyIdentifier<Integer> MANAGED_ESIM_OUTGOING_TRANSFER_POLICY =
+            new PolicyIdentifier<>("MANAGED_ESIM_OUTGOING_TRANSFER_POLICY");
 
     /**
      * Policy that sets a custom message to be shown on the lock screen. This message is displayed
