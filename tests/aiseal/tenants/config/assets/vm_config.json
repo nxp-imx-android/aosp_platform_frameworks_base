@@ -7,6 +7,12 @@
     {
       "package": "apk",
       "name": "android.aiseal.tests.odim",
+      "min_version": {ODIM_VERSION},
+      "expected_authority": {
+          "dev-keys": "{ODIM_EXPECTED_AUTHORITY}",
+          "test-keys": "{ODIM_EXPECTED_AUTHORITY}",
+          "release-keys": "{ODIM_EXPECTED_AUTHORITY}"
+      },
       "task": {
           "type": "microdroid_launcher",
           "command": "libtest_aiseal_odim_payload.so"
