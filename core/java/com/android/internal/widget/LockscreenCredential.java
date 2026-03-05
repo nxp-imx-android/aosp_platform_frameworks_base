@@ -376,33 +376,6 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
         }
     }
 
-    /**
-     * Hash the given password for the password history, using the legacy algorithm.
-     *
-     * @deprecated This algorithm is insecure because the password can be easily bruteforced, given
-     *             the hash and salt.  Use {@link #passwordToHistoryHash(byte[], byte[], byte[])}
-     *             instead, which incorporates an SP-derived secret into the hash.
-     *
-     * @return the legacy password hash
-     */
-    @Deprecated
-    public static String legacyPasswordToHash(byte[] password, byte[] salt) {
-        if (password == null || password.length == 0 || salt == null) {
-            return null;
-        }
-
-        try {
-            byte[] saltedPassword = ArrayUtils.concat(password, salt);
-            byte[] sha1 = MessageDigest.getInstance("SHA-1").digest(saltedPassword);
-            byte[] md5 = MessageDigest.getInstance("MD5").digest(saltedPassword);
-
-            ArrayUtils.zeroize(saltedPassword);
-            return HexEncoding.encodeToString(ArrayUtils.concat(sha1, md5));
-        } catch (NoSuchAlgorithmException e) {
-            throw new AssertionError("Missing digest algorithm: ", e);
-        }
-    }
-
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(mType);
