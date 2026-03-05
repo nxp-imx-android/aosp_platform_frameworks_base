@@ -343,6 +343,16 @@ flag {
 }
 
 flag {
+    name: "fix_adjust_accessibility_actions_for_stack_view_state"
+    namespace: "multitasking"
+    description: "Adjust accessibility actions for stack view expanded state"
+    bug: "469259914"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "bubble_dismiss_magnetize_collision_prevention"
     namespace: "multitasking"
     description: "Move the dismiss view higher so it`s magnetize zone does not collide with the bubble bar"
