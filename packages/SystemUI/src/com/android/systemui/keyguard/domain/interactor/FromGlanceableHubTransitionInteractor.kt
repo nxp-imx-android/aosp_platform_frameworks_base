@@ -213,8 +213,6 @@ constructor(
         scope.launch {
             allOf(
                     keyguardInteractor.isKeyguardGoingAway,
-                    // TODO(b/327225415): Handle edit mode opening here to avoid going to GONE
-                    // state until after edit mode is ready to be shown.
                     noneOf(
                         // When launching activities from widgets on the hub, we wait to change
                         // scenes until the activity launch is complete.
