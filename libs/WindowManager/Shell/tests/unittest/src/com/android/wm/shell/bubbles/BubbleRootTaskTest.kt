@@ -120,13 +120,22 @@ class BubbleRootTaskTest : ShellTestCase() {
             }
 
         // verify hierarchy ops
-        assertThat(wct.hierarchyOps.map { it.type })
-            .containsAtLeast(
-                HIERARCHY_OP_TYPE_REORDER,
-                HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME,
-                HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN,
-                HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH,
-            )
+        if (com.android.window.flags.Flags.idempotentWctResolution()) {
+            assertThat(wct.hierarchyOps.map { it.type })
+                .containsAtLeast(
+                    HIERARCHY_OP_TYPE_REORDER,
+                    HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME,
+                    HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH,
+                )
+        } else {
+            assertThat(wct.hierarchyOps.map { it.type })
+                .containsAtLeast(
+                    HIERARCHY_OP_TYPE_REORDER,
+                    HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH_FROM_HOME,
+                    HIERARCHY_OP_TYPE_DISALLOW_OVERRIDE_WINDOWING_MODE_FOR_CHILDREN,
+                    HIERARCHY_OP_TYPE_SET_PRESERVE_LEAF_TASK_IF_RELAUNCH,
+                )
+        }
 
         // verify changes
         assertThat(wct.changes[binder]).isNotNull()
@@ -136,6 +145,9 @@ class BubbleRootTaskTest : ShellTestCase() {
         assertThat(change.disablePip).isTrue()
         assertThat(change.disableLaunchAdjacent).isTrue()
         assertThat(change.forceTranslucent).isTrue()
+        if (com.android.window.flags.Flags.idempotentWctResolution()) {
+            assertThat(change.disallowOverrideWindowingModeForChildren).isTrue()
+        }
     }
 
     @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE, FLAG_ENABLE_BUBBLE_ROOT_TASK)
