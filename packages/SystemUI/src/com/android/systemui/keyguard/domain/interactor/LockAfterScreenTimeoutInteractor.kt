@@ -45,7 +45,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.launch
@@ -108,33 +107,49 @@ constructor(
 
     init {
         registerBroadcastReceiver()
-        monitorWakefulnessAndDreams()
+        handleWakefulness()
+        handleDreamingWhileAwake()
     }
 
-    private fun monitorWakefulnessAndDreams() {
+    private fun handleWakefulness() {
+        if (!SceneContainerFlag.isEnabled) {
+            return
+        }
+        scope.launch {
+            powerInteractor.detailedWakefulness
+                .distinctUntilChangedBy { it.isAsleep() }
+                .collect {
+                    if (it.isAwake()) {
+                        ensureTimerStopped("awake")
+                    } else {
+                        if (wakefulnessStateTriggersDelayedLock(it) && !delayLockIsImmediate()) {
+                            ensureTimerRunning("falling asleep")
+                        } else {
+                            ensureTimerStopped("not relevant")
+                        }
+                    }
+                }
+        }
+    }
+
+    /**
+     * While [handleWakefulness] schedules a lock when the device goes to sleep,
+     * [handleDreamingWhileAwake] schedules a lock when a dream is entered from awake. This can
+     * occur when the user manually starts a dream (also known as screensaver), via quick settings
+     * or settings.
+     */
+    private fun handleDreamingWhileAwake() {
         if (!SceneContainerFlag.isEnabled) {
             return
         }
 
         scope.launch {
-            val wakefulnessFlow =
-                powerInteractor.detailedWakefulness.distinctUntilChangedBy { it.isAsleep() }
-            val isDreamingFlow = keyguardInteractor.isDreamingAny.distinctUntilChanged()
-
-            combine(wakefulnessFlow, isDreamingFlow, ::Pair).collect { (wakefulness, isDreaming) ->
-                if (wakefulness.isAwake()) {
-                    if (!isDreaming) {
-                        ensureTimerStopped("awake")
+            keyguardInteractor.isDreamingAny.distinctUntilChanged().collect { isDreaming ->
+                if (powerInteractor.detailedWakefulness.value.isAwake()) {
+                    if (isDreaming) {
+                        ensureTimerRunning("started dreaming while awake")
                     } else {
-                        ensureTimerRunning("dreaming")
-                    }
-                } else {
-                    if (
-                        wakefulnessStateTriggersDelayedLock(wakefulness) && !delayLockIsImmediate()
-                    ) {
-                        ensureTimerRunning("falling asleep")
-                    } else {
-                        ensureTimerStopped("not relevant")
+                        ensureTimerStopped("stopped dreaming while awake")
                     }
                 }
             }

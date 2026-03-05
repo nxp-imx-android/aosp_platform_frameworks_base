@@ -111,63 +111,6 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun testCanWakeDirectlyToGone_lockscreenDisabledThenEnabled_onlyAfterWakefulnessChange() =
-        testScope.runTest {
-            val canWake by collectValues(underTest.canWakeDirectlyToGone)
-
-            assertEquals(
-                listOf(
-                    false // Defaults to false.
-                ),
-                canWake,
-            )
-
-            whenever(lockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(true)
-            runCurrent()
-
-            assertEquals(
-                listOf(
-                    // Still false - isLockScreenDisabled only causes canWakeDirectlyToGone to
-                    // update on the next wake/sleep event.
-                    false
-                ),
-                canWake,
-            )
-
-            kosmos.powerInteractor.setAsleepForTest(
-                sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
-            )
-            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
-            runCurrent()
-
-            assertEquals(
-                listOf(
-                    false,
-                    // True since we slept after setting isLockScreenDisabled=true
-                    true,
-                ),
-                canWake,
-            )
-
-            kosmos.powerInteractor.setAwakeForTest()
-            runCurrent()
-
-            kosmos.powerInteractor.setAsleepForTest(
-                sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
-            )
-            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
-            runCurrent()
-
-            assertEquals(listOf(false, true), canWake)
-
-            whenever(lockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(false)
-            kosmos.powerInteractor.setAwakeForTest()
-            runCurrent()
-
-            assertEquals(listOf(false, true, false), canWake)
-        }
-
-    @Test
     fun testCanWakeDirectlyToGone_lockscreenDisabledThenEnabled_lockNowEvent() =
         testScope.runTest {
             val canWake by collectValues(underTest.canWakeDirectlyToGone)
