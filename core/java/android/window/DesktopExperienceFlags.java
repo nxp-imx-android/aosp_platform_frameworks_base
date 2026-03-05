@@ -151,8 +151,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API),
     ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS(Flags::enterDesktopByDefaultOnFreeformDisplays,
             true, Flags.FLAG_ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS),
-    REPOSITORY_BASED_PERSISTENCE(Flags::repositoryBasedPersistence, false,
-            Flags.FLAG_REPOSITORY_BASED_PERSISTENCE),
     SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT(
             Flags::skipDeactivationOfDeskWithNothingInFront, true,
             Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT),
