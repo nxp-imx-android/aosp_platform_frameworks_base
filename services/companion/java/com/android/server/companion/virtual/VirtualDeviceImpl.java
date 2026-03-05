@@ -33,6 +33,7 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CAMERA;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CLIPBOARD;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
+import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -624,7 +625,10 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             InputMethodManagerInternal.get().setVirtualDeviceInputMethodForAllUsers(
                     mDeviceId, imeId);
         }
-        if (Flags.audioFocusEnvironments()) {
+        // VirtualDevices can have either custom external handling of the audio DAPs or through the
+        // internal VirtualAudioDevice. If the playback audio policies are handled externally,
+        // create the audio focus environment with the VirtualDevice
+        if (Flags.audioFocusEnvironments() && hasCustomAudioOutputSession()) {
             createAudioFocusEnvironment(token);
         }
     }
@@ -1020,6 +1024,11 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                 mVirtualAudioController.startListening(routingCallback, configChangedCallback);
             }
         }
+        // create an audio focus stack for the internal audio session if not already done
+        // for the custom external audio playback policies
+        if (Flags.audioFocusEnvironments() && !hasCustomAudioOutputSession()) {
+            createAudioFocusEnvironment(mAppToken);
+        }
     }
 
     @Override // Binder call
@@ -1030,6 +1039,11 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
                 mVirtualAudioController.stopListening();
                 mVirtualAudioController = null;
             }
+        }
+        // destroy an audio focus stack for the internal audio session if not needed by the
+        // custom external audio playback policies
+        if (Flags.audioFocusEnvironments() && !hasCustomAudioOutputSession()) {
+            destroyAudioFocusEnvironment();
         }
     }
 
@@ -1396,7 +1410,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
     // MODIFY_AUDIO_ROUTING is used, though not mandated
     @SuppressWarnings("AndroidFrameworkRequiresPermission")
     private void createAudioFocusEnvironment(@NonNull IBinder token) {
-        if (mAudioManager == null || getDevicePolicy(POLICY_TYPE_AUDIO) != DEVICE_POLICY_CUSTOM) {
+        if (mAudioManager == null || getDevicePolicy(POLICY_TYPE_AUDIO) != DEVICE_POLICY_CUSTOM
+                || mAudioFocusEnvToken != null) {
             return;
         }
 
@@ -1446,6 +1461,10 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             }
         }
         mAudioFocusEnvToken = null;
+    }
+
+    private boolean hasCustomAudioOutputSession() {
+        return getAudioPlaybackSessionId() != AUDIO_SESSION_ID_GENERATE;
     }
 
     private boolean hasCustomAudioInputSupportInternal() {
