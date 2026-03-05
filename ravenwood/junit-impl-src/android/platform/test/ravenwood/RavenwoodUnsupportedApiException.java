@@ -15,27 +15,31 @@
  */
 package android.platform.test.ravenwood;
 
+import java.lang.reflect.Method;
+import java.util.Objects;
+
 public class RavenwoodUnsupportedApiException extends UnsupportedOperationException {
 
-    private int mSkipStackTraces = 0;
     private String mReason = null;
+    private final String mCustomMessage;
 
     public RavenwoodUnsupportedApiException(String message) {
-        super(message + " is not yet supported under the Ravenwood deviceless testing "
-                + "environment; consider requesting support from the API owner or "
-                + "consider using Mockito; more details at go/ravenwood");
+        mCustomMessage = message;
     }
 
     public RavenwoodUnsupportedApiException() {
-        this("This method");
+        mCustomMessage = null;
     }
 
-    /**
-     * Sets the number of stack frames to skip when determining the reason.
-     */
-    public RavenwoodUnsupportedApiException skipStackTracesForReason(int number) {
-        mSkipStackTraces = number;
-        return this;
+    private String getMessagePrefix() {
+        return Objects.requireNonNullElseGet(mCustomMessage, () -> "Method " + getReason());
+    }
+
+    @Override
+    public String getMessage() {
+        return getMessagePrefix() + " is not yet supported under the Ravenwood deviceless testing "
+                + "environment; consider requesting support from the API owner or "
+                + "consider using Mockito; more details at go/ravenwood";
     }
 
     /**
@@ -47,11 +51,20 @@ public class RavenwoodUnsupportedApiException extends UnsupportedOperationExcept
     }
 
     /**
+     * Set a custom reason for the unsupported API exception.
+     */
+    public RavenwoodUnsupportedApiException setReason(Method method) {
+        mReason = method.getDeclaringClass().getName() + "#" + method.getName();
+        return this;
+    }
+
+    /**
      * Return the API that causes this exception.
      */
     public String getReason() {
         if (mReason != null) return mReason;
-        var caller = getStackTrace()[mSkipStackTraces];
-        return caller.getClassName() + "#" + caller.getMethodName();
+        var caller = getStackTrace()[0];
+        mReason = caller.getClassName() + "#" + caller.getMethodName();
+        return mReason;
     }
 }
