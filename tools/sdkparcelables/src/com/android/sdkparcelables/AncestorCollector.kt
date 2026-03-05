@@ -17,7 +17,6 @@
 package com.android.sdkparcelables
 
 import org.objectweb.asm.ClassVisitor
-import java.util.*
 
 data class Ancestors(val superName: String?, val interfaces: List<String>?)
 
@@ -30,8 +29,14 @@ class AncestorCollector(api: Int, dest: ClassVisitor?) : ClassVisitor(api, dest)
     val ancestors: Map<String, Ancestors>
         get() = _ancestors
 
-    override fun visit(version: Int, access: Int, name: String?, signature: String?,
-                       superName: String?, interfaces: Array<out String>?) {
+    override fun visit(
+        version: Int,
+        access: Int,
+        name: String?,
+        signature: String?,
+                       superName: String?,
+        interfaces: Array<out String>?
+    ) {
         name!!
 
         val old = _ancestors.put(name, Ancestors(superName, interfaces?.toList()))

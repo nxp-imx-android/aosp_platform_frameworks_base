@@ -55,8 +55,8 @@ class ParcelableDetector {
                 return old
             }
 
-            val cAncestors = ancestors[c] ?:
-                    throw RuntimeException("class $c missing ancestor information")
+            val cAncestors = ancestors[c]
+                ?: throw RuntimeException("class $c missing ancestor information")
 
             val seq = (cAncestors.interfaces?.asSequence() ?: emptySequence()) +
                     cAncestors.superName
