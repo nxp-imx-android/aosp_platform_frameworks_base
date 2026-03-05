@@ -29,6 +29,7 @@ import androidx.annotation.NonNull;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.personalcontext.component.Renderer;
 
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -165,6 +166,17 @@ public class EmbeddedInsightRenderer implements Renderer {
     @Override
     public UUID getComponentId() {
         return mComponentId;
+    }
+
+    /**
+     * Dump info about connected clients and visualizers.
+     */
+    public void dump(@NonNull PrintWriter fout) {
+        fout.write("EmbeddedInsightRenderer\n");
+        fout.write("=======================\n");
+        mClientRegistry.dump(fout);
+        mVisualizerRegistry.dump(fout);
+        fout.write("\n");
     }
 
     private InsightSurfaceClientInfo clientFromRenderToken(RenderToken renderToken) {

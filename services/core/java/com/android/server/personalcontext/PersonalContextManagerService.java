@@ -841,6 +841,7 @@ public class PersonalContextManagerService extends SystemService {
                     fout.println("User " + userId + ":");
                     UserState userState = service.mUserStates.valueAt(i);
                     userState.componentManager().dump(fout);
+                    userState.embeddedInsightRenderer().dump(fout);
                 }
             }
 
