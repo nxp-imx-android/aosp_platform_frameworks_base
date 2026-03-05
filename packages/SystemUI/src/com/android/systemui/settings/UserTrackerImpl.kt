@@ -130,7 +130,12 @@ internal constructor(
         if (initialized) {
             return
         }
-        registerUserSwitchObserver()
+        if (context.user.isSystem) {
+            registerUserSwitchObserver()
+        } else {
+            Log.w(TAG, "Context user (${context.userId}) is not system user, " +
+                    "not registering user switch observer.")
+        }
         val startingUser = getStartingUser()
         Log.i(TAG, "Starting user: $startingUser")
         initialized = true

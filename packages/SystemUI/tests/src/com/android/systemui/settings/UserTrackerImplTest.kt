@@ -520,6 +520,17 @@ class UserTrackerImplTest : SysuiTestCase() {
         }
 
     @Test
+    fun testInitializeFromNonSystemUserShouldNotRegisterUserSwitchObserver() =
+        testScope.runTest {
+            val nonSystemUserId = UserHandle.MIN_SECONDARY_USER_ID
+            whenever(context.userId).thenReturn(nonSystemUserId)
+            whenever(context.user).thenReturn(UserHandle.of(nonSystemUserId))
+
+            tracker.initialize { 0 }
+            verify(iActivityManager, never()).registerUserSwitchObserver(any(), any())
+        }
+
+    @Test
     fun testProfilesChangedFromBroadcast_isBeforeUserSwitching_skipsProfileChangedCallback() =
         testScope.runTest {
             tracker.initialize { 0 }
