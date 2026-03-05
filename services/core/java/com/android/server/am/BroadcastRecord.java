@@ -22,11 +22,13 @@ import static android.app.AppProtoEnums.BROADCAST_TYPE_DEFERRABLE_UNTIL_ACTIVE;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_FOREGROUND;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_INITIAL_STICKY;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_INTERACTIVE;
+import static android.app.AppProtoEnums.BROADCAST_TYPE_MANIFEST_RECEIVER;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_NONE;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_ORDERED;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_PRIORITIZED;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_PUSH_MESSAGE;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_PUSH_MESSAGE_OVER_QUOTA;
+import static android.app.AppProtoEnums.BROADCAST_TYPE_REGISTERED_RECEIVER_ONLY;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_RESULT_TO;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_STICKY;
 
@@ -958,6 +960,11 @@ final class BroadcastRecord extends Binder {
         if (initialSticky) {
             type |= BROADCAST_TYPE_INITIAL_STICKY;
         }
+        if (BroadcastSkipPolicy.disallowBackgroundStart(this)) {
+            type |= BROADCAST_TYPE_REGISTERED_RECEIVER_ONLY;
+        } else {
+            type |= BROADCAST_TYPE_MANIFEST_RECEIVER;
+        }
         return type;
     }
 
@@ -997,6 +1004,11 @@ final class BroadcastRecord extends Binder {
         }
         if (initialSticky) {
             types.add(BROADCAST_TYPE_INITIAL_STICKY);
+        }
+        if (BroadcastSkipPolicy.disallowBackgroundStart(this)) {
+            types.add(BROADCAST_TYPE_REGISTERED_RECEIVER_ONLY);
+        } else {
+            types.add(BROADCAST_TYPE_MANIFEST_RECEIVER);
         }
         return types.toArray();
     }
