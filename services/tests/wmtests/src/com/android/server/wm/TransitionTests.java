@@ -3274,9 +3274,11 @@ public class TransitionTests extends WindowTestsBase {
                 true /* noopDuringDisplayChange */);
 
         // Finish display transition
+        final List<DisplayChange> displayChanges = new ArrayList<>();
+        displayChanges.add(new DisplayChange(mDefaultDisplay.mDisplayId));
         controller.requestStartTransition(displayTransition, /* startTask= */ null,
                 /* remoteTransition= */ null,
-                /* displayChange= */ new DisplayChange(mDefaultDisplay.mDisplayId));
+                /* displayChanges= */ displayChanges);
         player.start();
         player.finish();
         waitHandlerIdle(mWm.mAtmService.mH);
@@ -3296,9 +3298,11 @@ public class TransitionTests extends WindowTestsBase {
         displayTransition.collect(mDefaultDisplay);
 
         // Start the display transition
+        final List<DisplayChange> displayChanges = new ArrayList<>();
+        displayChanges.add(new DisplayChange(mDefaultDisplay.mDisplayId));
         controller.requestStartTransition(displayTransition, /* startTask= */ null,
                 /* remoteTransition= */ null,
-                /* displayChange= */ new DisplayChange(mDefaultDisplay.mDisplayId));
+                /* displayChanges= */ displayChanges);
         player.start();
 
         final OnStartCollect openAppCollectStartedCallback = mock(OnStartCollect.class);
@@ -3330,9 +3334,11 @@ public class TransitionTests extends WindowTestsBase {
         controller.startCollectOrQueue(queuedTransition, queuedTransitionStartedCallback);
 
         // Finish display transition
+        final List<DisplayChange> displayChanges = new ArrayList<>();
+        displayChanges.add(new DisplayChange(mDefaultDisplay.mDisplayId));
         controller.requestStartTransition(displayTransition, /* startTask= */ null,
                 /* remoteTransition= */ null,
-                /* displayChange= */ new DisplayChange(mDefaultDisplay.mDisplayId));
+                /* displayChanges= */ displayChanges);
         player.start();
         player.finish();
         waitHandlerIdle(mWm.mAtmService.mH);

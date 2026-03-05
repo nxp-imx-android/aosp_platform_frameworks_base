@@ -296,8 +296,12 @@ class DeferredDisplayUpdater {
                         displayChange.setDisconnectReparentDisplay(reparentDisplay);
                         transition.addDisconnectReparentDisplay(reparentDisplay);
                     }
+
+                    final List<TransitionRequestInfo.DisplayChange> displayChanges =
+                            new ArrayList<>();
+                    displayChanges.add(displayChange);
                     mDisplayContent.mTransitionController.requestStartTransition(transition,
-                            /* startTask= */ null, /* remoteTransition= */ null, displayChange);
+                            /* startTask= */ null, /* remoteTransition= */ null, displayChanges);
                     if (willStopHostingTasks) {
                         mDisplayContent.mTransitionController.mStateValidators.add(() -> {
                             mDisplayContent.updateContentMode();
@@ -382,8 +386,10 @@ class DeferredDisplayUpdater {
         displayChange.setPhysicalDisplayChanged(true);
 
         transition.addTransactionPresentedListener(() -> continueScreenUnblocking(transition));
+        final List<TransitionRequestInfo.DisplayChange> displayChanges = new ArrayList<>();
+        displayChanges.add(displayChange);
         mDisplayContent.mTransitionController.requestStartTransition(transition,
-                /* startTask= */ null, /* remoteTransition= */ null, displayChange);
+                /* startTask= */ null, /* remoteTransition= */ null, displayChanges);
 
         if (mPendingKeyguardDrawing && ensureWallpaperDrawnOnDisplaySwitch()) {
             // Keyguard hasn't reported that it has drawn yet, defer readiness until it draws

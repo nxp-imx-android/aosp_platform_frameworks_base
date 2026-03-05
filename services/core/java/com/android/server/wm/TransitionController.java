@@ -72,6 +72,7 @@ import com.android.window.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.LongConsumer;
 
@@ -934,7 +935,12 @@ class TransitionController {
             @Nullable RemoteTransition remoteTransition,
             @Nullable TransitionRequestInfo.DisplayChange displayChange) {
         final Transition newTransition = createTransition(type, flags);
-        requestStartTransition(newTransition, null /* trigger */, remoteTransition, displayChange);
+        List<TransitionRequestInfo.DisplayChange> displayChanges = null;
+        if (displayChange != null) {
+            displayChanges = new ArrayList<>();
+            displayChanges.add(displayChange);
+        }
+        requestStartTransition(newTransition, null /* trigger */, remoteTransition, displayChanges);
         if (displayChange != null) {
             setDisplaySyncMethod(displayChange, trigger);
         }
@@ -952,8 +958,8 @@ class TransitionController {
     @NonNull
     Transition requestStartTransition(@NonNull Transition transition, @Nullable Task startTask,
             @Nullable RemoteTransition remoteTransition,
-            @Nullable TransitionRequestInfo.DisplayChange displayChange) {
-        return requestStartTransition(transition, startTask, remoteTransition, displayChange,
+            @Nullable List<TransitionRequestInfo.DisplayChange> displayChanges) {
+        return requestStartTransition(transition, startTask, remoteTransition, displayChanges,
                 null /* userChange */, null /* windowingLayerChange */,
                 null /* fullscreenRequestChange */);
     }
@@ -972,7 +978,7 @@ class TransitionController {
             @NonNull Task startTask,
             @NonNull TransitionRequestInfo.FullscreenRequestChange fullscreenRequestChange) {
         return requestStartTransition(transition, startTask, null /* remoteTransition */,
-                null /* displayChange */, null /* userChange */, null /* windowingLayerChange */,
+                null /* displayChanges */, null /* userChange */, null /* windowingLayerChange */,
                 fullscreenRequestChange);
     }
 
@@ -980,7 +986,7 @@ class TransitionController {
     @NonNull
     Transition requestStartTransition(@NonNull Transition transition, @Nullable Task startTask,
             @Nullable RemoteTransition remoteTransition,
-            @Nullable TransitionRequestInfo.DisplayChange displayChange,
+            @Nullable List<TransitionRequestInfo.DisplayChange> displayChanges,
             @Nullable TransitionRequestInfo.UserChange userChange,
             @Nullable TransitionRequestInfo.WindowingLayerChange windowingLayerChange,
             @Nullable TransitionRequestInfo.FullscreenRequestChange fullscreenRequestChange) {
@@ -1036,7 +1042,7 @@ class TransitionController {
             }
 
             final TransitionRequestInfo request = new TransitionRequestInfo(transition.mType,
-                    startTaskInfo, pipChange, remoteInfo, displayChange,
+                    startTaskInfo, pipChange, remoteInfo, displayChanges,
                     transition.getRequestedLocation(), userChange, windowingLayerChange,
                     fullscreenRequestChange, transition.getFlags(), transition.getSyncId());
 
