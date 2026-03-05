@@ -51,8 +51,8 @@ import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE;
 import static android.media.audio.Flags.roForegroundAudioControl;
-import static com.android.media.audio.Flags.hardeningBfgs;
 
+import static com.android.media.audio.Flags.hardeningBfgs;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_BACKUP;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_OOM_ADJ_REASON;
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_UID_OBSERVERS;
@@ -628,6 +628,11 @@ public class OomAdjusterImpl extends OomAdjuster {
             Flags.enableCapabilityControllerComputation() ? new ArrayList<>() : null;
     private final Consumer<GraphEdge> mAddEdgeToUpdateConsumer =
             Flags.enableCapabilityControllerComputation() ? mEdgesToUpdate::add : null;
+    /**
+     * A list of reachable nodes for partial graph updates in {@link #partialUpdateProcessGraphLSP}.
+     */
+    private final ArrayList<ProcessNode> mReachableNodes =
+            Flags.enableCapabilityControllerComputation() ? new ArrayList<>() : null;
 
     void unlinkProcessRecordFromList(@NonNull ProcessRecordInternal app) {
         mProcessRecordProcStateNodes.unlink(app);
@@ -852,7 +857,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         // computeConnectionsLSP, where the process state computation is done. It also needs to
         // be before updateAppUidRecIfNecessaryLSP because updated capabilities are read there.
         if (Flags.enableCapabilityControllerComputation()) {
-            partialUpdateProcessGraphLSP(targets);
+            partialUpdateProcessGraphLSP(targets, reachables);
         }
 
         // If all processes have an assigned adj, no need to calculate and assign cached adjs.
@@ -874,21 +879,36 @@ public class OomAdjusterImpl extends OomAdjuster {
         postUpdateOomAdjInnerLSP(oomAdjReason, activeUids, now, nowElapsed, oldTime, false);
     }
 
-    /** Performs a partial update to the process graph from a set of target processes. */
+    /**
+     * Performs a partial update to the process graph.
+     *
+     * @param targets    The set of target processes that have triggered the update.
+     * @param reachables The list of processes that are reachable from {@code targets} and may
+     *                   change in the update.
+     */
     @GuardedBy({"mServiceLock", "mProcLock"})
-    private void partialUpdateProcessGraphLSP(ArraySet<ProcessRecordInternal> targets) {
+    private void partialUpdateProcessGraphLSP(ArraySet<ProcessRecordInternal> targets,
+            ArrayList<ProcessRecordInternal> reachables) {
         if (!mEdgesToUpdate.isEmpty()) {
             Slog.e(TAG, "mEdgesToUpdate is not empty at the beginning of a partial update");
             mEdgesToUpdate.clear();
+        }
+        if (!mReachableNodes.isEmpty()) {
+            Slog.e(TAG, "mReachableNodes is not empty at the beginning of a partial update");
+            mReachableNodes.clear();
         }
 
         for (int i = 0, size = targets.size(); i < size; i++) {
             targets.valueAt(i).getProcessNode().forEachIncomingEdge(mAddEdgeToUpdateConsumer);
         }
+        for (int i = 0, size = reachables.size(); i < size; i++) {
+            mReachableNodes.add(reachables.get(i).getProcessNode());
+        }
 
         // Only triggers computation without using its result.
-        mCapabilityController.update(mEdgesToUpdate);
+        mCapabilityController.update(mEdgesToUpdate, mReachableNodes);
         mEdgesToUpdate.clear();
+        mReachableNodes.clear();
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
