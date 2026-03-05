@@ -611,6 +611,7 @@ public class AccessibilityFloatingMenuControllerTest extends SysuiTestCase {
                         mock(Magnification.class));
         controller.init();
         controller.mUserInitializationCompleteCallback.onUserInitializationComplete(0);
+        mTestableLooper.processAllMessages();
 
         return controller;
     }
