@@ -36,6 +36,7 @@ import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.res.R
@@ -129,7 +130,7 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
 
     @Test
     @EnableSceneContainer
-    fun entireScreenTouchable_sceneContainerEnabled_isIdleOnOccluded() =
+    fun entireScreenNotTouchable_sceneContainerEnabled_isIdleOnOccluded() =
         kosmos.runTest {
             kosmos.sceneInteractor.changeScene(Scenes.Occluded, "test")
             kosmos.sceneContainerRepository.setTransitionState(
@@ -141,6 +142,33 @@ class ShadeTouchableRegionManagerTest : SysuiTestCase() {
             kosmos.sceneContainerRepository.setTransitionState(
                 flowOf(Idle(currentScene = Scenes.Lockscreen))
             )
+            assertThat(underTest.shouldMakeEntireScreenTouchable()).isTrue()
+
+            kosmos.sceneInteractor.changeScene(Scenes.Occluded, "test")
+            kosmos.sceneContainerRepository.setTransitionState(
+                flowOf(Idle(currentScene = Scenes.Occluded))
+            )
+            assertThat(underTest.shouldMakeEntireScreenTouchable()).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun entireScreenTouchable_sceneContainerEnabled_isIdleOnOccluded_bouncerShowing() =
+        kosmos.runTest {
+            kosmos.sceneInteractor.changeScene(Scenes.Occluded, "test")
+            kosmos.sceneContainerRepository.setTransitionState(
+                flowOf(Idle(currentScene = Scenes.Occluded))
+            )
+            assertThat(underTest.shouldMakeEntireScreenTouchable()).isFalse()
+
+            kosmos.sceneInteractor.changeScene(Scenes.Occluded, "test")
+            kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "test")
+            kosmos.sceneContainerRepository.setTransitionState(
+                flowOf(
+                    Idle(currentScene = Scenes.Occluded, currentOverlays = setOf(Overlays.Bouncer))
+                )
+            )
+            runCurrent()
             assertThat(underTest.shouldMakeEntireScreenTouchable()).isTrue()
 
             kosmos.sceneInteractor.changeScene(Scenes.Occluded, "test")

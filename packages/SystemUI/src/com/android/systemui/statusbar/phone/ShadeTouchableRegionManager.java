@@ -44,6 +44,7 @@ import com.android.systemui.desktop.domain.interactor.DesktopInteractor;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
+import com.android.systemui.scene.shared.model.Overlays;
 import com.android.systemui.scene.shared.model.Scenes;
 import com.android.systemui.shade.ShadeOverlayBoundsListener;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
@@ -451,7 +452,9 @@ public final class ShadeTouchableRegionManager implements Dumpable {
                 || (SceneContainerFlag.isEnabled()
                     && (!mIsSceneContainerUiEmpty || mIsRemoteUserInteractionOngoing)
                     // Allow touch events to fall through to the underlying Activities
-                    && !mSceneInteractor.getCurrentSceneAsState().equals(Scenes.Occluded))
+                    && (mSceneInteractor.getCurrentOverlays().getValue().contains(Overlays.Bouncer)
+                        || (!mSceneInteractor.getCurrentSceneAsState().equals(Scenes.Occluded)))
+                )
                 || mPrimaryBouncerInteractor.isShowing().getValue()
                 || mAlternateBouncerInteractor.isVisibleState()
                 // The glanceable hub is a full-screen UI within the notification shade window. When
