@@ -114,6 +114,7 @@ public class TestableNotificationManagerService extends NotificationManagerServi
         super(context);
         mTestableContext = context;
         mTestableLooper = looper;
+        mComputerControlHelper = new FakeComputerControlHelper();
     }
     void init() throws IOException {
         init("<notification-policy></notification-policy", null);
@@ -189,6 +190,10 @@ public class TestableNotificationManagerService extends NotificationManagerServi
 
     RankingHelper getRankingHelper() {
         return mRankingHelper;
+    }
+
+    FakeComputerControlHelper getFakeComputerControlHelper() {
+        return (FakeComputerControlHelper) mComputerControlHelper;
     }
 
     /**
