@@ -8019,6 +8019,10 @@
     <string-array translatable="false" name="config_allowlistPersonalContextInsightReceiving">
     </string-array>
 
+    <!-- Timeout for waiting on text classification suggestions from PersonalContextService (milliseconds).
+         This default is derived from config_smartSelectionInitializedTimeoutMillis. -->
+    <integer name="config_textClassifierPersonalContextTimeoutMillis">180</integer>
+
     <!-- Whether the Wear-specific charging experience is enabled -->
     <bool name="config_wearChargingExperienceEnabled">false</bool>
 </resources>

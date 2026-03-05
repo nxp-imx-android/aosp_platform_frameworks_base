@@ -6571,6 +6571,9 @@
   <!-- Packages allowed to receive context insights -->
   <java-symbol type="array" name="config_allowlistPersonalContextInsightReceiving" />
 
+  <!-- PersonalContext TextClassifier configuration -->
+  <java-symbol type="integer" name="config_textClassifierPersonalContextTimeoutMillis" />
+
   <!-- TV Watchdog configuration -->
   <java-symbol type="integer" name="config_tvWatchdogUidIoUsageSummaryTopCount" />
   <java-symbol type="integer" name="config_tvWatchdogIoUsageSummaryMinSystemTotalWrittenBytes" />

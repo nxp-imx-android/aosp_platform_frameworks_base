@@ -41,8 +41,8 @@ public class PersonalContextBridgeImpl extends PersonalContextBridge {
     private static final String TAG = "PersonalContextBridge";
     private final ScheduledExecutorService mScheduledExecutorService =
             Executors.newSingleThreadScheduledExecutor();
-    private final PersonalContextAsyncReceiver mReceiver =
-            new PersonalContextAsyncReceiver(mScheduledExecutorService);
+    private final PersonalContextAsyncReceiver mReceiver;
+    private final Config mConfig;
 
     @Override
     public void trigger(int userId, String sessionId, TextClassification.Request request) {
@@ -142,5 +142,10 @@ public class PersonalContextBridgeImpl extends PersonalContextBridge {
         }
     }
 
-    public PersonalContextBridgeImpl() {}
+    public PersonalContextBridgeImpl(Config config) {
+        mConfig = config;
+        mReceiver =
+                new PersonalContextAsyncReceiver(
+                        mScheduledExecutorService, mConfig.mTimeoutInMillis());
+    }
 }
