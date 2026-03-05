@@ -17,14 +17,19 @@
 package com.android.systemui.notifications.intelligence.rules.data
 
 import com.android.systemui.CoreStartable
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.ContactsRepositoryImpl
+import com.android.systemui.notifications.intelligence.rules.data.repository.FreeformRuleRepository
+import com.android.systemui.notifications.intelligence.rules.data.repository.FreeformRuleRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.data.repository.InstalledAppsRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.InstalledAppsRepositoryImpl
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepository
 import com.android.systemui.notifications.intelligence.rules.data.repository.NotificationRulesRepositoryImpl
+import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayTestConfig
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 
@@ -43,7 +48,21 @@ interface NotificationRulesDataModule {
     ): NotificationRulesRepository
 
     @Binds
+    public fun bindFreeformRepository(impl: FreeformRuleRepositoryImpl): FreeformRuleRepository
+
+    @Binds
     @IntoMap
     @ClassKey(NotificationRulesRepositoryImpl::class)
     public fun bindRepoAsCoreStartable(impl: NotificationRulesRepositoryImpl): CoreStartable
+
+    companion object {
+        @Provides
+        @SysUISingleton
+        fun provideTestConfig(): NmContextualDisplayTestConfig {
+            return object : NmContextualDisplayTestConfig {
+                override val delayOnRuleGenerationMs = 0L
+                override val forceErrorOnRuleGeneration = false
+            }
+        }
+    }
 }

@@ -32,6 +32,8 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -54,8 +56,10 @@ class NotificationRulesRepositoryTest : SysuiTestCase() {
                     text = "sample text",
                 )
 
-            assertThat(result.isNew).isTrue()
-            assertThat(result.action).isEqualTo(ActionModel.Block)
+            assertThat(result).isInstanceOf(ResponseModel.Success::class.java)
+            assertThat((result as ResponseModel.Success<DraftRuleModel>).draftRule.isNew).isTrue()
+            assertThat((result as ResponseModel.Success<DraftRuleModel>).draftRule.action)
+                .isEqualTo(ActionModel.Block)
         }
 
     @Test

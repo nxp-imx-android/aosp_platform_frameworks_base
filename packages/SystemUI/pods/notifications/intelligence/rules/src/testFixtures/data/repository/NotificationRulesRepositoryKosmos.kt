@@ -25,6 +25,7 @@ val Kosmos.realNotificationRulesRepository by
     Kosmos.Fixture {
         NotificationRulesRepositoryImpl(
             notificationManager,
+            freeformRuleRepository = realFreeformRuleRepository,
             applicationScope = applicationCoroutineScope,
             backgroundDispatcher = testDispatcher,
         )

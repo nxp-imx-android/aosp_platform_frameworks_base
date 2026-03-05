@@ -2683,6 +2683,12 @@
     <string name="notification_rules_activity_title" translatable="false">Notification Rules</string>
     <!-- Title for a page where users can create a new notification rule. [CHAR LIMIT=NONE]-->
     <string name="notification_rules_create_new_title" translatable="false">Create New</string>
+    <!-- Text explaining that a notification rule is being generated and the user must wait for generation to finish. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_generating" translatable="false">Generating a rule\u2026</string>
+    <!-- Title for an error box explaining that a notification rule could not be generated. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_generation_error_title" translatable="false">Generation error</string>
+    <!-- Error text explaining that a notification rule could not be generated. [CHAR LIMIT=NONE]-->
+    <string name="notification_rules_generation_error_body" translatable="false">The rule could not be generated. Please try again.</string>
     <!-- Title for a button that will let users move to the next step of creating a new notification rule. [CHAR LIMIT=NONE]-->
     <string name="notification_rules_next" translatable="false">Next</string>
 

@@ -32,8 +32,8 @@ import com.android.systemui.notifications.intelligence.rules.shared.NmContextual
 import com.android.systemui.notifications.intelligence.rules.shared.model.ActionModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.FilterModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ResponseModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
-import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +45,7 @@ class NotificationRulesRepositoryImpl
 @Inject
 constructor(
     private val notificationManager: NotificationManager,
+    private val freeformRuleRepository: FreeformRuleRepository,
     @Application private val applicationScope: CoroutineScope,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) : NotificationRulesRepository, CoreStartable {
@@ -83,14 +84,8 @@ constructor(
     override suspend fun createDraftRuleFromFreeformText(
         action: ActionModel,
         text: String,
-    ): DraftRuleModel {
-        // TODO: b/478225883 - Send freeform text for processing.
-        return DraftRuleModel(
-            isNew = true,
-            action = action,
-            contacts = RuleValue.Ambiguous(text),
-            includedApps = null,
-        )
+    ): ResponseModel<DraftRuleModel> {
+        return freeformRuleRepository.createDraftRuleFromFreeformText(action, text)
     }
 
     override fun createRule(newRule: RuleModel) {

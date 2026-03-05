@@ -28,10 +28,22 @@ public interface NotificationRuleFreeformTextCreationViewModel {
     /** The currently-inputted text on the screen. */
     public val enteredText: TextFieldState
 
+    /**
+     * True if the user's freeform text has been sent for processing and SysUI awaits a response.
+     */
+    val isLoadingIndicatorVisible: Boolean
+    /** True if there was an error in processing the freeform text. */
+    val isErrorVisible: Boolean
+
     /** Creates a draft rule based on the freeform text inputted by the user. */
-    public suspend fun createDraftRuleFromFreeformText(): DraftRuleModel
+    public suspend fun createDraftRuleFromFreeformText()
+
+    /** Cancels any pending requests. */
+    public fun cancelRequest()
 
     public interface Factory {
-        public fun create(): NotificationRuleFreeformTextCreationViewModel
+        public fun create(
+            onNavigateToEditScreen: (DraftRuleModel) -> Unit
+        ): NotificationRuleFreeformTextCreationViewModel
     }
 }
