@@ -144,16 +144,16 @@ public class DragPositioningCallbackUtility {
             }
         }
 
-        // If width or height are negative or exceeding the width or height constraints, revert the
+        // If width or height are negative or violating the width or height constraints, revert the
         // respective bounds to use previous bound dimensions.
-        if (isExceedingWidthConstraint(repositionTaskBounds.width(),
+        if (isViolatingWidthConstraints(repositionTaskBounds.width(),
                 /* startingWidth= */ oldRight - oldLeft, stableBounds, displayController,
                 windowDecoration, canEnterDesktopMode)) {
             repositionTaskBounds.right = oldRight;
             repositionTaskBounds.left = oldLeft;
             isAspectRatioMaintained = false;
         }
-        if (isExceedingHeightConstraint(repositionTaskBounds.height(),
+        if (isViolatingHeightConstraints(repositionTaskBounds.height(),
                 /* startingHeight= */oldBottom - oldTop, stableBounds, displayController,
                 windowDecoration, canEnterDesktopMode)) {
             repositionTaskBounds.top = oldTop;
@@ -251,16 +251,16 @@ public class DragPositioningCallbackUtility {
     }
 
     /**
-     * Checks whether the new task bounds exceed the allowed width.
+     * Checks whether the new task bounds violate the allowed width.
      *
      * @param repositionedWidth task width after repositioning.
      * @param startingWidth task width before repositioning.
      * @param maxResizeBounds stable bounds for display.
      * @param displayController display controller for the task being checked.
      * @param windowDecoration contains decor info and helpers for the task.
-     * @return whether the task is exceeding any of the width constrains, minimum or maximum.
+     * @return whether the task is violating any of the width constraints, minimum or maximum.
      */
-    public static boolean isExceedingWidthConstraint(int repositionedWidth, int startingWidth,
+    public static boolean isViolatingWidthConstraints(int repositionedWidth, int startingWidth,
             Rect maxResizeBounds, DisplayController displayController,
             WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
         boolean isSizeIncreasing = (repositionedWidth - startingWidth) > 0;
@@ -277,16 +277,16 @@ public class DragPositioningCallbackUtility {
     }
 
     /**
-     * Checks whether the new task bounds exceed the allowed height.
+     * Checks whether the new task bounds violate the allowed height.
      *
      * @param repositionedHeight task's height after repositioning.
      * @param startingHeight task's height before repositioning.
      * @param maxResizeBounds stable bounds for display.
      * @param displayController display controller for the task being checked.
      * @param windowDecoration contains decor info and helpers for the task.
-     * @return whether the task is exceeding any of the height constrains, minimum or maximum.
+     * @return whether the task is violating any of the height constraints, minimum or maximum.
      */
-    public static boolean isExceedingHeightConstraint(int repositionedHeight, int startingHeight,
+    public static boolean isViolatingHeightConstraints(int repositionedHeight, int startingHeight,
             Rect maxResizeBounds, DisplayController displayController,
             WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
         boolean isSizeIncreasing = (repositionedHeight - startingHeight) > 0;
