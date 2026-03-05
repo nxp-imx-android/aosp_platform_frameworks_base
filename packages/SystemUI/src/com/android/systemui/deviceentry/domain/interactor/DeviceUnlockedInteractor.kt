@@ -328,7 +328,7 @@ constructor(
     private suspend fun handleUnlockEvents() {
         // Unlock the device when a new unlock source is detected.
         deviceUnlockSource.collect {
-            Log.d(TAG, "unlocking due to \"$it\"")
+            Log.i(TAG, "unlocking due to \"$it\"")
             repository.deviceUnlockStatus.value = DeviceUnlockStatus(true, it)
         }
     }
@@ -428,16 +428,16 @@ constructor(
         val debugReason = event.debugReason
         when (event) {
             is LockImmediately -> {
-                Log.d(TAG, "locking without delay due to \"$debugReason\"")
+                Log.i(TAG, "locking without delay due to \"$debugReason\"")
                 repository.deviceUnlockStatus.value = DeviceUnlockStatus(false, null)
             }
 
             is ExpectLockWithDelay -> {
                 if (lockAfterScreenTimeoutInteractor.delayLockIsImmediate()) {
-                    Log.d(TAG, "lock timeout is 0, so locking immediately due to \"$debugReason\"")
+                    Log.i(TAG, "lock timeout is 0, so locking immediately due to \"$debugReason\"")
                     repository.deviceUnlockStatus.value = DeviceUnlockStatus(false, null)
                 } else {
-                    Log.d(TAG, "waiting for lock timeout due to \"$debugReason\"")
+                    Log.i(TAG, "waiting for lock timeout due to \"$debugReason\"")
                 }
             }
         }

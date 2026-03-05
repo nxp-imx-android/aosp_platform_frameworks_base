@@ -174,7 +174,7 @@ constructor(
             return
         }
 
-        Log.d(TAG, "timer started due to $reason")
+        Log.i(TAG, "timer started due to $reason")
         scheduleAlarm()
     }
 
@@ -192,7 +192,7 @@ constructor(
         }
 
         if (shouldCancelAlarm) {
-            Log.d(TAG, "timer stopped due to $reason")
+            Log.i(TAG, "timer stopped due to $reason")
             cancelAlarm()
         }
     }
@@ -217,7 +217,7 @@ constructor(
             )
 
         val delay = lockDelay()
-        Log.d(TAG, "scheduling lock after screen timeout alarm seq=$counter in ${delay}ms")
+        Log.i(TAG, "scheduling lock after screen timeout alarm seq=$counter in ${delay}ms")
         val time = systemClock.elapsedRealtime() + delay
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, time, sender)
 
@@ -230,7 +230,7 @@ constructor(
      */
     private fun cancelAlarm() {
         var canceledCounter = timeoutCounter.getAndIncrement()
-        Log.d(TAG, "canceled lock after screen timeout alarm seq=$canceledCounter")
+        Log.i(TAG, "canceled lock after screen timeout alarm seq=$canceledCounter")
     }
 
     /**
