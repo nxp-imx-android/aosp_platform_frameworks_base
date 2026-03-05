@@ -135,7 +135,6 @@ interface IActivityTaskManager {
 
     boolean isActivityStartAllowedOnDisplay(int displayId, in Intent intent, in String resolvedType,
             int userId);
-    boolean isTaskMoveAllowedOnDisplay(int displayId);
 
     void unhandledBack();
 

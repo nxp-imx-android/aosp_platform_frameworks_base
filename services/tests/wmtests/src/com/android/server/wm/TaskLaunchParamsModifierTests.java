@@ -35,6 +35,7 @@ import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.
 import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.RESULT_SKIP;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -679,6 +680,7 @@ public class TaskLaunchParamsModifierTests extends
 
         assertEquivalentWindowingMode(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode,
                 WINDOWING_MODE_FULLSCREEN);
+        assertFalse(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test
@@ -827,6 +829,7 @@ public class TaskLaunchParamsModifierTests extends
 
         assertEquivalentWindowingMode(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode,
                 WINDOWING_MODE_FREEFORM);
+        assertTrue(mResult.mIsTaskMoveDisallowed);
     }
 
     @Test

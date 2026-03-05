@@ -1199,6 +1199,15 @@ public final class ActivityStarterTests extends ActivityStarterTestBase {
 
     @Test
     public void testMovableTaskRequired_succeedsIfTaskAllowedToMove() {
+        // Registering no-op modifier so that the test actually tests the ActivityStarter's
+        // behavior, not LPMs'.
+        final LaunchParamsModifier modifier = mock(LaunchParamsModifier.class);
+        doReturn(LaunchParamsModifier.RESULT_DONE)
+                .when(modifier)
+                .onCalculate(any(), any(), any(), any(), any(), any(), anyInt(), any(),
+                    any(LaunchParams.class));
+        mAtm.mTaskSupervisor.getLaunchParamsController().registerModifier(modifier);
+
         final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK);
         final ActivityOptions options = ActivityOptions.makeBasic().setMovableTaskRequired(true);
 

@@ -16,13 +16,10 @@
 
 package com.android.server.wm;
 
-import static android.Manifest.permission.REPOSITION_SELF_WINDOWS;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.pm.ActivityInfo.PERSIST_ACROSS_REBOOTS;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
-import static android.content.pm.PackageManager.PERMISSION_DENIED;
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.service.dreams.Flags.FLAG_DREAMS_QUERY_APPLICATION_INFO;
@@ -30,7 +27,6 @@ import static android.service.dreams.Flags.FLAG_DREAMS_QUERY_APPLICATION_INFO;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
@@ -41,7 +37,6 @@ import static com.android.server.wm.ActivityRecord.State.PAUSED;
 import static com.android.server.wm.ActivityRecord.State.PAUSING;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STOPPING;
-import static com.android.window.flags.Flags.FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API;
 import static com.android.window.flags.Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM;
 
 import static org.junit.Assert.assertEquals;
@@ -114,7 +109,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.mockito.MockitoSession;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -1950,54 +1944,6 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
         assertFalse(mAtm.mActivityClientController.enterPictureInPictureMode(record.token, params));
         assertFalse(record.inPinnedWindowingMode());
-    }
-
-    @EnableFlags(FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API)
-    @Test
-    public void testIsTaskMoveAllowedOnDisplay_permissionGranted() {
-        final int displayId = Display.DEFAULT_DISPLAY;
-        final DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
-
-        MockitoSession session =
-                mockitoSession().spyStatic(ActivityTaskManagerService.class).startMocking();
-        try {
-            doReturn(PERMISSION_GRANTED).when(() -> {
-                return ActivityTaskManagerService.checkPermission(
-                        eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
-            });
-
-            doReturn(true).when(dc).isTaskMoveAllowedOnDisplay();
-            assertTrue(mAtm.isTaskMoveAllowedOnDisplay(displayId));
-
-            doReturn(false).when(dc).isTaskMoveAllowedOnDisplay();
-            assertFalse(mAtm.isTaskMoveAllowedOnDisplay(displayId));
-        } finally {
-            session.finishMocking();
-        }
-    }
-
-    @EnableFlags(FLAG_ENABLE_IS_TASK_MOVE_ALLOWED_ON_DISPLAY_API)
-    @Test
-    public void testIsTaskMoveAllowedOnDisplay_permissionDenied() {
-        final int displayId = Display.DEFAULT_DISPLAY;
-        final DisplayContent dc = mRootWindowContainer.getDisplayContent(displayId);
-
-        MockitoSession session =
-                mockitoSession().spyStatic(ActivityTaskManagerService.class).startMocking();
-        try {
-            doReturn(PERMISSION_DENIED).when(() -> {
-                return ActivityTaskManagerService.checkPermission(
-                        eq(REPOSITION_SELF_WINDOWS), anyInt(), anyInt());
-            });
-
-            doReturn(true).when(dc).isTaskMoveAllowedOnDisplay();
-            assertFalse(mAtm.isTaskMoveAllowedOnDisplay(displayId));
-
-            doReturn(false).when(dc).isTaskMoveAllowedOnDisplay();
-            assertFalse(mAtm.isTaskMoveAllowedOnDisplay(displayId));
-        } finally {
-            session.finishMocking();
-        }
     }
 
     @Test
