@@ -89,6 +89,9 @@ public:
     void setSurfaceControl(sp<SurfaceControl> surfaceControl);
     void setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq);
 #ifdef __ANDROID__
+    void setCornerRadiiCallback(std::function<void(const gui::CornerRadii&)> cornerRadiiCallback);
+    void setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback);
+
     // Can be called on UI thread or RenderThread.
     void mergeWithNextTransaction(SurfaceComposerClient::Transaction*, uint64_t);
 

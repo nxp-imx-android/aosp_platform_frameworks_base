@@ -1317,8 +1317,8 @@ public final class ViewRootImpl implements ViewParent,
             }
         };
 
-    private BLASTBufferQueue.CornerRadiiCallback mCornerRadiiCallback =
-            new BLASTBufferQueue.CornerRadiiCallback() {
+    private HardwareRenderer.CornerRadiiCallback mHardwareRendererCornerRadiiCallback =
+            new HardwareRenderer.CornerRadiiCallback() {
                 @Override
                 public void onCornerRadiiChanged(float[] cornerRadii) {
                     if (!setClientDrawnCornerRadii()) {
@@ -2137,6 +2137,14 @@ public final class ViewRootImpl implements ViewParent,
         }
     }
 
+  private void updateRendererSurfaceControlAndBbq(SurfaceControl sc, BLASTBufferQueue bq) {
+      if (mAttachInfo.mThreadedRenderer == null) { return; }
+      mAttachInfo.mThreadedRenderer.setSurfaceControl(sc, bq);
+      mAttachInfo.mThreadedRenderer.setCornerRadiiCallback(mHardwareRendererCornerRadiiCallback);
+      mAttachInfo.mThreadedRenderer.setWaitForBufferReleaseCallback(
+              mChoreographer::onWaitForBufferRelease);
+  }
+
     @UnsupportedAppUsage
     private void enableHardwareAcceleration(WindowManager.LayoutParams attrs) {
         mAttachInfo.mHardwareAccelerated = false;
@@ -2185,7 +2193,7 @@ public final class ViewRootImpl implements ViewParent,
                 if (mPerfHintSessionDisabled) {
                     renderer.setHintSessionEnabled(false);
                 }
-                renderer.setSurfaceControl(mSurfaceControl, mBlastBufferQueue);
+                updateRendererSurfaceControlAndBbq(mSurfaceControl, mBlastBufferQueue);
                 updateColorModeIfNeeded(attrs.getColorMode(), attrs.getDesiredHdrHeadroom());
                 mHdrRenderState.forceUpdateHdrSdrRatio();
                 updateForceDarkMode();
@@ -3052,12 +3060,12 @@ public final class ViewRootImpl implements ViewParent,
         // queuing buffers on multiple apply tokens causing out of order buffer submissions. We
         // fix this by setting the same apply token on all BBQs created by this VRI.
         mBlastBufferQueue.setApplyToken(mBbqApplyToken);
-        mBlastBufferQueue.update(mSurfaceControl,  mSurfaceSize.x, mSurfaceSize.y,
+        mBlastBufferQueue.update(mSurfaceControl, mSurfaceSize.x, mSurfaceSize.y,
                 mWindowAttributes.format);
         mBlastBufferQueue.setTransactionHangCallback(sTransactionHangCallback);
-        mBlastBufferQueue.setWaitForBufferReleaseCallback(mChoreographer::onWaitForBufferRelease);
-        mBlastBufferQueue.setCornerRadiiCallback(mCornerRadiiCallback);
+
         Surface blastSurface;
+
         blastSurface = mBlastBufferQueue.createSurfaceWithHandle();
         // Only call transferFrom if the surface has changed to prevent inc the generation ID and
         // causing EGL resources to be recreated.
@@ -3130,9 +3138,7 @@ public final class ViewRootImpl implements ViewParent,
             mBlastBufferQueue = null;
         }
 
-        if (mAttachInfo.mThreadedRenderer != null) {
-            mAttachInfo.mThreadedRenderer.setSurfaceControl(null, null);
-        }
+        updateRendererSurfaceControlAndBbq(null, null);
 
         // Also reset the VRR relevant values.
         mPreferredFrameRateCategory = FRAME_RATE_CATEGORY_DEFAULT;
@@ -10296,7 +10302,7 @@ public final class ViewRootImpl implements ViewParent,
         if (mSurfaceControl.isValid()) {
             updateRenderTargetIfNeeded();
             if (mAttachInfo.mThreadedRenderer != null) {
-                mAttachInfo.mThreadedRenderer.setSurfaceControl(mSurfaceControl, mBlastBufferQueue);
+                updateRendererSurfaceControlAndBbq(mSurfaceControl, mBlastBufferQueue);
             }
             mHdrRenderState.forceUpdateHdrSdrRatio();
             if (transformHintChanged) {

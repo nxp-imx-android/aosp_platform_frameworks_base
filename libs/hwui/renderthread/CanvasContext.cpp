@@ -290,6 +290,15 @@ void CanvasContext::setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) {
 }
 
 #ifdef __ANDROID__
+void CanvasContext::setCornerRadiiCallback(
+        std::function<void(const gui::CornerRadii&)> cornerRadiiCallback) {
+    mRenderPipeline->setCornerRadiiCallback(std::move(cornerRadiiCallback));
+}
+
+void CanvasContext::setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback) {
+    mRenderPipeline->setWaitForBufferReleaseCallback(std::move(callback));
+}
+
 bool CanvasContext::syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> t,
                                         bool acquireSingleBuffer) {
     return mRenderPipeline->syncNextTransaction(t, acquireSingleBuffer);
@@ -908,7 +917,7 @@ void CanvasContext::reportMetricsWithPresentTime() {
             return;
         }
     }  // release lock
-    if (mNativeSurface == nullptr) {
+    if (!mRenderPipeline->hasRenderTarget()) {
         return;
     }
     ATRACE_CALL();
@@ -929,12 +938,11 @@ void CanvasContext::reportMetricsWithPresentTime() {
     }  // release lock
 
     nsecs_t presentTime = 0;
-    native_window_get_frame_timestamps(
-            mNativeSurface->getNativeWindow(), frameNumber, nullptr /*outRequestedPresentTime*/,
-            nullptr /*outAcquireTime*/, nullptr /*outLatchTime*/,
-            nullptr /*outFirstRefreshStartTime*/, nullptr /*outLastRefreshStartTime*/,
-            nullptr /*outGpuCompositionDoneTime*/, &presentTime, nullptr /*outDequeueReadyTime*/,
-            nullptr /*outReleaseTime*/);
+    mRenderPipeline->getFrameTimestamps(
+            frameNumber, nullptr /*outRequestedPresentTime*/, nullptr /*outAcquireTime*/,
+            nullptr /*outLatchTime*/, nullptr /*outFirstRefreshStartTime*/,
+            nullptr /*outLastRefreshStartTime*/, nullptr /*outGpuCompositionDoneTime*/,
+            &presentTime, nullptr /*outDequeueReadyTime*/, nullptr /*outReleaseTime*/);
 
     forthBehind->set(FrameInfoIndex::DisplayPresentTime) = presentTime;
     {  // acquire lock
