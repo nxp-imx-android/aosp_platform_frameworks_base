@@ -55,7 +55,7 @@ static struct {
 class NativeInputEventSender : public LooperCallback {
 public:
     NativeInputEventSender(JNIEnv* env, jobject senderWeak,
-                           const std::shared_ptr<InputChannel>& inputChannel,
+                           std::unique_ptr<InputChannel> inputChannel,
                            const sp<MessageQueue>& messageQueue);
 
     status_t initialize();
@@ -87,10 +87,10 @@ private:
 };
 
 NativeInputEventSender::NativeInputEventSender(JNIEnv* env, jobject senderWeak,
-                                               const std::shared_ptr<InputChannel>& inputChannel,
+                                               std::unique_ptr<InputChannel> inputChannel,
                                                const sp<MessageQueue>& messageQueue)
       : mSenderWeakGlobal(env->NewGlobalRef(senderWeak)),
-        mInputPublisher(inputChannel),
+        mInputPublisher(std::move(inputChannel)),
         mMessageQueue(messageQueue),
         mNextPublishedSeq(1) {
     if (kDebugDispatchCycle) {
