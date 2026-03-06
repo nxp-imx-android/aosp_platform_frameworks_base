@@ -19,11 +19,9 @@ package com.android.server.privatecompute;
 import android.util.Log;
 import com.android.internal.annotations.VisibleForTesting;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
@@ -61,9 +59,17 @@ class AuditLogFileWriter {
      * an ExecutorService to stop all of its threads somewhat gracefully.
      *
      * @param entries The list of AuditLogEntry to write.
-     * @throws IOException If an error occurs.
+     * @throws IOException If the parent directory cannot be created, or if there's an error
+     *     writing to the file.
      */
     void writeEntries(List<byte[]> entries) throws IOException {
+        File parent = mFile.getParentFile();
+        if (parent != null && !parent.exists()) {
+            if (!parent.mkdirs()) {
+                throw new IOException("Unable to create directory for audit file: " + parent);
+            }
+        }
+
         try (DataOutputStream outputStream =
                 new DataOutputStream(
                         new BufferedOutputStream(
