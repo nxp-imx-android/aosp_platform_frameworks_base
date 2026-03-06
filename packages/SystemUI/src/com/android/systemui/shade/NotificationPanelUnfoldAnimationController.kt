@@ -89,8 +89,11 @@ constructor(
     }
 
     fun setup(root: ViewGroup) {
+        // TODO(b/488459485): use a shadeMode-aware value to replace the fixed dimen
         val translationMax =
-            context.resources.getDimensionPixelSize(R.dimen.notification_side_paddings).toFloat()
+            context.resources
+                .getDimensionPixelSize(R.dimen.notification_side_paddings_single)
+                .toFloat()
         translateAnimator.init(root, translationMax)
         val splitShadeStatusBarViewGroup: ViewGroup? =
             root.findViewById(R.id.split_shade_status_bar)

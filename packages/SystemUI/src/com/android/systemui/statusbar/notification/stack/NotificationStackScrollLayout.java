@@ -978,7 +978,7 @@ public class NotificationStackScrollLayout
                 R.dimen.min_top_overscroll_to_qs);
         mStatusBarHeight = SystemBarUtils.getStatusBarHeight(mContext);
         mBottomPadding = res.getDimensionPixelSize(R.dimen.notification_panel_padding_bottom);
-        mMinimumPaddings = res.getDimensionPixelSize(R.dimen.notification_side_paddings);
+        mMinimumPaddings = res.getDimensionPixelSize(R.dimen.notification_side_paddings_single);
         mQsTilePadding = res.getDimensionPixelOffset(R.dimen.qs_tile_margin_horizontal);
         mSidePaddings = mMinimumPaddings;  // Updated in onMeasure by updateSidePadding()
         mMinInteractionHeight = res.getDimensionPixelSize(
@@ -990,34 +990,52 @@ public class NotificationStackScrollLayout
     }
 
     void updateSidePadding(int viewWidth) {
-        final int orientation = getResources().getConfiguration().orientation;
-        final boolean useLargeSidePaddings = SceneContainerFlag.isEnabled()
-                ? mScrollViewFields.useLargeSidePaddings
-                : !mShouldUseSplitNotificationShade;
-        mLastUpdateSidePaddingDumpStringSupplier = () -> "viewWidth=" + viewWidth
-                + " orientation=" + orientation
-                + " useLargeSidePaddings=" + useLargeSidePaddings;
+        if (SceneContainerFlag.isEnabled()) {
+            mSidePaddings = mScrollViewFields.baseSidePadding;
+            mLastUpdateSidePaddingDumpStringSupplier = () -> "viewWidth=" + viewWidth
+                    + " baseSidePadding=" + mSidePaddings
+                    + " alignToInnerQqsTiles=" + mScrollViewFields.alignToInnerQqsTiles;
 
-        mSidePaddings = mMinimumPaddings;
-        if (viewWidth == 0) {
-            Log.e(TAG, "updateSidePadding: viewWidth is zero");
-            return;
+            if (viewWidth == 0) {
+                Log.e(TAG, "updateSidePadding: viewWidth is zero");
+                return;
+            }
+
+            if (mScrollViewFields.alignToInnerQqsTiles) {
+                final int innerWidth = viewWidth - mSidePaddings * 2;
+                mSidePaddings += calculateExtraSidePaddingToAlignToTile(innerWidth);
+            }
+        } else {
+            final int orientation = getResources().getConfiguration().orientation;
+            mLastUpdateSidePaddingDumpStringSupplier = () -> "viewWidth=" + viewWidth
+                    + " orientation=" + orientation;
+
+            mSidePaddings = mMinimumPaddings;
+            if (viewWidth == 0) {
+                Log.e(TAG, "updateSidePadding: viewWidth is zero");
+                return;
+            }
+
+            if (orientation == Configuration.ORIENTATION_PORTRAIT
+                    || mShouldUseSplitNotificationShade) {
+                return;
+            }
+
+            final int innerWidth = viewWidth - mMinimumPaddings * 2;
+            mSidePaddings = mMinimumPaddings + calculateExtraSidePaddingToAlignToTile(innerWidth);
         }
+    }
 
-        if (orientation == Configuration.ORIENTATION_PORTRAIT || !useLargeSidePaddings) {
-            return;
-        }
-
-        final int innerWidth = viewWidth - mMinimumPaddings * 2;
+    private int calculateExtraSidePaddingToAlignToTile(int innerWidth) {
         if (widerLandscapeNotifications()) {
             // We can fit 8 small QS tiles on the screen in landscape, plus the padding between
             // them. We want our side padding to essentially be one small QS tile on each side, plus
             // the minimum padding that also applies to the QS tiles.
             final int smallQsTileWidth = (innerWidth + mQsTilePadding) / 8 - mQsTilePadding;
-            mSidePaddings = mMinimumPaddings + smallQsTileWidth + mQsTilePadding;
+            return smallQsTileWidth + mQsTilePadding;
         } else {
             final int qsTileWidth = (innerWidth - mQsTilePadding * 3) / 4;
-            mSidePaddings = mMinimumPaddings + qsTileWidth + mQsTilePadding;
+            return qsTileWidth + mQsTilePadding;
         }
     }
 
@@ -3476,9 +3494,15 @@ public class NotificationStackScrollLayout
     }
 
     @Override
-    public void setUseLargeSidePaddings(boolean useLargeSidePaddings) {
+    public void setAlignToInnerQqsTiles(boolean alignToInnerQqsTiles) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        mScrollViewFields.useLargeSidePaddings = useLargeSidePaddings;
+        mScrollViewFields.alignToInnerQqsTiles = alignToInnerQqsTiles;
+    }
+
+    @Override
+    public void setBaseSidePadding(int baseSidePadding) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
+        mScrollViewFields.baseSidePadding = baseSidePadding;
     }
 
     private void updateNotificationAnimationStates() {

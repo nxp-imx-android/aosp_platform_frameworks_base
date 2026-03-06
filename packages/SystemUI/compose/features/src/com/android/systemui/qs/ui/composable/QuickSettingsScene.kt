@@ -333,7 +333,7 @@ private fun ContentScope.QuickSettingsScene(
                 shouldPunchHoleBehindScrim = true,
                 shouldFillMaxHeight = true,
                 isTransparencyEnabled = viewModel.isTransparencyEnabled,
-                stackTopPadding = dimensionResource(id = R.dimen.notification_side_paddings),
+                stackTopPadding = dimensionResource(id = R.dimen.notification_side_paddings_single),
                 stackBottomPadding = { navigationBarPadding.calculateBottomPadding() },
                 shouldIncludeHeadsUpSpace = false,
                 isActivated = false,

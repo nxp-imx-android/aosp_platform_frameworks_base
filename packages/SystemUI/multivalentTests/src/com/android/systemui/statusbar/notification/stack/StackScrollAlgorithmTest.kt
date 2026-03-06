@@ -106,7 +106,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val notifSectionDividerGap = px(R.dimen.notification_section_divider_height)
     private val bundleGap = px(R.dimen.bundle_divider_height)
     private val bundleExpandedGap = px(R.dimen.bundle_expanded_divider_height)
-    private val scrimPadding = px(R.dimen.notification_side_paddings)
+    private val scrimPadding = px(R.dimen.notification_side_paddings_single)
     private val baseZ by lazy { ambientState.baseZHeight }
     private val headsUpZ = px(R.dimen.heads_up_pinned_elevation)
     private val bigGap = notifSectionDividerGap

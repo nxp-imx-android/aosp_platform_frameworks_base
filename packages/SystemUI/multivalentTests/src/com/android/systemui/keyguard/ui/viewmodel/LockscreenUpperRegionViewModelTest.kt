@@ -157,7 +157,7 @@ class LockscreenUpperRegionViewModelTest(flags: FlagsParameterization) : SysuiTe
         fakeConfigurationRepository.onConfigurationChange(configuration)
         val maxTranslation = 10
         fakeConfigurationRepository.setDimensionPixelSize(
-            R.dimen.notification_side_paddings,
+            R.dimen.notification_side_paddings_single,
             maxTranslation,
         )
         return maxTranslation
