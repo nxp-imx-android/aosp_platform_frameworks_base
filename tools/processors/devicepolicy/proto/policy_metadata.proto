@@ -120,13 +120,6 @@ message TypeSpecificPolicyMetadata {
   }
 
   message ListPolicyMetadata {
-    message ResolutionMechanism {
-      oneof mechanism {
-        bool custom = 1;
-        bool union = 2;
-      }
-    }
-
     oneof list_element_metadata {
       IntegerPolicyMetadata integer_metadata = 1;
       EnumPolicyMetadata enum_metadata = 2;
@@ -134,7 +127,6 @@ message TypeSpecificPolicyMetadata {
     }
 
     bool empty_list_allowed = 4;
-    ResolutionMechanism resolution_mechanism = 5;
   }
 
   oneof type_metadata {

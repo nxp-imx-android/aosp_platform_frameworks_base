@@ -8,7 +8,7 @@ policy_metadata {
     class_name: "Boolean"
     package_name: "java.lang"
   }
-  documentation: "Test policy 1\n\n<p>Second line"
+  documentation: "Test policy 1\n Second line "
   type_specific_metadata {
     boolean_metadata {
     }
@@ -434,9 +434,6 @@ policy_metadata {
     list_metadata {
       string_metadata {
         empty_string_allowed: true
-      }
-      resolution_mechanism {
-        custom: true
       }
     }
   }

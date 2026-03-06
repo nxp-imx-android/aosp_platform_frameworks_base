@@ -40,13 +40,15 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.app.admin.flags.Flags;
+import android.content.Intent;
+import android.os.UserManager;
 import android.processor.devicepolicy.AllowedDpcTypes;
 import android.processor.devicepolicy.EnumPolicyDefinition;
 import android.processor.devicepolicy.EnumResolutionMechanism;
 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
-import android.processor.devicepolicy.ListResolutionMechanism;
 import android.processor.devicepolicy.PolicyDefinition;
 import android.processor.devicepolicy.StringPolicyDefinition;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
@@ -348,15 +350,14 @@ public final class PolicyIdentifier<T> {
                                             requiredCrossUserPermission =
                                                     MANAGE_DEVICE_POLICY_ACROSS_USERS_FULL,
                                             allowedDpcTypes =
-                                                            @AllowedDpcTypes(
-                                                                    deviceOwner = ALLOWED,
-                                                                    managedProfileOwnerOfOrganizationOwnedDevice =
-                                                                            ALLOWED,
-                                                                    managedProfileOwnerOfPersonalOwnedDevice =
-                                                                            DISALLOWED,
-                                                                    unaffiliatedFullUserProfileOwner =
-                                                                            DISALLOWED))),
-                            resolutionMechanism = @ListResolutionMechanism(custom = true))
+                                                    @AllowedDpcTypes(
+                                                            deviceOwner = ALLOWED,
+                                                            managedProfileOwnerOfOrganizationOwnedDevice =
+                                                                    ALLOWED,
+                                                            managedProfileOwnerOfPersonalOwnedDevice =
+                                                                    DISALLOWED,
+                                                            unaffiliatedFullUserProfileOwner =
+                                                                    DISALLOWED))))
     public static final PolicyIdentifier<List<String>> CONTENT_RESTRICTION_APPS =
             new PolicyIdentifier<>("CONTENT_RESTRICTION_APPS");
 
