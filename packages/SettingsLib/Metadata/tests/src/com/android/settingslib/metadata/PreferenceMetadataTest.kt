@@ -199,7 +199,7 @@ class PreferenceMetadataTest {
 
         val result = preference.setWarningAsString(context)
 
-        assertThat(result).isEqualTo("Warning before writing: Set warning (must be shown).")
+        assertThat(result).isEqualTo("[Must show to user]: Set warning.")
     }
 
     @Test
@@ -215,7 +215,7 @@ class PreferenceMetadataTest {
 
         val result = preference.setWarningAsString(context)
 
-        assertThat(result).isEqualTo("Warning before writing: Set warning (must be shown if preconditions are met: Set preconditions).")
+        assertThat(result).isEqualTo("[Must show to user]: Set warning (if preconditions are met: Set preconditions).")
     }
 
     @Test
@@ -231,7 +231,7 @@ class PreferenceMetadataTest {
 
         val result = preference.setWarningAsString(context)
 
-        assertThat(result).isEqualTo("Warning before writing: Set warning (must be shown if preconditions are met: Set value preconditions).")
+        assertThat(result).isEqualTo("[Must show to user]: Set warning (if preconditions are met: Set value preconditions).")
     }
 
     @Test
@@ -268,7 +268,7 @@ class PreferenceMetadataTest {
 
         val result = preference.setWarningAsString(context)
 
-        assertThat(result).isEqualTo("Warning before writing: Set warning (must be shown if preconditions are met: Set preconditions).")
+        assertThat(result).isEqualTo("[Must show to user]: Set warning (if preconditions are met: Set preconditions).")
     }
 
     open class TestApiPreference(

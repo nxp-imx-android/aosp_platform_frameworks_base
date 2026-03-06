@@ -310,9 +310,9 @@ fun PreferenceMetadata.setWarningAsString(context: Context): String? {
         // Compute the set warning as a string message
         val conditionalText =
             warning.preconditionsDescription?.takeIf { it.isNotBlank() }?.let { description ->
-                " if preconditions are met: $description"
+                " (if preconditions are met: $description)"
             } ?: ""
 
-        "Warning before writing: ${warning.warningMessage} (must be shown$conditionalText)."
+        "[Must show to user]: ${warning.warningMessage}$conditionalText."
     }
 }
