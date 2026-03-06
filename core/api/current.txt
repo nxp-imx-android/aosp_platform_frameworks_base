@@ -6950,21 +6950,13 @@ package android.app {
   }
 
   @FlaggedApi("android.app.bridged_notifications") public static final class Notification.BridgedNotificationMetadata implements android.os.Parcelable {
-    ctor public Notification.BridgedNotificationMetadata(int, @NonNull String, @NonNull String, @NonNull String, @NonNull android.graphics.drawable.Icon);
+    ctor public Notification.BridgedNotificationMetadata(@NonNull String, @NonNull String, @NonNull String, @NonNull android.graphics.drawable.Icon);
     method public int describeContents();
     method @NonNull public android.graphics.drawable.Icon getAppIcon();
     method @NonNull public String getChannelId();
     method @NonNull public String getOriginDeviceName();
-    method public int getOriginDeviceType();
     method @NonNull public String getPackageName();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
-    field public static final int BRIDGED_METADATA_TYPE_LAPTOP = 3; // 0x3
-    field public static final int BRIDGED_METADATA_TYPE_PHONE = 1; // 0x1
-    field public static final int BRIDGED_METADATA_TYPE_TABLET = 2; // 0x2
-    field public static final int BRIDGED_METADATA_TYPE_TV = 5; // 0x5
-    field public static final int BRIDGED_METADATA_TYPE_UNKNOWN = 0; // 0x0
-    field public static final int BRIDGED_METADATA_TYPE_WATCH = 4; // 0x4
-    field public static final int BRIDGED_METADATA_TYPE_XR = 6; // 0x6
     field @NonNull public static final android.os.Parcelable.Creator<android.app.Notification.BridgedNotificationMetadata> CREATOR;
   }
 

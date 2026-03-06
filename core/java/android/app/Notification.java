@@ -16432,28 +16432,6 @@ public class Notification implements Parcelable
      */
     @FlaggedApi(FLAG_BRIDGED_NOTIFICATIONS)
     public static final class BridgedNotificationMetadata implements Parcelable {
-        public static final int BRIDGED_METADATA_TYPE_UNKNOWN = 0;
-        public static final int BRIDGED_METADATA_TYPE_PHONE = 1;
-        public static final int BRIDGED_METADATA_TYPE_TABLET = 2;
-        public static final int BRIDGED_METADATA_TYPE_LAPTOP = 3;
-        public static final int BRIDGED_METADATA_TYPE_WATCH = 4;
-        public static final int BRIDGED_METADATA_TYPE_TV = 5;
-        public static final int BRIDGED_METADATA_TYPE_XR = 6;
-
-        /** @hide */
-        @IntDef(prefix = { "BRIDGED_METADATA_TYPE_" }, value = {
-                BRIDGED_METADATA_TYPE_UNKNOWN,
-                BRIDGED_METADATA_TYPE_PHONE,
-                BRIDGED_METADATA_TYPE_TABLET,
-                BRIDGED_METADATA_TYPE_LAPTOP,
-                BRIDGED_METADATA_TYPE_WATCH,
-                BRIDGED_METADATA_TYPE_TV,
-                BRIDGED_METADATA_TYPE_XR
-        })
-        @Retention(RetentionPolicy.SOURCE)
-        public @interface BridgedMetadataType {}
-
-        private int mOriginDeviceType = BRIDGED_METADATA_TYPE_UNKNOWN;
         @NonNull
         private String mOriginDeviceName;
         @NonNull
@@ -16463,12 +16441,10 @@ public class Notification implements Parcelable
         @NonNull
         private Icon mAppIcon;
 
-        public BridgedNotificationMetadata(@BridgedMetadataType int type,
-                                           @NonNull String originDeviceName,
+        public BridgedNotificationMetadata(@NonNull String originDeviceName,
                                            @NonNull String packageName,
                                            @NonNull String channelId,
                                            @NonNull Icon appIcon) {
-            mOriginDeviceType = type;
             mOriginDeviceName = originDeviceName;
             mPackageName = requireNonNull(packageName);
             mChannelId = requireNonNull(channelId);
@@ -16476,9 +16452,6 @@ public class Notification implements Parcelable
         }
 
         private BridgedNotificationMetadata(Parcel in) {
-            if (in.readInt() != 0) {
-                mOriginDeviceType = in.readInt();
-            }
             if (in.readInt() != 0) {
                 mOriginDeviceName = in.readString8();
             }
@@ -16517,9 +16490,6 @@ public class Notification implements Parcelable
             requireNonNull(out);
 
             out.writeInt(1);
-            out.writeInt(mOriginDeviceType);
-
-            out.writeInt(1);
             out.writeString8(mOriginDeviceName);
 
             out.writeInt(1);
@@ -16530,14 +16500,6 @@ public class Notification implements Parcelable
 
             out.writeInt(1);
             mAppIcon.writeToParcel(out, 0);
-        }
-
-        /**
-         * The device type int representation of the device the notification was bridged from.
-         */
-        @BridgedMetadataType
-        public int getOriginDeviceType() {
-            return mOriginDeviceType;
         }
 
         /**
