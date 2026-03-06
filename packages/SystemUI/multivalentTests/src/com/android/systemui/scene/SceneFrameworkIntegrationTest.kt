@@ -40,7 +40,7 @@ import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.integration.SystemUiIntegrationTest
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
-import com.android.systemui.keyguard.domain.interactor.lockAfterScreenTimeoutInteractor
+import com.android.systemui.keyguard.domain.interactor.lockAfterDelayInteractor
 import com.android.systemui.keyguard.ui.viewmodel.lockscreenUserActionsViewModel
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -638,7 +638,7 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
 
         powerInteractor.setAsleepForTest()
         runCurrent()
-        kosmos.lockAfterScreenTimeoutInteractor.timeoutElapsedForTesting()
+        kosmos.lockAfterDelayInteractor.timeoutElapsedForTesting()
         runCurrent()
 
         powerInteractor.setAwakeForTest()
@@ -737,7 +737,7 @@ class SceneFrameworkIntegrationTest : SysuiTestCase() {
         if (lockTimerElapses) {
             // The waiting is actually implemented using AlarmManager, and tests currently only have
             // a mock AlarmManager. Pretend that its alarm has fired..
-            kosmos.lockAfterScreenTimeoutInteractor.timeoutElapsedForTesting()
+            kosmos.lockAfterDelayInteractor.timeoutElapsedForTesting()
             runCurrent()
         }
     }

@@ -31,7 +31,7 @@ import com.android.systemui.authentication.domain.interactor.AuthenticationInter
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.data.repository.KeyguardRepository
-import com.android.systemui.keyguard.shared.model.LockAfterScreenTimeoutTimerState
+import com.android.systemui.keyguard.shared.model.LockAfterDelayTimerState
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.power.shared.model.WakefulnessModel
@@ -53,10 +53,10 @@ import kotlinx.coroutines.launch
  * Monitors for events that should lead to "delayed lock" (e.g. screen off due to timeout) and
  * manages the corresponding timer in a deep-suspend-immune way (using
  * AlarmManager#setExactAndAllowWhileIdle). Reports the state of the "delayed lock" timer as
- * [LockAfterScreenTimeoutTimerState].
+ * [LockAfterDelayTimerState].
  */
 @SysUISingleton
-class LockAfterScreenTimeoutInteractor
+class LockAfterDelayInteractor
 @Inject
 constructor(
     @param:Application private val scope: CoroutineScope,
@@ -72,8 +72,7 @@ constructor(
     private val powerInteractor: PowerInteractor,
 ) {
 
-    val lockAfterScreenTimeoutState: StateFlow<LockAfterScreenTimeoutTimerState> =
-        repository.lockAfterScreenTimeoutState
+    val lockAfterDelayState: StateFlow<LockAfterDelayTimerState> = repository.lockAfterDelayState
 
     /**
      * Counter that is incremented every time we wake up or stop dreaming. Upon sleeping/dreaming,
@@ -93,8 +92,7 @@ constructor(
                     // elapsed.
                     var relevant = (timeoutCounter.get() == sequence)
                     if (relevant) {
-                        repository.lockAfterScreenTimeoutState.value =
-                            LockAfterScreenTimeoutTimerState.ELAPSED
+                        repository.lockAfterDelayState.value = LockAfterDelayTimerState.ELAPSED
                     }
                 }
             }
@@ -102,7 +100,7 @@ constructor(
 
     @VisibleForTesting
     fun timeoutElapsedForTesting() {
-        repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.ELAPSED
+        repository.lockAfterDelayState.value = LockAfterDelayTimerState.ELAPSED
     }
 
     init {
@@ -159,13 +157,9 @@ constructor(
     private suspend fun ensureTimerRunning(reason: String) {
         var shouldScheduleAlarm = false
         synchronized(this) {
-            if (
-                repository.lockAfterScreenTimeoutState.value ==
-                    LockAfterScreenTimeoutTimerState.INACTIVE
-            ) {
+            if (repository.lockAfterDelayState.value == LockAfterDelayTimerState.INACTIVE) {
                 shouldScheduleAlarm = true
-                repository.lockAfterScreenTimeoutState.value =
-                    LockAfterScreenTimeoutTimerState.RUNNING
+                repository.lockAfterDelayState.value = LockAfterDelayTimerState.RUNNING
             }
         }
 
@@ -174,25 +168,22 @@ constructor(
             return
         }
 
-        Log.d(TAG, "timer started due to $reason")
+        Log.i(TAG, "timer started due to $reason")
         scheduleAlarm()
     }
 
     private suspend fun ensureTimerStopped(reason: String) {
         var shouldCancelAlarm = false
         synchronized(this) {
-            if (
-                repository.lockAfterScreenTimeoutState.value ==
-                    LockAfterScreenTimeoutTimerState.RUNNING
-            ) {
+            if (repository.lockAfterDelayState.value == LockAfterDelayTimerState.RUNNING) {
                 shouldCancelAlarm = true
             }
 
-            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.INACTIVE
+            repository.lockAfterDelayState.value = LockAfterDelayTimerState.INACTIVE
         }
 
         if (shouldCancelAlarm) {
-            Log.d(TAG, "timer stopped due to $reason")
+            Log.i(TAG, "timer stopped due to $reason")
             cancelAlarm()
         }
     }
@@ -217,7 +208,7 @@ constructor(
             )
 
         val delay = lockDelay()
-        Log.d(TAG, "scheduling lock after screen timeout alarm seq=$counter in ${delay}ms")
+        Log.i(TAG, "scheduling lock after screen timeout alarm seq=$counter in ${delay}ms")
         val time = systemClock.elapsedRealtime() + delay
         alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, time, sender)
 
@@ -230,7 +221,7 @@ constructor(
      */
     private fun cancelAlarm() {
         var canceledCounter = timeoutCounter.getAndIncrement()
-        Log.d(TAG, "canceled lock after screen timeout alarm seq=$canceledCounter")
+        Log.i(TAG, "canceled lock after screen timeout alarm seq=$canceledCounter")
     }
 
     /**
@@ -263,7 +254,7 @@ constructor(
      */
     suspend fun lockDelay(): Long {
         val isSecure = authenticationInteractor.authenticationMethod.value.isSecure
-        val lockAfterScreenTimeoutSetting =
+        val lockAfterDelaySetting =
             if (isSecure) {
                 secureSettingsRepository
                     .getInt(
@@ -276,17 +267,14 @@ constructor(
                 // timeout. Ignore a possibly-set prior value.
                 KEYGUARD_LOCK_AFTER_DELAY_DEFAULT.toLong()
             }
-        Log.d(
-            TAG,
-            "Lock after screen timeout with isSecure=$isSecure: ${lockAfterScreenTimeoutSetting}ms",
-        )
+        Log.d(TAG, "Lock after delay with isSecure=$isSecure: ${lockAfterDelaySetting}ms")
 
         val maxTimeToLockDevicePolicy = authenticationInteractor.getMaximumTimeToLock()
 
         if (maxTimeToLockDevicePolicy <= 0) {
             // No device policy enforced maximum.
-            Log.d(TAG, "No device policy max, delay is ${lockAfterScreenTimeoutSetting}ms")
-            return lockAfterScreenTimeoutSetting
+            Log.d(TAG, "No device policy max, delay is ${lockAfterDelaySetting}ms")
+            return lockAfterDelaySetting
         }
 
         val screenOffTimeoutSetting =
@@ -300,7 +288,7 @@ constructor(
         )
 
         return (maxTimeToLockDevicePolicy - screenOffTimeoutSetting)
-            .coerceIn(minimumValue = 0, maximumValue = lockAfterScreenTimeoutSetting)
+            .coerceIn(minimumValue = 0, maximumValue = lockAfterDelaySetting)
             .also { Log.d(TAG, "Device policy max enforced, delay is ${it}ms") }
     }
 
@@ -341,7 +329,7 @@ constructor(
     }
 
     companion object {
-        private val TAG = "LockAfterScreenTimeoutInteractor"
+        private val TAG = "LockAfterDelayInteractor"
 
         private const val DELAYED_KEYGUARD_ACTION =
             "com.android.internal.policy.impl.PhoneWindowManager.DELAYED_KEYGUARD"

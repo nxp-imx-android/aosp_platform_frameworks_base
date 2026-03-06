@@ -89,7 +89,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteract
 import com.android.systemui.keyguard.domain.interactor.keyguardServiceShowLockscreenInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardSurfaceBehindInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardWakeDirectlyToGoneInteractor
-import com.android.systemui.keyguard.domain.interactor.lockAfterScreenTimeoutInteractor
+import com.android.systemui.keyguard.domain.interactor.lockAfterDelayInteractor
 import com.android.systemui.keyguard.domain.interactor.scenetransition.lockscreenSceneTransitionInteractor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.keyguard.shared.model.DozeStateModel
@@ -1496,7 +1496,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             // successful unlock.
             powerInteractor.setAsleepForTest()
             runCurrent()
-            kosmos.lockAfterScreenTimeoutInteractor.timeoutElapsedForTesting()
+            kosmos.lockAfterDelayInteractor.timeoutElapsedForTesting()
             runCurrent()
             // Verify that the startable changed the scene to Lockscreen because the device locked
             // following the sleep.

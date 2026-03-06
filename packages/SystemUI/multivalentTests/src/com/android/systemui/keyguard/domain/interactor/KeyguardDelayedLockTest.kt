@@ -75,14 +75,14 @@ class KeyguardDelayedLockTest : SysuiTestCase() {
         }
 
     private val testScope = kosmos.testScope
-    private lateinit var lockAfterDelayInteractor: LockAfterScreenTimeoutInteractor
+    private lateinit var lockAfterDelayInteractor: LockAfterDelayInteractor
     private val sceneContainerStartable by lazy { kosmos.sceneContainerStartable }
 
     @Before
     fun setup() {
         // initialize to start monitorWakefulnessAndDreams which handles starting a delayed
         // lock on keyguard when the devices goes to sleep
-        this.lockAfterDelayInteractor = kosmos.lockAfterScreenTimeoutInteractor
+        this.lockAfterDelayInteractor = kosmos.lockAfterDelayInteractor
 
         // automatically trigger scene changes based on asleep/awake states
         sceneContainerStartable.start()

@@ -267,7 +267,7 @@ class KeyguardOcclusionInteractorTest : SysuiTestCase() {
             // Re-lock device:
             powerInteractor.setAsleepForTest()
             testScope.runCurrent()
-            kosmos.lockAfterScreenTimeoutInteractor.timeoutElapsedForTesting()
+            kosmos.lockAfterDelayInteractor.timeoutElapsedForTesting()
             testScope.runCurrent()
             assertThat(occludingActivityWillDismissKeyguard).isFalse()
         }

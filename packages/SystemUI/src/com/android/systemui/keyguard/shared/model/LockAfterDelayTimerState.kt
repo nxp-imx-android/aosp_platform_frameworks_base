@@ -24,7 +24,7 @@ package com.android.systemui.keyguard.shared.model
  * - Awake -> Device starts dreaming and triggers the device to lock when it elapses. It is tied to
  *   the Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT setting.
  */
-enum class LockAfterScreenTimeoutTimerState {
+enum class LockAfterDelayTimerState {
     // The "lock screen after timeout timer" is not running.
     // This could be because the device is awake and not dreaming,
     // It could also be because the device entered sleep in a way that is not relevant for the timer
