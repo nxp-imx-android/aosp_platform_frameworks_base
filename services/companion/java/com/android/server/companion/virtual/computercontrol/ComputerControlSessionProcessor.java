@@ -90,7 +90,7 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
     @VisibleForTesting
     static final int MAXIMUM_CONCURRENT_SESSIONS = 1;
     @VisibleForTesting
-    static final int MIN_EXTENSION_VERSION_FOR_ANDROID_17 = 5;
+    static final int MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17 = 5;
 
     @Nullable
     private final String mReferenceDisplayAddress;
@@ -416,7 +416,7 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
                     ComputerControlSession.ERROR_SESSION_LIMIT_REACHED);
             return false;
         }
-        if (params.getTargetExtensionVersion() >= MIN_EXTENSION_VERSION_FOR_ANDROID_17
+        if (params.getTargetComputerControlVersion() >= MIN_COMPUTER_CONTROL_VERSION_FOR_ANDROID_17
                 && !mAppOpsManagerLocal.isUidInForeground(attributionSource.getUid())) {
             dispatchSessionCreationFailed(callback, attributionSource, params,
                     ComputerControlSession.ERROR_PERMISSION_DENIED);

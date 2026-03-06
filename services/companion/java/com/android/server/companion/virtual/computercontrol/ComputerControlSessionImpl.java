@@ -201,7 +201,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         fout.print("ComupterControlSession {");
         fout.print(" mDeviceId=" + mVirtualDeviceId);
         fout.print(" mName=" + mParams.getName());
-        fout.print(" mTargetExtensionVersion=" + mParams.getTargetExtensionVersion());
+        fout.print(" mTargetComputerControlVersion=" + mParams.getTargetComputerControlVersion());
         fout.print(" mOwnerPackageName=" + mOwnerPackageName);
         fout.print(" mTargetPackageNames=" + mParams.getTargetPackageNames());
         fout.print(" mAppInteractionAttribution=" + mParams.getAppInteractionAttribution());
