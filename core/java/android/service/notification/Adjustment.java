@@ -290,6 +290,14 @@ public final class Adjustment implements Parcelable {
     @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
     public static final String KEY_LIGHT = "light";
 
+    /**
+     * Data type: a {@link NotificationRule.DynamicBundle} that represents the configuration of
+     * the dynamic bundle this notification should be added to.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY_LAUNCH)
+    public static final String KEY_DYNAMIC_BUNDLE = "dynamic_bundle";
 
     /**
      * Create a notification adjustment.

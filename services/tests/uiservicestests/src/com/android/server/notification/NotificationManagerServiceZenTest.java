@@ -705,28 +705,6 @@ public class NotificationManagerServiceZenTest extends UiServiceTestCase {
         }
     }
 
-    private ApplicationInfo getApplicationInfo(String pkg, int uid) {
-        final ApplicationInfo applicationInfo = new ApplicationInfo();
-        applicationInfo.packageName = pkg;
-        applicationInfo.uid = uid;
-        applicationInfo.sourceDir = mContext.getApplicationInfo().sourceDir;
-        switch (pkg) {
-            case PKG_N_MR1:
-                applicationInfo.targetSdkVersion = Build.VERSION_CODES.N_MR1;
-                break;
-            case PKG_O:
-                applicationInfo.targetSdkVersion = Build.VERSION_CODES.O;
-                break;
-            case PKG_P:
-                applicationInfo.targetSdkVersion = Build.VERSION_CODES.P;
-                break;
-            default:
-                applicationInfo.targetSdkVersion = Build.VERSION_CODES.CUR_DEVELOPMENT;
-                break;
-        }
-        return applicationInfo;
-    }
-
     public void waitForIdle() {
         if (mTestableLooper != null) {
             mTestableLooper.processAllMessages();

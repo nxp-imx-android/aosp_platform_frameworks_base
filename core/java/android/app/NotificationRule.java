@@ -1167,6 +1167,115 @@ public final class NotificationRule implements Parcelable {
     }
 
     /**
+     * Data class that wraps various NotificationRule fields into an object that can be put in an
+     * {@link android.service.notification.Adjustment} so we can create the appropriate
+     * {@link NotificationChannel} for a custom bundle.
+     * @hide
+     */
+    public static final class DynamicBundle implements Parcelable {
+        private final @NonNull String mChannelId;
+        private final @NonNull String mBundleName;
+
+        @Nullable
+        public String getEmojiIcon() {
+            return mEmojiIcon;
+        }
+
+        @NonNull
+        public String getBundleName() {
+            return mBundleName;
+        }
+
+        @NonNull
+        public String getChannelId() {
+            return mChannelId;
+        }
+
+        private final @Nullable String mEmojiIcon;
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        public DynamicBundle(@NonNull String channelId, @NonNull String bundleName,
+                @Nullable String emojiIcon) {
+            mChannelId = channelId;
+            // TODO (b/490448108): are names required in the ui? do we have a fallback?
+            mBundleName = bundleName == null ? "" : bundleName;
+            mEmojiIcon = emojiIcon;
+        }
+
+        private DynamicBundle(Parcel in) {
+            if (in.readByte() != 0) {
+                mChannelId = in.readString8();
+            } else {
+                mChannelId = null;
+            }
+            if (in.readByte() != 0) {
+                mBundleName = in.readString8();
+            } else {
+                mBundleName = null;
+            }
+            if (in.readByte() != 0) {
+                mEmojiIcon = in.readString8();
+            } else {
+                mEmojiIcon = null;
+            }
+        }
+
+        @Override
+        public void writeToParcel(@NonNull Parcel dest, int flags) {
+            if (mChannelId != null) {
+                dest.writeByte((byte) 1);
+                dest.writeString8(mChannelId);
+            } else {
+                dest.writeByte((byte) 0);
+            }
+            if (mBundleName != null) {
+                dest.writeByte((byte) 1);
+                dest.writeString8(mBundleName);
+            } else {
+                dest.writeByte((byte) 0);
+            }
+            if (mEmojiIcon != null) {
+                dest.writeByte((byte) 1);
+                dest.writeString8(mEmojiIcon);
+            } else {
+                dest.writeByte((byte) 0);
+            }
+        }
+
+        @NonNull
+        public static final Creator<DynamicBundle> CREATOR =
+                new Creator<>() {
+                    @Override
+                    public DynamicBundle createFromParcel(Parcel in) {
+                        return new DynamicBundle(in);
+                    }
+
+                    @Override
+                    public DynamicBundle[] newArray(int size) {
+                        return new DynamicBundle[size];
+                    }
+                };
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof DynamicBundle)) return false;
+            DynamicBundle that = (DynamicBundle) o;
+            return Objects.equals(mChannelId, that.mChannelId) && Objects.equals(
+                    mBundleName, that.mBundleName) && Objects.equals(mEmojiIcon, that.mEmojiIcon);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mChannelId, mBundleName, mEmojiIcon);
+        }
+
+    }
+
+    /**
      * Criteria for which notifications this rule applies to.
      */
     public static final class Filter implements Parcelable {

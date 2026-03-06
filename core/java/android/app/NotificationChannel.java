@@ -34,7 +34,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ShortcutInfo;
 import android.media.AudioAttributes;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -42,13 +41,11 @@ import android.os.VibrationEffect;
 import android.os.vibrator.persistence.VibrationXmlParser;
 import android.os.vibrator.persistence.VibrationXmlSerializer;
 import android.provider.Settings;
-import android.service.notification.Adjustment;
 import android.service.notification.DynamicBundle;
 import android.service.notification.NotificationListenerService;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
-import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.util.Preconditions;
@@ -61,7 +58,6 @@ import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlSerializer;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -217,6 +213,7 @@ public final class NotificationChannel implements Parcelable {
     private static final String ATT_DELETED_TIME_MS = "del_time";
     private static final String DELIMITER = ",";
     private static final String ATT_BUNDLE = "is_bundle";
+    private static final String ATT_EMOJI = "emoji";
 
     /**
      * @hide
@@ -327,6 +324,7 @@ public final class NotificationChannel implements Parcelable {
      */
     private long mLastNotificationUpdateTimeMs = 0;
     private boolean mIsBundleChannel;
+    private @Nullable String mEmoji;
 
     /**
      * Creates a notification channel.
@@ -417,8 +415,15 @@ public final class NotificationChannel implements Parcelable {
                 mVibrationEffect = mVibrationEffect.cropToLengthOrNull(MAX_VIBRATION_LENGTH);
             }
         }
-        if (Flags.nmContextualDisplay()) {
+        if (Flags.nmContextualDisplay() || Flags.nmContextualDisplayLaunch()) {
             mIsBundleChannel = in.readBoolean();
+        }
+        if (Flags.nmContextualDisplayLaunch()) {
+            if (in.readByte() != 0) {
+                mEmoji = getTrimmedString(in.readString());
+            } else {
+                mEmoji = null;
+            }
         }
     }
 
@@ -491,8 +496,16 @@ public final class NotificationChannel implements Parcelable {
             }
         }
 
-        if (Flags.nmContextualDisplay()) {
+        if (Flags.nmContextualDisplay() || Flags.nmContextualDisplayLaunch()) {
             dest.writeBoolean(mIsBundleChannel);
+        }
+        if (Flags.nmContextualDisplayLaunch()) {
+            if (mEmoji != null) {
+                dest.writeByte((byte) 1);
+                dest.writeString(mEmoji);
+            } else {
+                dest.writeByte((byte) 0);
+            }
         }
     }
 
@@ -527,6 +540,7 @@ public final class NotificationChannel implements Parcelable {
         copy.setImportanceLockedByCriticalDeviceFunction(mImportanceLockedDefaultApp);
         copy.setLastNotificationUpdateTimeMs(mLastNotificationUpdateTimeMs);
         copy.setIsBundleChannel(mIsBundleChannel);
+        copy.setEmoji(mEmoji);
 
         return copy;
     }
@@ -1100,7 +1114,8 @@ public final class NotificationChannel implements Parcelable {
     @FlaggedApi(Flags.FLAG_NM_CONTEXTUAL_DISPLAY)
     public boolean isBundleChannel() {
         return SYSTEM_RESERVED_IDS.contains(mId)
-                || (Flags.nmContextualDisplay() && mIsBundleChannel);
+                || (Flags.nmContextualDisplay() && mIsBundleChannel)
+                || (Flags.nmContextualDisplayLaunch() && mIsBundleChannel);
     }
 
     /**
@@ -1232,6 +1247,20 @@ public final class NotificationChannel implements Parcelable {
     /**
      * @hide
      */
+    public void setEmoji(String emoji) {
+        mEmoji = emoji;
+    }
+
+    /**
+     * @hide
+     */
+    public String getEmoji() {
+        return mEmoji;
+    }
+
+    /**
+     * @hide
+     */
     public void populateFromXmlForRestore(XmlPullParser parser, boolean pkgInstalled,
             Context context) {
         populateFromXml(XmlUtils.makeTyped(parser), true, pkgInstalled, context);
@@ -1303,8 +1332,11 @@ public final class NotificationChannel implements Parcelable {
                 parser.getAttributeValue(null, ATT_CONVERSATION_ID));
         setDemoted(safeBool(parser, ATT_DEMOTE, false));
         setImportantConversation(safeBool(parser, ATT_IMP_CONVERSATION, false));
-        if (Flags.nmContextualDisplay()) {
+        if (Flags.nmContextualDisplay() || Flags.nmContextualDisplayLaunch()) {
             setIsBundleChannel(safeBool(parser, ATT_BUNDLE, false));
+        }
+        if (Flags.nmContextualDisplayLaunch() && isBundleChannel()) {
+            setEmoji(parser.getAttributeValue(null, ATT_EMOJI));
         }
     }
 
@@ -1432,8 +1464,13 @@ public final class NotificationChannel implements Parcelable {
             out.attributeBoolean(null, ATT_IMP_CONVERSATION, isImportantConversation());
         }
 
-        if (Flags.nmContextualDisplay() && isBundleChannel()) {
+        if ((Flags.nmContextualDisplay() || Flags.nmContextualDisplayLaunch())
+                && isBundleChannel()) {
             out.attributeBoolean(null, ATT_BUNDLE, isBundleChannel());
+        }
+
+        if (Flags.nmContextualDisplayLaunch() && isBundleChannel() && getEmoji() != null) {
+            out.attribute(null, ATT_EMOJI, getEmoji());
         }
 
         // mImportanceLockedDefaultApp has a different source of truth and so isn't written to
@@ -1581,7 +1618,8 @@ public final class NotificationChannel implements Parcelable {
             case TYPE_SOCIAL_MEDIA:
                 return SOCIAL_MEDIA_ID;
         }
-        if (Flags.nmContextualDisplay() && type >= DynamicBundle.DYNAMIC_RANGE_START
+        if ((Flags.nmContextualDisplayLaunch() || Flags.nmContextualDisplay() )
+                && type >= DynamicBundle.DYNAMIC_RANGE_START
                 && type <= DynamicBundle.DYNAMIC_RANGE_END) {
             return DYNAMIC_BUNDLE_PREFIX + type;
         }
@@ -1611,7 +1649,8 @@ public final class NotificationChannel implements Parcelable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NotificationChannel that = (NotificationChannel) o;
-        return getImportance() == that.getImportance()
+
+        boolean isEqual = getImportance() == that.getImportance()
                 && mBypassDnd == that.mBypassDnd
                 && getLockscreenVisibility() == that.getLockscreenVisibility()
                 && mLights == that.mLights
@@ -1638,6 +1677,13 @@ public final class NotificationChannel implements Parcelable {
                 && Objects.equals(getConversationId(), that.getConversationId())
                 && isDemoted() == that.isDemoted()
                 && isImportantConversation() == that.isImportantConversation();
+        if (Flags.nmContextualDisplayLaunch()) {
+                isEqual = isEqual
+                        && (isBundleChannel() == that.isBundleChannel())
+                        && Objects.equals(getEmoji(), that.getEmoji());
+        }
+
+        return isEqual;
     }
 
     @Override
@@ -1648,7 +1694,7 @@ public final class NotificationChannel implements Parcelable {
                 mVibrationEnabled, mShowBadge, isDeleted(), getDeletedTimeMs(),
                 getGroup(), getAudioAttributes(), isBlockable(), mAllowBubbles,
                 mImportanceLockedDefaultApp, mOriginalImportance, getVibrationEffect(),
-                mParentId, mConversationId, mDemoted, mImportantConvo);
+                mParentId, mConversationId, mDemoted, mImportantConvo, isBundleChannel(), mEmoji);
         result = 31 * result + Arrays.hashCode(mVibrationPattern);
         return result;
     }
@@ -1700,7 +1746,9 @@ public final class NotificationChannel implements Parcelable {
                 + ", mConversationId=" + mConversationId
                 + ", mDemoted=" + mDemoted
                 + ", mImportantConvo=" + mImportantConvo
-                + ", mLastNotificationUpdateTimeMs=" + mLastNotificationUpdateTimeMs;
+                + ", mLastNotificationUpdateTimeMs=" + mLastNotificationUpdateTimeMs
+                + ", isBundle=" + isBundleChannel()
+                + ", emoji=" + getEmoji();
     }
 
     /** @hide */

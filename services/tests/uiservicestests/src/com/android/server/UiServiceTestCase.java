@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import android.annotation.UserIdInt;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManagerInternal;
 import android.net.Uri;
 import android.os.Binder;
@@ -135,6 +136,31 @@ public class UiServiceTestCase {
         Mockito.doReturn(new Intent()).when(mContext).registerReceiver(any(), any());
         Mockito.doReturn(new Intent()).when(mContext).registerReceiver(any(), any(), anyInt());
         Mockito.doNothing().when(mContext).unregisterReceiver(any());
+    }
+
+    protected ApplicationInfo getApplicationInfo(String pkg, int uid) {
+        final ApplicationInfo applicationInfo = new ApplicationInfo();
+        applicationInfo.packageName = pkg;
+        applicationInfo.uid = uid;
+        applicationInfo.sourceDir = mContext.getApplicationInfo().sourceDir;
+        switch (pkg) {
+            case PKG_N_MR1:
+                applicationInfo.targetSdkVersion = Build.VERSION_CODES.N_MR1;
+                break;
+            case PKG_O:
+                applicationInfo.targetSdkVersion = Build.VERSION_CODES.O;
+                break;
+            case PKG_P:
+                applicationInfo.targetSdkVersion = Build.VERSION_CODES.P;
+                break;
+            case PKG_R:
+                applicationInfo.targetSdkVersion = Build.VERSION_CODES.R;
+                break;
+            default:
+                applicationInfo.targetSdkVersion = Build.VERSION_CODES.CUR_DEVELOPMENT;
+                break;
+        }
+        return applicationInfo;
     }
 
     @After

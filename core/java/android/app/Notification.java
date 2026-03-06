@@ -3660,6 +3660,13 @@ public class Notification implements Parcelable
     /**
      * @hide
      */
+    public boolean hasFlag(final int flag) {
+        return (flags & flag) != 0;
+    }
+
+    /**
+     * @hide
+     */
     public boolean containsCustomViews() {
         return contentView != null
                 || bigContentView != null

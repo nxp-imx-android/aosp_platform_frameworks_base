@@ -124,6 +124,7 @@ import static android.provider.DeviceConfig.NAMESPACE_SYSTEMUI;
 import static android.provider.DeviceConfig.Properties;
 import static android.security.Flags.secureLockDevice;
 import static android.service.notification.Adjustment.KEY_GROUP_KEY;
+import static android.service.notification.Adjustment.KEY_NOTIFICATION_RULES;
 import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TYPE;
 import static android.service.notification.Adjustment.KEY_UNCLASSIFY;
@@ -535,7 +536,8 @@ public class NotificationManagerService extends SystemService {
             Adjustment.KEY_RANKING_SCORE,
             Adjustment.KEY_NOT_CONVERSATION,
             Adjustment.KEY_TYPE,
-            Adjustment.KEY_SUMMARIZATION
+            Adjustment.KEY_SUMMARIZATION,
+            KEY_NOTIFICATION_RULES
     };
 
     static final String[] NON_BLOCKABLE_DEFAULT_ROLES = new String[] {
@@ -2369,7 +2371,17 @@ public class NotificationManagerService extends SystemService {
                         true, userId, REASON_TIMEOUT, null);
             }
         }
-    };
+
+         @Override
+         public void triggerPolicyFileWrite() {
+            handleSavePolicyFile();
+         }
+
+         @Override
+         public void triggerRulesFileWrite() {
+            handleSaveRulesFile();
+         }
+     };
 
     @VisibleForTesting
     void logSmartSuggestionsVisible(NotificationRecord r, int notificationLocation) {
@@ -3143,15 +3155,17 @@ public class NotificationManagerService extends SystemService {
                 mUserProfiles,
                 mUgmInternal,
                 mShowReviewPermissionsNotification,
-                Clock.systemUTC());
+                Clock.systemUTC(),
+                mNotificationManagerPrivate);
+        mNotificationRuleManager = new NotificationRuleManager(
+                getContext(), mNotificationManagerPrivate);
         mRankingHelper = new RankingHelper(getContext(), mRankingHandler, mPreferencesHelper,
-                mZenModeHelper, mUsageStats, extractorNames, mPlatformCompat, groupHelper);
+                mZenModeHelper, mUsageStats, extractorNames, mPlatformCompat, groupHelper,
+                mNotificationRuleManager);
         mSnoozeHelper = snoozeHelper;
         mGroupHelper = groupHelper;
         mHistoryManager = historyManager;
         mTtlHelper = new TimeToLiveHelper(mNotificationManagerPrivate, getContext());
-        mNotificationRuleManager = new NotificationRuleManager(
-                getContext(), mNotificationManagerPrivate);
 
         // This is a ManagedServices object that keeps track of the listeners.
         mListeners = notificationListeners;
@@ -8178,6 +8192,18 @@ public class NotificationManagerService extends SystemService {
                     if (!mAssistants.isAdjustmentAllowedForPackage(userId, KEY_SUMMARIZATION,
                             r.getSbn().getPackageName())) {
                         toRemove.add(potentialKey);
+                    }
+                }
+                if (nmContextualDisplayLaunch()) {
+                    if (potentialKey.equals(KEY_NOTIFICATION_RULES)) {
+                        mAssistants.setAdjustmentKeySupportedState(userId, potentialKey, true);
+                        mAssistants.setAdjustmentKeySupportedState(userId, KEY_TYPE, true);
+
+                        // this adjustment is not directly applied like other adjustments
+                        // so log it specially to help with debugging
+                        EventLogTags.writeNotificationAdjusted(adjustment.getKey(),
+                                potentialKey, adjustments.getIntegerArrayList(
+                                Adjustment.KEY_NOTIFICATION_RULES).toString());
                     }
                 }
             }

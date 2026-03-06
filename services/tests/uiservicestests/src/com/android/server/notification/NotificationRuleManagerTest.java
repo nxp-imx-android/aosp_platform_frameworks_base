@@ -35,6 +35,7 @@ import static android.app.NotificationRule.RESERVED_ID_PROMOTED;
 import static android.app.NotificationRule.RESERVED_ID_STATIC_BUNDLES;
 import static android.os.UserHandle.USER_ALL;
 import static android.service.notification.Adjustment.KEY_BREAKTHROUGH_ALL_MODES;
+import static android.service.notification.Adjustment.KEY_DYNAMIC_BUNDLE;
 import static android.service.notification.Adjustment.KEY_HIGHLIGHT;
 import static android.service.notification.Adjustment.KEY_IMPORTANCE;
 import static android.service.notification.Adjustment.KEY_LIGHT;
@@ -57,7 +58,9 @@ import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.app.Flags;
+import android.app.NotificationChannel;
 import android.app.NotificationRule;
+import android.app.NotificationRule.DynamicBundle;
 import android.app.backup.BackupRestoreEventLogger;
 import android.content.pm.UserInfo;
 import android.graphics.Color;
@@ -369,7 +372,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
         List<Adjustment> behavioralAdjustments =
-                underTest.getAdjustmentsForRules(mUser.id, original);
+                underTest.getAdjustmentsForRules(original);
         assertThat(behavioralAdjustments).hasSize(1);
         Adjustment behavioralAdjustment = behavioralAdjustments.get(0);
         assertThat(behavioralAdjustment.getPackage()).isEqualTo(original.getPackage());
@@ -401,7 +404,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
         List<Adjustment> behavioralAdjustments =
-                underTest.getAdjustmentsForRules(mUser.id, original);
+                underTest.getAdjustmentsForRules(original);
         Adjustment behavioralAdjustment = behavioralAdjustments.get(0);
         Bundle actualSignals = behavioralAdjustment.getSignals();
 
@@ -426,14 +429,14 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
         List<Adjustment> behavioralAdjustments =
-                underTest.getAdjustmentsForRules(mUser.id, original);
+                underTest.getAdjustmentsForRules(original);
         Adjustment behavioralAdjustment = behavioralAdjustments.get(0);
         Bundle actualSignals = behavioralAdjustment.getSignals();
 
         assertThat(actualSignals.getInt(KEY_IMPORTANCE)).isEqualTo(IMPORTANCE_LOW);
-        assertThat(actualSignals.getParcelable(KEY_SOUND, Uri.class)).isNull();
-        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGH_LIST)).isNull();
-        assertThat(actualSignals.getInt(KEY_LIGHT)).isEqualTo(0);
+        assertThat(actualSignals.containsKey(KEY_SOUND)).isFalse();
+        assertThat(actualSignals.containsKey(KEY_MODE_BREAKTHROUGH_LIST)).isFalse();
+        assertThat(actualSignals.containsKey(KEY_LIGHT)).isFalse();
     }
 
     @Test
@@ -449,11 +452,13 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
         List<Adjustment> behavioralAdjustments =
-                underTest.getAdjustmentsForRules(mUser.id, original);
+                underTest.getAdjustmentsForRules(original);
         Adjustment behavioralAdjustment = behavioralAdjustments.get(0);
         Bundle actualSignals = behavioralAdjustment.getSignals();
 
-        assertThat(actualSignals.getInt(KEY_TYPE)).isEqualTo(rule.getId());
+        assertThat(actualSignals.getParcelable(
+                KEY_DYNAMIC_BUNDLE, DynamicBundle.class).getChannelId())
+                .isEqualTo(NotificationChannel.getChannelIdForBundleType(rule.getId()));
     }
 
     @Test
@@ -469,7 +474,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
         List<Adjustment> behavioralAdjustments =
-                underTest.getAdjustmentsForRules(mUser.id, original);
+                underTest.getAdjustmentsForRules(original);
         Adjustment behavioralAdjustment = behavioralAdjustments.get(0);
         Bundle actualSignals = behavioralAdjustment.getSignals();
 
@@ -477,7 +482,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
     }
 
     @Test
-    public void getAdjustmentsForRules_multipleRules() {
+    public void getAdjustmentsForRules_multipleRules_mixedImportance() {
         NotificationRule rule = new NotificationRule.Builder(100,
                 new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT)
                         .setSoundHapticOverride(Uri.EMPTY)
@@ -499,13 +504,53 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
         Bundle signals = new Bundle();
         signals.putIntegerArrayList(KEY_NOTIFICATION_RULES,
-                new ArrayList<>(List.of(RESERVED_ID_STATIC_BUNDLES, 101, 100)));
+                new ArrayList<>(List.of(101, 101, RESERVED_ID_STATIC_BUNDLES)));
         Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
 
         List<Adjustment> behavioralAdjustments =
-                underTest.getAdjustmentsForRules(mUser.id, original);
-        assertThat(behavioralAdjustments).hasSize(3);
+                underTest.getAdjustmentsForRules(original);
+        assertThat(behavioralAdjustments).hasSize(1);
 
+        Adjustment behavioralAdjustment101 = behavioralAdjustments.get(0);
+        assertThat(behavioralAdjustment101.getOriginatingRuleId()).isEqualTo(rule2.getId());
+        Bundle actualSignals = behavioralAdjustment101.getSignals();
+        assertThat(actualSignals.getBoolean(KEY_HIGHLIGHT)).isEqualTo(true);
+        assertThat(actualSignals.getBoolean(KEY_BREAKTHROUGH_ALL_MODES)).isTrue();
+        assertThat(actualSignals.getParcelable(KEY_SOUND, Uri.class)).isEqualTo(
+                Uri.fromParts("hi", "hi", "hi"));
+        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGH_LIST))
+                .containsExactly("bedtime");
+        assertThat(actualSignals.getInt(KEY_LIGHT)).isEqualTo(Color.parseColor("red"));
+    }
+
+    @Test
+    public void getAdjustmentsForRules_multipleRules_sameImportance() {
+        NotificationRule rule = new NotificationRule.Builder(100,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT)
+                        .setSoundHapticOverride(Uri.EMPTY)
+                        .setModeBreakthroughIds(List.of("manual"))
+                        .setLightColorOverride(Color.parseColor("blue"))
+                        .build())
+                .build();
+        NotificationRule rule2 = new NotificationRule.Builder(101,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT)
+                        .setSoundHapticOverride(Uri.fromParts("hi", "hi", "hi"))
+                        .setModeBreakthroughIds(List.of("bedtime"))
+                        .setLightColorOverride(Color.parseColor("red"))
+                        .build())
+                .build();
+        underTest.setNotificationRules(mUser.id, List.of(rule, rule2));
+
+        Bundle signals = new Bundle();
+        signals.putIntegerArrayList(KEY_NOTIFICATION_RULES,
+                new ArrayList<>(List.of(101, 100)));
+        Adjustment original = new Adjustment("pkg", "key", signals, null, UserHandle.of(mUser.id));
+
+        List<Adjustment> behavioralAdjustments =
+                underTest.getAdjustmentsForRules(original);
+        assertThat(behavioralAdjustments).hasSize(2);
+
+        // both are here, in priority order
         Adjustment behavioralAdjustment100 = behavioralAdjustments.get(0);
         assertThat(behavioralAdjustment100.getOriginatingRuleId()).isEqualTo(rule.getId());
         Bundle actualSignals = behavioralAdjustment100.getSignals();
@@ -519,18 +564,11 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         assertThat(behavioralAdjustment101.getOriginatingRuleId()).isEqualTo(rule2.getId());
         actualSignals = behavioralAdjustment101.getSignals();
         assertThat(actualSignals.getBoolean(KEY_HIGHLIGHT)).isEqualTo(true);
-        assertThat(actualSignals.getBoolean(KEY_BREAKTHROUGH_ALL_MODES)).isTrue();
         assertThat(actualSignals.getParcelable(KEY_SOUND, Uri.class)).isEqualTo(
                 Uri.fromParts("hi", "hi", "hi"));
         assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGH_LIST))
                 .containsExactly("bedtime");
         assertThat(actualSignals.getInt(KEY_LIGHT)).isEqualTo(Color.parseColor("red"));
-
-        Adjustment behavioralAdjustment203 = behavioralAdjustments.get(2);
-        assertThat(behavioralAdjustment203.getOriginatingRuleId()).isEqualTo(rule3.getId());
-        actualSignals = behavioralAdjustment203.getSignals();
-        assertThat(actualSignals.keySet().size()).isEqualTo(1);
-        assertThat(actualSignals.getInt(KEY_TYPE)).isEqualTo(rule3.getId());
     }
 
     @Test
