@@ -683,6 +683,14 @@ package android.app.admin {
     ctor public IntentFilterPolicyKey(@NonNull String, @NonNull android.content.IntentFilter);
   }
 
+  @FlaggedApi("android.app.admin.flags.policy_streamlining") public final class LeastRecent<V> extends android.app.admin.ResolutionMechanism<V> {
+    ctor public LeastRecent();
+    method public int describeContents();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.app.admin.LeastRecent<?>> CREATOR;
+    field @NonNull public static final android.app.admin.LeastRecent<?> LEAST_RECENT;
+  }
+
   public final class MostRecent<V> extends android.app.admin.ResolutionMechanism<V> {
     ctor public MostRecent();
     method public int describeContents();
