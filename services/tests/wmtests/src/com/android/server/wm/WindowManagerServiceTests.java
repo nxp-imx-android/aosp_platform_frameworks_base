@@ -316,6 +316,51 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    public void testTaskFocusChange_rootTaskHomeTypeWithNonActivityFocusOnSameDA_focusNotChange() {
+        final DisplayContent display = createNewDisplay();
+
+        // Current focused window
+        final WindowState focusedWindow = newWindowBuilder("shade", TYPE_NOTIFICATION_SHADE)
+                .setDisplay(display)
+                .build();
+        spyOn(mWm);
+        doReturn(focusedWindow).when(mWm).getFocusedWindowLocked();
+
+        // Tapped home task
+        final Task tappedRootTask = createTask(
+                display, WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_HOME);
+        final Task tappedTask = createTaskInRootTask(tappedRootTask, 0 /* userId */);
+        spyOn(mWm.mAtmService);
+
+        mWm.handleTaskFocusChange(tappedTask, null /* window */);
+
+        verify(mWm.mAtmService, never()).setFocusedTask(tappedTask.mTaskId, null);
+    }
+
+    @Test
+    public void testTaskFocusChange_rootTaskHomeTypeWithNonActivityFocusOnDiffDA_focusChange() {
+        final DisplayContent display1 = createNewDisplay();
+        final DisplayContent display2 = createNewDisplay();
+
+        // Current focused window
+        final WindowState focusedWindow = newWindowBuilder("shade", TYPE_NOTIFICATION_SHADE)
+                .setDisplay(display1)
+                .build();
+        spyOn(mWm);
+        doReturn(focusedWindow).when(mWm).getFocusedWindowLocked();
+
+        // Tapped home task of different display
+        final Task tappedRootTask = createTask(
+                display2, WINDOWING_MODE_FULLSCREEN, ACTIVITY_TYPE_HOME);
+        final Task tappedTask = createTaskInRootTask(tappedRootTask, 0 /* userId */);
+        spyOn(mWm.mAtmService);
+
+        mWm.handleTaskFocusChange(tappedTask, null /* window */);
+
+        verify(mWm.mAtmService).setFocusedTask(tappedTask.mTaskId, null);
+    }
+
+    @Test
     public void testTrackOverlayWindow() {
         final WindowProcessController wpc = mSystemServicesTestRule.addProcess(
                 "pkgName", "processName", 1000 /* pid */, Process.SYSTEM_UID);
