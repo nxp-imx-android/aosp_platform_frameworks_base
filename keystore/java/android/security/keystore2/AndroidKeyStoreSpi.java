@@ -341,6 +341,10 @@ public class AndroidKeyStoreSpi extends KeyStoreSpi {
             // Disable randomized encryption requirement to support encryption
             // padding NONE above.
             specBuilder.setRandomizedEncryptionRequired(false);
+        } else if (KeyProperties.KEY_ALGORITHM_ML_DSA.equalsIgnoreCase(keyAlgorithm)) {
+            specBuilder =
+                    new KeyProtection.Builder(
+                            KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY);
         } else {
             throw new KeyStoreException("Unsupported key algorithm: " + keyAlgorithm);
         }
