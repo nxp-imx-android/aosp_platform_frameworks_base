@@ -99,12 +99,6 @@ constructor(
         booleanConfigFlow(R.bool.config_notificationShadeOnTopEnd)
 
     /**
-     * Whether the QS inline power menu should replace the Global Actions Dialog when the power
-     * button is clicked.
-     */
-    val isQSInlinePowerMenuEnabled: Boolean = resources.getBoolean(R.bool.config_qsInlinePowerMenu)
-
-    /**
      * Whether the shade layout should be Split Shade (`true`) or Single Shade (`false`). Only
      * applicable when Dual Shade is disabled.
      */

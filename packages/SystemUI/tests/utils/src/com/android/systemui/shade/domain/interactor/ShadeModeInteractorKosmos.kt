@@ -64,7 +64,6 @@ class FakeShadeModeInteractorImpl : ShadeModeInteractor {
     override val isFullWidthShade: StateFlow<Boolean> = MutableStateFlow(false)
     override val notificationStackHorizontalAlignment: StateFlow<Alignment.Horizontal> =
         MutableStateFlow(Alignment.CenterHorizontally)
-    override val isQSInlinePowerMenuEnabled: Boolean = false
     override var isSplitShade: Boolean = false
 }
 

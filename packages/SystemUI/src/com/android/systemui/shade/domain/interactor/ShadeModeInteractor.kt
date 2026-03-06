@@ -65,12 +65,6 @@ interface ShadeModeInteractor {
      */
     val notificationStackHorizontalAlignment: StateFlow<Alignment.Horizontal>
 
-    /**
-     * Whether the QS inline power menu should replace the Global Actions Dialog when the power
-     * button is clicked.
-     */
-    val isQSInlinePowerMenuEnabled: Boolean
-
     /** Convenience shortcut for querying whether the current [shadeMode] is [ShadeMode.Dual]. */
     val isDualShade: Boolean
         get() = shadeMode.value is ShadeMode.Dual
@@ -196,9 +190,6 @@ constructor(
                 initialValue = Alignment.CenterHorizontally,
             )
 
-    override val isQSInlinePowerMenuEnabled
-        get() = shadeConfigRepository.isQSInlinePowerMenuEnabled
-
     companion object {
         private const val TAG = "ShadeModeInteractorImpl"
     }
@@ -212,7 +203,4 @@ open class ShadeModeInteractorEmptyImpl @Inject constructor() : ShadeModeInterac
 
     override val notificationStackHorizontalAlignment: StateFlow<Alignment.Horizontal> =
         MutableStateFlow(Alignment.CenterHorizontally)
-
-    override val isQSInlinePowerMenuEnabled
-        get() = false
 }

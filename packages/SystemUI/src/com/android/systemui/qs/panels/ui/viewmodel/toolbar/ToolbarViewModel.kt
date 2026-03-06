@@ -41,7 +41,6 @@ import com.android.systemui.qs.panels.ui.viewmodel.TextFeedbackContentViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
-import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import dagger.assisted.AssistedFactory
@@ -64,7 +63,6 @@ constructor(
     val editModeButtonViewModelFactory: EditModeButtonViewModel.Factory,
     val textFeedbackContentViewModelFactory: TextFeedbackContentViewModel.Factory,
     val powerMenuViewModelFactory: PowerMenuViewModel.Factory,
-    private val shadeModeInteractor: ShadeModeInteractor,
     private val shadeInteractor: ShadeInteractor,
     private val footerActionsInteractor: FooterActionsInteractor,
     private val globalActionsDialogLiteProvider: Provider<GlobalActionsDialogLite>,
@@ -115,13 +113,18 @@ constructor(
     /**
      * Whether the inline power menu is visible on top of the QS panel.
      *
-     * This state is only relevant when [ShadeModeInteractor.isQSInlinePowerMenuEnabled] is true.
+     * This state is only relevant when [useInlinePowerMenu] is true.
      */
     var isInlinePowerMenuVisible by mutableStateOf(false)
         private set
 
+    /**
+     * Whether the QS inline power menu should replace the Global Actions Dialog when the power
+     * button is clicked.
+     */
     val useInlinePowerMenu =
-        shadeModeInteractor.isQSInlinePowerMenuEnabled && LargeScreenQSInlinePowerMenu.isEnabled
+        LargeScreenQSInlinePowerMenu.isEnabled &&
+            appContext.resources.getBoolean(R.bool.config_qsInlinePowerMenu)
 
     var securityInfoViewModel: FooterActionsSecurityButtonViewModel? by mutableStateOf(null)
         private set
@@ -210,7 +213,7 @@ constructor(
      */
     fun onPowerMenuDismissed() {
         LargeScreenQSInlinePowerMenu.expectInNewMode()
-        assert(shadeModeInteractor.isQSInlinePowerMenuEnabled)
+        assert(useInlinePowerMenu)
         isInlinePowerMenuVisible = false
     }
 
