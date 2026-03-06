@@ -836,6 +836,15 @@ object KeyGestureTestData {
                 isGestureHandlerRegistered = true,
             ),
             KeyGestureData(
+                "SYSRQ -> Take Partial Screenshot",
+                intArrayOf(KeyEvent.KEYCODE_SYSRQ),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
+                intArrayOf(KeyEvent.KEYCODE_SYSRQ),
+                0,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+                isGestureHandlerRegistered = false,
+            ),
+            KeyGestureData(
                 "LANGUAGE_SWITCH -> Switch Language",
                 intArrayOf(KeyEvent.KEYCODE_LANGUAGE_SWITCH),
                 KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
