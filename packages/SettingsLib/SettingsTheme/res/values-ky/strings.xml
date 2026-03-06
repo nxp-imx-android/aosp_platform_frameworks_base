@@ -22,4 +22,8 @@
     <string name="settingslib_dismiss_button_content_description" msgid="6466433970910120385">"Жабуу"</string>
     <string name="settingslib_expressive_expanded_state_expanded" msgid="7720903413665990380">"толук жайылып көрсөтүлдү"</string>
     <string name="settingslib_expressive_expanded_state_collapsed" msgid="3183852630776308202">"жыйыштырылды"</string>
+    <!-- no translation found for settingslib_spinner_item_selected (4339232352717298426) -->
+    <skip />
+    <!-- no translation found for settingslib_spinner_item_not_selected (2953994594850171841) -->
+    <skip />
 </resources>
