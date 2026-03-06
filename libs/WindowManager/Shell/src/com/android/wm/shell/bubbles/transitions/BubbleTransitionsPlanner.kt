@@ -54,14 +54,9 @@ class BubbleTransitionsPlanner(
     ) {
         logTransitionChanges("fullInfo", fullInfo)
         logTransitionChanges("info", info)
-        info.changes
-            .mapNotNull {
-                val planner =
-                    bubbleTransitions.getRunningEnterTransition(transition) as? ITransitionPlanner
-                Log.e(TAG, "found $planner for $transition")
-                planner
-            }
-            .forEach { handler -> handler.plan(plan, fullInfo, transition, info, startTransaction) }
+        val planner =
+            bubbleTransitions.getRunningEnterTransition(transition) as? ITransitionPlanner ?: return
+        planner.plan(plan, fullInfo, transition, info, startTransaction)
     }
 
     private fun logTransitionChanges(transitionName: String = "", info: TransitionInfo) {

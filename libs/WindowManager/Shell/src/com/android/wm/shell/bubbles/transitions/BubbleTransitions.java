@@ -55,6 +55,7 @@ import android.view.View;
 import android.view.ViewRootImpl;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
+import android.window.WindowAnimationState;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -93,12 +94,16 @@ import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTaskController;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.AnimationPlan;
+import com.android.wm.shell.transition.DetachResult;
+import com.android.wm.shell.transition.ITransitionAnimation;
 import com.android.wm.shell.transition.ITransitionPlanner;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.transition.Transitions.TransitionHandler;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -1127,6 +1132,7 @@ public class BubbleTransitions {
         IBinder mTransition;
         IBinder mPlayingTransition;
         private Transitions.TransitionFinishCallback mFinishCb;
+        private Runnable mAnimationFinishCb;
         private WindowContainerTransaction mFinishWct;
         final Rect mStartBounds = new Rect();
         SurfaceControl mSnapshot = null;
@@ -1285,7 +1291,8 @@ public class BubbleTransitions {
 
             BubbleLog.d("LaunchOrConvertToBubble.handleRequest(), set root bounds " + bounds);
             if (BubbleFlagHelper.isBubbleTransitionPlannerEnabled()) {
-                return new Transitions.RequestResult(wct, Collections.singletonList(this));
+                return new Transitions.RequestResult(wct,
+                        Collections.singletonList(mBubbleTransitionsPlanner));
             } else {
                 return new Transitions.RequestResult(wct, this);
             }
@@ -1347,40 +1354,8 @@ public class BubbleTransitions {
             mPlayingTransition = transition;
             mFinishCb = finishCallback;
 
-            // Identify the task that we are converting or launching. Note, we iterate back to front
-            // so that we can adjust alpha for revealed surfaces as needed.
-            boolean found = false;
             mPlayConvertTaskAnimation = false;
-            for (int i = info.getChanges().size() - 1; i >= 0; i--) {
-                final TransitionInfo.Change chg = info.getChanges().get(i);
-                final boolean isLaunchedTask = (chg.getTaskInfo() != null)
-                        && (chg.getMode() == TRANSIT_CHANGE || isOpeningMode(chg.getMode()))
-                        && (chg.getTaskInfo().launchCookies.contains(mLaunchCookie.binder));
-                if (isLaunchedTask) {
-                    mStartBounds.set(chg.getStartAbsBounds());
-                    // Converting a task into taskview, so treat as "new"
-                    mFinishWct = new WindowContainerTransaction();
-                    mTaskInfo = chg.getTaskInfo();
-                    mFinishT = finishTransaction;
-                    mTaskLeash = chg.getLeash();
-                    mSnapshot = chg.getSnapshot();
-                    mPlayConvertTaskAnimation = !isOpeningMode(chg.getMode()) && mSnapshot != null;
-                    found = true;
-                    if (BubbleFlagHelper.enableRootTaskForBubble()
-                            && chg.getMode() != TRANSIT_CHANGE) {
-                        // Prepare to animate in. This is normally pre-set in
-                        // Transitions#setupStartState, but after root Task for Bubble, the opening
-                        // leaf Task can be considered as dependent.
-                        startTransaction.setAlpha(chg.getLeash(), 0f);
-                    }
-                } else {
-                    // In core-initiated launches, the transition is of an OPEN type, and we need to
-                    // manually show the surfaces behind the newly bubbled task
-                    if (info.getType() == TRANSIT_OPEN && isOpeningMode(chg.getMode())) {
-                        startTransaction.setAlpha(chg.getLeash(), 1f);
-                    }
-                }
-            }
+            boolean found = processChangesFindMatching(info, startTransaction) != null;
             if (!found) {
                 Slog.w(TAG, "Expected a TaskView conversion in this transition but didn't get "
                         + "one, cleaning up the task view");
@@ -1422,8 +1397,8 @@ public class BubbleTransitions {
             if (animate) {
                 mPriorBubble = mExpandedViewAnimator.prepareConvertedView(mBubble);
             }
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchOrConvertToBubble.startExpandAnim(): "
-                    + "readyToAnimate=%b", mTransitionProgress.isReadyToAnimate());
+            BubbleLog.d("LaunchOrConvertToBubble.startExpandAnim(): readyToAnimate=%b",
+                    mTransitionProgress.isReadyToAnimate());
             if (mPriorBubble != null) {
                 // TODO: an animation. For now though, just remove it.
                 final BubbleBarExpandedView priorView = mPriorBubble.getBubbleBarExpandedView();
@@ -1458,8 +1433,7 @@ public class BubbleTransitions {
         }
 
         private void playAnimation(boolean animate) {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
-                    "LaunchOrConvertToBubble.playAnimation(): playConvert=%b",
+            BubbleLog.d("LaunchOrConvertToBubble.playAnimation(): playConvert=%b",
                     mPlayConvertTaskAnimation);
             mHasPlayed = true;
             final TaskViewTaskController tv = mBubble.getTaskView().getController();
@@ -1498,7 +1472,7 @@ public class BubbleTransitions {
         }
 
         private void cleanup() {
-            ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchOrConvertToBubble.cleanup(): removeCookie=%s",
+            BubbleLog.d("LaunchOrConvertToBubble.cleanup(): removeCookie=%s",
                     mLaunchCookie.binder);
             if (!mHasPlayed) {
                 // Cleanup the new Bubble which is never used.
@@ -1513,6 +1487,10 @@ public class BubbleTransitions {
                 mFinishCb.onTransitionFinished(mFinishWct);
                 mFinishCb = null;
             }
+            if (mAnimationFinishCb != null) {
+                mAnimationFinishCb.run();
+                mAnimationFinishCb = null;
+            }
             if (mTransition != null) {
                 mTaskViewTransitions.onExternalDone(mTransition);
                 mTransition = null;
@@ -1521,12 +1499,133 @@ public class BubbleTransitions {
             mEnterTransitions.remove(mPlayingTransition);
         }
 
+        @Nullable
+        private TransitionInfo.Change processChangesFindMatching(
+                @NonNull TransitionInfo transitionInfo,
+                @NonNull SurfaceControl.Transaction startTransaction) {
+            TransitionInfo.Change change = null;
+            // Identify the task that we are converting or launching. Note, we iterate back to front
+            // so that we can adjust alpha for revealed surfaces as needed.
+            for (int i = transitionInfo.getChanges().size() - 1; i >= 0; i--) {
+                final TransitionInfo.Change chg = transitionInfo.getChanges().get(i);
+                final boolean isLaunchedTask = (chg.getTaskInfo() != null)
+                        && (chg.getMode() == TRANSIT_CHANGE || isOpeningMode(chg.getMode()))
+                        && (chg.getTaskInfo().launchCookies.contains(mLaunchCookie.binder));
+                if (isLaunchedTask) {
+                    mStartBounds.set(chg.getStartAbsBounds());
+                    // Converting a task into taskview, so treat as "new"
+                    mFinishWct = new WindowContainerTransaction();
+                    mTaskInfo = chg.getTaskInfo();
+                    mTaskLeash = chg.getLeash();
+                    mSnapshot = chg.getSnapshot();
+                    mPlayConvertTaskAnimation = !isOpeningMode(chg.getMode()) && mSnapshot != null;
+                    if (change != null) {
+                        BubbleLog.w(
+                                "LaunchOrConvertToBubble.processChangesFindMatching() prev "
+                                        + "matching change=%s, new=%s", change, chg);
+                    }
+                    change = chg;
+                    if (BubbleFlagHelper.enableRootTaskForBubble()
+                            && chg.getMode() != TRANSIT_CHANGE) {
+                        // Prepare to animate in. This is normally pre-set in
+                        // Transitions#setupStartState, but after root Task for Bubble, the opening
+                        // leaf Task can be considered as dependent.
+                        startTransaction.setAlpha(chg.getLeash(), 0f);
+                    }
+                }
+                if (transitionInfo.getType() == TRANSIT_OPEN && isOpeningMode(
+                        chg.getMode())) {
+                    // In core-initiated launches, the transition is of an OPEN type, and we need to
+                    // manually show the surfaces behind the newly bubbled task
+                    startTransaction.setAlpha(chg.getLeash(), 1f);
+                }
+            }
+            return change;
+        }
+
         @Override
         public void plan(@NonNull AnimationPlan plan, @NonNull TransitionInfo fullInfo,
                 @NonNull IBinder transition, @NonNull TransitionInfo plannableInfo,
                 @NonNull SurfaceControl.Transaction startTransaction) {
-            // TODO(b/483107404) implement animation planning
-            ProtoLog.w(WM_SHELL_BUBBLES, "LaunchOrConvertToBubble.plan()");
+            BubbleLog.d("LaunchOrConvertToBubble.plan() bubble=%s", mBubble.getKey());
+            mPlayConvertTaskAnimation = false;
+            TransitionInfo.Change change =
+                    processChangesFindMatching(plannableInfo, startTransaction);
+            WindowContainerToken token = null;
+            if (change != null) {
+                token = change.getContainer();
+            }
+            if (token == null) {
+                String reason = change == null ? "change not found" : "no container for change";
+                BubbleLog.e("Expected a TaskView conversion in this transition but didn't get "
+                        + "one - " + reason + ", cleaning up the task view");
+                mBubble.getTaskView().getController().setTaskNotFound();
+                cleanup();
+                return;
+            }
+            // Now update state (and talk to launcher) in parallel with snapshot stuff
+            mBubbleData.notificationEntryUpdated(mBubble, /* suppressFlyout= */ true,
+                    /* showInShade= */ false, mBubbleBarLocation);
+            mFinishT = new SurfaceControl.Transaction();
+            final int left = mStartBounds.left - plannableInfo.getRoot(0).getOffset().x;
+            final int top = mStartBounds.top - plannableInfo.getRoot(0).getOffset().y;
+
+            if (mPlayConvertTaskAnimation) {
+                startTransaction.setCrop(mTaskLeash, mStartBounds);
+                startTransaction.setPosition(mTaskLeash, left, top);
+                startTransaction.show(mSnapshot);
+                // Move snapshot to root so that it remains visible while task is
+                // moved
+                // to taskview
+                startTransaction.reparent(mSnapshot, plannableInfo.getRoot(0).getLeash());
+                startTransaction.setPosition(mSnapshot, left, top);
+                startTransaction.setLayer(mSnapshot, Integer.MAX_VALUE);
+            } else {
+                startTransaction.setPosition(mTaskLeash, left, top);
+            }
+            startTransaction.apply();
+
+            mTaskViewTransitions.onExternalDone(mTransition);
+            mTransition = null;
+            mTransitionProgress.setTransitionReady();
+            plan.setAnimation(
+                    token,
+                    new ITransitionAnimation() {
+                        @NonNull
+                        @Override
+                        public DetachResult detach(
+                                @NonNull List<WindowContainerToken> containers,
+                                @NonNull SurfaceControl.Transaction startTransaction) {
+                            BubbleLog.w("ITransitionAnimation.detach()");
+                            // TODO(b/483107404) Properly implement detach
+                            final ArrayList<WindowAnimationState> states =
+                                    new ArrayList<>(containers.size());
+                            for (int i = 0; i < containers.size(); ++i) {
+                                final WindowAnimationState state = new WindowAnimationState();
+                                state.scale = 1.f;
+                                state.timestamp = System.currentTimeMillis();
+                                states.add(state);
+                            }
+                            return new DetachResult(states);
+                        }
+
+                        @Override
+                        public void start(
+                                @NonNull TransitionInfo info,
+                                @NonNull List<WindowAnimationState> from,
+                                @NonNull IFinishedCallback onFinished) {
+                            BubbleLog.w("ITransitionAnimation.start()");
+                            // TODO(b/483107404) use from for the animation
+                            mAnimationFinishCb = () -> onFinished.onFinished(mFinishT);
+                            startExpandAnim();
+                        }
+
+                        @NonNull
+                        @Override
+                        public String getDebugName() {
+                            return "LaunchOrConvertToBubbleAnimation";
+                        }
+                    });
         }
 
         @NonNull
