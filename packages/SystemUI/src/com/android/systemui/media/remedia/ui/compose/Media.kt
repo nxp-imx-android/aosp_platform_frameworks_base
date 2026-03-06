@@ -47,6 +47,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.DragInteraction
@@ -163,7 +164,6 @@ import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.byLayoutId
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.common.ui.compose.singleton
-import com.android.systemui.communal.ui.compose.extensions.detectLongPressGesture
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.shared.model.MediaCardActionButtonLayout
@@ -632,9 +632,9 @@ private fun ContentScope.CardForeground(
             )
 
         layout(contentPlaceable.measuredWidth, contentPlaceable.measuredHeight) {
-            if (!viewModel.guts.isVisible || gutsAlphaAnimatable.isRunning) {
-                contentPlaceable.place(0, 0)
-            }
+            // Place content so its modifiers stay active and don't wait for previous pointer events
+            // after the switch from guts to content.
+            contentPlaceable.place(0, 0)
             if (viewModel.guts.isVisible || gutsAlphaAnimatable.isRunning) {
                 gutsPlaceable.place(0, 0)
             }
@@ -1369,7 +1369,9 @@ private fun CardGuts(
 ) {
     Box(
         modifier =
-            modifier.pointerInput(Unit) { detectLongPressGesture { viewModel.onLongClick() } }
+            modifier.pointerInput(Unit) {
+                detectTapGestures(onTap = {}, onLongPress = { viewModel.onLongClick() })
+            }
     ) {
         // Settings button.
         Icon(
