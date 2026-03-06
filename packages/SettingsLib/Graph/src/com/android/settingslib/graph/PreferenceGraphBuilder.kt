@@ -761,6 +761,7 @@ fun <T> PersistentPreference<T>.evalReadPermit(
     callingUid: Int,
 ): Int =
     when {
+        sensitivityLevel == DO_NOT_EXPOSE -> ReadWritePermit.DISALLOW
         getReadPermissions(context)?.check(context, callingPid, callingUid) == false ->
             ReadWritePermit.REQUIRE_APP_PERMISSION
         else -> getReadPermit(context, callingPid, callingUid)
