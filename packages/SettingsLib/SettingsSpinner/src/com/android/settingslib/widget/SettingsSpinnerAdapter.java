@@ -118,7 +118,11 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
                             /* columnSpan= */ 1,
                             /* heading= */ false,
                             /* selected= */ false));
-                info.setSelected(isSelected);
+                info.setStateDescription(getContext().getString(isSelected
+                        ? com.android.settingslib.widget.theme.R.string
+                                .settingslib_spinner_item_selected
+                        : com.android.settingslib.widget.theme.R.string
+                                .settingslib_spinner_item_not_selected));
                 info.setClickable(true);
             }
         });

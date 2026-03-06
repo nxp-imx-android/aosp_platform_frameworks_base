@@ -1302,7 +1302,7 @@ final class ServiceRecord extends ServiceRecordInternal implements ComponentName
     void updateProcessStateOnRequest() {
         mProcessStateOnRequest = getHostProcess() != null && getHostProcess().getThread() != null
                 && !getHostProcess().isKilled()
-                ? getHostProcess().getCurProcState() : PROCESS_STATE_NONEXISTENT;
+                ? getHostProcess().getProcState() : PROCESS_STATE_NONEXISTENT;
     }
 
     @NonNull

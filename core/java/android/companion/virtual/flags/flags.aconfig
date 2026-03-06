@@ -231,3 +231,11 @@ flag {
     }
     bug: "487291564"
 }
+
+flag {
+    name: "virtual_camera_close_session"
+    namespace: "virtual_devices"
+    description: "API for VirtualCamera owner to close the current camera session"
+    bug: "487943236"
+    is_exported: true
+}

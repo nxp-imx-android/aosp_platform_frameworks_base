@@ -16,14 +16,12 @@
 
 package com.android.systemui.headline.ui.viewmodel
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
+import com.android.systemui.common.shared.model.ContentDescription
+import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.shared.model.Text
+import com.android.systemui.headline.ui.preview.R
 
 /** A fake implementation of [HeadlineViewModel]. */
 class FakeHeadlineViewModel(
@@ -59,10 +57,10 @@ class FakeHeadlineViewModel(
 
 fun fakeHeadlineItems(): List<FakeHeadlineItem> {
     return listOf(
-        FakeHeadlineItem("timer", Icons.Default.Timer, "4:42"),
-        FakeHeadlineItem("spotify", Icons.Default.MusicNote, "Espresso"),
-        FakeHeadlineItem("car", Icons.Default.DirectionsCar, "3 min"),
-        FakeHeadlineItem("phone", Icons.Default.Phone, "incoming call"),
+        FakeHeadlineItem("timer", R.drawable.timer, "4:42"),
+        FakeHeadlineItem("spotify", R.drawable.music_note, "Espresso"),
+        FakeHeadlineItem("car", R.drawable.directions_car, "3 min"),
+        FakeHeadlineItem("phone", R.drawable.phone, "incoming call"),
     )
 }
 
@@ -73,12 +71,12 @@ class FakeHeadlineItem(
 ) : HeadlineItem {
     constructor(
         key: Any = "spotify",
-        icon: ImageVector = Icons.Default.MusicNote,
+        icon: Int = R.drawable.music_note,
         text: String = "Espresso",
     ) : this(
         key,
-        listOf(HeadlineItemContent.Icon(icon, null)),
-        listOf(HeadlineItemContent.Text(text)),
+        listOf(HeadlineItemContent.IconItem(Icon.Resource(icon, ContentDescription.Loaded(null)))),
+        listOf(HeadlineItemContent.TextItem(Text.Loaded(text))),
     )
 
     override val key: HeadlineItemKey = HeadlineItemKey(key)

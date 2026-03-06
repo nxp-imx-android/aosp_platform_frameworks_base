@@ -78,17 +78,6 @@ public final class PerfettoTrace {
         return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("proc_state");
     }
 
-    public static final PerfettoTrace.Category GFX_CATEGORY = new PerfettoTrace.Category("gfx");
-
-    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
-            GFX_CATEGORY_V3 = getGfxCategoryV3();
-
-    @RavenwoodIgnore // Just use null on Ravenwood.
-    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
-            getGfxCategoryV3() {
-        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("gfx");
-    }
-
     // For tracing coroutine execution (coroutine creation and coroutine continuations)
     public static final PerfettoTrace.Category CC_CATEGORY = new PerfettoTrace.Category("cc");
 
@@ -476,11 +465,9 @@ public final class PerfettoTrace {
     @RavenwoodIgnore
     public static void registerCategories() {
         if (IS_USE_SDK_TRACING_API_V3) {
-            GFX_CATEGORY_V3.register();
             CC_CATEGORY_V3.register();
             BIG_LOCKS_V3.register();
         } else {
-            GFX_CATEGORY.register();
             CC_CATEGORY.register();
         }
         if (android.os.Flags.perfettoSdkTracingV3()) {

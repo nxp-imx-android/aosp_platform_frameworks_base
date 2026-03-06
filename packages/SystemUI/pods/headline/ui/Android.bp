@@ -23,6 +23,7 @@ java_library {
     defaults: ["sysui_api"],
     static_libs: ["androidx.compose.runtime_runtime"],
     libs: [
+        "com.android.systemui.common.shared.model_api",
         "PlatformComposeSceneTransitionLayout",
         "androidx.compose.ui_ui",
     ],
@@ -32,6 +33,8 @@ java_library {
     name: "com.android.systemui.headline.ui_main",
     defaults: ["sysui_main"],
     static_libs: [
+        "com.android.systemui.common.shared.model_api",
+        "com.android.systemui.common.ui.compose_api",
         "com.android.systemui.headline.ui_api",
         "PlatformComposeCore",
         "PlatformComposeSceneTransitionLayout",
@@ -50,9 +53,11 @@ java_library {
     ],
 }
 
-java_library {
+android_library {
     name: "com.android.systemui.headline.ui_preview",
+    package_name: "com.android.systemui.headline.ui.preview",
     defaults: ["sysui_preview"],
+    resource_dirs: ["src/resPreview"],
     static_libs: [
         "com.android.systemui.headline.ui_main",
         "com.android.systemui.headline.ui_api",

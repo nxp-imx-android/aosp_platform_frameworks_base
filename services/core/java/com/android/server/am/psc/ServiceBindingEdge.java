@@ -42,8 +42,8 @@ class ServiceBindingEdge extends GraphEdge {
      * or become {@code null}. Consequently, the target node may change during the lifetime of this
      * edge.
      *
-     * {@link #updateTarget()} updates the target node, and should be called before evaluating this
-     * edge in each update.
+     * {@link #updateTarget()} and {@link #setTarget(ProcessNode)} update the target node. Either
+     * should be called before evaluating this edge in each update.
      */
     private ProcessNode mTarget;
 
@@ -62,10 +62,14 @@ class ServiceBindingEdge extends GraphEdge {
         } else {
             client = mConn.getClient();
         }
-        // LINT.ThenChange(OomAdjusterImpl.java:getServiceClient)
+        // LINT.ThenChange(OomAdjusterImpl.java:forEachClientConnectionLSP)
 
         // The client must be non-null.
         mSource = client.getProcessNode();
+    }
+
+    final boolean isSandboxAttributedConnection() {
+        return mConn.getService().isSdkSandbox && mConn.getAttributedClient() != null;
     }
 
     @CpuTimeTransmissionType
@@ -86,21 +90,28 @@ class ServiceBindingEdge extends GraphEdge {
     }
 
     /**
-     * Updates the target node of this edge. Should be called before evaluating this edge in each
-     * update.
+     * Updates the target node of this edge.
      */
     final void updateTarget() {
         final ServiceRecordInternal service = mConn.getService();
         final ProcessRecordInternal host;
+        // LINT.IfChange(getServiceHost)
         if (service.isSdkSandbox) {
             host = service.getHostProcessInternal();
         } else {
-            // LINT.IfChange(getServiceHost)
             host = mConn.hasFlag(ServiceInfo.FLAG_ISOLATED_PROCESS)
                     ? service.getIsolationHostProcess() : service.getHostProcessInternal();
-            // LINT.ThenChange(OomAdjusterImpl.java:getServiceHost)
         }
+        // LINT.ThenChange(OomAdjusterImpl.java:forEachConnectionLSP)
         mTarget = (host == null) ? null : host.getProcessNode();
+    }
+
+    /**
+     * Sets the target node of this edge. Useful when the target node is already known (e.g., when
+     * iterating over the incoming edges of a node).
+     */
+    final void setTarget(@NonNull ProcessNode target) {
+        mTarget = Objects.requireNonNull(target);
     }
 
     @Override

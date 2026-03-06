@@ -350,7 +350,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     private final FakeExecutor mUiBgExecutor = new FakeExecutor(mFakeSystemClock);
     private final FakeFeatureFlags mFeatureFlags = new FakeFeatureFlags();
     private final InitController mInitController = new InitController();
-    private final DumpManager mDumpManager = new DumpManager();
+    private final DumpManager mDumpManager = mKosmos.getDumpManager();
     private final ScreenLifecycle mScreenLifecycle = new ScreenLifecycle(mDumpManager);
     private MessageRouterImpl mMessageRouter = new MessageRouterImpl(mMainExecutor);
 

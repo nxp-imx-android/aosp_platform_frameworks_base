@@ -573,6 +573,9 @@ public class SpatializerHelper {
             updatedDevice = new AdiDeviceState(canonicalDeviceType, ada.getInternalType(),
                     ada.getAddress());
             initSAState(updatedDevice);
+            if (forceEnable) {
+                updatedDevice.setSAEnabled(true);
+            }
             mDeviceBroker.addOrUpdateDeviceSAStateInInventory(
                     updatedDevice, true /*syncInventory*/);
         }

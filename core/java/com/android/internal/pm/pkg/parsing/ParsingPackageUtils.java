@@ -314,7 +314,7 @@ public class ParsingPackageUtils {
     @NonNull
     private final List<PermissionManager.SplitPermissionInfo> mSplitPermissionInfos;
     private final Callback mCallback;
-    private static final AconfigFlags sAconfigFlags = new AconfigFlags();
+
 
     public ParsingPackageUtils(String[] separateProcesses, DisplayMetrics displayMetrics,
             @NonNull List<PermissionManager.SplitPermissionInfo> splitPermissions,
@@ -789,7 +789,7 @@ public class ParsingPackageUtils {
             if (outerDepth + 1 < parser.getDepth() || type != XmlPullParser.START_TAG) {
                 continue;
             }
-            if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+            if (AconfigFlags.getInstance().skipCurrentElement(pkg, parser)) {
                 XmlUtils.skipCurrentTag(parser);
                 continue;
             }
@@ -869,7 +869,7 @@ public class ParsingPackageUtils {
             if (type != XmlPullParser.START_TAG) {
                 continue;
             }
-            if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+            if (AconfigFlags.getInstance().skipCurrentElement(pkg, parser)) {
                 XmlUtils.skipCurrentTag(parser);
                 continue;
             }
@@ -963,7 +963,7 @@ public class ParsingPackageUtils {
             if (type != XmlPullParser.START_TAG) {
                 continue;
             }
-            if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+            if (AconfigFlags.getInstance().skipCurrentElement(pkg, parser)) {
                 XmlUtils.skipCurrentTag(parser);
                 continue;
             }
@@ -1700,7 +1700,7 @@ public class ParsingPackageUtils {
             if (type != XmlPullParser.START_TAG) {
                 continue;
             }
-            if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+            if (AconfigFlags.getInstance().skipCurrentElement(pkg, parser)) {
                 XmlUtils.skipCurrentTag(parser);
                 continue;
             }
@@ -1944,7 +1944,7 @@ public class ParsingPackageUtils {
             if (type != XmlPullParser.START_TAG) {
                 continue;
             }
-            if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+            if (AconfigFlags.getInstance().skipCurrentElement(pkg, parser)) {
                 XmlUtils.skipCurrentTag(parser);
                 continue;
             }
@@ -2310,7 +2310,7 @@ public class ParsingPackageUtils {
             if (type != XmlPullParser.START_TAG) {
                 continue;
             }
-            if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+            if (AconfigFlags.getInstance().skipCurrentElement(pkg, parser)) {
                 XmlUtils.skipCurrentTag(parser);
                 continue;
             }
@@ -2978,7 +2978,7 @@ public class ParsingPackageUtils {
             if (type != XmlPullParser.START_TAG) {
                 continue;
             }
-            if (sAconfigFlags.skipCurrentElement(pkg, parser)) {
+            if (AconfigFlags.getInstance().skipCurrentElement(pkg, parser)) {
                 XmlUtils.skipCurrentTag(parser);
                 continue;
             }
@@ -3666,14 +3666,6 @@ public class ParsingPackageUtils {
         @NonNull Set<String> getHiddenApiWhitelistedApps();
 
         @NonNull Set<String> getInstallConstraintsAllowlist();
-    }
-
-    /**
-     * Getter for the flags object
-     */
-    @android.ravenwood.annotation.RavenwoodKeep
-    public static AconfigFlags getAconfigFlags() {
-        return sAconfigFlags;
     }
 
     private static class ParseMainComponentResult {

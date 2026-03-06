@@ -40,6 +40,7 @@ import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_GESTURE
 import static android.provider.Settings.Secure.ACCESSIBILITY_BUTTON_MODE_NAVIGATION_BAR;
 import static android.provider.Settings.Secure.ACCESSIBILITY_DISPLAY_MAGNIFICATION_NAVBAR_ENABLED;
 import static android.security.advancedprotection.AdvancedProtectionManager.ADVANCED_PROTECTION_SYSTEM_ENTITY;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
 import static android.view.accessibility.AccessibilityManager.FlashNotificationReason;
@@ -147,6 +148,7 @@ import android.provider.Settings;
 import android.provider.Settings.Secure.AccessibilityMagnificationCursorFollowingMode;
 import android.provider.SettingsStringUtil.SettingStringHelper;
 import android.safetycenter.SafetyCenterManager;
+import android.security.advancedprotection.AdvancedProtectionFeature;
 import android.security.advancedprotection.AdvancedProtectionManager;
 import android.text.TextUtils;
 import android.text.TextUtils.SimpleStringSplitter;
@@ -1022,7 +1024,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 mAdvancedProtectionManager =
                         mContext.getSystemService(AdvancedProtectionManager.class);
                 if (mAdvancedProtectionManager != null) {
-                    mAdvancedProtectionManager.registerAdvancedProtectionCallback(
+                    mAdvancedProtectionManager.registerAdvancedProtectionFeatureCallback(
+                            new int[]{FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES},
                             new HandlerExecutor(BackgroundThread.getHandler()),
                             this::handleAdvancedProtectionModeStateChanged);
                 }
@@ -1409,12 +1412,21 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
      * Handles changes to the Advanced Protection Mode (APM) state by applying
      * a global user restriction on non-tool accessibility services.
      */
-    void handleAdvancedProtectionModeStateChanged(boolean apmOn) {
+    void handleAdvancedProtectionModeStateChanged(List<AdvancedProtectionFeature> features) {
         if (mDevicePolicyManager == null) {
             Slog.e(LOG_TAG, "DevicePolicyManager is not available when handling APM state change");
             // if this happen, we need to check the timing when registering the call back to APM
             return;
         }
+        boolean apmOn = false;
+        for (int i = 0; i < features.size(); i++) {
+            AdvancedProtectionFeature feature = features.get(i);
+            if (feature.getId() == FEATURE_ID_RESTRICT_NON_TOOL_A11Y_SERVICES) {
+                apmOn = feature.isEnabled();
+                break;
+            }
+        }
+
         if (apmOn) {
             mDevicePolicyManager.addUserRestrictionGlobally(ADVANCED_PROTECTION_SYSTEM_ENTITY,
                     UserManager.DISALLOW_NON_TOOL_ACCESSIBILITY_SERVICE);

@@ -20,6 +20,7 @@ import static com.android.server.graphics.fonts.FontManagerService.SystemFontExc
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.graphics.Typeface;
 import android.graphics.fonts.FontManager;
 import android.graphics.fonts.FontUpdateRequest;
 import android.graphics.fonts.SystemFonts;
@@ -69,6 +70,8 @@ final class UpdatableFontDir {
     private static final String FONT_SIGNATURE_FILE = "font.fsv_sig";
     private static final String EMOJI_LANG = "und-Zsye";
     private static final String EMOJI_DEFAULT_POSTSCRIPT_NAME = "NotoColorEmoji";
+    // This is from frameworks/minikin/include/minikin/FontCollection.h
+    private static final int MAX_FAMILY_COUNT = 254;
 
     /** Interface to mock font file access in tests. */
     interface FontFileParser {
@@ -482,6 +485,14 @@ final class UpdatableFontDir {
                 throw new SystemFontException(FontManager.RESULT_ERROR_INVALID_ARGUMENT,
                         "Fallback families must have a 'lang' attribute.");
             }
+        }
+        FontConfig preinstalledFontConfig = mConfigSupplier.apply(Collections.emptyMap());
+        int maxCount = getMaxPrioritizedUnnamedFamilyCount(preinstalledFontConfig);
+        if (curConfig.prioritizedFamilyList.size() + fallbackRequests.size() > maxCount) {
+            throw new SystemFontException(FontManager.RESULT_ERROR_INVALID_ARGUMENT,
+                    "Too many fallback font update requests: " + fallbackRequests.size()
+                            + ", current: " + curConfig.prioritizedFamilyList.size()
+                            + ", max: " + maxCount);
         }
 
         boolean success = false;
@@ -1000,6 +1011,16 @@ final class UpdatableFontDir {
                 prioritizedUnnamedFamilies.add(resolvedUnnamedFamily);
             }
 
+            int maxCount = getMaxPrioritizedUnnamedFamilyCount(config);
+            if (prioritizedUnnamedFamilies.size() > maxCount) {
+                Slog.w(TAG, "Too many prioritized unnamed families: "
+                        + prioritizedUnnamedFamilies.size()
+                        + " > " + maxCount);
+                // Trim prioritizedUnnamedFamilies to maxCount.
+                prioritizedUnnamedFamilies
+                        .subList(maxCount, prioritizedUnnamedFamilies.size())
+                        .clear();
+            }
             addEmojiFontsToFallbackFamilyList(
                     prioritizedUnnamedFamilies, newFallbackFamilies);
             addGeneralFontsToFallbackFamilyList(
@@ -1076,5 +1097,46 @@ final class UpdatableFontDir {
         } catch (Throwable t) {
             Slog.w(TAG, "Failed to delete " + filesDir);
         }
+    }
+
+    private static int getMaxPrioritizedUnnamedFamilyCount(FontConfig config) {
+        int maxCount = MAX_FAMILY_COUNT
+                - getMaxNamedFamilyCount(config)
+                - getPreinstalledFallbackFamilyCount(config)
+                - Typeface.CustomFallbackBuilder.getMaxCustomFallbackCount();
+        return Math.max(maxCount, 0);
+    }
+
+    /** Returns the maximum possible number of named families in a Typeface object. */
+    private static int getMaxNamedFamilyCount(FontConfig config) {
+        int count = 0;
+        List<FontConfig.NamedFamilyList> namedFamilyLists = config.getNamedFamilyLists();
+        for (int i = 0; i < namedFamilyLists.size(); ++i) {
+            FontConfig.NamedFamilyList namedFamilyList = namedFamilyLists.get(i);
+            count = Math.max(count, namedFamilyList.getFamilies().size());
+        }
+        return count;
+    }
+
+    /** Returns the number of preinstalled fallback families in a Typeface object. */
+    private static int getPreinstalledFallbackFamilyCount(FontConfig config) {
+        int count = 0;
+        List<FontConfig.FontFamily> families = config.getFontFamilies();
+        for (int i = 0; i < families.size(); ++i) {
+            FontConfig.FontFamily fontFamily = families.get(i);
+            if (fontFamily.getPriority() <= 0) {
+                count++;
+            }
+        }
+        List<FontConfig.Customization.LocaleFallback> localeFallbacks =
+                config.getLocaleFallbackCustomizations();
+        for (int i = 0; i < localeFallbacks.size(); ++i) {
+            FontConfig.Customization.LocaleFallback localeFallback = localeFallbacks.get(i);
+            if (localeFallback.getOperation()
+                    != FontConfig.Customization.LocaleFallback.OPERATION_REPLACE) {
+                count++;
+            }
+        }
+        return count;
     }
 }

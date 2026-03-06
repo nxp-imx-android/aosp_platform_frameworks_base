@@ -24,18 +24,17 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.res.Resources;
 import android.location.ILocationListener;
 import android.location.LocationManagerInternal;
 import android.location.LocationRequest;
-import android.location.flags.Flags;
 import android.location.provider.ProviderRequest;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -88,6 +87,7 @@ public class LocationManagerServiceTest {
     @Mock private Context mContext;
     @Mock private Resources mResources;
     @Mock private PackageManager mPackageManager;
+    @Mock private PackageManagerInternal mPackageManagerInternal;
     @Mock private AppOpsManager mAppOpsManager;
     @Mock private PowerManager mPowerManager;
     @Mock private PowerManager.WakeLock mWakeLock;
@@ -96,6 +96,10 @@ public class LocationManagerServiceTest {
     @Before
     public void setUp() {
         initMocks(this);
+
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
+        LocalServices.addService(PackageManagerInternal.class, mPackageManagerInternal);
+        doReturn(true).when(mPackageManagerInternal).isSameApp(anyString(), anyInt(), anyInt());
 
         doReturn(mContext).when(mContext).createAttributionContext(any());
         doReturn("android").when(mContext).getPackageName();

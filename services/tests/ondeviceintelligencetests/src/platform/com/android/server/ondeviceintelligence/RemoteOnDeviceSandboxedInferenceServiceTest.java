@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.Handler;
 import android.os.UserHandle;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -40,6 +41,7 @@ import java.lang.reflect.Field;
 public class RemoteOnDeviceSandboxedInferenceServiceTest {
 
     @Mock Context mMockContext;
+    @Mock Handler mMockHandler;
 
     private static final String TEST_SERVICE_NAME = "com.test.package/.TestService";
     private static final ComponentName TEST_COMPONENT_NAME =
@@ -58,7 +60,8 @@ public class RemoteOnDeviceSandboxedInferenceServiceTest {
     public void testRemoteInferenceServiceConstructor_defaultFlags() throws Exception {
         RemoteOnDeviceSandboxedInferenceService service =
                 new RemoteOnDeviceSandboxedInferenceService(
-                        mMockContext, TEST_COMPONENT_NAME, UserHandle.SYSTEM.getIdentifier());
+                        mMockContext, TEST_COMPONENT_NAME, UserHandle.SYSTEM.getIdentifier(),
+                        mMockHandler);
 
         Field bindingFlagsField = ServiceConnector.Impl.class.getDeclaredField("mBindingFlags");
         bindingFlagsField.setAccessible(true);
@@ -76,7 +79,8 @@ public class RemoteOnDeviceSandboxedInferenceServiceTest {
                         mMockContext,
                         TEST_COMPONENT_NAME,
                         UserHandle.SYSTEM.getIdentifier(),
-                        customFlags);
+                        customFlags,
+                        mMockHandler);
 
         Field bindingFlagsField = ServiceConnector.Impl.class.getDeclaredField("mBindingFlags");
         bindingFlagsField.setAccessible(true);

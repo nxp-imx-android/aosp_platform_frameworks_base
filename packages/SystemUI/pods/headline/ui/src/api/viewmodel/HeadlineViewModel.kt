@@ -16,9 +16,10 @@
 
 package com.android.systemui.headline.ui.viewmodel
 
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.android.compose.animation.scene.HoistedSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
+import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.shared.model.Text
 
 /** ViewModel for the Headline. */
 public interface HeadlineViewModel {
@@ -90,14 +91,9 @@ public interface HeadlineItem {
 }
 
 public sealed interface HeadlineItemContent {
-    // TODO(b/449675581): Extract com/android/systemui/common/shared/model/Text.kt into its own
-    // library and use that instead.
-    public data class Text(val text: String) : HeadlineItemContent
+    public data class TextItem(val text: Text) : HeadlineItemContent
 
-    // TODO(b/449675581): Extract com/android/systemui/common/shared/model/Icon.kt into its own
-    // library and use that instead.
-    public data class Icon(val icon: ImageVector, val contentDescription: String?) :
-        HeadlineItemContent
+    public data class IconItem(val icon: Icon) : HeadlineItemContent
 }
 
 /** A key associated to a [HeadlineItem]. */

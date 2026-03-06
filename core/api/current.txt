@@ -182,6 +182,7 @@ package android {
     field public static final String MANAGE_DEVICE_POLICY_INSTALL_UNKNOWN_SOURCES = "android.permission.MANAGE_DEVICE_POLICY_INSTALL_UNKNOWN_SOURCES";
     field public static final String MANAGE_DEVICE_POLICY_KEEP_UNINSTALLED_PACKAGES = "android.permission.MANAGE_DEVICE_POLICY_KEEP_UNINSTALLED_PACKAGES";
     field public static final String MANAGE_DEVICE_POLICY_KEYGUARD = "android.permission.MANAGE_DEVICE_POLICY_KEYGUARD";
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_keyguard_status") public static final String MANAGE_DEVICE_POLICY_KEYGUARD_STATUS = "android.permission.MANAGE_DEVICE_POLICY_KEYGUARD_STATUS";
     field public static final String MANAGE_DEVICE_POLICY_LOCALE = "android.permission.MANAGE_DEVICE_POLICY_LOCALE";
     field public static final String MANAGE_DEVICE_POLICY_LOCATION = "android.permission.MANAGE_DEVICE_POLICY_LOCATION";
     field public static final String MANAGE_DEVICE_POLICY_LOCK = "android.permission.MANAGE_DEVICE_POLICY_LOCK";
@@ -4876,7 +4877,6 @@ package android.app {
     method public boolean isLowRamDevice();
     method @Deprecated public static boolean isRunningInTestHarness();
     method public static boolean isRunningInUserTestHarness();
-    method @FlaggedApi("com.android.window.flags.enable_is_task_move_allowed_on_display_api") public boolean isTaskMoveAllowedOnDisplay(int);
     method public static boolean isUserAMonkey();
     method @RequiresPermission(android.Manifest.permission.KILL_BACKGROUND_PROCESSES) public void killBackgroundProcesses(String);
     method @RequiresPermission(android.Manifest.permission.REORDER_TASKS) public void moveTaskToFront(int, int);
@@ -8659,6 +8659,7 @@ package android.app.admin {
     method public static boolean isMtePolicyEnforced();
     method public boolean isNetworkLoggingEnabled(@Nullable android.content.ComponentName);
     method public boolean isOrganizationOwnedDeviceWithManagedProfile();
+    method @FlaggedApi("android.app.admin.flags.managed_esim_outgoing_transfer_policy") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_DEVICE_POLICY_MANAGED_SUBSCRIPTIONS, "android.permission.WRITE_EMBEDDED_SUBSCRIPTIONS"}, conditional=true) public boolean isOutgoingTransferAllowedForSubscription(int);
     method public boolean isOverrideApnEnabled(@NonNull android.content.ComponentName);
     method @RequiresPermission(value=android.Manifest.permission.MANAGE_DEVICE_POLICY_PACKAGE_STATE, conditional=true) public boolean isPackageSuspended(@Nullable android.content.ComponentName, String) throws android.content.pm.PackageManager.NameNotFoundException;
     method public boolean isPreferentialNetworkServiceEnabled();
@@ -9108,6 +9109,9 @@ package android.app.admin {
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_easter_eggs") public static final int EASTER_EGGS_ALLOWED = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_easter_eggs") public static final int EASTER_EGGS_DISALLOWED = 1; // 0x1
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.String> LOCKSCREEN_MESSAGE;
+    field @FlaggedApi("android.app.admin.flags.managed_esim_outgoing_transfer_policy") public static final int MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED = 1; // 0x1
+    field @FlaggedApi("android.app.admin.flags.managed_esim_outgoing_transfer_policy") public static final int MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED = 2; // 0x2
+    field @FlaggedApi("android.app.admin.flags.managed_esim_outgoing_transfer_policy") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> MANAGED_ESIM_OUTGOING_TRANSFER_POLICY;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> SCREEN_CAPTURE;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") public static final int SCREEN_CAPTURE_ALLOWED = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.policy_streamlining") public static final int SCREEN_CAPTURE_DISALLOWED = 1; // 0x1

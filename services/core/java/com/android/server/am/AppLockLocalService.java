@@ -353,7 +353,7 @@ public final class AppLockLocalService implements AppLockInternal,
         final UidRecord uidRecord = mAmService.mProcessList.getUidRecordLOSP(uid);
 
         return uidRecord != null && uidRecord.anyProcessInPackageMatches(packageName,
-                process -> process.getCurProcState() <= PROCESS_STATE_TOP);
+                process -> process.getProcState() <= PROCESS_STATE_TOP);
     }
 
     private ArrayList<ActivityAssistInfo> getVisibleActivityAssistInfosForPackage(

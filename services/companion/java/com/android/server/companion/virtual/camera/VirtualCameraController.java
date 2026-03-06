@@ -165,6 +165,28 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
         }
     }
 
+    /**
+     * Closes the session of the virtual camera with the given config.
+     *
+     * @param cameraConfig The {@link VirtualCameraConfig} sent by the client.
+     */
+    public void closeVirtualCameraSession(@NonNull VirtualCameraConfig cameraConfig) {
+        connectVirtualCameraServiceIfNeeded();
+
+        final IVirtualCameraService service;
+        synchronized (mServiceLock) {
+            service = mVirtualCameraService;
+        }
+
+        if (service != null) {
+            try {
+                service.closeSession(cameraConfig.getCallback().asBinder());
+            } catch (RemoteException e) {
+                e.rethrowFromSystemServer();
+            }
+        }
+    }
+
     @Override
     public void binderDied() {
         Slog.w(TAG, "virtual_camera_service died.");

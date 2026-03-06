@@ -22,6 +22,7 @@ import android.view.Display;
 
 import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.dump.DumpModule;
 import com.android.systemui.plugins.PluginsModule;
 import com.android.systemui.unfold.UnfoldTransitionModule;
 import com.android.systemui.util.concurrency.GlobalConcurrencyModule;
@@ -48,6 +49,7 @@ import dagger.Provides;
  */
 @Module(includes = {
         AndroidInternalsModule.class,
+        DumpModule.class,
         FrameworkServicesModule.class,
         GlobalConcurrencyModule.class,
         GlobalCoroutinesModule.class,

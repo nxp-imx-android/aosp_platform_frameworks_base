@@ -15,15 +15,22 @@
  */
 package com.android.server.am.psc;
 
+import static android.app.ActivityManager.PROCESS_CAPABILITY_NONE;
+
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY;
 
 import android.annotation.NonNull;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessCapability;
 import android.app.ActivityManager.ProcessState;
 import android.content.pm.ServiceInfo.ForegroundServiceType;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
+import com.android.server.am.Flags;
+
+import java.util.ArrayList;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Represents a process within the process graph. Each node is embedded within a
@@ -35,7 +42,7 @@ import java.util.Objects;
  * bindings, to determine the importance of the edges' target processes during graph traversal.
  */
 @RavenwoodKeepWholeClass
-class ProcessNode {
+class ProcessNode implements GraphNode {
     /** A reference to the underlying ProcessRecordInternal. */
     private final @NonNull ProcessRecordInternal mProc;
 
@@ -51,6 +58,91 @@ class ProcessNode {
 
     ProcessNode(@NonNull ProcessRecordInternal proc) {
         mProc = Objects.requireNonNull(proc);
+    }
+
+    // LINT.IfChange(forEachOutgoingEdge)
+    @Override
+    public void forEachOutgoingEdge(@NonNull Consumer<GraphEdge> consumer) {
+        // Iterate over all outgoing ServiceBindingEdges from this node to non-sandbox service
+        // nodes.
+        final ProcessServiceRecordInternal psr = mProc.getServices();
+        for (int i = psr.numberOfConnections() - 1; i >= 0; i--) {
+            final ServiceBindingEdge edge = psr.getConnectionInternalAt(i).getServiceBindingEdge();
+            edge.updateTarget();
+            final ProcessNode target = edge.getTarget();
+            if (target == null || this == target || edge.isSandboxAttributedConnection()) {
+                continue;
+            }
+            consumer.accept(edge);
+        }
+
+        // Iterate over all outgoing ServiceBindingEdges from this node to sandbox service nodes.
+        for (int i = psr.numberOfSdkSandboxConnections() - 1; i >= 0; i--) {
+            final ServiceBindingEdge edge = psr.getSdkSandboxConnectionInternalAt(i)
+                    .getServiceBindingEdge();
+            edge.updateTarget();
+            final ProcessNode target = edge.getTarget();
+            if (target == null || this == target) {
+                continue;
+            }
+            consumer.accept(edge);
+        }
+
+        // Iterate over all outgoing ProviderBindingEdges from this node to provider nodes.
+        final ProcessProviderRecordInternal ppr = mProc.getProviders();
+        for (int i = ppr.numberOfProviderConnections() - 1; i >= 0; i--) {
+            final ProviderBindingEdge edge = ppr.getProviderConnectionInternalAt(i)
+                    .getProviderBindingEdge();
+            final ProcessNode target = edge.getTarget();
+            if (target == null || this == target) {
+                continue;
+            }
+            consumer.accept(edge);
+        }
+    }
+    // LINT.ThenChange(OomAdjusterImpl.java:forEachConnectionLSP)
+
+    /**
+     * Streams the incoming edges of this node to {@code consumer}. This method should only be used
+     * when {@link Flags#enableCapabilityControllerComputation} is enabled.
+     */
+    // LINT.IfChange(forEachIncomingEdge)
+    void forEachIncomingEdge(@NonNull Consumer<GraphEdge> consumer) {
+        // Visit the incoming ProcessEdge.
+        consumer.accept(mProc.getProcessEdge());
+
+        // Iterate over all incoming ServiceBindingEdges from client nodes to this node.
+        final ProcessServiceRecordInternal psr = mProc.getServices();
+        for (int i = psr.numberOfRunningServices() - 1; i >= 0; i--) {
+            final ServiceRecordInternal s = psr.getRunningServiceInternalAt(i);
+            for (int j = s.getConnectionsSize() - 1; j >= 0; j--) {
+                final ArrayList<? extends ConnectionRecordInternal> clist = s.getConnectionAt(j);
+                for (int k = clist.size() - 1; k >= 0; k--) {
+                    final ServiceBindingEdge edge = clist.get(k).getServiceBindingEdge();
+                    if (this == edge.getSource()) continue;
+                    edge.setTarget(this);
+                    consumer.accept(edge);
+                }
+            }
+        }
+
+        // Iterate over all incoming ProviderBindingEdges from client nodes to this node.
+        final ProcessProviderRecordInternal ppr = mProc.getProviders();
+        for (int i = ppr.numberOfProviders() - 1; i >= 0; i--) {
+            final ContentProviderRecordInternal cpr = ppr.getProviderInternalAt(i);
+            for (int j = cpr.numberOfConnections() - 1; j >= 0; j--) {
+                final ProviderBindingEdge edge = cpr.getConnectionsAt(j).getProviderBindingEdge();
+                if (this == edge.getSource()) continue;
+                consumer.accept(edge);
+            }
+        }
+    }
+    // LINT.ThenChange(OomAdjusterImpl.java:forEachClientConnectionLSP)
+
+    @Override
+    public final @ProcessCapability int getCapability() {
+        // TODO: b/477161434 - Implement the method.
+        return PROCESS_CAPABILITY_NONE;
     }
 
     // TODO: b/483182189 - Move state getters below to ProcessEdge.

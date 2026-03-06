@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.Density
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
+import kotlinx.coroutines.Dispatchers
 import org.junit.Assume
 import org.junit.rules.RuleChain
 import org.junit.rules.TestRule
@@ -55,7 +56,11 @@ fun createSysUiComposeMotionTestRule(
         createGoldenPathManager("frameworks/base/packages/SystemUI/tests/goldens", pathConfig)
     val testScope = kosmos.testScope
     val composeScreenshotTestRule =
-        createComposeScreenshotTestRule(deviceEmulationSpec, goldenPathManager)
+        createComposeScreenshotTestRule(
+            deviceEmulationSpec,
+            goldenPathManager,
+            effectContext = testScope.coroutineContext + Dispatchers.Main,
+        )
     val fixedConfiguration =
         FixedConfiguration(
             density =

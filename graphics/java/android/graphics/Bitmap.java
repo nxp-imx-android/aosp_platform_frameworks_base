@@ -16,6 +16,15 @@
 
 package android.graphics;
 
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBitmap.SIZE;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBitmap.WIDTH;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBitmap.HEIGHT;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBitmap.DENSITY;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBitmap.CONFIG;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBitmap.MUTABLE_PIXELS;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidBitmap.ID;
+import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidTrackEvent.BITMAP;
+
 import android.annotation.CheckResult;
 import android.annotation.ColorInt;
 import android.annotation.ColorLong;
@@ -28,8 +37,7 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
-import android.os.PerfettoTrace;
-import android.os.PerfettoTrackEventExtra;
+import android.os.PerfettoCategories;
 import android.os.SharedMemory;
 import android.os.StrictMode;
 import android.os.Trace;
@@ -40,6 +48,7 @@ import android.util.proto.ProtoOutputStream;
 import android.view.ThreadedRenderer;
 
 import com.android.graphics.flags.Flags;
+import com.android.internal.dev.perfetto.sdk.PerfettoTrackEventBuilder;
 import com.android.server.am.BitmapDumpProto;
 
 import dalvik.annotation.optimization.CriticalNative;
@@ -1071,13 +1080,15 @@ public final class Bitmap implements Parcelable {
         }
 
         final long flowId = source.mId;
-        final PerfettoTrace.Category category = PerfettoTrace.GFX_CATEGORY;
-        final boolean isTraceEnabled = category.isEnabled();
-        if (isTraceEnabled) {
-            PerfettoTrackEventExtra.Builder builder =
-                    PerfettoTrace.begin(category, "Bitmap_createBitmap").setFlow(flowId);
-            traceBitmap(builder, source);
-            builder.emit();
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            if (PerfettoCategories.GFX_CATEGORY.isEnabled()) {
+                PerfettoTrackEventBuilder builder =
+                        com.android.internal.dev.perfetto.sdk.PerfettoTrace.begin(
+                                        PerfettoCategories.GFX_CATEGORY, "Bitmap_createBitmap")
+                                .setFlow(flowId);
+                traceBitmap(builder, source);
+                builder.emit();
+            }
         }
 
         Bitmap result = null;
@@ -1190,30 +1201,50 @@ public final class Bitmap implements Parcelable {
             result = bitmap;
             return result;
         } finally {
-            if (isTraceEnabled) {
-                PerfettoTrackEventExtra.Builder builder = PerfettoTrace.end(category);
-                if (result != null) {
-                    traceBitmap(builder, result);
+            if (PerfettoCategories.GFX_CATEGORY.isEnabled()) {
+                if (android.os.Flags.perfettoSdkTracingV3()) {
+                    PerfettoTrackEventBuilder builder =
+                            com.android.internal.dev.perfetto.sdk.PerfettoTrace.end(
+                                    PerfettoCategories.GFX_CATEGORY);
+                    if (result != null) {
+                        traceBitmap(builder, result);
+                    }
+                    builder.emit();
                 }
-                builder.emit();
             }
         }
     }
 
-    private static void traceBitmap(PerfettoTrackEventExtra.Builder builder, Bitmap b) {
+    private static void traceBitmap(PerfettoTrackEventBuilder builder, Bitmap b) {
         if (b == null) return;
         Config config = b.getConfig();
         builder.beginProto()
-            .beginNested(2005 /* bitmap */)
-            .addField(1 /* size */, b.getAllocationByteCount())
-            .addField(2 /* width */, b.getWidth())
-            .addField(3 /* height */, b.getHeight())
-            .addField(4 /* density */, b.getDensity())
-            .addField(5 /* config */, config != null ? config.nativeInt : -1)
-            .addField(6 /* mutable_pixels */, b.isMutable() ? 1 : 0)
-            .addField(8 /* id */, b.mId)
-            .endNested()
-            .endProto();
+                .beginNested(BITMAP)
+                .addField(SIZE, b.getAllocationByteCount())
+                .addField(WIDTH, b.getWidth())
+                .addField(HEIGHT, b.getHeight())
+                .addField(DENSITY, b.getDensity())
+                .addField(CONFIG, config != null ? config.nativeInt : -1)
+                .addField(MUTABLE_PIXELS, b.isMutable() ? 1 : 0)
+                .addField(ID, b.mId)
+                .endNested()
+                .endProto();
+    }
+
+    private static void traceBitmap(android.os.PerfettoTrackEventExtra.Builder builder, Bitmap b) {
+        if (b == null) return;
+        Config config = b.getConfig();
+        builder.beginProto()
+                .beginNested(BITMAP)
+                .addField(SIZE, b.getAllocationByteCount())
+                .addField(WIDTH, b.getWidth())
+                .addField(HEIGHT, b.getHeight())
+                .addField(DENSITY, b.getDensity())
+                .addField(CONFIG, config != null ? config.nativeInt : -1)
+                .addField(MUTABLE_PIXELS, b.isMutable() ? 1 : 0)
+                .addField(ID, b.mId)
+                .endNested()
+                .endProto();
     }
 
     private static Bitmap transformGainmap(Bitmap source, Bitmap newBase, Matrix m, Paint paint,

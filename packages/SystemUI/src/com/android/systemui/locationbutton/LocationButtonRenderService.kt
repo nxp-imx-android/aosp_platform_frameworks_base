@@ -31,6 +31,7 @@ import android.os.UserHandle
 import android.permission.flags.Flags
 import android.util.Log
 import android.util.Slog
+import com.android.internal.util.LatencyTracker
 import com.android.server.ServiceThread
 import com.android.systemui.locationbutton.domain.interactor.LocationButtonInteractor
 import com.android.systemui.locationbutton.ui.session.LocationButtonSession
@@ -63,6 +64,7 @@ class LocationButtonRenderService
 constructor(
     private val interactor: LocationButtonInteractor,
     private val viewModelFactory: LocationButtonViewModel.Factory,
+    private val latencyTracker: LatencyTracker,
 ) : Service() {
     private val activeLocationButtonSessions = mutableListOf<LocationButtonSession>()
 
@@ -106,6 +108,7 @@ constructor(
                 )
 
             if (!locationButtonSession.isActive) {
+                latencyTracker.onActionCancel(LatencyTracker.ACTION_LOCATION_BUTTON_OPEN_SESSION)
                 return@execute
             }
 
@@ -120,9 +123,11 @@ constructor(
                     onLocationButtonSessionCloseListener
                 )
                 activeLocationButtonSessions.add(locationButtonSession)
+                latencyTracker.onActionEnd(LatencyTracker.ACTION_LOCATION_BUTTON_OPEN_SESSION)
             } catch (ex: RemoteException) {
                 Slog.e(LOG_TAG, "Client failed to respond, closing new session.", ex)
                 locationButtonSession.close()
+                latencyTracker.onActionCancel(LatencyTracker.ACTION_LOCATION_BUTTON_OPEN_SESSION)
             }
         }
     }
@@ -136,6 +141,7 @@ constructor(
                 request: LocationButtonRequest,
                 client: ILocationButtonClient,
             ) {
+                latencyTracker.onActionStart(LatencyTracker.ACTION_LOCATION_BUTTON_OPEN_SESSION)
                 val callerUid = Binder.getCallingUid()
                 if (!isValidHostPackage(packageName, callerUid)) {
                     Slog.e(LOG_TAG, "Package name doesn't belong to the caller $callerUid")
@@ -148,6 +154,9 @@ constructor(
                     } catch (_: RemoteException) {
                         // ignore remote exception
                     }
+                    latencyTracker.onActionCancel(
+                        LatencyTracker.ACTION_LOCATION_BUTTON_OPEN_SESSION
+                    )
                     return
                 }
                 val identity = Binder.clearCallingIdentity()

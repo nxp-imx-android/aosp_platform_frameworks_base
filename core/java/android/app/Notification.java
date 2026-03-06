@@ -786,6 +786,15 @@ public class Notification implements Parcelable
      */
     public static final int FLAG_PROMOTED_ONGOING = 0x00040000;
 
+    /**
+     * Bit to be bitwise-ORed into the {@link #flags} field that should be
+     * set by the system if this notification is associated with a ComputerControlSession.
+     *
+     * <p>This flag is for internal use only; applications cannot set this flag directly.
+     * @hide
+     */
+    public static final int FLAG_COMPUTER_CONTROL = 0x00080000;
+
     private static final Set<Class<? extends Style>> PLATFORM_STYLE_CLASSES = Set.of(
             BigTextStyle.class,
             BigPictureStyle.class,

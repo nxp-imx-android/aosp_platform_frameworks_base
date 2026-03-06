@@ -17,9 +17,12 @@
 package com.android.wm.shell.dagger.desktop;
 
 import android.annotation.NonNull;
+import android.content.Context;
 
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.ShellExecutor;
+import com.android.wm.shell.common.suppliers.TransactionSupplier;
 import com.android.wm.shell.dagger.DynamicOverride;
 import com.android.wm.shell.dagger.WMSingleton;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
@@ -27,8 +30,11 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.ShellDesktopState;
 import com.android.wm.shell.desktopmode.SnapController;
 import com.android.wm.shell.desktopmode.desktoptaskshandlers.DesktopTasksTransitionHandler;
+import com.android.wm.shell.desktopmode.homescreenpeeking.DesktopHomeScreenPeekController;
+import com.android.wm.shell.desktopmode.homescreenpeeking.DesktopHomeScreenPeekTransitionHandler;
 import com.android.wm.shell.desktopmode.multidesks.DesksController;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
+import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellController;
@@ -76,5 +82,33 @@ public class DesktopModule {
             Optional<DesktopTasksController> desktopTasksController) {
         return new DesktopTasksTransitionHandler(transitions, shellInit, desktopState,
                 desktopTasksController);
+    }
+
+    @WMSingleton
+    @Provides
+    static DesktopHomeScreenPeekController providePeekController(
+            Context context,
+            DesktopHomeScreenPeekTransitionHandler peekTransitionHandlerLazy,
+            DisplayController displayController,
+            ShellController shellController,
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+            ShellTaskOrganizer shellTaskOrganizer
+    ) {
+        return new DesktopHomeScreenPeekController(context, peekTransitionHandlerLazy,
+                displayController, shellController, desktopUserRepositories,
+                shellTaskOrganizer);
+    }
+
+    @WMSingleton
+    @Provides
+    static DesktopHomeScreenPeekTransitionHandler providePeekTransitionHandler(
+            @ShellMainThread ShellExecutor mainExecutor,
+            Transitions transitions,
+            TransactionSupplier transactionSupplier,
+            ShellController shellController,
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories
+    ) {
+        return new DesktopHomeScreenPeekTransitionHandler(mainExecutor, transitions,
+                transactionSupplier, shellController, desktopUserRepositories);
     }
 }

@@ -52,6 +52,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import java.io.PrintWriter
+import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 
 /**
  * A [DesksOrganizer] that uses root tasks as the container of each desk.
@@ -258,7 +259,7 @@ class RootTaskDesksOrganizer(
         val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
         if (!skipReorder) wct.reorder(root.token, /* onTop= */ true)
         updateLaunchRoot(wct, deskId, enabled = true)
-        updateTaskMoveAllowed(wct, deskId, allowed = true)
+        updateTaskMoveAllowed(wct, root.taskInfo.displayId, deskActivated = true)
         if (Flags.reparentDeskLeafTasksIfRelaunched()) {
             wct.setReparentLeafTaskIfRelaunch(root.token, /* reparentLeafTaskIfRelaunch */ false)
         }
@@ -287,7 +288,7 @@ class RootTaskDesksOrganizer(
         }
         if (!skipReorder) wct.reorder(root.taskInfo.token, /* onTop= */ false)
         updateLaunchRoot(wct, deskId, enabled = false)
-        updateTaskMoveAllowed(wct, deskId, allowed = false)
+        updateTaskMoveAllowed(wct, root.taskInfo.displayId, deskActivated = false)
         if (Flags.reparentDeskLeafTasksIfRelaunched()) {
             wct.setReparentLeafTaskIfRelaunch(root.token, /* reparentLeafTaskIfRelaunch */ true)
         }
@@ -323,25 +324,20 @@ class RootTaskDesksOrganizer(
 
     private fun updateTaskMoveAllowed(
         wct: WindowContainerTransaction,
-        deskId: Int,
-        allowed: Boolean,
+        displayId: Int,
+        deskActivated: Boolean,
     ) {
-        val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
-        if (root.isTaskMoveAllowed == allowed) {
-            logD(
-                "updateTaskMoveAllowed desk=%d Task move allowed already set to allowed=%b",
-                deskId,
-                allowed,
-            )
+        // If the display is desktop-first, we want to keep TDA#isTaskMoveAllowed true.
+        // LINT.IfChange(updateTaskMoveAllowed)
+        if (rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)) {
             return
         }
-        root.isTaskMoveAllowed = allowed
-        logD(
-            "updateTaskMoveAllowed changing desk=%d Task move allowed to allowed=%b",
-            deskId,
-            allowed,
-        )
-        wct.setIsTaskMoveAllowed(root.taskInfo.token, allowed)
+        // LINT.ThenChange(/libs/WindowManager/Shell/src/com/android/wm/shell/desktopmode/desktopfirst/DesktopDisplayModeController.kt:setIsTaskMoveAllowed)
+        val displayAreaInfo =
+            checkNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)) {
+                "DisplayAreaInfo not found for displayId=$displayId"
+            }
+        wct.setIsTaskMoveAllowed(displayAreaInfo.token, deskActivated)
     }
 
     override fun moveTaskToDesk(
@@ -931,7 +927,6 @@ class RootTaskDesksOrganizer(
                 "$innerPrefix    winMode=" + windowingModeToString(root.taskInfo.windowingMode)
             )
             pw.println("$innerPrefix    isLaunchRootRequested=${root.isLaunchRootRequested}")
-            pw.println("$innerPrefix    isTaskMoveAllowed=${root.isTaskMoveAllowed}")
             pw.println("$innerPrefix    children=${root.children}")
             pw.println("$innerPrefix    users=${root.users}")
             if (minimizationRoot != null) {

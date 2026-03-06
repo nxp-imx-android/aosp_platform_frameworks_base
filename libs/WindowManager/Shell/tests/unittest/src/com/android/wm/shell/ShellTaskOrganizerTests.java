@@ -208,6 +208,55 @@ public class ShellTaskOrganizerTests extends ShellTestCase {
     }
 
     @Test
+    public void testOnTaskInfoUpdated() {
+        RunningTaskInfo taskInfo = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        taskInfo.isInteractive = false;
+        TrackingTaskListener listener = new TrackingTaskListener();
+        mOrganizer.addListenerForType(listener, TASK_LISTENER_TYPE_MULTI_WINDOW);
+        mOrganizer.onTaskAppeared(taskInfo, /* leash= */ null);
+
+        RunningTaskInfo updateInfo = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        updateInfo.isInteractive = true;
+        mOrganizer.onTaskInfoUpdated(updateInfo);
+
+        assertEquals(0, listener.infoChanged.size());
+        assertTrue(mOrganizer.getRunningTaskInfo(1).isInteractive);
+    }
+
+    @Test
+    public void testOnTaskInfoUpdated_notAppeared() {
+        RunningTaskInfo updateInfo = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        updateInfo.isInteractive = true;
+        mOrganizer.onTaskInfoUpdated(updateInfo);
+
+        assertNull(mOrganizer.getRunningTaskInfo(1));
+    }
+
+    @Test
+    public void testOnTaskInfoChanged_preservesInteractivity() {
+        RunningTaskInfo taskInfo = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        taskInfo.isInteractive = true;
+        mOrganizer.onTaskAppeared(taskInfo, /* leash= */ null);
+
+        // Transition update changes interactivity to false
+        RunningTaskInfo updateInfo = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        updateInfo.isInteractive = false;
+        mOrganizer.onTaskInfoUpdated(updateInfo);
+        assertFalse(mOrganizer.getRunningTaskInfo(1).isInteractive);
+
+        // Task info change from Core with potentially stale interactivity (true)
+        RunningTaskInfo changeInfo = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
+        changeInfo.isInteractive = true;
+        // Trigger a change that would satisfy equalsForTaskOrganizer (e.g. visibility)
+        changeInfo.isVisible = !taskInfo.isVisible;
+
+        mOrganizer.onTaskInfoChanged(changeInfo);
+
+        // Interactivity should be preserved from the cache (false), not overwritten by changeInfo
+        assertFalse(mOrganizer.getRunningTaskInfo(1).isInteractive);
+    }
+
+    @Test
     public void testAppearedVanished() {
         RunningTaskInfo taskInfo = createTaskInfo(/* taskId= */ 1, WINDOWING_MODE_MULTI_WINDOW);
         TrackingTaskListener listener = new TrackingTaskListener();

@@ -1667,9 +1667,6 @@ public class RecentTasksTest extends WindowTestsBase {
         });
         assertSecurityException(expectCallable,
                 () -> mAtm.startActivityFromRecents(0, new Bundle()));
-        if (!com.android.window.flags.Flags.cleanUpTaskSnapshotLegacyMethods()) {
-            assertSecurityException(expectCallable, () -> mAtm.getTaskSnapshot(0, true));
-        }
         assertSecurityException(expectCallable, () -> mAtm.registerTaskStackListener(null));
         assertSecurityException(expectCallable,
                 () -> mAtm.unregisterTaskStackListener(null));

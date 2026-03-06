@@ -451,3 +451,13 @@ test_module_config {
     ],
     include_filters: ["com.android.server.supervision"],
 }
+
+test_module_config {
+    name: "FrameworksMockingServicesTests_service_masterClearReceiverTest",
+    base: "FrameworksMockingServicesTests",
+    test_suites: [
+        "automotive-tests",
+        "device-tests",
+    ],
+    include_filters: ["com.android.server.MasterClearReceiverTest"],
+}

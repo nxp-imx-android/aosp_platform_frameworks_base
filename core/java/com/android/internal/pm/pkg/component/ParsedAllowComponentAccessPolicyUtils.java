@@ -59,7 +59,7 @@ public class ParsedAllowComponentAccessPolicyUtils {
                 continue;
             }
 
-            if (ParsingPackageUtils.getAconfigFlags().skipCurrentElement(pkg, parser)) {
+            if (AconfigFlags.getInstance().skipCurrentElement(pkg, parser)) {
                 XmlUtils.skipCurrentTag(parser);
                 continue;
             }

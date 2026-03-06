@@ -19,16 +19,17 @@ package com.android.wm.shell.transition
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.window.TransitionInfo
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.sysui.ShellInit
 
 /**
  * An observer that hooks into the transitions and searches [TransitionInfo] to find lifecycle
- * changes to update the [InteractiveTasksRepository].
+ * changes to update the [ShellTaskOrganizer].
  */
 class InteractiveTasksTransitionObserver(
     shellInit: ShellInit,
     private val transitions: Transitions,
-    private val repository: InteractiveTasksRepository,
+    private val shellTaskOrganizer: ShellTaskOrganizer,
 ) : Transitions.TransitionObserver {
 
     init {
@@ -48,12 +49,6 @@ class InteractiveTasksTransitionObserver(
         info.changes
             .asSequence()
             .mapNotNull { change -> change.taskInfo }
-            .forEach { taskInfo ->
-                if (taskInfo.isInteractive) {
-                    repository.addTask(taskInfo)
-                } else {
-                    repository.removeTask(taskInfo)
-                }
-            }
+            .forEach { taskInfo -> shellTaskOrganizer.onTaskInfoUpdated(taskInfo) }
     }
 }

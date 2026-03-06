@@ -21,8 +21,6 @@ import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.FocusTransitionObserver
-import com.android.wm.shell.transition.InteractiveTasksRepository
-import java.util.Optional
 
 class ShellDesktopStateImpl(
     private val desktopState: DesktopState,
@@ -30,7 +28,6 @@ class ShellDesktopStateImpl(
     private val focusTransitionObserver: FocusTransitionObserver,
     private val shellController: ShellController,
     private val shellTaskOrganizer: ShellTaskOrganizer,
-    private val interactiveTasksRepository: Optional<InteractiveTasksRepository>,
 ) : ShellDesktopState, DesktopState by desktopState {
     /** Checks if the given display has an active desktop session (i.e., running freeform tasks). */
     private fun isInDesktop(displayId: Int): Boolean =
@@ -81,15 +78,14 @@ class ShellDesktopStateImpl(
             desktopUserRepositories
                 .getProfile(shellController.currentUserId)
                 .getActiveDeskId(displayId) ?: return false
-        return interactiveTasksRepository.get().isTaskInteractiveOnDisplay(displayId, deskTaskId)
+        return shellTaskOrganizer.getRunningTaskInfo(deskTaskId)?.isInteractive ?: false
     }
 
     private fun isHomeOrDesktopWallpaperInteractive(displayId: Int): Boolean {
         val tasks = shellTaskOrganizer.getRunningTasks(displayId)
         return tasks.any { task ->
             (task.activityType == ACTIVITY_TYPE_HOME ||
-                DesktopWallpaperActivity.isWallpaperTask(task)) &&
-                interactiveTasksRepository.get().isTaskInteractiveOnDisplay(displayId, task.taskId)
+                DesktopWallpaperActivity.isWallpaperTask(task)) && task.isInteractive
         }
     }
 }

@@ -118,7 +118,7 @@ class BroadcastProcessQueue {
     private boolean mTimeoutScheduled;
 
      /**
-     * Snapshotted value of {@link ProcessRecord#getCurProcState()} before
+     * Snapshotted value of {@link ProcessRecord#getProcState()} before
      * dispatching the current broadcast to the receiver in this process.
      */
     int lastProcessState;

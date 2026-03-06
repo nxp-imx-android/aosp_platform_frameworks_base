@@ -410,8 +410,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 // waitAsyncStart), so add a condition to ensure that it finishes applying.
                 final Transition.ReadyCondition wctApplied;
                 if (t != null) {
-                    wctApplied = new Transition.ReadyCondition("start WCT applied",
-                            !Flags.migrateBasicLegacyReady());
+                    wctApplied = new Transition.ReadyCondition("start WCT applied", false);
                     transition.mReadyTracker.add(wctApplied);
                 } else {
                     wctApplied = null;
@@ -578,7 +577,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             // Currently, application of wct can span multiple looper loops (ie. waitAsyncStart),
             // so need a condition to ensure that it finishes applying.
             final Transition.ReadyCondition wctApplied = new Transition.ReadyCondition(
-                    "TF WCT Applied", !Flags.migrateBasicLegacyReady());
+                    "TF WCT Applied", false);
             if (mService.mWindowManager.mSyncEngine.hasActiveSync()
                     && !shouldApplyIndependently) {
                 // Although there is an active sync, we want to apply the transaction now.

@@ -528,10 +528,6 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
 
         setSecureLockDeviceStrongAuthFlags();
 
-        mPowerManager.goToSleep(SystemClock.uptimeMillis(),
-                PowerManager.GO_TO_SLEEP_REASON_DEVICE_ADMIN, 0);
-        mWindowManagerInternal.lockNow();
-
         int userId = user.getIdentifier();
         mSecureLockDeviceSettingsManager.enableSecurityFeatures(userId);
         mStore.storeSecureLockDeviceEnabled(userId);
@@ -541,6 +537,9 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
             mUserAuthenticatedWithStrongBiometric = null;
         }
 
+        mPowerManager.goToSleep(SystemClock.uptimeMillis(),
+                PowerManager.GO_TO_SLEEP_REASON_DEVICE_ADMIN, 0);
+        mWindowManagerInternal.lockNow();
         notifyAllSecureLockDeviceListenersEnabledStatusUpdated();
         Slog.d(TAG, "Secure lock device is enabled");
 

@@ -171,6 +171,8 @@ public class AppWidgetServiceImplTest {
         LocalServices.addService(AppOpsManagerInternal.class, mMockAppOpsManagerInternal);
         when(mMockPackageManager.filterAppAccess(anyString(), anyInt(), anyInt()))
                 .thenReturn(false);
+        when(mMockPackageManager.isSameApp(anyString(), anyInt(), anyInt()))
+                .thenReturn(true);
         mService.onStart();
         mService.systemServicesReady();
 

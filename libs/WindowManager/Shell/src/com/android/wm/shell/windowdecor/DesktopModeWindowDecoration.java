@@ -102,8 +102,10 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum;
 import com.android.wm.shell.desktopmode.DesktopModeUtils;
+import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleFlagHelper;
@@ -214,6 +216,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final AssistContentRequester mAssistContentRequester;
     private final DesktopModeCompatPolicy mDesktopModeCompatPolicy;
     private final FocusTransitionObserver mFocusTransitionObserver;
+    private final PinnedLayerController mPinnedLayerController;
+    private final DesktopTasksController mDesktopTasksController;
 
     // Hover state for the layout menu and button. The menu will remain open as long as either of
     // these is true. See {@link #onMaximizeHoverStateChanged()}.
@@ -281,7 +285,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopConfig desktopConfig,
             WindowDecorationActions windowDecorationActions,
             LockTaskChangeListener lockTaskChangeListener,
-            FocusTransitionObserver focusTransitionObserver) {
+            FocusTransitionObserver focusTransitionObserver,
+            PinnedLayerController pinnedLayerController,
+            DesktopTasksController desktopTasksController) {
         this (context, userContext, displayController, taskResourceLoader, splitScreenController,
                 desktopUserRepositories, taskOrganizer, taskInfo, taskSurface, handler,
                 mainExecutor, mainDispatcher, mainScope, bgExecutor, transitions,
@@ -297,7 +303,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 windowDecorCaptionRepository, desktopModeEventLogger,
                 desktopModeUiEventLogger, desktopModeCompatPolicy,
                 desktopState, desktopConfig, windowDecorationActions, lockTaskChangeListener,
-                focusTransitionObserver);
+                focusTransitionObserver, pinnedLayerController, desktopTasksController);
     }
 
     DesktopModeWindowDecoration(
@@ -341,7 +347,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopConfig desktopConfig,
             WindowDecorationActions windowDecorationActions,
             LockTaskChangeListener lockTaskChangeListener,
-            FocusTransitionObserver focusTransitionObserver) {
+            FocusTransitionObserver focusTransitionObserver,
+            PinnedLayerController pinnedLayerController,
+            DesktopTasksController desktopTasksController) {
         super(context, handler, transitions, userContext, displayController, taskOrganizer,
                 taskInfo, taskSurface, surfaceControlBuilderSupplier,
                 surfaceControlTransactionSupplier, windowContainerTransactionSupplier,
@@ -375,6 +383,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mWindowDecorationActions = windowDecorationActions;
         mLockTaskChangeListener = lockTaskChangeListener;
         mFocusTransitionObserver = focusTransitionObserver;
+        mPinnedLayerController = pinnedLayerController;
+        mDesktopTasksController = desktopTasksController;
     }
 
     /** Returns the last valid drag area of the task or null if the task cannot be dragged. */
@@ -1013,7 +1023,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mGestureInterceptor,
                     mWindowManagerWrapper,
                     mHandler,
-                    mDesktopModeUiEventLogger
+                    mDesktopModeUiEventLogger,
+                    this,
+                    mFocusTransitionObserver,
+                    mPinnedLayerController,
+                    mDesktopTasksController
             );
         } else if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_header) {
             return mAppHeaderViewHolderFactory.create(

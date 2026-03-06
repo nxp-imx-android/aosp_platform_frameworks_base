@@ -190,12 +190,14 @@ to pre-existing users, but cannot uninstall pre-existing system packages from pr
 
     <!-- NFC (NfcNci/com.android.nfcservices) -->
     <install-in-user-type package="com.android.nfc">
+        <install-in user-type="SYSTEM" />
         <install-in user-type="FULL" />
         <install-in user-type="PROFILE" />
     </install-in-user-type>
 
     <!-- NFC sub-module (SecureElement) -->
     <install-in-user-type package="com.android.se">
+        <install-in user-type="SYSTEM" />
         <install-in user-type="FULL" />
         <install-in user-type="PROFILE" />
     </install-in-user-type>

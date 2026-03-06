@@ -240,7 +240,7 @@ public class NotificationStackScrollLayout
     int mImeInset = 0;
     private float mQsExpansionFraction;
     private final int mSplitShadeMinContentHeight;
-    private Supplier<String> mLastUpdateSidePaddingDumpStringSupplier;
+    private Supplier<String> mLastUpdateSidePaddingDumpStringSupplier = () -> "(Not yet measured)";
 
     private final HeadsUpAnimator mHeadsUpAnimator;
     /**

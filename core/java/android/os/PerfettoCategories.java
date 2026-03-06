@@ -18,6 +18,7 @@ package android.os;
 
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
 
@@ -34,6 +35,7 @@ import java.util.List;
  *
  * @hide
  */
+@RavenwoodKeepWholeClass
 public final class PerfettoCategories {
     private PerfettoCategories() {}
 

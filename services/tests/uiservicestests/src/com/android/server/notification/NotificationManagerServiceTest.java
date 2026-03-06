@@ -229,6 +229,7 @@ import android.content.pm.IPackageManager;
 import android.content.pm.LauncherApps;
 import android.content.pm.ModuleInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
@@ -298,7 +299,6 @@ import android.util.AtomicFile;
 import android.util.IntArray;
 import android.util.Log;
 import android.util.Pair;
-import android.util.Slog;
 import android.util.SparseArray;
 import android.util.Xml;
 import android.view.accessibility.AccessibilityManager;
@@ -343,12 +343,12 @@ import com.android.server.utils.quota.MultiRateLimiter;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
-import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
-import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
-
 import com.google.android.collect.Lists;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+
+import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
+import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -365,6 +365,9 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -379,9 +382,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
-
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWithLooper
@@ -573,6 +573,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     BroadcastReceiver mNotificationTimeoutReceiver;
     NotificationRecordLoggerFake mNotificationRecordLogger = new NotificationRecordLoggerFake();
     TestableNotificationManagerService.StrongAuthTrackerFake mStrongAuthTracker;
+    FakeComputerControlHelper mFakeComputerControlHelper = new FakeComputerControlHelper();
 
     TestableFlagResolver mTestFlagResolver = new TestableFlagResolver();
     @Rule
@@ -691,6 +692,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         LocalServices.removeServiceForTest(PersonalContextManagerInternal.class);
         LocalServices.addService(PersonalContextManagerInternal.class,
                 mPersonalContextManagerInternal);
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
+        LocalServices.addService(PackageManagerInternal.class, mPmi);
+        when(mPmi.isSameApp(anyString(), anyInt(), anyInt())).thenReturn(true);
         LocalServices.removeServiceForTest(AppLockInternal.class);
         LocalServices.addService(AppLockInternal.class, mAppLockInternal);
         mContext.addMockSystemService(Context.ALARM_SERVICE, mAlarmManager);
@@ -15831,6 +15835,22 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    public void fixComputerControlNotification_withOnGoingFlag_shouldBeNonDismissible()
+            throws Exception {
+        // Given: a computer control notification has the flag FLAG_ONGOING_EVENT set
+        mService.getFakeComputerControlHelper().setDefaultResponse(true);
+        Notification n = new Notification.Builder(mContext, "test")
+                .setOngoing(true)
+                .build();
+
+        // When: fix the notification with NotificationManagerService
+        mService.fixNotification(n, mPkg, "tag", 9, 0, mUid, NOT_FOREGROUND_SERVICE, true);
+
+        // Then: the notification's flag FLAG_NO_DISMISS should be set
+        assertNotSame(0, n.flags & Notification.FLAG_NO_DISMISS);
+    }
+
+    @Test
     public void fixSystemNotification_defaultSearchSelectior_withOnGoingFlag_nondismissible()
             throws Exception {
         final ApplicationInfo ai = new ApplicationInfo();
@@ -15884,7 +15904,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void fixCallNotification_withOnGoingFlag_shouldNotBeNonDismissible()
+    public void fixCallNotification_withOnGoingFlag_shouldBeDismissible()
             throws Exception {
         // Given: a call notification has the flag FLAG_ONGOING_EVENT set
         Person person = new Person.Builder()
@@ -16040,6 +16060,40 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         // Then: the notification's flag FLAG_NO_DISMISS should not be set
         assertSame(0, n.flags & Notification.FLAG_NO_DISMISS);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NOTIFICATION_FLAG_COMPUTER_CONTROL)
+    public void fixComputerControlNotification_shouldReceiveFlag()
+            throws Exception {
+        // Given: a computer control notification
+        mService.getFakeComputerControlHelper().setDefaultResponse(true);
+        Notification n = new Notification.Builder(mContext, "test")
+                .setOngoing(true)
+                .build();
+
+        // When: fix the notification with NotificationManagerService
+        mService.fixNotification(n, mPkg, "tag", 9, 0, mUid, NOT_FOREGROUND_SERVICE, true);
+
+        // Then: the notification's flag FLAG_COMPUTER_CONTROL should be set
+        assertNotSame(0, n.flags & Notification.FLAG_COMPUTER_CONTROL);
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_NOTIFICATION_FLAG_COMPUTER_CONTROL)
+    public void fixNonComputerControlNotification_shouldClearFlag() throws Exception {
+        // Given: a non-computer control notification has the flag FLAG_COMPUTER_CONTROL set
+        mService.getFakeComputerControlHelper().setDefaultResponse(false);
+        Notification n = new Notification.Builder(mContext, "test")
+                .setOngoing(true)
+                .build();
+        n.flags |= Notification.FLAG_COMPUTER_CONTROL;
+
+        // When: fix the notification with NotificationManagerService
+        mService.fixNotification(n, mPkg, "tag", 9, 0, mUid, NOT_FOREGROUND_SERVICE, true);
+
+        // Then: the notification's flag FLAG_COMPUTER_CONTROL should be cleared
+        assertSame(0, n.flags & Notification.FLAG_COMPUTER_CONTROL);
     }
 
     @Test

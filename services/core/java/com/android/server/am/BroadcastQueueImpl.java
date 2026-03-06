@@ -1306,7 +1306,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
                     mService.mPackageManagerInt.grantImplicitAccess(r.userId, r.intent,
                             UserHandle.getAppId(app.uid), r.callingUid, true);
                 }
-                queue.lastProcessState = app.getCurProcState();
+                queue.lastProcessState = app.getProcState();
                 if (receiver instanceof BroadcastFilter) {
                     notifyScheduleRegisteredReceiver(app, r, (BroadcastFilter) receiver);
                     thread.scheduleRegisteredReceiver(

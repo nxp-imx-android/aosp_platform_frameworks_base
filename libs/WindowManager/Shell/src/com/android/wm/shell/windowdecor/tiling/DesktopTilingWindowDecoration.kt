@@ -929,7 +929,7 @@ class DesktopTilingWindowDecoration(
         rightBounds: Rect,
         stableBounds: Rect,
     ): Boolean {
-        return DragPositioningCallbackUtility.isExceedingWidthConstraint(
+        return DragPositioningCallbackUtility.isViolatingWidthConstraints(
             newLeftBounds.width(),
             leftBounds.width(),
             stableBounds,
@@ -937,7 +937,7 @@ class DesktopTilingWindowDecoration(
             leftTaskResizingHelper?.windowDecoration,
             desktopState.canEnterDesktopMode,
         ) ||
-            DragPositioningCallbackUtility.isExceedingWidthConstraint(
+            DragPositioningCallbackUtility.isViolatingWidthConstraints(
                 newRightBounds.width(),
                 rightBounds.width(),
                 stableBounds,

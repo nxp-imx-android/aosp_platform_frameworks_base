@@ -422,6 +422,13 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_taskbar_in_fullscreen_mode"
+    namespace: "lse_desktop_experience"
+    description: "Adding functionalities for desktop-first taskbar in fullscreen mode, including showing recent fullscreen apps and auto-hide taskbar in fullscreen mode."
+    bug: "478732123"
+}
+
+flag {
     name: "enable_desktop_taskbar_on_freeform_displays"
     namespace: "lse_desktop_experience"
     description: "Forces pinned taskbar with desktop tasks on freeform displays"
@@ -697,14 +704,6 @@ flag {
     namespace: "web_apps_on_chromeos_and_android"
     description: "Enables the Interactive Picture-in-Picture window API."
     bug: "399376001"
-    is_exported: true
-}
-
-flag {
-    name: "enable_is_task_move_allowed_on_display_api"
-    namespace: "lse_desktop_experience"
-    description: "Enables the API to allow browsers to learn task-move-allowed states of displays."
-    bug: "400407139"
     is_exported: true
 }
 

@@ -20,6 +20,7 @@ import static com.android.hardware.input.Flags.createVirtualKeyboardApi;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.companion.virtualdevice.flags.Flags;
@@ -44,6 +45,9 @@ public abstract class VirtualInputDeviceConfig {
      * See also UINPUT_MAX_NAME_SIZE in linux/uinput.h
      */
     private static final int DEVICE_NAME_MAX_LENGTH = 80;
+
+    private static final ViewBehaviorConfig DEFAULT_VIEW_BEHAVIOR_CONFIG =
+            new ViewBehaviorConfig.Builder().build();
 
     /** The vendor id uniquely identifies the company who manufactured the device. */
     private final int mVendorId;
@@ -144,6 +148,19 @@ public abstract class VirtualInputDeviceConfig {
     }
 
     /**
+     * Returns the {@link ViewBehaviorConfig} for the input device ({@code defaultValue} for
+     * default {@link ViewBehaviorConfig}).
+     *
+     * @hide
+     */
+    @Nullable
+    public ViewBehaviorConfig getViewBehaviorConfigOrDefault(
+            @Nullable ViewBehaviorConfig defaultValue) {
+        return DEFAULT_VIEW_BEHAVIOR_CONFIG.equals(mViewBehaviorConfig) ? defaultValue
+                : mViewBehaviorConfig;
+    }
+
+    /**
      * Checks if a display ID is valid.
      *
      * @throws IllegalArgumentException if an invalid display is associated with this device.
@@ -189,9 +206,6 @@ public abstract class VirtualInputDeviceConfig {
      */
     @SuppressWarnings({"StaticFinalBuilder", "MissingBuildMethod"})
     public abstract static class Builder<T extends Builder<T>> {
-        private static final ViewBehaviorConfig DEFAULT_VIEW_BEHAVIOR_CONFIG =
-                new ViewBehaviorConfig.Builder().build();
-
         private int mVendorId;
         private int mProductId;
         private int mAssociatedDisplayId = Display.INVALID_DISPLAY;

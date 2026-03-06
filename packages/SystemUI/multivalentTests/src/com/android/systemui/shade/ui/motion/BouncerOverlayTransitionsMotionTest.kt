@@ -92,6 +92,7 @@ import com.android.systemui.window.data.repository.fakeWindowRootViewBlurReposit
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -217,6 +218,7 @@ class BouncerOverlayTransitionsMotionTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_STATUS_BAR_MOBILE_ICON_KAIROS)
+    @Ignore("b/489632440")
     fun swipeUpFromLockscreenToBouncer_recordBouncerOverlayElementsState() {
         motionTestRule.runTest(60.seconds) {
             kosmos.enableSingleShade()

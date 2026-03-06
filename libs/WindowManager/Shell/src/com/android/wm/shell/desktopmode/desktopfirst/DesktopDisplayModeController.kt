@@ -191,9 +191,11 @@ class DesktopDisplayModeController(
         if (currentDisplayWindowingMode == targetDisplayWindowingMode) {
             // If the windowing mode is already as needed, just make sure that the task move allowed
             // bit is set correctly.
+            // LINT.IfChange(setIsTaskMoveAllowed)
             val wct = WindowContainerTransaction()
             wct.setIsTaskMoveAllowed(tdaInfo.token, taskMoveAllowed)
             transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+            // LINT.ThenChange(/libs/WindowManager/Shell/src/com/android/wm/shell/desktopmode/multidesks/RootTaskDesksOrganizer.kt:updateTaskMoveAllowed)
 
             // Already in the target mode.
             return

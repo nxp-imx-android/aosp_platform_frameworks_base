@@ -659,6 +659,7 @@ interface IDevicePolicyManager {
     int getPolicySizeForAdmin(String callerPackageName, in EnforcingAdmin admin);
 
     int getHeadlessDeviceOwnerMode(String callerPackageName);
+    boolean isOutgoingTransferAllowedForSubscription(String callerPackageName, int subscriptionId);
 
     void setAppFunctionsPolicy(String callerPackageName, int policy);
     int getAppFunctionsPolicy(String callerPackageName, int userId);

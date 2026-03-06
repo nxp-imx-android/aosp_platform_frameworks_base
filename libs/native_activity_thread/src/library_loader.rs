@@ -62,25 +62,25 @@ pub struct LinkerNamespace {
 impl LinkerNamespace {
     pub fn create(
         name: String,
-        library_paths: &str,
+        search_paths: &str,
         permitted_libs_dir: &str,
         parent: Option<&LinkerNamespace>,
         flags: u64,
     ) -> Result<Self> {
         let cname = CString::new(name).context("Invalid name")?;
-        let ld_path = CString::new(library_paths).context("invalid library paths")?;
+        let search_path = CString::new(search_paths).context("invalid search paths")?;
         let permitted_libs =
             CString::new(permitted_libs_dir).context("invalid permitted libs dir")?;
         let parent_raw = parent.map_or(std::ptr::null_mut(), |p| p.as_ptr());
 
-        // SAFETY: `cname`, `ld_path`, `permitted_libs_dir` are valid pointers and this function
-        // accepts the null pointer for `default_library_path` and `parent`. Passed pointers'
+        // SAFETY: `cname`, `search_path`, `permitted_libs_dir` are valid pointers and this
+        // function accepts the null pointer for `ld_library_path` and `parent`. Passed pointers'
         // lifetime is long enough (strings are copied to the created namespace).
         let namespace = unsafe {
             android_create_namespace(
                 cname.as_ptr(),
-                ld_path.as_ptr(),
-                /* default_library_path= */ std::ptr::null_mut(),
+                /* ld_library_path= */ std::ptr::null_mut(),
+                search_path.as_ptr(),
                 flags,
                 permitted_libs.as_ptr(),
                 parent_raw,

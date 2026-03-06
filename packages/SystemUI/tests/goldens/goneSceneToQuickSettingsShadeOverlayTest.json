@@ -33,9 +33,6 @@
     464,
     480,
     496,
-    512,
-    528,
-    544,
     "after"
   ],
   "features": [
@@ -97,10 +94,6 @@
         },
         {
           "width": 1440,
-          "height": 50
-        },
-        {
-          "width": 1440,
           "height": 56
         },
         {
@@ -113,7 +106,7 @@
         },
         {
           "width": 1440,
-          "height": 97
+          "height": 104
         },
         {
           "width": 1440,
@@ -121,15 +114,11 @@
         },
         {
           "width": 1440,
-          "height": 175
+          "height": 200
         },
         {
           "width": 1440,
-          "height": 225
-        },
-        {
-          "width": 1440,
-          "height": 276
+          "height": 251
         },
         {
           "width": 1440,
@@ -169,19 +158,15 @@
         },
         {
           "width": 1440,
-          "height": 597
+          "height": 624
         },
         {
           "width": 1440,
-          "height": 626
+          "height": 651
         },
         {
           "width": 1440,
-          "height": 652
-        },
-        {
-          "width": 1440,
-          "height": 678
+          "height": 677
         },
         {
           "width": 1440,

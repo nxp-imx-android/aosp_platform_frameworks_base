@@ -54,8 +54,6 @@ import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.Flags.FLAG_STL_FLING_ANIMATION_CONSUME_OVERSHOOT
 import com.android.systemui.Flags.stlFlingAnimationConsumeOvershoot
-import kotlin.time.Duration.Companion.milliseconds
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -66,6 +64,7 @@ import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.MotionControlFn
 import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
 import platform.test.motion.compose.feature
+import platform.test.motion.compose.fetchAllSemanticsNodesMaybeCached
 import platform.test.motion.compose.hasMotionTestValue
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
@@ -127,7 +126,6 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
         }
 
     @Test
-    @Ignore("Need to understand the immediate dispatch issue in test")
     fun dragGesture_overdrag_animatesBack() =
         motionRule.runTest {
             val motion =
@@ -135,6 +133,7 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
                     performTouchInputAsync(onNodeWithTag("stl")) {
                         swipeRight(startX = 10f, endX = width * 1.5f, durationMillis = 250)
                     }
+                    awaitIdle()
                 }
 
             motionRule
@@ -359,25 +358,14 @@ class SwipeAnimationMotionTest(flags: FlagsParameterization) {
             ComposeRecordingSpec(
                 MotionControl {
                     recording()
-                    if (recordScrollState) {
-                        // When `disableSwipesWhenScrolling` applies, the overscroll from the
-                        // horizontalScroll will animate. It's non-trivial to wait for that
-                        // currently. Once go/frame-observation-in-compose-test-rule is implemented,
-                        // this will be a non-issue, hence using awaitDelay to capture some of the
-                        // animation.
-                        awaitDelay(200.milliseconds)
-                    }
-                    awaitCondition { !(state.isTransitioning()) }
+                    awaitIdle()
                 },
                 recordBefore = false,
                 recordAfter = false,
-                captureScreenshots = true,
                 timeSeriesCapture = {
                     on({
-                        it.onAllNodes(isElement(TestElements.Foo))
-                            .fetchSemanticsNodes()
-                            .filter { it.layoutInfo.isPlaced }
-                            .firstOrNull()
+                        it.fetchAllSemanticsNodesMaybeCached(isElement(TestElements.Foo))
+                            .firstOrNull { it.layoutInfo.isPlaced }
                     }) {
                         feature(FeatureCaptures.elementOffset)
                         feature(ComposeFeatureCaptures.positionInRoot)

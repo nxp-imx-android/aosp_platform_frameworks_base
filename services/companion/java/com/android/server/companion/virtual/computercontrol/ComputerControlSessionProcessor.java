@@ -58,6 +58,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.util.ArraySet;
 import android.util.Slog;
 
@@ -96,6 +97,7 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
 
     private final Context mContext;
     private final KeyguardManager mKeyguardManager;
+    private final AuthenticationPolicyManager mAuthenticationPolicyManager;
     private final AppOpsManager mAppOpsManager;
     private final AppOpsManagerLocal mAppOpsManagerLocal;
     private final PackageManager mPackageManager;
@@ -138,6 +140,7 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         mVirtualDeviceFactory = virtualDeviceFactory;
         mPendingIntentFactory = pendingIntentFactory;
         mKeyguardManager = context.getSystemService(KeyguardManager.class);
+        mAuthenticationPolicyManager = context.getSystemService(AuthenticationPolicyManager.class);
         mAppOpsManager = context.getSystemService(AppOpsManager.class);
         mAppOpsManagerLocal = LocalManagerRegistry.getManager(AppOpsManagerLocal.class);
         mPackageManager = context.getPackageManager();
@@ -434,8 +437,15 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
             deviceId = Context.DEVICE_ID_DEFAULT;
         }
         final int userId = UserHandle.getUserId(attributionSource.getUid());
-        return Binder.withCleanCallingIdentity(
-                () -> mKeyguardManager.isDeviceLocked(userId, deviceId));
+        return Binder.withCleanCallingIdentity(() -> {
+            if (android.companion.Flags.supportAiAgent() && mAuthenticationPolicyManager != null) {
+                // TODO(b/482988620): replace null with CDM DeviceId for xdevice scenarios
+                return !mAuthenticationPolicyManager.isAgentAuthorized(
+                        userId, deviceId, /* companionDeviceId */ null);
+            } else {
+                return mKeyguardManager.isDeviceLocked(userId, deviceId);
+            }
+        });
     }
 
     /** Returns true of the source's UID is seen on the device given by the source's deviceId. */

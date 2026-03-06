@@ -399,7 +399,7 @@ public class Transitions implements RemoteCallable<Transitions>,
         if (com.android.window.flags.Flags.transitMixpatcherBase()) {
             mMixpatcher = new TransitionMixpatcher(mOrganizer, mMainExecutor);
             mMixpatcher.overridePrePlanner(mMixpatchLegacyPrePlanner);
-            mMixpatcher.mPlanners.add(mMixpatchLegacyPlanner);
+            addPlanner(mMixpatchLegacyPlanner);
         } else {
             mMixpatcher = null;
         }
@@ -488,9 +488,8 @@ public class Transitions implements RemoteCallable<Transitions>,
      */
     public void addPlanner(@NonNull ITransitionPlanner planner) {
         if (com.android.window.flags.Flags.transitMixpatcherBase()) {
+            ProtoLog.v(WM_SHELL_TRANSITIONS, "addPlanner: %s", planner.getDebugName());
             mMixpatcher.mPlanners.add(planner);
-            ProtoLog.v(WM_SHELL_TRANSITIONS, "addPlaner: %s",
-                    planner.getClass().getSimpleName());
         }
     }
 
@@ -1727,7 +1726,7 @@ public class Transitions implements RemoteCallable<Transitions>,
     public static final class RequestResult {
         @NonNull public final WindowContainerTransaction mWct;
         public final TransitionHandler mHandler;
-        List<ITransitionPlanner> mInterest;
+        List<ITransitionPlanner> mInterest = List.of();
 
         public RequestResult(@NonNull WindowContainerTransaction wct,
                 @NonNull List<ITransitionPlanner> interest) {
@@ -1739,7 +1738,6 @@ public class Transitions implements RemoteCallable<Transitions>,
         public RequestResult(@NonNull WindowContainerTransaction wct) {
             mWct = wct;
             mHandler = null;
-            mInterest = List.of();
         }
 
         @Deprecated
@@ -1747,6 +1745,11 @@ public class Transitions implements RemoteCallable<Transitions>,
                 @NonNull TransitionHandler handler) {
             mWct = wct;
             mHandler = handler;
+        }
+
+        /** Checks whether there are any interested planners. */
+        public boolean hasInterestPlanners() {
+            return !mInterest.isEmpty();
         }
     }
 

@@ -248,6 +248,11 @@ interface IVirtualDevice {
     String getVirtualCameraId(in VirtualCameraConfig camera);
 
     /**
+     * Closes the session for the virtual camera with the given config.
+     */
+    void closeVirtualCameraSession(in VirtualCameraConfig camera);
+
+    /**
      * Setter for listeners that live in the client process, namely in
      * {@link android.companion.virtual.VirtualDeviceInternal}.
      *

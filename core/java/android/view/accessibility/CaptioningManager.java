@@ -40,6 +40,7 @@ import android.text.TextUtils;
 import com.android.internal.R;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -56,6 +57,7 @@ public class CaptioningManager {
     private static final String EASY_READER_LOCALE_VARIANT = "simple";
     private static final String LOCALE_DELIMITER = "_";
     private static final String VARIANT_DELIMITER = "-";
+    private static final String SCRIPT_PREFIX = "#";
 
     /** Default style preset as an index into {@link CaptionStyle#PRESETS}. */
     private static final int DEFAULT_PRESET = 0;
@@ -158,11 +160,21 @@ public class CaptioningManager {
             builder.setRegion(splitLocale[1]);
         }
         if (splitLocale.length >= 3) {
-            String variant = splitLocale[2];
-            if (easyReaderEnabled) {
-                variant = variant + VARIANT_DELIMITER + EASY_READER_LOCALE_VARIANT;
+            String[] elements = splitLocale[2].split(LOCALE_DELIMITER);
+            List<String> variants = new ArrayList<>();
+            String script = null;
+            for (String element : elements) {
+                if (element.startsWith(SCRIPT_PREFIX)) {
+                    script = element.substring(SCRIPT_PREFIX.length());
+                } else {
+                    variants.add(element);
+                }
             }
-            builder.setVariant(variant);
+            if (easyReaderEnabled) {
+                variants.add(EASY_READER_LOCALE_VARIANT);
+            }
+            builder.setVariant(String.join(VARIANT_DELIMITER, variants));
+            builder.setScript(script);
         } else if (easyReaderEnabled) {
             builder.setVariant(EASY_READER_LOCALE_VARIANT);
         }

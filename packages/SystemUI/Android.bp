@@ -539,6 +539,8 @@ android_library {
         "androidx.graphics_graphics-core",
         "com.google.android.material_material",
         // Unlike most pods, this module is directly included into GlobalModule
+        "com.android.systemui.dump_dagger",
+        // Unlike most pods, this module is directly included into GlobalModule
         "com.android.systemui.util.time_dagger",
         "device_state_flags_lib",
         "kotlinx_coroutines_android",

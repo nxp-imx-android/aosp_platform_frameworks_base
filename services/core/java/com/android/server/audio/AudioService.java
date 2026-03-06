@@ -12848,7 +12848,7 @@ public class AudioService extends IAudioService.Stub
             }
             if (!permissionOverridesCheck && mHardeningEnforcer.blockFocusMethod(uid,
                     HardeningEnforcer.METHOD_AUDIO_MANAGER_REQUEST_AUDIO_FOCUS,
-                    clientId, focusReqType, callingPackageName, attributionTag, sdk)) {
+                    clientId, focusReqType, callingPackageName, attributionTag, sdk, aa)) {
                 final String reason = "Audio focus request blocked by hardening";
                 Log.w(TAG, reason);
                 mmi.set(MediaMetrics.Property.EARLY_RETURN, reason).record();

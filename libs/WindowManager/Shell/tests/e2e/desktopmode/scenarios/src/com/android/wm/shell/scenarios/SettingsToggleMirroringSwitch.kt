@@ -16,8 +16,10 @@
 
 package com.android.wm.shell.scenarios
 
+import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
 import android.provider.Settings
 import android.view.Display.DEFAULT_DISPLAY
+import androidx.test.uiautomator.By
 import org.junit.After
 import org.junit.Ignore
 import org.junit.Test
@@ -29,7 +31,7 @@ abstract class SettingsToggleMirroringSwitch : SettingsConnectedDisplayTestBase(
     @Test
     open fun enableMirrorBuiltInDisplaySwitch() {
         Settings.Secure.putInt(instrumentation.context.contentResolver, MIRROR_SETTING, 0)
-        navigateToolbarToSelectedDisplaySettings(DEFAULT_DISPLAY)
+        selectDisplay(DEFAULT_DISPLAY)
 
         val displayId = connectedDisplayRule.addedDisplays.first()
         getMirroringPreference().click()
@@ -42,7 +44,7 @@ abstract class SettingsToggleMirroringSwitch : SettingsConnectedDisplayTestBase(
     @Test
     open fun disableMirrorBuiltInDisplaySwitch() {
         Settings.Secure.putInt(instrumentation.context.contentResolver, MIRROR_SETTING, 1)
-        navigateToolbarToSelectedDisplaySettings(DEFAULT_DISPLAY)
+        selectDisplay(DEFAULT_DISPLAY)
 
         val displayId = connectedDisplayRule.addedDisplays.first()
         getMirroringPreference().click()
@@ -57,7 +59,14 @@ abstract class SettingsToggleMirroringSwitch : SettingsConnectedDisplayTestBase(
         Settings.Secure.putInt(instrumentation.context.contentResolver, MIRROR_SETTING, 0)
     }
 
+    private fun getMirroringPreference() =
+        waitForObj(By.res(MIRROR_BUILT_IN_DISPLAY_SWITCH_ID)) {
+            "Could not find the 'Mirroring' preference, have `selectDisplay(displayId)` been " +
+                "called and display is DEFAULT_DISPLAY?"
+        }
+
     private companion object {
+        const val MIRROR_BUILT_IN_DISPLAY_SWITCH_ID = "com.android.settings:id/switchWidget"
         const val MIRROR_SETTING = Settings.Secure.MIRROR_BUILT_IN_DISPLAY
     }
 }

@@ -80,6 +80,13 @@ flag {
 }
 
 flag {
+  name: "notification_flag_computer_control"
+  namespace: "notifications"
+  description: "Adds logic for NotificationManagerService to set or clear Notification.FLAG_COMPUTER_CONTROL for all notifications."
+  bug: "489800294"
+}
+
+flag {
   name: "remove_remote_views"
   namespace: "systemui"
   description: "Removes all custom views"

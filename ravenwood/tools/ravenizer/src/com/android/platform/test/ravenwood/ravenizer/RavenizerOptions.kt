@@ -21,12 +21,8 @@ import com.android.hoststubgen.utils.ArgIterator
 import com.android.hoststubgen.utils.DEFAULT_SHARD_COUNT
 import com.android.hoststubgen.utils.IntSetOnce
 import com.android.hoststubgen.utils.SetOnce
-import com.android.hoststubgen.utils.ensureFileExists
 
 class RavenizerOptions(
-    /** Input jar file*/
-    val inJar: SetOnce<String> = SetOnce(""),
-
     /** Output jar file */
     val outJar: SetOnce<String> = SetOnce(""),
 
@@ -43,7 +39,6 @@ class RavenizerOptions(
             // TODO: Write help
             "-h", "--help" -> TODO("Help is not implemented yet")
 
-            "--in-jar" -> inJar.set(nextArg()).ensureFileExists()
             "--out-jar" -> outJar.set(nextArg())
 
             "--strip-mockito" -> stripMockito.set(true)
@@ -62,9 +57,7 @@ class RavenizerOptions(
     }
 
     override fun checkArgs() {
-        if (!inJar.isSet) {
-            throw ArgumentsException("Required option missing: --in-jar")
-        }
+        super.checkArgs()
         if (!outJar.isSet) {
             throw ArgumentsException("Required option missing: --out-jar")
         }
@@ -72,7 +65,6 @@ class RavenizerOptions(
 
     override fun dumpFields(): String {
         return """
-            inJar=$inJar,
             outJar=$outJar,
             stripMockito=$stripMockito,
             numShards=$numShards,

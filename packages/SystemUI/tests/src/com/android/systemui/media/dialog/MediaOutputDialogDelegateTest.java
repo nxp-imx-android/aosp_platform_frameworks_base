@@ -366,8 +366,8 @@ public class MediaOutputDialogDelegateTest extends SysuiTestCase {
 
     @Test
     @RequiresFlagsEnabled(FLAG_ACCESS_LOCAL_NETWORK_PERMISSION_ENABLED)
-    public void refresh_noMissingPermissionsResolveIntent_warningSectionGone() {
-        when(mMediaSwitchingController.getMissingPermissionsResolveIntent()).thenReturn(null);
+    public void refresh_noMissingPermissionsWarning_warningSectionGone() {
+        when(mMediaSwitchingController.getMissingPermissionsWarning()).thenReturn(null);
 
         mMediaOutputDialogDelegate = createDelegate();
         final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
@@ -386,8 +386,8 @@ public class MediaOutputDialogDelegateTest extends SysuiTestCase {
         final SystemUIDialog dialog = mMediaOutputDialogDelegate.createDialog();
         mMediaOutputDialogDelegate.onCreate(dialog, new Bundle());
 
-        Intent testIntent = new Intent("test.action.intent");
-        when(mMediaSwitchingController.getMissingPermissionsResolveIntent()).thenReturn(testIntent);
+        when(mMediaSwitchingController.getMissingPermissionsWarning())
+                .thenReturn(new MissingPermissionsWarning("Test App"));
 
         mMediaOutputDialogDelegate.refresh();
         mMediaOutputDialogDelegate.mDialogView.requireViewById(R.id.warning_fix_button)

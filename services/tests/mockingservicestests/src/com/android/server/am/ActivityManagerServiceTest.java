@@ -313,6 +313,7 @@ public class ActivityManagerServiceTest {
 
         doReturn(new ComponentName("", "")).when(mPackageManagerInternal)
                 .getSystemUiServiceComponent();
+        doReturn(true).when(mPackageManagerInternal).isSameApp(anyString(), anyInt(), anyInt());
 
         doReturn(mPackageManager).when(AppGlobals::getPackageManager);
         doReturn(mPermissionManager).when(AppGlobals::getPermissionManager);
@@ -2161,7 +2162,7 @@ public class ActivityManagerServiceTest {
         }
 
         assertThat(latchHolder[0].await(5, TimeUnit.SECONDS)).isTrue();
-        assertEquals(ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE, app.getCurProcState());
+        assertEquals(ActivityManager.PROCESS_STATE_FOREGROUND_SERVICE, app.getProcState());
         final long timeoutMs = 5000L;
         final VerificationMode mode = withNotification
                 ? timeout(timeoutMs) : after(timeoutMs).atMost(0);
@@ -2178,7 +2179,7 @@ public class ActivityManagerServiceTest {
         }
 
         assertThat(latchHolder[0].await(5, TimeUnit.SECONDS)).isTrue();
-        assertEquals(ActivityManager.PROCESS_STATE_CACHED_EMPTY, app.getCurProcState());
+        assertEquals(ActivityManager.PROCESS_STATE_CACHED_EMPTY, app.getProcState());
         verify(mNotificationManagerInternal, mode)
                 .cancelNotification(eq(app.info.packageName), eq(app.info.packageName),
                         eq(app.info.uid), eq(app.mPid), eq(null),

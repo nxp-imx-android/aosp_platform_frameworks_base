@@ -18,7 +18,6 @@ package com.android.server.am.psc;
 import static com.android.server.am.psc.OomAdjuster.CPU_TIME_REASON_NONE;
 
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManager.ProcessCapability;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
@@ -58,11 +57,11 @@ final class ProcessEdge extends GraphEdge {
         mCpuTimeReasons = CPU_TIME_REASON_NONE;
     }
 
-    /** Returns {@code null} since the source is always the system. */
+    /** Returns the {@link SystemNode} singleton instance. */
     @Override
-    @Nullable
-    ProcessNode getSource() {
-        return null;
+    @NonNull
+    SystemNode getSource() {
+        return SystemNode.getInstance();
     }
 
     @Override

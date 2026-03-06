@@ -1180,26 +1180,6 @@ class TransitionController {
         setReady(wc, true);
     }
 
-    /** @see Transition#deferTransitionReady */
-    void deferTransitionReady() {
-        if (Flags.migrateBasicLegacyReady()) return;
-        if (!isShellTransitionsEnabled()) return;
-        if (mCollectingTransition == null) {
-            throw new IllegalStateException("No collecting transition to defer readiness for.");
-        }
-        mCollectingTransition.deferTransitionReady();
-    }
-
-    /** @see Transition#continueTransitionReady */
-    void continueTransitionReady() {
-        if (Flags.migrateBasicLegacyReady()) return;
-        if (!isShellTransitionsEnabled()) return;
-        if (mCollectingTransition == null) {
-            throw new IllegalStateException("No collecting transition to defer readiness for.");
-        }
-        mCollectingTransition.continueTransitionReady();
-    }
-
     /** @see Transition#finishTransition */
     void finishTransition(@NonNull ActionChain chain) {
         if (!chain.isFinishing()) {

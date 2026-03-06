@@ -32,6 +32,10 @@ import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
+import com.android.wm.shell.desktopmode.DesktopTasksController
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
+import com.android.wm.shell.transition.FocusTransitionObserver
+import com.android.wm.shell.windowdecor.HandleMenuController
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.viewholder.AppHandleAnimator.Companion.APP_HANDLE_ALPHA_FADE_IN_ANIMATION_DURATION_MS
 import com.android.wm.shell.windowdecor.viewholder.AppHandleAnimator.Companion.APP_HANDLE_ALPHA_FADE_OUT_ANIMATION_DURATION_MS
@@ -73,6 +77,10 @@ class AppHandleViewHolderTest : ShellTestCase() {
     private val mockHandler = mock<Handler>()
     private val mockTaskInfo = mock<RunningTaskInfo>()
     private val mockDesktopModeUiEventLogger = mock<DesktopModeUiEventLogger>()
+    private val mockHandleMenuController = mock<HandleMenuController>()
+    private val mockFocusTransitionObserver = mock<FocusTransitionObserver>()
+    private val mockPinnedLayerController = mock<PinnedLayerController>()
+    private val mockDesktopTasksController = mock<DesktopTasksController>()
 
     @Before
     fun setup() {
@@ -273,6 +281,10 @@ class AppHandleViewHolderTest : ShellTestCase() {
                 mockWindowManagerWrapper,
                 mockHandler,
                 mockDesktopModeUiEventLogger,
+                mockHandleMenuController,
+                mockFocusTransitionObserver,
+                mockPinnedLayerController,
+                mockDesktopTasksController,
             )
             .apply {
                 visible?.let { this.rootView.visibility = if (visible) View.VISIBLE else View.GONE }

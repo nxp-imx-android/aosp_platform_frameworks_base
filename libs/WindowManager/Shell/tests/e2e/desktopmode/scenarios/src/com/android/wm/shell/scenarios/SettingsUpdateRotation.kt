@@ -31,7 +31,6 @@ abstract class SettingsUpdateRotation : SettingsConnectedDisplayTestBase() {
     @Test
     fun updateRotation() {
         val displayId = connectedDisplayRule.addedDisplays.first()
-        navigateToolbarToSelectedDisplaySettings(displayId)
         val rotationPreference = getRotationPreference()
         rotationPreference.click()
 
@@ -57,7 +56,16 @@ abstract class SettingsUpdateRotation : SettingsConnectedDisplayTestBase() {
         instrumentation.uiAutomation.executeShellCommand("wm user-rotation -d $displayId lock 0")
     }
 
+    private fun getRotationPreference() =
+        waitForObj(
+            By.clazz("android.widget.RelativeLayout").hasDescendant(By.text(ROTATION_TEXT))
+        ) {
+            "Could not find the 'Rotation' preference, have `selectDisplay(displayId)` been " +
+                "called and display is external display?"
+        }
+
     private companion object {
+        const val ROTATION_TEXT = "Rotation"
         const val ROTATION_90_TEXT = "90°"
         const val ROTATION_90_VAL = 1
     }

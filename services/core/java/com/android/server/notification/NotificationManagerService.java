@@ -42,6 +42,7 @@ import static android.app.Notification.EXTRA_TITLE_BIG;
 import static android.app.Notification.FLAG_AUTOGROUP_SUMMARY;
 import static android.app.Notification.FLAG_AUTO_CANCEL;
 import static android.app.Notification.FLAG_BUBBLE;
+import static android.app.Notification.FLAG_COMPUTER_CONTROL;
 import static android.app.Notification.FLAG_FOREGROUND_SERVICE;
 import static android.app.Notification.FLAG_FSI_REQUESTED_BUT_DENIED;
 import static android.app.Notification.FLAG_GROUP_SUMMARY;
@@ -412,7 +413,6 @@ import com.android.server.IoThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.bitmapoffload.BitmapOffloadInternal;
-import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.lights.LightsManager;
 import com.android.server.notification.GroupHelper.NotificationAttributes;
@@ -701,7 +701,8 @@ public class NotificationManagerService extends SystemService {
     @Nullable StatusBarManagerInternal mStatusBar;
     private DisplayManager mDisplayManager;
     private WindowManagerInternal mWindowManagerInternal;
-    private VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
+    @VisibleForTesting
+    ComputerControlHelper mComputerControlHelper;
     private AlarmManager mAlarmManager;
     @VisibleForTesting
     ICompanionDeviceManager mCompanionManager;
@@ -3683,8 +3684,9 @@ public class NotificationManagerService extends SystemService {
         if (phase == SystemService.PHASE_SYSTEM_SERVICES_READY) {
             mDisplayManager = getContext().getSystemService(DisplayManager.class);
             mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
-            mVirtualDeviceManagerInternal =
-                    LocalServices.getService(VirtualDeviceManagerInternal.class);
+            if (mComputerControlHelper == null) {
+                mComputerControlHelper = ComputerControlHelper.forLocalService();
+            }
             mZenModeHelper.onSystemReady();
             RoleObserver roleObserver = new RoleObserver(getContext(),
                     getContext().getSystemService(RoleManager.class),
@@ -9569,6 +9571,16 @@ public class NotificationManagerService extends SystemService {
             notification.flags &= ~FLAG_AUTO_CANCEL;
         }
 
+        if (android.app.Flags.notificationFlagComputerControl()) {
+            // Apply or set FLAG_COMPUTER_CONTROL based on the existence of a ComputerControlSession
+            // which references this notification.
+            if (isComputerControlNotification(id, tag, pkg)) {
+                notification.flags |= FLAG_COMPUTER_CONTROL;
+            } else {
+                notification.flags &= ~FLAG_COMPUTER_CONTROL;
+            }
+        }
+
         // Only notifications that can be non-dismissible can have the flag FLAG_NO_DISMISS
         if (((notification.flags & FLAG_ONGOING_EVENT) > 0)
                 && canBeNonDismissible(ai, notification, id, tag)) {
@@ -9816,17 +9828,18 @@ public class NotificationManagerService extends SystemService {
                 || notification.isStyle(Notification.CallStyle.class)
                 || isDefaultSearchSelectorPackage(ai.packageName)
                 || isDefaultAdservicesPackage(ai.packageName)
-                || isComputerControlNotification(id, tag, ai.packageName);
+                || (android.app.Flags.notificationFlagComputerControl()
+                        ? hasFlag(notification.flags, FLAG_COMPUTER_CONTROL)
+                        : isComputerControlNotification(id, tag, ai.packageName));
     }
 
     private boolean isComputerControlNotification(int notificationId, String notificationTag,
             String packageName) {
-        if (mVirtualDeviceManagerInternal == null) {
-            mVirtualDeviceManagerInternal =
-                    LocalServices.getService(VirtualDeviceManagerInternal.class);
+        if (mComputerControlHelper == null) {
+            mComputerControlHelper = ComputerControlHelper.forLocalService();
         }
-        if (mVirtualDeviceManagerInternal != null) {
-            return mVirtualDeviceManagerInternal.isComputerControlNotification(notificationId,
+        if (mComputerControlHelper != null) {
+            return mComputerControlHelper.isComputerControlNotification(notificationId,
                     notificationTag, packageName);
         }
         return false;

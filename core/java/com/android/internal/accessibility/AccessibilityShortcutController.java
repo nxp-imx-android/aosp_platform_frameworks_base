@@ -21,7 +21,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
 
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
 import static com.android.internal.accessibility.dialog.AccessibilityTargetHelper.getTargets;
-import static com.android.internal.os.RoSystemProperties.SUPPORT_ONE_HANDED_MODE;
 import static com.android.internal.util.ArrayUtils.convertToLongArray;
 
 import android.Manifest;
@@ -57,6 +56,7 @@ import android.widget.Toast;
 
 import com.android.internal.R;
 import com.android.internal.accessibility.dialog.AccessibilityTarget;
+import com.android.internal.accessibility.dialog.AccessibilityTargetHelper;
 import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.accessibility.util.FrameworkObjectProvider;
 import com.android.internal.accessibility.util.ShortcutUtils;
@@ -187,7 +187,7 @@ public class AccessibilityShortcutController {
                             Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ENABLED,
                              "1" /* Value to enable */, "0" /* Value to disable */,
                             R.string.mouse_keys_feature_name));
-            if (SUPPORT_ONE_HANDED_MODE) {
+            if (AccessibilityTargetHelper.sSupportOneHandedMode) {
                 featuresMap.put(ONE_HANDED_COMPONENT_NAME,
                         new ToggleableFrameworkFeatureInfo(
                                 Settings.Secure.ONE_HANDED_MODE_ACTIVATED,

@@ -56,7 +56,6 @@ import platform.test.motion.compose.ComposeFeatureCaptures.positionInRoot
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.feature
-import platform.test.motion.compose.motionTestValueOfNode
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.screenshot.DeviceEmulationSpec
@@ -126,9 +125,7 @@ class BouncerContentTest : SysuiTestCase() {
                                 doubleClick(position = centerLeft)
                             }
 
-                            awaitCondition {
-                                motionTestValueOfNode(BouncerMotionTestKeys.swapAnimationEnd)
-                            }
+                            awaitIdle()
                         }
                     ) {
                         feature(

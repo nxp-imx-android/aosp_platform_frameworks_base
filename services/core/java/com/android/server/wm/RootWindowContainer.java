@@ -149,7 +149,6 @@ import com.android.server.policy.PermissionPolicyInternal;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.utils.Slogf;
 import com.android.server.wm.utils.RegionUtils;
-import com.android.window.flags.Flags;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -1964,7 +1963,9 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
         mCurrentUser = userId;
 
-        mTaskSupervisor.mStartingUsers.add(uss);
+        if (!mTaskSupervisor.mStartingUsers.contains(uss)) {
+            mTaskSupervisor.mStartingUsers.add(uss);
+        }
         forAllRootTasks(rootTask -> {
             rootTask.switchUser(userId);
         });
@@ -2143,9 +2144,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
         final TransitionController transitionController = task.mTransitionController;
 
-        transitionController.deferTransitionReady();
         final Transition.ReadyCondition pipChangesApplied =
-                new Transition.ReadyCondition("movedToPip", !Flags.migrateBasicLegacyReady());
+                new Transition.ReadyCondition("movedToPip", false);
         transitionController.waitFor(pipChangesApplied);
         mService.deferWindowLayout();
         boolean localVisibilityDeferred = false;
@@ -2339,7 +2339,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     ensureActivitiesVisible();
                 }
             } finally {
-                transitionController.continueTransitionReady();
                 pipChangesApplied.meet();
             }
         }

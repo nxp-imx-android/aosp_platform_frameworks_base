@@ -16,8 +16,6 @@
 
 package com.android.server.am;
 
-import static android.content.pm.PackageManager.MATCH_DEBUG_TRIAGED_MISSING;
-
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_MU;
 import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_MU;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
@@ -29,12 +27,12 @@ import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityOptions;
-import android.app.AppGlobals;
 import android.app.PendingIntent;
 import android.app.PendingIntentStats;
 import android.app.compat.CompatChanges;
 import android.content.IIntentSender;
 import android.content.Intent;
+import android.content.pm.PackageManagerInternal;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -86,6 +84,7 @@ public class PendingIntentController {
     final Object mLock = new Object();
     final Handler mH;
     ActivityManagerInternal mAmInternal;
+    private PackageManagerInternal mPmInternal;
     final UserController mUserController;
     final ActivityTaskManagerInternal mAtmInternal;
 
@@ -107,6 +106,7 @@ public class PendingIntentController {
             ActivityManagerConstants constants) {
         mH = new Handler(looper);
         mAtmInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
+        mPmInternal = LocalServices.getService(PackageManagerInternal.class);
         mUserController = userController;
         mConstants = constants;
     }
@@ -114,6 +114,16 @@ public class PendingIntentController {
     void onActivityManagerInternalAdded() {
         synchronized (mLock) {
             mAmInternal = LocalServices.getService(ActivityManagerInternal.class);
+            mPmInternal = LocalServices.getService(PackageManagerInternal.class);
+        }
+    }
+
+    private PackageManagerInternal getPackageManagerInternal() {
+        synchronized (mLock) {
+            if (mPmInternal == null) {
+                mPmInternal = LocalServices.getService(PackageManagerInternal.class);
+            }
+            return mPmInternal;
         }
     }
 
@@ -227,8 +237,9 @@ public class PendingIntentController {
                         continue;
                     }
                 } else {
-                    if (UserHandle.getAppId(pir.uid) != appId) {
-                        // Different app id, skip it.
+                    if (!getPackageManagerInternal().isSameApp(packageName, pir.uid,
+                            UserHandle.getUserId(pir.uid))) {
+                        // Different app, skip it.
                         continue;
                     }
                     if (userId != UserHandle.USER_ALL && pir.key.userId != userId) {
@@ -265,18 +276,14 @@ public class PendingIntentController {
         }
         synchronized (mLock) {
             final PendingIntentRecord rec = (PendingIntentRecord) sender;
-            try {
-                final int uid = AppGlobals.getPackageManager().getPackageUid(rec.key.packageName,
-                        MATCH_DEBUG_TRIAGED_MISSING, UserHandle.getCallingUserId());
-                if (!UserHandle.isSameApp(uid, Binder.getCallingUid())) {
-                    String msg = "Permission Denial: cancelIntentSender() from pid="
-                            + Binder.getCallingPid() + ", uid=" + Binder.getCallingUid()
-                            + " is not allowed to cancel package " + rec.key.packageName;
-                    Slog.w(TAG, msg);
-                    throw new SecurityException(msg);
-                }
-            } catch (RemoteException e) {
-                throw new SecurityException(e);
+            final int callingUid = Binder.getCallingUid();
+            if (!getPackageManagerInternal().isSameApp(rec.key.packageName, callingUid,
+                    UserHandle.getUserId(callingUid))) {
+                String msg = "Permission Denial: cancelIntentSender() from pid="
+                        + Binder.getCallingPid() + ", uid=" + callingUid
+                        + " is not allowed to cancel package " + rec.key.packageName;
+                Slog.w(TAG, msg);
+                throw new SecurityException(msg);
             }
             cancelIntentSender(rec, true, CANCEL_REASON_OWNER_CANCELED);
         }

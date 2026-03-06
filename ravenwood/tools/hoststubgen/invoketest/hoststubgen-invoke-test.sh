@@ -57,6 +57,11 @@ EXTRA_ARGS=""
 # HostStubGen result in it.
 HOSTSTUBGEN_RC=0
 
+run() {
+    echo "Running: $@"
+    "$@"
+}
+
 # Note, because the build rule will only install hoststubgen.jar, but not the wrapper script,
 # we need to execute it manually with the java command.
 hoststubgen() {
@@ -248,10 +253,6 @@ run_hoststubgen_for_success "One specific class disallowed, but it doesn't use a
 
 OUTJAR="" run_hoststubgen_for_success "No output generation" "" "$DELETE_PARTIAL_ANNOTATION_CLASSESS"
 
-EXTRA_ARGS="--in-jar abc" run_hoststubgen_for_failure "Duplicate arg" \
-    "Duplicate or conflicting argument found: --in-jar" \
-    ""
-
 # ---------------------------------------------------------------------------------------------
 # Tests for "partially-allowlisted".
 # ---------------------------------------------------------------------------------------------
@@ -391,6 +392,68 @@ run_for_outermost_annot_failure "/BadAnnot24" \
 TEST_OUTERMOST=1 HSG_ENTRY_FILTER="/GoodAnnot" EXTRA_ARGS="--default-throw" run_hoststubgen_for_success 'Good annotations' \
     "* # allow all" \
     "# no policy"
+
+#========================================================================
+# Test with multiple input JAR files and a directory.
+
+# We extract $INJAR and create multiple JARs from different sets of files of it,
+# and create a directory contain another part.
+
+function multi_input_test() {
+    # First, extract all the files in $INJAR.
+    echo "# Extracting $extracted_jar_dir..."
+    local extracted_jar_dir="./invoketest-jar-ext/"
+    run rm -fr "$extracted_jar_dir"
+    run mkdir -p "$extracted_jar_dir"
+
+    run ls -l "$INJAR"
+    run unzip -o "$INJAR" -d "$extracted_jar_dir" # extract the JAR
+
+    # These are the subsets we use in this test.
+    local path1=com/android/hoststubgen/test/tinyframework/exp/
+    local path2=com/android/hoststubgen/test/tinyframework/outer/
+    local path3=com/android/hoststubgen/test/tinyframework/packagetest/
+
+    # Create two jars from $path1 and $path2 in $INJAR
+    echo "# Creating partial jar files..."
+    local in_jar1=in-jar-1.jar
+    local in_jar2=in-jar-2.jar
+
+    cd "$extracted_jar_dir"
+    run zip -r "../$in_jar1" "$path1" # create $in_jar1
+    run zip -r "../$in_jar2" "$path2" # create $in_jar2
+    cd ..
+
+    #  Then copy $path3 to a standalone directory directory.
+    local in_dir="./invoketest-in-dir/"
+    run rm -fr "$in_dir"
+    run mkdir -p "$in_dir/$path3"
+    cp -r "$extracted_jar_dir/$path3"* "$in_dir/$path3"
+
+    # Now, we run hoststubgen on these 2 jars and directory.
+    echo "# Running hoststubgen"
+    INJAR=$in_jar1 EXTRA_ARGS="--in-jar $in_jar2 --in-dir $in_dir" run_hoststubgen
+
+    # Now, $OUTJAR should contain class files from these 3 inputs.
+    echo "# Now, $OUTJAR contains the following files:"
+    jar tf "$OUTJAR"
+
+    local expected
+    for expected in $path1 $path2 $path3; do
+        echo "# Checking $expected..."
+        if jar tf "$OUTJAR" | grep -q "$expected.*\.class" ; then
+            # Okay, contains a class.
+            continue
+        fi
+        echo "$OUTJAR doesn't contain expected path $expected."
+        exit 9
+    done
+    # Check passed.
+}
+
+multi_input_test
+
+#========================================================================
 
 echo "All tests passed"
 exit 0

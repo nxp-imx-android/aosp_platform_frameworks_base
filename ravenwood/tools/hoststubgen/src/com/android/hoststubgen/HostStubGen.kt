@@ -17,7 +17,7 @@ package com.android.hoststubgen
 
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.filters.printAsTextPolicy
-import com.android.hoststubgen.utils.ConcurrentZipFile
+import com.android.hoststubgen.utils.ConcurrentZipProcessor
 import com.android.hoststubgen.utils.ZipEntryData
 import java.io.PrintWriter
 import java.util.regex.Pattern
@@ -34,20 +34,20 @@ class HostStubGen(val options: HostStubGenOptions) {
 
     fun run() {
         val errors = HostStubGenErrors()
-        val inJar = ConcurrentZipFile(options.inJar.get, options.numShards.get)
+        val inJars = ConcurrentZipProcessor(options.inJars, options.numShards.get)
         val stats = HostStubGenStats()
 
         lateinit var allClasses: ClassNodes
 
         stats.totalTime = log.nTime {
             // Load all classes.
-            allClasses = ClassNodes.loadClassStructures(inJar) {
+            allClasses = ClassNodes.loadClassStructures(inJars) {
                 stats.loadStructureTime = it
             }
 
-            convert(inJar, allClasses, options, errors, stats)
+            convert(inJars, allClasses, options, errors, stats)
         }
-        log.i(stats.toString())
+        log.v(stats.toString())
 
         // Dump the classes, if specified.
         options.inputJarDumpFile.ifSet {
@@ -71,19 +71,19 @@ class HostStubGen(val options: HostStubGenOptions) {
      * Convert a JAR file.
      */
     private fun convert(
-        inJar: ConcurrentZipFile,
+        inJars: ConcurrentZipProcessor,
         allClasses: ClassNodes,
         options: HostStubGenOptions,
         errors: HostStubGenErrors,
         stats: HostStubGenStats,
     ) {
-        log.v("Converting %s into %s ...", inJar.fileName, options.outJar.get)
+        log.v("Converting %s into %s ...", inJars.sourceFiles, options.outJar.get)
         log.v("ASM CheckClassAdapter is %s",
             if (options.enableClassChecker.get) "enabled" else "disabled")
 
         stats.totalProcessTime = log.nTime {
             log.withIndent {
-                inJar.forEachThread { entries ->
+                inJars.forEachThread { entries ->
                     // Create a new processor for each thread
                     val processor = HostStubGenClassProcessor(options, allClasses, errors)
                     entries.process { entry ->
@@ -95,8 +95,8 @@ class HostStubGen(val options: HostStubGenOptions) {
         }
 
         options.outJar.get?.let { outJar ->
-            val meta = getJarMetadata("hoststubgen", inJar.fileName, outJar)
-            inJar.write(outJar, meta) { time -> stats.totalWriteTime = time }
+            val meta = getJarMetadata("hoststubgen", inJars.sourceFiles, outJar)
+            inJars.write(outJar, meta) { time -> stats.totalWriteTime = time }
             log.d("Created: $outJar")
         }
     }
@@ -159,7 +159,11 @@ class HostStubGen(val options: HostStubGenOptions) {
         log.v("Creating class: %s Policy: %s", entryInfo.classInternalName, entryInfo.policy)
         log.withIndent {
             val data = processor.processClassBytecode(entry.data)
-            return ZipEntryData.fromBytes(entryInfo.renamedEntryName, data)
+            return ZipEntryData.fromBytes(
+                entry.container,
+                entryInfo.renamedEntryName,
+                data,
+            )
         }
     }
 }

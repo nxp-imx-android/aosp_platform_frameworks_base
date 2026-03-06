@@ -27,4 +27,8 @@
     <string name="settingslib_expressive_expanded_state_expanded">fully expanded</string>
     <!-- State description to indicate the state of the element is collapsed [CHAR LIMIT=NONE] -->
     <string name="settingslib_expressive_expanded_state_collapsed">collapsed</string>
+    <!-- Accessibility announcement for a selected item in a list [CHAR LIMIT=NONE] -->
+    <string name="settingslib_spinner_item_selected">selected</string>
+    <!-- Accessibility announcement for an item that is not selected in a list [CHAR LIMIT=NONE] -->
+    <string name="settingslib_spinner_item_not_selected">not selected</string>
 </resources>

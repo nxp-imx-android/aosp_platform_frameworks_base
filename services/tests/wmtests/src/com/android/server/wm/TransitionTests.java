@@ -1930,18 +1930,10 @@ public class TransitionTests extends WindowTestsBase {
         openTransition.setAllReady();
 
         final Transition.ReadyCondition testCondition = new Transition.ReadyCondition("test");
-        if (Flags.migrateBasicLegacyReady()) {
-            openTransition.mReadyTracker.add(testCondition);
-        } else {
-            openTransition.deferTransitionReady();
-        }
+        openTransition.mReadyTracker.add(testCondition);
         assertFalse(openTransition.allReady());
 
-        if (Flags.migrateBasicLegacyReady()) {
-            testCondition.meet();
-        } else {
-            openTransition.continueTransitionReady();
-        }
+        testCondition.meet();
         assertTrue(openTransition.allReady());
     }
 
@@ -2557,21 +2549,13 @@ public class TransitionTests extends WindowTestsBase {
         assertTrue(mSyncEngine.isReady(transition.getSyncId()));
 
         final Transition.ReadyCondition testCondition = new Transition.ReadyCondition("test");
-        if (Flags.migrateBasicLegacyReady()) {
-            transition.mReadyTracker.add(testCondition);
-        } else {
-            transition.deferTransitionReady();
-        }
+        transition.mReadyTracker.add(testCondition);
 
         // Both transition ready tracker and sync engine should be deferred.
         assertFalse(transition.allReady());
         assertFalse(mSyncEngine.isReady(transition.getSyncId()));
 
-        if (Flags.migrateBasicLegacyReady()) {
-            testCondition.meet();
-        } else {
-            transition.continueTransitionReady();
-        }
+        testCondition.meet();
 
         assertTrue(transition.allReady());
         assertTrue(mSyncEngine.isReady(transition.getSyncId()));

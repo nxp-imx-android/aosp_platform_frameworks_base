@@ -1039,9 +1039,13 @@ class DesktopRepository(
     private fun addOrMoveTaskToTopOfDesk(displayId: Int, deskId: Int, taskId: Int) {
         val desk = desktopData.getDesk(deskId) ?: error("Could not find desk: $deskId")
         val bounds = Rect()
-        desktopData.forAllDesks { _, desk1 ->
-            desk1.freeformTasksInZOrder.remove(taskId)
-            desk1.boundsByTaskId[taskId]?.let { bounds.set(it) }
+        // If the desk is transient, don't remove from a nontransient desk as this
+        // functionally won't be a duplicate; the transient desk will be removed once finished.
+        if (!desk.transientDesk) {
+            desktopData.forAllDesks { _, desk1 ->
+                desk1.freeformTasksInZOrder.remove(taskId)
+                desk1.boundsByTaskId[taskId]?.let { bounds.set(it) }
+            }
         }
         desk.freeformTasksInZOrder.add(0, taskId)
         if (!bounds.isEmpty) desk.boundsByTaskId[taskId] = bounds

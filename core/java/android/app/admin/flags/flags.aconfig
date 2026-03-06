@@ -583,6 +583,14 @@ flag {
 }
 
 flag {
+  name: "managed_esim_outgoing_transfer_policy"
+  namespace: "enterprise"
+  description: "Adds a new API for setting the outgoing transfer policy of managed eSIMs"
+  bug: "461421887"
+  is_exported: true
+}
+
+flag {
   name: "increase_watch_strong_auth_timeout"
   namespace: "cross_device_access_service"
   description: "Increase the watch strong auth timeout to 14 days."
@@ -679,5 +687,13 @@ flag {
   namespace: "enterprise"
   description: "Redirect addUserRestriction/getUserRestriction for DISALLOW_FUN to the generic set/getPolicy APIs."
   bug: "444381084"
+  is_exported: true
+}
+
+flag {
+  name: "policy_streamlining_keyguard_status"
+  namespace: "enterprise"
+  description: "Redirect setKeyguardDisabled to the generic setPolicy APIs"
+  bug: "434919316"
   is_exported: true
 }

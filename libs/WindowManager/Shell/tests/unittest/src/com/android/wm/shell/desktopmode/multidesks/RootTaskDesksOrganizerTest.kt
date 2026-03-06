@@ -47,11 +47,14 @@ import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.LaunchAdjacentController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createRecentTaskInfo
+import com.android.wm.shell.desktopmode.desktopfirst.DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
+import com.android.wm.shell.desktopmode.desktopfirst.TOUCH_FIRST_DISPLAY_WINDOWING_MODE
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer.DeskMinimizationRoot
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer.DeskRoot
 import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import kotlin.coroutines.suspendCoroutine
 import kotlin.test.assertNotNull
 import kotlinx.coroutines.launch
@@ -549,33 +552,38 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     @Test
     fun testActivateDesk() = runTest {
         val desk = createDeskSuspending()
+        val tda = mockTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+        tda.configuration.windowConfiguration.windowingMode = TOUCH_FIRST_DISPLAY_WINDOWING_MODE
 
         val wct = WindowContainerTransaction()
         organizer.activateDesk(wct, desk.deskRoot.deskId)
 
-        assertThat(
-                wct.hierarchyOps.any { hop ->
-                    hop.type == HierarchyOp.HIERARCHY_OP_TYPE_REORDER &&
-                        hop.toTop &&
-                        hop.container == desk.deskRoot.taskInfo.token.asBinder()
-                }
-            )
+        val deskRootTokenBinder = desk.deskRoot.taskInfo.token.asBinder()
+        val hops = wct.hierarchyOps
+
+        val hasReorderToTop = hops.any {
+            it.type == HierarchyOp.HIERARCHY_OP_TYPE_REORDER &&
+            it.toTop &&
+            it.container == deskRootTokenBinder
+        }
+        assertWithMessage("Expected REORDER op to top for container, but got: $hops")
+            .that(hasReorderToTop)
             .isTrue()
-        assertThat(
-                wct.hierarchyOps.any { hop ->
-                    hop.type == HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT &&
-                        hop.container == desk.deskRoot.taskInfo.token.asBinder()
-                }
-            )
+
+        val hasSetLaunchRoot = hops.any {
+            it.type == HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT &&
+            it.container == deskRootTokenBinder
+        }
+        assertWithMessage("Expected SET_LAUNCH_ROOT op for container, but got: $hops")
+            .that(hasSetLaunchRoot)
             .isTrue()
-        assertThat(
-                wct.changes.any { change ->
-                    change.key == desk.deskRoot.token.asBinder() &&
-                        (change.value.changeMask and Change.CHANGE_IS_TASK_MOVE_ALLOWED != 0) &&
-                        change.value.isTaskMoveAllowed
-                }
-            )
-            .isTrue()
+
+        val tdaTokenBinder = tda.token.asBinder()
+        assertThat(wct.changes).containsKey(tdaTokenBinder)
+
+        val change = wct.changes[tdaTokenBinder]!!
+        assertThat(change.changeMask and Change.CHANGE_IS_TASK_MOVE_ALLOWED).isNotEqualTo(0)
+        assertThat(change.isTaskMoveAllowed).isTrue()
     }
 
     @Test
@@ -850,18 +858,39 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     fun deactivateDesk_unsetsTaskMoveAllowed() = runTest {
         val wct = WindowContainerTransaction()
         val desk = createDeskSuspending()
-        organizer.activateDesk(wct, desk.deskRoot.deskId)
+        val tda = mockTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+        tda.configuration.windowConfiguration.windowingMode = TOUCH_FIRST_DISPLAY_WINDOWING_MODE
 
+        organizer.activateDesk(wct, desk.deskRoot.deskId)
         organizer.deactivateDesk(wct, desk.deskRoot.deskId)
 
         assertThat(
                 wct.changes.any { change ->
-                    change.key == desk.deskRoot.token.asBinder() &&
+                    change.key == tda.token.asBinder() &&
                         (change.value.changeMask and Change.CHANGE_IS_TASK_MOVE_ALLOWED != 0) &&
                         !change.value.isTaskMoveAllowed
                 }
             )
             .isTrue()
+    }
+
+    @Test
+    fun deactivateDesk_keepsTaskMoveAllowedStateForDesktopFirst() = runTest {
+        val wct = WindowContainerTransaction()
+        val desk = createDeskSuspending()
+        val tda = mockTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)!!
+        tda.configuration.windowConfiguration.windowingMode = DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
+
+        organizer.activateDesk(wct, desk.deskRoot.deskId)
+        organizer.deactivateDesk(wct, desk.deskRoot.deskId)
+
+        assertThat(
+                wct.changes.any { change ->
+                    change.key == tda.token.asBinder() &&
+                        change.value.changeMask and Change.CHANGE_IS_TASK_MOVE_ALLOWED != 0
+                }
+            )
+            .isFalse()
     }
 
     @Test

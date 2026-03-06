@@ -89,6 +89,7 @@ constructor(
     private lateinit var mDialogFooter: ViewGroup
     private lateinit var mStopButton: Button
     private lateinit var mWarningSection: ViewGroup
+    private lateinit var mWarningTextView: TextView
     private lateinit var mWarningFixButton: Button
     private var mDismissing = false
     private var currentDialog: SystemUIDialog? = null
@@ -148,6 +149,7 @@ constructor(
         mDoneButton = mDialogView.requireViewById(R.id.done)
         mStopButton = mDialogView.requireViewById(R.id.stop)
         mWarningSection = mDialogView.requireViewById(R.id.warning_section)
+        mWarningTextView = mDialogView.requireViewById(R.id.warning_text)
         mWarningFixButton = mDialogView.requireViewById(R.id.warning_fix_button)
 
         updateAppResourceIcon()
@@ -423,11 +425,17 @@ constructor(
         mContext.resources.configuration.screenHeightDp <= SMALL_SCREEN_HEIGHT_DP
 
     private fun refreshWarningSection() {
-        if (mMediaSwitchingController.getMissingPermissionsResolveIntent() == null) {
+        val warningInfo = mMediaSwitchingController.getMissingPermissionsWarning()
+        if (warningInfo == null) {
             mWarningSection.visibility = View.GONE
             return
         }
         mWarningSection.visibility = View.VISIBLE
+        val appName = warningInfo.appName
+        mWarningTextView.text =
+            mContext.getString(R.string.media_output_dialog_missing_permissions_warning, appName)
+        mWarningFixButton.text =
+            mContext.getString(R.string.media_output_dialog_warning_button_fix, appName)
         mWarningFixButton.setOnClickListener {
             mMediaSwitchingController.tryToLaunchMissingPermissionsResolveIntent()
         }

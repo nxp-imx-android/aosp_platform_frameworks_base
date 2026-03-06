@@ -591,21 +591,20 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
 
     @Test
     public void testSetIsTaskMoveAllowed() {
-        final Task task = createTask(mDisplayContent);
-        assertFalse(task.getIsTaskMoveAllowed());
+        final TaskDisplayArea tda = mDisplayContent.getDefaultTaskDisplayArea();
 
         WindowContainerTransaction wct = new WindowContainerTransaction();
-        WindowContainerToken token = task.getTaskInfo().token;
+        WindowContainerToken token = tda.mRemoteToken.toWindowContainerToken();
         wct.setIsTaskMoveAllowed(token, true /* isTaskMoveAllowed */);
         applyTransaction(wct);
 
-        assertTrue(task.getIsTaskMoveAllowed());
+        assertTrue(tda.getIsTaskMoveAllowed());
 
         wct = new WindowContainerTransaction();
         wct.setIsTaskMoveAllowed(token, false /* isTaskMoveAllowed */);
         applyTransaction(wct);
 
-        assertFalse(task.getIsTaskMoveAllowed());
+        assertFalse(tda.getIsTaskMoveAllowed());
     }
 
     @Test

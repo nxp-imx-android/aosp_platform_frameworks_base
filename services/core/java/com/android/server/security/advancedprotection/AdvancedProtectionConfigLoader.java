@@ -23,7 +23,7 @@ import android.security.advancedprotection.AdvancedProtectionManager;
 import android.util.ArraySet;
 
 // config parser and classes are automatically generated based on advanced-protection-config.xsd
-import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
+import com.android.internal.pm.pkg.component.AconfigFlags;
 import com.android.server.security.advancedprotection.config.AdvancedProtectionConfig;
 import com.android.server.security.advancedprotection.config.Protections;
 import com.android.server.security.advancedprotection.config.Protections.Protection;
@@ -129,7 +129,7 @@ public class AdvancedProtectionConfigLoader {
             negated = true;
             featureFlag = featureFlag.substring(1).strip();
         }
-        Boolean featureFlagValue = ParsingPackageUtils.getAconfigFlags().getFlagValue(featureFlag);
+        Boolean featureFlagValue = AconfigFlags.getInstance().getFlagValue(featureFlag);
         if (featureFlagValue == null) {
             throw new IllegalArgumentException("Invalid feature flag: " + featureFlag);
         }

@@ -21,11 +21,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.MusicNote
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -37,6 +32,10 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.android.systemui.common.shared.model.ContentDescription
+import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.shared.model.Text
+import com.android.systemui.headline.ui.preview.R
 import com.android.systemui.headline.ui.viewmodel.FakeHeadlineItem
 import com.android.systemui.headline.ui.viewmodel.FakeHeadlineViewModel
 import com.android.systemui.headline.ui.viewmodel.HeadlineItem
@@ -154,14 +153,21 @@ private fun rememberListWithIconAndTextItem(): List<HeadlineItem> {
                 FakeHeadlineItem(
                     "icons",
                     listOf(
-                        HeadlineItemContent.Icon(Icons.Default.Timer, contentDescription = null),
-                        HeadlineItemContent.Text("4:42"),
+                        HeadlineItemContent.IconItem(
+                            Icon.Resource(
+                                R.drawable.directions_car,
+                                ContentDescription.Loaded(null),
+                            )
+                        ),
+                        HeadlineItemContent.TextItem(Text.Loaded("4:42")),
                     ),
                     listOf(
-                        HeadlineItemContent.Text("3 min"),
-                        HeadlineItemContent.Icon(
-                            Icons.Default.DirectionsCar,
-                            contentDescription = null,
+                        HeadlineItemContent.TextItem(Text.Loaded("3 min")),
+                        HeadlineItemContent.IconItem(
+                            Icon.Resource(
+                                R.drawable.directions_car,
+                                ContentDescription.Loaded(null),
+                            )
                         ),
                     ),
                 )
@@ -176,12 +182,16 @@ private fun rememberListWithIconOnlyItem(): List<HeadlineItem> {
         buildList {
             val icons =
                 listOf(
-                        Icons.Default.Timer,
-                        Icons.Default.MusicNote,
-                        Icons.Default.Phone,
-                        Icons.Default.DirectionsCar,
+                        R.drawable.timer,
+                        R.drawable.music_note,
+                        R.drawable.phone,
+                        R.drawable.directions_car,
                     )
-                    .map { HeadlineItemContent.Icon(it, contentDescription = null) }
+                    .map {
+                        HeadlineItemContent.IconItem(
+                            Icon.Resource(it, ContentDescription.Loaded(null))
+                        )
+                    }
             add(FakeHeadlineItem("icons", icons.take(2), icons.takeLast(2)))
         }
     }
@@ -193,8 +203,8 @@ private fun rememberListWithTextOnlyItem(): List<FakeHeadlineItem> {
         listOf(
             FakeHeadlineItem(
                 "texts",
-                listOf("1", "2", "3").map { HeadlineItemContent.Text(it) },
-                listOf("c", "b", "a").map { HeadlineItemContent.Text(it) },
+                listOf("1", "2", "3").map { HeadlineItemContent.TextItem(Text.Loaded(it)) },
+                listOf("c", "b", "a").map { HeadlineItemContent.TextItem(Text.Loaded(it)) },
             )
         )
     }
@@ -208,7 +218,11 @@ private fun rememberListWithLongItem(): List<HeadlineItem> {
                 FakeHeadlineItem(
                     key = "long",
                     startContents =
-                        listOf(HeadlineItemContent.Text("A very very very loooooong text")),
+                        listOf(
+                            HeadlineItemContent.TextItem(
+                                Text.Loaded("A very very very loooooong text")
+                            )
+                        ),
                     endContents = emptyList(),
                 )
             )

@@ -176,12 +176,9 @@ fun cascadeWindowStepped(
     isRememberedBounds: Boolean,
     res: Resources,
 ) {
-    val candidatePos = frame.getDesktopTaskPosition(dest)
-    if (candidatePos == Maximized || candidatePos == LeftSnapped || candidatePos == RightSnapped) {
-        // No need to cascade if the destination bounds is maximized or snapped.
+    if (DesktopModeLaunchBoundsUtils.isMaximizedOrSnapped(frame, dest)) {
         return
     }
-
     val boundsToCascade =
         if (isRememberedBounds) {
             dest

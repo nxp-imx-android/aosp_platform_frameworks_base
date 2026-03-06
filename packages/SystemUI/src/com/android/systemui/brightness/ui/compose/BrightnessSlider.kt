@@ -271,10 +271,6 @@ fun BrightnessSlider(
                 sliderState = sliderState,
                 modifier =
                     Modifier.motionTestValues {
-                            (iconActiveAlphaAnimatable.isRunning ||
-                                iconInactiveAlphaAnimatable.isRunning) exportAs
-                                BrightnessSliderMotionTestKeys.AnimatingIcon
-
                             iconActiveAlphaAnimatable.value exportAs
                                 BrightnessSliderMotionTestKeys.ActiveIconAlpha
                             iconInactiveAlphaAnimatable.value exportAs
@@ -503,7 +499,6 @@ private suspend fun Animatable<Float, AnimationVector1D>.disappear() =
 
 @VisibleForTesting
 object BrightnessSliderMotionTestKeys {
-    val AnimatingIcon = MotionTestValueKey<Boolean>("animatingIcon")
     val ActiveIconAlpha = MotionTestValueKey<Float>("activeIconAlpha")
     val InactiveIconAlpha = MotionTestValueKey<Float>("inactiveIconAlpha")
 }

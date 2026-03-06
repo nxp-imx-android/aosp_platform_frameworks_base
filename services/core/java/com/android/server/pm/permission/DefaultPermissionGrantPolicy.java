@@ -66,7 +66,7 @@ import android.util.SparseArray;
 import android.util.Xml;
 
 import com.android.internal.R;
-import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
+import com.android.internal.pm.pkg.component.AconfigFlags;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.XmlUtils;
 import com.android.modules.utils.TypedXmlPullParser;
@@ -1682,7 +1682,7 @@ final class DefaultPermissionGrantPolicy {
 
                 // If the trunkstable feature flag is disabled for this
                 // exception, skip the tag.
-                if (ParsingPackageUtils.getAconfigFlags().skipCurrentElement(
+                if (AconfigFlags.getInstance().skipCurrentElement(
                         /* pkg= */ null, parser, /* allowNoNamespace= */ true)) {
                     XmlUtils.skipCurrentTag(parser);
                     continue;

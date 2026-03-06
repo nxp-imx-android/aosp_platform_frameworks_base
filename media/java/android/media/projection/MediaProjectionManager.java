@@ -43,6 +43,7 @@ import android.util.Log;
 import android.view.ContentRecordingSession;
 import android.view.Surface;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.media.projection.flags.Flags;
 
 import java.util.Map;
@@ -121,9 +122,10 @@ public final class MediaProjectionManager {
     /** @hide */
     public static final int TYPE_PRESENTATION = 2;
 
-    private Context mContext;
-    private Map<Callback, CallbackDelegate> mCallbacks;
-    private IMediaProjectionManager mService;
+    private final Context mContext;
+    @GuardedBy("mCallbacks")
+    private final Map<Callback, CallbackDelegate> mCallbacks;
+    private final IMediaProjectionManager mService;
 
     /** @hide */
     public MediaProjectionManager(Context context) {
@@ -360,7 +362,9 @@ public final class MediaProjectionManager {
             throw new IllegalArgumentException("callback must not be null");
         }
         CallbackDelegate delegate = new CallbackDelegate(callback, handler);
-        mCallbacks.put(callback, delegate);
+        synchronized (mCallbacks) {
+            mCallbacks.put(callback, delegate);
+        }
         try {
             mService.addCallback(delegate);
         } catch (RemoteException e) {
@@ -377,7 +381,10 @@ public final class MediaProjectionManager {
             Log.w(TAG, "ContentRecording: cannot remove null callback");
             throw new IllegalArgumentException("callback must not be null");
         }
-        CallbackDelegate delegate = mCallbacks.remove(callback);
+        CallbackDelegate delegate;
+        synchronized (mCallbacks) {
+            delegate = mCallbacks.remove(callback);
+        }
         try {
             if (delegate != null) {
                 mService.removeCallback(delegate);

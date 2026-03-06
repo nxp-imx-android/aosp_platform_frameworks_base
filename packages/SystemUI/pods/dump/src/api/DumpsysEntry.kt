@@ -32,27 +32,25 @@ import com.android.systemui.log.table.TableLogBuffer
  * Individual consumers can request these participants in a list via the relevant get* methods on
  * [DumpManager]
  */
-sealed interface DumpsysEntry {
-    val name: String
-    val priority: DumpPriority
+public sealed interface DumpsysEntry {
+    public val name: String
+    public val priority: DumpPriority
 
-    data class DumpableEntry(
-        val dumpable: Dumpable,
+    public data class DumpableEntry(
+        public val dumpable: Dumpable,
         override val name: String,
         override val priority: DumpPriority,
     ) : DumpsysEntry
 
-    data class LogBufferEntry(
-        val buffer: LogBuffer,
-        override val name: String,
-    ) : DumpsysEntry {
+    public data class LogBufferEntry(public val buffer: LogBuffer, override val name: String) :
+        DumpsysEntry {
         // All buffers must be priority NORMAL, not CRITICAL, because they often contain a lot of
         // data.
         override val priority: DumpPriority = DumpPriority.NORMAL
     }
 
-    data class TableLogBufferEntry(
-        val table: TableLogBuffer,
+    public data class TableLogBufferEntry(
+        public val table: TableLogBuffer,
         override val name: String,
     ) : DumpsysEntry {
         // All buffers must be priority NORMAL, not CRITICAL, because they often contain a lot of

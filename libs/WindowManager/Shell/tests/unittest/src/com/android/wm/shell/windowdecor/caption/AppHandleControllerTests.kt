@@ -35,13 +35,16 @@ import com.android.wm.shell.apptoweb.AppToWebRepositoryImpl
 import com.android.wm.shell.apptoweb.AssistContentRequester
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiInstanceHelper
+import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.recents.PerDisplayRecentsTransitionStateListener
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.HandleMenu
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
@@ -93,6 +96,9 @@ class AppHandleControllerTests : ShellTestCase() {
     private val mockViewHostSupplier = mock<WindowDecorViewHostSupplier<WindowDecorViewHost>>()
     private val mockAssistContentRequester = mock<AssistContentRequester>()
     private val mockAssistContent = mock<AssistContent>()
+    private val mockFocusTransitionObserver = mock<FocusTransitionObserver>()
+    private val mockPinnedLayerController = mock<PinnedLayerController>()
+    private val mockDesktopTasksController = mock<DesktopTasksController>()
 
     private val testDispatcher = StandardTestDispatcher(TestCoroutineScheduler())
     private val testHandler = TestHandler(Looper.getMainLooper())
@@ -216,6 +222,9 @@ class AppHandleControllerTests : ShellTestCase() {
             appToWebRepository = appToWebRepository,
             handleMenuFactory = mockHandleMenuFactory,
             recentsTransitionStateListener = recentsTransitionStateListener,
+            focusTransitionObserver = mockFocusTransitionObserver,
+            pinnedLayerController = mockPinnedLayerController,
+            desktopTasksController = mockDesktopTasksController,
         )
 
     private fun AppHandleController.relayout(taskInfo: RunningTaskInfo) {

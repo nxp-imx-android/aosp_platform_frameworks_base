@@ -321,6 +321,7 @@ public class SystemServicesTestRule implements TestRule {
         // PackageManagerInternal
         final PackageManagerInternal packageManagerInternal = mock(PackageManagerInternal.class);
         LocalServices.addService(PackageManagerInternal.class, packageManagerInternal);
+        doReturn(true).when(packageManagerInternal).isSameApp(anyString(), anyInt(), anyInt());
         doReturn(false).when(packageManagerInternal).isPermissionsReviewRequired(
                 anyString(), anyInt());
         doReturn(null).when(packageManagerInternal).getDefaultHomeActivity(anyInt());

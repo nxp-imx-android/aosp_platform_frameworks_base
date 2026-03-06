@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.junit.Assert.fail;
 
+import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.FontListParser;
 import android.graphics.fonts.FallbackFontUpdateRequest;
@@ -66,6 +67,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -1323,6 +1325,66 @@ public final class UpdatableFontDirTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_INSERT_FONT_FAMILY)
+    public void getSystemFontConfig_fallbackFamilies_trimFallbackFontsOnTooManyFallbacks()
+            throws Exception {
+        UpdatableFontDir dir = createNewUpdateDir();
+        dir.update(
+                Collections.singletonList(newFontUpdateRequest("foo.ttf,10,foo", GOOD_SIGNATURE)));
+
+        for (int i = 0; i < 10; i++) {
+            FontFamilyUpdateRequest.Font font =
+                    new FontFamilyUpdateRequest.Font.Builder("foo", new FontStyle()).build();
+            FontUpdateRequest request =
+                    new FontUpdateRequest(
+                            LocaleList.forLanguageTags("en-US"),
+                            Collections.singletonList(font),
+                            i + 1);
+            dir.updateFontFallbacks(Collections.singletonList(request));
+        }
+        // Verify that the fallback is added correctly.
+        FontConfig fontConfig = dir.getSystemFontConfig();
+        assertThat(fontConfig.getFontFamilies().size()).isLessThan(254);
+        assertThat(fontConfig.getFontFamilies().stream().filter(f -> f.getPriority() >= 1))
+                .hasSize(10);
+
+        // Simulate that the number of the system fallback fonts increased after OTA.
+        Function<Map<String, File>, FontConfig> configSupplier =
+                (map) -> {
+                    ArrayList<FontConfig.FontFamily> families = new ArrayList<>();
+                    for (int i = 0; i < 186; i++) {
+                        families.add(newFamily("en-US", newFont("system_font_" + i)));
+                    }
+                    return new FontConfig(
+                            families,
+                            Collections.emptyList(),
+                            Collections.emptyList(),
+                            Collections.emptyList(),
+                            0,
+                            0);
+                };
+        UpdatableFontDir dirAfterUpdate =
+                new UpdatableFontDir(
+                        mUpdatableFontFilesDir,
+                        mParser,
+                        mFakeFsverityUtil,
+                        mConfigFile,
+                        mCurrentTimeSupplier,
+                        configSupplier);
+        dirAfterUpdate.loadFontFileMap();
+        // Verify that the fallback is trimmed.
+        FontConfig fontConfigAfterUpdate = dirAfterUpdate.getSystemFontConfig();
+        // 254 - 64 (custom fallback)
+        assertThat(fontConfigAfterUpdate.getFontFamilies()).hasSize(190);
+        List<FontConfig.FontFamily> prioritizedFallbackFamilies =
+                fontConfigAfterUpdate.getFontFamilies().stream()
+                        .filter(f -> f.getPriority() >= 1)
+                        .toList();
+        // Keep 4 (190 - 186)
+        assertThat(prioritizedFallbackFamilies).hasSize(4);
+    }
+
+    @Test
     public void deleteAllFiles() throws Exception {
         FakeFontFileParser parser = new FakeFontFileParser();
         FakeFsverityUtil fakeFsverityUtil = new FakeFsverityUtil();
@@ -2268,6 +2330,68 @@ public final class UpdatableFontDirTest {
     }
 
     @Test
+    public void testUpdateFontFallbacks_errorOnTooManyFallbacks() throws Exception {
+        Function<Map<String, File>, FontConfig> configSupplier =
+                (map) -> {
+                    FontConfig.FontFamily fooFamily = newFamily(null, newFont("foo"));
+                    FontConfig.FontFamily barFamily = newFamily(null, newFont("bar"));
+                    FontConfig.NamedFamilyList namedFamilyList =
+                            new FontConfig.NamedFamilyList(
+                                    Arrays.asList(fooFamily, barFamily), "sans-serif", null);
+                    FontConfig.FontFamily fallbackFamily = newFamily("en-US", newFont("fallback"));
+                    FontConfig.FontFamily customFallbackFamily =
+                            newFamily("en-US", newFont("fallback2"));
+                    FontConfig.Customization.LocaleFallback localeFallback =
+                            new FontConfig.Customization.LocaleFallback(
+                                    Locale.US,
+                                    FontConfig.Customization.LocaleFallback.OPERATION_PREPEND,
+                                    customFallbackFamily);
+                    return new FontConfig(
+                            Collections.singletonList(fallbackFamily),
+                            Collections.emptyList(),
+                            Collections.singletonList(namedFamilyList),
+                            Collections.singletonList(localeFallback),
+                            0,
+                            1);
+                };
+        UpdatableFontDir dir =
+                new UpdatableFontDir(
+                        mUpdatableFontFilesDir,
+                        mParser,
+                        mFakeFsverityUtil,
+                        mConfigFile,
+                        mCurrentTimeSupplier,
+                        configSupplier);
+
+        dir.update(
+                Collections.singletonList(
+                        newFontUpdateRequest("emoji1.ttf,1,emoji1", GOOD_SIGNATURE)));
+        FontFamilyUpdateRequest.Font font =
+                new FontFamilyUpdateRequest.Font.Builder("emoji1", new FontStyle()).build();
+        // 254 (max) - 64 (custom fallback) - 2 (named) - 1 (fallback) - 1 (locale fallback)
+        int maxCount = 186;
+        for (int i = 0; i < maxCount; i++) {
+            FontUpdateRequest request =
+                    new FontUpdateRequest(
+                            LocaleList.forLanguageTags("und-Zsye"),
+                            Collections.singletonList(font),
+                            i + 1);
+            dir.updateFontFallbacks(Collections.singletonList(request));
+        }
+        FontUpdateRequest request =
+                new FontUpdateRequest(
+                        LocaleList.forLanguageTags("und-Zsye"),
+                        Collections.singletonList(font),
+                        maxCount + 1);
+        try {
+            dir.updateFontFallbacks(Collections.singletonList(request));
+            fail("Expected SystemFontException for too many fallbacks");
+        } catch (FontManagerService.SystemFontException e) {
+            assertThat(e.getErrorCode()).isEqualTo(FontManager.RESULT_ERROR_INVALID_ARGUMENT);
+        }
+    }
+
+    @Test
     public void testUpdateFontFallbacks_rollbackOnFailure() throws Exception {
         UpdatableFontDir dir = createNewUpdateDir();
         dir.update(
@@ -2401,5 +2525,24 @@ public final class UpdatableFontDirTest {
         assertThat(fontConfig.getNamedFamilyLists().stream()
                 .map(FontConfig.NamedFamilyList::getName)
                 .collect(Collectors.toSet())).contains(familyName);
+    }
+
+    private FontConfig.Font newFont(String postScriptName) {
+        return new FontConfig.Font(
+                new File(mPreinstalledFontDirs.get(0), postScriptName + ".ttf"),
+                null,
+                postScriptName,
+                new FontStyle(400, FontStyle.FONT_SLANT_UPRIGHT),
+                0,
+                null,
+                null,
+                FontConfig.Font.VAR_TYPE_AXES_NONE);
+    }
+
+    private FontConfig.FontFamily newFamily(@Nullable String languages, FontConfig.Font... fonts) {
+        return new FontConfig.FontFamily(
+                Arrays.asList(fonts),
+                languages != null ? LocaleList.forLanguageTags(languages) : null,
+                FontConfig.FontFamily.VARIANT_DEFAULT);
     }
 }
