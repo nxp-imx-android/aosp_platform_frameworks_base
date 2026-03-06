@@ -28,6 +28,9 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.viewModel
+import com.android.systemui.res.R
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationScrollViewModel
 import com.android.systemui.util.kotlin.FlowDumperImpl
@@ -39,7 +42,7 @@ import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 
-/** Binds the [NotificationScrollView]. */
+/** Binds the [NotificationScrollView], SceneContainer only. */
 @SysUISingleton
 class NotificationScrollViewBinder
 @Inject
@@ -61,10 +64,13 @@ constructor(
     }
 
     fun bindWhileAttached(): DisposableHandle {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
+            return DisposableHandle {}
+        }
         return view.asView().repeatWhenAttached(androidUiDispatcher) { bind() }
     }
 
-    suspend fun bind(): Nothing =
+    private suspend fun bind(): Nothing =
         view.asView().viewModel(
             traceName = "NotificationScrollViewBinder",
             minWindowLifecycleState = WindowLifecycleState.ATTACHED,
