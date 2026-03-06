@@ -30,6 +30,6 @@ class TimeOfDayTest {
 
     @Test
     fun getDescription_returnsDateFormatDescription() {
-        assertThat(TimeOfDay().getDescription(context)).contains("24-hour format HH:mm")
+        assertThat(TimeOfDay.getDescription(context)).contains("24-hour format HH:mm")
     }
 }

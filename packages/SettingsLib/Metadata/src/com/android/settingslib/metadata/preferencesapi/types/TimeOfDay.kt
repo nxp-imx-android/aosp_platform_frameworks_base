@@ -21,7 +21,7 @@ import com.android.settingslib.metadata.R
 
 // TODO(b/489053762): Add validation (possibly supporting ISO-8601, see LocalTime.parse).
 /** A time of day defined by the 24-hour format HH:mm. */
-class TimeOfDay() : ApiType<String> {
+object TimeOfDay : ApiType<String> {
     override fun getType(): Class<String> = String::class.java
 
     override fun getDescription(context: Context): String =
