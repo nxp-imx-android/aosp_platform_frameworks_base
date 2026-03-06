@@ -162,12 +162,18 @@ constructor(
             .pairwise(initialValue = OngoingActivityChipModel.Inactive())
             .map { (old, new) ->
                 if (
-                    old is OngoingActivityChipModel.Active &&
-                        old.content is OngoingActivityChipModel.Content.Timer &&
-                        new is OngoingActivityChipModel.Active &&
-                        new.content is OngoingActivityChipModel.Content.Timer
+                    old is OngoingActivityChipModel.Active && new is OngoingActivityChipModel.Active
                 ) {
-                    new.copy(content = new.content.copy(value = old.content.value))
+                    val oldContent = old.content
+                    val newContent = new.content
+                    if (
+                        oldContent is OngoingActivityChipModel.Content.Timer &&
+                            newContent is OngoingActivityChipModel.Content.Timer
+                    ) {
+                        new.copy(content = newContent.copy(value = oldContent.value))
+                    } else {
+                        new
+                    }
                 } else {
                     new
                 }

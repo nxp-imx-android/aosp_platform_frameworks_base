@@ -86,6 +86,7 @@ java_library {
         "com.android.systemui.notifications.content.ui_testlib",
         "com.android.systemui.notifications.intelligence.rules_testlib",
         "com.android.systemui.notifications.intelligence.rules.ui_testlib",
+        "com.android.systemui.statusbar.chips.ui_testlib",
     ],
 
     visibility: ["//frameworks/base/packages/SystemUI:__pkg__"],
