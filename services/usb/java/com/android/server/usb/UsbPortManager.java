@@ -44,8 +44,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.hardware.usb.IBc12TypeListener;
 import android.hardware.usb.DisplayPortAltModeInfo;
+import android.hardware.usb.IBc12TypeListener;
 import android.hardware.usb.IDisplayPortAltModeInfoListener;
 import android.hardware.usb.IPowerProfileInfoListener;
 import android.hardware.usb.IUsbOperationInternal;
@@ -82,7 +82,6 @@ import com.android.server.usb.hal.port.UsbPortHalInstance;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
@@ -1510,11 +1509,24 @@ public class UsbPortManager implements IBinder.DeathRecipient {
 
     private void sendDpAltModeCallbackLocked(PortInfo portInfo, IndentingPrintWriter pw) {
         String portId = portInfo.mUsbPort.getId();
+        DisplayPortAltModeInfo info = portInfo.mUsbPortStatus.getDisplayPortAltModeInfo();
+
+        if (portId == null) {
+            logAndPrint(Log.ERROR, pw, "sendDpAltModeCallbackLocked attempted to make callback "
+                    + "to null portId");
+            return;
+        }
+
+        if (info == null) {
+            logAndPrint(Log.WARN, pw, "sendDpAltModeCallbackLocked attempted to send "
+                    + "null DisplayPortAltModeInfo to port " + portId);
+            return;
+        }
+
         synchronized (mDisplayPortListenerLock) {
             for (IDisplayPortAltModeInfoListener mListener : mDisplayPortListeners.values()) {
                 try {
-                    mListener.onDisplayPortAltModeInfoChanged(portId,
-                            portInfo.mUsbPortStatus.getDisplayPortAltModeInfo());
+                    mListener.onDisplayPortAltModeInfoChanged(portId, info);
                 } catch (RemoteException e) {
                     logAndPrintException(pw, "Caught RemoteException at "
                             + "sendDpAltModeCallbackLocked", e);
