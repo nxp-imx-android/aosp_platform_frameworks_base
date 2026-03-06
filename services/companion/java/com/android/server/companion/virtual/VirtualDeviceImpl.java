@@ -685,9 +685,9 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         return mAssociationInfo == null ? mParams.getName() : mAssociationInfo.getDisplayName();
     }
 
-    @Nullable
+    @NonNull
     String getDeviceProfile() {
-        return mAssociationInfo == null ? null : mAssociationInfo.getDeviceProfile();
+        return mDeviceProfile;
     }
 
     /** Returns the public representation of the device. */
@@ -1255,7 +1255,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         checkCallerIsDeviceOwner();
         if ((uiMode & Configuration.UI_MODE_TYPE_MASK) == Configuration.UI_MODE_TYPE_CAR
                 && !AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION.equals(
-                        getDeviceProfile())) {
+                        mDeviceProfile)) {
             throw new SecurityException("Setting car UI mode requires "
                     + AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION);
         }
@@ -1390,11 +1390,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         }
 
         // If the VDM owner app targets B or earlier, we rely on the role instead of the permission.
-        String deviceProfile = getDeviceProfile();
-        if (deviceProfile == null) {
-            return false;
-        }
-        return DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS.contains(deviceProfile);
+        return DEVICE_PROFILES_ALLOWING_MIRROR_DISPLAYS.contains(mDeviceProfile);
     }
 
     // MODIFY_AUDIO_ROUTING is used, though not mandated
