@@ -1138,16 +1138,6 @@ flag {
 }
 
 flag {
-    name: "repository_based_persistence"
-    namespace: "lse_desktop_experience"
-    description: "Persists the whole repository instead of just persisting a single desk per event"
-    bug: "425916459"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "repository_based_persistence_bg_thread"
     namespace: "lse_desktop_experience"
     description: "Enables repository based persistence to run on background thread."
