@@ -20,7 +20,6 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
-import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_AUTHENTICATION_PROMPT_REQUESTED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_EMPTY;
 import static android.companion.virtual.computercontrol.ComputerControlSession.CLOSE_REASON_SESSION_TIMED_OUT;
@@ -33,7 +32,6 @@ import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityOptions;
 import android.app.AppOpsManager;
-import android.app.IApplicationThread;
 import android.app.KeyguardManager;
 import android.app.PendingIntent;
 import android.companion.virtual.VirtualDeviceManager;
@@ -41,12 +39,10 @@ import android.companion.virtual.VirtualDeviceManager.VirtualDevice;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.audio.VirtualAudioDevice;
 import android.companion.virtual.computercontrol.ComputerControlSession;
-import android.companion.virtual.computercontrol.ComputerControlSessionParams;
 import android.companion.virtual.computercontrol.IComputerControlLifecycleCallback;
 import android.companion.virtual.computercontrol.IComputerControlSession;
 import android.companion.virtual.computercontrol.IInteractiveMirror;
 import android.companion.virtual.computercontrol.LifecycleState;
-import android.content.AttributionSource;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -169,14 +165,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final String mTraceTrack = "ComputerControlSessionImpl#"
             + System.identityHashCode(this);
 
-    private final IBinder mAppToken;
-    private final ComputerControlSessionParams mParams;
-    private final IApplicationThread mAppThread;
-    private final String mAttributionTag;
-
-    private final UserHandle mOwnerUser;
-    private final String mOwnerPackageName;
-    private final Context mOwnerContext;
+    private final ComputerControlSessionRequest mRequest;
 
     private final Consumer<ComputerControlSessionImpl> mOnClosedListener;
     private final VirtualDevice mVirtualDevice;
@@ -193,19 +182,20 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     private final ComputerControlAudioInjector mAudioInjector;
 
     @Override
-    protected void dump(@androidx.annotation.NonNull FileDescriptor fd,
-            @androidx.annotation.NonNull PrintWriter fout,
-            @androidx.annotation.Nullable String[] args) {
+    protected void dump(@NonNull FileDescriptor fd, @NonNull PrintWriter fout,
+            @Nullable String[] args) {
         String indent = "        ";
         fout.print(indent);
 
         fout.print("ComupterControlSession {");
         fout.print(" mDeviceId=" + mVirtualDeviceId);
-        fout.print(" mName=" + mParams.getName());
-        fout.print(" mTargetComputerControlVersion=" + mParams.getTargetComputerControlVersion());
-        fout.print(" mOwnerPackageName=" + mOwnerPackageName);
-        fout.print(" mTargetPackageNames=" + mParams.getTargetPackageNames());
-        fout.print(" mAppInteractionAttribution=" + mParams.getAppInteractionAttribution());
+        fout.print(" mName=" + getName());
+        fout.print(" mTargetComputerControlVersion="
+                + mRequest.params().getTargetComputerControlVersion());
+        fout.print(" mOwnerPackageName=" + mRequest.ownerPackageName());
+        fout.print(" mTargetPackageNames=" + mRequest.params().getTargetPackageNames());
+        fout.print(" mAppInteractionAttribution="
+                + mRequest.params().getAppInteractionAttribution());
         fout.print("}");
         fout.print("\n");
     }
@@ -214,9 +204,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
 
     /** Executor for the shared FgThread. */
     private final Executor mFgThreadExecutor;
+    private final AppOpsManager mOwnerAppOpsManager;
 
-    private final PackageManager mOwnerPackageManager;
-    private final AppOpsManager mAppOpsManager;
     private final WindowManagerInternal mWindowManagerInternal;
     private final InputMethodManagerInternal mInputMethodManagerInternal;
     private final UserManagerInternal mUserManagerInternal;
@@ -337,15 +326,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             };
 
     ComputerControlSessionImpl(Context context,
-            ComputerControlAllowlistController allowlistController, IBinder appToken,
-            ComputerControlSessionParams params, IApplicationThread appThread,
-            AttributionSource attributionSource,
+            ComputerControlAllowlistController allowlistController,
+            ComputerControlSessionRequest request,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
             Consumer<ComputerControlSessionImpl> onClosedListener,
             @Nullable String referenceDisplayAddress) {
         this(context, DisplayManagerGlobal.getInstance(), allowlistController,
                 ViewConfiguration.get(context), DEFAULT_GLOBAL_SESSION_TIMEOUT_DURATION_MS,
-                SurfaceControl.Transaction::new, appToken, params, appThread, attributionSource,
+                SurfaceControl.Transaction::new, request,
                 virtualDeviceFactory, onClosedListener, FgThread.getExecutor(),
                 referenceDisplayAddress, Executors.newSingleThreadScheduledExecutor());
     }
@@ -354,9 +342,8 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     ComputerControlSessionImpl(Context context, DisplayManagerGlobal displayManagerGlobal,
             ComputerControlAllowlistController allowlistController,
             ViewConfiguration viewConfiguration, long globalSessionTimeoutDurationMs,
-            Supplier<SurfaceControl.Transaction> transactionSupplier, IBinder appToken,
-            ComputerControlSessionParams params, IApplicationThread appThread,
-            AttributionSource attributionSource,
+            Supplier<SurfaceControl.Transaction> transactionSupplier,
+            ComputerControlSessionRequest request,
             ComputerControlSessionProcessor.VirtualDeviceFactory virtualDeviceFactory,
             Consumer<ComputerControlSessionImpl> onClosedListener, Executor fgThreadExecutor,
             @Nullable String referenceDisplayAddress, ScheduledExecutorService scheduler) {
@@ -365,23 +352,15 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mViewConfiguration = viewConfiguration;
         mGlobalSessionTimeoutDurationMs = globalSessionTimeoutDurationMs;
         mTransactionSupplier = transactionSupplier;
-        mAppToken = appToken;
-        mParams = params;
         mAllowlistController = allowlistController;
-        mPreviewIntent = params.getPreviewIntent();
-        mAppThread = appThread;
-        mAttributionTag = attributionSource.getAttributionTag();
+        mRequest = request;
+        mPreviewIntent = request.params().getPreviewIntent();
         mReferenceDisplayAddress = referenceDisplayAddress;
         mScheduler = scheduler;
         mLifecycle = new SessionLifecycle(mScheduler, mStateTransitions);
 
-        mOwnerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
-        mOwnerContext = context.createContextAsUser(mOwnerUser, /* flags = */ 0);
-        mOwnerPackageName = attributionSource.getPackageName();
-        mOwnerPackageManager = mOwnerContext.getPackageManager();
-
-        mIsTestSession = mAllowlistController.isTestAgent(attributionSource.getUid(),
-                mOwnerPackageName, mOwnerPackageManager);
+        mIsTestSession = mAllowlistController.isTestAgent(request.ownerUid(),
+                request.ownerPackageName(), request.ownerPackageManager());
 
         mOnClosedListener = onClosedListener;
         mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
@@ -393,7 +372,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mInputManagerInternal = LocalServices.getService(InputManagerInternal.class);
         mDisplayManagerGlobal = displayManagerGlobal;
         mStatsController = new ComputerControlStatsController(
-                context.getPackageManager(), attributionSource, params);
+                context.getPackageManager(), request.attributionSource(), request.params());
         if (android.app.appfunctions.flags.Flags.enableAppInteractionApi()) {
             mAppInteractionService = LocalServices.getService(AppInteractionService.class);
         } else {
@@ -401,18 +380,17 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
 
         // TODO(b/469400179): Consider using the display from the app's context instead.
-        mMainDisplayId = mUserManagerInternal.getMainDisplayAssignedToUser(
-                mOwnerUser.getIdentifier());
+        mMainDisplayId = mUserManagerInternal.getMainDisplayAssignedToUser(request.ownerUserId());
 
         // This assumes that {@link ComputerControlSessionParams#getTargetPackageNames()}
         // never contains any packageNames that the session owner should never be able to
         // launch. This is validated in {@link ComputerControlSessionProcessor} prior to
         // creating the session.
-        mAllowlistedPackages.addAll(mParams.getTargetPackageNames());
+        mAllowlistedPackages.addAll(request.params().getTargetPackageNames());
 
         final VirtualDeviceParams.Builder virtualDeviceParamsBuilder =
                 new VirtualDeviceParams.Builder()
-                    .setName(mParams.getName())
+                    .setName(getName())
                     .setLocalDeviceOnly(true)
                     .setDevicePolicy(POLICY_TYPE_BLOCKED_ACTIVITY, DEVICE_POLICY_CUSTOM)
                     .setDevicePolicy(POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS,
@@ -421,14 +399,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final VirtualDeviceParams virtualDeviceParams = virtualDeviceParamsBuilder.build();
 
         final VirtualDisplayConfig virtualDisplayConfig = createSessionDisplayConfig(
-                mParams.getName() + "-display", getTargetDisplayInfo());
+                getName() + "-display", getTargetDisplayInfo());
         final int displayWidth = virtualDisplayConfig.getWidth();
         final int displayHeight = virtualDisplayConfig.getHeight();
 
         VirtualDevice virtualDevice = null;
         try {
-            virtualDevice = virtualDeviceFactory.createVirtualDevice(mAppToken, attributionSource,
-                    virtualDeviceParams);
+            virtualDevice = virtualDeviceFactory.createVirtualDevice(
+                    request.appToken(), request.attributionSource(), virtualDeviceParams);
             mVirtualDevice = virtualDevice;
             mVirtualDeviceId = mVirtualDevice.getDeviceId();
             mVirtualDevice.addActivityListener(mScheduler, new ComputerControlActivityListener());
@@ -450,7 +428,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                     mVirtualDisplayId, WindowManager.DISPLAY_IME_POLICY_HIDE);
 
             final String inputDeviceNamePrefix =
-                    createInputDeviceNamePrefix(attributionSource.getPackageName());
+                    createInputDeviceNamePrefix(request.ownerPackageName());
 
             final String dpadName = inputDeviceNamePrefix + "-dpad";
             final VirtualDpadConfig virtualDpadConfig =
@@ -480,7 +458,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             mAudioCapture = new ComputerControlAudioCapture(virtualAudioDevice);
             mAudioCapture.startAudioCapture();
 
-            mAppToken.linkToDeath(this, 0);
+            request.appToken().linkToDeath(this, 0);
             startSessionCloseGlobalTimeout();
         } catch (RemoteException e) {
             if (virtualDevice != null) {
@@ -489,9 +467,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             throw e.rethrowFromSystemServer();
         }
 
-        mAppOpsManager = mOwnerContext.getSystemService(AppOpsManager.class);
-        mAppOpsManager.startWatchingMode(AppOpsManager.OP_COMPUTER_CONTROL, mOwnerPackageName,
-                this);
+        mOwnerAppOpsManager = request.ownerContext().getSystemService(AppOpsManager.class);
+        mOwnerAppOpsManager.startWatchingMode(AppOpsManager.OP_COMPUTER_CONTROL,
+                request.ownerPackageName(), this);
     }
 
     private DisplayInfo getTargetDisplayInfo() {
@@ -554,12 +532,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         return mVirtualDeviceId;
     }
 
+    @NonNull
     String getName() {
-        return mParams.getName();
+        return mRequest.name();
     }
 
+    @NonNull
     String getOwnerPackageName() {
-        return mOwnerPackageName;
+        return mRequest.ownerPackageName();
     }
 
     boolean isAutomatingPackage(@NonNull String packageName) {
@@ -575,12 +555,14 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
     }
 
+    @NonNull
     PackageManager getPackageManager() {
-        return mOwnerPackageManager;
+        return mRequest.ownerPackageManager();
     }
 
+    @Nullable
     KeyguardManager getKeyguardManager() {
-        return mOwnerContext.getSystemService(KeyguardManager.class);
+        return mRequest.ownerContext().getSystemService(KeyguardManager.class);
     }
 
     boolean isTestSession() {
@@ -649,8 +631,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         final Bundle options =
                 ActivityOptions.makeBasic().setLaunchDisplayId(mVirtualDisplayId).toBundle();
         Binder.withCleanCallingIdentity(() -> mActivityTaskManagerInternal.startActivityAsUser(
-                mAppThread, mOwnerPackageName, mAttributionTag, intent, null,
-                Intent.FLAG_ACTIVITY_NEW_TASK, options, mOwnerUser.getIdentifier()));
+                mRequest.appThread(), mRequest.ownerPackageName(),
+                mRequest.attributionSource().getAttributionTag(), intent, null,
+                Intent.FLAG_ACTIVITY_NEW_TASK, options, mRequest.ownerUserId()));
         mStatsController.onApplicationLaunched(packageName);
     }
 
@@ -763,14 +746,15 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     @Override
     public void onOpChanged(@NonNull String op, @NonNull String packageName, int userId) {
         if (!AppOpsManager.OPSTR_COMPUTER_CONTROL.equals(op)
-                || !Objects.equals(packageName, mOwnerPackageName)
-                || userId != mOwnerUser.getIdentifier()) {
+                || !Objects.equals(packageName, mRequest.ownerPackageName())
+                || userId != mRequest.ownerUserId()) {
             return;
         }
 
         try {
-            final int uid = mOwnerPackageManager.getPackageUidAsUser(packageName, userId);
-            final int mode = mAppOpsManager.checkOpNoThrow(op, uid, packageName);
+            final int uid =
+                    mRequest.ownerPackageManager().getPackageUidAsUser(packageName, userId);
+            final int mode = mOwnerAppOpsManager.checkOpNoThrow(op, uid, packageName);
             Slog.i(TAG, "onOpChanged: Found new mode " + mode + " for package " + packageName
                     + " for user id " + userId);
             if (mode == AppOpsManager.MODE_IGNORED) {
@@ -1080,10 +1064,10 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         mAudioInjector.stopAudioInjection();
         mAudioCapture.stopAudioCapture();
         mVirtualDevice.close(); // closes also the VirtualAudioDevice
-        mAppToken.unlinkToDeath(this, 0);
+        mRequest.appToken().unlinkToDeath(this, 0);
         removeAllInteractiveMirrorsOnSessionClose();
         mOnClosedListener.accept(this);
-        mAppOpsManager.stopWatchingMode(this);
+        mOwnerAppOpsManager.stopWatchingMode(this);
     }
 
     private void performSwipeStep(int fromX, int fromY, int toX, int toY, int step, int stepCount) {
@@ -1147,7 +1131,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
     }
 
     private String createInputDeviceNamePrefix(String packageName) {
-        final String prefix = packageName + ":" + mParams.getName();
+        final String prefix = packageName + ":" + getName();
 
         byte[] bytes = prefix.getBytes(StandardCharsets.UTF_8);
         if (bytes.length <= MAX_INPUT_DEVICE_NAME_PREFIX_BYTES) {
@@ -1180,19 +1164,19 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         }
 
         // TODO: b/451568055 - Support cross-user sessions.
-        return userId == UserHandle.USER_SYSTEM || userId == mOwnerUser.getIdentifier();
+        return userId == UserHandle.USER_SYSTEM || userId == mRequest.ownerUserId();
     }
 
     @Nullable
     private Intent getLaunchIntent(@NonNull String packageName, @Nullable String className) {
         if (className == null) {
-            return mOwnerPackageManager.getLaunchIntentForPackage(packageName);
+            return mRequest.ownerPackageManager().getLaunchIntentForPackage(packageName);
         }
         final Intent intent = new Intent(Intent.ACTION_MAIN)
                 .addCategory(Intent.CATEGORY_LAUNCHER)
                 .setClassName(packageName, className);
-        final List<ResolveInfo> resolveInfos = mOwnerPackageManager.queryIntentActivities(
-                intent, ResolveInfoFlags.of(PackageManager.MATCH_ALL));
+        final List<ResolveInfo> resolveInfos = mRequest.ownerPackageManager()
+                .queryIntentActivities(intent, ResolveInfoFlags.of(PackageManager.MATCH_ALL));
         if (resolveInfos.isEmpty()) {
             return null;
         }
@@ -1265,7 +1249,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
             // If this new activity belongs to a package the session is authorized to control,
             // we should trust it, even if it's a secondary task (like a new Chrome window).
             synchronized (mAllowedTaskIds) {
-                boolean isPackageAllowed = mParams.getTargetPackageNames()
+                boolean isPackageAllowed = mRequest.params().getTargetPackageNames()
                         .contains(topActivity.getPackageName());
                 int taskId = isPackageAllowed ? getTopTaskId(mVirtualDisplayId) : -1;
                 if (taskId != -1) {
@@ -1309,7 +1293,7 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
         public void onActivityLaunchBlocked(int displayId, @NonNull ComponentName componentName,
                 @NonNull UserHandle user, IntentSender intentSender) {
             Slog.w(TAG, "Unexpectedly blocked activity launch for " + componentName
-                    + " on session " + mParams.getName());
+                    + " on session " + getName());
         }
 
         @Override
@@ -1344,9 +1328,9 @@ final class ComputerControlSessionImpl extends IComputerControlSession.Stub
                 mFgThreadExecutor.execute(
                         () -> {
                             mAppInteractionService.noteAppInteraction(
-                                    mOwnerPackageName,
+                                    mRequest.ownerPackageName(),
                                     componentName.getPackageName(),
-                                    mParams.getAppInteractionAttribution(),
+                                    mRequest.params().getAppInteractionAttribution(),
                                     now,
                                     userId);
                         });

@@ -100,6 +100,7 @@ import com.android.server.Watchdog;
 import com.android.server.companion.virtual.VirtualDeviceImpl.PendingTrampoline;
 import com.android.server.companion.virtual.computercontrol.AutomatedPackagesRepository;
 import com.android.server.companion.virtual.computercontrol.ComputerControlSessionProcessor;
+import com.android.server.companion.virtual.computercontrol.ComputerControlSessionRequest;
 import com.android.server.wm.ActivityInterceptorCallback;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
@@ -586,7 +587,8 @@ public class VirtualDeviceManagerService extends SystemService implements Watchd
             Objects.requireNonNull(callback);
 
             mComputerControlSessionProcessor.processNewSessionRequest(
-                    appThread, attributionSource, params, callback);
+                    ComputerControlSessionRequest.create(
+                            getContext(), appThread, attributionSource, params, callback));
         }
 
         @Override // Binder call
