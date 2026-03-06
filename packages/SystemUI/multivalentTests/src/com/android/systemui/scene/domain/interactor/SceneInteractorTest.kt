@@ -118,14 +118,14 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             enableDualShade()
             val currentScene by collectLastValue(underTest.currentScene)
-            val currentOverlays by collectLastValue(underTest.currentOverlays)
+
             underTest.showOverlay(Overlays.NotificationsShade, "reason")
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).isNotEmpty()
+            assertThat(underTest.transitionState.currentOverlays).isNotEmpty()
 
             underTest.changeScene(Scenes.Lockscreen, "reason")
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).isEmpty()
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
         }
 
     @Test
@@ -134,14 +134,16 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             enableDualShade()
             val currentScene by collectLastValue(underTest.currentScene)
-            val currentOverlays by collectLastValue(underTest.currentOverlays)
+
             underTest.showOverlay(Overlays.NotificationsShade, "reason")
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).containsExactly(Overlays.NotificationsShade)
+            assertThat(underTest.transitionState.currentOverlays)
+                .containsExactly(Overlays.NotificationsShade)
 
             underTest.changeScene(Scenes.Lockscreen, "reason", hideAllOverlays = false)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).containsExactly(Overlays.NotificationsShade)
+            assertThat(underTest.transitionState.currentOverlays)
+                .containsExactly(Overlays.NotificationsShade)
         }
 
     @Test
@@ -218,16 +220,16 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             enableDualShade()
             val currentScene by collectLastValue(underTest.currentScene)
-            val currentOverlays by collectLastValue(underTest.currentOverlays)
+
             underTest.showOverlay(Overlays.NotificationsShade, "reason")
             val previousScene = currentScene
             val unknownScene = SceneKey("UNKNOWN")
             assertThat(previousScene).isNotEqualTo(unknownScene)
-            assertThat(currentOverlays).isNotEmpty()
+            assertThat(underTest.transitionState.currentOverlays).isNotEmpty()
 
             underTest.snapToScene(unknownScene, loggingReason = "reason")
             assertThat(currentScene).isEqualTo(previousScene)
-            assertThat(currentOverlays).isEmpty()
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
         }
 
     @Test
@@ -247,14 +249,14 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             enableDualShade()
             val currentScene by collectLastValue(underTest.currentScene)
-            val currentOverlays by collectLastValue(underTest.currentOverlays)
+
             underTest.showOverlay(Overlays.NotificationsShade, "reason")
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).isNotEmpty()
+            assertThat(underTest.transitionState.currentOverlays).isNotEmpty()
 
             underTest.snapToScene(Scenes.Lockscreen, loggingReason = "reason")
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).isEmpty()
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
         }
 
     @Test
@@ -263,14 +265,16 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             enableDualShade()
             val currentScene by collectLastValue(underTest.currentScene)
-            val currentOverlays by collectLastValue(underTest.currentOverlays)
+
             underTest.showOverlay(Overlays.NotificationsShade, "reason")
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).containsExactly(Overlays.NotificationsShade)
+            assertThat(underTest.transitionState.currentOverlays)
+                .containsExactly(Overlays.NotificationsShade)
 
             underTest.snapToScene(Scenes.Lockscreen, "reason", hideAllOverlays = false)
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
-            assertThat(currentOverlays).containsExactly(Overlays.NotificationsShade)
+            assertThat(underTest.transitionState.currentOverlays)
+                .containsExactly(Overlays.NotificationsShade)
         }
 
     @Test
@@ -619,16 +623,16 @@ class SceneInteractorTest : SysuiTestCase() {
     fun showOverlay_overlayDisabled_doesNothing() =
         kosmos.runTest {
             enableDualShade()
-            val currentOverlays by collectLastValue(underTest.currentOverlays)
+
             val disabledOverlay = Overlays.QuickSettingsShade
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(disable2 = StatusBarManager.DISABLE2_QUICK_SETTINGS)
             assertThat(disabledContentInteractor.isDisabled(disabledOverlay)).isTrue()
-            assertThat(currentOverlays).doesNotContain(disabledOverlay)
+            assertThat(underTest.transitionState.currentOverlays).doesNotContain(disabledOverlay)
 
             underTest.showOverlay(disabledOverlay, "reason")
 
-            assertThat(currentOverlays).doesNotContain(disabledOverlay)
+            assertThat(underTest.transitionState.currentOverlays).doesNotContain(disabledOverlay)
         }
 
     @Test
@@ -636,10 +640,10 @@ class SceneInteractorTest : SysuiTestCase() {
     fun replaceOverlay_withDisabledOverlay_doesNothing() =
         kosmos.runTest {
             enableDualShade()
-            val currentOverlays by collectLastValue(underTest.currentOverlays)
+
             val showingOverlay = Overlays.NotificationsShade
             underTest.showOverlay(showingOverlay, "reason")
-            assertThat(currentOverlays).isEqualTo(setOf(showingOverlay))
+            assertThat(underTest.transitionState.currentOverlays).isEqualTo(setOf(showingOverlay))
             val disabledOverlay = Overlays.QuickSettingsShade
             fakeDisableFlagsRepository.disableFlags.value =
                 DisableFlagsModel(disable2 = StatusBarManager.DISABLE2_QUICK_SETTINGS)
@@ -647,7 +651,7 @@ class SceneInteractorTest : SysuiTestCase() {
 
             underTest.replaceOverlay(showingOverlay, disabledOverlay, "reason")
 
-            assertThat(currentOverlays).isEqualTo(setOf(showingOverlay))
+            assertThat(underTest.transitionState.currentOverlays).isEqualTo(setOf(showingOverlay))
         }
 
     @Test
@@ -780,15 +784,15 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             enableDualShade()
             val currentScene by collectLastValue(underTest.currentScene)
-            val currentOverlays by collectLastValue(underTest.currentOverlays)
+
             val originalScene = currentScene
-            assertThat(currentOverlays).isEmpty()
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
 
             val overlay = Overlays.NotificationsShade
             underTest.instantlyShowOverlay(overlay, "reason")
 
             assertThat(currentScene).isEqualTo(originalScene)
-            assertThat(currentOverlays).contains(overlay)
+            assertThat(underTest.transitionState.currentOverlays).contains(overlay)
         }
 
     @Test
@@ -797,16 +801,16 @@ class SceneInteractorTest : SysuiTestCase() {
         kosmos.runTest {
             enableDualShade()
             val currentScene by collectLastValue(underTest.currentScene)
-            val currentOverlays by collectLastValue(underTest.currentOverlays)
+
             val overlay = Overlays.QuickSettingsShade
             underTest.showOverlay(overlay, "reason")
             val originalScene = currentScene
-            assertThat(currentOverlays).contains(overlay)
+            assertThat(underTest.transitionState.currentOverlays).contains(overlay)
 
             underTest.instantlyHideOverlay(overlay, "reason")
 
             assertThat(currentScene).isEqualTo(originalScene)
-            assertThat(currentOverlays).isEmpty()
+            assertThat(underTest.transitionState.currentOverlays).isEmpty()
         }
 
     @Test

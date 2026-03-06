@@ -125,6 +125,10 @@ constructor(
      * Note that during a transition between overlays, a different set of overlays may be rendered -
      * but only the ones in this set are considered the current overlays.
      */
+    @Deprecated(
+        "Prefer the more performant non-Flow version.",
+        ReplaceWith("transitionState.currentOverlays"),
+    )
     val currentOverlays: StateFlow<Set<OverlayKey>> = repository.currentOverlays
 
     @Deprecated("Prefer the more performant non-Flow version.", ReplaceWith("transitionState"))
@@ -338,7 +342,7 @@ constructor(
         }
 
         if (hideAllOverlays) {
-            currentOverlays.value.forEach {
+            transitionState.currentOverlays.forEach {
                 hideOverlay(it, "Hiding overlay ${it.debugName} due to scene change request")
             }
         }
@@ -530,7 +534,7 @@ constructor(
 
         logger.logOverlayChangeRequested(to = overlay, reason = loggingReason)
 
-        repository.instantlyTransitionTo(overlays = currentOverlays.value + overlay)
+        repository.instantlyTransitionTo(overlays = transitionState.currentOverlays + overlay)
     }
 
     /**
@@ -546,7 +550,7 @@ constructor(
 
         logger.logOverlayChangeRequested(from = overlay, reason = loggingReason)
 
-        repository.instantlyTransitionTo(overlays = currentOverlays.value - overlay)
+        repository.instantlyTransitionTo(overlays = transitionState.currentOverlays - overlay)
     }
 
     /**
@@ -893,7 +897,7 @@ constructor(
     ): Boolean {
         check(from != null || to != null) {
             "No overlay key provided for requested change." +
-                " Current transition state is ${transitionStateFlow.value}." +
+                " Current transition state is $transitionState." +
                 " Logging reason for overlay change was: $loggingReason"
         }
 
@@ -935,7 +939,7 @@ constructor(
                 false
             }
 
-            from != null && from !in currentOverlays.value -> {
+            from != null && from !in transitionState.currentOverlays -> {
                 logger.logContentChangeRejection(
                     from = from,
                     to = to,
@@ -945,7 +949,7 @@ constructor(
                 false
             }
 
-            to != null && to in currentOverlays.value -> {
+            to != null && to in transitionState.currentOverlays -> {
                 logger.logContentChangeRejection(
                     from = from,
                     to = to,
@@ -1031,7 +1035,7 @@ constructor(
             }
 
             launch {
-                currentOverlays
+                snapshotFlow { transitionState.currentOverlays }
                     .map { overlayKeys -> DiffableOverlayKeys(keys = overlayKeys) }
                     .pairwise()
                     .collect { (prev, current) ->
