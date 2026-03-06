@@ -35,6 +35,8 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CLIPBOAR
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
 
+import static com.android.server.companion.virtual.VirtualDeviceManagerService.DEVICE_PROFILE_COMPUTER_CONTROL;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.StringRes;
@@ -123,6 +125,7 @@ import android.view.WindowManagerGlobal;
 import android.widget.Toast;
 import android.window.DisplayWindowPolicyController;
 
+import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.Initializer;
 import com.android.internal.annotations.SystemServerLock;
@@ -1950,6 +1953,22 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
             mSoundEffectListener.onPlaySoundEffect(effectType);
         } catch (RemoteException exception) {
             Slog.w(TAG, "Unable to invoke sound effect listener", exception);
+        }
+    }
+
+    void onAuthenticationPrompt(int uid, String packageName, int displayId) {
+        try {
+            if (DEVICE_PROFILE_COMPUTER_CONTROL.equals(mDeviceProfile)) {
+                mActivityListener.onAuthenticationPrompt(displayId, packageName);
+            } else {
+                //TODO (b/481273047): Use display ID to show toast
+                showToastWhereUidIsRunning(uid,
+                        R.string.app_streaming_blocked_message_for_fingerprint_dialog,
+                        Toast.LENGTH_LONG, Looper.getMainLooper());
+            }
+        } catch (RemoteException e) {
+            Slog.w(TAG, "Unable to call onAuthenticationPrompt for package: "
+                    + packageName);
         }
     }
 

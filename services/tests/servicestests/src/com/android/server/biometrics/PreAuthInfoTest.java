@@ -221,6 +221,51 @@ public class PreAuthInfoTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(com.android.server.biometrics.Flags.FLAG_BP_COMPUTER_CONTROLLED)
+    public void testVdmInternalNotify_whenComputerControlledDisplayAndAuthenticationRequested()
+            throws RemoteException {
+        when(mVirtualDeviceManagerInternal.isComputerControlDisplay(DISPLAY_ID)).thenReturn(true);
+
+        final BiometricSensor faceSensor = getFaceSensor();
+        final BiometricSensor fingerprintSensor = getFingerprintSensor();
+        final PromptInfo promptInfo = new PromptInfo();
+
+        promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK
+                | BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+        promptInfo.setDisplayId(DISPLAY_ID);
+        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
+                mSettingObserver, List.of(faceSensor, fingerprintSensor), USER_ID, promptInfo,
+                TEST_PACKAGE_NAME, false /* checkDevicePolicyManager */, mContext,
+                mBiometricCameraManager, mUserManager, mVirtualDeviceManagerInternal,
+                true /* authenticationRequested */);
+
+        assertThat(promptInfo.shouldNotifyVdmAuthenticationRequested()).isTrue();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.server.biometrics.Flags.FLAG_BP_COMPUTER_CONTROLLED)
+    public void testVdmInternalNotNotify_whenComputerControlledDisplay()
+            throws RemoteException {
+        when(mVirtualDeviceManagerInternal.isComputerControlDisplay(DISPLAY_ID)).thenReturn(true);
+
+        final BiometricSensor faceSensor = getFaceSensor();
+        final BiometricSensor fingerprintSensor = getFingerprintSensor();
+        final PromptInfo promptInfo = new PromptInfo();
+
+        promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK
+                | BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+        promptInfo.setDisplayId(DISPLAY_ID);
+        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
+                mSettingObserver, List.of(faceSensor, fingerprintSensor), USER_ID, promptInfo,
+                TEST_PACKAGE_NAME, false /* checkDevicePolicyManager */, mContext,
+                mBiometricCameraManager, mUserManager, mVirtualDeviceManagerInternal,
+                false /* authenticationRequested */);
+
+        assertThat(promptInfo.shouldNotifyVdmAuthenticationRequested()).isFalse();
+
+    }
+
+    @Test
     public void testFaceAuthentication_whenCameraPrivacyIsEnabled() throws Exception {
         when(mBiometricCameraManager.isCameraPrivacyEnabled()).thenReturn(true);
 

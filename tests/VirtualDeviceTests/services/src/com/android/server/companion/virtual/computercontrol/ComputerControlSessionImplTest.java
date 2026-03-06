@@ -22,6 +22,7 @@ import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_ACTIVITY
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_BLOCKED_ACTIVITY;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_DEFAULT_DEVICE_CAMERA_ACCESS;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
+import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_AUTHENTICATION_PROMPT_REQUESTED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_CALLER_INITIATED;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_DISALLOWED_ACTIVITY_LAUNCH;
 import static android.companion.virtual.computercontrol.ComputerControlSession.BLOCK_REASON_SECURE_CONTENT;
@@ -1109,6 +1110,21 @@ public class ComputerControlSessionImplTest {
 
         verify(mAppInteractionService, never())
                 .noteAppInteraction(any(), any(), any(), anyLong(), anyInt());
+    }
+
+    @Test
+    public void onAuthenticationPrompt_entersBlockedState() throws RemoteException {
+        int displayId = Display.DEFAULT_DISPLAY;
+        createComputerControlSession(mDefaultParams);
+        verify(mVirtualDevice).addActivityListener(any(),
+                mActivityListenerArgumentCaptor.capture());
+
+        mActivityListenerArgumentCaptor.getValue().onAuthenticationPrompt(
+                displayId, BLOCKED_COMPONENT.getPackageName());
+        waitForIdle();
+
+        verify(mLifecycleCallback).onBlocked(BLOCK_REASON_AUTHENTICATION_PROMPT_REQUESTED,
+                BLOCKED_COMPONENT.getPackageName());
     }
 
     @Test

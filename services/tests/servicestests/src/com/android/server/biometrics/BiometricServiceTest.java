@@ -2474,6 +2474,74 @@ public class BiometricServiceTest {
         assertFalse(mBiometricService.mAuthSession.mPromptInfo.isSystemCaller());
     }
 
+    @Test
+    @RequiresFlagsEnabled(com.android.server.biometrics.Flags.FLAG_BP_COMPUTER_CONTROLLED)
+    public void testAuthenticate_triggerVdmCallback_whenComputerControlledAndBiometricsAvailable()
+            throws Exception {
+        when(mVirtualDeviceManagerInternal.isComputerControlDisplay(anyInt())).thenReturn(true);
+
+        setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
+
+        mBiometricService.mImpl.authenticate(
+                new Binder(),
+                0 /* operationId */,
+                0 /* userId */,
+                mReceiver1,
+                "com.random.app",
+                createTestPromptInfo(false, Authenticators.BIOMETRIC_STRONG, false, false, false)
+        );
+        waitForIdle();
+
+        verify(mVirtualDeviceManagerInternal).onAuthenticationPrompt(anyInt(), anyInt(),
+                anyString());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.server.biometrics.Flags.FLAG_BP_COMPUTER_CONTROLLED)
+    public void testAuthenticate_doesNotTriggerVdmCallback_whenNoBiometricsAvailable()
+            throws Exception {
+        when(mVirtualDeviceManagerInternal.isComputerControlDisplay(anyInt())).thenReturn(true);
+
+        mBiometricService = new BiometricService(mContext, mInjector, mBiometricHandlerProvider);
+        mBiometricService.onStart();
+
+        when(mBiometricService.mSettingObserver.getEnabledForApps(anyInt(), anyInt()))
+                .thenReturn(true);
+
+        mBiometricService.mImpl.authenticate(
+                new Binder(),
+                0 /* operationId */,
+                0 /* userId */,
+                mReceiver1,
+                "com.random.app",
+                createTestPromptInfo(false, Authenticators.BIOMETRIC_STRONG, false, false, false)
+        );
+        waitForIdle();
+
+        verify(mVirtualDeviceManagerInternal, never()).onAuthenticationPrompt(anyInt(), anyInt(),
+                anyString());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.server.biometrics.Flags.FLAG_BP_COMPUTER_CONTROLLED)
+    public void testAuthenticate_triggerVdmCallback_whenDisplayNotComputerControlledAndBiometricsAvailable()
+            throws Exception {
+        setupAuthForOnly(TYPE_FINGERPRINT, Authenticators.BIOMETRIC_STRONG);
+
+        mBiometricService.mImpl.authenticate(
+                new Binder(),
+                0 /* operationId */,
+                0 /* userId */,
+                mReceiver1,
+                "com.random.app",
+                createTestPromptInfo(false, Authenticators.BIOMETRIC_STRONG, false, false, false)
+        );
+        waitForIdle();
+
+        verify(mVirtualDeviceManagerInternal).onAuthenticationPrompt(anyInt(), anyInt(),
+                anyString());
+    }
+
     // Helper methods
 
     private int invokeCanAuthenticate(BiometricService service, int authenticators)

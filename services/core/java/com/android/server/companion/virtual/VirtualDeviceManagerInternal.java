@@ -69,6 +69,16 @@ public abstract class VirtualDeviceManagerInternal {
     public abstract void onAuthenticationPrompt(int uid);
 
     /**
+     * Notifies that biometric prompt is about to be shown for an app.
+     *
+     * @param uid The user ID associated with the application.
+     * @param displayId The display ID on which biometric authentication is requested.
+     * @param packageName Package name of the calling application.
+     */
+    public abstract void onAuthenticationPrompt(int uid, int displayId,
+            String packageName);
+
+    /**
      * Gets the owner uid for a deviceId.
      *
      * @param deviceId which device we're asking about

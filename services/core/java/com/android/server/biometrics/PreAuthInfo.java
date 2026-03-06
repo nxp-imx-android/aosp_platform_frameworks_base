@@ -120,6 +120,23 @@ class PreAuthInfo {
             UserManager userManager,
             VirtualDeviceManagerInternal virtualDeviceManagerInternal)
             throws RemoteException {
+        return create(trustManager, devicePolicyManager, settingObserver, sensors, userId,
+                promptInfo, opPackageName, checkDevicePolicyManager, context,
+                biometricCameraManager, userManager, virtualDeviceManagerInternal,
+                false /* authenticationRequested */);
+    }
+
+    static PreAuthInfo create(ITrustManager trustManager,
+            DevicePolicyManager devicePolicyManager,
+            BiometricService.SettingObserver settingObserver,
+            List<BiometricSensor> sensors,
+            int userId, PromptInfo promptInfo, String opPackageName,
+            boolean checkDevicePolicyManager, Context context,
+            BiometricCameraManager biometricCameraManager,
+            UserManager userManager,
+            VirtualDeviceManagerInternal virtualDeviceManagerInternal,
+            boolean authenticationRequested)
+            throws RemoteException {
 
         final boolean isOnlyMandatoryBiometricsRequested = promptInfo.getAuthenticators()
                 == BiometricManager.Authenticators.IDENTITY_CHECK;
@@ -151,7 +168,7 @@ class PreAuthInfo {
 
         final List<BiometricSensor> eligibleSensors = new ArrayList<>();
         List<Pair<BiometricSensor, Integer>> ineligibleSensors = new ArrayList<>();
-        final boolean isCallerComputerControlled = virtualDeviceManagerInternal != null
+        final boolean isComputerControlledDisplay = virtualDeviceManagerInternal != null
                 && virtualDeviceManagerInternal.isComputerControlDisplay(promptInfo.getDisplayId());
 
         if (biometricRequested) {
@@ -184,8 +201,13 @@ class PreAuthInfo {
             }
         }
 
+        if (authenticationRequested && (!eligibleSensors.isEmpty()
+                || (credentialAvailable && credentialRequested))) {
+            promptInfo.notifyVdmAuthenticationRequested();
+        }
+
         if (com.android.server.biometrics.Flags.bpComputerControlled()
-                && isCallerComputerControlled) {
+                && isComputerControlledDisplay) {
             Slog.d(TAG, "Disabling auth since display is computer controlled.");
 
             List<Pair<BiometricSensor, Integer>> updatedIneligibleSensors = new ArrayList<>();

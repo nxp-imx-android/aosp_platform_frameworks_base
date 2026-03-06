@@ -1117,6 +1117,14 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         @Override
+        public void onAuthenticationPrompt(int uid, int displayId, String packageName) {
+            VirtualDeviceImpl device = getVirtualDeviceForDisplayId(displayId);
+            if (device != null) {
+                device.onAuthenticationPrompt(uid, packageName, displayId);
+            }
+        }
+
+        @Override
         public int getBaseVirtualDisplayFlags(IVirtualDevice virtualDevice) {
             return ((VirtualDeviceImpl) virtualDevice).getBaseVirtualDisplayFlags();
         }
@@ -1263,6 +1271,23 @@ public class VirtualDeviceManagerService extends SystemService {
                 @NonNull Consumer<String> persistentDeviceIdRemovedListener) {
             synchronized (mVirtualDeviceManagerLock) {
                 mPersistentDeviceIdRemovedListeners.remove(persistentDeviceIdRemovedListener);
+            }
+        }
+
+        @Nullable
+        private VirtualDeviceImpl getVirtualDeviceForDisplayId(int displayId) {
+            synchronized (mVirtualDeviceManagerLock) {
+                if (displayId == Display.INVALID_DISPLAY || displayId == Display.DEFAULT_DISPLAY) {
+                    return null;
+                }
+                ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
+                for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
+                    VirtualDeviceImpl virtualDevice = virtualDevicesSnapshot.get(i);
+                    if (virtualDevice.isDisplayOwnedByVirtualDevice(displayId)) {
+                        return virtualDevice;
+                    }
+                }
+                return null;
             }
         }
     }
