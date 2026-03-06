@@ -264,12 +264,15 @@ public class AlertController {
     }
 
     private static boolean useWearMaterial3Style(Context context) {
+        int themeId = context.getThemeResId();
+        final boolean isThemeAllowedForWearM3 =
+                themeId == com.android.internal.R.style.Theme_DeviceDefault
+                        || themeId == com.android.internal.R.style.Theme_DeviceDefault_Dialog_Alert
+                        || themeId == com.android.internal.R.style.Theme_Dialog_Confirmation;
         return Flags.useWearMaterial3Ui()
                 && CompatChanges.isChangeEnabled(WEAR_MATERIAL3_ALERTDIALOG)
                 && context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH)
-                && (context.getThemeResId() == com.android.internal.R.style.Theme_DeviceDefault
-                    || context.getThemeResId()
-                        == com.android.internal.R.style.Theme_DeviceDefault_Dialog_Alert);
+                && isThemeAllowedForWearM3;
     }
 
     static boolean canTextInput(View v) {
