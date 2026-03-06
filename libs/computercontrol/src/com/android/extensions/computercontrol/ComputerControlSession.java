@@ -25,6 +25,7 @@ import android.app.Activity;
 import android.app.AppInteractionAttribution;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.companion.DeviceId;
 import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.content.ComponentName;
 import android.content.Context;
@@ -630,18 +631,21 @@ public final class ComputerControlSession implements AutoCloseable {
         @NonNull private final List<String> mTargetPackageNames;
         @Nullable private final PendingIntent mPreviewIntent;
         @Nullable private final AppInteractionAttribution mAppInteractionAttribution;
+        @Nullable private final DeviceId mCompanionDeviceId;
 
         private Params(
                 @NonNull Context context,
                 @NonNull String name,
                 @NonNull List<String> targetPackageNames,
                 @Nullable PendingIntent previewIntent,
-                @Nullable AppInteractionAttribution appInteractionAttribution) {
+                @Nullable AppInteractionAttribution appInteractionAttribution,
+                @Nullable DeviceId companionDeviceId) {
             mContext = context;
             mName = name;
             mTargetPackageNames = targetPackageNames;
             mPreviewIntent = previewIntent;
             mAppInteractionAttribution = appInteractionAttribution;
+            mCompanionDeviceId = companionDeviceId;
         }
 
         /**
@@ -695,6 +699,14 @@ public final class ComputerControlSession implements AutoCloseable {
         }
 
         /**
+         * Returns the companion device id of the device that is controlling this session.
+         */
+        @Nullable
+        public DeviceId getCompanionDeviceId() {
+            return mCompanionDeviceId;
+        }
+
+        /**
          * Builder for {@link Params}.
          */
         public static class Builder {
@@ -703,6 +715,7 @@ public final class ComputerControlSession implements AutoCloseable {
             private List<String> mTargetPackageNames = Collections.emptyList();
             private PendingIntent mPreviewIntent;
             private AppInteractionAttribution mAppInteractionAttribution;
+            private DeviceId mCompanionDeviceId;
 
             /**
              * Create a new Builder.
@@ -756,6 +769,15 @@ public final class ComputerControlSession implements AutoCloseable {
                 return this;
             }
 
+            /**
+             * Sets the companion device id of the device that is controlling this session.
+             */
+            @NonNull
+            public Builder setCompanionDeviceId(@Nullable DeviceId companionDeviceId) {
+                mCompanionDeviceId = companionDeviceId;
+                return this;
+            }
+
             /** Build a computer control session. */
             @NonNull
             public Params build() {
@@ -764,7 +786,8 @@ public final class ComputerControlSession implements AutoCloseable {
                         mName,
                         mTargetPackageNames,
                         mPreviewIntent,
-                        mAppInteractionAttribution);
+                        mAppInteractionAttribution,
+                        mCompanionDeviceId);
             }
         }
     }
