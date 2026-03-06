@@ -40,7 +40,7 @@ flag {
     is_exported: true
     namespace: "media_better_together"
     description: "Adds device model information in MediaRouter2Info."
-    bug: "446801535"
+    bug: "468015358"
 }
 
 flag {
