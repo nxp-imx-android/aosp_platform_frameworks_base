@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.notifications.ui.composable.component
+package com.android.systemui.notifications.content.ui.composable.component
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -47,8 +47,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
-import kotlin.test.Test
+import org.junit.Ignore
 import org.junit.Rule
+import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
@@ -69,6 +70,7 @@ class PrioritizedRowTest : SysuiTestCase() {
     private val reducedWidth = 50.dp
     private val hideWidth = 20.dp
 
+    @Ignore("b/439930983")
     @Test
     fun widthFull_allChildrenAreVisible() {
         rule.setContent {

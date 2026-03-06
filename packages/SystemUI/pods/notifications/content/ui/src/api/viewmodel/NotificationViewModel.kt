@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.notifications.ui.viewmodel
+package com.android.systemui.notifications.content.ui.viewmodel
 
 import android.graphics.drawable.Drawable
 
@@ -56,4 +56,8 @@ public interface NotificationViewModel {
      * so this determines its maximum width relative to that.
      */
     public val maxLargeIconAspectRatio: Float
+
+    public interface Factory {
+        public fun create(): NotificationViewModel
+    }
 }

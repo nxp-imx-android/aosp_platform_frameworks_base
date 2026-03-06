@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.notifications.ui.composable.component.icons
+package com.android.systemui.notifications.content.ui.composable.component.icons
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.materialIcon

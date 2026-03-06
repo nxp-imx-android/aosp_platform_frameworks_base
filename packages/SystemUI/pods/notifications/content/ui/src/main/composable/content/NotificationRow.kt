@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 The Android Open Source Project
+ * Copyright (C) 2026 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.notifications.ui.composable.content
+package com.android.systemui.notifications.content.ui.composable.content
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,63 +27,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.android.systemui.notifications.ui.composable.component.AppIcon
-import com.android.systemui.notifications.ui.composable.component.CollapsedText
-import com.android.systemui.notifications.ui.composable.component.ExpandedText
-import com.android.systemui.notifications.ui.composable.component.Expander
-import com.android.systemui.notifications.ui.composable.component.LargeIcon
-import com.android.systemui.notifications.ui.composable.component.Title
-import com.android.systemui.notifications.ui.composable.component.TopLineText
-import com.android.systemui.notifications.ui.viewmodel.NotificationViewModel
+import com.android.systemui.notifications.content.ui.composable.component.AppIcon
+import com.android.systemui.notifications.content.ui.composable.component.Expander
+import com.android.systemui.notifications.content.ui.composable.component.LargeIcon
+import com.android.systemui.notifications.content.ui.viewmodel.NotificationViewModel
 
 @Composable
-public fun NotificationContent(viewModel: NotificationViewModel, modifier: Modifier = Modifier) {
-    // TODO: b/431222735 - Handle transitions using STL.
-    if (!viewModel.isExpanded) {
-        NotificationRow(
-            viewModel,
-            firstLine = {
-                TopLineText(
-                    modifier = Modifier.padding(vertical = 2.dp),
-                    title = viewModel.title,
-                    // When collapsed, app name is only shown when there is no title
-                    appNameText = if (viewModel.title == null) viewModel.appName else null,
-                    headerTextSecondary = viewModel.headerTextSecondary,
-                    headerText = viewModel.headerText,
-                    // TODO: b/431222735 - Implement time/chronometer logic.
-                    timeText = "now",
-                    verificationText = viewModel.verificationText,
-                )
-            },
-            secondLine = { viewModel.text?.let { CollapsedText(it) } },
-            modifier,
-        )
-    } else {
-        NotificationRow(
-            viewModel,
-            firstLine = {
-                TopLineText(
-                    modifier = Modifier.padding(vertical = 2.dp),
-                    appNameText = viewModel.appName,
-                    headerTextSecondary = viewModel.headerTextSecondary,
-                    headerText = viewModel.headerText,
-                    // TODO: b/431222735 - Implement time/chronometer logic.
-                    timeText = "now",
-                    verificationText = viewModel.verificationText,
-                )
-            },
-            // TODO: b/431222735 - Consider showing the expanded text here when there is no title.
-            //  this would require a mechanism for getting the text to wrap around the large icon.
-            secondLine = { Title(viewModel.title ?: "") },
-            modifier,
-        ) {
-            viewModel.text?.let { ExpandedText(it, maxLines = viewModel.maxLinesWhenExpanded) }
-        }
-    }
-}
-
-@Composable
-private fun NotificationRow(
+internal fun NotificationRow(
     viewModel: NotificationViewModel,
     firstLine: @Composable () -> Unit,
     secondLine: @Composable () -> Unit,

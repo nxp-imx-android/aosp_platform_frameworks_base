@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.notifications.ui.composable.component
+package com.android.systemui.notifications.content.ui.composable.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -35,8 +35,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.compose.theme.LocalAndroidColorScheme
-import com.android.systemui.notifications.ui.composable.component.icons.ExpandLess
-import com.android.systemui.notifications.ui.composable.component.icons.ExpandMore
+import com.android.systemui.notifications.content.ui.composable.component.icons.ExpandLess
+import com.android.systemui.notifications.content.ui.composable.component.icons.ExpandMore
 
 // TODO: b/432249649 - Once we move the compose code for bundles into a pod, we should consolidate
 //  these elements with ExpansionControl used there.
