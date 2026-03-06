@@ -23,7 +23,6 @@ import android.os.UserHandle
 import android.util.Log
 import android.view.Display.INVALID_DISPLAY
 import android.view.accessibility.Flags as AccessibilityFlags
-import androidx.annotation.VisibleForTesting
 import com.android.internal.accessibility.common.ShortcutChooserDialogConstants
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType
 import com.android.internal.accessibility.util.AccessibilityUtils
@@ -32,19 +31,17 @@ import com.android.systemui.accessibility.data.repository.AccessibilityShortcuts
 import com.android.systemui.accessibility.shortcutchooser.shared.model.AccessibilityTargetModel
 import com.android.systemui.accessibility.shortcutchooser.shared.model.DialogRequestModel
 import com.android.systemui.broadcast.BroadcastDispatcher
-import com.android.systemui.broadcast.BroadcastSender
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
-import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 
 @SysUISingleton
 class ShortcutChooserDialogInteractor
@@ -57,28 +54,25 @@ constructor(
     private val hsum: HeadlessSystemUserMode,
     private val keyguardInteractor: KeyguardInteractor,
     private val broadcastDispatcher: BroadcastDispatcher,
-    private val broadcastSender: BroadcastSender,
 ) {
     val dialogRequest: Flow<DialogRequestModel> =
-        merge(
-                broadcastDispatcher.broadcastFlow(
-                    filter = IntentFilter().apply { addAction(SHORTCUT_CHOOSER_ACTION) },
-                    user = UserHandle.ALL,
-                    flags = Context.RECEIVER_EXPORTED,
-                    permission = SHORTCUT_CHOOSER_PERMISSION,
-                ) { intent, _ ->
-                    processShortcutChooserIntent(intent)
-                },
-                broadcastDispatcher.broadcastFlow(
-                    filter = IntentFilter().apply { addAction(QUICK_ACCESS_ACTION) },
-                    user = UserHandle.SYSTEM,
-                    flags = Context.RECEIVER_EXPORTED,
-                    permission = QUICK_ACCESS_PERMISSION,
-                ) { intent, _ ->
-                    processQuickAccessIntent(intent)
-                },
-            )
+        broadcastDispatcher
+            .broadcastFlow(
+                filter =
+                    IntentFilter().apply {
+                        addAction(
+                            ShortcutChooserDialogConstants.LAUNCH_SHORTCUT_CHOOSER_DIALOG_ACTION
+                        )
+                    },
+                user = UserHandle.ALL,
+                flags = Context.RECEIVER_EXPORTED,
+                permission = SHORTCUT_CHOOSER_PERMISSION,
+            ) { intent, _ ->
+                intent
+            }
+            .map { intent -> processShortcutChooserIntent(intent) }
             .filterNotNull()
+            .filter { isValidDialogRequest(it) }
 
     fun getAllAccessibilityTargets(
         @UserShortcutType shortcutType: Int
@@ -152,16 +146,6 @@ constructor(
         }
     }
 
-    fun launchQuickAccessDialog(displayId: Int) =
-        broadcastSender.sendBroadcastAsUser(
-            Intent().apply {
-                setPackage(SYSTEMUI_PACKAGE)
-                setAction(QUICK_ACCESS_ACTION)
-                putExtra(QuickStepContract.EXTRA_ACCESSIBILITY_DISPLAY_ID, displayId)
-            },
-            UserHandle.SYSTEM,
-        )
-
     /** True for a full user (not HSU) that has completed OOBE setup. */
     suspend fun isCompletedFullUser() = !isHeadlessSystemUser() && !isOOBE()
 
@@ -183,35 +167,38 @@ constructor(
     suspend fun setAccessibilityButtonTargetComponent(target: String) =
         repository.setAccessibilityButtonTargetComponent(target)
 
-    private fun processShortcutChooserIntent(intent: Intent): DialogRequestModel? {
-        if (!AccessibilityFlags.enableA11yTopRowShortcut()) {
-            return null
-        }
-        val shortcutType =
-            intent.getIntExtra(
-                QuickStepContract.EXTRA_ACCESSIBILITY_SHORTCUT_TYPE,
-                UserShortcutType.DEFAULT,
+    suspend private fun processShortcutChooserIntent(intent: Intent): DialogRequestModel? {
+        return DialogRequestModel(
+                shortcutType =
+                    intent.getIntExtra(
+                        ShortcutChooserDialogConstants.SHORTCUT_TYPE,
+                        UserShortcutType.DEFAULT,
+                    ),
+                displayId =
+                    intent.getIntExtra(ShortcutChooserDialogConstants.DISPLAY_ID, INVALID_DISPLAY),
             )
-        val displayId =
-            intent.getIntExtra(ShortcutChooserDialogConstants.DISPLAY_ID, INVALID_DISPLAY)
-
-        if (shortcutType != UserShortcutType.DEFAULT && displayId != INVALID_DISPLAY) {
-            return DialogRequestModel(shortcutType, displayId)
-        }
-        return null
+            .run {
+                if (shortcutType == UserShortcutType.TOP_ROW_KEY && !isCompletedFullUser()) {
+                    // If the user is not logged in or hasn't completed OOBE setup, show the general
+                    // purpose Quick Access dialog instead.
+                    copy(shortcutType = UserShortcutType.QUICK_ACCESS)
+                } else {
+                    this
+                }
+            }
+            .takeIf {
+                when (it.shortcutType) {
+                    UserShortcutType.QUICK_ACCESS ->
+                        SystemUIFlags.launchAccessibilityQuickAccessDialogPermission()
+                    else -> AccessibilityFlags.enableA11yTopRowShortcut()
+                }
+            }
     }
 
-    private fun processQuickAccessIntent(intent: Intent): DialogRequestModel? {
-        if (!SystemUIFlags.launchAccessibilityQuickAccessDialogPermission()) {
-            return null
-        }
-        val displayId =
-            intent.getIntExtra(ShortcutChooserDialogConstants.DISPLAY_ID, INVALID_DISPLAY)
-        if (displayId != INVALID_DISPLAY) {
-            return DialogRequestModel(UserShortcutType.QUICK_ACCESS, displayId)
-        }
-        return null
-    }
+    private fun isValidDialogRequest(dialogRequest: DialogRequestModel) =
+        dialogRequest.shortcutType > UserShortcutType.DEFAULT &&
+            dialogRequest.shortcutType < UserShortcutType.ALL &&
+            dialogRequest.displayId != INVALID_DISPLAY
 
     /**
      * Conditionally filters out excluded targets.
@@ -229,18 +216,7 @@ constructor(
     companion object {
         private val TAG = ShortcutChooserDialogInteractor::class.simpleName
 
-        @VisibleForTesting
-        const val SHORTCUT_CHOOSER_ACTION =
-            QuickStepContract.ACTION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG
-
-        const val SHORTCUT_CHOOSER_PERMISSION =
-            QuickStepContract.PERMISSION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG
-
-        @VisibleForTesting
-        const val QUICK_ACCESS_ACTION =
-            QuickStepContract.ACTION_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG
-        const val QUICK_ACCESS_PERMISSION =
-            QuickStepContract.PERMISSION_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG
-        @VisibleForTesting val SYSTEMUI_PACKAGE = QuickStepContract.SYSUI_PACKAGE
+        private const val SHORTCUT_CHOOSER_PERMISSION =
+            "com.android.systemui.permission.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG"
     }
 }
