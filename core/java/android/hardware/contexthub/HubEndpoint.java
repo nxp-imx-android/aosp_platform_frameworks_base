@@ -151,9 +151,11 @@ public class HubEndpoint {
      * @param queue The message queue associated with the endpoint's mLooper object.
      * @param callback The callback to invoke from the native layer.
      * @param hubId The hub Id of this endpoint.
+     * @param endpointId The endpoint ID of this endpoint.
      * @return The native handle to be used for all other native calls.
      */
-    private native long native_init(MessageQueue queue, DataFlowJniCallback callback, long hubId);
+    private native long native_init(
+            MessageQueue queue, DataFlowJniCallback callback, long hubId, long endpointId);
 
     /**
      * @param nativeHandle The native handle created in native_init.
@@ -194,6 +196,7 @@ public class HubEndpoint {
      * @param regionFd The file descriptor of the shared data region.
      * @param dataFlowHubId The hub ID of the data flow.
      * @param dataFlowId The ID of the data flow.
+     * @param sourceId The ID of the source endpoint, scoped to dataFlowHubId.
      * @param notifyHostFdsWaking The waking file descriptor for host notifications.
      * @param notifyHostFdsNonWaking The non-waking file descriptor for host notifications.
      * @param notifyHostFdsHalAck The HAL acknowledgment file descriptor for host notifications.
@@ -210,6 +213,7 @@ public class HubEndpoint {
             int regionFd,
             long dataFlowHubId,
             int dataFlowId,
+            long sourceId,
             int notifyHostFdsWaking,
             int notifyHostFdsNonWaking,
             int notifyHostFdsHalAck,
@@ -542,7 +546,8 @@ public class HubEndpoint {
                         return;
                     }
 
-                    DataFlowDataConfig config = enableHostSinkFromContext(context);
+                    DataFlowDataConfig config =
+                            enableHostSinkFromContext(context, source.getIdentifier());
                     DataFlowSink sink = createDataFlowSink(config, context);
                     mSinks.put(context.id, sink);
 
@@ -787,7 +792,8 @@ public class HubEndpoint {
                         native_init(
                                 mEpollLooper.getQueue(),
                                 mJniCallback,
-                                mAssignedHubEndpointInfo.getIdentifier().getHub());
+                                mAssignedHubEndpointInfo.getIdentifier().getHub(),
+                                mAssignedHubEndpointInfo.getIdentifier().getEndpoint());
             } else {
                 mNativeHandle = 0;
             }
@@ -1460,7 +1466,8 @@ public class HubEndpoint {
         mSinks.remove(context.id);
     }
 
-    private DataFlowDataConfig enableHostSinkFromContext(DataFlowSinkContext context) {
+    private DataFlowDataConfig enableHostSinkFromContext(
+            DataFlowSinkContext context, HubEndpointInfo.HubEndpointIdentifier sourceId) {
         int[] hostSinkValues =
                 native_enableHostSink(
                         mNativeHandle,
@@ -1469,6 +1476,7 @@ public class HubEndpoint {
                         context.info.region.sharedMemory.getFd(),
                         context.id.hubId,
                         context.id.id,
+                        sourceId.getEndpoint(),
                         context.alertFds.waking.getFd(),
                         context.alertFds.nonWaking.getFd(),
                         context.alertFds.halAck.getFd(),
