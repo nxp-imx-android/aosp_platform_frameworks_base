@@ -53,6 +53,7 @@ import com.android.systemui.settings.userTracker
 import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
 import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth.assertThat
+import java.util.Locale
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.junit.Before
@@ -627,6 +628,30 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
 
             underTest.setAccessibilityButtonTargetComponent("TestService2")
             assertThat(latestTarget).isEqualTo("TestService2")
+        }
+
+    @Test
+    fun getKeyGestureConfirmInfo_turkishLocale_colorInversionUsesUnicodeI() =
+        kosmos.runTest {
+            val turkishLocale = Locale("tr")
+            context.resources.configuration.setLocale(turkishLocale)
+
+            val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
+            val type = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DISPLAY_COLOR_INVERSION
+
+            val info =
+                underTest.getKeyGestureConfirmInfo(
+                    type,
+                    metaState,
+                    KeyEvent.KEYCODE_I,
+                    getTargetNameByType(type),
+                    DEFAULT_DISPLAY,
+                )
+
+            assertThat(info).isNotNull()
+            val contentText = info!!.contentText.toString()
+            assertThat(contentText).contains("\u0130")
+            assertThat(contentText).doesNotContain(" + I ")
         }
 
     private fun createAccessibilityTargetModel(targetName: String) =
