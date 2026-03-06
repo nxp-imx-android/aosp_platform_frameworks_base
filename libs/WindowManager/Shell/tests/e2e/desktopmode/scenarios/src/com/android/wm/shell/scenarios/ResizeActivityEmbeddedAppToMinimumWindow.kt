@@ -43,8 +43,7 @@ abstract class ResizeActivityEmbeddedAppToMinimumWindow(
 
     @Before
     fun setup() {
-        settingsApp.launchViaIntent(wmHelper)
-        settingsApp.enterDesktopModeViaKeyboard(wmHelper)
+        settingsApp.enterDesktopMode(wmHelper, device)
         // Maximize app windows to see the two-pane view.
         settingsApp.maximiseDesktopApp(wmHelper, device)
     }
