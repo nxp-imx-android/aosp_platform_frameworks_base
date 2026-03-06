@@ -18,6 +18,8 @@ package com.android.server.security.authenticationpolicy;
 
 import static android.content.Context.STATUS_BAR_SERVICE;
 import static android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG;
+import static android.hardware.biometrics.BiometricManager.TYPE_FACE;
+import static android.hardware.biometrics.BiometricManager.TYPE_FINGERPRINT;
 import static android.security.Flags.secureLockDevice;
 import static android.security.Flags.secureLockdown;
 import static android.security.authenticationpolicy.AuthenticationPolicyManager.ERROR_ALREADY_ENABLED;
@@ -32,6 +34,7 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.PRI
 import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_BIOMETRIC_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE;
 
 import android.annotation.NonNull;
+import android.annotation.RequiresNoPermission;
 import android.app.ActivityManager;
 import android.app.ActivityTaskManager;
 import android.app.admin.DevicePolicyManager;
@@ -42,6 +45,7 @@ import android.content.IntentFilter;
 import android.hardware.biometrics.BiometricEnrollmentStatus;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricStateListener;
+import android.hardware.biometrics.IBiometricEnabledOnKeyguardCallback;
 import android.hardware.biometrics.SensorProperties;
 import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
@@ -62,6 +66,7 @@ import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
 import android.util.Slog;
+import android.util.SparseBooleanArray;
 
 import androidx.annotation.Nullable;
 
@@ -96,6 +101,7 @@ import java.util.Objects;
 public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     private static final String TAG = "SecureLockDeviceService";
     private static final boolean DEBUG = Build.IS_DEBUGGABLE;
+    private static final boolean DEFAULT_ENABLED_ON_KEYGUARD = false;
 
     @Nullable private final BiometricManager mBiometricManager;
     private final Context mContext;
@@ -110,6 +116,8 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     private final Object mDisableStateLock = new Object();
     private final RemoteCallbackList<ISecureLockDeviceStatusListener>
             mSecureLockDeviceStatusListeners = new RemoteCallbackList<>();
+    private final SparseBooleanArray mFaceEnabledOnKeyguard = new SparseBooleanArray();
+    private final SparseBooleanArray mFingerprintEnabledOnKeyguard = new SparseBooleanArray();
 
     // Not final because initialized after SecureLockDeviceService in SystemServer
     private ActivityManager mActivityManager;
@@ -171,6 +179,20 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         };
         mContext.registerReceiver(userUnlockedAfterBootReceiver,
                 new IntentFilter(Intent.ACTION_USER_UNLOCKED));
+        mBiometricManager.registerEnabledOnKeyguardCallback(
+                new IBiometricEnabledOnKeyguardCallback.Stub() {
+                    @Override
+                    @RequiresNoPermission
+                    public void onChanged(boolean enabled, int userId, int modality)
+                            throws RemoteException {
+                        if (modality == TYPE_FACE) {
+                            mFaceEnabledOnKeyguard.put(userId, enabled);
+                        } else if (modality == TYPE_FINGERPRINT) {
+                            mFingerprintEnabledOnKeyguard.put(userId, enabled);
+                        }
+                        notifySecureLockDeviceAvailabilityForUser(userId);
+                    }
+                });
     }
 
     /**
@@ -448,10 +470,10 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
                         + "sensors of sufficient strength.");
             }
             return ERROR_INSUFFICIENT_BIOMETRICS;
-        } else if (!hasStrongBiometricsEnrolled(user)) {
+        } else if (!hasStrongBiometricsEnrolledAndEnabledOnKeyguard(user)) {
             if (DEBUG) {
                 Slog.d(TAG, "Secure lock device unavailable: device is missing enrollments "
-                        + "for strong biometric sensor.");
+                        + "or is not enabled on keyguard for strong biometric sensor.");
             }
             return ERROR_NO_BIOMETRICS_ENROLLED;
         } else {
@@ -468,7 +490,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         return false;
     }
 
-    private boolean hasStrongBiometricsEnrolled(UserHandle user) {
+    private boolean hasStrongBiometricsEnrolledAndEnabledOnKeyguard(UserHandle user) {
         Context userContext = mContext.createContextAsUser(user, 0);
         BiometricManager biometricManager = userContext.getSystemService(BiometricManager.class);
 
@@ -480,11 +502,24 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         Map<Integer, BiometricEnrollmentStatus> enrollmentStatusMap =
                 biometricManager.getEnrollmentStatus();
 
-        for (BiometricEnrollmentStatus status : enrollmentStatusMap.values()) {
-            if (status.getStrength() == BIOMETRIC_STRONG && status.getEnrollmentCount() > 0) {
+        for (int modality : enrollmentStatusMap.keySet()) {
+            BiometricEnrollmentStatus status = enrollmentStatusMap.get(modality);
+            if (status.getStrength() == BIOMETRIC_STRONG && status.getEnrollmentCount() > 0
+                    && isModalityEnabledOnKeyguard(modality, user.getIdentifier())) {
                 return true;
             }
         }
+
+        return false;
+    }
+
+    private boolean isModalityEnabledOnKeyguard(int modality, int userId) {
+        if (modality == TYPE_FACE) {
+            return mFaceEnabledOnKeyguard.get(userId, DEFAULT_ENABLED_ON_KEYGUARD);
+        } else if (modality == TYPE_FINGERPRINT) {
+            return mFingerprintEnabledOnKeyguard.get(userId, DEFAULT_ENABLED_ON_KEYGUARD);
+        }
+        Slog.e(TAG, "Unknown modality: " + modality);
         return false;
     }
 
@@ -791,7 +826,7 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
      * enrollment changes.
      *
      * @param userId the user id associated with the secure lock device availability status
-     *               update. Only listeners registered to this userId will be notified.s
+     *               update. Only listeners registered to this userId will be notified.
      */
     private void notifySecureLockDeviceAvailabilityForUser(int userId) {
         synchronized (mSecureLockDeviceStatusListenerLock) {
