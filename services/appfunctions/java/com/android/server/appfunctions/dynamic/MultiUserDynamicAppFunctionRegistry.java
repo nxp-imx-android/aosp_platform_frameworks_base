@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.server.appfunctions;
+package com.android.server.appfunctions.dynamic;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -52,6 +52,7 @@ public final class MultiUserDynamicAppFunctionRegistry {
     private static MultiUserDynamicAppFunctionRegistry sInstance;
 
     /** Gets a singleton instance. */
+    @NonNull
     public static synchronized MultiUserDynamicAppFunctionRegistry getInstance() {
         if (sInstance == null) {
             sInstance = new MultiUserDynamicAppFunctionRegistry();
@@ -70,7 +71,7 @@ public final class MultiUserDynamicAppFunctionRegistry {
      * <p>This will create registry for this {@code user}.
      */
     public void onUserUnlocked(
-            @NonNull AppFunctionMetadataObserver metadataObserver,
+            @NonNull OnRegistrationStateChangedListener registrationListener,
             @NonNull SystemService.TargetUser user) {
         maybePrintDebugLog("onUserUnlocked: " + user.getUserIdentifier(), null);
         synchronized (mCrossUserLock) {
@@ -79,9 +80,7 @@ public final class MultiUserDynamicAppFunctionRegistry {
                         user.getUserIdentifier(),
                         new DynamicAppFunctionRegistry(
                                 BackgroundThread.getExecutor(),
-                                changedFunctionNames ->
-                                        metadataObserver.onEnabledStatesChanged(
-                                                user.getUserHandle(), changedFunctionNames)));
+                                registrationListener));
             }
         }
     }
@@ -162,7 +161,9 @@ public final class MultiUserDynamicAppFunctionRegistry {
      * @throws IllegalStateException If the user was not unlocked.
      */
     public boolean hasRegistrations(
-            String packageName, String functionIdentifier, UserHandle userHandle) {
+            @NonNull String packageName,
+            @NonNull String functionIdentifier,
+            @NonNull UserHandle userHandle) {
         return getPerUserRegistry(userHandle)
                 .hasRegistrations(packageName, functionIdentifier);
     }
@@ -176,9 +177,9 @@ public final class MultiUserDynamicAppFunctionRegistry {
      * @throws IllegalStateException If the user was not unlocked.
      */
     public void executeAppFunction(
-            ExecuteAppFunctionAidlRequest request,
-            SafeOneTimeExecuteAppFunctionCallback safeExecuteAppFunctionCallback,
-            ICancellationSignal cancellationTransport) {
+            @NonNull ExecuteAppFunctionAidlRequest request,
+            @NonNull SafeOneTimeExecuteAppFunctionCallback safeExecuteAppFunctionCallback,
+            @NonNull ICancellationSignal cancellationTransport) {
         getPerUserRegistry(request.getUserHandle())
                 .executeAppFunction(
                         request.getClientRequest(),
@@ -227,45 +228,8 @@ public final class MultiUserDynamicAppFunctionRegistry {
         return getPerUserRegistry(userHandle).getAppFunctionActivityStates(activityIds);
     }
 
-    public static class RegistrationScopeId {
-        @Nullable private final AppFunctionActivityId mAppFunctionActivityId;
-
-        public static final RegistrationScopeId GLOBAL_SCOPE = new RegistrationScopeId(null);
-
-        public RegistrationScopeId(@Nullable AppFunctionActivityId appFunctionActivityId) {
-            mAppFunctionActivityId = appFunctionActivityId;
-        }
-
-        @Nullable
-        public AppFunctionActivityId getAppFunctionActivityId() {
-            return mAppFunctionActivityId;
-        }
-
-        @Override
-        public String toString() {
-            return "ActivitySourceId{" + mAppFunctionActivityId + "}";
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(mAppFunctionActivityId);
-        }
-
-        @Override
-        public boolean equals(@Nullable Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (!(obj instanceof RegistrationScopeId)) {
-                return false;
-            }
-            return Objects.equals(
-                    mAppFunctionActivityId, ((RegistrationScopeId) obj).mAppFunctionActivityId);
-        }
-    }
-
     @NonNull
-    private DynamicAppFunctionRegistry getPerUserRegistry(UserHandle userHandle) {
+    private DynamicAppFunctionRegistry getPerUserRegistry(@NonNull UserHandle userHandle) {
         synchronized (mCrossUserLock) {
             if (!mPerUserRegistrations.contains(userHandle.getIdentifier())) {
                 throw new IllegalStateException(

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.server.appfunctions
+package com.android.server.appfunctions.dynamic
 
 import android.app.appfunctions.AppFunctionActivityId
 import android.app.appfunctions.AppFunctionActivityState
@@ -29,7 +29,6 @@ import android.os.Binder
 import android.os.ICancellationSignal
 import android.os.RemoteException
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.android.server.appfunctions.MultiUserDynamicAppFunctionRegistry.RegistrationScopeId
 import com.google.common.truth.Truth.assertThat
 import android.util.ArraySet
 import com.google.common.util.concurrent.MoreExecutors
@@ -59,7 +58,7 @@ import org.mockito.kotlin.inOrder
 class DynamicAppFunctionRegistryTest {
     private lateinit var registry: DynamicAppFunctionRegistry
     private lateinit var mMockOnRegistrationStateChangedListener:
-        DynamicAppFunctionRegistry.OnRegistrationStateChangedListener
+        OnRegistrationStateChangedListener
 
     private val globalScope: List<RegistrationScopeId> = listOf(RegistrationScopeId(null))
 
@@ -69,7 +68,7 @@ class DynamicAppFunctionRegistryTest {
     @Before
     fun setUp() {
         mMockOnRegistrationStateChangedListener =
-            mock<DynamicAppFunctionRegistry.OnRegistrationStateChangedListener>()
+            mock<OnRegistrationStateChangedListener>()
         registry = DynamicAppFunctionRegistry(
             MoreExecutors.directExecutor(),
             mMockOnRegistrationStateChangedListener)
@@ -79,9 +78,9 @@ class DynamicAppFunctionRegistryTest {
     fun createRegistrationId_equalsPackageAndFunction() {
         val name = AppFunctionName(TEST_PACKAGE, TEST_FUNCTION)
         val id1 =
-            DynamicAppFunctionRegistry.AppFunctionRegistrationId(name, RegistrationScopeId(null))
+            AppFunctionRegistrationId(name, RegistrationScopeId(null))
         val id2 =
-            DynamicAppFunctionRegistry.AppFunctionRegistrationId(name, RegistrationScopeId(null))
+            AppFunctionRegistrationId(name, RegistrationScopeId(null))
 
         assertThat(id1).isEqualTo(id2)
         assertThat(id1.hashCode()).isEqualTo(id2.hashCode())
@@ -92,22 +91,22 @@ class DynamicAppFunctionRegistryTest {
         val globalScopeId = RegistrationScopeId(null)
         val activityScopeId = RegistrationScopeId(mock())
         val id1 =
-            DynamicAppFunctionRegistry.AppFunctionRegistrationId(
+            AppFunctionRegistrationId(
                 AppFunctionName(TEST_PACKAGE, TEST_FUNCTION),
                 globalScopeId,
             )
         val id2 =
-            DynamicAppFunctionRegistry.AppFunctionRegistrationId(
+            AppFunctionRegistrationId(
                 AppFunctionName(TEST_PACKAGE, TEST_FUNCTION2),
                 globalScopeId,
             )
         val id3 =
-            DynamicAppFunctionRegistry.AppFunctionRegistrationId(
+            AppFunctionRegistrationId(
                 AppFunctionName(TEST_PACKAGE2, TEST_FUNCTION),
                 globalScopeId,
             )
         val id4 =
-            DynamicAppFunctionRegistry.AppFunctionRegistrationId(
+            AppFunctionRegistrationId(
                 AppFunctionName(TEST_PACKAGE, TEST_FUNCTION),
                 activityScopeId,
             )
@@ -280,6 +279,39 @@ class DynamicAppFunctionRegistryTest {
     }
 
     @Test
+    fun unregister_oneOfTwoRegistrationsForSameName_callsOnRegistrationChanged() {
+        val executor1 = createExecutorMock()
+        val executor2 = createExecutorMock()
+
+        val activityId1 = AppFunctionActivityId(Binder())
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            executor1,
+            listOf(RegistrationScopeId(activityId1)),
+        )
+        val activityId2 = AppFunctionActivityId(Binder())
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            executor2,
+            listOf(RegistrationScopeId(activityId2)),
+        )
+
+        registry.unregisterAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            executor1,
+        )
+
+        val captor = argumentCaptor<Set<AppFunctionName>>()
+        verify(mMockOnRegistrationStateChangedListener, times(3))
+            .onRegistrationChanged(captor.capture())
+        assertThat(captor.thirdValue)
+            .containsExactly(AppFunctionName(TEST_PACKAGE, TEST_FUNCTION))
+    }
+
+    @Test
     fun unregister_activityScopedRegistration_succeeds() {
         val activityExecutor = createExecutorMock()
 
@@ -416,6 +448,39 @@ class DynamicAppFunctionRegistryTest {
         assertThat(captor.secondValue)
             .containsExactly(AppFunctionName(TEST_PACKAGE, TEST_FUNCTION))
         verifyNoMoreInteractions(mMockOnRegistrationStateChangedListener)
+    }
+
+    @Test
+    fun onCallbackDied_oneOfTwoRegistrationsForSameNameDied_callsOnRegistrationChanged() {
+        val binder1 = mock<IBinder>()
+        val executor1 = createExecutorMock(binder1)
+        val binder2 = mock<IBinder>()
+        val executor2 = createExecutorMock(binder2)
+
+        val activityId1 = AppFunctionActivityId(Binder())
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            executor1,
+            listOf(RegistrationScopeId(activityId1)),
+        )
+        val activityId2 = AppFunctionActivityId(Binder())
+        registry.registerAppFunctions(
+            TEST_PACKAGE,
+            listOf(TEST_FUNCTION),
+            executor2,
+            listOf(RegistrationScopeId(activityId2)),
+        )
+
+        val deathRecipientCaptor = argumentCaptor<IBinder.DeathRecipient>()
+        verify(binder1).linkToDeath(deathRecipientCaptor.capture(), anyInt())
+        deathRecipientCaptor.firstValue.binderDied(binder1)
+
+        val captor = argumentCaptor<Set<AppFunctionName>>()
+        verify(mMockOnRegistrationStateChangedListener, times(3))
+            .onRegistrationChanged(captor.capture())
+        assertThat(captor.thirdValue)
+            .containsExactly(AppFunctionName(TEST_PACKAGE, TEST_FUNCTION))
     }
 
     @Test
