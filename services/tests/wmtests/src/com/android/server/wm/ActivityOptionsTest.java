@@ -298,7 +298,6 @@ public class ActivityOptionsTest {
                 case "android:activity.usageTimeReport": // KEY_USAGE_TIME_REPORT
                 case "android:activity.rotationAnimationHint": // KEY_ROTATION_ANIMATION_HINT
                 case "android:instantapps.installerbundle": // KEY_INSTANT_APP_VERIFICATION_BUNDLE
-                case "android:activity.specsFuture": // KEY_SPECS_FUTURE
                 case "android:activity.remoteAnimationAdapter": // KEY_REMOTE_ANIMATION_ADAPTER
                 case "android:activity.remoteTransition": // KEY_REMOTE_TRANSITION
                 case "android:activity.overrideTaskTransition": // KEY_OVERRIDE_TASK_TRANSITION

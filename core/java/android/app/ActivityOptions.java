@@ -59,7 +59,6 @@ import android.os.UserHandle;
 import android.transition.TransitionManager;
 import android.util.Pair;
 import android.util.Slog;
-import android.view.IAppTransitionAnimationSpecsFuture;
 import android.view.RemoteAnimationAdapter;
 import android.view.View;
 import android.view.ViewGroup;
@@ -445,7 +444,6 @@ public class ActivityOptions extends ComponentOptions {
 
     private static final String KEY_INSTANT_APP_VERIFICATION_BUNDLE
             = "android:instantapps.installerbundle";
-    private static final String KEY_SPECS_FUTURE = "android:activity.specsFuture";
     private static final String KEY_REMOTE_ANIMATION_ADAPTER
             = "android:activity.remoteAnimationAdapter";
     private static final String KEY_REMOTE_TRANSITION =
@@ -521,10 +519,6 @@ public class ActivityOptions extends ComponentOptions {
     /** @hide */
     public static final int ANIM_LAUNCH_TASK_BEHIND = 7;
     /** @hide */
-    public static final int ANIM_THUMBNAIL_ASPECT_SCALE_UP = 8;
-    /** @hide */
-    public static final int ANIM_THUMBNAIL_ASPECT_SCALE_DOWN = 9;
-    /** @hide */
     public static final int ANIM_CUSTOM_IN_PLACE = 10;
     /** @hide */
     public static final int ANIM_CLIP_REVEAL = 11;
@@ -579,7 +573,6 @@ public class ActivityOptions extends ComponentOptions {
     private SourceInfo mSourceInfo;
     private int mRotationAnimationHint = -1;
     private Bundle mAppVerificationBundle;
-    private IAppTransitionAnimationSpecsFuture mSpecsFuture;
     private RemoteAnimationAdapter mRemoteAnimationAdapter;
     private IBinder mLaunchCookie;
     private RemoteTransition mRemoteTransition;
@@ -985,72 +978,6 @@ public class ActivityOptions extends ComponentOptions {
     }
 
     /**
-     * Create an ActivityOptions specifying an animation where a list of activity windows and
-     * thumbnails are aspect scaled to/from a new location.
-     * @hide
-     */
-    @UnsupportedAppUsage
-    @android.ravenwood.annotation.RavenwoodThrow(blockedBy = Context.class)
-    public static ActivityOptions makeMultiThumbFutureAspectScaleAnimation(Context context,
-            Handler handler, IAppTransitionAnimationSpecsFuture specsFuture,
-            OnAnimationStartedListener listener, boolean scaleUp) {
-        ActivityOptions opts = new ActivityOptions();
-        opts.mPackageName = context.getPackageName();
-        opts.mAnimationType = scaleUp
-                ? ANIM_THUMBNAIL_ASPECT_SCALE_UP
-                : ANIM_THUMBNAIL_ASPECT_SCALE_DOWN;
-        opts.mSpecsFuture = specsFuture;
-        opts.setOnAnimationStartedListener(handler, listener);
-        return opts;
-    }
-
-    /**
-     * Create an ActivityOptions specifying an animation where the new activity
-     * window and a thumbnail is aspect-scaled to a new location.
-     *
-     * @param source The View that this thumbnail is animating to.  This
-     * defines the coordinate space for <var>startX</var> and <var>startY</var>.
-     * @param thumbnail The bitmap that will be shown as the final thumbnail
-     * of the animation.
-     * @param startX The x end location of the bitmap, relative to <var>source</var>.
-     * @param startY The y end location of the bitmap, relative to <var>source</var>.
-     * @param handler If <var>listener</var> is non-null this must be a valid
-     * Handler on which to dispatch the callback; otherwise it should be null.
-     * @param listener Optional OnAnimationStartedListener to find out when the
-     * requested animation has started running.  If for some reason the animation
-     * is not executed, the callback will happen immediately.
-     * @return Returns a new ActivityOptions object that you can use to
-     * supply these options as the options Bundle when starting an activity.
-     * @hide
-     */
-    @android.ravenwood.annotation.RavenwoodThrow(blockedBy = View.class)
-    public static ActivityOptions makeThumbnailAspectScaleDownAnimation(View source,
-            Bitmap thumbnail, int startX, int startY, int targetWidth, int targetHeight,
-            Handler handler, OnAnimationStartedListener listener) {
-        return makeAspectScaledThumbnailAnimation(source, thumbnail, startX, startY,
-                targetWidth, targetHeight, handler, listener, false);
-    }
-
-    @android.ravenwood.annotation.RavenwoodThrow(blockedBy = View.class)
-    private static ActivityOptions makeAspectScaledThumbnailAnimation(View source, Bitmap thumbnail,
-            int startX, int startY, int targetWidth, int targetHeight,
-            Handler handler, OnAnimationStartedListener listener, boolean scaleUp) {
-        ActivityOptions opts = new ActivityOptions();
-        opts.mPackageName = source.getContext().getPackageName();
-        opts.mAnimationType = scaleUp ? ANIM_THUMBNAIL_ASPECT_SCALE_UP :
-                ANIM_THUMBNAIL_ASPECT_SCALE_DOWN;
-        opts.mThumbnail = thumbnail;
-        int[] pts = new int[2];
-        source.getLocationOnScreen(pts);
-        opts.mStartX = pts[0] + startX;
-        opts.mStartY = pts[1] + startY;
-        opts.mWidth = targetWidth;
-        opts.mHeight = targetHeight;
-        opts.setOnAnimationStartedListener(handler, listener);
-        return opts;
-    }
-
-    /**
      * Create an ActivityOptions to transition between Activities using cross-Activity scene
      * animations. This method carries the position of one shared element to the started Activity.
      * The position of <code>sharedElement</code> will be used as the epicenter for the
@@ -1376,8 +1303,6 @@ public class ActivityOptions extends ComponentOptions {
 
             case ANIM_THUMBNAIL_SCALE_UP:
             case ANIM_THUMBNAIL_SCALE_DOWN:
-            case ANIM_THUMBNAIL_ASPECT_SCALE_UP:
-            case ANIM_THUMBNAIL_ASPECT_SCALE_DOWN:
                 // Unpackage the HardwareBuffer from the parceled thumbnail
                 final HardwareBuffer buffer = opts.getParcelable(KEY_ANIM_THUMBNAIL, android.hardware.HardwareBuffer.class);
                 if (buffer != null) {
@@ -1430,10 +1355,6 @@ public class ActivityOptions extends ComponentOptions {
         mSourceInfo = opts.getParcelable(KEY_SOURCE_INFO, android.app.ActivityOptions.SourceInfo.class);
         mRotationAnimationHint = opts.getInt(KEY_ROTATION_ANIMATION_HINT, -1);
         mAppVerificationBundle = opts.getBundle(KEY_INSTANT_APP_VERIFICATION_BUNDLE);
-        if (opts.containsKey(KEY_SPECS_FUTURE)) {
-            mSpecsFuture = IAppTransitionAnimationSpecsFuture.Stub.asInterface(opts.getBinder(
-                    KEY_SPECS_FUTURE));
-        }
         mRemoteAnimationAdapter = opts.getParcelable(KEY_REMOTE_ANIMATION_ADAPTER, android.view.RemoteAnimationAdapter.class);
         mLaunchCookie = opts.getBinder(KEY_LAUNCH_COOKIE);
         mRemoteTransition = opts.getParcelable(KEY_REMOTE_TRANSITION, android.window.RemoteTransition.class);
@@ -1583,11 +1504,6 @@ public class ActivityOptions extends ComponentOptions {
     /** @hide */
     public PendingIntent getUsageTimeReport() {
         return mUsageTimeReport;
-    }
-
-    /** @hide */
-    public IAppTransitionAnimationSpecsFuture getSpecsFuture() {
-        return mSpecsFuture;
     }
 
     /** @hide */
@@ -2469,8 +2385,6 @@ public class ActivityOptions extends ComponentOptions {
                 break;
             case ANIM_THUMBNAIL_SCALE_UP:
             case ANIM_THUMBNAIL_SCALE_DOWN:
-            case ANIM_THUMBNAIL_ASPECT_SCALE_UP:
-            case ANIM_THUMBNAIL_ASPECT_SCALE_DOWN:
                 mThumbnail = otherOptions.mThumbnail;
                 mStartX = otherOptions.mStartX;
                 mStartY = otherOptions.mStartY;
@@ -2488,7 +2402,6 @@ public class ActivityOptions extends ComponentOptions {
         mLockTaskMode = otherOptions.mLockTaskMode;
         mShareIdentity = otherOptions.mShareIdentity;
         mAnimationFinishedListener = otherOptions.mAnimationFinishedListener;
-        mSpecsFuture = otherOptions.mSpecsFuture;
         mRemoteAnimationAdapter = otherOptions.mRemoteAnimationAdapter;
         mLaunchIntoPipParams = otherOptions.mLaunchIntoPipParams;
         mLaunchDisplayId = otherOptions.mLaunchDisplayId;
@@ -2541,8 +2454,6 @@ public class ActivityOptions extends ComponentOptions {
                 break;
             case ANIM_THUMBNAIL_SCALE_UP:
             case ANIM_THUMBNAIL_SCALE_DOWN:
-            case ANIM_THUMBNAIL_ASPECT_SCALE_UP:
-            case ANIM_THUMBNAIL_ASPECT_SCALE_DOWN:
                 // Once we parcel the thumbnail for transfering over to the system, create a copy of
                 // the bitmap to a hardware bitmap and pass through the HardwareBuffer
                 if (mThumbnail != null) {
@@ -2636,9 +2547,6 @@ public class ActivityOptions extends ComponentOptions {
         }
         if (mAnimationFinishedListener != null) {
             b.putBinder(KEY_ANIMATION_FINISHED_LISTENER, mAnimationFinishedListener.asBinder());
-        }
-        if (mSpecsFuture != null) {
-            b.putBinder(KEY_SPECS_FUTURE, mSpecsFuture.asBinder());
         }
         if (mSourceInfo != null) {
             b.putParcelable(KEY_SOURCE_INFO, mSourceInfo);

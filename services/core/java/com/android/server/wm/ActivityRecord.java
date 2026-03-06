@@ -25,8 +25,6 @@ import static android.app.ActivityOptions.ANIM_OPEN_CROSS_PROFILE_APPS;
 import static android.app.ActivityOptions.ANIM_REMOTE_ANIMATION;
 import static android.app.ActivityOptions.ANIM_SCALE_UP;
 import static android.app.ActivityOptions.ANIM_SCENE_TRANSITION;
-import static android.app.ActivityOptions.ANIM_THUMBNAIL_ASPECT_SCALE_DOWN;
-import static android.app.ActivityOptions.ANIM_THUMBNAIL_ASPECT_SCALE_UP;
 import static android.app.ActivityOptions.ANIM_THUMBNAIL_SCALE_DOWN;
 import static android.app.ActivityOptions.ANIM_THUMBNAIL_SCALE_UP;
 import static android.app.ActivityOptions.ANIM_UNDEFINED;
@@ -5167,10 +5165,6 @@ final class ActivityRecord extends WindowToken {
                             pendingOptions.getStartX() + buffer.getWidth(),
                             pendingOptions.getStartY() + buffer.getHeight()));
                 }
-                break;
-            case ANIM_THUMBNAIL_ASPECT_SCALE_UP:
-            case ANIM_THUMBNAIL_ASPECT_SCALE_DOWN:
-                // TODO(b/397847511): remove the related types from ActivityOptions.
                 break;
             case ANIM_OPEN_CROSS_PROFILE_APPS:
                 options = AnimationOptions.makeCrossProfileAnimOptions();
