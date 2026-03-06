@@ -37,4 +37,13 @@ public @interface StringPolicyDefinition {
      * be allowed.
      */
     boolean emptyStringAllowed() default false;
+
+    /**
+     * By default unprintable characters are not allowed in the policy value. Set it to true if
+     * they should be allowed.
+     *
+     * ISO control characters (a set of unprintable characters mostly used to control
+     * terminal functionality) are the only unprintable characters being checked.
+     */
+    boolean unprintableCharactersAllowed() default false;
 }

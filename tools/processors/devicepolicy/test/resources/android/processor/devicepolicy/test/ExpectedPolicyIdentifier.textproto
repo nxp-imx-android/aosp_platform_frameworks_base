@@ -421,6 +421,25 @@ policy_metadata {
 }
 policy_metadata {
   identifier {
+    field_name: "SIMPLE_STRING_POLICY_WITH_UNPRINTABLE_CHARACTERS_ALLOWED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "String"
+    package_name: "java.lang"
+  }
+  documentation: "Test policy verifying a string policy with unprintable characters allowed. "
+  type_specific_metadata {
+    string_metadata {
+      unprintable_characters_allowed: true
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}
+policy_metadata {
+  identifier {
     field_name: "SIMPLE_STRING_LIST_POLICY"
     class_name: "PolicyIdentifier"
     package_name: "android.app.admin"
@@ -437,6 +456,28 @@ policy_metadata {
       }
       resolution_mechanism {
         custom: true
+      }
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}
+policy_metadata {
+  identifier {
+    field_name: "SIMPLE_STRING_LIST_POLICY_WITH_UNPRINTABLE_CHARACTERS_ALLOWED"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "List<java.lang.String>"
+    package_name: "java.util"
+  }
+  documentation: "Test policy verifying a string list policy with unprintable characters allowed. "
+  type_specific_metadata {
+    list_metadata {
+      string_metadata {
+        empty_string_allowed: true
+        unprintable_characters_allowed: true
       }
     }
   }

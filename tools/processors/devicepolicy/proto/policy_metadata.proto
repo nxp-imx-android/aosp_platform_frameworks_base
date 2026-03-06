@@ -117,6 +117,7 @@ message TypeSpecificPolicyMetadata {
 
   message StringPolicyMetadata {
     bool empty_string_allowed = 1;
+    bool unprintable_characters_allowed = 2;
   }
 
   message ListPolicyMetadata {
