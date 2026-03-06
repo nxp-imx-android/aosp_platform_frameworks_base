@@ -47,7 +47,11 @@ public class ComputerControlExtensions {
             android.companion.virtual.computercontrol.AutomatedPackageListener> mListeners =
             new ArrayMap<>();
 
-    private ComputerControlExtensions() {}
+    private final int mTargetComputerControlVersion;
+
+    private ComputerControlExtensions(int targetComputerControlVersion) {
+        mTargetComputerControlVersion = targetComputerControlVersion;
+    }
 
     /**
      * Retrieve the current version of the extensions.
@@ -64,14 +68,40 @@ public class ComputerControlExtensions {
      * @param context Context to fetch system features
      * @return An instance of ComputerControlExtensions, or {@code null} if the extensions are
      * unavailable.
+     *
+     * @deprecated with ComputerControl v5. Use {@link #getInstance(Context, int)} instead.
+     *
      */
+    // TODO(b/489808412) force this method to getVersion() when finalizing v5
+    @Deprecated
     @Nullable
-    public static ComputerControlExtensions getInstance(Context context) {
+    public static ComputerControlExtensions getInstance(@NonNull Context context) {
         if (!isAvailable(context)) {
             return null;
         }
-        return new ComputerControlExtensions();
+        // Hardcode version 4 to prevent backwards incompatibilities
+        return new ComputerControlExtensions(4);
     }
+
+    /**
+     * Gets an instance of the ComputerControlExtensions. These extensions can be unavailable on
+     * devices. In such cases {@code null} is returned and the extensions won't be available on this
+     * device.
+     *
+     * @param context Context to fetch system features
+     * @param targetComputerControlVersion target version for the ComputerControl extensions
+     * @return An instance of ComputerControlExtensions, or {@code null} if the extensions are
+     * unavailable.
+     */
+    @Nullable
+    public static ComputerControlExtensions getInstance(@NonNull Context context,
+            int targetComputerControlVersion) {
+        if (!isAvailable(context)) {
+            return null;
+        }
+        return new ComputerControlExtensions(targetComputerControlVersion);
+    }
+
 
     /**
      * Requests a new {@link ComputerControlSession} for the given parameters. When the session is
@@ -92,7 +122,7 @@ public class ComputerControlExtensions {
         ComputerControlSessionParams sessionParams =
                 new ComputerControlSessionParams.Builder()
                         .setName(params.getName())
-                        .setTargetExtensionVersion(params.getTargetExtensionVersion())
+                        .setTargetComputerControlVersion(mTargetComputerControlVersion)
                         .setTargetPackageNames(params.getTargetPackageNames())
                         .setPreviewIntent(params.getPreviewIntent())
                         .setAppInteractionAttribution(params.getAppInteractionAttribution())
@@ -193,8 +223,26 @@ public class ComputerControlExtensions {
     /**
      * @return {@code true} if computer control functionality is available on the device and the
      * caller is allowed to access session creation functionality with the given {@link Context}.
+     *
+     * @deprecated with ComputerControl v5. Use {@link #isSessionCreationAvailable(Context, int)}
+     * instead.
      */
+    // TODO(b/489808412) remove this method to getVersion() when finalizing v5
+    // This method was only added in v5 technically, but used in Trunkfood hence keeping it
+    // to allow for migration.
+    @Deprecated
     public static boolean isSessionCreationAvailable(@NonNull Context context) {
+        // Hardcoded to 4 to ensure existing callers remain compatible
+        return isSessionCreationAvailable(context, 4);
+    }
+
+    /**
+     * @return {@code true} if computer control functionality is available on the device and the
+     * caller is allowed to access session creation functionality with the given {@link Context}
+     * and the given {@code targetComputerControlVersion}.
+     */
+    public static boolean isSessionCreationAvailable(@NonNull Context context,
+            int targetComputerControlVersion) {
         if (!isAvailable(context)) {
             return false;
         }

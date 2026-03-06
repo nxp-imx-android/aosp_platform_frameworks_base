@@ -17,6 +17,7 @@
 package android.companion.virtual.computercontrol;
 
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
@@ -26,7 +27,6 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Parcel;
 
-import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Test;
@@ -38,7 +38,7 @@ import java.util.List;
 public class ComputerControlSessionParamsTest {
 
     private static final String SESSION_NAME = "ComputerControlSessionName";
-    private static final int TARGET_EXTENSION_VERSION = 1;
+    private static final int TARGET_COMPUTER_CONTROL_VERSION = 1;
     private static final String TARGET_PACKAGE_1 = "com.android.foo";
     private static final String TARGET_PACKAGE_2 = "com.android.bar";
     private static final List<String> TARGET_PACKAGE_NAMES =
@@ -59,7 +59,7 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams originalParams =
                 new ComputerControlSessionParams.Builder()
                         .setName(SESSION_NAME)
-                        .setTargetExtensionVersion(TARGET_EXTENSION_VERSION)
+                        .setTargetComputerControlVersion(TARGET_COMPUTER_CONTROL_VERSION)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setPreviewIntent(previewIntent)
                         .setAppInteractionAttribution(appInteractionAttribution)
@@ -71,7 +71,8 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams params =
                 ComputerControlSessionParams.CREATOR.createFromParcel(parcel);
         assertThat(params.getName()).isEqualTo(SESSION_NAME);
-        assertThat(params.getTargetExtensionVersion()).isEqualTo(TARGET_EXTENSION_VERSION);
+        assertThat(params.getTargetComputerControlVersion())
+                .isEqualTo(TARGET_COMPUTER_CONTROL_VERSION);
         assertThat(params.getTargetPackageNames()).containsExactlyElementsIn(TARGET_PACKAGE_NAMES);
         assertThat(params.getPreviewIntent()).isEqualTo(previewIntent);
         assertThat(params.getAppInteractionAttribution()).isEqualTo(appInteractionAttribution);
@@ -144,7 +145,7 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams params =
                 new ComputerControlSessionParams.Builder()
                         .setName(SESSION_NAME)
-                        .setTargetExtensionVersion(TARGET_EXTENSION_VERSION)
+                        .setTargetComputerControlVersion(TARGET_COMPUTER_CONTROL_VERSION)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setPreviewIntent(null)
                         .build();
@@ -157,7 +158,7 @@ public class ComputerControlSessionParamsTest {
         ComputerControlSessionParams params =
                 new ComputerControlSessionParams.Builder()
                         .setName(SESSION_NAME)
-                        .setTargetExtensionVersion(TARGET_EXTENSION_VERSION)
+                        .setTargetComputerControlVersion(TARGET_COMPUTER_CONTROL_VERSION)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setAppInteractionAttribution(null)
                         .build();
@@ -167,14 +168,14 @@ public class ComputerControlSessionParamsTest {
     }
 
     @Test
-    public void build_withTargetExtensionVersion5_unsetAppInteractionAttribution_throwsException() {
+    public void build_withTargetComputerControlVersion5_unsetAppInteractionAttribution_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
                 () ->
                         new ComputerControlSessionParams.Builder()
                                 .setName(SESSION_NAME)
                                 .setTargetPackageNames(TARGET_PACKAGE_NAMES)
-                                .setTargetExtensionVersion(5)
+                                .setTargetComputerControlVersion(5)
                                 .build());
     }
 }
