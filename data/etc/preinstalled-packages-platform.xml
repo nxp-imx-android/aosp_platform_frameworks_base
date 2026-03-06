@@ -18,7 +18,8 @@
 This XML file declares which system packages should be initially installed for new users based on
 their user type. All system packages on the device should ideally have an entry in an xml file
 (keyed by its manifest name), except for static overlays which are instead treated automatically
-according to the entry for their corresponding overlay target package.
+according to the entry for their corresponding overlay target package if they don't have their own
+explicit entry.
 
 Base user-types (every user will be at least one of these types) are:
   SYSTEM    (user 0)
