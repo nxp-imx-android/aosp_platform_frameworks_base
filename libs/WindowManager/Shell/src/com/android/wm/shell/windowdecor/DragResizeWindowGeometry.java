@@ -73,7 +73,8 @@ public final class DragResizeWindowGeometry {
         mFineTaskCorners = new TaskCorners(mTaskSize, fineCornerSize);
 
         // Save touch areas for each edge.
-        mTaskEdges = new TaskEdges(mTaskSize, mResizeHandleEdgeOutset, mDisabledEdge);
+        mTaskEdges = new TaskEdges(
+                mTaskSize, mResizeHandleEdgeOutset, mResizeHandleEdgeInset, mDisabledEdge);
     }
 
     /**
@@ -448,31 +449,31 @@ public final class DragResizeWindowGeometry {
         private final @NonNull Region mRegion;
         private final @NonNull DisabledEdge mDisabledEdge;
 
-        private TaskEdges(@NonNull Size taskSize, int resizeHandleThickness,
+        private TaskEdges(@NonNull Size taskSize, int resizeHandleOutset, int resizeHandleInset,
                 DisabledEdge disabledEdge) {
             // Save touch areas for each edge.
             mDisabledEdge = disabledEdge;
             // Save touch areas for each edge.
             mTopEdgeBounds = new Rect(
-                    -resizeHandleThickness,
-                    -resizeHandleThickness,
-                    taskSize.getWidth() + resizeHandleThickness,
-                    resizeHandleThickness);
+                    -resizeHandleOutset,
+                    -resizeHandleOutset,
+                    taskSize.getWidth() + resizeHandleOutset,
+                    resizeHandleInset);
             mLeftEdgeBounds = new Rect(
-                    -resizeHandleThickness,
+                    -resizeHandleOutset,
                     0,
-                    resizeHandleThickness,
+                    resizeHandleInset,
                     taskSize.getHeight());
             mRightEdgeBounds = new Rect(
-                    taskSize.getWidth() - resizeHandleThickness,
+                    taskSize.getWidth() - resizeHandleInset,
                     0,
-                    taskSize.getWidth() + resizeHandleThickness,
+                    taskSize.getWidth() + resizeHandleOutset,
                     taskSize.getHeight());
             mBottomEdgeBounds = new Rect(
-                    -resizeHandleThickness,
-                    taskSize.getHeight() - resizeHandleThickness,
-                    taskSize.getWidth() + resizeHandleThickness,
-                    taskSize.getHeight() + resizeHandleThickness);
+                    -resizeHandleOutset,
+                    taskSize.getHeight() - resizeHandleInset,
+                    taskSize.getWidth() + resizeHandleOutset,
+                    taskSize.getHeight() + resizeHandleOutset);
 
             mRegion = new Region();
             union(mRegion);
