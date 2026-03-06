@@ -56,7 +56,8 @@ public class DesktopModeStatus {
     /**
      * Flag to indicate whether to restrict desktop mode to supported devices.
      */
-    private static final boolean ENFORCE_DEVICE_RESTRICTIONS = SystemProperties.getBoolean(
+    // Non-final: field is overwritten in DesktopModeStatusTest.
+    private static boolean ENFORCE_DEVICE_RESTRICTIONS = SystemProperties.getBoolean(
             "persist.wm.debug.desktop_mode_enforce_device_restrictions", true);
 
     /**
