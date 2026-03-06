@@ -9822,12 +9822,15 @@ public class WindowManagerService extends IWindowManager.Stub
         // apps to go behind home. See b/117376413
         if (task.isActivityTypeHome()) {
             // Only ignore root home task if the requested focus home Task is in the same
-            // TaskDisplayArea as the current focus Task.
-            TaskDisplayArea homeTda = task.getDisplayArea();
-            WindowState curFocusedWindow = getFocusedWindow();
-            if (curFocusedWindow != null && homeTda != null
-                    && curFocusedWindow.isDescendantOf(homeTda)) {
-                return;
+            // TaskDisplayArea or RootDisplayArea as the current focus window.
+            final WindowState curFocusedWindow = getFocusedWindow();
+            if (curFocusedWindow != null) {
+                final DisplayArea commonParent = curFocusedWindow.isActivityWindow()
+                        ? curFocusedWindow.getDisplayArea()
+                        : curFocusedWindow.getRootDisplayArea();
+                if (commonParent != null && task.isDescendantOf(commonParent)) {
+                    return;
+                }
             }
         }
 
