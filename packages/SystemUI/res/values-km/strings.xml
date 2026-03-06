@@ -987,12 +987,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"រួចរាល់"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ប្រើ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"បិទ"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"ឧបករណ៍"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"ទូរសព្ទ"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"ថេប្លេត"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"កុំព្យូទ័រ​យួរ​ដៃ"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"នាឡិកា"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"ទូរទស្សន៍"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"ឧបករណ៍ប្រភព"</string>
     <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"បើក​ការកំណត់<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"ស្ងាត់"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"លំនាំដើម"</string>
@@ -1229,10 +1224,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"បើការកំណត់ <xliff:g id="ID_1">%s</xliff:g>"</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"កែលំដាប់នៃការកំណត់រហ័ស។"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"ម៉ឺនុយ​ថាមពល"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"បាន​ពង្រីក"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"បាន​បង្រួម"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"ទំព័រ <xliff:g id="ID_1">%1$d</xliff:g> នៃ <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"បើក <xliff:g id="ID_1">%1$s</xliff:g> ឬ?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"រូប"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> គឺជាផ្លូវកាត់​ក្ដារ​ចុចសម្រាប់ប្រើ <xliff:g id="ID_4">^4</xliff:g>។ <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1495,8 +1488,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ឧបករណ៍​ដែលអាច​ប្រើបាន​សម្រាប់ឧបករណ៍​បញ្ចេញ​សំឡេង។"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"កម្រិតសំឡេង"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"មិនអាចមើលឃើញឧបករណ៍មួយចំនួនទេ។ ធ្វើបច្ចុប្បន្នភាពការអនុញ្ញាតកម្មវិធីរបស់អ្នក"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"កែ"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ឧបករណ៍បំពងសំឡេងតភ្ជាប់"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ឧបករណ៍បំពងសំឡេង និងផ្ទាំងអេក្រង់"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"បាន​ណែនាំ"</string>
@@ -1606,8 +1601,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"​មើល​រូបភាព​សាកល្បង"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"កែ"</string>
     <string name="add" msgid="81036585205287996">"បញ្ចូល"</string>
-    <!-- no translation found for remove (7031760447233505700) -->
-    <skip />
+    <string name="remove" msgid="7031760447233505700">"ដកចេញ"</string>
     <string name="manage_users" msgid="1823875311934643849">"គ្រប់គ្រង​អ្នក​ប្រើប្រាស់"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"ការជូនដំណឹងនេះមិនអាចឱ្យអូសដើម្បីបំបែកអេក្រង់បានទេ"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"ទីតាំងដែលសកម្ម"</string>
@@ -1776,7 +1770,7 @@
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"អូសឡើងលើ ហើយសង្កត់ឱ្យជាប់ដោយប្រើម្រាមដៃបីលើផ្ទាំងប៉ះរបស់អ្នក"</string>
     <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"អូសឡើងលើដោយប្រើម្រាមដៃបី​នៅលើផ្ទាំងប៉ះរបស់អ្នក"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"ធ្វើបានល្អ!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"អ្នកបានបញ្ចប់ការមើលចលនាកម្មវិធីថ្មីៗ"</string>
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="6217687180479342625">"អ្នកបានបញ្ចប់ការធ្វើចលនាដើម្បីមើលកម្មវិធីថ្មីៗហើយ"</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"ដើម្បីមើលកម្មវិធីថ្មីៗ សូមអូសឡើងលើ រួចសង្កត់ឱ្យជាប់លើផ្ទាំងប៉ះរបស់អ្នក ដោយប្រើម្រាមដៃបី"</string>
     <string name="touchpad_recent_updated_gesture_error_body" msgid="3310047209458414383">"អូសឡើងលើដោយប្រើម្រាមដៃបីលើផ្ទាំងប៉ះរបស់អ្នក ដើម្បីទៅកាន់អេក្រង់កម្មវិធីថ្មីៗរបស់អ្នក"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"ប្ដូរ​កម្មវិធី"</string>

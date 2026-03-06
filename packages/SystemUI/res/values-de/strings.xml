@@ -706,18 +706,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Du kannst während des Ladevorgangs auf deine bevorzugten Widgets und Bildschirmschoner zugreifen."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Los gehts"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Beim Laden werden deine Lieblings-Bildschirmschoner angezeigt"</string>
-    <!-- no translation found for dream_switcher_select_dream_title (2784437029616150736) -->
-    <skip />
-    <!-- no translation found for dream_switcher_choose_screensaver (3073471555365511227) -->
-    <skip />
-    <!-- no translation found for dream_switcher_edit_button_text (2152516873780618659) -->
-    <skip />
-    <!-- no translation found for dream_switcher_go_to_app_button_text (6043693674135654080) -->
-    <skip />
-    <!-- no translation found for dream_switcher_more_screensavers (6672017768044989604) -->
-    <skip />
-    <!-- no translation found for dreams_switcher_accessibility_action (2910870945341642369) -->
-    <skip />
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"Traum auswählen"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"Bildschirmschoner auswählen"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"<xliff:g id="DREAM_NAME">%1$s</xliff:g> bearbeiten"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"Zu <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"Weitere Bildschirmschoner"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"Menü für Traumauswahl öffnen"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Nutzer wechseln"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"Pull-down-Menü"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Alle Apps und Daten in dieser Sitzung werden gelöscht."</string>
@@ -993,12 +987,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Fertig"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Anwenden"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Deaktivieren"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"Gerät"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"Smartphone"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"Tablet"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"Laptop"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"Smartwatch"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"Smart TV"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"Quellgerät"</string>
     <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>-Einstellungen öffnen"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Lautlos"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Standard"</string>
@@ -1112,8 +1101,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"Einstellungen öffnen"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"Digitalen Assistenten öffnen"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"Kontextsuche"</string>
-    <!-- no translation found for group_system_access_contextual_cursor (200587108400598774) -->
-    <skip />
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"Kontextbezogener Cursor"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"Bildschirm sperren"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"Notiz machen"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasking"</string>
@@ -1236,10 +1224,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Einstellungen für <xliff:g id="ID_1">%s</xliff:g> öffnen."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Reihenfolge der Schnelleinstellungen bearbeiten"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Ein/Aus-Menü"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"Maximiert"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"Minimiert"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Seite <xliff:g id="ID_1">%1$d</xliff:g> von <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> aktivieren?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"Symbol"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ist die Tastenkombination zum Verwenden von <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1502,8 +1488,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Für die Audioausgabe verfügbare Geräte."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Lautstärke"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g> %%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"Einige Geräte sind erst zu sehen, wenn du deine App-Berechtigungen änderst."</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"Änderungen vornehmen"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Verbundene Lautsprecher"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Lautsprecher &amp; Displays"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Vorschläge"</string>

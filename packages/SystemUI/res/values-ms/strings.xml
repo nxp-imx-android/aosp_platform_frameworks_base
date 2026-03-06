@@ -987,12 +987,8 @@
     <string name="inline_done_button" msgid="6043094985588909584">"Selesai"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Guna"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Matikan"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"peranti"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"telefon"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"tablet"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"komputer riba"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"jam tangan"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"TV"</string>
+    <!-- no translation found for bridged_source_device (2233591993331607836) -->
+    <skip />
     <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"Buka tetapan <xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Senyap"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Lalai"</string>
@@ -1229,10 +1225,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"Buka tetapan <xliff:g id="ID_1">%s</xliff:g>."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Edit urutan Tetapan Pantas."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu kuasa"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"Dikembangkan"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"Dikuncupkan"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Halaman <xliff:g id="ID_1">%1$d</xliff:g> daripada <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Hidupkan <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ikon"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ialah pintasan papan kekunci untuk menggunakan <xliff:g id="ID_4">^4</xliff:g>. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1495,8 +1489,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"Peranti tersedia untuk audio output."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"Kelantangan"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"Sesetengah peranti tidak kelihatan. Kemas kinikan kebenaran apl anda"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"Penyelesaian"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"Pembesar suara tersambung"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"Pembesar Suara &amp; Paparan"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"Dicadangkan"</string>
@@ -1606,8 +1602,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"Pratonton imej"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"edit"</string>
     <string name="add" msgid="81036585205287996">"Tambah"</string>
-    <!-- no translation found for remove (7031760447233505700) -->
-    <skip />
+    <string name="remove" msgid="7031760447233505700">"Alih keluar"</string>
     <string name="manage_users" msgid="1823875311934643849">"Urus pengguna"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"Pemberitahuan ini tidak menyokong penyeretan kepada skrin pisah"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"Lokasi aktif"</string>

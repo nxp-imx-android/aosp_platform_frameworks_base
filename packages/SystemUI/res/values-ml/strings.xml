@@ -987,12 +987,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"പൂർത്തിയായി"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ബാധകമാക്കുക"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ഓഫാക്കുക"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"ഉപകരണം"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"ഫോൺ"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"ടാബ്‌ലെറ്റ്"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ലാപ്‌ടോപ്പ്"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"വാച്ച്"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"ടിവി"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"ഉറവിട ഉപകരണം"</string>
     <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"<xliff:g id="DEVICE_TYPE">%1$s</xliff:g> ക്രമീകരണം തുറക്കുക"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"നിശബ്‌ദം"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ഡിഫോൾട്ട്"</string>
@@ -1229,10 +1224,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"<xliff:g id="ID_1">%s</xliff:g> ക്രമീകരണം തുറക്കുക."</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"ദ്രുത ക്രമീകരണത്തിന്റെ ക്രമം എഡിറ്റ് ചെയ്യുക."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"പവർ മെനു"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"വികസിപ്പിച്ചു"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"ചുരുക്കി"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"പേജ് <xliff:g id="ID_1">%1$d</xliff:g> / <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> ഓണാക്കണോ?"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_4">^4</xliff:g> ഉപയോഗിക്കാനുള്ള കീബോർഡ് കുറുക്കുവഴികൾ <xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"ഐക്കൺ"</annotation>" + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> ആണ്. <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1495,8 +1488,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"ഓഡിയോ ഔട്ട്‌പുട്ടിന് ലഭ്യമായ ഉപകരണങ്ങൾ."</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"വോളിയം"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"ചില ഉപകരണങ്ങൾ ദൃശ്യമല്ല. നിങ്ങളുടെ ആപ്പ് അനുമതികൾ അപ്ഡേറ്റ് ചെയ്യുക"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"പ്രശ്‌നം പരിഹരിക്കുക"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"കണക്റ്റ് ചെയ്ത സ്‌പീക്കറുകൾ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"സ്‌പീക്കറുകളും ഡിസ്പ്ലേകളും"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"നിർദ്ദേശിക്കുന്നത്"</string>
@@ -1606,8 +1601,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"ചിത്രത്തിന്റെ പ്രിവ്യൂ"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"എഡിറ്റ് ചെയ്യുക"</string>
     <string name="add" msgid="81036585205287996">"ചേർക്കുക"</string>
-    <!-- no translation found for remove (7031760447233505700) -->
-    <skip />
+    <string name="remove" msgid="7031760447233505700">"നീക്കം ചെയ്യുക"</string>
     <string name="manage_users" msgid="1823875311934643849">"ഉപയോക്താക്കളെ മാനേജ് ചെയ്യുക"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"സ്പ്ലിറ്റ് സ്ക്രീനിലേക്ക് വലിച്ചിടുന്നതിനെ ഈ അറിയിപ്പ് പിന്തുണയ്ക്കുന്നില്ല"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"ലൊക്കേഷൻ സജീവമാണ്"</string>

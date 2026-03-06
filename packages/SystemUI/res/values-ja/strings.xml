@@ -708,18 +708,12 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"充電中にお気に入りのウィジェットやスクリーン セーバーにアクセスできます。"</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"使ってみる"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"お気に入りのスクリーンセーバーを充電中に表示"</string>
-    <!-- no translation found for dream_switcher_select_dream_title (2784437029616150736) -->
-    <skip />
-    <!-- no translation found for dream_switcher_choose_screensaver (3073471555365511227) -->
-    <skip />
-    <!-- no translation found for dream_switcher_edit_button_text (2152516873780618659) -->
-    <skip />
-    <!-- no translation found for dream_switcher_go_to_app_button_text (6043693674135654080) -->
-    <skip />
-    <!-- no translation found for dream_switcher_more_screensavers (6672017768044989604) -->
-    <skip />
-    <!-- no translation found for dreams_switcher_accessibility_action (2910870945341642369) -->
-    <skip />
+    <string name="dream_switcher_select_dream_title" msgid="2784437029616150736">"ドリームを選択してください"</string>
+    <string name="dream_switcher_choose_screensaver" msgid="3073471555365511227">"スクリーンセーバーを選択する"</string>
+    <string name="dream_switcher_edit_button_text" msgid="2152516873780618659">"<xliff:g id="DREAM_NAME">%1$s</xliff:g>を編集"</string>
+    <string name="dream_switcher_go_to_app_button_text" msgid="6043693674135654080">"<xliff:g id="APP_NAME">%1$s</xliff:g>に移動"</string>
+    <string name="dream_switcher_more_screensavers" msgid="6672017768044989604">"その他のスクリーンセーバー"</string>
+    <string name="dreams_switcher_accessibility_action" msgid="2910870945341642369">"ドリーム選択メニューを開く"</string>
     <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"ユーザーを切り替える"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"プルダウン メニュー"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"このセッションでのアプリとデータはすべて削除されます。"</string>
@@ -995,12 +989,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"完了"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"適用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"OFF にする"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"デバイス"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"スマートフォン"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"タブレット"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"ノートパソコン"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"スマートウォッチ"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"テレビ"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"ソースデバイス"</string>
     <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>の設定を開く"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"マナー"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"デフォルト"</string>
@@ -1114,8 +1103,7 @@
     <string name="group_system_access_system_settings" msgid="8731721963449070017">"設定を開く"</string>
     <string name="group_system_access_google_assistant" msgid="3769929488906534254">"デジタル アシスタントを開く"</string>
     <string name="group_system_access_contextual_search" msgid="525635757621336007">"コンテキスト検索"</string>
-    <!-- no translation found for group_system_access_contextual_cursor (200587108400598774) -->
-    <skip />
+    <string name="group_system_access_contextual_cursor" msgid="200587108400598774">"コンテキスト カーソル"</string>
     <string name="group_system_lock_screen" msgid="7391191300363416543">"画面をロックする"</string>
     <string name="group_system_quick_memo" msgid="3764560265935722903">"メモを入力する"</string>
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"マルチタスク"</string>
@@ -1238,10 +1226,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"<xliff:g id="ID_1">%s</xliff:g> の設定を開きます。"</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"クイック設定の順序を編集します。"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"電源ボタン メニュー"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"開いた状態です"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"閉じた状態です"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"ページ <xliff:g id="ID_1">%1$d</xliff:g>/<xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> 機能を ON にしますか？"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612">"<xliff:g id="ID_1">^1</xliff:g> "<annotation id="action_key_icon">"アイコン"</annotation>"+<xliff:g id="ID_2">^2</xliff:g>+<xliff:g id="ID_3">^3</xliff:g> は、<xliff:g id="ID_4">^4</xliff:g> 機能を使用するためのキーボード ショートカットです。<xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1504,8 +1490,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"音声出力ができるデバイスです。"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"音量"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"一部のデバイスが表示されていません。アプリの権限を更新してください"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"修正"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"接続済みのスピーカー"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"スピーカーとディスプレイ"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"候補"</string>
@@ -1615,8 +1603,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"画像プレビュー"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"編集"</string>
     <string name="add" msgid="81036585205287996">"追加"</string>
-    <!-- no translation found for remove (7031760447233505700) -->
-    <skip />
+    <string name="remove" msgid="7031760447233505700">"削除"</string>
     <string name="manage_users" msgid="1823875311934643849">"ユーザーの管理"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"この通知は、分割画面へのドラッグをサポートしていません"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"位置情報がアクティブです"</string>
@@ -1780,7 +1767,7 @@
     <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"「ホームに移動」ジェスチャーを学習しました"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"ホーム画面に移動するには、タッチパッドを 3 本の指で上にスワイプします"</string>
     <string name="touchpad_home_gesture_partial_success_title" msgid="5618869261676484908">"もう少しです！"</string>
-    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"次に、3 本の指で上にスワイプしてホーム画面に移動します"</string>
+    <string name="touchpad_home_gesture_partial_success_body" msgid="8133100850302405630">"次に、3 本の指でもう一度上にスワイプしてホーム画面に移動します"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"最近使ったアプリを表示する"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"タッチパッドを 3 本の指で上にスワイプして長押しします"</string>
     <string name="touchpad_recent_apps_updated_gesture_guidance" msgid="828804493094219998">"タッチパッドを 3 本の指で上にスワイプします"</string>
