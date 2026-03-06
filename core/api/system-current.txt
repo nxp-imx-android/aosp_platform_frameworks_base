@@ -1221,7 +1221,6 @@ package android.app {
     method @NonNull public java.util.List<android.app.NotificationRule.Condition> getConditions();
     method @NonNull public java.util.List<android.app.NotificationRule.Filter> getFilters();
     method public int getId();
-    method @NonNull public String getName();
     method public boolean isEnabled();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.NotificationRule> CREATOR;
@@ -1243,8 +1242,8 @@ package android.app {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.NotificationRule.Action> CREATOR;
     field public static final int PRIMARY_ACTION_BLOCK = 5; // 0x5
     field public static final int PRIMARY_ACTION_BUNDLE = 4; // 0x4
-    field public static final int PRIMARY_ACTION_DEFAULT = 2; // 0x2
-    field public static final int PRIMARY_ACTION_HIGHLIGHT = 1; // 0x1
+    field public static final int PRIMARY_ACTION_HIGHLIGHT = 2; // 0x2
+    field public static final int PRIMARY_ACTION_HIGHLIGHT_AND_ALERT = 1; // 0x1
     field public static final int PRIMARY_ACTION_LOW = 3; // 0x3
     field public static final int PRIMARY_ACTION_NONE = 0; // 0x0
   }
@@ -1262,13 +1261,12 @@ package android.app {
 
   public static final class NotificationRule.Builder {
     ctor public NotificationRule.Builder(@NonNull android.app.NotificationRule);
-    ctor public NotificationRule.Builder(@IntRange(from=100, to=125) int, @NonNull String);
+    ctor public NotificationRule.Builder(@IntRange(from=100, to=125) int, @NonNull android.app.NotificationRule.Action);
     method @NonNull public android.app.NotificationRule build();
     method @NonNull public android.app.NotificationRule.Builder setAction(@NonNull android.app.NotificationRule.Action);
     method @NonNull public android.app.NotificationRule.Builder setConditions(@Nullable java.util.List<android.app.NotificationRule.Condition>);
     method @NonNull public android.app.NotificationRule.Builder setEnabled(boolean);
     method @NonNull public android.app.NotificationRule.Builder setFilters(@Nullable java.util.List<android.app.NotificationRule.Filter>);
-    method @NonNull public android.app.NotificationRule.Builder setName(@NonNull String);
   }
 
   public static final class NotificationRule.Condition implements android.os.Parcelable {

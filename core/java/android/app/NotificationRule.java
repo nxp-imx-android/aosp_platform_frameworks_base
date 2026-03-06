@@ -139,9 +139,8 @@ public final class NotificationRule implements Parcelable {
     private final List<Filter> mFilters = new ArrayList<>();
     private boolean mEnabled = true;
     private int mId;
-    private @NonNull final String mName;
     private @Nullable final String mEditIntentAction;
-    private @Nullable final Action mAction;
+    private @NonNull final Action mAction;
     private boolean mCanBeDisabled = true;
     private final List<Condition> mConditions = new ArrayList<>();
 
@@ -196,13 +195,6 @@ public final class NotificationRule implements Parcelable {
     }
 
     /**
-     * Returns the name of this rule.
-     */
-    public @NonNull String getName() {
-        return mName;
-    }
-
-    /**
      * Returns whether a 'turn off rule' affordance should be displayed in the rule edit UIs.
      * @hide
      */
@@ -239,31 +231,29 @@ public final class NotificationRule implements Parcelable {
         if (!(o instanceof NotificationRule)) return false;
         NotificationRule that = (NotificationRule) o;
         return mEnabled == that.mEnabled && mId == that.mId && mCanBeDisabled == that.mCanBeDisabled
-                && Objects.equals(mFilters, that.mFilters) && Objects.equals(mName,
-                that.mName) && Objects.equals(mEditIntentAction, that.mEditIntentAction)
+                && Objects.equals(mFilters, that.mFilters)
+                && Objects.equals(mEditIntentAction, that.mEditIntentAction)
                 && Objects.equals(mAction, that.mAction) && Objects.equals(
                 mConditions, that.mConditions);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(mFilters, mEnabled, mId, mName, mEditIntentAction, mAction,
+        return Objects.hash(mFilters, mEnabled, mId, mEditIntentAction, mAction,
                 mCanBeDisabled,
                 mConditions);
     }
 
     @Override
     public String toString() {
-        return "NotificationRule{" +
-                "mFilters=" + mFilters +
-                ", mEnabled=" + mEnabled +
-                ", mId=" + mId +
-                ", mName='" + mName + '\'' +
-                ", mEditIntentAction='" + mEditIntentAction + '\'' +
-                ", mAction=" + mAction +
-                ", mCanBeDisabled=" + mCanBeDisabled +
-                ", mConditions=" + mConditions +
-                '}';
+        return "NotificationRule{mId=" + mId
+                + "\n mFilters=" + mFilters
+                + "\n mAction=" + mAction
+                + "\n mConditions= " + mConditions
+                + "\n mEnabled=" + mEnabled
+                + ", mEditIntentAction='" + mEditIntentAction + '\''
+                + ", mCanBeDisabled=" + mCanBeDisabled
+                + '}';
     }
 
     /**
@@ -276,31 +266,41 @@ public final class NotificationRule implements Parcelable {
         if (type != XmlPullParser.START_TAG || !RULE_TAG.equals(tag)) return null;
 
         int id = parser.getAttributeInt(null, ID_ATTR, 0);
-        String name = parser.getAttributeValue(null, NAME_ATTR);
-        NotificationRule.Builder builder = new NotificationRule.Builder(id, name);
-        builder.setEnabled(parser.getAttributeBoolean(null, ENABLED_ATTR));
-        builder.setEditIntentAction(parser.getAttributeValue(null, EDIT_INTENT_ACTION_ATTR));
-        builder.setCanBeDisabled(parser.getAttributeBoolean(null, CAN_BE_DISABLED_ATTR));
+        boolean enabled = parser.getAttributeBoolean(null, ENABLED_ATTR);
+        String editAction = parser.getAttributeValue(null, EDIT_INTENT_ACTION_ATTR);
+        boolean canBeDisabled = parser.getAttributeBoolean(null, CAN_BE_DISABLED_ATTR);
+        Action action = null;
+        List<Condition> conditions = new ArrayList<>();
+        List<Filter> filters = new ArrayList<>();
         type = parser.next();
         tag = parser.getName();
         while (type != XmlPullParser.END_DOCUMENT
                 && !(RULE_TAG.equals(tag) && type == XmlPullParser.END_TAG)) {
             if (type == XmlPullParser.START_TAG) {
                 if (ACTION_TAG.equals(tag)) {
-                    builder.setAction(Action.readXml(parser, forRestore, context));
+                    action = Action.readXml(parser, forRestore, context);
                 }
                 if (CONDITION_TAG.equals(tag)) {
-                    builder.addCondition(Condition.readXml(parser));
+                    conditions.add(Condition.readXml(parser));
                 }
                 if (FILTER_TAG.equals(tag)) {
                     Filter filter = Filter.readXml(parser);
-                    builder.addFilter(filter);
+                    filters.add(filter);
                 }
             }
             type = parser.next();
             tag = parser.getName();
         }
-        return builder.build();
+        if (action != null) {
+            return new NotificationRule.Builder(id, action)
+                    .setEnabled(enabled)
+                    .setEditIntentAction(editAction)
+                    .setCanBeDisabled(canBeDisabled)
+                    .setFilters(filters)
+                    .setConditions(conditions)
+                    .build();
+        }
+        return null;
     }
 
     /**
@@ -314,7 +314,6 @@ public final class NotificationRule implements Parcelable {
         }
         out.attribute(null, ID_ATTR, String.valueOf(getId()));
         out.attribute(null, ENABLED_ATTR, String.valueOf(isEnabled()));
-        out.attribute(null, NAME_ATTR, getName());
         if (mEditIntentAction != null) {
             out.attribute(null, EDIT_INTENT_ACTION_ATTR, getEditIntentAction());
         }
@@ -347,7 +346,6 @@ public final class NotificationRule implements Parcelable {
         dest.writeTypedList(mFilters);
         dest.writeBoolean(mEnabled);
         dest.writeInt(mId);
-        dest.writeString8(mName);
         dest.writeString8(mEditIntentAction);
         dest.writeParcelable(mAction, flags);
         dest.writeBoolean(mCanBeDisabled);
@@ -358,7 +356,6 @@ public final class NotificationRule implements Parcelable {
         in.readTypedList(mFilters, Filter.CREATOR);
         mEnabled = in.readBoolean();
         mId = in.readInt();
-        mName = in.readString8();
         mEditIntentAction = in.readString8();
         mAction = in.readParcelable(Action.class.getClassLoader(), Action.class);
         mCanBeDisabled = in.readBoolean();
@@ -366,13 +363,12 @@ public final class NotificationRule implements Parcelable {
     }
 
     private NotificationRule(@NonNull List<Filter> filters,
-            boolean enabled, int id, @Nullable String name, @Nullable String editIntentAction,
-            @Nullable Action action, boolean canBeDisabled,
+            boolean enabled, int id, @Nullable String editIntentAction,
+            @NonNull Action action, boolean canBeDisabled,
             @NonNull List<Condition> conditions) {
         mFilters.addAll(filters);
         mEnabled = enabled;
         mId = id;
-        mName = name;
         mEditIntentAction = editIntentAction;
         mAction = action;
         mCanBeDisabled = canBeDisabled;
@@ -397,9 +393,8 @@ public final class NotificationRule implements Parcelable {
         private final List<Filter> mFilters = new ArrayList<>();
         private boolean mEnabled = true;
         private int mId;
-        private @NonNull String mName;
         private @Nullable String mEditIntentAction;
-        private @Nullable Action mAction;
+        private @NonNull Action mAction;
         private boolean mCanBeDisabled = true;
         private final List<Condition> mConditions = new ArrayList<>();
 
@@ -407,16 +402,15 @@ public final class NotificationRule implements Parcelable {
             mFilters.addAll(rule.getFilters());
             mEnabled = rule.isEnabled();
             mId = rule.getId();
-            mName = rule.getName();
             mEditIntentAction = rule.getEditIntentAction();
             mAction = rule.getAction();
             mCanBeDisabled = rule.canBeDisabled();
             mConditions.addAll(rule.getConditions());
         }
 
-        public Builder(@IntRange(from=100, to=125) int mId, @NonNull String name) {
+        public Builder(@IntRange(from=100, to=125) int mId, @NonNull Action action) {
             this.mId = mId;
-            this.mName = name;
+            mAction = action;
         }
 
         /**
@@ -447,15 +441,6 @@ public final class NotificationRule implements Parcelable {
         @NonNull
         public Builder setEnabled(boolean enabled) {
             mEnabled = enabled;
-            return this;
-        }
-
-        /**
-         * Sets the name of this rule.
-         */
-        @NonNull
-        public Builder setName(@NonNull String name) {
-            mName = name;
             return this;
         }
 
@@ -514,7 +499,7 @@ public final class NotificationRule implements Parcelable {
 
         @NonNull
         public NotificationRule build() {
-            return new NotificationRule(mFilters, mEnabled, mId, mName, mEditIntentAction,
+            return new NotificationRule(mFilters, mEnabled, mId, mEditIntentAction,
                     mAction, mCanBeDisabled, mConditions);
         }
     }
@@ -818,7 +803,7 @@ public final class NotificationRule implements Parcelable {
     public static final class Action implements Parcelable {
         /** @hide */
         @IntDef(prefix = {"PRIMARY_ACTION_"}, value = {
-                PRIMARY_ACTION_NONE, PRIMARY_ACTION_HIGHLIGHT, PRIMARY_ACTION_DEFAULT,
+                PRIMARY_ACTION_NONE, PRIMARY_ACTION_HIGHLIGHT_AND_ALERT, PRIMARY_ACTION_HIGHLIGHT,
                 PRIMARY_ACTION_LOW, PRIMARY_ACTION_BUNDLE, PRIMARY_ACTION_BLOCK
         })
         @Retention(RetentionPolicy.SOURCE)
@@ -830,15 +815,16 @@ public final class NotificationRule implements Parcelable {
          */
         public static final int PRIMARY_ACTION_NONE = 0;
         /**
+         * Notifications that match this filter should be highlighted and breakthrough all
+         * {@link AutomaticZenRule modes}. This means they will have elevated audible and visual
+         * alerts.
+         */
+        public static final int PRIMARY_ACTION_HIGHLIGHT_AND_ALERT = 1;
+        /**
          * Notifications that match this filter should be highlighted. This means they will have
          * elevated audible and visual alerts.
          */
-        public static final int PRIMARY_ACTION_HIGHLIGHT = 1;
-        /**
-         * Notifications that match this filter should have their importance set to
-         * {@link NotificationManager#IMPORTANCE_DEFAULT}.
-         */
-        public static final int PRIMARY_ACTION_DEFAULT = 2;
+        public static final int PRIMARY_ACTION_HIGHLIGHT = 2;
         /**
          * Notifications that match this filter should have their importance set to
          * {@link NotificationManager#IMPORTANCE_LOW}.
@@ -944,6 +930,16 @@ public final class NotificationRule implements Parcelable {
             } else {
                 mEmojiIcon = null;
             }
+        }
+
+        /**
+         * @hide
+         */
+        public Action(@PrimaryAction int primaryAction) {
+            mPrimaryAction = primaryAction;
+            mSoundHapticOverride = null;
+            mBundleName = null;
+            mEmojiIcon = null;
         }
 
         @Override
