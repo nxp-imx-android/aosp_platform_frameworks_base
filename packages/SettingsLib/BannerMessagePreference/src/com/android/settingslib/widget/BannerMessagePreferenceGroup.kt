@@ -575,6 +575,12 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
             }
         }
 
+        dismissedSection.isExpanded = false
+        dismissedSection.collapsePref?.isVisible = false
+        dismissedSection.expandPref?.isVisible = true
+
+        dismissedSection.expandPref?.order = COLLAPSE_DISMISSED_ORDER
+
         val totalVictims = dismissedSection.list.size
         val lastAnimatedIndex = totalVictims - 1
         val areAnimsEnabled = areAnimationsEnabled()
@@ -590,8 +596,7 @@ class BannerMessagePreferenceGroup @JvmOverloads constructor(
                             dismissedSection.isExpanded = false
 
                             dismissedSection.list.forEach { it.isVisible = false }
-                            dismissedSection.collapsePref?.isVisible = false
-                            dismissedSection.expandPref?.isVisible = true
+                            dismissedSection.expandPref?.order = EXPAND_DISMISSED_ORDER
                         }
                     } else {
                         child.signalCollapse(false, null)
