@@ -708,8 +708,10 @@ public class VirtualDeviceManagerService extends SystemService {
         }
 
         @Override // Binder call
-        public boolean isComputerControlAvailable(@NonNull AttributionSource attributionSource) {
-            return mComputerControlSessionProcessor.isComputerControlAvailable(attributionSource);
+        public boolean isComputerControlAvailable(@NonNull AttributionSource attributionSource,
+                int targetComputerControlVersion) {
+            return mComputerControlSessionProcessor.isComputerControlAvailable(attributionSource,
+                    targetComputerControlVersion);
         }
 
         @Override // Binder call

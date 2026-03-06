@@ -236,8 +236,8 @@ public class ComputerControlSessionProcessorTest {
 
         when(mComputerControlSessionCallback.asBinder()).thenReturn(new Binder());
 
-        when(mAllowlistController.isPackageAllowedToCreateSession(anyString(), any()))
-                .thenReturn(true);
+        when(mAllowlistController.isPackageAllowedToCreateSession(anyString(), any(), any(),
+                anyInt())).thenReturn(true);
         when(mAllowlistController.isPackageAutomatable(
                 eq(TARGET_PACKAGE), eq(OWNER_PACKAGE_NAME), any())).thenReturn(true);
 
@@ -377,8 +377,8 @@ public class ComputerControlSessionProcessorTest {
 
     @Test
     public void callerNotAllowListed_throwsException() throws Exception {
-        when(mAllowlistController.isPackageAllowedToCreateSession(anyString(), any()))
-                .thenReturn(false);
+        when(mAllowlistController.isPackageAllowedToCreateSession(anyString(), any(), any(),
+                anyInt())).thenReturn(false);
 
         assertThrows(SecurityException.class,
                 () -> mProcessor.processNewSessionRequest(

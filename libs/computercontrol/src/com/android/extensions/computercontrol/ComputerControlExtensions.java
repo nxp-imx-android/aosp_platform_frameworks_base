@@ -246,6 +246,7 @@ public class ComputerControlExtensions {
         if (!isAvailable(context)) {
             return false;
         }
-        return context.getSystemService(VirtualDeviceManager.class).isComputerControlAvailable();
+        return context.getSystemService(VirtualDeviceManager.class).isComputerControlAvailable(
+                targetComputerControlVersion);
     }
 }

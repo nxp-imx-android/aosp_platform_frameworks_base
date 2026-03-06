@@ -231,7 +231,7 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         final PackageManager ownerPackageManager = ownerContext.getPackageManager();
         final String callerPackageName = attributionSource.getPackageName();
         if (!mAllowlistController.isPackageAllowedToCreateSession(callerPackageName,
-                ownerPackageManager)) {
+                ownerPackageManager, ownerUser, params.getTargetComputerControlVersion())) {
             ComputerControlStatsController.writeFailedSessionWithStatsReason(
                     mPackageManager, attributionSource, params,
                     COMPUTER_CONTROL_FAILED_SESSION_REPORTED__REASON__CALLER_NOT_ALLOWED);
@@ -270,7 +270,8 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
     /**
      * Returns whether the computer control functionality is available for the caller.
      */
-    public boolean isComputerControlAvailable(@NonNull AttributionSource attributionSource) {
+    public boolean isComputerControlAvailable(@NonNull AttributionSource attributionSource,
+            int targetComputerControlVersion) {
         final UserHandle ownerUser = UserHandle.getUserHandleForUid(attributionSource.getUid());
         final Context ownerContext;
         final long token = Binder.clearCallingIdentity();
@@ -286,7 +287,7 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         final String callerPackageName = attributionSource.getPackageName();
         try {
             return mAllowlistController.isPackageAllowedToCreateSession(callerPackageName,
-                    ownerPackageManager);
+                    ownerPackageManager, ownerUser, targetComputerControlVersion);
         } catch (SecurityException e) {
             return false;
         }

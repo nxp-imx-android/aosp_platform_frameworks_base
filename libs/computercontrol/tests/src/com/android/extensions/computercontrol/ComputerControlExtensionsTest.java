@@ -19,6 +19,7 @@ package com.android.extensions.computercontrol;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -69,7 +70,7 @@ public class ComputerControlExtensionsTest {
         mContext.setMockPackageManager(mPackageManager);
         mContext.addMockSystemService(VirtualDeviceManager.class,
                 new VirtualDeviceManager(mIVirtualDeviceManager, mContext));
-        when(mIVirtualDeviceManager.isComputerControlAvailable(any())).thenReturn(true);
+        when(mIVirtualDeviceManager.isComputerControlAvailable(any(), anyInt())).thenReturn(true);
 
         mParams = new ComputerControlSession.Params.Builder(mContext)
                 .setName(SESSION_NAME)
@@ -105,7 +106,7 @@ public class ComputerControlExtensionsTest {
 
     @Test
     public void getInstance_noAccess_returnsNonNull() throws Exception {
-        when(mIVirtualDeviceManager.isComputerControlAvailable(any())).thenReturn(false);
+        when(mIVirtualDeviceManager.isComputerControlAvailable(any(), anyInt())).thenReturn(false);
         assertThat(ComputerControlExtensions.getInstance(mContext)).isNotNull();
     }
 
@@ -116,13 +117,13 @@ public class ComputerControlExtensionsTest {
 
     @Test
     public void isSessionCreationAvailable_noAccess_returnsFalse() throws Exception {
-        when(mIVirtualDeviceManager.isComputerControlAvailable(any())).thenReturn(false);
+        when(mIVirtualDeviceManager.isComputerControlAvailable(any(), anyInt())).thenReturn(false);
         assertThat(ComputerControlExtensions.isSessionCreationAvailable(mContext)).isFalse();
     }
 
     @Test
     public void isSessionCreationAvailable_withAccess_returnsTrue() throws Exception {
-        when(mIVirtualDeviceManager.isComputerControlAvailable(any())).thenReturn(true);
+        when(mIVirtualDeviceManager.isComputerControlAvailable(any(), anyInt())).thenReturn(true);
         assertThat(ComputerControlExtensions.isSessionCreationAvailable(mContext)).isTrue();
     }
 

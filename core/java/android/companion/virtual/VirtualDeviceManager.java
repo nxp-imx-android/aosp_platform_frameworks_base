@@ -454,14 +454,16 @@ public final class VirtualDeviceManager {
 
     /**
      * Returns whether the computer control functionality is available for the caller.
+     *
      * @hide
      */
-    public boolean isComputerControlAvailable() {
+    public boolean isComputerControlAvailable(int targetComputerControlVersion) {
         if (mService == null) {
             return false;
         }
         try {
-            return mService.isComputerControlAvailable(mContext.getAttributionSource());
+            return mService.isComputerControlAvailable(mContext.getAttributionSource(),
+                    targetComputerControlVersion);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
