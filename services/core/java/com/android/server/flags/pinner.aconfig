@@ -2,16 +2,6 @@ package: "com.android.server.flags"
 container: "system"
 
 flag {
-  name: "pin_global_quota"
-  namespace: "system_performance"
-  description: "This flag controls whether pinner will use a global quota or not"
-  bug: "340935152"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "pinner_list_remove_wear_apks"
   namespace: "watch_software_performance"
   description: "Remove ClockworkSystemUI and WearServicesGoogle apk from pinned list"
