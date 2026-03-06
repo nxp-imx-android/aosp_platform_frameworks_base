@@ -147,10 +147,10 @@ open class ContainerProperties(
         val winMode = capitalize(WindowConfiguration.windowingModeToString(windowingMode))
         val actType = capitalize(WindowConfiguration.activityTypeToString(activityType))
         val rotDegress = HierarchyDebugUtils.rotationToDegrees(rotation)
-        val rotStr = if (rotation != config.windowConfiguration.displayRotation) "rot=$rotDegress"
+        val rotStr = if (rotation != config.windowConfiguration.displayRotation) " rot=$rotDegress"
                 else ""
         return "u$userId vis=$visibleRequested winMode=$winMode actType=$actType " +
-                "bounds=${bounds.toShortString()} $rotStr"
+                "bounds=${bounds.toShortString()}$rotStr"
     }
 
     /**

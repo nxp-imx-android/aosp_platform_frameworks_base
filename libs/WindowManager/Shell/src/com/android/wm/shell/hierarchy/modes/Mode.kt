@@ -20,6 +20,7 @@ import android.window.WindowContainerTransaction
 import com.android.wm.shell.hierarchy.containers.Container
 import com.android.wm.shell.hierarchy.properties.DisplayContainerProperties
 import com.android.wm.shell.hierarchy.updates.HierarchySnapshot
+import com.android.wm.shell.transition.AnimationPlan
 import com.android.wm.shell.transition.DetachResult
 import com.android.wm.shell.transition.ITransitionAnimation
 import java.io.PrintWriter
@@ -30,15 +31,15 @@ import java.io.PrintWriter
 interface Mode {
 
     //
-    // Updates (ie. for a mode to respond to changes in the hierarchy)
+    // Hierarchy Updates (to handle changes to the hierarchy that have already occurred)
     //
 
     /**
      * A hook into new displays being added, to create any static containers for this mode (if
      * necessary).
      *
-     * This is always called globally for all modes before a mode is associated with any descendant
-     * of this new display in the hierarchy.
+     * This is always called globally for all modes BEFORE modes are notified of any containers
+     * entering the mode.
      *
      * FUTURE: This would be a good place to hook into to save/restore per-display & mode state
      */
@@ -48,17 +49,23 @@ interface Mode {
      * A hook into displays being removed, to clean up any static containers previously added in
      * `prepareForDisplay()`.
      *
-     * This is only called AFTER `containersRemoved()` has been called on the modes for every
-     * container in the display.
+     * This is always called for all modes AFTER modes are notified that containers on this display
+     * are leaving the mode.
      */
     fun cleanupForDisplay(updateContext: UpdateContext, display: Container) {}
 
     /**
-     * A hook into global state changing in the hierarchy (ie. changes in the root container or
-     * the display container for the given `modeContainer`).
+     * A hook into new containers entering this mode, existing containers changing, or a global
+     * state changing.
      *
-     * For example, a mode can use the snapshot to update when global focus changes in the root
-     * container properties:
+     * The mode's responsibility is to:
+     * - Perform any local setup for all `enteringContainers`
+     * - Handle updates to the mode's state (or root tasks)
+     * - Handle updates to the dependent "global" containers (ie. root or display containers)
+     * - Create animations for added or changed containers if desired by calling
+     *   `AnimationPlan.setAnimation()`.
+     *
+     * A mode can use the snapshot to query for which global states have changed, ie:
      * ```kotlin
      * if (snapshot.getChanges(hierarchy.root)[CHANGED_FOCUS]) {
      *     val focusedTask = hierarchy.root.rootProps().focusState.globallyFocusedTaskId
@@ -66,53 +73,63 @@ interface Mode {
      * }
      * ```
      *
-     * This is always called after `containersRemoved()` and before `containersChanged()` for the
-     * given mode container, and only after the mode container has first been reported to the mode
-     * via `containersChanged()`.
-     */
-    fun globalStateChanged(
-        updateContext: UpdateContext,
-        modeContainer: Container,
-        snapshot: HierarchySnapshot,
-    ) {}
-
-    /**
-     * A hook into any changes in the hierarchy for containers associated with this mode under the
-     * given `modeContainer`, including newly added containers and changed containers.
+     * This is always called AFTER `containersRemoved()` for the containers passed into this method.
      *
-     * Modes can use the snapshot to get more details about the changes to each container, including
-     * the prior state of properties for those containers.
-     *
-     * NOTE:
-     * - There is no guarantee of ordering of calls between different modes
-     * - This will be called once for each disjoint mode container that has changed containers,
-     *   modes are expected to use the given container to resolve how to handle the changes.
+     * @param updateContext Additional information related to the change.
+     * @param enteringContainers The set of containers that are newly added to this mode. These
+     *                           containers may belong to disjoint parts of the hierarchy.
+     * @param changedContainers The set of containers that were pre-existing in this mode that have
+     *                          changes. These containers may belong to disjoint parts of the
+     *                          hierarchy.
+     * @param globalStateChanged Whether the global state outside the mode has changed (ie. changes
+     *                           in the root or display container properties)
+     * @param snapshot The snapshot of containers in the hierarchy prior to this update
+     * @param animationPlan The animation plan for an ongoing Mixpatcher transition, if this update
+     *                      is the result of a transition.
      */
     fun containersChanged(
         updateContext: UpdateContext,
-        modeContainer: Container,
-        addedContainers: List<Container>,
+        enteringContainers: List<Container>,
         changedContainers: List<Container>,
+        globalStateChanged: Boolean,
         snapshot: HierarchySnapshot,
+        animationPlan: AnimationPlan?,
     ) {}
 
     /**
-     * A hook into containers being removed from this mode, to allow for any cleanup of
-     * mode-specific state for those containers.
+     * A hook into containers leaving this mode.
      *
-     * This is always called before `globalStateChanged()` and `containersChanged()` to ensure a
-     * clear ordering of calls between the last & new mode managing a container.
+     * The mode's responsibility is to:
+     * - Perform any local cleanup for all `leavingContainers`
+     * - Prepare leaving containers for animation (if there are any surface overrides that are
+     *   important wrt. preparing a container for an animation) by calling `AnimationPlan.detach()`
+     *   on those containers to hand-off animation state to the next animator
+     * - Create animations for `removedContainers` if desired (otherwise it is animated by the
+     *   new mode for leaving containers) by calling `AnimationPlan.setAnimation()`.
+     *
+     * This is always called BEFORE `containersChanged()` to ensure an ordering of calls between
+     * the last & current mode managing a container.
+     *
+     * @param updateContext Additional information related to the change.
+     * @param leavingContainers The set of containers that are leaving this mode (either to move
+     *                          to a different mode, or removed from the hierarchy entirely. These
+     *                          containers may belong to disjoint parts of the hierarchy.
+     * @param removedContainers The subset of `leavingContainers` containers that were removed from
+     *                          the hierarchy entirely.
+     * @param snapshot The snapshot of containers in the hierarchy prior to this update.
+     * @param animationPlan The animation plan for an ongoing Mixpatcher transition, if this update
+     *                      is the result of a transition.
      */
     fun containersRemoved(
         updateContext: UpdateContext,
-        modeContainer: Container,
+        leavingContainers: List<Container>,
         removedContainers: List<Container>,
         snapshot: HierarchySnapshot,
+        animationPlan: AnimationPlan?,
     ) {}
 
     //
-    // Requests (ie. when someone needs to manipulate containers in the hierarchy and needs to know
-    // how to move something into/out of a mode.
+    // Requests (to compose changes that will manipulate containers in the hierarchy)
     //
 
     /**
@@ -156,52 +173,6 @@ interface Mode {
     ) {}
 
     //
-    // Transitions (ie. post-update transition resolution for containers associated with this mode)
-    //
-
-    /**
-     * Called for the set of descendant containers (of the "source" mode) that are participating in
-     * the current transition, allowing the mode to "detach" the container and report the current
-     * state of the container/surface to whatever animates the container next (ie. the target mode).
-     *
-     * If a mode is handling the "detaching" of the containers from the mode, then it must return
-     * a list of DetachResults with one `WindowAnimationState` for each of the provided containers.
-     * Doing so will also prevent these containers from being notified to other modes for detaching.
-     *
-     * TODO: Clarify about coordinate space for the handoff state
-     */
-    fun prepareForAnimation(
-        containers: List<Container>,
-    ): List<DetachResult>? {
-        return null
-    }
-
-    /**
-     * Called for the set of descendant containers (of the "target" mode) that are participating in
-     * the current transition, allowing this mode to create an animation to be played for the given
-     * containers to their final target state in this mode.
-     *
-     * If the container was previously in the hierarchy, then `prepareForAnimation` will have been
-     * called first prior to this call.
-     *
-     * Returning a non-null animation indicates that this mode will animate ALL provided descendant
-     * containers, and the animation assumes the responsibility for calling the provided finish
-     * callback.
-     *
-     * NOTE: The container provided may not currently exist in the hierarchy (ie. it was removed in
-     * this update).
-     *
-     * FUTURE: Make this work with Shell-only containers as well.
-     */
-    fun createAnimation(
-        animContext: AnimationContext,
-        containers: List<Container>,
-        snapshot: HierarchySnapshot,
-    ): ITransitionAnimation? {
-        return null
-    }
-
-    //
     // Misc
     //
 
@@ -226,6 +197,11 @@ interface Mode {
     /**
      * Additional context for updates, including specific transition information that isn't
      * persisted in the updated hierarchy.
+     *
+     * @see prepareForDisplay
+     * @see cleanupForDisplay
+     * @see containersChanged
+     * @see containersRemoved
      */
     class UpdateContext(
         var reason: String = "No reason given",
@@ -246,13 +222,5 @@ interface Mode {
      */
     class EnterRequestContext(
         val displayId: Int
-    )
-
-    /**
-     * Additional context for resolving transitions.
-     */
-    class AnimationContext(
-        // The surface transactions applied before the transition starts playing.
-        val preTransitionTx: SurfaceControl.Transaction,
     )
 }

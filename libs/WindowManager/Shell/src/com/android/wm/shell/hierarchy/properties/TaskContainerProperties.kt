@@ -83,7 +83,7 @@ class TaskContainerProperties(
 
     /** @see ContainerProperties.propsToString */
     override fun propsToString(): String {
-        return "#$taskId pkg=${ComponentUtils.getPackageName(taskInfo)} " + super.propsToString()
+        return "#$taskId pkg=${ComponentUtils.getPackageName(taskInfo)} | " + super.propsToString()
     }
 
     /** @see ContainerProperties.getTypeName */
