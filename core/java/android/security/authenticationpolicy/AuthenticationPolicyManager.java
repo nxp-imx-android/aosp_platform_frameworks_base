@@ -570,7 +570,11 @@ public final class AuthenticationPolicyManager {
      * Checks if a cross device agent is authorized for automation on this device when locked.
      *
      * When the companionDeviceId is null this method assumes the agent is running on the same
-     * device and will return the same value as calling {@link KeyguardManager#isDeviceLocked()}.
+     * device.
+     *
+     * Local and remote agent access is gated by device policies, which vary by role and form
+     * factor. When there is not an explicit policy this method will return the same value as
+     * calling {@link KeyguardManager#isDeviceLocked()}.
      *
      * @param companionDeviceId DeviceId from the CompanionDeviceManager or null
      * @return true if authorized now
@@ -592,9 +596,13 @@ public final class AuthenticationPolicyManager {
     /**
      * Per-user per-device version of {@link #isAgentAuthorized(DeviceId)}.
      *
+     * Local and remote agent access is gated by device policies, which vary by role and form
+     * factor. When there is not an explicit policy this method will return the same value as
+     * calling {@link KeyguardManager#isDeviceLocked(int, int)}.
+     *
      * @param userId user id
-     * @param deviceId local device id
-     * @param companionDeviceId remote DeviceId from the CompanionDeviceManager or null
+     * @param deviceId local device id where agent will run
+     * @param companionDeviceId remote DeviceId or null for local agents
      *
      * @hide
      */

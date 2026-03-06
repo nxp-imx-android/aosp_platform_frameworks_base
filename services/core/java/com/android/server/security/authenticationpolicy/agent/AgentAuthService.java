@@ -16,6 +16,8 @@
 
 package com.android.server.security.authenticationpolicy.agent;
 
+import static com.android.server.security.authenticationpolicy.agent.AgentSessionMap.Key;
+
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -23,8 +25,12 @@ import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
 import android.app.ActivityManager;
 import android.app.KeyguardManager;
+import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
 import android.companion.DeviceId;
+import android.companion.virtual.VirtualDevice;
+import android.companion.virtual.VirtualDeviceManager;
+import android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener;
 import android.content.Context;
 import android.hardware.biometrics.BiometricManager;
 import android.os.Build;
@@ -33,6 +39,7 @@ import android.os.SystemClock;
 import android.os.UserHandle;
 import android.util.Slog;
 
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
@@ -67,6 +74,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
     private BiometricManager mBiometricManager;
     private KeyguardManager mKeyguardManager;
     private CompanionDeviceManager mCompanionDeviceManager;
+    private VirtualDeviceManager mVirtualDeviceManager;
 
     private final Clock mClock;
     private final long mLastAuthTimeIntervalMillis;
@@ -82,16 +90,22 @@ public class AgentAuthService implements AgentAuthServiceInternal {
         mHandler = handler;
         mClock = clock;
         mLastAuthTimeIntervalMillis = lastAuthTimeIntervalMillis;
-        mAgentSessionList = new AgentSessionMap(mContext, ActivityManager.getCurrentUser());
+        mAgentSessionList = new AgentSessionMap(mContext, mCurrentUserId);
         mStrongAuthListener = new StrongAuthListener(mHandler, this::onStrongAuthForUser);
     }
 
     @Override
     public boolean isAgentAuthorized(@UserIdInt int userId, int deviceId,
             @Nullable DeviceId companionDeviceId) {
-        // for a local agent the device must be unlocked
         if (companionDeviceId == null) {
-            return !mKeyguardManager.isDeviceLocked(userId, deviceId);
+            // check for valid VDM managed local agents first
+            if (mVirtualDeviceManager != null
+                    && mVirtualDeviceManager.isValidVirtualDeviceId(deviceId)) {
+                return isAgentAuthorizedByDeviceId(userId, deviceId);
+            }
+
+            // otherwise, the device must be unlocked
+            return !mKeyguardManager.isDeviceLocked(userId, Context.DEVICE_ID_DEFAULT);
         }
 
         // check for a valid association with the given remote agent
@@ -106,44 +120,93 @@ public class AgentAuthService implements AgentAuthServiceInternal {
     }
 
     @Override
+    public boolean isAgentAuthorizedByDeviceId(@UserIdInt int userId, int deviceId) {
+        final var info = mAgentSessionList.get(Key.ofLocal(deviceId));
+        return info != null && (info.getUserId() == userId) && info.isAllowed()
+                && !mKeyguardManager.isDeviceLocked(userId, deviceId);
+    }
+
+    @Override
     public boolean isAgentAuthorizedByAssociationId(@UserIdInt int userId, int associationId) {
-        final var info = mAgentSessionList.get(associationId);
+        final var info = mAgentSessionList.get(Key.ofRemote(associationId));
         return info != null && (info.getUserId() == userId) && info.isAllowed();
     }
 
     @Override
-    public boolean setOverride(@UserIdInt int userId, int associationId, boolean authorized) {
+    public boolean setOverrideForDeviceId(@UserIdInt int userId,
+            int deviceId, boolean authorized) {
         if (Build.IS_DEBUGGABLE) {
-            final AgentSession result = authorized ?
-                mAgentSessionList.authorizeIfPresent(userId, associationId) :
-                    mAgentSessionList.revokeIfPresent(userId, associationId);
+            final AgentSession result = authorized
+                    ? mAgentSessionList.authorizeIfPresent(userId, Key.ofLocal(deviceId))
+                    : mAgentSessionList.revokeIfPresent(userId, Key.ofLocal(deviceId));
             return result != null && result.isAllowed();
         }
+
+        return false;
+    }
+
+    @Override
+    public boolean setOverrideForAssociationId(@UserIdInt int userId,
+            int associationId, boolean authorized) {
+        if (Build.IS_DEBUGGABLE) {
+            final AgentSession result = authorized
+                    ? mAgentSessionList.authorizeIfPresent(userId, Key.ofRemote(associationId))
+                    : mAgentSessionList.revokeIfPresent(userId, Key.ofRemote(associationId));
+            return result != null && result.isAllowed();
+        }
+
         return false;
     }
 
     /** Start the service start monitoring for connected agents and init for current user. */
+    void start() {
+        mHandler.post(() -> {
+            start(Objects.requireNonNull(LocalServices.getService(LockSettingsInternal.class)),
+                    Objects.requireNonNull(mContext.getSystemService(BiometricManager.class)),
+                    Objects.requireNonNull(mContext.getSystemService(KeyguardManager.class)),
+                    Objects.requireNonNull(mContext.getSystemService(CompanionDeviceManager.class)),
+                    mContext.getSystemService(VirtualDeviceManager.class),
+                    ActivityManager.getCurrentUser());
+        });
+    }
+
+    @VisibleForTesting
     void start(@NonNull LockSettingsInternal lockSettings,
             @NonNull BiometricManager biometricManager,
             @NonNull KeyguardManager keyguardManager,
-            @NonNull CompanionDeviceManager companionDeviceManager) {
+            @NonNull CompanionDeviceManager companionDeviceManager,
+            @Nullable VirtualDeviceManager virtualDeviceManager,
+            @UserIdInt int initialUserId) {
         mLockSettings = lockSettings;
         mBiometricManager = biometricManager;
         mKeyguardManager = keyguardManager;
         mCompanionDeviceManager = companionDeviceManager;
+        mVirtualDeviceManager = virtualDeviceManager;
 
-        mHandler.post(() -> {
-            mLockSettings.registerLockSettingsStateListener(
-                    mStrongAuthListener.asLockSettingsStateListener());
-            mBiometricManager.registerAuthenticationStateListener(
-                    mStrongAuthListener.asAuthenticationStateListener());
-        });
+        mLockSettings.registerLockSettingsStateListener(
+                mStrongAuthListener.asLockSettingsStateListener());
+        mBiometricManager.registerAuthenticationStateListener(
+                mStrongAuthListener.asAuthenticationStateListener());
+        if (mVirtualDeviceManager != null) {
+            mVirtualDeviceManager.registerVirtualDeviceListener(mHandler::post,
+                    new VirtualDeviceListener() {
+                        @Override
+                        public void onVirtualDeviceCreated(int deviceId) {
+                            handleVirtualDeviceCreated(deviceId);
+                        }
 
-        initInBackgroundForUser(ActivityManager.getCurrentUser());
+                        @Override
+                        public void onVirtualDeviceClosed(int deviceId) {
+                            handleVirtualDeviceClosed(deviceId);
+                        }
+                    });
+        }
+
+        initInBackgroundForUser(initialUserId);
     }
 
     /** Refresh data for the given user (call when the foreground user changes). */
-    void initInBackgroundForUser(int userId) {
+    void initInBackgroundForUser(@UserIdInt int userId) {
         mHandler.post(() -> {
             Slog.i(TAG, "Refreshing data for user: " + userId);
 
@@ -151,7 +214,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
         });
     }
 
-    private void onUserSwitched(int userId) {
+    private void onUserSwitched(@UserIdInt int userId) {
         if (mCurrentUserId == userId) {
             Slog.i(TAG, "user did not change - ignore");
             return;
@@ -182,32 +245,70 @@ public class AgentAuthService implements AgentAuthServiceInternal {
                 public void onAgentConnectionStarted(int associationId) {
                     final boolean authorized = isAuthorizedAtConnection();
                     if (authorized) {
-                        Slog.d(TAG, "Start session (authorized): " + associationId);
-
-                        mAgentSessionList.put(associationId, AgentSession.authorized(userId));
+                        Slog.d(TAG, "Start remote session (authorized): " + associationId);
+                        mAgentSessionList.put(Key.ofRemote(associationId),
+                                AgentSession.authorized(userId));
                     } else {
-                        Slog.d(TAG, "Start session (not authorized): " + associationId);
-
-                        mAgentSessionList.put(associationId, AgentSession.notAuthorized(userId));
+                        Slog.d(TAG, "Start remote session (not authorized): " + associationId);
+                        mAgentSessionList.put(Key.ofRemote(associationId),
+                                AgentSession.notAuthorized(userId));
                     }
                 }
 
                 @Override
                 public void onAgentConnectionStopped(int associationId) {
-                    Slog.d(TAG, "End session: " + associationId);
-                    mAgentSessionList.remove(associationId);
+                    Slog.d(TAG, "End remote session (if any) for associationId: " + associationId);
+                    mAgentSessionList.remove(Key.ofRemote(associationId));
                 }
             });
             mAgentMonitor.start();
         }
     }
 
-    private void onStrongAuthForUser(int userId) {
+    private void handleVirtualDeviceCreated(int deviceId) {
+        Slog.d(TAG, "Virtual device created: " + deviceId);
+
+        final VirtualDevice virtualDevice = mVirtualDeviceManager != null
+                ? mVirtualDeviceManager.getVirtualDevice(deviceId) : null;
+        if (virtualDevice == null) {
+            Slog.w(TAG, "Could not find virtual device for id: " + deviceId);
+            return;
+        }
+
+        final boolean requireHostUnlock = requiresRecentUnlockOnHost(virtualDevice);
+        final boolean authorized = !requireHostUnlock || isAuthorizedAtConnection();
+        if (authorized) {
+            Slog.d(TAG, "Start local session (authorized): " + deviceId);
+            mAgentSessionList.put(Key.ofLocal(deviceId),
+                    AgentSession.authorized(mCurrentUserId));
+        } else {
+            Slog.d(TAG, "Start local session (not authorized): " + deviceId);
+            mAgentSessionList.put(Key.ofLocal(deviceId),
+                    AgentSession.notAuthorized(mCurrentUserId));
+        }
+    }
+
+    private boolean requiresRecentUnlockOnHost(@Nullable VirtualDevice virtualDevice) {
+        if (virtualDevice != null) {
+            final String profile = virtualDevice.getDeviceProfile();
+
+            // only auto projected supports this, all others should use the device lock state
+            return AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION.equals(profile);
+        }
+        return false;
+    }
+
+    private void handleVirtualDeviceClosed(int deviceId) {
+        Slog.d(TAG, "End local session (if any) for deviceId: " + deviceId);
+        mAgentSessionList.remove(Key.ofLocal(deviceId));
+    }
+
+    private void onStrongAuthForUser(@UserIdInt int userId) {
         if (mCurrentUserId != userId) {
             return;
         }
 
-        mAgentSessionList.authorizeAll();
+        mAgentSessionList.authorizeAll(userId);
     }
 
     private boolean isAuthorizedAtConnection() {
@@ -251,15 +352,7 @@ public class AgentAuthService implements AgentAuthServiceInternal {
         @Override
         public void onStart() {
             LocalServices.addService(AgentAuthServiceInternal.class, mService);
-
-            mService.start(
-                    Objects.requireNonNull(
-                            LocalServices.getService(LockSettingsInternal.class)),
-                    Objects.requireNonNull(
-                            mService.mContext.getSystemService(BiometricManager.class)),
-                    (KeyguardManager) mService.mContext.getSystemService(Context.KEYGUARD_SERVICE),
-                    (CompanionDeviceManager) mService.mContext.getSystemService(
-                            Context.COMPANION_DEVICE_SERVICE));
+            mService.start();
         }
 
         @Override

@@ -29,6 +29,7 @@ import android.testing.AndroidTestingRunner;
 import androidx.test.core.app.ApplicationProvider;
 
 import com.android.internal.util.test.FakeSettingsProvider;
+import com.android.server.security.authenticationpolicy.agent.AgentSessionMap.Key;
 
 import org.junit.After;
 import org.junit.Before;
@@ -72,7 +73,7 @@ public class AgentSessionMapTest {
     @Test
     public void testPut_allowedSession_doesNotUpdateSetting() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.authorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.authorized(USER_ID));
 
         assertThat(getSetting()).isEmpty();
     }
@@ -80,35 +81,35 @@ public class AgentSessionMapTest {
     @Test
     public void testPut_notAllowedSession_updatesSetting() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.notAuthorized(USER_ID));
 
-        assertThat(getSetting()).containsExactly("1");
+        assertThat(getSetting()).containsExactly("remote_1");
     }
 
     @Test
     public void testPut_multipleSessions_updatesSetting() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
-        mAgentSessionMap.put(2, AgentSession.authorized(USER_ID));
-        mAgentSessionMap.put(3, AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(2), AgentSession.authorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(3), AgentSession.notAuthorized(USER_ID));
 
-        assertThat(getSetting()).containsExactly("1", "3");
+        assertThat(getSetting()).containsExactly("remote_1", "remote_3");
     }
 
     @Test
     public void testRemove_updatesSetting() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
-        mAgentSessionMap.put(2, AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(2), AgentSession.notAuthorized(USER_ID));
 
-        mAgentSessionMap.remove(1);
-        assertThat(getSetting()).containsExactly("2");
+        mAgentSessionMap.remove(Key.ofRemote(1));
+        assertThat(getSetting()).containsExactly("remote_2");
     }
 
     @Test
     public void testClear_updatesSetting() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.notAuthorized(USER_ID));
 
         mAgentSessionMap.clear();
         assertThat(getSetting()).isEmpty();
@@ -118,25 +119,25 @@ public class AgentSessionMapTest {
     public void testGet_returnsCorrectSession() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
         AgentSession session = AgentSession.authorized(USER_ID);
-        mAgentSessionMap.put(1, session);
-        mAgentSessionMap.put(2, AgentSession.authorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(1), session);
+        mAgentSessionMap.put(Key.ofRemote(2), AgentSession.authorized(USER_ID));
 
-        assertThat(mAgentSessionMap.get(1)).isEqualTo(session);
+        assertThat(mAgentSessionMap.get(Key.ofRemote(1))).isEqualTo(session);
     }
 
     @Test
     public void testPut_overwriteExistingSession_updatesSetting() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
-        assertThat(getSetting()).containsExactly("1");
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.notAuthorized(USER_ID));
+        assertThat(getSetting()).containsExactly("remote_1");
 
         // Overwrite with authorized
-        mAgentSessionMap.put(1, AgentSession.authorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.authorized(USER_ID));
         assertThat(getSetting()).isEmpty();
 
         // Overwrite back to not authorized
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
-        assertThat(getSetting()).containsExactly("1");
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.notAuthorized(USER_ID));
+        assertThat(getSetting()).containsExactly("remote_1");
     }
 
     @Test
@@ -145,17 +146,17 @@ public class AgentSessionMapTest {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
         AgentSessionMap otherMap = new AgentSessionMap(mContext, otherUser);
 
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
-        otherMap.put(1, AgentSession.notAuthorized(otherUser));
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.notAuthorized(USER_ID));
+        otherMap.put(Key.ofRemote(1), AgentSession.notAuthorized(otherUser));
 
-        assertThat(getSetting()).containsExactly("1");
-        assertThat(getSetting(otherUser)).containsExactly("1");
+        assertThat(getSetting()).containsExactly("remote_1");
+        assertThat(getSetting(otherUser)).containsExactly("remote_1");
     }
 
     @Test
     public void testPut_wrongUserId_doesNotUpdateSetting() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID + 1));
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.notAuthorized(USER_ID + 1));
 
         assertThat(getSetting()).isEmpty();
     }
@@ -163,53 +164,53 @@ public class AgentSessionMapTest {
     @Test
     public void testRemove_nonExistentKey_updatesSetting() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
-        assertThat(getSetting()).containsExactly("1");
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.notAuthorized(USER_ID));
+        assertThat(getSetting()).containsExactly("remote_1");
 
-        mAgentSessionMap.remove(2); // non-existent
-        assertThat(getSetting()).containsExactly("1");
+        mAgentSessionMap.remove(Key.ofRemote(2)); // non-existent
+        assertThat(getSetting()).containsExactly("remote_1");
     }
 
     @Test
     public void testAuthorizeAll_updatesSetting() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
-        mAgentSessionMap.put(2, AgentSession.notAuthorized(USER_ID));
-        assertThat(getSetting()).containsExactly("1", "2");
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(2), AgentSession.notAuthorized(USER_ID));
+        assertThat(getSetting()).containsExactly("remote_1", "remote_2");
 
-        mAgentSessionMap.authorizeAll();
+        mAgentSessionMap.authorizeAll(USER_ID);
 
-        assertThat(mAgentSessionMap.get(1).isAllowed()).isTrue();
-        assertThat(mAgentSessionMap.get(2).isAllowed()).isTrue();
+        assertThat(mAgentSessionMap.get(Key.ofRemote(1)).isAllowed()).isTrue();
+        assertThat(mAgentSessionMap.get(Key.ofRemote(2)).isAllowed()).isTrue();
         assertThat(getSetting()).isEmpty();
     }
 
     @Test
     public void testAuthorizeIfPresent_updatesSetting() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.notAuthorized(USER_ID));
-        mAgentSessionMap.put(2, AgentSession.notAuthorized(USER_ID));
-        assertThat(getSetting()).containsExactly("1", "2");
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.notAuthorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(2), AgentSession.notAuthorized(USER_ID));
+        assertThat(getSetting()).containsExactly("remote_1", "remote_2");
 
-        mAgentSessionMap.authorizeIfPresent(USER_ID, 1);
+        mAgentSessionMap.authorizeIfPresent(USER_ID, Key.ofRemote(1));
 
-        assertThat(mAgentSessionMap.get(1).isAllowed()).isTrue();
-        assertThat(mAgentSessionMap.get(2).isAllowed()).isFalse();
-        assertThat(getSetting()).containsExactly("2");
+        assertThat(mAgentSessionMap.get(Key.ofRemote(1)).isAllowed()).isTrue();
+        assertThat(mAgentSessionMap.get(Key.ofRemote(2)).isAllowed()).isFalse();
+        assertThat(getSetting()).containsExactly("remote_2");
     }
 
     @Test
     public void testRevokeIfPresent_updatesSetting() {
         mAgentSessionMap = new AgentSessionMap(mContext, USER_ID);
-        mAgentSessionMap.put(1, AgentSession.authorized(USER_ID));
-        mAgentSessionMap.put(2, AgentSession.authorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(1), AgentSession.authorized(USER_ID));
+        mAgentSessionMap.put(Key.ofRemote(2), AgentSession.authorized(USER_ID));
         assertThat(getSetting()).isEmpty();
 
-        mAgentSessionMap.revokeIfPresent(USER_ID, 1);
+        mAgentSessionMap.revokeIfPresent(USER_ID, Key.ofRemote(1));
 
-        assertThat(mAgentSessionMap.get(1).isAllowed()).isFalse();
-        assertThat(mAgentSessionMap.get(2).isAllowed()).isTrue();
-        assertThat(getSetting()).containsExactly("1");
+        assertThat(mAgentSessionMap.get(Key.ofRemote(1)).isAllowed()).isFalse();
+        assertThat(mAgentSessionMap.get(Key.ofRemote(2)).isAllowed()).isTrue();
+        assertThat(getSetting()).containsExactly("remote_1");
     }
 
     private List<String> getSetting() {

@@ -37,7 +37,6 @@ import android.platform.test.annotations.Presubmit;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -158,5 +157,15 @@ public class VirtualDeviceTest {
 
         when(mVirtualDevice.getDevicePolicy(POLICY_TYPE_CAMERA)).thenReturn(DEVICE_POLICY_CUSTOM);
         assertThat(virtualDevice.hasCustomCameraSupport()).isTrue();
+    }
+
+    @Test
+    public void virtualDevice_getDeviceProfile() throws Exception {
+        VirtualDevice virtualDevice =
+                new VirtualDevice(
+                        mVirtualDevice, VIRTUAL_DEVICE_ID, /*persistentId=*/null, /*name=*/null);
+
+        when(mVirtualDevice.getDeviceProfile()).thenReturn("test_profile");
+        assertThat(virtualDevice.getDeviceProfile()).isEqualTo("test_profile");
     }
 }

@@ -687,6 +687,19 @@ public class AuthenticationPolicyService extends SystemService {
 
         @Override
         @EnforcePermission(USE_BIOMETRIC_INTERNAL)
+        public boolean isAgentAuthorizedByDeviceId(UserHandle user, int deviceId) {
+            isAgentAuthorizedByDeviceId_enforcePermission();
+
+            if (android.companion.Flags.supportAiAgent()) {
+                return mAgentAuthService.isAgentAuthorizedByDeviceId(
+                        user.getIdentifier(), deviceId);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        @EnforcePermission(USE_BIOMETRIC_INTERNAL)
         public boolean isAgentAuthorizedByAssociationId(UserHandle user, int associationId) {
             isAgentAuthorizedByAssociationId_enforcePermission();
 
@@ -700,12 +713,27 @@ public class AuthenticationPolicyService extends SystemService {
 
         @Override
         @EnforcePermission(USE_BIOMETRIC_INTERNAL)
+        public boolean setAgentAuthorizedByDeviceId(UserHandle user, int deviceId, boolean authorized) {
+            setAgentAuthorizedByDeviceId_enforcePermission();
+
+            if (Build.IS_DEBUGGABLE) {
+                if (android.companion.Flags.supportAiAgent()) {
+                    return mAgentAuthService.setOverrideForDeviceId(
+                            user.getIdentifier(), deviceId, authorized);
+                }
+            }
+
+            return false;
+        }
+
+        @Override
+        @EnforcePermission(USE_BIOMETRIC_INTERNAL)
         public boolean setAgentAuthorizedByAssociationId(UserHandle user, int associationId, boolean authorized) {
             setAgentAuthorizedByAssociationId_enforcePermission();
 
             if (Build.IS_DEBUGGABLE) {
                 if (android.companion.Flags.supportAiAgent()) {
-                    return mAgentAuthService.setOverride(
+                    return mAgentAuthService.setOverrideForAssociationId(
                             user.getIdentifier(), associationId, authorized);
                 }
             }

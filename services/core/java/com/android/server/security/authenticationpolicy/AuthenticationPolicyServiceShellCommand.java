@@ -88,8 +88,10 @@ class AuthenticationPolicyServiceShellCommand extends ShellCommand {
         pw.println("  get-secure-lock-device-availability");
         pw.println("  on-strong-face-auth-success-confirmed");
         pw.println("  set-secure-lock-device-test-status [true/false]");
-        pw.println("  is-agent-authorized [association-id]");
-        pw.println("  set-agent-authorized [association-id] [true/false]");
+        pw.println("  is-agent-authorized [--device-id] [id]");
+        pw.println("      --device-id: Use VDM deviceId instead of CDM associationId.");
+        pw.println("  set-agent-authorized [--device-id] [id] [true/false]");
+        pw.println("      --device-id: Use VDM deviceId instead of CDM associationId.");
     }
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
@@ -147,24 +149,31 @@ class AuthenticationPolicyServiceShellCommand extends ShellCommand {
 
     private int isAgentAuthorized(@NonNull PrintWriter pw) throws RemoteException {
         try {
+            final boolean useDeviceId = "--device-id".equals(getNextOption());
             final int id = Integer.parseInt(getNextArgRequired());
-            final boolean result = mService.isAgentAuthorizedByAssociationId(mCallingUser, id);
+            final boolean result = useDeviceId
+                    ? mService.isAgentAuthorizedByDeviceId(mCallingUser, id)
+                    : mService.isAgentAuthorizedByAssociationId(mCallingUser, id);
             pw.println("authorized: " + result);
         } catch (Exception e) {
             pw.println("invalid id or not enabled");
+            e.printStackTrace(pw);
         }
         return 0;
     }
 
     private int setAgentAuthorized(@NonNull PrintWriter pw) throws RemoteException {
         try {
+            final boolean useDeviceId = "--device-id".equals(getNextOption());
             final int id = Integer.parseInt(getNextArgRequired());
             final boolean authorized = Boolean.parseBoolean(getNextArgRequired());
-            final boolean result = mService.setAgentAuthorizedByAssociationId(
-                    mCallingUser, id, authorized);
+            final boolean result = useDeviceId
+                    ? mService.setAgentAuthorizedByDeviceId(mCallingUser, id, authorized)
+                    : mService.setAgentAuthorizedByAssociationId(mCallingUser, id, authorized);
             pw.println("authorized: " + result);
         } catch (Exception e) {
             pw.println("invalid params or not enabled");
+            e.printStackTrace(pw);
         }
         return 0;
     }

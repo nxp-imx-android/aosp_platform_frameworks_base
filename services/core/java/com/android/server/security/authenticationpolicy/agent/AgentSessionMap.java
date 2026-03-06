@@ -16,6 +16,8 @@
 
 package com.android.server.security.authenticationpolicy.agent;
 
+import android.annotation.Nullable;
+import android.annotation.UserIdInt;
 import android.content.Context;
 import android.provider.Settings;
 import android.util.Slog;
@@ -45,7 +47,7 @@ public class AgentSessionMap {
 
     private final Context mContext;
     private final int mUserId;
-    private final Map<Integer, AgentSession> mAgentSessionList = new ConcurrentHashMap<>();
+    private final Map<Key, AgentSession> mAgentSessionList = new ConcurrentHashMap<>();
 
     /**
      * Create a new session map.
@@ -53,21 +55,23 @@ public class AgentSessionMap {
      * @param context system_server context
      * @param userId user id
      */
-    AgentSessionMap(Context context, int userId) {
+    AgentSessionMap(Context context, @UserIdInt int userId) {
         mContext = context;
         mUserId = userId;
         updateSetting("" /* value */);
     }
 
-    public AgentSession get(int associationId) {
-        return mAgentSessionList.get(associationId);
+    /** Lookup a session with the given key. */
+    @Nullable
+    public AgentSession get(Key key) {
+        return mAgentSessionList.get(key);
     }
 
     /** Add a new session to the map. */
-    public void put(int associationId, AgentSession value) {
+    public void put(Key key, AgentSession value) {
         try {
             if (value.getUserId() == mUserId) {
-                mAgentSessionList.put(associationId, value);
+                mAgentSessionList.put(key, value);
             } else {
                 Slog.e(TAG, "Invalid user id: " + value.getUserId() + ", ignoring session");
             }
@@ -77,15 +81,16 @@ public class AgentSessionMap {
     }
 
     /** Remove an existing session from the map. */
-    public AgentSession remove(int associationId) {
+    @Nullable
+    public AgentSession remove(Key key) {
         try {
-            return mAgentSessionList.remove(associationId);
+            return mAgentSessionList.remove(key);
         } finally {
             updateSetting();
         }
     }
 
-    /** Clear the map so it is empty.. */
+    /** Clear the map so it is empty. */
     public void clear() {
         try {
             mAgentSessionList.clear();
@@ -95,18 +100,22 @@ public class AgentSessionMap {
     }
 
     /** Authorize all sessions in this map. */
-    public void authorizeAll() {
+    public void authorizeAll(@UserIdInt int userId) {
         try {
-            mAgentSessionList.replaceAll((key, session) -> AgentSession.authorized(session));
+            mAgentSessionList.replaceAll((key, session) ->
+                    session.getUserId() == userId
+                            ? AgentSession.authorized(session)
+                            : AgentSession.notAuthorized(session));
         } finally {
             updateSetting();
         }
     }
 
     /** Authorize a session only if it exists in the map already. */
-    public AgentSession authorizeIfPresent(int userId, int associationId) {
+    @Nullable
+    public AgentSession authorizeIfPresent(@UserIdInt int userId, Key key) {
         try {
-            return mAgentSessionList.computeIfPresent(associationId, (k, session) -> {
+            return mAgentSessionList.computeIfPresent(key, (k, session) -> {
                 if (userId == mUserId && !session.isAllowed()) {
                     return AgentSession.authorized(session);
                 } else {
@@ -118,9 +127,11 @@ public class AgentSessionMap {
         }
     }
 
-    public AgentSession revokeIfPresent(int userId, int associationId) {
+    /** Revoke authorization for a session only if it exists in the map already. */
+    @Nullable
+    public AgentSession revokeIfPresent(@UserIdInt int userId, Key key) {
         try {
-            return mAgentSessionList.computeIfPresent(associationId, (k, session) -> {
+            return mAgentSessionList.computeIfPresent(key, (k, session) -> {
                 if (userId == mUserId && session.isAllowed()) {
                     return AgentSession.notAuthorized(session);
                 } else {
@@ -137,6 +148,10 @@ public class AgentSessionMap {
     }
 
     private void updateSetting(String overrideValue) {
+        if (mUserId < 0) {
+            return;
+        }
+
         final String value = overrideValue != null ? overrideValue : mAgentSessionList.entrySet()
                 .stream()
                 .filter(e -> {
@@ -149,6 +164,68 @@ public class AgentSessionMap {
                 SETTINGS_KEY, value, mUserId);
         if (!ok) {
             Slog.w(TAG, "Unable to shadow invalid connections");
+        }
+    }
+
+    /** Key for an AgentSessionMap entry. */
+    public static final class Key {
+        private final int id;
+        private final int sourceType;
+
+        private static final int SOURCE_TYPE_CDM_ASSOCIATION_ID = 1;
+        private static final int SOURCE_TYPE_VDM_DISPLAY_ID = 2;
+
+        public Key(int id, int sourceType) {
+            this.id = id;
+            this.sourceType = sourceType;
+        }
+
+        public int id() {
+            return id;
+        }
+
+        public int sourceType() {
+            return sourceType;
+        }
+
+        /**
+         * Creates a key for a local agent associated with a
+         * {@link android.companion.virtual.VirtualDeviceManager} virtual device.
+         *
+         * @param id device id
+         */
+        public static Key ofLocal(int id) {
+            return new Key(id, SOURCE_TYPE_VDM_DISPLAY_ID);
+        }
+
+        /**
+         * Creates a key for remote agent associated with an
+         * {@link android.companion.CompanionDeviceManager} association to a remote device.
+         *
+         * @param id association id
+         */
+        public static Key ofRemote(int id) {
+            return new Key(id, SOURCE_TYPE_CDM_ASSOCIATION_ID);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Key)) return false;
+            Key key = (Key) o;
+            return id == key.id && sourceType == key.sourceType;
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * id + sourceType;
+        }
+
+        @Override
+        public String toString() {
+            if (sourceType == SOURCE_TYPE_CDM_ASSOCIATION_ID) return "remote_" + id;
+            if (sourceType == SOURCE_TYPE_VDM_DISPLAY_ID) return "local_" + id;
+            return Integer.toString(id);
         }
     }
 }
