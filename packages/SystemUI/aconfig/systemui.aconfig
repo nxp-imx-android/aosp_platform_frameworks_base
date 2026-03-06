@@ -78,16 +78,6 @@ flag {
 }
 
 flag {
-    name: "av_controls_chip_per_display"
-    namespace: "systemui"
-    description: "Makes Av Controls Chip related code per display."
-    bug: "433653329"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "avalanche_replace_hun_when_critical"
    namespace: "systemui"
    description: "Fix for replacing a sticky HUN when a critical HUN posted"

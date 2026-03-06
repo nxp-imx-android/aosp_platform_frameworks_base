@@ -159,7 +159,6 @@ import com.android.systemui.statusbar.policy.PolicyModule;
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController;
 import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.statusbar.policy.dagger.StatusBarPolicyModule;
-import com.android.systemui.statusbar.quickactions.av.AvControlsChipModule;
 import com.android.systemui.statusbar.quickactions.dagger.StatusBarFeaturePodsModule;
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsModule;
 import com.android.systemui.statusbar.ui.binder.StatusBarViewBinderModule;
@@ -219,7 +218,6 @@ import javax.inject.Named;
         AppOpsModule.class,
         AssistModule.class,
         AuthenticationModule.class,
-        AvControlsChipModule.class,
         BiometricsModule.class,
         BiometricsDomainLayerModule.class,
         BouncerInteractorModule.class,
