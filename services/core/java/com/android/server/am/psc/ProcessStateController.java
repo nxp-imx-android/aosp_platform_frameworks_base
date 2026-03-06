@@ -91,7 +91,6 @@ public class ProcessStateController {
             Object lock, Object procLock, Consumer<ProcessRecordInternal> topChangeCallback,
             ProcessLruUpdater lruUpdater, OomAdjuster.Injector oomAdjInjector,
             OomAdjuster.Constants oomConstants, OomAdjuster.Callback callback,
-            OomAdjuster.StateGetter stateGetter,
             OomAdjuster.HostingTypeProvider hostingTypeProvider) {
 
         mLock = lock;
@@ -113,7 +112,7 @@ public class ProcessStateController {
         };
         mOomConstants = oomConstants;
         mOomAdjuster = new OomAdjusterImpl(mLock, mProcLock, processList, activeUids,
-                handlerThread, mOomConstants, mGlobalState, oomAdjInjector, callback, stateGetter,
+                handlerThread, mOomConstants, mGlobalState, oomAdjInjector, callback,
                 updateHandler, hostingTypeProvider);
         mTopChangeCallback = topChangeCallback;
         mProcessLruUpdater = lruUpdater;
@@ -544,7 +543,7 @@ public class ProcessStateController {
         if (prev == proc) return;
         mGlobalState.mBackupTargets.put(userId, proc);
 
-        if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+        if (Flags.autoTriggerOomadjUpdates()) {
             enqueueUpdateTarget(prev);
             enqueueUpdateTarget(proc);
             runPendingUpdate(OOM_ADJ_REASON_BACKUP);
@@ -559,7 +558,7 @@ public class ProcessStateController {
         final ProcessRecordInternal prev = mGlobalState.mBackupTargets.removeReturnOld(userId);
         if (prev == null) return;
 
-        if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+        if (Flags.autoTriggerOomadjUpdates()) {
             enqueueUpdateTarget(prev);
             runPendingUpdate(OOM_ADJ_REASON_BACKUP);
         }
@@ -1470,7 +1469,6 @@ public class ProcessStateController {
         private final ActiveUidsInternal mActiveUids;
         private final OomAdjuster.Constants mOomConstants;
         private final OomAdjuster.Callback mOomAdjCallback;
-        private final OomAdjuster.StateGetter mOomAdjStateGetter;
 
         private ServiceThread mHandlerThread = null;
         private Object mLock = null;
@@ -1482,12 +1480,11 @@ public class ProcessStateController {
 
         public Builder(ProcessListInternal processList,
                 ActiveUidsInternal activeUids, OomAdjuster.Constants oomConstants,
-                OomAdjuster.Callback oomAdjCallback, OomAdjuster.StateGetter oomAdjStateGetter) {
+                OomAdjuster.Callback oomAdjCallback) {
             mProcessList = processList;
             mActiveUids = activeUids;
             mOomConstants = oomConstants;
             mOomAdjCallback = oomAdjCallback;
-            mOomAdjStateGetter = oomAdjStateGetter;
         }
 
         /**
@@ -1522,7 +1519,7 @@ public class ProcessStateController {
             }
             return new ProcessStateController(mProcessList, mActiveUids, mHandlerThread,
                     mLock, mProcLock, mTopChangeCallback, mProcessLruUpdater, mOomAdjInjector,
-                    mOomConstants, mOomAdjCallback, mOomAdjStateGetter, mHostingTypeProvider);
+                    mOomConstants, mOomAdjCallback, mHostingTypeProvider);
         }
 
         /**

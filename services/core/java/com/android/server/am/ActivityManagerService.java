@@ -2588,8 +2588,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
-                         new OomAdjusterStateGetter())
+                .Builder(mProcessList, activeUids, oomConstants, new OomAdjusterCallback())
                 .setHandlerThread(handlerThread)
                 .setHostingTypeProvider(this)
                 .build();
@@ -2664,8 +2663,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         final Looper activityTaskLooper = DisplayThread.get().getLooper();
         mCachedAppOptimizer = new CachedAppOptimizer(this);
         mProcessStateController = new ProcessStateController
-                .Builder(mProcessList, activeUids, oomConstants, new OomAdjusterCallback(),
-                         new OomAdjusterStateGetter())
+                .Builder(mProcessList, activeUids, oomConstants, new OomAdjusterCallback())
                 .setLockObject(this)
                 .setProcLockObject(this.mProcLock)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
@@ -14843,7 +14841,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
             proc.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_BACKUP);
 
-            if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+            if (Flags.autoTriggerOomadjUpdates()) {
                 // Do nothing, ProcessStateController will handle the update in setBackupTarget.
             } else {
                 // Try not to kill the process during backup
@@ -14979,7 +14977,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 // Not backing this app up any more; reset its OOM adjustment
                 final ProcessRecord proc = backupTarget.app;
 
-                if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+                if (Flags.autoTriggerOomadjUpdates()) {
                     // Do nothing.
                     // ProcessStateController will handle the update in stopBackupTarget.
                 } else {
@@ -20542,32 +20540,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         app.setHasReportedInteraction(isInteraction);
         if (!isInteraction) {
             app.setInteractionEventTime(0);
-        }
-    }
-
-    private final class OomAdjusterStateGetter implements OomAdjuster.StateGetter {
-        @Override
-        public boolean isDeviceFullyAwake() {
-            return mWakefulness.get() == PowerManagerInternal.WAKEFULNESS_AWAKE;
-        }
-
-        @Override
-        public boolean isBackupProcess(ProcessRecordInternal app) {
-            final BackupRecord backupTarget = mBackupTargets.get(app.userId);
-            if (backupTarget == null) {
-                return false;
-            }
-            return app == backupTarget.app;
-        }
-
-        @Override
-        public boolean isLastMemoryLevelNormal() {
-            return mAppProfiler.isLastMemoryLevelNormal();
-        }
-
-        @Override
-        public int getFrozenProcessCount() {
-            return mCachedAppOptimizer.getFrozenProcessCount();
         }
     }
 

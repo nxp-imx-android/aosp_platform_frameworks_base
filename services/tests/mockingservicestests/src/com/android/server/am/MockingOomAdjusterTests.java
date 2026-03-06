@@ -345,10 +345,9 @@ public class MockingOomAdjusterTests {
 
         mCallback = spy(mService.new OomAdjusterCallback());
         doNothing().when(mCallback).enqueuePendingTopAppIfNecessaryLocked();
-        final OomAdjuster.StateGetter stateGetter = mock(OomAdjuster.StateGetter.class);
         mProcessStateController = new ProcessStateController.Builder(
                 mService.mProcessList, mActiveUids, mService.mConstants.createOomConstants(),
-                mCallback, stateGetter)
+                mCallback)
                 .setProcessLruUpdater(lruUpdater)
                 .setOomAdjusterInjector(mInjector)
                 .setHostingTypeProvider(mService)
@@ -1607,7 +1606,7 @@ public class MockingOomAdjusterTests {
                 MOCKAPP_PACKAGENAME, true);
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         setBackupTarget(app);
-        if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+        if (Flags.autoTriggerOomadjUpdates()) {
             // Do not manually run the update.
         } else {
             updateOomAdj(app);
@@ -1617,7 +1616,7 @@ public class MockingOomAdjusterTests {
         assertThatProcess(app).hasImplicitCpuTimeCapability();
 
         stopBackupTarget(app.userId);
-        if (Flags.pushGlobalStateToOomadjuster() && Flags.autoTriggerOomadjUpdates()) {
+        if (Flags.autoTriggerOomadjUpdates()) {
             // Do not manually run the update.
         } else {
             updateOomAdj(app);
@@ -4853,31 +4852,17 @@ public class MockingOomAdjusterTests {
     }
 
     private void setWakefulness(int state) {
-        if (Flags.pushGlobalStateToOomadjuster()) {
-            mProcessStateController.setWakefulness(state);
-        } else {
-            mService.mWakefulness.set(state);
-        }
+        mProcessStateController.setWakefulness(state);
     }
 
     @SuppressWarnings("GuardedBy")
     private void setBackupTarget(ProcessRecord app) {
-        if (Flags.pushGlobalStateToOomadjuster()) {
-            mProcessStateController.setBackupTarget(app, app.userId);
-        } else {
-            BackupRecord backupTarget = new BackupRecord(null, 0, 0, 0, true);
-            backupTarget.app = app;
-            doReturn(backupTarget).when(mService.mBackupTargets).get(anyInt());
-        }
+        mProcessStateController.setBackupTarget(app, app.userId);
     }
 
     @SuppressWarnings("GuardedBy")
     private void stopBackupTarget(int userId) {
-        if (Flags.pushGlobalStateToOomadjuster()) {
-            mProcessStateController.stopBackupTarget(userId);
-        } else {
-            doReturn(null).when(mService.mBackupTargets).get(anyInt());
-        }
+        mProcessStateController.stopBackupTarget(userId);
     }
 
     private void setHasActivity(@NonNull ProcessRecord proc, boolean hasActivity) {

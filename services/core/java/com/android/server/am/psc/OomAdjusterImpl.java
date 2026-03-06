@@ -606,11 +606,11 @@ public class OomAdjusterImpl extends OomAdjuster {
 
     public OomAdjusterImpl(Object serviceLock, Object procLock, ProcessListInternal processList,
             ActiveUidsInternal activeUids, ServiceThread adjusterThread, Constants oomConstants,
-            GlobalState globalState, Injector injector, Callback callback,
-            StateGetter stateGetter, Handler updateHandler,
+            @NonNull GlobalState globalState, Injector injector, Callback callback,
+            Handler updateHandler,
             HostingTypeProvider hostingTypeProvider) {
         super(serviceLock, procLock, processList, activeUids, adjusterThread, oomConstants,
-                globalState, injector, callback, stateGetter, updateHandler, hostingTypeProvider);
+                globalState, injector, callback, updateHandler, hostingTypeProvider);
 
         SystemNode.initInstance(processList);
     }
