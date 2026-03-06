@@ -19,7 +19,6 @@ package com.android.systemui.accessibility.shortcutchooser.domain.interactor
 import android.content.applicationContext
 import com.android.systemui.accessibility.data.repository.accessibilityShortcutsRepository
 import com.android.systemui.broadcast.broadcastDispatcher
-import com.android.systemui.broadcast.mockBroadcastSender
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
@@ -36,6 +35,5 @@ val Kosmos.shortcutChooserDialogInteractor by Fixture {
         fakeHeadlessSystemUserMode,
         keyguardInteractor,
         broadcastDispatcher,
-        mockBroadcastSender,
     )
 }

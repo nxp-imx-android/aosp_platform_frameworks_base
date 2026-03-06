@@ -176,10 +176,6 @@ constructor(
         }
 
         if (shortcutType == UserShortcutType.TOP_ROW_KEY) {
-            if (!interactor.isCompletedFullUser()) {
-                interactor.launchQuickAccessDialog(requestModel.displayId)
-                return
-            }
             if (assignedTargetsCount == 0) {
                 if (!keyguardInteractor.isKeyguardCurrentlyShowing()) {
                     _dialogType.value = DialogType.TUTORIAL

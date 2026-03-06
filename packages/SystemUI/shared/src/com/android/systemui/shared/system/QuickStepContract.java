@@ -36,6 +36,7 @@ import android.view.WindowManagerPolicyConstants;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.internal.accessibility.common.ShortcutChooserDialogConstants;
 import com.android.internal.policy.ScreenDecorationsUtils;
 
 import java.lang.annotation.Retention;
@@ -337,7 +338,7 @@ public class QuickStepContract {
         if ((sysuiStateFlags & SYSUI_STATE_ALLOW_GESTURE_IGNORING_BAR_VISIBILITY) != 0) {
             sysuiStateFlags &= ~SYSUI_STATE_NAV_BAR_HIDDEN;
         }
-        // Disable when in quick settings, screen pinning, immersive, the bouncer is showing, 
+        // Disable when in quick settings, screen pinning, immersive, the bouncer is showing,
         // or search is disabled
         long disableFlags = SYSUI_STATE_SCREEN_PINNING
                 | SYSUI_STATE_NAV_BAR_HIDDEN
@@ -455,42 +456,19 @@ public class QuickStepContract {
         }
     }
 
-    /**
-     * Broadcast action to launch the accessibility shortcut chooser dialog in SystemUI.
-     */
+    /** Broadcast action to launch the accessibility shortcut chooser dialog in SystemUI. */
     public static final String ACTION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG =
-            "com.android.systemui.action.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG";
+            ShortcutChooserDialogConstants.LAUNCH_SHORTCUT_CHOOSER_DIALOG_ACTION;
 
-    /**
-     * Extra key for the accessibility shortcut type in the chooser dialog intent.
-     */
-    public static final String EXTRA_ACCESSIBILITY_SHORTCUT_TYPE = "SHORTCUT_TYPE";
+    /** Extra key for the accessibility shortcut type in the chooser dialog intent. */
+    public static final String EXTRA_ACCESSIBILITY_SHORTCUT_TYPE =
+            ShortcutChooserDialogConstants.SHORTCUT_TYPE;
 
-    /**
-     * Extra key for the display id in the chooser dialog intent.
-     */
-    public static final String EXTRA_ACCESSIBILITY_DISPLAY_ID = "DISPLAY_ID";
+    /** Extra key for the display id in the chooser dialog intent. */
+    public static final String EXTRA_ACCESSIBILITY_DISPLAY_ID =
+            ShortcutChooserDialogConstants.DISPLAY_ID;
 
-    /**
-     * Package name of the SystemUI.
-     */
+    /** Package name of the SystemUI. */
     public static final String SYSUI_PACKAGE =
             Resources.getSystem().getString(com.android.internal.R.string.config_systemUi);
-    /**
-     * Broadcast action to launch the accessibility quick access dialog in SystemUI.
-     */
-    public static final String ACTION_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG =
-            "com.android.systemui.action.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG";
-
-    /**
-     * Permission required to launch the accessibility quick access dialog.
-     */
-    public static final String PERMISSION_LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG =
-            "com.android.systemui.permission.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG";
-
-    /**
-     * Permission required to launch the accessibility shortcut chooser dialog.
-     */
-    public static final String PERMISSION_LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG =
-            "com.android.systemui.permission.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG";
 }

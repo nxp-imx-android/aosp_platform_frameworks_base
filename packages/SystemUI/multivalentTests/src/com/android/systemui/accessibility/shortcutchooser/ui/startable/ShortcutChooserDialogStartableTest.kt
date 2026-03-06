@@ -46,11 +46,9 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.FakeAccessibilityShortcutsRepository
 import com.android.systemui.accessibility.data.repository.accessibilityShortcutsRepository
 import com.android.systemui.accessibility.data.repository.fakeAccessibilityShortcutsRepository
-import com.android.systemui.accessibility.shortcutchooser.domain.interactor.ShortcutChooserDialogInteractor
 import com.android.systemui.accessibility.shortcutchooser.ui.viewmodel.ShortcutChooserDialogViewModel.DialogType
 import com.android.systemui.accessibility.shortcutchooser.ui.viewmodel.shortcutChooserDialogViewModelFactory
 import com.android.systemui.broadcast.broadcastDispatcher
-import com.android.systemui.broadcast.mockBroadcastSender
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
@@ -65,9 +63,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.any
 import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -326,7 +322,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
         }
 
     @Test
-    fun createDialog_topRowKey_noSelectedTargets_setupIncomplete_sendBroadcast() =
+    fun createDialog_topRowKey_noSelectedTargets_setupIncomplete_showsQuickAccessDialog() =
         runTestAndDismiss {
             setOobeCompleted(false)
 
@@ -334,12 +330,11 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
             sendIntentInMainThreadWaitForIdle()
 
-            assertCurrentDialog(DialogType.NONE)
-            verify(mockBroadcastSender, times(1)).sendBroadcastAsUser(any(), any())
+            assertCurrentDialog(DialogType.QUICK_ACCESS)
         }
 
     @Test
-    fun createDialog_topRowKey_twoSelectedTargets_setupIncomplete_sendBroadcast() =
+    fun createDialog_topRowKey_twoSelectedTargets_setupIncomplete_showsQuickAccessDialog() =
         runTestAndDismiss {
             setOobeCompleted(false)
             setTalkbackAndMagnificationSelected()
@@ -348,8 +343,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
             sendIntentInMainThreadWaitForIdle()
 
-            assertCurrentDialog(DialogType.NONE)
-            verify(mockBroadcastSender, times(1)).sendBroadcastAsUser(any(), any())
+            assertCurrentDialog(DialogType.QUICK_ACCESS)
         }
 
     @Test
@@ -367,20 +361,20 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
     }
 
     @Test
-    fun createDialog_topRowKey_noSelectedTargets_onLoginScreen_sendBroadcast() = runTestAndDismiss {
-        setOobeCompleted(true)
-        fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(true)
+    fun createDialog_topRowKey_noSelectedTargets_onLoginScreen_showsQuickAccessDialog() =
+        runTestAndDismiss {
+            setOobeCompleted(true)
+            fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(true)
 
-        underTest.start()
+            underTest.start()
 
-        sendIntentInMainThreadWaitForIdle()
+            sendIntentInMainThreadWaitForIdle()
 
-        assertCurrentDialog(DialogType.NONE)
-        verify(mockBroadcastSender, times(1)).sendBroadcastAsUser(any(), any())
-    }
+            assertCurrentDialog(DialogType.QUICK_ACCESS)
+        }
 
     @Test
-    fun createDialog_topRowKey_twoSelectedTargets_onLoginScreen_sendBroadcast() =
+    fun createDialog_topRowKey_twoSelectedTargets_onLoginScreen_showsQuickAccessDialog() =
         runTestAndDismiss {
             setOobeCompleted(true)
             fakeHeadlessSystemUserMode.setIsHeadlessSystemUser(true)
@@ -390,8 +384,7 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
 
             sendIntentInMainThreadWaitForIdle()
 
-            assertCurrentDialog(DialogType.NONE)
-            verify(mockBroadcastSender, times(1)).sendBroadcastAsUser(any(), any())
+            assertCurrentDialog(DialogType.QUICK_ACCESS)
         }
 
     @Test
@@ -668,12 +661,8 @@ class ShortcutChooserDialogStartableTest : SysuiTestCase() {
             broadcastDispatcher.sendIntentToMatchingReceiversOnly(
                 context,
                 Intent().apply {
-                    if (shortcutType == UserShortcutType.QUICK_ACCESS) {
-                        action = ShortcutChooserDialogInteractor.QUICK_ACCESS_ACTION
-                    } else {
-                        action = ShortcutChooserDialogInteractor.SHORTCUT_CHOOSER_ACTION
-                        putExtra(ShortcutChooserDialogConstants.SHORTCUT_TYPE, shortcutType)
-                    }
+                    action = ShortcutChooserDialogConstants.LAUNCH_SHORTCUT_CHOOSER_DIALOG_ACTION
+                    putExtra(ShortcutChooserDialogConstants.SHORTCUT_TYPE, shortcutType)
                     putExtra(ShortcutChooserDialogConstants.DISPLAY_ID, DEFAULT_DISPLAY)
                 },
             )

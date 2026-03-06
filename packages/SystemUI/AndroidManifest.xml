@@ -282,14 +282,6 @@
     <uses-permission
             android:name="com.android.systemui.permission.LAUNCH_ACCESSIBILITY_SHORTCUT_CHOOSER_DIALOG"/>
 
-    <permission
-            android:name="com.android.systemui.permission.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG"
-            android:protectionLevel="signature"
-            android:featureFlag="com.android.systemui.launch_accessibility_quick_access_dialog_permission" />
-    <uses-permission
-            android:name="com.android.systemui.permission.LAUNCH_ACCESSIBILITY_QUICK_ACCESS_DIALOG"
-            android:featureFlag="com.android.systemui.launch_accessibility_quick_access_dialog_permission" />
-
     <!-- to control accessibility volume -->
     <uses-permission android:name="android.permission.CHANGE_ACCESSIBILITY_VOLUME" />
 
