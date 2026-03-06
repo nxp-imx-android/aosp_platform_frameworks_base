@@ -69,7 +69,12 @@ constructor(
     HydratedActivatable(enableEnqueuedActivations = true),
     DrawableLoaderViewModel by drawableLoaderViewModel {
     private val appContentsViewModel =
-        appContentsViewModelFactory.create(thumbnailWidthPx, thumbnailHeightPx, iconSizePx)
+        appContentsViewModelFactory.create(
+            shareScreenUiInteractor.packageName,
+            thumbnailWidthPx,
+            thumbnailHeightPx,
+            iconSizePx,
+        )
 
     val isAppContentSharingEnabled: Boolean
         get() =

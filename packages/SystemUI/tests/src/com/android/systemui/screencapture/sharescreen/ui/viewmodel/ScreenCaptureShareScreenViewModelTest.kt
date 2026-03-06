@@ -130,7 +130,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
         kosmos.shareScreenUiInteractor.initialize(
             projection = mock(),
             reviewGrantedConsentRequired = true,
-            hostUserHandle = UserHandle.of(100),
+            hostUserHandle = UserHandle.CURRENT,
             uid = 100,
             packageName = context.packageName,
             initialDisplayId = 0,
@@ -408,7 +408,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
                 RecentTask(
                     taskId = 42,
                     displayId = 0,
-                    userId = 100,
+                    userId = UserHandle.CURRENT.identifier,
                     topActivityComponent = ComponentName(context.packageName, "HostClass"),
                     baseIntentComponent = ComponentName(context.packageName, "HostClass"),
                     baseIntent = Intent(),
@@ -427,7 +427,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
                 .thenReturn(Intent())
             val mockUserContext = mock<Context>()
             whenever(mockUserContext.packageManager).thenReturn(mockUserPackageManager)
-            val hostUserHandle = UserHandle.of(hostRecentTask.userId)
+            val hostUserHandle = UserHandle.CURRENT
             context.prepareCreateContextAsUser(hostUserHandle, mockUserContext)
 
             whenever(
@@ -545,7 +545,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
             // Populate the view model with the fake target.
             kosmos.fakeScreenCaptureRecentTaskRepository.setRecentTasks(kosmos.fakeRecentTask)
             kosmos.fakeScreenCaptureAppContentRepository.setAppContentSuccess(
-                packageName = "FakeBasePackage",
+                packageName = context.packageName,
                 user = UserHandle.CURRENT,
                 listOf(fakeMediaProjectionAppContent),
                 WeakReference(fakeCallback),
@@ -564,7 +564,7 @@ class ScreenCaptureShareScreenViewModelTest : SysuiTestCase() {
 
             kosmos.fakeMediaProjectionRepository.mediaProjectionState.value =
                 MediaProjectionState.Projecting.SingleTask(
-                    hostPackage = "FakeBasePackage",
+                    hostPackage = context.packageName,
                     hostDeviceName = null,
                     task = mock(),
                 )
