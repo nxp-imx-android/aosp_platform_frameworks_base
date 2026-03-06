@@ -363,10 +363,15 @@ class MediaRouter2ServiceImpl {
     @RequiresPermission(Manifest.permission.PACKAGE_USAGE_STATS)
     public boolean showMediaOutputSwitcherWithRouter2(@NonNull String packageName,
             @Nullable MediaSession.Token sessionToken) {
+        int callingUid = Binder.getCallingUid();
         UserHandle userHandle = Binder.getCallingUserHandle();
         final long token = Binder.clearCallingIdentity();
         try {
-            return showOutputSwitcher(packageName, userHandle, sessionToken);
+            return showOutputSwitcher(
+                    callingUid,
+                    /* targetPackageName= */ packageName,
+                    /* targetUserHandle= */ userHandle,
+                    sessionToken);
         } finally {
             Binder.restoreCallingIdentity(token);
         }
@@ -1001,7 +1006,7 @@ class MediaRouter2ServiceImpl {
     public boolean showMediaOutputSwitcherWithProxyRouter(
             @NonNull IMediaRouter2Manager proxyRouter, @Nullable MediaSession.Token sessionToken) {
         Objects.requireNonNull(proxyRouter, "Proxy router must not be null");
-
+        int callingUid = Binder.getCallingUid();
         final long token = Binder.clearCallingIdentity();
         try {
             synchronized (mLock) {
@@ -1016,6 +1021,7 @@ class MediaRouter2ServiceImpl {
                     sessionToken = null;
                 }
                 return showOutputSwitcher(
+                        callingUid,
                         proxyRouterRecord.mTargetPackageName,
                         proxyRouterRecord.mUserRecord.mUserHandle,
                         sessionToken);
@@ -1203,15 +1209,29 @@ class MediaRouter2ServiceImpl {
         }
     }
 
+    /**
+     * Invokes the SystemUI output switcher for the given {@code targetPackageName} and the optional
+     * {@code sessionToken}.
+     *
+     * @param callerUid The uid trying to invoke the SystemUI Output Switcher.
+     * @param targetPackageName The package name of the app for which to open the Output Switcher.
+     * @param targetUserHandle The user handle of the app for which to open the Output Switcher.
+     * @param sessionToken An optional {@link MediaSession.Token} for which to open the Output
+     *     Switcher.
+     * @return Whether the Output Switcher invocation succeeds.
+     */
     @RequiresPermission(Manifest.permission.PACKAGE_USAGE_STATS)
     private boolean showOutputSwitcher(
-            @NonNull String packageName, @NonNull UserHandle userHandle,
+            int callerUid,
+            @NonNull String targetPackageName,
+            @NonNull UserHandle targetUserHandle,
             @Nullable MediaSession.Token sessionToken) {
-        if (mActivityManager.getPackageImportance(packageName) > IMPORTANCE_FOREGROUND) {
+        if (mActivityManager.getUidImportance(callerUid) > IMPORTANCE_FOREGROUND) {
             Slog.w(TAG, "showMediaOutputSwitcher only works when called from foreground");
             return false;
         }
-        mStatusBarManagerInternal.showMediaOutputSwitcher(packageName, userHandle, sessionToken);
+        mStatusBarManagerInternal.showMediaOutputSwitcher(
+                targetPackageName, targetUserHandle, sessionToken);
         return true;
     }
 
