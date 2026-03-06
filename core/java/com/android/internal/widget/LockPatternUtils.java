@@ -1683,6 +1683,11 @@ public class LockPatternUtils {
                 new SparseBooleanArray();
         private final boolean mDefaultIsNonStrongBiometricAllowed = true;
 
+        /**
+         * @param context the current {@link Context}
+         * @throws NullPointerException if the current thread does not have a Looper (for example,
+         * on a background thread).
+         */
         public StrongAuthTracker(Context context) {
             this(context, Looper.myLooper());
         }
