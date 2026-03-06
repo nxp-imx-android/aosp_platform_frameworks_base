@@ -18,6 +18,7 @@ package com.android.systemui.communal.ui.viewmodel
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import androidx.compose.ui.input.pointer.PointerType
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.Swipe
@@ -49,15 +50,19 @@ import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.testKosmos
+import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import org.junit.Before
+import org.junit.Rule
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @EnableSceneContainer
 class CommunalUserActionsViewModelTest : SysuiTestCase() {
+
+    @get:Rule val expect: Expect = Expect.create()
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
@@ -78,19 +83,20 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
 
             setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
+            expect.that(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
+            expect.that(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
+            expect.that(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
 
             setUpState(isShadeTouchable = false, isDeviceUnlocked = false)
             assertThat(actions).isEmpty()
 
             setUpState(isShadeTouchable = true, isDeviceUnlocked = true)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up))
+            expect.that(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
+            expect
+                .that(actions?.get(Swipe.Up))
                 .isEqualTo(UserActionResult(Scenes.Gone, transitionKey = SwipeUpToGone))
-            assertThat(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
+            expect.that(actions?.get(Swipe.Down)).isEqualTo(UserActionResult(Scenes.Shade))
         }
 
     @Test
@@ -102,9 +108,10 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
 
             setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Down))
+            expect.that(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
+            expect.that(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
+            expect
+                .that(actions?.get(Swipe.Down))
                 .isEqualTo(UserActionResult(Scenes.Shade, ToSplitShade))
 
             setUpState(isShadeTouchable = false, isDeviceUnlocked = false)
@@ -112,10 +119,12 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
 
             setUpState(isShadeTouchable = true, isDeviceUnlocked = true)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up))
+            expect.that(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
+            expect
+                .that(actions?.get(Swipe.Up))
                 .isEqualTo(UserActionResult(Scenes.Gone, transitionKey = SwipeUpToGone))
-            assertThat(actions?.get(Swipe.Down))
+            expect
+                .that(actions?.get(Swipe.Down))
                 .isEqualTo(UserActionResult(Scenes.Shade, ToSplitShade))
         }
 
@@ -128,9 +137,16 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
 
             setUpState(isShadeTouchable = true, isDeviceUnlocked = false)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Down))
+            expect.that(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
+            expect.that(actions?.get(Swipe.Up)).isEqualTo(UserActionResult(Scenes.Lockscreen))
+            expect
+                .that(actions?.get(Swipe.Down(pointerType = PointerType.Eraser)))
+                .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
+            expect
+                .that(actions?.get(Swipe.Down(pointerType = PointerType.Stylus)))
+                .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
+            expect
+                .that(actions?.get(Swipe.Down(pointerType = PointerType.Touch)))
                 .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
 
             setUpState(isShadeTouchable = false, isDeviceUnlocked = false)
@@ -138,10 +154,18 @@ class CommunalUserActionsViewModelTest : SysuiTestCase() {
 
             setUpState(isShadeTouchable = true, isDeviceUnlocked = true)
             assertThat(actions).isNotEmpty()
-            assertThat(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
-            assertThat(actions?.get(Swipe.Up))
+            expect.that(actions?.get(Swipe.End)).isEqualTo(UserActionResult(Scenes.Lockscreen))
+            expect
+                .that(actions?.get(Swipe.Up))
                 .isEqualTo(UserActionResult(Scenes.Gone, transitionKey = SwipeUpToGone))
-            assertThat(actions?.get(Swipe.Down))
+            expect
+                .that(actions?.get(Swipe.Down(pointerType = PointerType.Eraser)))
+                .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
+            expect
+                .that(actions?.get(Swipe.Down(pointerType = PointerType.Stylus)))
+                .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
+            expect
+                .that(actions?.get(Swipe.Down(pointerType = PointerType.Touch)))
                 .isEqualTo(UserActionResult.ShowOverlay(Overlays.NotificationsShade))
         }
 
