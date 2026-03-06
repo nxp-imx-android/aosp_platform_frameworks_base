@@ -384,9 +384,6 @@ public class SystemWindows {
         public void dispatchDragEvent(DragEvent event) {}
 
         @Override
-        public void dispatchWindowShown() {}
-
-        @Override
         public void requestAppKeyboardShortcuts(IResultReceiver receiver, int deviceId) {}
 
         @Override

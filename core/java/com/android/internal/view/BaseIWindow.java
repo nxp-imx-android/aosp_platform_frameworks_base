@@ -119,10 +119,6 @@ public class BaseIWindow extends WindowClientTransactionHandler {
     }
 
     @Override
-    public void dispatchWindowShown() {
-    }
-
-    @Override
     public void requestAppKeyboardShortcuts(IResultReceiver receiver, int deviceId) {
     }
 

@@ -7209,7 +7209,6 @@ public final class ViewRootImpl implements ViewParent,
     private static final int MSG_INVALIDATE_WORLD = 22;
     private static final int MSG_WINDOW_MOVED = 23;
     private static final int MSG_SYNTHESIZE_INPUT_EVENT = 24;
-    private static final int MSG_DISPATCH_WINDOW_SHOWN = 25;
     private static final int MSG_REQUEST_KEYBOARD_SHORTCUTS = 26;
     private static final int MSG_POINTER_CAPTURE_CHANGED = 28;
     private static final int MSG_INSETS_CONTROL_CHANGED = 29;
@@ -7277,8 +7276,6 @@ public final class ViewRootImpl implements ViewParent,
                     return "MSG_WINDOW_MOVED";
                 case MSG_SYNTHESIZE_INPUT_EVENT:
                     return "MSG_SYNTHESIZE_INPUT_EVENT";
-                case MSG_DISPATCH_WINDOW_SHOWN:
-                    return "MSG_DISPATCH_WINDOW_SHOWN";
                 case MSG_POINTER_CAPTURE_CHANGED:
                     return "MSG_POINTER_CAPTURE_CHANGED";
                 case MSG_INSETS_CONTROL_CHANGED:
@@ -7524,9 +7521,6 @@ public final class ViewRootImpl implements ViewParent,
                     if (mView != null) {
                         invalidateWorld(mView);
                     }
-                } break;
-                case MSG_DISPATCH_WINDOW_SHOWN: {
-                    handleDispatchWindowShown();
                 } break;
                 case MSG_REQUEST_KEYBOARD_SHORTCUTS: {
                     final IResultReceiver receiver = (IResultReceiver) msg.obj;
@@ -9817,10 +9811,6 @@ public final class ViewRootImpl implements ViewParent,
         mAttachInfo.mForceReportNewAttributes = true;
     }
 
-    public void handleDispatchWindowShown() {
-        mAttachInfo.mTreeObserver.dispatchOnWindowShown();
-    }
-
     public void handleRequestKeyboardShortcuts(IResultReceiver receiver, int deviceId) {
         Bundle data = new Bundle();
         ArrayList<KeyboardShortcutGroup> list = new ArrayList<>();
@@ -11696,10 +11686,6 @@ public final class ViewRootImpl implements ViewParent,
         mHandler.sendMessage(msg);
     }
 
-    public void dispatchWindowShown() {
-        mHandler.sendEmptyMessage(MSG_DISPATCH_WINDOW_SHOWN);
-    }
-
     public void dispatchCloseSystemDialogs(String reason) {
         Message msg = Message.obtain();
         msg.what = MSG_CLOSE_SYSTEM_DIALOGS;
@@ -12763,14 +12749,6 @@ public final class ViewRootImpl implements ViewParent,
             final ViewRootImpl viewAncestor = mViewAncestor.get();
             if (viewAncestor != null) {
                 viewAncestor.dispatchDragEvent(event);
-            }
-        }
-
-        @Override
-        public void dispatchWindowShown() {
-            final ViewRootImpl viewAncestor = mViewAncestor.get();
-            if (viewAncestor != null) {
-                viewAncestor.dispatchWindowShown();
             }
         }
 

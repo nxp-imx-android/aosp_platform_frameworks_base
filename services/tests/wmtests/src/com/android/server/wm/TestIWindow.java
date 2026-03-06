@@ -90,10 +90,6 @@ public class TestIWindow extends WindowClientTransactionHandler {
     }
 
     @Override
-    public void dispatchWindowShown() throws RemoteException {
-    }
-
-    @Override
     public void requestAppKeyboardShortcuts(IResultReceiver receiver, int deviceId)
             throws RemoteException {
     }
