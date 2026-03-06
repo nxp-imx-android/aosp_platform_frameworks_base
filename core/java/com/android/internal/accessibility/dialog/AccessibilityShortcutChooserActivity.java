@@ -100,9 +100,8 @@ public class AccessibilityShortcutChooserActivity extends Activity {
 
     private void onTargetSelected(AdapterView<?> parent, View view, int position, long id) {
         final AccessibilityTarget target = mTargets.get(position);
-        if (target instanceof AccessibilityServiceTarget
-                || target instanceof AccessibilityActivityTarget) {
-            if (sendRestrictedDialogIntentIfNeeded(target)) {
+        if (target instanceof AccessibilityServiceTarget serviceTarget) {
+            if (sendRestrictedDialogIntentIfNeeded(serviceTarget)) {
                 return;
             }
         }
@@ -115,7 +114,7 @@ public class AccessibilityShortcutChooserActivity extends Activity {
         final AccessibilityTarget target = mTargets.get(position);
 
         if (target instanceof AccessibilityServiceTarget serviceTarget) {
-            if (sendRestrictedDialogIntentIfNeeded(target)) {
+            if (sendRestrictedDialogIntentIfNeeded(serviceTarget)) {
                 return;
             }
             final AccessibilityManager am = getSystemService(AccessibilityManager.class);
@@ -123,12 +122,6 @@ public class AccessibilityShortcutChooserActivity extends Activity {
                     serviceTarget.getAccessibilityServiceInfo())) {
                 showPermissionDialogIfNeeded(this, (AccessibilityServiceTarget) target,
                         position, mTargetAdapter);
-                return;
-            }
-        }
-        if (target instanceof AccessibilityActivityTarget activityTarget) {
-            if (!activityTarget.isShortcutEnabled()
-                    && sendRestrictedDialogIntentIfNeeded(activityTarget)) {
                 return;
             }
         }
@@ -142,14 +135,14 @@ public class AccessibilityShortcutChooserActivity extends Activity {
      *
      * @return true if sends restricted dialog intent, otherwise false.
      */
-    private boolean sendRestrictedDialogIntentIfNeeded(AccessibilityTarget target) {
-        if (AccessibilityTargetHelper.isAccessibilityTargetAllowed(this,
-                target.getComponentName().getPackageName(), target.getUid())) {
+    private boolean sendRestrictedDialogIntentIfNeeded(AccessibilityServiceTarget target) {
+        if (AccessibilityTargetHelper.isAccessibilityServiceTargetAllowed(this,
+                target.getAccessibilityServiceInfo())) {
             return false;
         }
 
         AccessibilityTargetHelper.sendRestrictedDialogIntent(this,
-                target.getComponentName().getPackageName(), target.getUid());
+                target.getAccessibilityServiceInfo());
         return true;
     }
 

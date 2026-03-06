@@ -66,8 +66,8 @@ class ToggleAccessibilityServiceTarget extends AccessibilityServiceTarget {
             @ShortcutMenuMode int shortcutMenuMode) {
         super.updateActionItem(holder, shortcutMenuMode);
 
-        final boolean isAllowed = AccessibilityTargetHelper.isAccessibilityTargetAllowed(
-                getContext(), getComponentName().getPackageName(), getUid());
+        final boolean isAllowed = AccessibilityTargetHelper.isAccessibilityServiceTargetAllowed(
+                getContext(), getAccessibilityServiceInfo());
         final boolean isEditMenuMode =
                 shortcutMenuMode == ShortcutMenuMode.EDIT;
         holder.mStatusView.setVisibility(isEditMenuMode ? View.GONE : View.VISIBLE);

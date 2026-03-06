@@ -21,6 +21,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
 
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.HARDWARE;
 import static com.android.internal.accessibility.dialog.AccessibilityTargetHelper.getTargets;
+import static com.android.internal.os.RoSystemProperties.SUPPORT_ONE_HANDED_MODE;
 import static com.android.internal.util.ArrayUtils.convertToLongArray;
 
 import android.Manifest;
@@ -56,7 +57,6 @@ import android.widget.Toast;
 
 import com.android.internal.R;
 import com.android.internal.accessibility.dialog.AccessibilityTarget;
-import com.android.internal.accessibility.dialog.AccessibilityTargetHelper;
 import com.android.internal.accessibility.util.AccessibilityUtils;
 import com.android.internal.accessibility.util.FrameworkObjectProvider;
 import com.android.internal.accessibility.util.ShortcutUtils;
@@ -158,6 +158,26 @@ public class AccessibilityShortcutController {
     // Visible for testing
     public FrameworkObjectProvider mFrameworkObjectProvider = new FrameworkObjectProvider();
 
+    private static Boolean sSupportOneHandedModeForTesting = null;
+
+    /**
+     * Sets whether One-Handed mode is supported for testing.
+     *
+     * @param enabled {@code true} if supported.
+     */
+    @VisibleForTesting
+    public static void setSupportOneHandedModeForTesting(Boolean enabled) {
+        sSupportOneHandedModeForTesting = enabled;
+        // Clear the cache so it rebuilds on the next call to getFrameworkShortcutFeaturesMap
+        sFrameworkShortcutFeaturesMap = null;
+    }
+
+    private static boolean isOneHandedModeSupported() {
+        return sSupportOneHandedModeForTesting != null
+                ? sSupportOneHandedModeForTesting
+                : SUPPORT_ONE_HANDED_MODE;
+    }
+
     /**
      * @return An immutable map from placeholder component names to feature
      *         info for toggling a framework feature
@@ -187,7 +207,7 @@ public class AccessibilityShortcutController {
                             Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ENABLED,
                              "1" /* Value to enable */, "0" /* Value to disable */,
                             R.string.mouse_keys_feature_name));
-            if (AccessibilityTargetHelper.sSupportOneHandedMode) {
+            if (isOneHandedModeSupported()) {
                 featuresMap.put(ONE_HANDED_COMPONENT_NAME,
                         new ToggleableFrameworkFeatureInfo(
                                 Settings.Secure.ONE_HANDED_MODE_ACTIVATED,
