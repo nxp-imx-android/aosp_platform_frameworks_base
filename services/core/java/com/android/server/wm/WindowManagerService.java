@@ -48,7 +48,7 @@ import static android.internal.perfetto.protos.Windowmanagerservice.WindowManage
 import static android.internal.perfetto.protos.Windowmanagerservice.WindowManagerServiceDumpProto.WINDOW_FRAMES_VALID;
 import static android.os.InputConstants.DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
 import static android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE;
-import static android.os.PerfettoTrace.BIG_LOCKS_V3;
+import static android.os.PerfettoCategories.BIG_LOCKS_CATEGORY;
 import static android.os.Process.SYSTEM_UID;
 import static android.os.Process.myPid;
 import static android.os.Process.myUid;
@@ -341,7 +341,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.SystemServerLock;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.annotations.VisibleForTesting.Visibility;
-import com.android.internal.dev.perfetto.sdk.PerfettoTrace;
 import com.android.internal.os.IResultReceiver;
 import com.android.internal.os.TransferPipe;
 import com.android.internal.policy.IKeyguardDismissCallback;
@@ -1197,21 +1196,29 @@ public class WindowManagerService extends IWindowManager.Stub
      * Emits a trace event indicating the start of an attempt to acquire the main WMS lock.
      */
     public static void traceBeforeWmsLock() {
-        PerfettoTrace.instant(BIG_LOCKS_V3, "wms_lock_acquire").emit();
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace.instant(BIG_LOCKS_CATEGORY,
+                    "wms_lock_acquire").emit();
+        }
     }
 
     /**
      * Emits a trace event indicating that the main WMS lock has been acquired and is now held.
      */
     public static void traceAfterWmsLock() {
-        PerfettoTrace.begin(BIG_LOCKS_V3, "wms_lock_held").emit();
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace.begin(BIG_LOCKS_CATEGORY,
+                    "wms_lock_held").emit();
+        }
     }
 
     /**
      * Emits a trace event indicating the end of the critical section protected by the WMS lock.
      */
     public static void traceAfterWmsUnlock() {
-        PerfettoTrace.end(BIG_LOCKS_V3).emit();
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace.end(BIG_LOCKS_CATEGORY).emit();
+        }
     }
 
     SystemPerformanceHinter mSystemPerformanceHinter;

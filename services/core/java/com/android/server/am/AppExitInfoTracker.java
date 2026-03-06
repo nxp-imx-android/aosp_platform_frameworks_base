@@ -27,7 +27,7 @@ import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.Andro
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.IMPORTANCE;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.RSS_KB;
 import static android.internal.perfetto.protos.AndroidTrackEventOuterClass.AndroidProcessDiedEvent.HAS_FOREGROUND_SERVICES;
-import static android.os.PerfettoTrace.PROC_STATE_CATEGORY;
+import static android.os.PerfettoCategories.PROC_LIFECYCLE_CATEGORY;
 import static android.os.Process.THREAD_PRIORITY_BACKGROUND;
 
 import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_PROCESSES;
@@ -958,7 +958,7 @@ public final class AppExitInfoTracker {
         info.setLoggedInStatsd(true);
         if (android.os.Flags.perfettoSdkTracingV3()) {
             PerfettoTrackEventBuilder builder =
-                    PerfettoTrace.instant(PROC_STATE_CATEGORY, "process_died").beginProto()
+                    PerfettoTrace.instant(PROC_LIFECYCLE_CATEGORY, "process_died").beginProto()
                             .beginNested(PROCESS_DIED_EVENT);
 
             if (info.getRss() != 0) {
