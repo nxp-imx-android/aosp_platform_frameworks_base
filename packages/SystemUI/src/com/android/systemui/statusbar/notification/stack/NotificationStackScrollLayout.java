@@ -2372,7 +2372,9 @@ public class NotificationStackScrollLayout
     }
 
     public void setExpandingEnabled(boolean enable) {
-        mExpandHelper.setEnabled(enable);
+        if (!NsslTouchDispatchFix.isEnabled()) {
+            mExpandHelper.setEnabled(enable);
+        }
     }
 
     private boolean isScrollingEnabled() {
@@ -2656,7 +2658,9 @@ public class NotificationStackScrollLayout
     }
 
     private void notifyOverscrollTopListener(float amount, boolean isRubberbanded) {
-        mExpandHelper.onlyObserveMovements(amount > 1.0f);
+        if (!NsslTouchDispatchFix.isEnabled()) {
+            mExpandHelper.onlyObserveMovements(amount > 1.0f);
+        }
         if (mDontReportNextOverScroll) {
             mDontReportNextOverScroll = false;
             return;
@@ -5033,7 +5037,9 @@ public class NotificationStackScrollLayout
                 resetChildAlpha();
             } else {
                 mGroupExpansionManager.collapseGroups();
-                mExpandHelper.cancelImmediately();
+                if (!NsslTouchDispatchFix.isEnabled()) {
+                    mExpandHelper.cancelImmediately();
+                }
                 if (!mIsExpansionChanging) {
                     resetAllSwipeState();
                 }
@@ -5337,7 +5343,9 @@ public class NotificationStackScrollLayout
     }
 
     public void cancelExpandHelper() {
-        mExpandHelper.cancel();
+        if (!NsslTouchDispatchFix.isEnabled()) {
+            mExpandHelper.cancel();
+        }
     }
 
     void setIntrinsicPadding(int intrinsicPadding) {
@@ -7537,7 +7545,14 @@ public class NotificationStackScrollLayout
                 ((ExpandableNotificationRow) v).setUserSwipingToExpandRow(isUserSwiping);
             }
             cancelLongPress();
-            requestDisallowInterceptTouchEvent(true);
+            if (!NsslTouchDispatchFix.isEnabled()) {
+                 //  With NsslTouchDispatchFix, this line is being called before NSSL can
+                //  handle the expansion. This is causing a problem, where the swipe-to-expand
+                // gesture is not intercepted by the NSSL, and therefore sent to the Child row,
+                // which handles it as a click (if the gesture finished on the child itself).
+                // This problem only repros in the Shade over Gone (not over Lockscreen).
+                requestDisallowInterceptTouchEvent(true);
+            }
         }
 
         @Override
@@ -7551,6 +7566,7 @@ public class NotificationStackScrollLayout
         }
     };
 
+    @Override
     public ExpandHelper.Callback getExpandHelperCallback() {
         return mExpandHelperCallback;
     }
