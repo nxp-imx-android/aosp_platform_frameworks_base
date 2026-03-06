@@ -321,6 +321,7 @@ fun ContentScope.NestedScrollingNotificationPanel(
     isActivated: Boolean = true,
     onEmptySpaceClick: (() -> Unit)? = null,
     onStackHeightChanged: (Int) -> Unit = {},
+    allowSwipeToExpandChildren: () -> Boolean = { contentScrollState.value == 0 },
 ) {
     /**
      * Space available for the notification stack on the screen. These bounds don't scroll off the
@@ -568,18 +569,16 @@ fun ContentScope.NestedScrollingNotificationPanel(
 
                     var layoutCoordinates: LayoutCoordinates? by remember { mutableStateOf(null) }
 
-                    val swipeToExpandDraggable: SwipeToExpandNotificationDraggable = remember {
-                        SwipeToExpandNotificationDraggable(
-                            callback = stackScrollView.getExpandHelperCallback(),
-                            layoutCoordinatesProvider = { layoutCoordinates },
-                            allowStartGesture = {
-                                // TODO(b/481223652) also check the scrim offset
-                                contentScrollState.value == 0
-                            },
-                            velocityThresholdPx = with(density) { 125.dp.toPx() }, // px/sec
-                            distanceThresholdPx = with(density) { 56.dp.toPx() },
-                        )
-                    }
+                    val swipeToExpandDraggable: SwipeToExpandNotificationDraggable =
+                        remember(stackScrollView, allowSwipeToExpandChildren) {
+                            SwipeToExpandNotificationDraggable(
+                                callback = stackScrollView.getExpandHelperCallback(),
+                                layoutCoordinatesProvider = { layoutCoordinates },
+                                allowStartGesture = allowSwipeToExpandChildren,
+                                velocityThresholdPx = with(density) { 125.dp.toPx() }, // px/sec
+                                distanceThresholdPx = with(density) { 56.dp.toPx() },
+                            )
+                        }
 
                     // NotificationPanel content
                     Box {

@@ -81,8 +81,9 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
 
     // region Layout tests
     @Test
-    fun scrimAtRest() =
+    fun scrimAtRest_laidOutCorrectly() =
         kosmos.runTest {
+            // Given: Scrim sits at its default position (QQS fully visible).
             setTestContent(contentHeight = { LayoutSize })
 
             // Initial layout placement
@@ -96,7 +97,7 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
         }
 
     @Test
-    fun scrimScrolledToTop() =
+    fun scrimScrolledToTop_laidOutCorrectly() =
         kosmos.runTest {
             // Given the content is tall enough to scroll, and scrim is at rest
             setTestContent(contentHeight = { 1000.dp })
@@ -155,6 +156,83 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
 
             // Then the scrim snaps back to rest automatically
             assertScrimAtRest()
+        }
+
+    @Test
+    fun scrimAtRest_isSwipeDownExpandAllowed_true() =
+        kosmos.runTest {
+            lateinit var isSwipeDownExpandAllowed: () -> Boolean
+
+            // Given: Scrim sits at its default position (QQS fully visible).
+            setTestContent { onHeightChanged: (Int) -> Unit, isScrimAtRest: () -> Boolean ->
+                // Capture the lambda, so it can be called outside setTestContent
+                isSwipeDownExpandAllowed = isScrimAtRest
+
+                // Emulate the content structure of the real shade.
+                Box(
+                    Modifier.fillMaxWidth().height(LayoutSize).onSizeChanged {
+                        onHeightChanged(it.height)
+                    }
+                )
+            }
+
+            assertThat(isSwipeDownExpandAllowed()).isTrue()
+        }
+
+    @Test
+    fun scrimScrolledToTop__isSwipeDownExpandAllowed_false() =
+        kosmos.runTest {
+            lateinit var isSwipeDownExpandAllowed: () -> Boolean
+
+            // Given the content is tall enough to scroll, and scrim is at rest
+            setTestContent { onHeightChanged: (Int) -> Unit, isScrimAtRest: () -> Boolean ->
+                // Capture the lambda, so it can be called outside setTestContent
+                isSwipeDownExpandAllowed = isScrimAtRest
+
+                // Emulate the content structure of the real shade.
+                Box(
+                    Modifier.fillMaxWidth().height(1000.dp).onSizeChanged {
+                        onHeightChanged(it.height)
+                    }
+                )
+            }
+            assertThat(isSwipeDownExpandAllowed()).isTrue()
+
+            // When swiped up
+            swipeScrimUp()
+
+            // Then scrim moves up
+            assertThat(isSwipeDownExpandAllowed()).isFalse()
+        }
+
+    @Test
+    fun afterScrimSnapsToRestAfterContentShrinks_isSwipeDownExpandAllowed_true() =
+        kosmos.runTest {
+            lateinit var isSwipeDownExpandAllowed: () -> Boolean
+
+            // Given tall content, scrolled all the way to the top
+            var contentHeight by mutableStateOf(1000.dp)
+
+            setTestContent { onHeightChanged: (Int) -> Unit, isScrimAtRest: () -> Boolean ->
+                // Capture the lambda, so it can be called outside setTestContent
+                isSwipeDownExpandAllowed = isScrimAtRest
+
+                // Emulate the content structure of the real shade.
+                Box(
+                    Modifier.fillMaxWidth().height(contentHeight).onSizeChanged {
+                        onHeightChanged(it.height)
+                    }
+                )
+            }
+            swipeScrimUp()
+            assertThat(isSwipeDownExpandAllowed()).isFalse()
+
+            // When content suddenly becomes short (shorter than available space at rest)
+            contentHeight = 100.dp
+            rule.waitForIdle() // wait for compose
+
+            // Then the gesture is allowed again
+            assertThat(isSwipeDownExpandAllowed()).isTrue()
         }
 
     // endregion
@@ -272,7 +350,21 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
     // endregion
 
     // region Setup Helpers
-    private fun setTestContent(contentHeight: () -> Dp) {
+    private fun setTestContent(contentHeight: () -> Dp) =
+        setTestContent { onHeightChanged: (Int) -> Unit, _ ->
+            // Emulate the content structure of the real shade.
+            Box(
+                Modifier.fillMaxWidth().height(contentHeight()).onSizeChanged {
+                    onHeightChanged(it.height)
+                }
+            )
+        }
+
+    private fun setTestContent(
+        scrollingContent:
+            @Composable
+            (onContentHeightChanged: (Int) -> Unit, isScrimAtRest: () -> Boolean) -> Unit
+    ) {
         rule.setContent {
             val contentScrollState = rememberScrollState()
             val contentOverscrollEffect = rememberOffsetOverscrollEffect()
@@ -291,7 +383,8 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
                     mediaAndQqsHeader = {
                         Box(Modifier.testTag(TAG_HEADER).fillMaxWidth().height(HeaderHeight))
                     },
-                    scrollableScrim = { onHeightChanged: (Int) -> Unit ->
+                    scrollableScrim = { onHeightChanged: (Int) -> Unit, isScrimAtRest: () -> Boolean
+                        ->
                         // This box must be scrollable, for the parent's NestedScrollConnection
                         Box(
                             Modifier.testTag(TAG_SCRIM)
@@ -299,11 +392,7 @@ class SingleShadeNestedScrollLayoutTest : SysuiTestCase() {
                                 .verticalScroll(contentScrollState, contentOverscrollEffect)
                         ) {
                             // Emulate the content structure of the real shade.
-                            Box(
-                                Modifier.fillMaxWidth().height(contentHeight()).onSizeChanged {
-                                    onHeightChanged(it.height)
-                                }
-                            )
+                            scrollingContent(onHeightChanged, isScrimAtRest)
                         }
                     },
                     cutoutInsetsProvider = { null },
