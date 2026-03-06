@@ -1503,23 +1503,25 @@ private fun DeviceChip(
     // The inner composable consumes the user events from the InteractionSource and feeds them into
     // its indication.
     val clickInteractionSource = remember { MutableInteractionSource() }
-    Expandable(
-        controller =
-            rememberExpandableController(
-                color = Color.Transparent,
-                shape = RoundedCornerShape(12.dp),
-            ),
-        modifier = modifier.padding(top = 16.dp, bottom = 0.dp),
-        useModifierBasedImplementation = true,
+    val expandable = remember { Expandable() }
+    Box(
+        modifier =
+            modifier.padding(top = 16.dp, bottom = 0.dp).heightIn(min = 48.dp).clickable(
+                interactionSource = clickInteractionSource,
+                indication = null,
+            ) {
+                viewModel.onClick(expandable)
+            }
     ) {
-        Box(
-            modifier =
-                Modifier.heightIn(min = 48.dp).clickable(
-                    interactionSource = clickInteractionSource,
-                    indication = null,
-                ) {
-                    viewModel.onClick(it)
-                }
+        Expandable(
+            expandable = expandable,
+            controller =
+                rememberExpandableController(
+                    color = style.fillColor,
+                    shape = RoundedCornerShape(12.dp),
+                ),
+            useModifierBasedImplementation = true,
+            defaultMinSize = false,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
