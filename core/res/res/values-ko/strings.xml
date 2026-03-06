@@ -554,10 +554,8 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"언제든지 앱에서 카메라를 사용하여 사진을 촬영하고 동영상을 녹화할 수 있습니다."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"사진 및 동영상 촬영을 위해 애플리케이션 또는 서비스에서 시스템 카메라에 액세스하도록 허용"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"이 권한이 있는 시스템 앱은 언제든지 시스템 카메라를 사용하여 사진을 촬영하고 동영상을 녹화할 수 있습니다. 또한 앱에 android.permission.CAMERA 권한이 필요합니다."</string>
-    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
-    <skip />
-    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
-    <skip />
+    <string name="permlab_warmUpCamera" msgid="6135692056406854923">"애플리케이션 또는 서비스에서 카메라 하위 시스템에 준비 신호를 전송하도록 허용"</string>
+    <string name="permdesc_warmUpCamera" msgid="925343364567764736">"권한이 있는 앱 또는 시스템 앱은 카메라 기기를 예열하기 위해 카메라 하위 시스템에 신호를 보내 성능을 개선하는 등의 이점을 얻을 수 있습니다."</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"애플리케이션 또는 서비스에서 카메라 기기 열림 또는 닫힘에 대한 콜백을 수신하도록 허용"</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"이 앱은 애플리케이션이 카메라 기기를 열거나 닫을 때 콜백을 수신할 수 있습니다."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"애플리케이션 또는 서비스에서 헤드리스 시스템 사용자로 카메라에 액세스하도록 허용"</string>

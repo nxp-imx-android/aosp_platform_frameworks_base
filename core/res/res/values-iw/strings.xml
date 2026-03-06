@@ -555,10 +555,8 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"האפליקציה הזו יכולה להשתמש במצלמה כדי לצלם תמונות וסרטונים בכל זמן."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"הרשאת גישה למצלמות המערכת עבור אפליקציה או שירות כדי לצלם תמונות וסרטונים"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"‏האפליקציה הזו בעלת ההרשאות, או אפליקציית המערכת הזו, יכולה לצלם תמונות ולהקליט סרטונים באמצעות מצלמת מערכת בכל זמן. בנוסף, לאפליקציה נדרשת ההרשאה android.permission.CAMERA"</string>
-    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
-    <skip />
-    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
-    <skip />
+    <string name="permlab_warmUpCamera" msgid="6135692056406854923">"אפליקציה או שירות יוכלו לשלוח אות הפעלה למערכת המשנה של המצלמה"</string>
+    <string name="permdesc_warmUpCamera" msgid="925343364567764736">"האפליקציה הזו עם ההרשאות, או אפליקציית המערכת הזו, יכולות לשלוח אות למערכת המשנה של המצלמה כדי להפעיל את מכשיר המצלמה ולשפר את הביצועים, וזה אחד היתרונות כאן"</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"‏אפליקציה או שירות יוכלו לקבל קריאות חוזרות (callback) כשמכשירי מצלמה ייפתחו או ייסגרו."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"‏האפליקציה הזו יכולה לקבל קריאות חוזרות (callback) כשמכשיר מצלמה כלשהו נפתח (באמצעות אפליקציה) או נסגר."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"מתן גישה למצלמת המערכת עבור אפליקציה או שירות כמשתמש באפליקציית מערכת ללא ממשק גרפי"</string>
@@ -1807,7 +1805,7 @@
     <string name="kg_pattern_instructions" msgid="8366024510502517748">"צריך לשרטט את קו ביטול הנעילה"</string>
     <string name="kg_sim_pin_instructions" msgid="6479401489471690359">"‏יש להזין את קוד האימות של ה-SIM"</string>
     <string name="kg_pin_instructions" msgid="7355933174673539021">"יש להזין קוד אימות"</string>
-    <string name="kg_password_instructions" msgid="7179782578809398050">"יש להזין את הסיסמה"</string>
+    <string name="kg_password_instructions" msgid="7179782578809398050">"מה הסיסמה?"</string>
     <string name="kg_puk_enter_puk_hint" msgid="6696187482616360994">"‏כרטיס ה-SIM מושבת כרגע. צריך להזין קוד PUK כדי להמשיך. יש לפנות אל הספק לקבלת פרטים."</string>
     <string name="kg_puk_enter_pin_hint" msgid="8190982314659429770">"צריך להזין את קוד האימות הרצוי"</string>
     <string name="kg_enter_confirm_pin_hint" msgid="6372557107414074580">"יש לאשר את קוד האימות הרצוי"</string>

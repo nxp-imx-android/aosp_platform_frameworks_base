@@ -2162,7 +2162,7 @@
     <string name="app_lock_edu_dialog_info_header" msgid="5876120209204270990">"ಆ್ಯಪ್ ಲಾಕ್ ಮೂಲಕ"</string>
     <string name="app_lock_edu_dialog_info_notifications" msgid="1124438392204873305">"ನೋಟಿಫಿಕೇಶನ್ ಕಂಟೆಂಟ್ ಅನ್ನು ಮರೆಮಾಡಲಾಗುತ್ತದೆ"</string>
     <string name="app_lock_edu_dialog_info_widgets" msgid="8809009414650740872">"ವಿಜೆಟ್‌ಗಳು ಮತ್ತು ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ತೆಗೆದುಹಾಕಲಾಗುತ್ತದೆ"</string>
-    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"ನೀವು %1$s ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್‌ ಮಾಡಲು ಅನುಮತಿಸಿದ AI ಏಜೆಂಟ್‌ಗಳು ಮತ್ತು ಸೇವೆಗಳು ಇನ್ನೂ ಅದರ ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್‌ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತದೆ"</string>
+    <string name="app_lock_edu_dialog_info_ai_disclaimer" msgid="5623615653703542050">"ನೀವು %1$s ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್‌ ಮಾಡಲು ಅನುಮತಿಸಿದ AI ಏಜೆಂಟ್‌ಗಳು ಮತ್ತು ಸೇವೆಗಳಿಗೆ ಈಗಲೂ ಅದರ ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್‌ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತದೆ"</string>
     <string name="app_lock_edu_dialog_button_lock" msgid="3914687128135704801">"ಆ್ಯಪ್ ಲಾಕ್ ಸೇರಿಸಿ"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="default" msgid="1348151645996748654">"ಫೇಸ್ ಅನ್‌ಲಾಕ್"</string>
     <string name="app_lock_edu_dialog_biometric_description_has_face" product="desktop" msgid="380233309639495358">"ಮುಖದ ಮೂಲಕ ಅನ್‌ಲಾಕ್ ಮಾಡುವಿಕೆ"</string>

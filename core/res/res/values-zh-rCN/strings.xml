@@ -554,10 +554,8 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"此应用可以随时使用相机拍摄照片和录制视频。"</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"要拍照或录制视频，请允许应用或服务访问系统相机"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"这个具有特权的系统应用随时可以使用系统相机拍照及录制视频。另外，应用还需要获取 android.permission.CAMERA 权限"</string>
-    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
-    <skip />
-    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
-    <skip />
+    <string name="permlab_warmUpCamera" msgid="6135692056406854923">"允许应用或服务向相机子系统发送预热信号"</string>
+    <string name="permdesc_warmUpCamera" msgid="925343364567764736">"这个特权或系统应用可以向相机子系统发送信号，以预热相机设备，从而帮助提升性能，并带来其他好处"</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"允许应用或服务接收与打开或关闭摄像头设备有关的回调。"</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"此应用可在任何摄像头设备（被某些应用）打开或关闭时收到相应回调。"</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"允许应用或服务以无头系统用户的身份使用摄像头"</string>

@@ -556,10 +556,8 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"Ta aplikacja może w dowolnym momencie robić zdjęcia i nagrywać filmy przy użyciu aparatu."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Zezwól na dostęp aplikacji lub usługi do aparatów systemu i robienie zdjęć oraz nagrywanie filmów"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"Ta aplikacja systemowa z podwyższonymi uprawnieniami może w dowolnym momencie robić zdjęcia i nagrywać filmy przy użyciu aparatu systemowego. Wymaga przyznania uprawnień android.permission.CAMERA również aplikacji."</string>
-    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
-    <skip />
-    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
-    <skip />
+    <string name="permlab_warmUpCamera" msgid="6135692056406854923">"Zezwól aplikacji lub usłudze na wysyłanie sygnału rozgrzewania do podsystemu kamery"</string>
+    <string name="permdesc_warmUpCamera" msgid="925343364567764736">"Ta aplikacja systemowa lub z podwyższonymi uprawnieniami może wysyłać sygnał do podsystemu kamery, aby rozgrzać urządzenie i między innymi poprawić jego wydajność"</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Zezwól na dostęp aplikacji lub usługi na otrzymywanie wywoływania zwrotnego o urządzeniach z aparatem, kiedy są one uruchamiane lub zamykane."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"Ta aplikacja może otrzymywać wywołania zwrotne, kiedy urządzenie z aparatem jest uruchamiane (przez jaką aplikację) albo zamykane."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Zezwól na dostęp aplikacji lub usługi do aparatu jako użytkownik systemowy bez interfejsu graficznego."</string>
@@ -814,7 +812,7 @@
     <skip />
     <string name="face_acquired_recalibrate_alt" msgid="5702674220280332115">"Nie można utworzyć modelu twarzy. Spróbuj ponownie."</string>
     <string name="face_acquired_dark_glasses_detected_alt" msgid="4052123776406041972">"Wykryto ciemne okulary. Twarz musi być widoczna w całości."</string>
-    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"Wykryto zasłonę twarzy – twarz musi być widoczna w całości"</string>
+    <string name="face_acquired_mouth_covering_detected_alt" msgid="1122294982850589766">"Wykryto osłonę twarzy – twarz musi być widoczna w całości"</string>
   <string-array name="face_acquired_vendor">
   </string-array>
     <string name="face_error_hw_not_available" msgid="5085202213036026288">"Nie można zweryfikować twarzy. Sprzęt niedostępny."</string>
