@@ -1106,8 +1106,6 @@ void GnssAssistanceUtil::setGnssAssistance(JNIEnv* env, jobject gnssAssistanceOb
                                              gnssAssistance.galileoAssistance);
     GnssAssistanceUtil::setBeidouAssistance(env, beidouAssistanceObj,
                                             gnssAssistance.beidouAssistance);
-    GnssAssistanceUtil::setBeidouAssistance(env, beidouAssistanceObj,
-                                            gnssAssistance.beidouAssistance);
 
     env->DeleteLocalRef(gpsAssistanceObj);
     env->DeleteLocalRef(glonassAssistanceObj);
