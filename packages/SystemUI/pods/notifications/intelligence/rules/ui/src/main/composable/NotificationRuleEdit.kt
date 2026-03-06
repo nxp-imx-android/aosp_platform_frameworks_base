@@ -73,7 +73,7 @@ fun NotificationRuleEdit(
 
     val textStyles = rememberTextStyles()
     val text =
-        remember(viewModel, onEnterEditField, onExitEditField, textStyles) {
+        remember(viewModel, viewModel.rule, onEnterEditField, onExitEditField, textStyles) {
             buildAnnotatedText(
                 viewModel = viewModel,
                 onEnterEditField = onEnterEditField,
