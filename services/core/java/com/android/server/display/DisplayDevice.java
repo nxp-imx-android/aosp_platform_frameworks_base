@@ -91,6 +91,23 @@ abstract class DisplayDevice {
         mContext = context;
     }
 
+    static int findUserPreferredModeIdLocked(
+            @Nullable Display.Mode userPreferredMode,
+            Display.Mode[] supportedModes
+    ) {
+        if (userPreferredMode != null) {
+            for (int i = 0; i < supportedModes.length; i++) {
+                Display.Mode supportedMode = supportedModes[i];
+                if (userPreferredMode.matches(supportedMode.getPhysicalWidth(),
+                        supportedMode.getPhysicalHeight(),
+                        supportedMode.getRefreshRate())) {
+                    return supportedMode.getModeId();
+                }
+            }
+        }
+        return Display.Mode.INVALID_MODE_ID;
+    }
+
     /**
      * Gets the display adapter that owns the display device.
      *
