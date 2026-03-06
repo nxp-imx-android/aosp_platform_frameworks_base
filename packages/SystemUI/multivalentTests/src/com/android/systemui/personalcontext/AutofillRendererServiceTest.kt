@@ -24,6 +24,7 @@ import android.service.personalcontext.RenderToken
 import android.service.personalcontext.hint.AutofillInlineRequestHint
 import android.service.personalcontext.hint.BundleHint
 import android.service.personalcontext.hint.PublishedContextHint
+import android.service.personalcontext.insight.BundleInsight
 import android.service.personalcontext.insight.DisplayInsight
 import android.service.personalcontext.insight.InsightDisplayDetails
 import android.testing.AndroidTestingRunner
@@ -103,6 +104,44 @@ class AutofillRendererServiceTest : SysuiTestCase() {
             verify(autofillManager)
                 .notifySystemInlineSuggestions(eq(sessionId), datasetCaptor.capture())
             assertThat(datasetCaptor.firstValue).hasSize(1)
+        }
+
+    @Test
+    fun testOnRender_bundleInsight_returnsEmptyDatasets() =
+        kosmos.runTest {
+            val sessionId = 42
+            val inlineSuggestionsRequest =
+                InlineSuggestionsRequest.Builder(
+                        listOf<InlinePresentationSpec?>(AUTOFILL_INLINE_PRESENTATION_SPEC)
+                    )
+                    .build()
+            val originHint =
+                AutofillInlineRequestHint.Builder(
+                        sessionId,
+                        0,
+                        Instant.now(),
+                        ComponentName("test_package", "test_component"),
+                        AutofillId(0),
+                        AutofillValue.forText("test"),
+                        inlineSuggestionsRequest,
+                        Binder(),
+                    )
+                    .build()
+            underTest.onRender(
+                BundleInsight.Builder()
+                    .addOriginHint(
+                        PublishedContextHint.Builder(originHint, generateSignedHintKey()).build()
+                    )
+                    .build()
+                    .fakePublish(),
+                RenderToken(UUID.randomUUID(), null),
+            )
+
+            // An empty list of datasets is returned for a BundleInsight.
+            val datasetCaptor = argumentCaptor<MutableList<Dataset>>()
+            verify(autofillManager)
+                .notifySystemInlineSuggestions(eq(sessionId), datasetCaptor.capture())
+            assertThat(datasetCaptor.firstValue).hasSize(0)
         }
 
     @Test

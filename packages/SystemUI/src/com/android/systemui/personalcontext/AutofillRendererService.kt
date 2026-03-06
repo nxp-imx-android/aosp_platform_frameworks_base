@@ -27,6 +27,7 @@ import android.service.personalcontext.RenderToken
 import android.service.personalcontext.hint.AutofillInlineRequestHint
 import android.service.personalcontext.hint.BundleHint
 import android.service.personalcontext.insight.ActionableInsight
+import android.service.personalcontext.insight.BundleInsight
 import android.service.personalcontext.insight.ContextInsight
 import android.service.personalcontext.insight.DisplayInsight
 import android.service.personalcontext.insight.InsightActionDetails
@@ -65,6 +66,10 @@ constructor(private val context: Context, private val autofillManager: AutofillM
             .addInsightType(ActionableInsight::class.java)
             // Multiple insights allowed, will result in multiple datasets.
             .addInsightType(InsightCollection::class.java)
+            // TODO(b/490164951): remove once there's a proper API for this
+            // BundleInsight is used to signal there are no suggestions so that autofill framework
+            // can stop waiting for a response from personal context.
+            .addInsightType(BundleInsight::class.java)
             .build()
     }
 
@@ -75,6 +80,19 @@ constructor(private val context: Context, private val autofillManager: AutofillM
         if (autofillManager == null) {
             return
         }
+
+        if (publishedContextInsight.insight is BundleInsight) {
+            // BundleInsight represents no suggestions being produced.
+            findAutofillHint(publishedContextInsight.insight)?.let { autofillHint ->
+                // TODO(b/490164951): remove once there's a proper API for this
+                autofillManager.notifySystemInlineSuggestions(
+                    autofillHint.sessionId,
+                    emptyList<Dataset>(),
+                )
+                return
+            }
+        }
+
         val inlineSuggestionDetails = mutableListOf<InlineSuggestionDetails>()
         InsightTraverser.traverse(
             publishedContextInsight.insight,
