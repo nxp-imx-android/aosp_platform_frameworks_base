@@ -17,6 +17,9 @@
 package com.android.systemui.bouncer.ui.composable
 
 import android.security.Flags.lockscreenTimeoutDeactivatePinPad
+import android.view.View
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityManager
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationSpec
@@ -58,6 +61,7 @@ import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -112,6 +116,10 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { focusRequester.requestFocus() }
 
+    val view = LocalView.current
+    val context = LocalContext.current
+    val accessibilityManager = remember(context) { AccessibilityManager.getInstance(context) }
+
     VerticalGrid(
         columns = columns,
         verticalSpacing = verticalSpacing,
@@ -126,7 +134,18 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
             DigitButton(
                 digit = index + 1,
                 isInputEnabled = isInputEnabled,
-                onClicked = viewModel::onPinButtonClicked,
+                onClicked = { digit ->
+                    sendAccessibilityEvent(
+                        view = view,
+                        accessibilityManager = accessibilityManager,
+                    ) {
+                        PinAccessibilityEvent.DigitAdded(
+                            pinLengthBeforeChange = viewModel.enteredPinLength,
+                            digitAdded = digit,
+                        )
+                    }
+                    viewModel.onPinButtonClicked(digit)
+                },
                 scaling = buttonScaleAnimatables[index]::value,
                 isAnimationEnabled = isDigitButtonAnimationEnabled,
                 onPointerDown = viewModel::onDigitButtonDown,
@@ -146,9 +165,23 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
                         ContentDescription.Resource(R.string.keyboardview_keycode_delete),
                 ),
             isInputEnabled = isInputEnabled,
-            onClicked = viewModel::onBackspaceButtonClicked,
+            onClicked = {
+                sendAccessibilityEvent(view = view, accessibilityManager = accessibilityManager) {
+                    PinAccessibilityEvent.CharacterDeleted(
+                        pinLengthBeforeChange = viewModel.enteredPinLength
+                    )
+                }
+                viewModel.onBackspaceButtonClicked()
+            },
             onPointerDown = viewModel::onBackspaceButtonPressed,
-            onLongPressed = viewModel::onBackspaceButtonLongPressed,
+            onLongPressed = {
+                sendAccessibilityEvent(view = view, accessibilityManager = accessibilityManager) {
+                    PinAccessibilityEvent.TextCleared(
+                        pinLengthBeforeChange = viewModel.enteredPinLength
+                    )
+                }
+                viewModel.onBackspaceButtonLongPressed()
+            },
             onLongClickLabel =
                 stringResource(R.string.keyguard_accessibility_pin_delete_long_click),
             appearance = viewModel.backspaceButtonAppearance,
@@ -159,7 +192,15 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
         DigitButton(
             digit = 0,
             isInputEnabled = isInputEnabled,
-            onClicked = viewModel::onPinButtonClicked,
+            onClicked = {
+                sendAccessibilityEvent(view = view, accessibilityManager = accessibilityManager) {
+                    PinAccessibilityEvent.DigitAdded(
+                        pinLengthBeforeChange = viewModel.enteredPinLength,
+                        digitAdded = 0,
+                    )
+                }
+                viewModel.onPinButtonClicked(0)
+            },
             scaling = buttonScaleAnimatables[10]::value,
             isAnimationEnabled = isDigitButtonAnimationEnabled,
             onPointerDown = viewModel::onDigitButtonDown,
@@ -531,6 +572,56 @@ private suspend fun showFailureAnimation(
     }
 }
 
+private sealed interface PinAccessibilityEvent {
+    val pinLengthBeforeChange: Int
+
+    data class DigitAdded(override val pinLengthBeforeChange: Int, val digitAdded: Int) :
+        PinAccessibilityEvent
+
+    data class CharacterDeleted(override val pinLengthBeforeChange: Int) : PinAccessibilityEvent
+
+    data class TextCleared(override val pinLengthBeforeChange: Int) : PinAccessibilityEvent
+}
+
+private fun sendAccessibilityEvent(
+    view: View,
+    accessibilityManager: AccessibilityManager,
+    eventFactory: () -> PinAccessibilityEvent,
+) {
+    if (!accessibilityManager.isEnabled) {
+        return
+    }
+
+    val event = eventFactory()
+
+    view.sendAccessibilityEventUnchecked(
+        AccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED).apply {
+            isEnabled = true
+            isPassword = true
+            beforeText = Bullet.repeat(event.pinLengthBeforeChange)
+            when (event) {
+                is PinAccessibilityEvent.DigitAdded -> {
+                    text.add(Bullet.repeat(event.pinLengthBeforeChange) + "${event.digitAdded}")
+                    addedCount = 1
+                    removedCount = 0
+                    fromIndex = event.pinLengthBeforeChange
+                }
+                is PinAccessibilityEvent.CharacterDeleted -> {
+                    text.add(Bullet.repeat(event.pinLengthBeforeChange - 1))
+                    addedCount = 0
+                    removedCount = 1
+                    fromIndex = event.pinLengthBeforeChange - 1
+                }
+                is PinAccessibilityEvent.TextCleared -> {
+                    addedCount = 0
+                    removedCount = event.pinLengthBeforeChange
+                    fromIndex = 0
+                }
+            }
+        }
+    )
+}
+
 /** Returns the amount of horizontal spacing between columns, in dips. */
 private fun calculateHorizontalSpacingBetweenColumns(gridWidth: Dp): Dp {
     return (gridWidth - (pinButtonMaxSize * columns)) / (columns - 1)
@@ -554,3 +645,6 @@ private val pinButtonPressedDuration = 100.milliseconds
 private val pinButtonPressedEasing = Easings.Linear
 private val pinButtonReleasedDuration = 420.milliseconds
 private val pinButtonReleasedEasing = Easings.Standard
+
+/** This is `•`, the bullet character. */
+private val Bullet = "\u2022"
