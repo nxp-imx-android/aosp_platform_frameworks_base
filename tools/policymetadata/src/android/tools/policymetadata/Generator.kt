@@ -354,8 +354,14 @@ object Generator {
 
     private val stringPolicyMetadataType = ClassName.get(METADATA_PACKAGE, "StringPolicyMetadata")
 
-    private fun CodeBlock.Builder.addStringMetadataInformation(emptyStringAllowed: Boolean) =
-        this.add("/* emptyStringAllowed= */ \$L", emptyStringAllowed)
+    private fun CodeBlock.Builder.addStringMetadataInformation(
+        stringMetadata: StringPolicyMetadata
+    ) =
+        this.add("/* emptyStringAllowed= */ \$L,\n", stringMetadata.emptyStringAllowed)
+            .add(
+                "/* unprintableCharactersAllowed= */ \$L",
+                stringMetadata.unprintableCharactersAllowed,
+            )
 
     // Returns a CodeBlock containing `new StringPolicyMetadata(<policy-id>, ....)` .
     private fun generateStringPolicyMetadata(
@@ -368,7 +374,7 @@ object Generator {
             .indent()
             .addPolicyArguments(policy, policyId)
             .add(",\n")
-            .addStringMetadataInformation(stringMetadata.emptyStringAllowed)
+            .addStringMetadataInformation(stringMetadata)
             .add("\n")
             .unindent()
             .add(")")

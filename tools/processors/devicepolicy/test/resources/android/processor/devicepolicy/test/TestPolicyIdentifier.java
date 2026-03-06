@@ -220,6 +220,29 @@ public final class PolicyIdentifier<T> {
     public static final PolicyIdentifier<String> SIMPLE_STRING_POLICY =
             new PolicyIdentifier<>("SIMPLE_STRING_POLICY");
 
+    /** Test policy verifying a string policy with unprintable characters allowed. */
+    @StringPolicyDefinition(
+            base =
+                    @PolicyDefinition(
+                            allowedScopes = {
+                                1 // POLICY_SCOPE_USER
+                            },
+                            affectedResource = 1, // RESOURCE_DEVICE_WIDE
+                            // requiredPermission and requiredCrossUserPermission using the default
+                            // values.
+                            allowedDpcTypes =
+                                    @AllowedDpcTypes(
+                                            deviceOwner = DISALLOWED,
+                                            managedProfileOwnerOfOrganizationOwnedDevice =
+                                                    DISALLOWED,
+                                            managedProfileOwnerOfPersonalOwnedDevice = DISALLOWED,
+                                            unaffiliatedFullUserProfileOwner = DISALLOWED)),
+            unprintableCharactersAllowed = true)
+    public static final PolicyIdentifier<String>
+            SIMPLE_STRING_POLICY_WITH_UNPRINTABLE_CHARACTERS_ALLOWED =
+                    new PolicyIdentifier<>(
+                            "SIMPLE_STRING_POLICY_WITH_UNPRINTABLE_CHARACTERS_ALLOWED");
+
     /** Test policy 5 */
     @ListOfStringPolicyDefinition(
             base =
@@ -245,6 +268,35 @@ public final class PolicyIdentifier<T> {
                             emptyStringAllowed = true))
     public static final PolicyIdentifier<List<String>> SIMPLE_STRING_LIST_POLICY =
             new PolicyIdentifier<>("SIMPLE_STRING_LIST_POLICY");
+
+    /** Test policy verifying a string list policy with unprintable characters allowed. */
+    @ListOfStringPolicyDefinition(
+            base =
+                    @StringPolicyDefinition(
+                            base =
+                                    @PolicyDefinition(
+                                            allowedScopes = {
+                                                1 // POLICY_SCOPE_USER
+                                            },
+                                            affectedResource = 1, // RESOURCE_DEVICE_WIDE
+                                            // requiredPermission and requiredCrossUserPermission
+                                            // using the default
+                                            // values.
+                                            allowedDpcTypes =
+                                                    @AllowedDpcTypes(
+                                                            deviceOwner = DISALLOWED,
+                                                            managedProfileOwnerOfOrganizationOwnedDevice =
+                                                                    DISALLOWED,
+                                                            managedProfileOwnerOfPersonalOwnedDevice =
+                                                                    DISALLOWED,
+                                                            unaffiliatedFullUserProfileOwner =
+                                                                    DISALLOWED)),
+                            emptyStringAllowed = true,
+                            unprintableCharactersAllowed = true))
+    public static final PolicyIdentifier<List<String>>
+            SIMPLE_STRING_LIST_POLICY_WITH_UNPRINTABLE_CHARACTERS_ALLOWED =
+                    new PolicyIdentifier<>(
+                            "SIMPLE_STRING_LIST_POLICY_WITH_UNPRINTABLE_CHARACTERS_ALLOWED");
 
     /** Test policy verifying processing of DEFAULT_DEVICE_OWNER allowed. */
     @IntegerPolicyDefinition(

@@ -305,7 +305,8 @@ public class Policies {
             /* requiredPermission= */ null,
             /* requiredCrossUserPermission= */ null,
             /* allowedDpcTypes= */ Set.of(),
-            /* emptyStringAllowed= */ false
+            /* emptyStringAllowed= */ false,
+            /* unprintableCharactersAllowed= */ true
         ));
         policies.add(new ListPolicyMetadata<String>(
             /* id= */ SIMPLE_STRING_LIST_POLICY,
@@ -318,7 +319,8 @@ public class Policies {
                 /* requiredPermission= */ null,
                 /* requiredCrossUserPermission= */ null,
                 /* allowedDpcTypes= */ Set.of(),
-                /* emptyStringAllowed= */ true
+                /* emptyStringAllowed= */ true,
+                /* unprintableCharactersAllowed= */ false
             ),
             /* emptyListAllowed= */ false
         ));

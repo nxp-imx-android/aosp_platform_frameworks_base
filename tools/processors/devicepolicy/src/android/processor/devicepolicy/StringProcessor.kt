@@ -77,5 +77,6 @@ class StringProcessor(processingEnv: ProcessingEnvironment) :
     ): TypeSpecificPolicyMetadata.StringPolicyMetadata =
         TypeSpecificPolicyMetadata.StringPolicyMetadata.newBuilder()
             .setEmptyStringAllowed(definition.emptyStringAllowed)
+            .setUnprintableCharactersAllowed(definition.unprintableCharactersAllowed)
             .build()
 }
