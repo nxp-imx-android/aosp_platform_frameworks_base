@@ -80,6 +80,7 @@ class HsuTilesRepositoryTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun flagEnabled_internetTileAllowed_convertedToWifi() =
         kosmos.runTest {
             overrideAllowListResource(arrayOf("internet"))
