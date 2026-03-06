@@ -354,6 +354,7 @@ class AppHeaderController(
                     },
                     transactionSupplier = surfaceControlTransactionSupplier,
                     desktopModeUiEventLogger = desktopModeUiEventLogger,
+                    splitScreenController = splitScreenController,
                 )
                 .apply {
                     show(

@@ -44,7 +44,6 @@ import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.DrawableInsets
 import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.isFullscreen
-import com.android.wm.shell.windowdecor.extension.isMultiWindow
 import com.android.wm.shell.windowdecor.extension.isPinned
 import com.android.wm.shell.windowdecor.extension.isRtl
 
@@ -254,7 +253,7 @@ class WindowingPillView(private val context: Context, attrs: AttributeSet) :
     }
 
     /** Binds the menu views to the new data. */
-    fun bind(taskInfo: RunningTaskInfo) {
+    fun bind(taskInfo: RunningTaskInfo, isInSplitScreen: Boolean) {
         this.taskInfo = taskInfo
         this.style = calculateMenuStyle(taskInfo)
 
@@ -268,11 +267,14 @@ class WindowingPillView(private val context: Context, attrs: AttributeSet) :
             splitscreenBtn.visibility = View.GONE
         }
 
-        fullscreenBtn.isSelected = taskInfo.isFullscreen
-        fullscreenBtn.isEnabled = !taskInfo.isFullscreen
+        // Currently split screen doesn't override task windowing mode when it's entering split.
+        // So a split task can have WINDOWING_MODE_FULLSCREEN. Use `isInSplitScreen` to check if
+        // the task is in split screen.
+        fullscreenBtn.isSelected = taskInfo.isFullscreen && !isInSplitScreen
+        fullscreenBtn.isEnabled = !taskInfo.isFullscreen || isInSplitScreen
         fullscreenBtn.imageTintList = style.buttonColor
-        splitscreenBtn.isSelected = taskInfo.isMultiWindow
-        splitscreenBtn.isEnabled = !taskInfo.isMultiWindow
+        splitscreenBtn.isSelected = isInSplitScreen
+        splitscreenBtn.isEnabled = !isInSplitScreen
         splitscreenBtn.imageTintList = style.buttonColor
         floatingBtn.isSelected = taskInfo.isPinned
         floatingBtn.isEnabled = !taskInfo.isPinned
