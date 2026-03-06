@@ -27,8 +27,6 @@ import static com.android.internal.jank.InteractionJankMonitor.ACTION_SESSION_CA
 import static com.android.internal.jank.InteractionJankMonitor.ACTION_SESSION_END;
 import static com.android.internal.jank.InteractionJankMonitor.EXECUTOR_TASK_TIMEOUT;
 
-import static java.lang.Double.isNaN;
-
 import android.animation.AnimationHandler;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -129,6 +127,7 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
         @JankType int jankTypeExperimental;
         long frameInterval;
         long presentDelay;
+        double jankScore;
         @RefreshRate int refreshRate = UNKNOWN_REFRESH_RATE;
 
         JankInfo(SurfaceControl.JankData jankStat) {
@@ -150,6 +149,7 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
             }
             this.totalDurationNanos = jankStat.getActualAppFrameTimeNanos();
             this.presentDelay = jankStat.getPresentDelayNanos();
+            this.jankScore = jankStat.getJankScore();
             return this;
         }
 
@@ -530,9 +530,9 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
         int successiveMissedFramesCount = 0;
         @RefreshRate int refreshRate = UNKNOWN_REFRESH_RATE;
         long totalAnimationTime = 0;
-        float totalWeightedJank = 0;
-        float appWeightedJank = 0;
-        float sfWeightedJank = 0;
+        double totalWeightedJank = 0;
+        double appWeightedJank = 0;
+        double sfWeightedJank = 0;
 
         for (int i = 0; i < mJankInfos.size(); i++) {
             JankInfo info = mJankInfos.valueAt(i);
@@ -584,13 +584,17 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
                     ? info.jankTypeExperimental : info.jankTypeLegacy;
             if ((jankType & (JANK_APPLICATION | JANK_COMPOSER)) != 0) {
                 totalAnimationTime += info.frameInterval + Math.max(info.presentDelay, 0);
-                float weightedJank = computeWeightedJank(info);
-                totalWeightedJank += weightedJank;
+                totalWeightedJank += info.jankScore;
                 if ((jankType & JANK_APPLICATION) != 0) {
-                    appWeightedJank += weightedJank;
+                    appWeightedJank += info.jankScore;
                 }
                 if ((jankType & JANK_COMPOSER) != 0) {
-                    sfWeightedJank += weightedJank;
+                    sfWeightedJank += info.jankScore;
+                }
+
+                if (Trace.isTagEnabled(TRACE_TAG_APP)) {
+                    Trace.instant(TRACE_TAG_APP,
+                            "vsync=" + info.frameVsyncId + ", score=" + info.jankScore);
                 }
             } else {
                 totalAnimationTime += info.frameInterval;
@@ -641,9 +645,9 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
                     missedAppFramesCountLegacy,
                     maxSuccessiveMissedFramesCount,
                     totalAnimationTime,
-                    totalWeightedJank,
-                    sfWeightedJank,
-                    appWeightedJank);
+                    (float) totalWeightedJank,
+                    (float) sfWeightedJank,
+                    (float) appWeightedJank);
         }
     }
 
@@ -653,26 +657,6 @@ public class FrameTracker implements SurfaceControl.OnJankDataListener {
         boolean overFrameTimeThreshold = !mSurfaceOnly && mTraceThresholdFrameTimeMillis != -1
                 && maxFrameTimeNanos >= mTraceThresholdFrameTimeMillis * NANOS_IN_MILLISECOND;
         return overMissedFramesThreshold || overFrameTimeThreshold;
-    }
-
-    private static float computeWeightedJank(JankInfo info) {
-        double frameInterval = info.frameInterval;
-
-        // Treat negative present delay, i.e. an early frame, the same as if it was late by the same
-        // amount of time it was early.
-        double frameTime = frameInterval + Math.abs(info.presentDelay);
-
-        // Compute the jank severity, based on jank duration, and frame rate, normalized to 120Hz,
-        // weights. See go/refined-jank-metric.
-        double omegaS = Math.log(frameTime / frameInterval) / LOG2;
-        double omegaF = Math.sqrt(frameInterval / 8_333_333.0);
-
-        if (Trace.isTagEnabled(TRACE_TAG_APP)) {
-            Trace.instant(TRACE_TAG_APP,
-                    "vsync=" + info.frameVsyncId + ", omega_s=" + omegaS + ", omega_f=" + omegaF);
-        }
-
-        return (float) ((isNaN(omegaS) ? 1.0 : omegaS) * (isNaN(omegaF) ? 1.0 : omegaF));
     }
 
     /**
