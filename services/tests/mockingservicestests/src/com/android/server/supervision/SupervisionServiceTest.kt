@@ -1727,7 +1727,7 @@ class SupervisionServiceTest {
     fun onBootCompleted_sameVersion_doesNotUpgrade() {
         val settings =
             loadSupervisionSettings(
-                ServicestestsR.xml.supervision_settings_v_current,
+                ServicestestsR.xml.supervision_settings_current_version,
                 SupervisionSettings.VERSION,
             )
 
