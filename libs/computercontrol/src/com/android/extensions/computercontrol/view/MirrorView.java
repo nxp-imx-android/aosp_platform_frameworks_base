@@ -20,6 +20,8 @@ import android.annotation.MainThread;
 import android.companion.virtual.computercontrol.InteractiveMirror;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Insets;
+import android.graphics.Rect;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -35,6 +37,8 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.ViewRootImpl;
 import android.view.ViewTreeObserver;
+import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -70,6 +74,9 @@ public class MirrorView extends FrameLayout {
     private InteractiveMirror mInteractiveMirror = null;
 
     private float mLastCompoundedAlpha = -1f;
+
+    @NonNull
+    private Insets mMirrorSurfaceInsets = Insets.NONE;
 
     private final ViewTreeObserver.OnPreDrawListener mOnPreDrawListener = () -> {
         final float compoundedAlpha = getCompoundedAlpha();
@@ -140,6 +147,7 @@ public class MirrorView extends FrameLayout {
             @Nullable ComputerControlSession requestedSession, boolean isInteractive) {
         final var session = isMirrorViewAllowedOnDisplay(getDisplay())
                 ? requestedSession : null;
+        final var insets = mMirrorSurfaceInsets;
 
         mHandlerThread.getThreadExecutor().execute(() -> {
             if (mInteractiveMirror != null) {
@@ -156,6 +164,9 @@ public class MirrorView extends FrameLayout {
                 size = session.getDisplaySize();
                 if (isInteractive != InteractiveMirror.DEFAULT_INTERACTIVE) {
                     interactiveMirror.setInteractive(isInteractive);
+                }
+                if (!Insets.NONE.equals(insets)) {
+                    interactiveMirror.updateInsets(insets);
                 }
             } else {
                 mirrorSurface = null;
@@ -211,6 +222,39 @@ public class MirrorView extends FrameLayout {
             // Attempt to recreate the interactive mirror based on the new display.
             updateInteractiveMirrorOnAuxThread(mComputerControlSession, mIsInteractive);
         }
+    }
+
+    @Override
+    public WindowInsets onApplyWindowInsets(WindowInsets insets) {
+        final var mirrorInsets = calculateInsetsForMirrorSurface(insets);
+
+        if (!Objects.equals(mMirrorSurfaceInsets, mirrorInsets)) {
+            mMirrorSurfaceInsets = mirrorInsets;
+            mHandlerThread.getThreadExecutor().execute(() -> {
+                if (mInteractiveMirror != null) {
+                    mInteractiveMirror.updateInsets(mirrorInsets);
+                }
+            });
+        }
+        return WindowInsets.CONSUMED;
+    }
+
+    @NonNull
+    private Insets calculateInsetsForMirrorSurface(WindowInsets windowInsets) {
+        var controller = getWindowInsetsController();
+        if (controller == null) {
+            return Insets.NONE;
+        }
+        var windowBounds = Objects.requireNonNull(mContext.getSystemService(WindowManager.class))
+                .getCurrentWindowMetrics().getBounds();
+        var mirrorBounds = new Rect();
+        mMirrorSurface.getBoundsInWindow(mirrorBounds, true);
+
+        return windowInsets.inset(mirrorBounds.left - windowBounds.left,
+                mirrorBounds.top - windowBounds.top,
+                windowBounds.right - mirrorBounds.right,
+                windowBounds.bottom - mirrorBounds.bottom
+        ).getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.ime());
     }
 
     private void init() {

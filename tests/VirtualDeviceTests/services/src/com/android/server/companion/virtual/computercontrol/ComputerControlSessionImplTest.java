@@ -86,6 +86,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Insets;
 import android.gui.DropInputMode;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
@@ -177,6 +178,7 @@ public class ComputerControlSessionImplTest {
     private static final String ATTRIBUTION_TAG = "tag";
     private static final long GLOBAL_TIMEOUT_MILLIS = 10000L;
     private static final long SCHEDULER_IDLE_TIMEOUT_MS = 100L;
+    private static final long UI_THREAD_TIMEOUT_MS = 1000L;
     private static final String AGENT_PACKAGE = "com.package";
     private static final ComponentName TEST_COMPONENT = new ComponentName(TARGET_PACKAGE_1,
             TARGET_CLASS);
@@ -208,6 +210,8 @@ public class ComputerControlSessionImplTest {
     private PackageManager mOwnerPackageManager;
     @Mock
     private AppOpsManager mAppOpsManager;
+    @Mock
+    private WindowManager mWindowManager;
     @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
@@ -279,6 +283,8 @@ public class ComputerControlSessionImplTest {
     private ArgumentCaptor<SurfaceControl> mSurfaceControlArgumentCaptor;
     @Captor
     private ArgumentCaptor<Consumer<Boolean>> mWindowsDrawnCallbackCaptor;
+    @Captor
+    private ArgumentCaptor<WindowManager.LayoutParams> mLayoutParamsCaptor;
 
     private SurfaceControl.Transaction mTransaction;
     private AutoCloseable mMockitoSession;
@@ -308,6 +314,11 @@ public class ComputerControlSessionImplTest {
                 .thenReturn(ownerContext);
         when(ownerContext.getPackageManager()).thenReturn(mOwnerPackageManager);
         when(ownerContext.getSystemService(Context.APP_OPS_SERVICE)).thenReturn(mAppOpsManager);
+
+        final Context displayContext = spy(new ContextWrapper(
+                InstrumentationRegistry.getInstrumentation().getTargetContext()));
+        doReturn(displayContext).when(mContext).createDisplayContext(any());
+        doReturn(mWindowManager).when(displayContext).getSystemService(WindowManager.class);
 
         LocalServices.removeAllServicesForTest();
         LocalServices.addService(WindowManagerInternal.class, mWindowManagerInternal);
@@ -1615,6 +1626,63 @@ public class ComputerControlSessionImplTest {
         mirror.close();
 
         verify(mWindowManagerInternal, never()).requestHardwareRendererOutputDisabled(anyInt());
+    }
+
+    @Test
+    public void updateInsets_appliesInsetsToVirtualDisplay() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        Insets insets = Insets.of(10, 20, 30, 40);
+
+        mirror.updateInsets(insets);
+
+        verify(mWindowManager, timeout(UI_THREAD_TIMEOUT_MS)).addView(any(),
+                mLayoutParamsCaptor.capture());
+
+        WindowManager.LayoutParams lp = mLayoutParamsCaptor.getValue();
+        assertThat(lp.providedInsets).hasLength(4);
+        assertThat(lp.providedInsets[0].getInsetsSize()).isEqualTo(Insets.of(10, 0, 0, 0));
+        assertThat(lp.providedInsets[1].getInsetsSize()).isEqualTo(Insets.of(0, 20, 0, 0));
+        assertThat(lp.providedInsets[2].getInsetsSize()).isEqualTo(Insets.of(0, 0, 30, 0));
+        assertThat(lp.providedInsets[3].getInsetsSize()).isEqualTo(Insets.of(0, 0, 0, 40));
+    }
+
+    @Test
+    public void updateInsets_scaled_appliesScaledInsetsToVirtualDisplay() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        // DISPLAY_WIDTH = 600, DISPLAY_HEIGHT = 1000
+        // resize to 300x500 -> scale = 2.0
+        mirror.resize(300, 500);
+        Insets insets = Insets.of(10, 20, 30, 40);
+
+        mirror.updateInsets(insets);
+
+        verify(mWindowManager, timeout(UI_THREAD_TIMEOUT_MS))
+                .addView(any(), mLayoutParamsCaptor.capture());
+
+        WindowManager.LayoutParams lp = mLayoutParamsCaptor.getValue();
+        assertThat(lp.providedInsets).hasLength(4);
+        assertThat(lp.providedInsets[0].getInsetsSize()).isEqualTo(Insets.of(20, 0, 0, 0));
+        assertThat(lp.providedInsets[1].getInsetsSize()).isEqualTo(Insets.of(0, 40, 0, 0));
+        assertThat(lp.providedInsets[2].getInsetsSize()).isEqualTo(Insets.of(0, 0, 60, 0));
+        assertThat(lp.providedInsets[3].getInsetsSize()).isEqualTo(Insets.of(0, 0, 0, 80));
+    }
+
+    @Test
+    public void closeInteractiveMirror_removesInsets() throws Exception {
+        createComputerControlSession(mDefaultParams);
+        setupMockMirror();
+        IInteractiveMirror mirror = mSession.createInteractiveMirror(new SurfaceControl());
+        Insets insets = Insets.of(10, 20, 30, 40);
+        mirror.updateInsets(insets);
+        verify(mWindowManager, timeout(UI_THREAD_TIMEOUT_MS)).addView(any(), any());
+
+        mirror.close();
+
+        verify(mWindowManager, timeout(UI_THREAD_TIMEOUT_MS)).removeView(any());
     }
 
     @Test
