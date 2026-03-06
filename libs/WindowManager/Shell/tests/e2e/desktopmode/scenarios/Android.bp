@@ -135,6 +135,7 @@ test_module_config {
         "com.android.wm.shell.functional.keyboardshortcuts.OpenAppFromAllAppsUsingKeyboardTest",
         "com.android.wm.shell.functional.keyboardshortcuts.OpenBrowserWithKeyboardShortcutTest",
         "com.android.wm.shell.functional.keyboardshortcuts.ToggleFullscreenViaFullscreenKeyTest",
+        "com.android.wm.shell.functional.launchbounds.RememberedBoundsTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
         "com.android.wm.shell.functional.maximize.MaximizeUnfocusedAppWindowTest",
         "com.android.wm.shell.functional.maximize.UnmaximizeAppWindowTest",
@@ -615,6 +616,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.keyboardshortcuts.OpenBrowserWithKeyboardShortcutTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-launchbounds-RememberedBoundsTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.launchbounds.RememberedBoundsTest"],
 }
 
 test_module_config {
