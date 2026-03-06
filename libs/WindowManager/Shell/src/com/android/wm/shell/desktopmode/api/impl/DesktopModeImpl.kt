@@ -29,6 +29,7 @@ import com.android.wm.shell.shared.annotations.ExternalThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopFirstListener
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource
+import com.android.wm.shell.shared.desktopmode.DesktopScrimListener
 import java.util.Optional
 import java.util.concurrent.Executor
 import java.util.function.Consumer
@@ -68,6 +69,27 @@ class DesktopModeImpl(
     ) {
         mainExecutor.execute {
             desktopTasksController.getOrNull()?.setTaskRegionListener(listener, callbackExecutor)
+        }
+    }
+
+    override fun addDesktopScrimListener(
+        listener: DesktopScrimListener,
+        callbackExecutor: Executor,
+    ) {
+        mainExecutor.execute {
+            desktopTasksController
+                .getOrNull()
+                ?.getDesktopScrimController()
+                ?.addDesktopScrimListener(listener, callbackExecutor)
+        }
+    }
+
+    override fun removeDesktopScrimListener(listener: DesktopScrimListener) {
+        mainExecutor.execute {
+            desktopTasksController
+                .getOrNull()
+                ?.getDesktopScrimController()
+                ?.removeDesktopScrimListener(listener)
         }
     }
 

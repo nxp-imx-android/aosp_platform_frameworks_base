@@ -161,11 +161,13 @@ class ResizeTaskPositioner(
             // Update taskbar rounding once the drag/resize has registered a move event - in case
             // the moved task is no longer maximized. Only call this once per resize/drag so we
             // don't call into Launcher with each drag/resize frame to try to update the taskbar.
-            desktopTasksController.updateTaskbarRoundingOnTaskResize(
-                displayId,
-                windowDecoration.taskInfo.taskId,
-                Rect(session.repositionTaskBounds),
-            )
+            desktopTasksController
+                .getDesktopScrimController()
+                .updateDesktopScrimOnResize(
+                    displayId,
+                    windowDecoration.taskInfo.taskId,
+                    Rect(session.repositionTaskBounds),
+                )
             session.hasFirstMoveEventConsumed = true
 
             if (!isResizing) {

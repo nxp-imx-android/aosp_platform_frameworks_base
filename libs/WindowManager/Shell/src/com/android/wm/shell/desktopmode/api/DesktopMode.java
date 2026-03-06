@@ -23,6 +23,7 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.shared.annotations.ExternalThread;
 import com.android.wm.shell.shared.desktopmode.DesktopFirstListener;
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
+import com.android.wm.shell.shared.desktopmode.DesktopScrimListener;
 
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -66,6 +67,23 @@ public interface DesktopMode {
      */
     default void addDesktopGestureExclusionRegionListener(Consumer<Region> listener,
             Executor callbackExecutor) { }
+
+    /**
+     * Adds a consumer to listen for scrim effect change requirements.
+     *
+     * <p>This is used to notify the status bar opacity change requirement when the desktop has a
+     * maximized window or has tiled windows.
+     */
+    void addDesktopScrimListener(DesktopScrimListener listener,
+            Executor callbackExecutor);
+
+
+    /**
+     * Remove a listener for status bar changes.
+     *
+     * @param listener the listener to remove.
+     */
+    void removeDesktopScrimListener(DesktopScrimListener listener);
 
 
     /** Called when requested to go to desktop mode from the current focused app. */
