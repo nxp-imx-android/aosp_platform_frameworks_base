@@ -1806,34 +1806,30 @@ public final class BatteryStatsService extends IBatteryStats.Stub
     @EnforcePermission(UPDATE_DEVICE_STATS)
     public void noteScreenState(final int displayId, final int state, final int reason) {
         super.noteScreenState_enforcePermission();
-        if (com.android.server.am.Flags.batteryStatsLogCombinedDisplayState()) {
-            int combinedState = Display.STATE_UNKNOWN;
-            synchronized (mDisplayStatesLock) {
-                if (mDisplayStates == null) {
-                    Slog.w(TAG, "noteScreenState called with displayId: " + displayId
-                            + ", but mDisplayStates is null.");
-                    return;
-                }
-                if (displayId < 0 || displayId >= mDisplayStates.length) {
-                    Slog.w(TAG, "noteScreenState called with out of bounds displayId: " + displayId
-                            + ", mDisplayStates.length=" + mDisplayStates.length);
-                    return;
-                }
-                mDisplayStates[displayId] = BatteryStatsImpl.getSanitizedDisplayState(state);
-                combinedState = mDisplayStates[displayId];
-                int currentPriority = BatteryStatsImpl.getDisplayStatePriority(combinedState);
-                for (int i = 0; i < mDisplayStates.length; i++) {
-                    if (BatteryStatsImpl.getDisplayStatePriority(mDisplayStates[i])
-                            > currentPriority) {
-                        combinedState = mDisplayStates[i];
-                        currentPriority = BatteryStatsImpl.getDisplayStatePriority(combinedState);
-                    }
+        int combinedState = Display.STATE_UNKNOWN;
+        synchronized (mDisplayStatesLock) {
+            if (mDisplayStates == null) {
+                Slog.w(TAG, "noteScreenState called with displayId: " + displayId
+                        + ", but mDisplayStates is null.");
+                return;
+            }
+            if (displayId < 0 || displayId >= mDisplayStates.length) {
+                Slog.w(TAG, "noteScreenState called with out of bounds displayId: " + displayId
+                        + ", mDisplayStates.length=" + mDisplayStates.length);
+                return;
+            }
+            mDisplayStates[displayId] = BatteryStatsImpl.getSanitizedDisplayState(state);
+            combinedState = mDisplayStates[displayId];
+            int currentPriority = BatteryStatsImpl.getDisplayStatePriority(combinedState);
+            for (int i = 0; i < mDisplayStates.length; i++) {
+                if (BatteryStatsImpl.getDisplayStatePriority(mDisplayStates[i])
+                        > currentPriority) {
+                    combinedState = mDisplayStates[i];
+                    currentPriority = BatteryStatsImpl.getDisplayStatePriority(combinedState);
                 }
             }
-            FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_STATE_CHANGED, combinedState);
-        } else {
-            FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_STATE_CHANGED, state);
         }
+        FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_STATE_CHANGED, combinedState);
 
         synchronized (mClock) {
             final long elapsedRealtime = mClock.elapsedRealtime();
