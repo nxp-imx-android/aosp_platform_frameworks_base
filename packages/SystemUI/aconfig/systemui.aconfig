@@ -1219,6 +1219,16 @@ flag {
 }
 
 flag {
+   name: "nssl_touch_dispatch_fix"
+   namespace: "systemui"
+   description: "Dispatch complete event streams from the NSSL to Compose to avoid corrupting Compose's touch tracking."
+   bug: "481223652"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "ongoing_activity_chips_on_dream"
     namespace: "systemui"
     description: "Enables ongoing activity chips in dream status bar"

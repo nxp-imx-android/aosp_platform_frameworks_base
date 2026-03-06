@@ -20,6 +20,7 @@ import static android.os.Trace.TRACE_TAG_APP;
 import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_POINTER_DOWN;
+import static android.view.MotionEvent.ACTION_POINTER_UP;
 import static android.view.MotionEvent.ACTION_UP;
 
 import static com.android.app.tracing.TrackGroupUtils.trackGroup;
@@ -126,6 +127,7 @@ import com.android.systemui.statusbar.notification.shared.NmContextualDisplay;
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling;
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
+import com.android.systemui.statusbar.notification.shared.NsslTouchDispatchFix;
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape;
@@ -210,6 +212,7 @@ public class NotificationStackScrollLayout
     private float mMaxOverScroll;
     private boolean mIsBeingDragged;
     private boolean mSendingTouchesToSceneFramework;
+    private boolean mGestureReachedScroller;
     private int mLastMotionY;
     private int mDownX;
     private int mActivePointerId = INVALID_POINTER;
@@ -3949,6 +3952,7 @@ public class NotificationStackScrollLayout
     private boolean isOutBoundsDownEvent(MotionEvent ev) {
         if (!SceneContainerFlag.isEnabled()) return false;
         final int action = ev.getActionMasked();
+        // Check if the pointer down is inside the bounds.
         if (action == ACTION_DOWN || action == ACTION_POINTER_DOWN) {
             // Get the index of the pointer that just triggered the event.
             final int pointerIndex = ev.getActionIndex();
@@ -4042,8 +4046,13 @@ public class NotificationStackScrollLayout
      */
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        mGestureReachedScroller = true;
         if (SceneContainerFlag.isEnabled()) {
             if (shouldRefuseTouchEvent(ev)) {
+                if (NsslTouchDispatchFix.isEnabled()) {
+                    // Stop dispatching, otherwise SceneContainer might receive it twice.
+                    claimTouchFromSceneFramework(ev);
+                }
                 return false;
             }
         }
@@ -4062,7 +4071,38 @@ public class NotificationStackScrollLayout
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        if (SceneContainerFlag.isEnabled()) {
+        if (NsslTouchDispatchFix.isEnabled()) {
+            // IMPORTANT: Dispatch to super first to handle standard touch routing.
+            // This triggers side effects on subsequent events (like ACTION_MOVE), potentially
+            // mutating mGestureReachedScroller to true, or calling claimTouchFromSceneFramework.
+            boolean handled = isRootViewVisible() && super.dispatchTouchEvent(ev);
+            switch (ev.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN -> {
+                    // Initialize new gesture -> allow forwarding if super handled the down event.
+                    // This is the ONLY place mSendingTouchesToSceneFramework can become true.
+                    mSendingTouchesToSceneFramework = handled;
+                    mGestureReachedScroller = false;
+                }
+                case MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    // Gesture ended: route the final event accordingly.
+                    if (mGestureReachedScroller && mSendingTouchesToSceneFramework) {
+                        sendToSceneFramework(ev);
+                    } else {
+                        // Either a child consumed the gesture, or it was to short to consider it.
+                        // Claim this gesture from the SceneFramework with a final ACTION_CANCEL.
+                        claimTouchFromSceneFramework(ev);
+                    }
+                    mSendingTouchesToSceneFramework = false;
+                    mGestureReachedScroller = false;
+                    setIsBeingDragged(false);
+                    return handled;
+                }
+            }
+            if (mSendingTouchesToSceneFramework) {
+                sendToSceneFramework(ev);
+            }
+            return handled;
+        } else if (SceneContainerFlag.isEnabled()) {
             if (!isRootViewVisible()) {
                 debugShadeLog("NSSL's root view is not visible. Touch not dispatched.");
                 return false;
@@ -4118,7 +4158,49 @@ public class NotificationStackScrollLayout
         return TouchLogger.logDispatchTouch(TAG, ev, super.dispatchTouchEvent(ev));
     }
 
+    /**
+     * Claims the current gesture from the Scene Framework.
+     *
+     * This stops forwarding subsequent touch events in the current gesture to the Scene Framework
+     * and sends a synthetic {@link MotionEvent#ACTION_CANCEL} to notify it that the gesture has
+     * been intercepted by the NSSL.
+     */
+    public void claimTouchFromSceneFramework(MotionEvent ev) {
+        if (mSendingTouchesToSceneFramework) {
+            mSendingTouchesToSceneFramework = false;
+            sendCancelToSceneFramework(ev);
+        }
+    }
+
+    /**
+     * Dispatches a copy of the received event, but it doesn't read/update the flag
+     * [mSendingTouchesToSceneFramework], that's the responsibility of the callers.
+     */
+    private void sendToSceneFramework(MotionEvent ev) {
+        MotionEvent syntheticEvent = MotionEvent.obtain(ev);
+        syntheticEvent.setLocation(ev.getRawX(), ev.getRawY());
+        mController.sendTouchToSceneFramework(syntheticEvent);
+        syntheticEvent.recycle();
+    }
+
+
+    /**
+     * Dispatches a copy of the received event, but it doesn't read/update the flag
+     * [mSendingTouchesToSceneFramework], that's the responsibility of the callers.
+     *
+     * Consider calling {claimTouchFromSceneFramework} internally, because this method doesn't
+     * finalize dispatching by clearing up the [mSendingTouchesToSceneFramework] flag.
+     */
+    private void sendCancelToSceneFramework(MotionEvent ev) {
+        MotionEvent syntheticCancel = MotionEvent.obtain(ev);
+        syntheticCancel.setAction(ACTION_CANCEL);
+        syntheticCancel.setLocation(ev.getRawX(), ev.getRawY());
+        mController.sendTouchToSceneFramework(syntheticCancel);
+        syntheticCancel.recycle();
+    }
+
     void dispatchDownEventToScroller(MotionEvent ev) {
+        NsslTouchDispatchFix.assertInLegacyMode();
         MotionEvent downEvent = MotionEvent.obtain(ev);
         downEvent.setAction(ACTION_DOWN);
         onScrollTouch(downEvent);
@@ -4191,6 +4273,7 @@ public class NotificationStackScrollLayout
     }
 
     boolean onScrollTouch(MotionEvent ev) {
+        NsslTouchDispatchFix.assertInLegacyMode();
         if (!isScrollingEnabled()) {
             return false;
         }
@@ -4207,7 +4290,7 @@ public class NotificationStackScrollLayout
             // one starts.
             Log.e(TAG, "Invalid pointerId=" + mActivePointerId + " in onTouchEvent "
                     + MotionEvent.actionToString(ev.getActionMasked()));
-            return true;
+            return false;
         }
 
         // If the scene framework is enabled, ignore all non-move gestures if we are currently
@@ -4355,6 +4438,88 @@ public class NotificationStackScrollLayout
                 mLastMotionY = (int) ev.getY(ev.findPointerIndex(mActivePointerId));
                 mDownX = (int) ev.getX(ev.findPointerIndex(mActivePointerId));
                 break;
+        }
+        return true;
+    }
+
+    /**
+     * A version of [onScrollTouch] that removes all scrolling code and the new touch dispatch code.
+     * It still has a side effect of controlling [mIsBeingDragged], why we cannot remove it yet.
+     */
+    boolean offerScrollTouchToScroller(MotionEvent ev) {
+        if (!isScrollingEnabled()) {
+            return false;
+        }
+        if (!isInScrollableRegion(ev) && !mIsBeingDragged) {
+            return false;
+        }
+
+        initVelocityTrackerIfNotExists();
+        mVelocityTracker.addMovement(ev);
+
+        final int action = ev.getActionMasked();
+        if (ev.findPointerIndex(mActivePointerId) == -1 && action != ACTION_DOWN) {
+            // Incomplete gesture, possibly due to window swap mid-gesture. Ignore until a new
+            // one starts.
+            Log.e(TAG, "Invalid pointerId=" + mActivePointerId + " in onTouchEvent "
+                    + MotionEvent.actionToString(ev.getActionMasked()));
+            return true;
+        }
+
+        switch (action) {
+            case ACTION_DOWN -> {
+                if (getChildCount() == 0 || !isInContentBounds(ev)) {
+                    return false;
+                }
+                boolean isBeingDragged = !mScroller.isFinished();
+                setIsBeingDragged(isBeingDragged);
+
+                // Remember where the motion event started
+                mLastMotionY = (int) ev.getY();
+                mDownX = (int) ev.getX();
+                mActivePointerId = ev.getPointerId(0);
+            }
+            case MotionEvent.ACTION_MOVE -> {
+                final int activePointerIndex = ev.findPointerIndex(mActivePointerId);
+                if (activePointerIndex == -1) {
+                    Log.e(TAG, "Invalid pointerId=" + mActivePointerId + " in onTouchEvent");
+                    break;
+                }
+
+                final int y = (int) ev.getY(activePointerIndex);
+                final int x = (int) ev.getX(activePointerIndex);
+                final int xDiff = Math.abs(x - mDownX);
+                final int yDiff = Math.abs(mLastMotionY - y);
+                final float touchSlop = getTouchSlop(ev);
+                if (!mIsBeingDragged && yDiff > touchSlop && yDiff > xDiff) {
+                    // Lock down to vertical scroll.
+                    setIsBeingDragged(true);
+                }
+            }
+            case ACTION_UP -> {
+                if (mIsBeingDragged) {
+                    mActivePointerId = INVALID_POINTER;
+                    endDrag();
+                }
+            }
+            case ACTION_CANCEL -> {
+                if (mIsBeingDragged && getChildCount() > 0) {
+                    mActivePointerId = INVALID_POINTER;
+                    endDrag();
+                }
+            }
+            case ACTION_POINTER_DOWN -> {
+                final int index = ev.getActionIndex();
+                mLastMotionY = (int) ev.getY(index);
+                mDownX = (int) ev.getX(index);
+                mActivePointerId = ev.getPointerId(index);
+            }
+            case ACTION_POINTER_UP -> {
+                // Let onSecondaryPointerUp choose a new pointer, and update mActivePointerId.
+                onSecondaryPointerUp(ev);
+                mLastMotionY = (int) ev.getY(ev.findPointerIndex(mActivePointerId));
+                mDownX = (int) ev.getX(ev.findPointerIndex(mActivePointerId));
+            }
         }
         return true;
     }
@@ -4634,7 +4799,7 @@ public class NotificationStackScrollLayout
             requestDisallowInterceptTouchEvent(true);
             cancelLongPress();
             resetExposedMenuView(true /* animate */, true /* force */);
-        } else {
+        } else if (!NsslTouchDispatchFix.isEnabled()) {
             mSendingTouchesToSceneFramework = false;
         }
     }
@@ -5956,6 +6121,8 @@ public class NotificationStackScrollLayout
                 DumpUtilsKt.withIncreasedIndent(pw, () -> {
                             println(pw, "sendingTouchesToSceneFramework",
                                     mSendingTouchesToSceneFramework);
+                            println(pw, "gestureReachedScroller",
+                                    mGestureReachedScroller);
                             println(pw, "isBeingDragged", mIsBeingDragged);
                             println(pw, "activePointerId", mActivePointerId);
                         }
