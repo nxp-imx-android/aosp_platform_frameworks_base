@@ -659,16 +659,6 @@ flag {
 }
 
 flag {
-    name: "fix_scene_container_action_outside_touch"
-    namespace: "systemui"
-    description: "Fix the shade auto-closing on status bar touch on lock screen."
-    bug: "486078670"
-    metadata {
-       purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
    name: "flashlight_strength"
    namespace: "systemui"
    description: "Enable the flashlight strength feature in systemui, allowing QS flashlight tile to"
