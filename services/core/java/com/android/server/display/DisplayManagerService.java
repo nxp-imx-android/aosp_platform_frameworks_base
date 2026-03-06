@@ -2040,8 +2040,7 @@ public final class DisplayManagerService extends SystemService {
         }
 
         if ((flags & VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH) != 0) {
-            // TODO(b/474207070): Support VDM displays
-            if (virtualDevice != null) {
+            if (virtualDevice != null && !Flags.virtualDisplaysSupportDesktopMode()) {
                 Slog.d(TAG, "Virtual displays associated with virtual device currently don't "
                         + "support content mode switch, hence ignoring "
                         + "VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH");
@@ -2186,6 +2185,14 @@ public final class DisplayManagerService extends SystemService {
             if (!checkCallingPermission(ADD_TRUSTED_DISPLAY, "createVirtualDisplay()")) {
                 throw new SecurityException("Requires ADD_TRUSTED_DISPLAY permission to "
                         + "create a virtual display which is not in the default DisplayGroup.");
+            }
+        }
+
+        if (callingUid != Process.SYSTEM_UID
+                && virtualDisplayConfig.getUniqueId() != null) {
+            if (!checkCallingPermission(ADD_TRUSTED_DISPLAY, "createVirtualDisplay()")) {
+                throw new SecurityException("Requires ADD_TRUSTED_DISPLAY permission to "
+                        + "create a virtual display with a uniqueId.");
             }
         }
 

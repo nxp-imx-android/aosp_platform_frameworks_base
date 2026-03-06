@@ -390,6 +390,7 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
         return true;
     }
 
+    // TODO(b/487544125): Support multiple top activity changes for desktop mode.
     @Override
     public void onTopActivityChanged(ComponentName topActivity, int uid, @UserIdInt int userId) {
         final int displayId = waitAndGetDisplayId();
@@ -496,6 +497,8 @@ final class GenericWindowPolicyController extends DisplayWindowPolicyController 
         // The callback is fired only when window flags have changed, to let the VirtualDevice owner
         // know that the secure/insecure state of the content on the virtual display has changed.
         // Post callback on the main thread, so it doesn't block activity launching.
+        // TODO(b/487544125): Support multiple secure surfaces shown or hidden in succession in
+        // desktop mode.
         if (isSecureContent(newWindowFlags) && !isSecureContent(previousWindowFlags)) {
             mHandler.post(
                     () -> mActivityListener.onSecureWindowShown(displayId, componentName, uid));

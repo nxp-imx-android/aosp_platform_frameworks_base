@@ -17,6 +17,7 @@
 package com.android.server.companion.virtual;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
 import static android.app.admin.DevicePolicyManager.NEARBY_STREAMING_SAME_MANAGED_ACCOUNT_ONLY;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
@@ -1053,6 +1054,17 @@ public class VirtualDeviceManagerServiceTest {
         verify(mIPowerManagerMock, never()).acquireWakeLock(any(Binder.class), anyInt(),
                 nullable(String.class), nullable(String.class), nullable(WorkSource.class),
                 nullable(String.class), anyInt(), eq(null));
+    }
+
+    @Test
+    public void onVirtualDisplayCreated_allowsContentModeSwitch_setsEmptySupportedWindowingModes() {
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_2, Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH);
+        GenericWindowPolicyController gwpc = mDeviceImpl.getDisplayWindowPolicyControllerForTest(
+                DISPLAY_ID_2);
+        assertThat(gwpc.isWindowingModeSupported(WINDOWING_MODE_PINNED))
+                .isTrue();
+        assertThat(gwpc.isWindowingModeSupported(WINDOWING_MODE_FULLSCREEN))
+                .isTrue();
     }
 
     @Test

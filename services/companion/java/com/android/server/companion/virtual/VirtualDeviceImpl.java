@@ -1656,8 +1656,15 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub implements IBinder.Dea
         final int flags = mDisplayManagerInternal.getDisplayInfo(displayId).flags;
         final boolean isTrustedDisplay = (flags & Display.FLAG_TRUSTED) == Display.FLAG_TRUSTED;
         final boolean isSecureDisplay = (flags & Display.FLAG_SECURE) == Display.FLAG_SECURE;
-
+        final boolean isContentModeSwitchAllowed =
+                (flags & Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH)
+                        == Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
         GenericWindowPolicyController gwpc = (GenericWindowPolicyController) dwpc;
+        // If content mode switch is allowed, then set the list to an empty list so all modes
+        // become supported on this virtual display.
+        if (isContentModeSwitchAllowed) {
+            gwpc.setSupportedWindowingModes(new ArraySet<>());
+        }
         if (!isSecureDisplay) {
             gwpc.setInterestedWindowFlags(WindowManager.LayoutParams.FLAG_SECURE,
                     WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS);

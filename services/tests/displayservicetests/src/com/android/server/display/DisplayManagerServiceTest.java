@@ -544,6 +544,8 @@ public class DisplayManagerServiceTest {
         mLooperManagers.add(InstrumentationRegistry.getInstrumentation().acquireLooperManager(
                 UiThread.getHandler().getLooper()));
         manageDisplaysPermission(/* granted= */ false);
+        doReturn(PackageManager.PERMISSION_GRANTED).when(mContext)
+                .checkCallingPermission(eq(ADD_TRUSTED_DISPLAY));
         when(mContext.getResources()).thenReturn(mResources);
         mUserManager = Mockito.spy(mContext.getSystemService(UserManager.class));
         when(mMockDisplayDeviceConfig.getTempSensor()).thenReturn(
@@ -1584,6 +1586,48 @@ public class DisplayManagerServiceTest {
                         + " group.",
                 displayGroupId1,
                 displayGroupId2);
+    }
+
+    @Test
+    public void createVirtualDisplay_uniqueIdProvidedWithoutTrustedPermission_throwsException() {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerService.BinderService binderService = mDisplayManager.new BinderService();
+
+        registerDefaultDisplays(mDisplayManager);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+
+        final VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
+                VIRTUAL_DISPLAY_NAME, 600, 800, 320);
+        builder.setUniqueId("uniqueId");
+
+        doReturn(PackageManager.PERMISSION_DENIED).when(mContext)
+                .checkCallingPermission(eq(ADD_TRUSTED_DISPLAY));
+
+        assertThrows(SecurityException.class, () -> {
+            binderService.createVirtualDisplay(builder.build(), mMockAppToken /* callback */,
+                    null /* projection */, PACKAGE_NAME);
+        });
+    }
+
+    @Test
+    public void createVirtualDisplay_uniqueIdProvidedWithTrustedPermission_success() {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerService.BinderService binderService = mDisplayManager.new BinderService();
+
+        registerDefaultDisplays(mDisplayManager);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+
+        final VirtualDisplayConfig.Builder builder = new VirtualDisplayConfig.Builder(
+                VIRTUAL_DISPLAY_NAME, 600, 800, 320);
+        builder.setUniqueId("uniqueId");
+
+        doReturn(PackageManager.PERMISSION_GRANTED).when(mContext)
+                .checkCallingPermission(eq(ADD_TRUSTED_DISPLAY));
+
+        int displayId = binderService.createVirtualDisplay(builder.build(),
+                mMockAppToken /* callback */, null /* projection */, PACKAGE_NAME);
+
+        assertThat(displayId).isNotEqualTo(Display.INVALID_DISPLAY);
     }
 
     @Test
@@ -6278,5 +6322,83 @@ public class DisplayManagerServiceTest {
         assertThat(Settings.Global.getInt(contentResolver,
                 Settings.Global.Wearable.WEAR_CHARGING_EXPERIENCE_ENABLED, -1))
                 .isEqualTo(existingUserValue);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS)
+    @DisableFlags(Flags.FLAG_VIRTUAL_DISPLAYS_SUPPORT_DESKTOP_MODE)
+    public void createVirtualDisplay_vdm_contentModeSwitch_disabled_stripsFlag()
+            throws Exception {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerInternal localService = mDisplayManager.new LocalService();
+
+        registerDefaultDisplays(mDisplayManager);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+
+        IVirtualDevice virtualDevice = mock(IVirtualDevice.class);
+        when(virtualDevice.getDeviceId()).thenReturn(1);
+        when(virtualDevice.canCreateMirrorDisplays()).thenReturn(true);
+        when(mIVirtualDeviceManager.isValidVirtualDeviceId(1)).thenReturn(true);
+        when(mContext.checkCallingPermission(ADD_TRUSTED_DISPLAY))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
+
+        final VirtualDisplayConfig.Builder builder =
+                new VirtualDisplayConfig.Builder(VIRTUAL_DISPLAY_NAME, 600, 800, 320)
+                        .setUniqueId("uniqueId --- content mode switch")
+                        .setFlags(DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+                                | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                                | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH);
+
+        int displayId = localService.createVirtualDisplay(
+                builder.build(),
+                mMockAppToken /* callback */,
+                virtualDevice /* virtualDeviceToken */,
+                mock(DisplayWindowPolicyController.class),
+                PACKAGE_NAME,
+                Process.myUid());
+
+        DisplayInfo displayInfo = localService.getDisplayInfo(displayId);
+        assertFalse("FLAG_ALLOWS_CONTENT_MODE_SWITCH should be stripped when flag is disabled",
+                (displayInfo.flags & Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH) != 0);
+    }
+
+    @Test
+    @EnableFlags({
+            Flags.FLAG_VIRTUAL_SECONDARY_DISPLAYS,
+            Flags.FLAG_VIRTUAL_DISPLAYS_SUPPORT_DESKTOP_MODE
+    })
+    public void createVirtualDisplay_vdm_contentModeSwitch_enabled_keepsFlag()
+            throws Exception {
+        mDisplayManager = new DisplayManagerService(mContext, mBasicInjector);
+        DisplayManagerInternal localService = mDisplayManager.new LocalService();
+
+        registerDefaultDisplays(mDisplayManager);
+        when(mMockAppToken.asBinder()).thenReturn(mMockAppToken);
+
+        IVirtualDevice virtualDevice = mock(IVirtualDevice.class);
+        when(virtualDevice.getDeviceId()).thenReturn(1);
+        when(virtualDevice.canCreateMirrorDisplays()).thenReturn(true);
+        when(mIVirtualDeviceManager.isValidVirtualDeviceId(1)).thenReturn(true);
+        when(mContext.checkCallingPermission(ADD_TRUSTED_DISPLAY))
+                .thenReturn(PackageManager.PERMISSION_GRANTED);
+
+        final VirtualDisplayConfig.Builder builder =
+                new VirtualDisplayConfig.Builder(VIRTUAL_DISPLAY_NAME, 600, 800, 320)
+                        .setUniqueId("uniqueId --- content mode switch")
+                        .setFlags(DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUSTED
+                                | DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC
+                                | DisplayManager.VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH);
+
+        int displayId = localService.createVirtualDisplay(
+                builder.build(),
+                mMockAppToken /* callback */,
+                virtualDevice /* virtualDeviceToken */,
+                mock(DisplayWindowPolicyController.class),
+                PACKAGE_NAME,
+                Process.myUid());
+
+        DisplayInfo displayInfo = localService.getDisplayInfo(displayId);
+        assertTrue("FLAG_ALLOWS_CONTENT_MODE_SWITCH should be kept when flag is enabled",
+                (displayInfo.flags & Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH) != 0);
     }
 }
