@@ -252,15 +252,6 @@ flag {
     }
 }
 
-flag {
-    name: "send_bubble_root_task_id_to_launcher"
-    namespace: "multitasking"
-    description: "Share bubbles root task id with Launcher"
-    bug: "473848153"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
 
 flag {
     name: "disable_bubble_scrim_large_screens"
