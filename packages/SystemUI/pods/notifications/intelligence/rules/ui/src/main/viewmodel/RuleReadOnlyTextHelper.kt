@@ -17,6 +17,8 @@
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import android.content.res.Resources
+import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
@@ -26,12 +28,12 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.RuleMo
  * more visually prominent but not editable.
  */
 internal fun buildReadOnlyRuleText(rule: RuleModel, resources: Resources): RuleDisplayModel {
-    val appsText: SingleFieldTextModel? =
+    val appsText: SingleFieldTextModel<AppModel>? =
         rule.filter.includedApps?.let {
             createReadOnlyIncludedAppsText(selectedIncludedApps = it, resources = resources)
         }
 
-    val contactsText: SingleFieldTextModel? =
+    val contactsText: SingleFieldTextModel<ContactModel>? =
         rule.filter.contacts?.let {
             createReadOnlyContactsText(selectedContacts = it, resources = resources)
         }
@@ -42,9 +44,10 @@ internal fun buildReadOnlyRuleText(rule: RuleModel, resources: Resources): RuleD
 private fun createReadOnlyIncludedAppsText(
     selectedIncludedApps: IncludedAppsModel,
     resources: Resources,
-): SingleFieldTextModel {
+): SingleFieldTextModel<AppModel> {
     return createMultiItemText(
         items = selectedIncludedApps.apps,
+        id = { it.uniqueId },
         label = { it.label },
         onClick = null,
         resources = resources,
@@ -55,9 +58,10 @@ private fun createReadOnlyIncludedAppsText(
 private fun createReadOnlyContactsText(
     selectedContacts: ContactsModel,
     resources: Resources,
-): SingleFieldTextModel {
+): SingleFieldTextModel<ContactModel> {
     return createMultiItemText(
         items = selectedContacts.contacts,
+        id = { it.id },
         label = { it.displayLabel },
         onClick = null,
         resources = resources,

@@ -59,13 +59,13 @@ fun AppChoiceScreen(viewState: RulesScreenViewState.EditField.Apps, onDismissReq
         fetchSearchResults = { query -> getSearchResults(allApps, query) },
         sortKey = { it.label },
         uniqueId = { it.uniqueId },
-        image = { AppIcon(it) },
+        icon = { AppIcon(it) },
         text = { it.label },
     )
 }
 
 @Composable
-private fun AppIcon(appModel: AppModel, modifier: Modifier = Modifier) {
+fun AppIcon(appModel: AppModel, modifier: Modifier = Modifier) {
     Image(
         rememberDrawablePainter(appModel.icon),
         contentDescription = null,

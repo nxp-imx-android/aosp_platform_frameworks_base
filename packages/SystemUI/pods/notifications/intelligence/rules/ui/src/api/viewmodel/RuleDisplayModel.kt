@@ -37,4 +37,7 @@ public sealed interface TextChunk {
         /** True if this text is ambiguous and requires clarification. See [RuleValue.Ambiguous]. */
         val isAmbiguous: Boolean,
     ) : TextChunk
+
+    /** An icon embedded inline within the text. */
+    data class Icon<T>(val model: T, val iconId: String) : TextChunk
 }

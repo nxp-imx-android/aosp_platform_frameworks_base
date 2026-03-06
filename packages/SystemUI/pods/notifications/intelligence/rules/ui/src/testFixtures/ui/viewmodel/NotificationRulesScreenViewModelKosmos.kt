@@ -17,6 +17,7 @@
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.notifications.intelligence.rules.domain.interactor.fakeContactsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.notificationRulesInteractor
 
 val Kosmos.notificationRulesScreenViewModelFactory by
@@ -28,6 +29,7 @@ val Kosmos.notificationRulesScreenViewModelFactory by
                 return NotificationRulesScreenViewModelImpl(
                     backStack = backStack,
                     notificationRulesInteractor,
+                    fakeContactsInteractor,
                 )
             }
         }

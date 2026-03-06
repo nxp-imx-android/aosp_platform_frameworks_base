@@ -96,12 +96,13 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                     resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks).hasSize(4)
             assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
             assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+            assertThat(ruleDisplay.textChunks[2]).isEqualTo(TextChunk.Icon(contact, "cat-uri"))
 
-            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
-            val clickableChunk = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(ruleDisplay.textChunks[3]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[3] as TextChunk.ClickableText
             assertThat(clickableChunk.text).isEqualTo("Meowth")
             assertThat(clickableChunk.isAmbiguous).isFalse()
 
@@ -175,12 +176,14 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                     resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks).hasSize(4)
             assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
             assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+            assertThat(ruleDisplay.textChunks[2])
+                .isEqualTo(TextChunk.Icon(app, "1000-fake.app.messaging.cat"))
 
-            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
-            val clickableChunk = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(ruleDisplay.textChunks[3]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[3] as TextChunk.ClickableText
             assertThat(clickableChunk.text).isEqualTo("Chat the Cat")
             assertThat(clickableChunk.isAmbiguous).isFalse()
 
@@ -215,12 +218,13 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                     resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks).hasSize(4)
             assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
             assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+            assertThat(ruleDisplay.textChunks[2]).isEqualTo(TextChunk.Icon(contact, "mom-uri"))
 
-            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
-            val clickableChunk = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(ruleDisplay.textChunks[3]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[3] as TextChunk.ClickableText
             assertThat(clickableChunk.text).isEqualTo("Mom Cell +1 more")
             assertThat(clickableChunk.isAmbiguous).isFalse()
         }
@@ -255,12 +259,14 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                     resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.textChunks).hasSize(3)
+            assertThat(ruleDisplay.textChunks).hasSize(4)
             assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
             assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+            assertThat(ruleDisplay.textChunks[2])
+                .isEqualTo(TextChunk.Icon(app, "2000-fake.app.crossword"))
 
-            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
-            val clickableChunk = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(ruleDisplay.textChunks[3]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunk = ruleDisplay.textChunks[3] as TextChunk.ClickableText
             assertThat(clickableChunk.text).isEqualTo("Puzzle the Cat +2 more")
             assertThat(clickableChunk.isAmbiguous).isFalse()
         }
@@ -301,18 +307,23 @@ class NotificationRuleEditViewModelTest : SysuiTestCase() {
                     resources = applicationContext.resources,
                 )
 
-            assertThat(ruleDisplay.textChunks).hasSize(5)
+            assertThat(ruleDisplay.textChunks).hasSize(7)
+
             assertThat(ruleDisplay.textChunks[0]).isEqualTo(TextChunk.BasicText("Notifications"))
             assertThat(ruleDisplay.textChunks[1]).isEqualTo(TextChunk.BasicText(" from "))
+            assertThat(ruleDisplay.textChunks[2])
+                .isEqualTo(TextChunk.Icon(app, "2000-fake.app.crossword"))
 
-            assertThat(ruleDisplay.textChunks[2]).isInstanceOf(TextChunk.ClickableText::class.java)
-            val clickableChunkApps = ruleDisplay.textChunks[2] as TextChunk.ClickableText
+            assertThat(ruleDisplay.textChunks[3]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunkApps = ruleDisplay.textChunks[3] as TextChunk.ClickableText
             assertThat(clickableChunkApps.text).isEqualTo("Puzzle the Cat +2 more")
             assertThat(clickableChunkApps.isAmbiguous).isFalse()
 
-            assertThat(ruleDisplay.textChunks[3]).isEqualTo(TextChunk.BasicText(" from "))
-            assertThat(ruleDisplay.textChunks[4]).isInstanceOf(TextChunk.ClickableText::class.java)
-            val clickableChunkContacts = ruleDisplay.textChunks[4] as TextChunk.ClickableText
+            assertThat(ruleDisplay.textChunks[4]).isEqualTo(TextChunk.BasicText(" from "))
+            assertThat(ruleDisplay.textChunks[5]).isEqualTo(TextChunk.Icon(contact, "mom-uri"))
+
+            assertThat(ruleDisplay.textChunks[6]).isInstanceOf(TextChunk.ClickableText::class.java)
+            val clickableChunkContacts = ruleDisplay.textChunks[6] as TextChunk.ClickableText
             assertThat(clickableChunkContacts.text).isEqualTo("Mom Cell")
             assertThat(clickableChunkContacts.isAmbiguous).isFalse()
         }

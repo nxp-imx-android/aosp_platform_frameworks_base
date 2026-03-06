@@ -58,19 +58,13 @@ fun ContactChoiceScreen(
         fetchSearchResults = { query -> viewModel.fetchContacts(query, contentResolver) },
         sortKey = { it.displayLabel },
         uniqueId = { it.id },
-        image = {
-            ContactImage(it, EditScreenDimens.imageSize, viewModel::loadContactBitmapFromUri)
-        },
+        icon = { ContactIcon(it, EditScreenDimens.iconSize, viewModel::loadContactBitmapFromUri) },
         text = { it.name },
     )
 }
 
 @Composable
-private fun ContactImage(
-    model: ContactModel,
-    size: Dp,
-    loadBitmap: suspend (Uri, Context, Int) -> Bitmap?,
-) {
+fun ContactIcon(model: ContactModel, size: Dp, loadBitmap: suspend (Uri, Context, Int) -> Bitmap?) {
     AsyncUriImage(
         uri = model.photoUri,
         loadBitmap = loadBitmap,

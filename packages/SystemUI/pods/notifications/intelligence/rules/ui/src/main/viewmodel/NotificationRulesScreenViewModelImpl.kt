@@ -16,8 +16,12 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
+import android.content.Context
 import android.content.res.Resources
+import android.graphics.Bitmap
+import android.net.Uri
 import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.notifications.intelligence.rules.domain.interactor.ContactsInteractor
 import com.android.systemui.notifications.intelligence.rules.domain.interactor.NotificationRulesInteractor
 import com.android.systemui.notifications.intelligence.rules.shared.model.RuleModel
 import dagger.assisted.Assisted
@@ -29,6 +33,7 @@ class NotificationRulesScreenViewModelImpl
 constructor(
     @Assisted override val backStack: List<RulesScreenViewState>,
     private val interactor: NotificationRulesInteractor,
+    private val contactsInteractor: ContactsInteractor,
 ) : NotificationRulesScreenViewModel, HydratedActivatable() {
     override val rules: List<RuleModel>
         get() = interactor.rules
@@ -42,6 +47,14 @@ constructor(
 
     override fun buildRuleText(rule: RuleModel, resources: Resources): RuleDisplayModel {
         return buildReadOnlyRuleText(rule, resources)
+    }
+
+    override suspend fun loadContactBitmapFromUri(
+        uri: Uri,
+        userContext: Context,
+        sizePx: Int,
+    ): Bitmap? {
+        return contactsInteractor.loadBitmapFromUri(uri, userContext, sizePx)
     }
 
     @AssistedFactory

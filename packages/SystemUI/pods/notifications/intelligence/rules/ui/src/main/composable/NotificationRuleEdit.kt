@@ -28,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -69,6 +70,7 @@ fun NotificationRuleEdit(
     var isAddFieldDialogShowing by remember { mutableStateOf(false) }
 
     val textStyles = rememberTextStyles()
+    val textSize = textStyles.defaultStyle.fontSize
     val ruleDisplay: RuleDisplayModel =
         remember(
             viewModel,
@@ -87,6 +89,18 @@ fun NotificationRuleEdit(
     val text =
         remember(ruleDisplay.textChunks, textStyles) {
             buildAnnotatedString(ruleDisplay.textChunks, textStyles)
+        }
+    val inlineTextContent =
+        remember(ruleDisplay.textChunks, textStyles) {
+            buildInlineContentMap(
+                ruleDisplay.textChunks,
+                appIcon = { AppIcon(it) },
+                contactIcon = {
+                    val iconSizeDp = with(LocalDensity.current) { textSize.toDp() }
+                    ContactIcon(it, iconSizeDp, viewModel::loadContactBitmapFromUri)
+                },
+                textSize = textSize,
+            )
         }
 
     BackHandler(enabled = true, onBack = onDismissRuleEditScreen)
@@ -107,7 +121,7 @@ fun NotificationRuleEdit(
                 viewModel.rule = viewModel.rule.copy(action = newAction)
             },
         )
-        Text(text = text, style = MaterialTheme.typography.titleLargeEmphasized)
+        Text(text = text, inlineContent = inlineTextContent, style = textStyles.defaultStyle)
 
         AddButton(
             addFieldOptions = addFieldOptions,

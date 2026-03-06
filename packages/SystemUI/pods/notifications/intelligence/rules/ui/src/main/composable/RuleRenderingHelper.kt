@@ -16,12 +16,20 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
+import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.TextChunk
 import com.android.systemui.notifications.intelligence.rules.ui.viewmodel.TextStyles
 
@@ -31,6 +39,35 @@ internal fun buildAnnotatedString(
     textStyles: TextStyles,
 ): AnnotatedString {
     return buildAnnotatedString { textChunks.forEach { appendTextChunk(it, textStyles) } }
+}
+
+/** Transforms a series of text chunks into the inline text content that should be rendered. */
+internal fun buildInlineContentMap(
+    textChunks: List<TextChunk>,
+    appIcon: @Composable (AppModel) -> Unit,
+    contactIcon: @Composable (ContactModel) -> Unit,
+    textSize: TextUnit,
+): Map<String, InlineTextContent> {
+    return textChunks.filterIsInstance<TextChunk.Icon<*>>().associate { iconChunk ->
+        val iconContent =
+            InlineTextContent(
+                placeholder =
+                    Placeholder(
+                        width = textSize,
+                        height = textSize,
+                        placeholderVerticalAlign = PlaceholderVerticalAlign.Center,
+                    )
+            ) {
+                when (val model = iconChunk.model) {
+                    is AppModel -> appIcon(model)
+                    is ContactModel -> contactIcon(model)
+                    else -> {
+                        throw IllegalStateException("Unsupported model type for inline icon")
+                    }
+                }
+            }
+        iconChunk.iconId to iconContent
+    }
 }
 
 private fun AnnotatedString.Builder.appendTextChunk(chunk: TextChunk, textStyles: TextStyles) {
@@ -48,6 +85,9 @@ private fun AnnotatedString.Builder.appendTextChunk(chunk: TextChunk, textStyles
                 isAmbiguous = chunk.isAmbiguous,
                 textStyles = textStyles,
             )
+        }
+        is TextChunk.Icon<*> -> {
+            appendInlineContent(chunk.iconId)
         }
     }
 }

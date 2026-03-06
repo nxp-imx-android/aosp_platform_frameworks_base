@@ -17,12 +17,14 @@
 package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 
 import android.content.res.Resources
+import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
 import com.android.systemui.res.R
 
 /** Creates a model of a full rules text string using the given [appsText] and [contactsText]. */
 internal fun buildRuleText(
-    appsText: SingleFieldTextModel?,
-    contactsText: SingleFieldTextModel?,
+    appsText: SingleFieldTextModel<AppModel>?,
+    contactsText: SingleFieldTextModel<ContactModel>?,
     resources: Resources,
 ): RuleDisplayModel {
     // Each field text requires annotations like underlining, click-ability, etc. And, we can't put
@@ -72,7 +74,7 @@ internal fun buildRuleText(
 }
 
 /** Transforms a single field (like "from Photos +3 more") into a list of individual text chunks. */
-internal fun SingleFieldTextModel.toTextChunks(): List<TextChunk> {
+internal fun SingleFieldTextModel<*>.toTextChunks(): List<TextChunk> {
     if (valueFieldRange == null) {
         return listOf(TextChunk.BasicText(text))
     }
@@ -80,6 +82,10 @@ internal fun SingleFieldTextModel.toTextChunks(): List<TextChunk> {
     return buildList {
             add(TextChunk.BasicText(text.substring(0 until valueFieldRange.first)))
 
+            // Always add the inline icon right before the value field.
+            if (firstItem != null && firstItemIconId != null) {
+                add(TextChunk.Icon(firstItem, firstItemIconId))
+            }
             if (onClick != null) {
                 add(
                     TextChunk.ClickableText(

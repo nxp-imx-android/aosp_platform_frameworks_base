@@ -81,7 +81,7 @@ import kotlinx.coroutines.launch
  *   [query]. [allSearchResults] is provided as the second parameter.
  * @param sortKey a function used to sort items as they're added to the list.
  * @param uniqueId a function that should return a unique identifier for an item.
- * @param image a composable rendering an image for a particular item.
+ * @param icon a composable rendering an icon for a particular item.
  * @param text a function that should return the main text for a particular item.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,7 +95,7 @@ fun <T> EditScreen(
     fetchSearchResults: suspend (query: String) -> List<T>?,
     sortKey: (T) -> String,
     uniqueId: (T) -> Any,
-    image: (@Composable (T) -> Unit),
+    icon: (@Composable (T) -> Unit),
     text: (T) -> String,
 ) {
     val scope = rememberCoroutineScope()
@@ -151,7 +151,7 @@ fun <T> EditScreen(
                             onSelectionToggled = onSelectionToggled,
                             currentSelection = currentSelection,
                             uniqueId = uniqueId,
-                            image = image,
+                            icon = icon,
                             text = text,
                         )
                     } else {
@@ -176,7 +176,7 @@ fun <T> EditScreen(
                     onSelectionToggled = onSelectionToggled,
                     onClearSelection = { currentSelection.clear() },
                     uniqueId = uniqueId,
-                    image = image,
+                    icon = icon,
                     text = text,
                 )
             } else {
@@ -202,7 +202,7 @@ private fun <T> SearchResults(
     onSelectionToggled: (T, Boolean) -> Unit,
     currentSelection: List<T>,
     uniqueId: (T) -> Any,
-    image: (@Composable (T) -> Unit),
+    icon: (@Composable (T) -> Unit),
     text: (T) -> String,
 ) {
     LazyColumn(
@@ -222,7 +222,7 @@ private fun <T> SearchResults(
                 model = it,
                 isSelected = it in currentSelection,
                 onSelectionToggled = onSelectionToggled,
-                image = image,
+                icon = icon,
                 text = text,
             )
         }
@@ -237,7 +237,7 @@ private fun <T> SelectedItems(
     onSelectionToggled: (T, Boolean) -> Unit,
     onClearSelection: () -> Unit,
     uniqueId: (T) -> Any,
-    image: (@Composable (T) -> Unit),
+    icon: (@Composable (T) -> Unit),
     text: (T) -> String,
 ) {
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -265,7 +265,7 @@ private fun <T> SelectedItems(
                 model = it,
                 isSelected = true,
                 onSelectionToggled = onSelectionToggled,
-                image = image,
+                icon = icon,
                 text = text,
             )
         }
@@ -282,7 +282,7 @@ private fun <T> Item(
     model: T,
     isSelected: Boolean,
     onSelectionToggled: (T, Boolean) -> Unit,
-    image: @Composable (T) -> Unit,
+    icon: @Composable (T) -> Unit,
     text: (T) -> String,
 ) {
     Row(
@@ -295,7 +295,7 @@ private fun <T> Item(
                 .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(EditScreenDimens.imageSize)) { image(model) }
+        Box(Modifier.size(EditScreenDimens.iconSize)) { icon(model) }
 
         Text(
             text = text(model),
@@ -384,5 +384,5 @@ private fun <T> BoxScope.FloatingSaveButton(
 
 /** Common dimensions used by the edit screen. */
 object EditScreenDimens {
-    val imageSize = 40.dp
+    val iconSize = 40.dp
 }
