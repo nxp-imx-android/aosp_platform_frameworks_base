@@ -24,7 +24,10 @@ import platform.test.motion.golden.DataPointType
 import platform.test.motion.golden.FloatTolerances
 import platform.test.motion.golden.UnknownTypeException
 
-fun Scale.asDataPoint() = DataPointTypes.scale.makeDataPoint(this)
+fun Scale?.asDataPoint() = DataPointTypes.scale.makeDataPoint(this)
+
+val Scale.Companion.dataPointType
+    get() = DataPointTypes.scale
 
 object DataPointTypes {
     val scale: DataPointType<Scale> =
