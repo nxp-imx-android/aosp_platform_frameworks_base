@@ -331,7 +331,7 @@ constructor(
         handleBouncerImeVisibility()
         handleBouncerHiding()
         handleSimUnlock()
-        handleDeviceUnlockStatus()
+        handleDeviceEntry()
         handlePowerState()
         handleDisableFlags()
     }
@@ -410,8 +410,9 @@ constructor(
         }
     }
 
-    private fun handleDeviceUnlockStatus() {
+    private fun handleDeviceEntry() {
         deviceEntryInteractor.handleDeviceUnlockStatusChange()
+        deviceEntryInteractor.handleDeviceEntryFromBiometricWhenAlreadyUnlocked()
         deviceEntryInteractor.handleDeviceEntryMetricsLogging()
     }
 
