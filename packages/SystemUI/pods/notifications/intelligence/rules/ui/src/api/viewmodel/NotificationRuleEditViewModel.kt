@@ -19,6 +19,7 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 import android.annotation.Px
 import android.content.ContentResolver
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.net.Uri
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
@@ -27,8 +28,27 @@ import com.android.systemui.notifications.intelligence.rules.shared.model.DraftR
 
 /** A view model for editing a specific notification rule. Work-in-progress. */
 public interface NotificationRuleEditViewModel {
-    /** The rule being edited. */
+    /** The rule being edited or created. */
     public var rule: DraftRuleModel
+
+    /**
+     * Creates display text for the [rule]. This text is also interactable: Users can tap individual
+     * fields to edit the contents.
+     *
+     * @param onEnterEditField invoked when the user starts editing a particular field of the rule.
+     * @param onExitEditField invoked when the user finishes editing a particular field of the rule.
+     */
+    public fun buildRuleText(
+        onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
+        onExitEditField: () -> Unit,
+        resources: Resources,
+    ): RuleDisplayModel
+
+    /** Saves a new set of apps to the draft rule. */
+    public fun onAppsSaved(newApps: List<AppModel>, onExitEditField: () -> Unit)
+
+    /** Saves a new set of contacts to the draft rule. */
+    public fun onContactsSaved(newContacts: List<ContactModel>, onExitEditField: () -> Unit)
 
     /**
      * Fetches all contacts whose name matches [searchQuery].
