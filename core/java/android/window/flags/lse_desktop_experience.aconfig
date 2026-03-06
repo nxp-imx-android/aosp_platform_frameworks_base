@@ -782,6 +782,13 @@ flag {
 }
 
 flag {
+    name: "enable_no_resize_cursor"
+    namespace: "lse_desktop_experience"
+    description: "Enable no-resize cursors for window drag resizing."
+    bug: "444328529"
+}
+
+flag {
     name: "enable_no_window_decoration_for_desks"
     namespace: "lse_desktop_experience"
     description: "Stops the creation of a window decoration for desk tasks."
