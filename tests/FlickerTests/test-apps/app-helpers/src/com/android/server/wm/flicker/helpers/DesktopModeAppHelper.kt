@@ -409,8 +409,11 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
             device.wait(Until.findObjects(caption.displayId(displayId)), TIMEOUT.toMillis())
                 ?: error("Unable to find view $caption\n")
 
+        val task = wmHelper.currentState.wmState.getTaskForActivity(innerHelper)
+            ?: error("Unable to find task for $innerHelper")
+
         return captions.find {
-            wmHelper.getWindowRegion(innerHelper).bounds.contains(it.visibleBounds)
+            task.bounds.contains(it.visibleBounds)
         }
     }
 
