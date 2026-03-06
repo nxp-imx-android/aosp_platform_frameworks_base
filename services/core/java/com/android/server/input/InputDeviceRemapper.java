@@ -349,17 +349,38 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
         onInputDeviceChanged(deviceId);
     }
 
+    /**
+     * This listener is needed here to make sure that device's persisted mappings get propagated to
+     * the native layer when the device source becomes one of the sources that support remapping.
+     * Without it, the remappings might be not propagated when the device gets initially connected
+     * and at the time of onInputDeviceAdded() the source is not one of the supported ones.
+     *
+     * <p>This method however is effectively recursive, as applying remappings triggers device
+     * change event and this method gets called again soon after on a different thread. It works in
+     * practice because remappings changes are relatively rare and on the subsequent call the
+     * remappings are already set to the same values in native and thus a device change event is not
+     * triggered again, but with more frequent remappings changes it might cause a race condition.
+     * An unnecessary call to native is also not ideal. Additionally, it is difficult to reason
+     * about, thus it would be better to refactor it in the future in a way that this listener is
+     * not needed at all.
+     *
+     * <p>TODO: b/489350713 - Refactor to avoid the need for this listener.
+     */
     @Override
     public void onInputDeviceChanged(int deviceId) {
         InputDevice device = mInputManager.getInputDevice(deviceId);
         if (device == null) {
             return;
         }
-        if (isPhysicalButtonDevice(device)) {
-            setKeyRemapping(deviceId, getKeyRemappings(mCurrentUserId, device.getIdentifier()));
-        }
-        if (isPhysicalJoystickDevice(device)) {
-            setAxisRemapping(deviceId, getAxisRemappings(mCurrentUserId, device.getIdentifier()));
+
+        InputDeviceIdentifier identifier = device.getIdentifier();
+
+        // Lock to make sure getting current remappings and sending them to native is atomic.
+        synchronized (mLock) {
+            InputDeviceRemappingData data =
+                    getOrCreateRemappingDataLocked(mCurrentUserId, identifier);
+            findButtonDeviceAndApplyKeyRemapping(identifier, data.buttonRemappingMap());
+            findJoystickDeviceAndApplyAxisRemapping(identifier, data.axisRemappingMap());
         }
     }
 
@@ -368,7 +389,6 @@ final class InputDeviceRemapper implements InputManager.InputDeviceListener {
         setKeyRemapping(deviceId, null);
         setAxisRemapping(deviceId, null);
     }
-
 
     private void findButtonDeviceAndApplyKeyRemapping(
             @NonNull InputDeviceIdentifier deviceIdentifier,
