@@ -230,6 +230,7 @@ import static android.app.admin.ProvisioningException.ERROR_SETTING_PROFILE_OWNE
 import static android.app.admin.ProvisioningException.ERROR_SET_DEVICE_OWNER_FAILED;
 import static android.app.admin.ProvisioningException.ERROR_STARTING_PROFILE_FAILED;
 import static android.app.admin.ProvisioningException.ERROR_UNKNOWN;
+import static android.app.supervision.flags.Flags.enableRemoveDeviceAdminChecksForResetPasswordToken;
 import static android.content.Context.RECEIVER_NOT_EXPORTED;
 import static android.content.Intent.ACTION_MANAGED_PROFILE_AVAILABLE;
 import static android.content.Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE;
@@ -19064,7 +19065,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     @Override
     public boolean setResetPasswordToken(ComponentName admin, String callerPackageName,
             byte[] token) {
-        if (!mHasFeature || !mLockPatternUtils.hasSecureLockScreen()) {
+        boolean missingDeviceAdminFeature =
+                enableRemoveDeviceAdminChecksForResetPasswordToken()
+                        ? isDeviceAdminFeatureDisabled() : !mHasFeature;
+        if (missingDeviceAdminFeature || !mLockPatternUtils.hasSecureLockScreen()) {
             return false;
         }
         if (token == null || token.length < 32) {
@@ -19122,7 +19126,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
     @Override
     public boolean clearResetPasswordToken(ComponentName admin, String callerPackageName) {
-        if (!mHasFeature || !mLockPatternUtils.hasSecureLockScreen()) {
+        boolean missingDeviceAdminFeature =
+                enableRemoveDeviceAdminChecksForResetPasswordToken()
+                        ? isDeviceAdminFeatureDisabled() : !mHasFeature;
+        if (missingDeviceAdminFeature || !mLockPatternUtils.hasSecureLockScreen()) {
             return false;
         }
         CallerIdentity caller;
@@ -19166,7 +19173,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
     @Override
     public boolean isResetPasswordTokenActive(ComponentName admin, String callerPackageName) {
-        if (!mHasFeature || !mLockPatternUtils.hasSecureLockScreen()) {
+        boolean missingDeviceAdminFeature =
+                enableRemoveDeviceAdminChecksForResetPasswordToken()
+                        ? isDeviceAdminFeatureDisabled() : !mHasFeature;
+        if (missingDeviceAdminFeature || !mLockPatternUtils.hasSecureLockScreen()) {
             return false;
         }
         CallerIdentity caller;
@@ -19230,7 +19240,10 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     public boolean resetPasswordWithTokenInternal(ComponentName admin, String callerPackageName,
             String passwordOrNull, byte[] token,
             int flags) {
-        if (!mHasFeature || !mLockPatternUtils.hasSecureLockScreen()) {
+        boolean missingDeviceAdminFeature =
+                enableRemoveDeviceAdminChecksForResetPasswordToken()
+                        ? isDeviceAdminFeatureDisabled() : !mHasFeature;
+        if (missingDeviceAdminFeature || !mLockPatternUtils.hasSecureLockScreen()) {
             return false;
         }
         Objects.requireNonNull(token);
