@@ -21,9 +21,7 @@ import android.content.DialogInterface
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.FiniteAnimationSpec
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
@@ -71,7 +69,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -89,6 +86,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -103,7 +101,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
@@ -132,12 +129,9 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.fold.ui.composable.foldPosture
 import com.android.systemui.fold.ui.helper.FoldPosture
 import com.android.systemui.res.R
-import com.android.systemui.scene.shared.model.Overlays
-import com.android.systemui.scene.ui.composable.transitions.BOUNCER_INITIAL_TRANSLATION
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.pow
 import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.compose.values.MotionTestValues
@@ -152,116 +146,7 @@ fun ContentScope.BouncerContent(
     val isOneHandedModeSupported by viewModel.isOneHandedModeSupported.collectAsStateWithLifecycle()
     val layout = calculateLayout(isOneHandedModeSupported = isOneHandedModeSupported)
 
-    fun isDraggingToBouncer(): Boolean {
-        val currentTransition = layoutState.currentTransition
-        return currentTransition != null &&
-            currentTransition.isTransitioning(to = Overlays.Bouncer) &&
-            currentTransition.isInitiatedByUserInput
-    }
-
-    // Custom handle the BouncerContent toBouncer transition here.
-    // fromBouncer transitions are handled by the Scene transitions.
-
-    // Give an extra delay for showing BouncerContent if face auth or active unlock may run.
-    // This gives passive auth methods an opportunity to succeed before showing bouncer contents.
-    val appearAnimationInterpolator = FastOutSlowInEasing
-    var appearAnimationDuration: Int by remember { mutableIntStateOf(0) }
-    var appearAnimationDelay: Int by remember { mutableIntStateOf(0) }
-    var startAppearAnimation: Boolean by remember { mutableStateOf(false) }
-    val animatedAlpha: Float by
-        animateFloatAsState(
-            animationSpec =
-                if (appearAnimationDuration == 0) snap(delayMillis = appearAnimationDelay)
-                else
-                    tween(
-                        durationMillis = appearAnimationDuration,
-                        delayMillis = appearAnimationDelay,
-                        easing = appearAnimationInterpolator,
-                    ),
-            targetValue =
-                if (startAppearAnimation) {
-                    1f
-                } else {
-                    // init alpha to 0f before anim begins
-                    0f
-                },
-            label = "alpha",
-        )
-
-    val animatedOffsetY by
-        animateDpAsState(
-            animationSpec =
-                if (appearAnimationDuration == 0) snap(delayMillis = appearAnimationDelay)
-                else
-                    tween(
-                        durationMillis = appearAnimationDuration,
-                        delayMillis = appearAnimationDelay,
-                        easing = appearAnimationInterpolator,
-                    ),
-            targetValue =
-                if (startAppearAnimation) {
-                    0.dp
-                } else {
-                    // init to BOUNCER_INITIAL_TRANSLATION before anim begins
-                    BOUNCER_INITIAL_TRANSLATION
-                },
-            label = "offsetY",
-        )
-
-    fun contentAlpha(): Float {
-        return if (isDraggingToBouncer()) {
-            min(
-                appearAnimationInterpolator.transform(
-                    // animate in along with the layout's transition
-                    layoutState.currentTransition!!.progress
-                ),
-                animatedAlpha,
-            )
-        } else {
-            // animate in separately from the layout's transition
-            animatedAlpha
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        appearAnimationDelay =
-            BOUNCER_CONTENTS_PASSIVE_AUTH_DELAY.takeIf { viewModel.shouldDelayBouncerContent() }
-                ?: 0
-        appearAnimationDuration =
-            BOUNCER_CONTENTS_ALPHA_IN_ANIMATION_DURATION.takeIf {
-                viewModel.shouldDelayBouncerContent()
-            } ?: 0
-        startAppearAnimation = true
-    }
-
-    BouncerContentLayout(
-        layout,
-        viewModel,
-        dialogFactory,
-        modifier =
-            modifier
-                .offset {
-                    val yOffset =
-                        if (isDraggingToBouncer()) {
-                            min(
-                                ((1 -
-                                        appearAnimationInterpolator.transform(
-                                            layoutState.currentTransition!!.progress
-                                        )) * BOUNCER_INITIAL_TRANSLATION)
-                                    .toPx(),
-                                animatedOffsetY.value,
-                            )
-                        } else {
-                            animatedOffsetY.value
-                        }
-                    IntOffset(x = 0, y = yOffset.toInt())
-                }
-                .graphicsLayer { alpha = contentAlpha() }
-                .motionTestValues {
-                    contentAlpha() exportAs BouncerMotionTestKeys.bouncerContentAlpha
-                },
-        alphaOnEntry = { contentAlpha() },
-    )
+    BouncerContentLayout(layout, viewModel, dialogFactory, modifier = modifier)
 }
 
 @Composable
@@ -271,7 +156,6 @@ fun ContentScope.BouncerContentLayout(
     viewModel: BouncerOverlayContentViewModel,
     dialogFactory: SystemUIDialog.Factory,
     modifier: Modifier,
-    alphaOnEntry: () -> Float,
 ) {
     val scale by viewModel.scale.collectAsStateWithLifecycle()
     Box(
@@ -283,14 +167,12 @@ fun ContentScope.BouncerContentLayout(
                 .pointerInput(Unit) { detectTapGestures { viewModel.backgroundTap() } }
     ) {
         when (layout) {
-            BouncerOverlayLayout.STANDARD_BOUNCER ->
-                StandardLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
+            BouncerOverlayLayout.STANDARD_BOUNCER -> StandardLayout(viewModel = viewModel)
             BouncerOverlayLayout.BESIDE_USER_SWITCHER ->
-                BesideUserSwitcherLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
+                BesideUserSwitcherLayout(viewModel = viewModel)
             BouncerOverlayLayout.BELOW_USER_SWITCHER ->
-                BelowUserSwitcherLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
-            BouncerOverlayLayout.SPLIT_BOUNCER ->
-                SplitLayout(viewModel = viewModel, alphaOnEntry = alphaOnEntry)
+                BelowUserSwitcherLayout(viewModel = viewModel)
+            BouncerOverlayLayout.SPLIT_BOUNCER -> SplitLayout(viewModel = viewModel)
         }
 
         Dialog(bouncerViewModel = viewModel, dialogFactory = dialogFactory)
@@ -329,7 +211,6 @@ fun ContentScope.BouncerContentLayout(
 @Composable
 private fun ContentScope.StandardLayout(
     viewModel: BouncerOverlayContentViewModel,
-    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     val isHeightExpanded =
@@ -360,7 +241,7 @@ private fun ContentScope.StandardLayout(
                         }
                 )
 
-                OutputArea(viewModel = viewModel, alphaOnEntry = alphaOnEntry, modifier = Modifier)
+                OutputArea(viewModel = viewModel, modifier = Modifier)
             }
         },
         belowFold = {
@@ -401,7 +282,6 @@ private fun ContentScope.StandardLayout(
 @Composable
 private fun ContentScope.SplitLayout(
     viewModel: BouncerOverlayContentViewModel,
-    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -428,7 +308,6 @@ private fun ContentScope.SplitLayout(
                     )
                     OutputArea(
                         viewModel = viewModel,
-                        alphaOnEntry = alphaOnEntry,
                         modifier =
                             Modifier.align(Alignment.Center).sysuiResTag("bouncer_text_entry"),
                     )
@@ -479,7 +358,6 @@ private fun ContentScope.SplitLayout(
                         StatusMessage(viewModel = viewModel.message)
                         OutputArea(
                             viewModel = viewModel,
-                            alphaOnEntry = alphaOnEntry,
                             modifier =
                                 Modifier.padding(top = 24.dp).sysuiResTag("bouncer_text_entry"),
                         )
@@ -498,7 +376,6 @@ private fun ContentScope.SplitLayout(
 @Composable
 private fun ContentScope.BesideUserSwitcherLayout(
     viewModel: BouncerOverlayContentViewModel,
-    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     val isLeftToRight = LocalLayoutDirection.current == LayoutDirection.Ltr
@@ -622,7 +499,6 @@ private fun ContentScope.BesideUserSwitcherLayout(
                     StatusMessage(viewModel = viewModel.message)
                     OutputArea(
                         viewModel = viewModel,
-                        alphaOnEntry = alphaOnEntry,
                         modifier = Modifier.padding(top = 24.dp).sysuiResTag("bouncer_text_entry"),
                     )
                 }
@@ -656,7 +532,6 @@ private fun ContentScope.BesideUserSwitcherLayout(
 @Composable
 private fun ContentScope.BelowUserSwitcherLayout(
     viewModel: BouncerOverlayContentViewModel,
-    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -675,11 +550,7 @@ private fun ContentScope.BelowUserSwitcherLayout(
 
         Spacer(Modifier.weight(1f))
 
-        OutputArea(
-            viewModel = viewModel,
-            alphaOnEntry = alphaOnEntry,
-            modifier = Modifier.padding(top = 24.dp),
-        )
+        OutputArea(viewModel = viewModel, modifier = Modifier.padding(top = 24.dp))
 
         Spacer(Modifier.weight(1f))
 
@@ -743,9 +614,7 @@ private fun ContentScope.FoldableScene(
     modifier: Modifier = Modifier,
 ) {
     val splitRatio =
-        LocalContext.current.resources.getFloat(
-            R.dimen.motion_layout_half_fold_bouncer_height_ratio
-        )
+        LocalResources.current.getFloat(R.dimen.motion_layout_half_fold_bouncer_height_ratio)
 
     Column(modifier = modifier.fillMaxHeight()) {
         // Content above the fold, when split on a foldable device in a "table top" posture:
@@ -841,7 +710,6 @@ private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier
 @Composable
 private fun ContentScope.OutputArea(
     viewModel: BouncerOverlayContentViewModel,
-    alphaOnEntry: () -> Float,
     modifier: Modifier = Modifier,
 ) {
     when (val nonNullViewModel = viewModel.authMethodViewModel) {
@@ -853,7 +721,6 @@ private fun ContentScope.OutputArea(
         is PasswordBouncerViewModel ->
             PasswordBouncer(
                 viewModel = nonNullViewModel,
-                alphaOnEntry = alphaOnEntry,
                 modifier = modifier.sysuiResTag("bouncer_text_entry"),
             )
         else -> Unit
@@ -1296,6 +1163,3 @@ object BouncerMotionTestKeys {
         MotionTestValueKey<Float>("bouncerContentActionBtnTranslationY")
     val bouncerContentAlpha = MotionTestValueKey<Float>("bouncerContentAlpha")
 }
-
-private const val BOUNCER_CONTENTS_PASSIVE_AUTH_DELAY = 500
-private const val BOUNCER_CONTENTS_ALPHA_IN_ANIMATION_DURATION = 250

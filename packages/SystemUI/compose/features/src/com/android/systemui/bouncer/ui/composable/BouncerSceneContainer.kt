@@ -29,6 +29,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.scene.ui.composable.transitions.sharedBouncerTransitions
+import com.android.systemui.scene.ui.viewmodel.ToBouncerTransitionViewModel
 
 /**
  * A [SceneTransitionLayout] that contains an empty scene and the bouncer overlay.
@@ -41,13 +42,19 @@ import com.android.systemui.scene.ui.composable.transitions.sharedBouncerTransit
 fun BouncerSceneContainer(
     state: HoistedSceneTransitionLayoutState,
     bouncerOverlay: Overlay,
+    toBouncerTransitionViewModel: ToBouncerTransitionViewModel,
     modifier: Modifier = Modifier,
 ) {
     val userActions by bouncerOverlay.userActions.collectAsStateWithLifecycle(emptyMap())
 
     SceneTransitionLayout(
         state = state,
-        transitions = transitions { sharedBouncerTransitions() },
+        transitions =
+            transitions {
+                sharedBouncerTransitions(
+                    toBouncerTransitionViewModel = toBouncerTransitionViewModel
+                )
+            },
         modifier = modifier,
         debugName = "BouncerTopSTL",
     ) {

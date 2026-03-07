@@ -96,6 +96,7 @@ constructor(
     val burnInMovementFactory: BurnInMovementState.Factory,
     val dualShadeEducationalTooltipsViewModelFactory: DualShadeEducationalTooltipsViewModel.Factory,
     val animateQsTilesViewModelFactory: AnimateQsTilesViewModel.Factory,
+    toBouncerTransitionViewModelFactory: ToBouncerTransitionViewModel.Factory,
     sceneTransitionBlurViewModelFactory: SceneTransitionBlurViewModel.Factory,
     private val toastDisplayer: Lazy<SceneContainerToastDisplayer>,
     @Assisted private val motionEventHandlerReceiver: (MotionEventHandler?) -> Unit,
@@ -107,6 +108,7 @@ constructor(
 
     private val hydrator = Hydrator("SceneContainerViewModel.hydrator")
     val blurViewModel: SceneTransitionBlurViewModel = sceneTransitionBlurViewModelFactory.create()
+    val toBouncerTransitionViewModel = toBouncerTransitionViewModelFactory.create()
 
     /** Whether the container is visible. */
     val isVisible: Boolean

@@ -64,6 +64,7 @@ import com.android.systemui.scene.ui.composable.SceneContainer
 import com.android.systemui.scene.ui.view.sceneJankMonitorFactory
 import com.android.systemui.scene.ui.view.sceneTransitionLatencyMonitor
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
+import com.android.systemui.scene.ui.viewmodel.toBouncerTransitionViewModel
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.phone.KeyguardStatusBarViewController
@@ -213,6 +214,7 @@ class BouncerOverlayToLockScreenTransitionTest : SysuiTestCase() {
                     BouncerSceneContainer(
                         state = bouncerSceneContainerState,
                         bouncerOverlay = bouncerOverlay,
+                        toBouncerTransitionViewModel = kosmos.toBouncerTransitionViewModel,
                     )
                     SceneContainer(
                         viewModel = vm,
