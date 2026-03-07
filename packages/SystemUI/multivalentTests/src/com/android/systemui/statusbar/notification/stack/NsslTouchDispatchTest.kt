@@ -20,9 +20,12 @@ package com.android.systemui.statusbar.notification.stack
 import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.os.SystemClock
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper
 import android.view.InputDevice
 import android.view.MotionEvent
+import android.view.MotionEvent.ACTION_CANCEL
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_POINTER_DOWN
@@ -36,9 +39,11 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_NSSL_TOUCH_DISPATCH_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.featureFlagsClassic
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.notifications.ui.YSpace
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.shade.ShadeController
@@ -84,7 +89,7 @@ import org.mockito.kotlin.whenever
 class NsslTouchDispatchTest : SysuiTestCase() {
     private lateinit var parent: ViewGroup
     private lateinit var underTest: NotificationStackScrollLayout
-    private lateinit var controller: NotificationStackScrollLayoutController
+    private lateinit var controller: TestController
     private lateinit var sibling: TouchRecordingView
 
     private var touchSlop: Int = 0
@@ -102,7 +107,7 @@ class NsslTouchDispatchTest : SysuiTestCase() {
             NotificationStackScrollLayout(context, null).apply {
                 initView(context, mock(), mock())
                 setScrollingEnabled(true)
-                // ScrollView requires at least one child to become a touch target for the initial
+                // ScrollView requires at least one child to become a touch target on the initial
                 // down.
                 addView(DummyExpandableView(context))
             }
@@ -126,30 +131,230 @@ class NsslTouchDispatchTest : SysuiTestCase() {
     }
 
     @Test
-    fun verticalSwipe_exceedsSlop() {
-        val dispatchedEvents = sibling.capturedEvents
+    @DisableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun verticalSwipe_exceedsSlop_legacy() {
+        val receivedEvents = sibling.capturedEvents
         var yPosition = 100f
 
         onDownEvent(pointerId = 0, x = 100f, y = yPosition)
-        assertThat(dispatchedEvents).isEmpty()
+        assertThat(receivedEvents).isEmpty()
 
         onMoveEvent(pointerId = 0, x = 100f, y = ++yPosition)
-        assertThat(dispatchedEvents).isEmpty()
+        assertThat(receivedEvents).isEmpty()
 
         yPosition += touchSlop * 2 // exceed the slop
         onMoveEvent(pointerId = 0, x = 100f, y = yPosition)
         // The stack is being dragged, a touch is to be dispatched on the next ACTION_MOVE.
         assertThat(underTest.isBeingDragged()).isTrue()
-        assertThat(dispatchedEvents).isEmpty()
+        assertThat(receivedEvents).isEmpty()
 
         onMoveEvent(pointerId = 0, x = 100f, y = ++yPosition)
-        assertThat(dispatchedEvents.last()).isDown()
+        assertThat(receivedEvents.last()).isDown()
 
         onUpEvent()
-        assertThat(dispatchedEvents.last()).isUp()
+        assertThat(receivedEvents.last()).isUp()
 
-        assertThat(dispatchedEvents).hasSize(2)
+        assertThat(receivedEvents).hasSize(2)
     }
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun verticalSwipe() {
+        val receivedEvents = sibling.capturedEvents
+        val dispatchedEvents = controller.capturedEvents
+        var yPosition = 100f
+
+        onDownEvent(pointerId = 0, x = 100f, y = yPosition)
+        assertThat(receivedEvents.last()).isDown()
+
+        onMoveEvent(pointerId = 0, x = 100f, y = ++yPosition)
+        assertThat(receivedEvents.last()).isMove()
+
+        yPosition += touchSlop * 2 // exceed the slop
+        onMoveEvent(pointerId = 0, x = 100f, y = yPosition)
+        assertThat(underTest.isBeingDragged()).isTrue()
+        assertThat(receivedEvents.last()).isMove()
+
+        onMoveEvent(pointerId = 0, x = 100f, y = ++yPosition)
+        assertThat(receivedEvents.last()).isMove()
+
+        onUpEvent()
+        assertThat(receivedEvents.last()).isUp()
+
+        assertThat(receivedEvents).hasSize(5)
+        // All the events received by the sibling were dispatched.
+        assertThat(receivedEvents).containsExactlyElementsIn(dispatchedEvents)
+    }
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun verticalSwipe_externalSetDragCall() {
+        val receivedEvents = sibling.capturedEvents
+        val dispatchedEvents = controller.capturedEvents
+        var yPosition = 100f
+
+        underTest.setIsBeingDragged(true) // turn the drag manually on
+
+        onDownEvent(pointerId = 0, x = 100f, y = yPosition)
+        assertThat(receivedEvents.last()).isDown()
+        // Don't even move, so it's not gonna result in a drag.
+        onUpEvent()
+        assertThat(receivedEvents.last()).isUp()
+
+        assertThat(receivedEvents).hasSize(2)
+        // All the events received by the sibling were dispatched.
+        assertThat(receivedEvents).containsExactlyElementsIn(dispatchedEvents)
+
+        // isBeingDragged is reset even without reaching the scroller
+        assertThat(underTest.isBeingDragged()).isFalse()
+    }
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun multiPointerGesture_forwardsAllEvents() {
+        val receivedEvents = sibling.capturedEvents
+        val dispatchedEvents = controller.capturedEvents
+
+        onDownEvent(pointerId = 0, x = 100f, y = 100f)
+        assertThat(receivedEvents.last()).isDown()
+        assertThat(receivedEvents.last()).hasPointerCount(1)
+
+        onPointerDownEvent(pointerId = 1, x = 200f, y = 200f)
+        assertThat(receivedEvents.last()).isPointerDown()
+        assertThat(receivedEvents.last()).hasPointerCount(2)
+
+        // Move to exceed slop so that UP is sent at the end (not CANCEL).
+        onMoveEvent(pointerId = 0, x = 100f, y = 100f + touchSlop * 2f)
+        assertThat(receivedEvents.last()).isMove()
+        assertThat(receivedEvents.last()).hasPointerCount(2)
+
+        onPointerUpEvent(pointerId = 1)
+        assertThat(receivedEvents.last()).isPointerUp()
+        assertThat(receivedEvents.last()).hasPointerCount(2)
+
+        onUpEvent()
+        assertThat(receivedEvents.last()).isUp()
+        assertThat(receivedEvents.last()).hasPointerCount(1)
+
+        assertThat(receivedEvents).hasSize(5)
+        // All the events received by the sibling were dispatched.
+        assertThat(receivedEvents).containsExactlyElementsIn(dispatchedEvents)
+    }
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun parentSendsCancel_forwardsAndResetsState() {
+        val receivedEvents = sibling.capturedEvents
+
+        onDownEvent(pointerId = 0, x = 100f, y = 100f)
+        assertThat(receivedEvents.last()).isDown()
+
+        // Simulate parent intercepting/cancelling (e.g. some window above took the touch).
+        onCancelEvent()
+
+        assertThat(receivedEvents.last()).isCancel()
+
+        // Ensure subsequent moves are ignored because tracking was reset.
+        onMoveEvent(pointerId = 0, x = 100f, y = 200f)
+        assertThat(receivedEvents).hasSize(2)
+    }
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun scrollingDisabled_rejectsTouchEvents() =
+        kosmos.runTest {
+            val dispatchedEvents = controller.capturedEvents
+            underTest.setScrollingEnabled(false)
+            // Attempt a standard vertical scroll gesture that exceeds the slop.
+            onDownEvent(pointerId = 0, x = 100f, y = 100f)
+            onMoveEvent(pointerId = 0, x = 100f, y = 200f) // Would normally trigger a drag.
+            onUpEvent()
+            assertThat(dispatchedEvents).isEmpty()
+            assertThat(underTest.isBeingDragged()).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun gestureStartsOutside_rejectedByNssl() =
+        kosmos.runTest {
+            val dispatchedEvents = controller.capturedEvents
+            // Setup: Define a clipping region that excludes (0,0) but includes (0,200).
+            setupStackBounds(left = 0f, top = 150f, bottom = 300f, right = 200f)
+
+            // Down Event outside of the region (at 0, 100)
+            // Unlike in other tests, send it directly to the NSSL, to check the return value.
+            val handled =
+                underTest.dispatchTouchEvent(
+                    motionEventBuilder.down(pointerId = 0, x = 0f, y = 100f)
+                )
+            assertThat(handled).isFalse()
+            assertThat(dispatchedEvents.isEmpty())
+        }
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun parentInvisible_rejectedByNssl() =
+        kosmos.runTest {
+            val dispatchedEvents = controller.capturedEvents
+            // Setup: Hide the parent View.
+            parent.visibility = View.INVISIBLE
+
+            // Send a regular Down Event, that would be handled normally.
+            // Unlike in other tests, send it directly to the NSSL, to check the return value.
+            val handled =
+                underTest.dispatchTouchEvent(
+                    motionEventBuilder.down(pointerId = 0, x = 100f, y = 100f)
+                )
+            assertThat(handled).isFalse()
+            assertThat(dispatchedEvents.isEmpty())
+        }
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun rejectedDown_neverSendsSubsequentEvents() {
+        val dispatchedEvents = controller.capturedEvents
+        val receivedEvents = sibling.capturedEvents
+        // Reconfigure bounds to exclude the top half.
+        setupStackBounds(left = 0f, top = 500f, bottom = 1000f, right = 1000f)
+
+        // Down in top half (rejected by the NSSL).
+        onDownEvent(pointerId = 0, x = 100f, y = 100f)
+        assertThat(receivedEvents.last()).isDown()
+
+        // Move into bottom half (valid region).
+        onMoveEvent(pointerId = 0, x = 100f, y = 600f)
+        assertThat(receivedEvents.last()).isMove()
+
+        // NSSL didn't dispatch any events, because the initial DOWN was rejected.
+        assertThat(dispatchedEvents).isEmpty()
+        // But the sibling received all of the events through the parent.
+        assertThat(receivedEvents).hasSize(2)
+    }
+
+    @Test
+    @EnableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX)
+    fun rejectedDown_thenEntersRegion_doesNotCrash() =
+        kosmos.runTest {
+            val dispatchedEvents = controller.capturedEvents
+            val receivedEvents = sibling.capturedEvents
+            // Setup: Define a clipping region that excludes (0,0) but includes (0,200).
+            setupStackBounds(left = 0f, top = 150f, bottom = 300f, right = 200f)
+
+            // Down Event outside of the region (at 0, 100).
+            onDownEvent(pointerId = 0, x = 0f, y = 100f)
+            assertThat(receivedEvents.last()).isDown()
+
+            // Move Event inside the region (at 0, 200).
+            onMoveEvent(pointerId = 0, x = 0f, y = 200f)
+            assertThat(receivedEvents.last()).isMove()
+
+            // NSSL never started dragging.
+            assertThat(underTest.isBeingDragged()).isFalse()
+            // NSSL didn't dispatch any events.
+            assertThat(dispatchedEvents).isEmpty()
+            // But the sibling received all of the events through the parent.
+            assertThat(receivedEvents).hasSize(2)
+        }
 
     private fun injectTestDependencies() {
         // Migrate these to Kosmos one day.
@@ -182,7 +387,7 @@ class NsslTouchDispatchTest : SysuiTestCase() {
     }
 
     private fun setupStackBounds(left: Float, top: Float, bottom: Float, right: Float) {
-        val bounds = ShadeScrimBounds(left = 0f, top = 0f, bottom = 1000f, right = 1000f)
+        val bounds = ShadeScrimBounds(left = left, top = top, bottom = bottom, right = right)
         underTest.setClippingShape(
             ShadeScrimShape(bounds = bounds, topRadius = 0, bottomRadius = 0)
         )
@@ -199,29 +404,34 @@ class NsslTouchDispatchTest : SysuiTestCase() {
 
     /** Initial down event. Simulates a valid [MotionEvent] and sends it to the [parent] View. */
     private fun onDownEvent(pointerId: Int, x: Float, y: Float) =
-        underTest.dispatchTouchEvent(motionEventBuilder.down(pointerId, x, y))
+        sendEvent(motionEventBuilder.down(pointerId, x, y))
 
     /** Final up event. Simulates a valid [MotionEvent] and sends it to the [parent] View. */
-    private fun onUpEvent() = underTest.dispatchTouchEvent(motionEventBuilder.up())
+    private fun onUpEvent() = sendEvent(motionEventBuilder.up())
+
+    /** Final cancel event. Simulates a valid [MotionEvent] and sends it to the [parent] View. */
+    private fun onCancelEvent() = sendEvent(motionEventBuilder.cancel())
 
     /**
      * Moves the pointer with [pointerId]. Simulates a valid [MotionEvent] and sends it to the
      * [parent] View.
      */
     private fun onMoveEvent(pointerId: Int, x: Float, y: Float) =
-        underTest.dispatchTouchEvent(motionEventBuilder.move(pointerId, x, y))
+        sendEvent(motionEventBuilder.move(pointerId, x, y))
 
     /**
      * Non primary pointer down. Simulates a valid [MotionEvent] and sends it to the [parent] View.
      */
     private fun onPointerDownEvent(pointerId: Int, x: Float, y: Float) =
-        underTest.dispatchTouchEvent(motionEventBuilder.pointerDown(pointerId, x, y))
+        sendEvent(motionEventBuilder.pointerDown(pointerId, x, y))
 
     /**
      * Non primary pointer down. Simulates a valid [MotionEvent] and sends it to the [parent] View.
      */
     private fun onPointerUpEvent(pointerId: Int) =
-        underTest.dispatchTouchEvent(motionEventBuilder.pointerUp(pointerId))
+        sendEvent(motionEventBuilder.pointerUp(pointerId))
+
+    private fun sendEvent(ev: MotionEvent) = parent.dispatchTouchEvent(ev)
 }
 
 /**
@@ -249,6 +459,13 @@ private class MotionEventBuilder {
         return event
     }
 
+    /** Final cancel event. */
+    fun cancel(): MotionEvent {
+        val event = buildEvent(ACTION_CANCEL, activePointers.keys.firstOrNull() ?: 0)
+        activePointers.clear()
+        return event
+    }
+
     /** Updates a single pointer and fires a single MOVE event. */
     fun move(pointerId: Int, x: Float, y: Float): MotionEvent {
         activePointers[pointerId] = x to y
@@ -269,7 +486,7 @@ private class MotionEventBuilder {
     }
 
     private fun buildEvent(action: Int, targetPointerId: Int): MotionEvent {
-        eventTime += 10 // Advance time slightly for each event
+        eventTime += 10 // Advance time slightly for each event.
         val count = activePointers.size
         val properties = Array(count) { PointerProperties() }
         val coords = Array(count) { PointerCoords() }
@@ -385,9 +602,14 @@ private class TestController(nssl: NotificationStackScrollLayout, private val si
         /* magneticNotificationRowManager = */ mock(),
         /* sectionsManager = */ mock(),
     ) {
+    val capturedEvents = ArrayList<MotionEvent>()
+
     override fun sendTouchToSceneFramework(ev: MotionEvent?) {
+        // Make a deep copy, because MotionEvents are mutable and recycled by the NSSL.
+        val copy = MotionEvent.obtain(ev)
+        capturedEvents.add(copy)
         // don't call super
-        sibling.dispatchTouchEvent(ev)
+        sibling.dispatchTouchEvent(copy)
     }
 }
 
@@ -423,9 +645,7 @@ private class TouchRecordingView(context: Context) : ViewGroup(context) {
     val capturedEvents = ArrayList<MotionEvent>()
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        // Make a deep copy, because MotionEvents are mutable and recycled by the caller.
-        val copy = MotionEvent.obtain(ev)
-        capturedEvents.add(copy)
+        capturedEvents.add(ev)
         return true // always wants the event
     }
 

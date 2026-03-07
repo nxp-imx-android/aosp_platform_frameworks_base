@@ -822,4 +822,8 @@ final class VerifyingSession {
     public boolean isStaged() {
         return mIsStaged;
     }
+
+    public SigningDetails getSigningDetails() {
+        return mSigningDetails;
+    }
 }

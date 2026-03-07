@@ -132,6 +132,11 @@ public abstract class TaskStackListener extends ITaskStackListener.Stub {
     public void onTaskRemovalStarted(int taskId) throws RemoteException {
     }
 
+    /**
+     * Called when the task description changes.
+     * Note: To optimize performance, the provided {@link RunningTaskInfo} may only contain
+     * essential fields: taskId, displayId, and taskDescription.
+     */
     @Override
     public void onTaskDescriptionChanged(RunningTaskInfo taskInfo)
             throws RemoteException {

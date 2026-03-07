@@ -68,6 +68,7 @@ android_ravenwood_test {
         "src/com/android/server/audio/AudioModeSessionTest.kt",
         "src/com/android/server/audio/AudioServerPermissionProviderTest.java",
         "src/com/android/server/audio/MediaFocusControlTest.java",
+        "src/com/android/server/audio/RouteSelectionStackTest.kt",
         "src/com/android/server/audio/ServiceHolderTest.java",
     ],
 

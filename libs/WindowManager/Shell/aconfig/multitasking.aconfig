@@ -343,6 +343,16 @@ flag {
 }
 
 flag {
+    name: "fix_adjust_accessibility_actions_for_stack_view_state"
+    namespace: "multitasking"
+    description: "Adjust accessibility actions for stack view expanded state"
+    bug: "469259914"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "bubble_dismiss_magnetize_collision_prevention"
     namespace: "multitasking"
     description: "Move the dismiss view higher so it`s magnetize zone does not collide with the bubble bar"
@@ -353,10 +363,30 @@ flag {
 }
 
 flag {
+    name: "fix_reduce_shadow_alpha"
+    namespace: "multitasking"
+    description: "Reduce floating bubbles scrim view alpha to make navigation buttons visible"
+    bug: "450646947"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "fix_flicker_when_app_bubble_from_overflow"
     namespace: "multitasking"
     description: "Fixes a flicker issue that happens when promoting an app bubble from overflow"
     bug: "472080053"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "fix_bubble_bar_not_collapsed_if_animating_bubble"
+    namespace: "multitasking"
+    description: "Fixes bubble bar collapse failure when setExpandedFromSysui() is called while a bubble is animating."
+    bug: "487678424"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

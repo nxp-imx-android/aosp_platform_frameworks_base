@@ -75,7 +75,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Recording screen and mic/internal audio
  */
-public class ScreenMediaRecorder extends MediaProjection.Callback {
+public class ScreenMediaRecorder {
     private static final int TOTAL_NUM_TRACKS = 1;
     private static final int VIDEO_FRAME_RATE = 30;
     private static final int VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO = 6;
@@ -138,8 +138,10 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
             projection.setLaunchCookie(mCaptureRegion.getLaunchCookie());
             projection.setTaskId(mCaptureRegion.getTaskId());
         }
+        final MediaProjectionCallback mediaProjectionCallback = new MediaProjectionCallback(
+                mListener, mContext.getUserId());
         mMediaProjection = new MediaProjection(mContext, projection);
-        mMediaProjection.registerCallback(this, mHandler);
+        mMediaProjection.registerCallback(mediaProjectionCallback, mHandler);
 
         File cacheDir = mContext.getCacheDir();
         cacheDir.mkdirs();
@@ -197,7 +199,7 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
                 new VirtualDisplay.Callback() {
                     @Override
                     public void onStopped() {
-                        onStop();
+                        mediaProjectionCallback.onStop();
                     }
                 },
                 mHandler);
@@ -346,12 +348,6 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         }
     }
 
-    @Override
-    public void onStop() {
-        Log.d(TAG, "The system notified about stopping the projection");
-        mListener.onStopped(mContext.getUserId(), StopReason.STOP_UNKNOWN);
-    }
-
     private void stopInternalAudioRecording() {
         if (mAudioSource == INTERNAL || mAudioSource == MIC_AND_INTERNAL) {
             mAudio.end();
@@ -467,6 +463,31 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
                 height).getUpper().intValue() / 2;
         // hard cap refresh rate at VIDEO_FRAME_RATE anyway
         return Math.min(maxRate, VIDEO_FRAME_RATE);
+    }
+
+    private static final class MediaProjectionCallback extends MediaProjection.Callback {
+
+        private final ScreenMediaRecorderListener mListener;
+        private final int mUserId;
+
+        MediaProjectionCallback(ScreenMediaRecorderListener listener, int userId) {
+            mListener = listener;
+            mUserId = userId;
+        }
+
+        @Override
+        public void onStop() {
+            Log.d(TAG, "Projection stopped");
+            mListener.onStopped(mUserId, StopReason.STOP_TARGET_REMOVED);
+        }
+
+        @Override
+        public void onCapturedContentVisibilityChanged(boolean isVisible) {
+            if (!isVisible) {
+                Log.d(TAG, "Content became invisible");
+                mListener.onStopped(mUserId, StopReason.STOP_TARGET_REMOVED);
+            }
+        }
     }
 
     /**

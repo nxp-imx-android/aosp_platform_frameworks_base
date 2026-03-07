@@ -83,7 +83,7 @@ constructor(private val context: Context, private val autofillManager: AutofillM
                     findAutofillHint(insight)?.let { autofillHint ->
                         inlineSuggestionDetails.add(
                             InlineSuggestionDetails(
-                                insight.insightId.toString(),
+                                getDatasetId(insight),
                                 insight.displayDetails,
                                 insight.actionDetails,
                                 autofillHint,
@@ -97,7 +97,7 @@ constructor(private val context: Context, private val autofillManager: AutofillM
                     findAutofillHint(insight)?.let { autofillHint ->
                         inlineSuggestionDetails.add(
                             InlineSuggestionDetails(
-                                insight.insightId.toString(),
+                                getDatasetId(insight),
                                 insight.details,
                                 null,
                                 autofillHint,
@@ -142,15 +142,38 @@ constructor(private val context: Context, private val autofillManager: AutofillM
      *
      * @return a list of hint strings, or an empty list if none are found
      */
+    // TODO(b/490420098): replace with proper API
     private fun findInlineSuggestionsHints(insight: ContextInsight): List<String> {
         for (hint in insight.originHints) {
             val contextHint = hint.contextHint
             if (contextHint is BundleHint) {
-                return contextHint.dataBundle.getStringArray(KEY_INLINE_SUGGESTIONS_HINTS)?.toList()
-                    ?: emptyList()
+                contextHint.dataBundle.getStringArray(KEY_INLINE_SUGGESTIONS_HINTS)?.let {
+                    return it.toList()
+                }
             }
         }
         return emptyList()
+    }
+
+    /**
+     * Returns a string ID to attach to the [Dataset] generated from the given insight.
+     *
+     * <p>Looks for an optional [BundleHint] containing a dataset ID to attach to the generated
+     * dataset or defaults to the insight ID if none is found.
+     *
+     * @return a string dataset ID
+     */
+    // TODO(b/490420098): replace with proper API
+    private fun getDatasetId(insight: ContextInsight): String {
+        for (hint in insight.originHints) {
+            val contextHint = hint.contextHint
+            if (contextHint is BundleHint) {
+                contextHint.dataBundle.getString(KEY_DATASET_ID)?.let {
+                    return it
+                }
+            }
+        }
+        return insight.insightId.toString()
     }
 
     fun createInlineSuggestions(
@@ -238,5 +261,11 @@ constructor(private val context: Context, private val autofillManager: AutofillM
          * [InlineSuggestionUi].
          */
         const val KEY_INLINE_SUGGESTIONS_HINTS = "inlineSuggestionHints"
+
+        /**
+         * String key on a {@link BundleHint} for a string ID to set on the [Dataset] generated from
+         * the insight.
+         */
+        const val KEY_DATASET_ID = "datasetId"
     }
 }

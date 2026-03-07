@@ -1,9 +1,0 @@
-package: "com.android.server.accounts"
-container: "system"
-
-flag {
-    name: "detach_de_ce"
-    namespace: "system_performance"
-    bug: "444846497"
-    description: "Do not ATTACH AccountsDb DE and CE DBs, and enable WAL"
-}

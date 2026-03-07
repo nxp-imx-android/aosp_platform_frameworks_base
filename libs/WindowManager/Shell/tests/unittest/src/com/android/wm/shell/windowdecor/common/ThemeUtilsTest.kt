@@ -47,7 +47,7 @@ class ThemeUtilsTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        decorThemeUtil = DecorThemeUtil(mContext)
+        decorThemeUtil = DecorThemeUtil.Factory().create(mContext)
         mContext.getOrCreateTestableResources().overrideConfiguration(configuration)
     }
 

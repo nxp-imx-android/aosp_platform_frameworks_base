@@ -38,8 +38,11 @@ import android.service.personalcontext.insight.PublishedContextInsightWrapper;
 import android.util.Log;
 import android.util.Slog;
 
+import androidx.annotation.NonNull;
+
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -279,6 +282,20 @@ public class VisualizerConnection {
                         Context.DEVICE_ID_DEFAULT,
                         UserHandle.CURRENT.getIdentifier())
                 == PackageManager.PERMISSION_GRANTED;
+    }
+
+    /**
+     * Dump info about a connected visualizer.
+     */
+    public void dump(@NonNull PrintWriter fout) {
+        fout.write("  Name: " + mComponentName.flattenToShortString() + "\n");
+        fout.write("   Started: " + mStarted + "\n");
+        fout.write("   Bound: " + mBound + "\n");
+        fout.write("   Deferred Actions: " + mDeferredActions.size() + "\n");
+        fout.write("   Connected Clients:\n");
+        for (UUID clientId : mConnectedClientIds) {
+            fout.write("    Client ID: " + clientId + "\n");
+        }
     }
 
     /**

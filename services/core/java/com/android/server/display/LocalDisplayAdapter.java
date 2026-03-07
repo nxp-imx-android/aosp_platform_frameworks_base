@@ -519,7 +519,8 @@ final class LocalDisplayAdapter extends DisplayAdapter {
             }
 
             if (mUserPreferredMode != null) {
-                mUserPreferredModeId = findUserPreferredModeIdLocked(mUserPreferredMode);
+                mUserPreferredModeId = findUserPreferredModeIdLocked(mUserPreferredMode,
+                        getDisplayModes(mSupportedModes));
             }
 
             // Determine whether the active mode is still there.
@@ -1150,7 +1151,8 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 }
             }
 
-            mUserPreferredModeId = findUserPreferredModeIdLocked(mUserPreferredMode);
+            mUserPreferredModeId = findUserPreferredModeIdLocked(mUserPreferredMode,
+                    getDisplayModes(mSupportedModes));
 
             if (oldModeId == getPreferredModeId()) {
                 return false;
@@ -1485,20 +1487,6 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                 }
             }
             return null;
-        }
-
-        private int findUserPreferredModeIdLocked(Display.Mode userPreferredMode) {
-            if (userPreferredMode != null) {
-                for (int i = 0; i < mSupportedModes.size(); i++) {
-                    Display.Mode supportedMode = mSupportedModes.valueAt(i).mMode;
-                    if (userPreferredMode.matches(supportedMode.getPhysicalWidth(),
-                            supportedMode.getPhysicalHeight(),
-                            supportedMode.getRefreshRate())) {
-                        return supportedMode.getModeId();
-                    }
-                }
-            }
-            return INVALID_MODE_ID;
         }
 
         private int findMatchingModeIdLocked(int sfModeId) {

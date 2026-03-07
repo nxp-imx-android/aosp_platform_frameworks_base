@@ -28,6 +28,7 @@ import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.WithAnimationOverLockscreen
@@ -101,6 +102,7 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
     fun setUp() {
         underTest = kosmos.windowManagerLockscreenVisibilityInteractor
         kosmos.setSceneTransition(ObservableTransitionState.Idle(Scenes.Lockscreen))
+        kosmos.fakeKeyguardRepository.setAodAvailable(true)
     }
 
     @Test
@@ -1206,12 +1208,47 @@ class WindowManagerLockscreenVisibilityInteractorTest : SysuiTestCase() {
 
             powerInteractor.setAsleepForTest()
             setSceneTransition(Transition(from = Scenes.Gone, to = Scenes.Lockscreen))
-            // Lockscreen remains not visible during the transition so that the unlocked app content
-            // is visible under the light reveal screen off animation.
             assertThat(lockscreenVisibility).isFalse()
 
             setSceneTransition(Idle(Scenes.Lockscreen))
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(lockscreenVisibility).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun lockscreenVisibilityWithScenes_aodDisabled() =
+        kosmos.runTest {
+            kosmos.fakeKeyguardRepository.setAodAvailable(false)
+            enableSingleShade()
+            powerInteractor.setAwakeForTest()
+            runCurrent()
+            val isDeviceUnlocked by
+                collectLastValue(deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked })
+            assertThat(isDeviceUnlocked).isFalse()
+
+            setSceneTransition(Idle(Scenes.Lockscreen))
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+
+            val lockscreenVisibility by collectLastValue(lockscreenVisibilityBoolean)
+            assertThat(lockscreenVisibility).isTrue()
+            kosmos.authenticationInteractor.authenticate(FakeAuthenticationRepository.DEFAULT_PIN)
+
+            setSceneTransition(Idle(Scenes.Gone))
+            sceneInteractor.changeScene(Scenes.Gone, "")
+            assertThat(currentScene).isEqualTo(Scenes.Gone)
+            assertThat(lockscreenVisibility).isFalse()
+
+            powerInteractor.onStartedGoingToSleep(0)
+            setSceneTransition(Transition(from = Scenes.Gone, to = Scenes.Lockscreen))
+            // With AOD disabled, we don't need to keep the unlocked app content visible for the
+            // screen off animation, since we're doing the screenshot fade. However, we do need to
+            // wait for the screenshot fade to start (or there will be a flicker), which happens
+            // after we finish going to sleep.
+            assertThat(lockscreenVisibility).isFalse()
+
+            powerInteractor.onFinishedGoingToSleep(false)
             assertThat(lockscreenVisibility).isTrue()
         }
 

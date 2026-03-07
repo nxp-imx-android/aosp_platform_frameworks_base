@@ -57,6 +57,7 @@ interface IPersonalContextManager {
 
     Token mintToken();
 
+    @EnforcePermission("PERSONAL_CONTEXT_PUBLISH_HINTS")
     oneway void publishInsightSurfaceHints(
         in List<ContextHintWrapper> hints, in InsightSurfaceClientInfo clientInfo, int userId);
 

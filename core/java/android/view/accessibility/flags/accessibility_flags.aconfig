@@ -128,13 +128,6 @@ flag {
 }
 
 flag {
-    name: "button_chooser_activity_bottom_margin_system_bar"
-    namespace: "accessibility"
-    description: "Uses system bar insets as a bottom margin for AccessibilityButtonChooserActivity, preventing overlap."
-    bug: "433572832"
-}
-
-flag {
     name: "collection_info_item_counts"
     namespace: "accessibility"
     is_exported: true

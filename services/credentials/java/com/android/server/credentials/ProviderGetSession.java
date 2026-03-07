@@ -183,15 +183,13 @@ public final class ProviderGetSession extends ProviderSession<BeginGetCredential
             CredentialProviderInfo info,
             String hybridService) {
         Slog.i(TAG, "Filtering request options for: " + info.getComponentName());
-        if (android.credentials.flags.Flags.hybridFilterOptFixEnabled()) {
-            ComponentName hybridComponentName = ComponentName.unflattenFromString(hybridService);
-            if (hybridComponentName != null && hybridComponentName
-                    .equals(info.getComponentName())) {
-                Slog.i(TAG, "Skipping filtering of options for hybrid service");
-                return clientRequest;
-            }
-            Slog.w(TAG, "Could not parse hybrid service while filtering options");
+        ComponentName hybridComponentName = ComponentName.unflattenFromString(hybridService);
+        if (hybridComponentName != null && hybridComponentName
+                .equals(info.getComponentName())) {
+            Slog.i(TAG, "Skipping filtering of options for hybrid service");
+            return clientRequest;
         }
+        Slog.w(TAG, "Could not parse hybrid service while filtering options");
 
         List<CredentialOption> filteredOptions = new ArrayList<>();
         for (CredentialOption option : clientRequest.getCredentialOptions()) {

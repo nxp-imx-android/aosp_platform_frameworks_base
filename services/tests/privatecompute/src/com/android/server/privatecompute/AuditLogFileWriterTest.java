@@ -141,4 +141,20 @@ public class AuditLogFileWriterTest {
         assertEquals(entries.get(0).mCallingUid, 23);
         assertThat(entries.get(0).mData.getInt("test_key2")).isEqualTo(123);
     }
+
+    @Test
+    public void writeEntries_createsDirectoryIfItDoesNotExist()
+            throws Exception {
+        File newDir = new File(mTemporaryFolder.getRoot(), "new_dir");
+        File file = new File(newDir, "test_log");
+        assertThat(newDir.exists()).isFalse();
+
+        AuditLogFileWriter writer = new AuditLogFileWriter(file);
+        AuditLogEntry entry = getTestEntry();
+
+        writer.writeEntries(ImmutableList.of(entry.toByteArray()));
+
+        assertThat(newDir.exists()).isTrue();
+        assertThat(file.exists()).isTrue();
+    }
 }

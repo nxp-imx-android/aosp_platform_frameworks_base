@@ -82,7 +82,8 @@ class DisplayDisconnectTransitionHandler(
         transition: IBinder,
         request: TransitionRequestInfo,
     ): WindowContainerTransaction? {
-        val displayChange = request.displayChange
+        // TODO: b/448471638 - support multiple display changes
+        val displayChange = request.displayChanges?.firstOrNull()
         if (
             !(DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue &&
                 displayChange != null)

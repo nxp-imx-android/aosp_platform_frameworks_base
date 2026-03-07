@@ -29,6 +29,7 @@ import com.android.settingslib.datastore.Permissions
 import com.android.settingslib.datastore.and
 import com.android.settingslib.datastore.or
 import com.android.settingslib.metadata.PersistentPreference
+import com.android.settingslib.metadata.SensitivityLevel
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.preferencesapi.Utils.getExceptionMessageAlreadyDefined
@@ -848,6 +849,7 @@ class ApiPreferenceConfigBuilder<V : Any>(
     val getScreenParameters: () -> ValidatedKeyParameters?
 ) {
     private var flagConfig: FlagConfig? = null
+    private var sensitivityLevelValue: Int? = null
     private var permissionsConfig: Permissions? = null
     private var preconditionsConfig: PreconditionsConfig? = null
     private var tagsList: List<String>? = null
@@ -873,6 +875,17 @@ class ApiPreferenceConfigBuilder<V : Any>(
             }
             lambda()
         }
+    }
+
+    /**
+     * Sets the sensitivity level for this preference.
+     */
+    fun sensitivityLevel(level: @SensitivityLevel Int) {
+        if (sensitivityLevelValue != null) {
+            error(getExceptionMessageMultipleDefines("sensitivityLevel"))
+        }
+
+        sensitivityLevelValue = level
     }
 
     /**
@@ -984,6 +997,8 @@ class ApiPreferenceConfigBuilder<V : Any>(
 
     /** Create an instance of [ApiPreference] from its configuration. */
     fun build() = object : ApiPreference<V>(flagConfig, appliesTo) {
+        override val sensitivityLevel: Int =
+            this@ApiPreferenceConfigBuilder.sensitivityLevelValue ?: super.sensitivityLevel
         override val screenPermissions = this@ApiPreferenceConfigBuilder.screenPermissions
         override val screenPreconditions = this@ApiPreferenceConfigBuilder.screenPreconditions
         override val permissions: Permissions? = permissionsConfig

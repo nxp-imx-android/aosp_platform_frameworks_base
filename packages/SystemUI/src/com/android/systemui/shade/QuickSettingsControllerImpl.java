@@ -448,7 +448,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                 mPanelView.getContext());
         mFalsingThreshold = mResources.getDimensionPixelSize(R.dimen.qs_falsing_threshold);
         mLockscreenNotificationPadding = mResources.getDimensionPixelSize(
-                R.dimen.notification_side_paddings);
+                R.dimen.notification_side_paddings_single);
         mDistanceForFullShadeTransition = mResources.getDimensionPixelSize(
                 R.dimen.lockscreen_shade_qs_transition_distance);
         Log.d("b/445707756",

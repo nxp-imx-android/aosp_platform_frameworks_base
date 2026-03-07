@@ -45,6 +45,7 @@ public class PolicyHandlerFactory {
         handlers.add(new PolicyHandler<Integer>(PolicyIdentifier.AUTO_TIME_ZONE));
         handlers.add(
                 new PolicyHandler<Integer>(PolicyIdentifier.MANAGED_ESIM_OUTGOING_TRANSFER_POLICY));
+        handlers.add(new PolicyHandler<List<String>>(PolicyIdentifier.CONTENT_RESTRICTION_APPS));
         handlers.add(new PolicyHandler<String>(PolicyIdentifier.LOCKSCREEN_MESSAGE));
         // go/keep-sorted end
 

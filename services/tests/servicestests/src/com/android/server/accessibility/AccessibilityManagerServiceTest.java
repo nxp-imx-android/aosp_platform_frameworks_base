@@ -3091,11 +3091,11 @@ public class AccessibilityManagerServiceTest {
                         MAGNIFICATION_COMPONENT_NAME.flattenToString()),
                 ShortcutUtils.convertToKey(HARDWARE));
 
-        doReturn(true).when(spyUserState).isShortcutTargetPermittedLocked(
+        doReturn(true).when(spyUserState).isAccessibilityFeaturePermittedLocked(
                 eq(toolComp.flattenToString()), any());
-        doReturn(true).when(spyUserState).isShortcutTargetPermittedLocked(
+        doReturn(true).when(spyUserState).isAccessibilityFeaturePermittedLocked(
                 eq(MAGNIFICATION_COMPONENT_NAME.flattenToString()), any());
-        doReturn(false).when(spyUserState).isShortcutTargetPermittedLocked(
+        doReturn(false).when(spyUserState).isAccessibilityFeaturePermittedLocked(
                 eq(nonToolShortcutComp.flattenToString()), any());
 
         // 3. Mock DPM to return null so we calculate AAPM-specific restricted counts.
@@ -3445,7 +3445,7 @@ public class AccessibilityManagerServiceTest {
         for (String target : targets) {
             doReturn(true).when(userState).isShortcutTargetInstalledLocked(target);
             for (Integer user : users) {
-                doReturn(true).when(userState).isShortcutTargetPermittedLocked(target);
+                doReturn(true).when(userState).isAccessibilityFeaturePermittedLocked(target);
             }
         }
         mA11yms.mUserStates.put(userId, userState);

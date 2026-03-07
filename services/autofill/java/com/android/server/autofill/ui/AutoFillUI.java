@@ -367,7 +367,31 @@ public final class AutoFillUI {
             if (callback != mCallback) {
                 return;
             }
+
+            // hideAllUiThread only hides UI created by the session that is passed in as parameter
+            // of callback.
             hideAllUiThread(callback);
+            // If mSaveUi is not null, it means there is a save dialog showing for
+            // a previous session. Framework needs to destroy it before showing the next one
+            // as current AutoFillUi logic only supports showing one save dialog at a time.
+            //
+            // Note: Make sure this destroy happens before updating and mSaveUiCallback,
+            // otherwise the wrong session will be destroyed
+            if (Flags.destroySaveUiBeforeShowingNextOne() && mSaveUi != null) {
+                if (sDebug) {
+                    Slog.d(
+                            TAG,
+                            "showSaveUi(): save dialog is showing when AutofillUi tries to"
+                                    + " show another one. Destroying previous save dialog");
+                }
+                destroySaveUiUiThread(mSaveUi.getPendingUi(), /* notifyClient= */ true);
+                if (sDebug) {
+                    Slog.d(
+                            TAG,
+                            "showSaveUi(): finished destroying previous save "
+                                    + "dialog, continue to show the new save dialog");
+                }
+            }
             mSaveUiCallback = callback;
             mSaveUi = new SaveUi(saveContext, pendingSaveUi, serviceLabel, serviceIcon,
                     servicePackageName, componentName, info, valueFinder,
@@ -640,6 +664,29 @@ public final class AutoFillUI {
             // first call is made after the SaveUI is hidden and the second when the session is
             // finished.
             if (sDebug) Slog.d(TAG, "destroySaveUiUiThread(): already destroyed");
+            return;
+        }
+
+        // This guards against a race condition during session switching, an example scenario is as
+        // follows:
+        //  1. Session #2 requests showing SaveUI, causing Session #1's SaveUi#1 to be destroyed.
+        //  2. The destruction listener of SaveUi#1 triggers the destruction of Session #1.
+        //  3. Session #1 calls into destroySaveUiUiThread() during cleanup, through calling
+        //     destroyAllUiThread().
+        //  4. Without this check, at this moment Session #1 would destroy the SaveUi#2 that now
+        //     belongs to Session#2
+        if (Flags.destroySaveUiBeforeShowingNextOne()
+                && pendingSaveUi != null
+                && mSaveUi.getPendingUi() != null
+                && mSaveUi.getPendingUi().sessionId != pendingSaveUi.sessionId) {
+            if (sDebug) {
+                Slog.d(
+                        TAG,
+                        "destroySaveUiUiThread(): not destroying save UI owned by session "
+                                + mSaveUi.getPendingUi().sessionId + " (destroy requested by "
+                                + "session " + pendingSaveUi.sessionId + ")"
+                );
+            }
             return;
         }
 

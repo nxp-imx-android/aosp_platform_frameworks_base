@@ -71,6 +71,12 @@ private constructor(metadata: FailureMetadata, private val actual: MotionEvent?)
      */
     fun isPointerUp() = maskedActionEqualTo(MotionEvent.ACTION_POINTER_UP)
 
+    /** Fails if the event doesn't have the given [MotionEvent.getPointerCount]. */
+    fun hasPointerCount(count: Int) {
+        checkNotNull(actual)
+        check("getPointerCount()").that((actual.pointerCount)).isEqualTo(count)
+    }
+
     /** Asserts that the action associated with this event matches the expected one. */
     private fun maskedActionEqualTo(action: Int) {
         checkNotNull(actual)

@@ -20,6 +20,13 @@ flag {
 }
 
 flag {
+    name: "notification_animated_action_style_2026"
+    namespace: "notifications"
+    description: "Whether to use the new 2026 style for notification animated actions."
+    bug: "487036918"
+}
+
+flag {
     name: "notification_chip_from_compact_content"
     namespace: "notifications"
     description: "Use resolveCompactContent() as the source of truth for promoted notification chips."

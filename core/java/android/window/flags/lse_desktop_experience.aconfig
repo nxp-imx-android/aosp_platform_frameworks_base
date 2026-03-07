@@ -1103,6 +1103,17 @@ flag {
 }
 
 flag {
+    name: "prioritize_visible_task_display_over_source"
+    namespace: "lse_desktop_experience"
+    description: "When enabled enabled prioritizes the display of the visible task over the /n"
+                 "display the source orinated from"
+    bug: "478922443"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "protect_set_launch_windowing_mode_api"
     namespace: "lse_desktop_experience"
     description: "Protect setLaunchWindowingMode API from being called by 3P apps."
@@ -1132,16 +1143,6 @@ flag {
     description: "Reparents the leaf tasks of a desk to the task display area if they are /n"
                  "relaunched outside of desktop."
     bug: "452719159"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "repository_based_persistence"
-    namespace: "lse_desktop_experience"
-    description: "Persists the whole repository instead of just persisting a single desk per event"
-    bug: "425916459"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

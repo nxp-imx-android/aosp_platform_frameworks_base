@@ -40,7 +40,7 @@ flag {
     is_exported: true
     namespace: "media_better_together"
     description: "Adds device model information in MediaRouter2Info."
-    bug: "446801535"
+    bug: "468015358"
 }
 
 flag {
@@ -231,6 +231,16 @@ flag {
     namespace: "media_better_together"
     description: "Hides the BT address of media routes to apps without BT permission."
     bug: "410871506"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "move_output_switcher_calls_to_background_thread"
+    namespace: "media_better_together"
+    description: "Move blocking calls from Output Switcher to a background thread"
+    bug: "445243616"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

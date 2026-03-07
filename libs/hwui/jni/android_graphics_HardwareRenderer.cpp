@@ -114,6 +114,14 @@ struct {
     jmethodID accept;
 } gTransactionConsumer;
 
+struct {
+    jmethodID onCornerRadiiChanged;
+} gCornerRadiiCallback;
+
+struct {
+    jmethodID onWaitForBufferRelease;
+} gWaitForBufferReleaseCallback;
+
 static JNIEnv* getenv(JavaVM* vm) {
     JNIEnv* env;
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
@@ -243,6 +251,75 @@ static void android_view_ThreadedRenderer_setBLASTBufferQueue(JNIEnv* env, jobje
     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
     BLASTBufferQueue* bbq = reinterpret_cast<BLASTBufferQueue*>(bbqPtr);
     proxy->setBLASTBufferQueue(sp<BLASTBufferQueue>::fromExisting(bbq));
+#endif
+}
+
+static void android_view_ThreadedRenderer_setCornerRadiiCallback(JNIEnv* env, jobject clazz,
+                                                                 jlong proxyPtr,
+                                                                 jobject callback) {
+#ifdef __ANDROID__
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
+    if (!callback) {
+        proxy->setCornerRadiiCallback(nullptr);
+    } else {
+        JavaVM* vm = nullptr;
+        LOG_ALWAYS_FATAL_IF(env->GetJavaVM(&vm) != JNI_OK, "Unable to get Java VM");
+        auto globalCallbackRef =
+            std::make_shared<JGlobalRefHolder>(vm, env->NewGlobalRef(callback));
+        proxy->setCornerRadiiCallback([globalCallbackRef](const gui::CornerRadii& cornerRadii) {
+            JNIEnv* env = getenv(globalCallbackRef->vm());
+            ScopedLocalRef<jfloatArray> javaCornerRadiiArray(env, env->NewFloatArray(4));
+            if (javaCornerRadiiArray == nullptr) {
+                ALOGE("Failed to create new Java float array for cornerRadii");
+                return;
+            }
+
+            jfloat tempCornerRadii[4];
+            tempCornerRadii[0] = cornerRadii.topLeft.x;
+            tempCornerRadii[1] = cornerRadii.topRight.x;
+            tempCornerRadii[2] = cornerRadii.bottomLeft.x;
+            tempCornerRadii[3] = cornerRadii.bottomRight.x;
+
+            env->SetFloatArrayRegion(javaCornerRadiiArray.get(), 0, 4, tempCornerRadii);
+            env->CallVoidMethod(globalCallbackRef->object(),
+                gCornerRadiiCallback.onCornerRadiiChanged,
+                javaCornerRadiiArray.get());
+
+            if (env->ExceptionCheck()) {
+                ALOGE("Uncaught exception in CornerRadiiCallback.");
+                env->ExceptionDescribe();
+                env->ExceptionClear();
+            }
+        });
+    }
+#endif
+}
+
+static void android_view_ThreadedRenderer_setWaitForBufferReleaseCallback(
+        JNIEnv* env, jobject clazz, jlong proxyPtr, jobject callback) {
+#ifdef __ANDROID__
+    RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
+    if (!callback) {
+        proxy->setWaitForBufferReleaseCallback(nullptr);
+    } else {
+        JavaVM* vm = nullptr;
+        LOG_ALWAYS_FATAL_IF(env->GetJavaVM(&vm) != JNI_OK, "Unable to get Java VM");
+        auto globalCallbackRef =
+                std::make_shared<JGlobalRefHolder>(vm, env->NewGlobalRef(callback));
+
+        proxy->setWaitForBufferReleaseCallback([globalCallbackRef](int64_t durationNanos) {
+            JNIEnv* env = getenv(globalCallbackRef->vm());
+            env->CallVoidMethod(globalCallbackRef->object(),
+                                gWaitForBufferReleaseCallback.onWaitForBufferRelease,
+                                (jlong)durationNanos);
+
+            if (env->ExceptionCheck()) {
+                ALOGE("Uncaught exception in WaitForBufferReleaseCallback.");
+                env->ExceptionDescribe();
+                env->ExceptionClear();
+            }
+        });
+    }
 #endif
 }
 
@@ -1105,6 +1182,11 @@ static const JNINativeMethod gMethods[] = {
          (void*)android_view_ThreadedRenderer_setSurface},
         {"nSetSurfaceControl", "(JJ)V", (void*)android_view_ThreadedRenderer_setSurfaceControl},
         {"nSetBLASTBufferQueue", "(JJ)V", (void*)android_view_ThreadedRenderer_setBLASTBufferQueue},
+        {"nSetCornerRadiiCallback", "(JLandroid/graphics/HardwareRenderer$CornerRadiiCallback;)V",
+         (void*)android_view_ThreadedRenderer_setCornerRadiiCallback},
+        {"nSetWaitForBufferReleaseCallback",
+         "(JLandroid/graphics/HardwareRenderer$WaitForBufferReleaseCallback;)V",
+         (void*)android_view_ThreadedRenderer_setWaitForBufferReleaseCallback},
         {"nPause", "(J)Z", (void*)android_view_ThreadedRenderer_pause},
         {"nSetStopped", "(JZ)V", (void*)android_view_ThreadedRenderer_setStopped},
         {"nSetLightAlpha", "(JFF)V", (void*)android_view_ThreadedRenderer_setLightAlpha},
@@ -1294,6 +1376,17 @@ int register_android_view_ThreadedRenderer(JNIEnv* env) {
     jclass consumer = FindClassOrDie(env, "java/util/function/Consumer");
     gTransactionConsumer.accept =
             GetMethodIDOrDie(env, consumer, "accept", "(Ljava/lang/Object;)V");
+
+    jclass cornerRadiiCallbackClass =
+            FindClassOrDie(env, "android/graphics/HardwareRenderer$CornerRadiiCallback");
+    gCornerRadiiCallback.onCornerRadiiChanged =
+            GetMethodIDOrDie(env, cornerRadiiCallbackClass, "onCornerRadiiChanged", "([F)V");
+
+    jclass waitForBufferReleaseCallbackClass =
+            FindClassOrDie(env, "android/graphics/HardwareRenderer$WaitForBufferReleaseCallback");
+    gWaitForBufferReleaseCallback.onWaitForBufferRelease =
+            GetMethodIDOrDie(env, waitForBufferReleaseCallbackClass, "onWaitForBufferRelease",
+                             "(J)V");
 #endif
 
     return RegisterMethodsOrDie(env, kClassPathName, gMethods, NELEM(gMethods));

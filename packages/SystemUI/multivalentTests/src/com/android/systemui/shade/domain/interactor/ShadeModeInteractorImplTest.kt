@@ -262,18 +262,4 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
 
             assertThat(alignment).isEqualTo(Alignment.Start)
         }
-
-    @Test
-    fun isQSInlinePowerMenuEnabled_matchesConfigFalse() =
-        kosmos.runTest {
-            overrideResource(R.bool.config_qsInlinePowerMenu, false)
-            assertThat(underTest.isQSInlinePowerMenuEnabled).isFalse()
-        }
-
-    @Test
-    fun isQSInlinePowerMenuEnabled_matchesConfigTrue() =
-        kosmos.runTest {
-            overrideResource(R.bool.config_qsInlinePowerMenu, true)
-            assertThat(underTest.isQSInlinePowerMenuEnabled).isTrue()
-        }
 }

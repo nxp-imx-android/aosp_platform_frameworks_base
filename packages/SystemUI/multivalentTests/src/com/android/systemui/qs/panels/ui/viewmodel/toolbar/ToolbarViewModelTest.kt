@@ -36,7 +36,6 @@ import com.android.systemui.qs.footer.domain.model.SecurityButtonConfig
 import com.android.systemui.qs.footerActionsInteractor
 import com.android.systemui.qs.panels.LargeScreenQSInlinePowerMenu
 import com.android.systemui.res.R
-import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.testKosmosNew
 import com.android.systemui.user.data.model.SelectedUserModel
@@ -204,7 +203,6 @@ class ToolbarViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             setQsInlinePowerMenuEnabled(true)
 
-            assertThat(shadeModeInteractor.isQSInlinePowerMenuEnabled).isTrue()
             assertThat(underTest.useInlinePowerMenu).isTrue()
             assertThat(underTest.isInlinePowerMenuVisible).isFalse()
         }

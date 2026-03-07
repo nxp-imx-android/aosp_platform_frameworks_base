@@ -2385,15 +2385,14 @@ public final class AccessibilityManager {
     }
 
     /**
-     * Determines if the accessibility target is allowed.
+     * Determines if the {@link AccessibilityServiceInfo} is allowed.
      *
-     * @param packageName The name of the application attempting to perform the operation.
-     * @param uid The user id of the application attempting to perform the operation.
-     * @param userId The id of the user for whom to perform the operation.
-     * @return {@code true} the accessibility target is allowed.
+     * @param info The accessibility service info to check.
+     * @param userId The user id.
+     * @return {@code true} if it's allowed, {@code false} otherwise.
      * @hide
      */
-    public boolean isAccessibilityTargetAllowed(String packageName, int uid, int userId) {
+    public boolean isAccessibilityServiceTargetAllowed(AccessibilityServiceInfo info, int userId) {
         final IAccessibilityManager service;
         synchronized (mLock) {
             service = getServiceLocked();
@@ -2403,23 +2402,22 @@ public final class AccessibilityManager {
         }
 
         try {
-            return service.isAccessibilityTargetAllowed(packageName, uid, userId);
+            return service.isAccessibilityServiceTargetAllowed(info, userId);
         } catch (RemoteException re) {
-            Log.e(LOG_TAG, "Error while check accessibility target status", re);
+            Log.e(LOG_TAG, "Error while check accessibility service target status", re);
             return false;
         }
     }
 
     /**
-     * Sends restricted dialog intent if the accessibility target is disallowed.
+     * Sends restricted dialog intent if the {@link AccessibilityServiceInfo} is disallowed.
      *
-     * @param packageName The name of the application attempting to perform the operation.
-     * @param uid The user id of the application attempting to perform the operation.
-     * @param userId The id of the user for whom to perform the operation.
-     * @return {@code true} if the restricted dialog is shown.
+     * @param info The accessibility service info to check.
+     * @param userId The user id.
+     * @return {@code true} if it sends the intent, {@code false} otherwise.
      * @hide
      */
-    public boolean sendRestrictedDialogIntent(String packageName, int uid, int userId) {
+    public boolean sendRestrictedDialogIntent(AccessibilityServiceInfo info, int userId) {
         final IAccessibilityManager service;
         synchronized (mLock) {
             service = getServiceLocked();
@@ -2429,7 +2427,7 @@ public final class AccessibilityManager {
         }
 
         try {
-            return service.sendRestrictedDialogIntent(packageName, uid, userId);
+            return service.sendRestrictedDialogIntent(info, userId);
         } catch (RemoteException re) {
             Log.e(LOG_TAG, "Error while show restricted dialog", re);
             return false;

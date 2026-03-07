@@ -18,6 +18,7 @@ package com.android.server.personalcontext;
 
 import static java.util.Collections.emptySet;
 
+import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.PermissionManuallyEnforced;
 import android.annotation.RequiresNoPermission;
@@ -452,7 +453,8 @@ public class PersonalContextManagerService extends SystemService {
         }
     }
 
-    private void publishInsightSurfaceHints(
+    @VisibleForTesting
+    void publishInsightSurfaceHints(
             int userId,
             int callingUid,
             Set<ContextHint> hints,
@@ -839,10 +841,15 @@ public class PersonalContextManagerService extends SystemService {
                     () -> getService().unregisterInsightSurfaceClient(userId, id.getUuid()));
         }
 
-        @PermissionManuallyEnforced
+        // Suppressing warning as enforcement is currently behind a flag
+        @SuppressWarnings("MissingEnforcePermissionHelper")
+        @EnforcePermission(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS)
         @Override
         public void publishInsightSurfaceHints(
                 List<ContextHintWrapper> hints, InsightSurfaceClientInfo clientInfo, int userId) {
+            if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()) {
+                publishInsightSurfaceHints_enforcePermission();
+            }
             verifyUser(userId);
 
             final int callingUid = Binder.getCallingUid();
@@ -907,6 +914,7 @@ public class PersonalContextManagerService extends SystemService {
                     fout.println("User " + userId + ":");
                     UserState userState = service.mUserStates.valueAt(i);
                     userState.componentManager().dump(fout);
+                    userState.embeddedInsightRenderer().dump(fout);
                 }
             }
 

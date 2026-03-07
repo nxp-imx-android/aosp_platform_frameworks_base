@@ -35,7 +35,7 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.keyguard.shared.model.LockAfterScreenTimeoutTimerState
+import com.android.systemui.keyguard.shared.model.LockAfterDelayTimerState
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAsleepForTest
 import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.setAwakeForTest
@@ -105,63 +105,6 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             )
 
             repository.setKeyguardEnabled(true)
-            runCurrent()
-
-            assertEquals(listOf(false, true, false), canWake)
-        }
-
-    @Test
-    fun testCanWakeDirectlyToGone_lockscreenDisabledThenEnabled_onlyAfterWakefulnessChange() =
-        testScope.runTest {
-            val canWake by collectValues(underTest.canWakeDirectlyToGone)
-
-            assertEquals(
-                listOf(
-                    false // Defaults to false.
-                ),
-                canWake,
-            )
-
-            whenever(lockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(true)
-            runCurrent()
-
-            assertEquals(
-                listOf(
-                    // Still false - isLockScreenDisabled only causes canWakeDirectlyToGone to
-                    // update on the next wake/sleep event.
-                    false
-                ),
-                canWake,
-            )
-
-            kosmos.powerInteractor.setAsleepForTest(
-                sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
-            )
-            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
-            runCurrent()
-
-            assertEquals(
-                listOf(
-                    false,
-                    // True since we slept after setting isLockScreenDisabled=true
-                    true,
-                ),
-                canWake,
-            )
-
-            kosmos.powerInteractor.setAwakeForTest()
-            runCurrent()
-
-            kosmos.powerInteractor.setAsleepForTest(
-                sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
-            )
-            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
-            runCurrent()
-
-            assertEquals(listOf(false, true), canWake)
-
-            whenever(lockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(false)
-            kosmos.powerInteractor.setAwakeForTest()
             runCurrent()
 
             assertEquals(listOf(false, true, false), canWake)
@@ -309,7 +252,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             kosmos.powerInteractor.setAsleepForTest(
                 sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
             )
-            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
+            repository.lockAfterDelayState.value = LockAfterDelayTimerState.RUNNING
             runCurrent()
 
             assertEquals(listOf(false, true), canWake)
@@ -349,7 +292,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
                 toScene = Scenes.Lockscreen,
                 loggingReason = "for test",
             )
-            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
+            repository.lockAfterDelayState.value = LockAfterDelayTimerState.RUNNING
             runCurrent()
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
@@ -373,7 +316,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
                 to = KeyguardState.UNDEFINED,
                 testScope = testScope,
             )
-            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.INACTIVE
+            repository.lockAfterDelayState.value = LockAfterDelayTimerState.INACTIVE
             runCurrent()
             kosmos.sceneInteractor.changeScene(toScene = Scenes.Gone, loggingReason = "for test")
             runCurrent()
@@ -392,7 +335,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             kosmos.powerInteractor.setAsleepForTest(
                 sleepReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT
             )
-            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.RUNNING
+            repository.lockAfterDelayState.value = LockAfterDelayTimerState.RUNNING
             runCurrent()
 
             assertEquals(
@@ -407,7 +350,7 @@ class KeyguardWakeDirectlyToGoneInteractorTest : SysuiTestCase() {
             )
 
             // The "lock after screen timeout" timer expires
-            repository.lockAfterScreenTimeoutState.value = LockAfterScreenTimeoutTimerState.ELAPSED
+            repository.lockAfterDelayState.value = LockAfterDelayTimerState.ELAPSED
             runCurrent()
 
             // Not possible to go directly back to Gone anymore

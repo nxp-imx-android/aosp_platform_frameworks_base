@@ -28,6 +28,7 @@ import static android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_CHORD;
 import static android.view.WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER;
 import static android.view.WindowManagerPolicyConstants.FLAG_INTERACTIVE;
 
+import static com.android.hardware.input.Flags.enablePartialScreenshotKeyboardShortcut;
 import static com.android.hardware.input.Flags.enableNew26q2Keycodes;
 import static com.android.hardware.input.Flags.keyboardBacklightShortcuts;
 import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
@@ -803,10 +804,7 @@ final class KeyGestureController {
                 break;
             case KeyEvent.KEYCODE_SCREENSHOT:
                 if (firstDown && !hasModifiers) {
-                    handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
-                            KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
-                            focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    handleScreenshotKey(keyCode, deviceId, displayId, focusedToken);
                     return true;
                 }
                 break;
@@ -1222,10 +1220,7 @@ final class KeyGestureController {
                 break;
             case KeyEvent.KEYCODE_SYSRQ:
                 if (firstDown) {
-                    handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
-                            KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
-                            KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
-                            focusedToken, /* flags = */0, /* appLaunchData = */null);
+                    handleScreenshotKey(keyCode, deviceId, displayId, focusedToken);
                     return true;
                 }
                 break;
@@ -1300,6 +1295,30 @@ final class KeyGestureController {
             return true;
         }
         return false;
+    }
+
+    private void handleScreenshotKey(int keyCode, int deviceId, int displayId,
+            @Nullable IBinder focusedToken) {
+        if (enablePartialScreenshotKeyboardShortcut()
+                && hasKeyGestureHandlerRegistered(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT)) {
+            handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
+                    KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
+                    focusedToken, /* flags = */0, /* appLaunchData = */null);
+        } else {
+            handleKeyGesture(deviceId, new int[]{keyCode}, /* modifierState = */0,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
+                    KeyGestureEvent.ACTION_GESTURE_COMPLETE, displayId,
+                    focusedToken, /* flags = */0, /* appLaunchData = */null);
+        }
+    }
+
+    private boolean hasKeyGestureHandlerRegistered(
+            @KeyGestureEvent.KeyGestureType int gestureType) {
+        synchronized (mKeyGestureHandlerRecords) {
+            return mSupportedKeyGestureToPidMap.indexOfKey(gestureType) >= 0;
+        }
     }
 
     public void notifyKeyGestureCompleted(int deviceId, int[] keycodes, int modifierState,

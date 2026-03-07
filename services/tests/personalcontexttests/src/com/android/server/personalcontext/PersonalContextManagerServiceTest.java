@@ -472,6 +472,38 @@ public class PersonalContextManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
+    public void testPublishInsightSurfaceHints_allowListAllowed_succeeds() {
+        when(mAccessController.hasAccess(anyInt(), eq(AccessController.ACCESS_PUBLISH_HINTS)))
+                .thenReturn(true);
+        BundleHint hint = new BundleHint.Builder().build();
+        ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
+        List<ContextHintWrapper> hints = List.of(hintWrapper);
+
+        mBinderService.publishInsightSurfaceHints(
+                hints, mock(InsightSurfaceClientInfo.class), USER_ID_1);
+
+        verify(mService)
+                .publishInsightSurfaceHints(eq(USER_ID_1), anyInt(), eq(Set.of(hint)), any());
+    }
+
+    @Test
+    @EnableFlags(android.service.personalcontext.Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
+    public void testPublishInsightSurfaceHints_permissionDenied_throwsSecurityException() {
+        mFakePermissionEnforcer.revoke(Manifest.permission.PERSONAL_CONTEXT_PUBLISH_HINTS);
+
+        BundleHint hint = new BundleHint.Builder().build();
+        ContextHintWrapper hintWrapper = new ContextHintWrapper(hint);
+        List<ContextHintWrapper> hints = List.of(hintWrapper);
+
+        assertThrows(
+                SecurityException.class,
+                () ->
+                        mBinderService.publishInsightSurfaceHints(
+                                hints, mock(InsightSurfaceClientInfo.class), USER_ID_1));
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_PERMISSIONS)
     public void testIsEnabled_permissionsDenied_throwsSecurityException() {
         PersonalContextManagerService.BinderService binderService =

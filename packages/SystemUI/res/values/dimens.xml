@@ -310,8 +310,14 @@
     <!-- Height of a heads up notification in the status bar -->
     <dimen name="notification_max_heads_up_height">136dp</dimen>
 
-    <!-- Side padding on the side of notifications -->
-    <dimen name="notification_side_paddings">16dp</dimen>
+    <!-- Padding on the side of notifications for single shade -->
+    <dimen name="notification_side_paddings_single">16dp</dimen>
+
+    <!-- Padding on the side of notifications for split shade -->
+    <dimen name="notification_side_paddings_split">16dp</dimen>
+
+    <!-- Padding on the side of notifications for dual shade -->
+    <dimen name="notification_side_paddings_dual">16dp</dimen>
 
     <!-- Width of inline notification menu item buttons -->
     <dimen name="notification_menu_item_width">112dp</dimen>
@@ -710,7 +716,7 @@
     <!-- Most of the time it should be the same as notification_side_paddings as it's vertically
          aligned with notifications. The exception is split shade when this value becomes
          independent  -->
-    <dimen name="qs_horizontal_margin">@dimen/notification_side_paddings</dimen>
+    <dimen name="qs_horizontal_margin">@dimen/notification_side_paddings_single</dimen>
 
     <!-- Most of the time it should be the same as notification_shade_content_margin_horizontal as
          it's vertically aligned with notifications. The exception is split shade when this value
@@ -810,7 +816,7 @@
     <dimen name="notification_2025_children_container_margin_top">@*android:dimen/notification_2025_content_margin_top</dimen>
 
     <!-- The height of the gap between adjacent notification sections. -->
-    <dimen name="notification_section_divider_height">@dimen/notification_side_paddings</dimen>
+    <dimen name="notification_section_divider_height">@dimen/notification_side_paddings_single</dimen>
 
     <!-- The height of the gap between adjacent notification sections on lockscreen. -->
     <dimen name="notification_section_divider_height_lockscreen">4dp</dimen>
@@ -1240,6 +1246,7 @@
 
     <!-- Biometric Auth Credential values -->
     <dimen name="biometric_auth_icon_size">48dp</dimen>
+    <dimen name="biometric_auth_close_button_size">40dp</dimen>
     <dimen name="biometric_auth_back_button_size">40dp</dimen>
 
     <!-- Biometric Auth pattern view size, better to align keyguard_security_width -->
@@ -1453,7 +1460,7 @@
     <dimen name="control_menu_item_text_size">16sp</dimen>
     <dimen name="control_menu_item_height">54dp</dimen>
     <dimen name="control_menu_vertical_padding">12dp</dimen>
-    <dimen name="control_menu_horizontal_padding">@dimen/notification_side_paddings</dimen>
+    <dimen name="control_menu_horizontal_padding">@dimen/notification_side_paddings_single</dimen>
     <dimen name="control_apps_popup_item_height">56dp</dimen>
     <dimen name="control_popup_item_corner_radius">@dimen/notification_corner_radius_small</dimen>
     <dimen name="control_popup_items_divider_height">@dimen/controls_app_divider_height</dimen>

@@ -22,7 +22,7 @@ android:layout_height="match_parent">
         android:id="@+id/auth_screen"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="button_bar, scrollView, indicator"/>
+        app:constraint_referenced_ids="button_bar, scrollView, indicator, close_button"/>
 
     <View
         android:id="@+id/panel"
@@ -249,6 +249,16 @@ android:layout_height="match_parent">
         app:layout_constraintEnd_toEndOf="@id/scrollView"
         app:layout_constraintStart_toStartOf="@id/scrollView"
         app:layout_constraintTop_toBottomOf="@id/scrollView" />
+
+    <ImageButton
+        android:id="@+id/close_button"
+        style="@style/AuthCredentialCloseButton"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        android:src="@drawable/ic_close"
+        android:contentDescription="@string/cancel"
+        app:layout_constraintTop_toTopOf="@id/scrollView"
+        app:layout_constraintEnd_toEndOf="@id/scrollView" />
 
     <!-- Guidelines for setting panel border -->
     <androidx.constraintlayout.widget.Barrier

@@ -178,7 +178,6 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaPlayPauseActionViewM
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSecondaryActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSettingsButtonViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
-import com.android.systemui.plugins.keyguard.ui.composable.elements.LockscreenElementKeys
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.verticalSquish
 import com.android.systemui.res.R
 import kotlin.math.abs
@@ -1504,23 +1503,25 @@ private fun DeviceChip(
     // The inner composable consumes the user events from the InteractionSource and feeds them into
     // its indication.
     val clickInteractionSource = remember { MutableInteractionSource() }
-    Expandable(
-        controller =
-            rememberExpandableController(
-                color = Color.Transparent,
-                shape = RoundedCornerShape(12.dp),
-            ),
-        modifier = modifier.padding(top = 16.dp, bottom = 0.dp),
-        useModifierBasedImplementation = true,
+    val expandable = remember { Expandable() }
+    Box(
+        modifier =
+            modifier.padding(top = 16.dp, bottom = 0.dp).heightIn(min = 48.dp).clickable(
+                interactionSource = clickInteractionSource,
+                indication = null,
+            ) {
+                viewModel.onClick(expandable)
+            }
     ) {
-        Box(
-            modifier =
-                Modifier.heightIn(min = 48.dp).clickable(
-                    interactionSource = clickInteractionSource,
-                    indication = null,
-                ) {
-                    viewModel.onClick(it)
-                }
+        Expandable(
+            expandable = expandable,
+            controller =
+                rememberExpandableController(
+                    color = style.fillColor,
+                    shape = RoundedCornerShape(12.dp),
+                ),
+            useModifierBasedImplementation = true,
+            defaultMinSize = false,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -1918,7 +1919,7 @@ object Media {
         val NextButton = ElementKey("next")
         val SeekBarSlider = ElementKey("seek_bar_slider")
         val OutputSwitcherButton = ElementKey("output_switcher")
-        val MediaCarousel = LockscreenElementKeys.MediaCarousel // Shared element with lock screen
+        val MediaCarousel = ElementKey("media_carousel")
 
         fun additionalActionButton(index: Int): ElementKey {
             val name = "additional_action_$index"

@@ -867,6 +867,7 @@
     <protected-broadcast android:name="android.intent.action.UPDATE_CT_LOGS" />
     <protected-broadcast android:name="android.intent.action.INSTALL_COMPLETE" />
     <protected-broadcast android:name="android.intent.action.PERSONAL_CONTEXT_MODE_CHANGED" />
+    <protected-broadcast android:name="android.os.storage.action.FILE_OPERATION_COMPLETED" />
 
     <!-- Added in 26Q4 -->
     <protected-broadcast android:name="android.app.action.DYNAMIC_BUNDLE_MODIFIED" />

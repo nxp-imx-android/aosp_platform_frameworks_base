@@ -561,7 +561,8 @@ class GeneratorTest {
                     /* requiredPermission= */ null,
                     /* requiredCrossUserPermission= */ null,
                     /* allowedDpcTypes= */ Set.of(),
-                    /* emptyStringAllowed= */ false
+                    /* emptyStringAllowed= */ false,
+                    /* unprintableCharactersAllowed= */ false
                 ));
                 """,
                 )
@@ -615,7 +616,8 @@ class GeneratorTest {
                         /* requiredPermission= */ null,
                         /* requiredCrossUserPermission= */ null,
                         /* allowedDpcTypes= */ Set.of(),
-                        /* emptyStringAllowed= */ false
+                        /* emptyStringAllowed= */ false,
+                        /* unprintableCharactersAllowed= */ false
                     ),
                     /* emptyListAllowed= */ false
                 ));

@@ -43,45 +43,34 @@ import androidx.core.graphics.withClip
 import com.android.systemui.res.R
 import com.android.wm.shell.shared.animation.Interpolators
 
-class AnimatedActionBackgroundDrawable(
-    context: Context,
-    onAnimationStarted: () -> Unit,
-    onAnimationEnded: () -> Unit,
-    onAnimationCancelled: () -> Unit,
-) :
+class AnimatedActionBackgroundDrawable(context: Context) :
     RippleDrawable(
         ContextCompat.getColorStateList(context, R.color.notification_ripple_untinted_color)
             ?: ColorStateList.valueOf(Color.TRANSPARENT),
-        createBaseDrawable(context, onAnimationStarted, onAnimationEnded, onAnimationCancelled),
+        BaseBackgroundDrawable(context),
         null,
-    ) {
-    companion object {
-        private fun createBaseDrawable(
-            context: Context,
-            onAnimationStarted: () -> Unit,
-            onAnimationEnded: () -> Unit,
-            onAnimationCancelled: () -> Unit,
-        ): Drawable {
-            return BaseBackgroundDrawable(
-                context,
-                onAnimationStarted,
-                onAnimationEnded,
-                onAnimationCancelled,
-            )
-        }
-    }
+    ),
+    AnimatableActionBackground {
 
-    fun animate() {
-        (getDrawable(0) as? BaseBackgroundDrawable)?.animate()
+    override fun animate(
+        onAnimationStarted: () -> Unit,
+        onAnimationEnded: () -> Unit,
+        onAnimationCancelled: () -> Unit,
+    ) {
+        (getDrawable(0) as? AnimatableActionBackground)?.animate(
+            onAnimationStarted,
+            onAnimationEnded,
+            onAnimationCancelled,
+        )
     }
 }
 
-class BaseBackgroundDrawable(
-    private val context: Context,
-    onAnimationStarted: () -> Unit,
-    onAnimationEnded: () -> Unit,
-    onAnimationCancelled: () -> Unit,
-) : Drawable() {
+class BaseBackgroundDrawable(private val context: Context) :
+    Drawable(), AnimatableActionBackground {
+
+    private var onAnimationStarted: (() -> Unit)? = null
+    private var onAnimationEnded: (() -> Unit)? = null
+    private var onAnimationCancelled: (() -> Unit)? = null
 
     private val cornerRadius =
         context.resources
@@ -153,11 +142,13 @@ class BaseBackgroundDrawable(
                 addListener(
                     object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
-                            onAnimationEnded()
+                            onAnimationEnded?.invoke()
+                            clearCallbacks()
                         }
 
                         override fun onAnimationCancel(animation: Animator) {
-                            onAnimationCancelled()
+                            onAnimationCancelled?.invoke()
+                            clearCallbacks()
                         }
                     }
                 )
@@ -179,16 +170,29 @@ class BaseBackgroundDrawable(
                 addListener(
                     object : AnimatorListenerAdapter() {
                         override fun onAnimationStart(animation: Animator) {
-                            onAnimationStarted()
+                            onAnimationStarted?.invoke()
                         }
                     }
                 )
             }
     }
 
-    fun animate() {
+    override fun animate(
+        onAnimationStarted: () -> Unit,
+        onAnimationEnded: () -> Unit,
+        onAnimationCancelled: () -> Unit,
+    ) {
+        this.onAnimationStarted = onAnimationStarted
+        this.onAnimationEnded = onAnimationEnded
+        this.onAnimationCancelled = onAnimationCancelled
         gradientAnimator.start()
         fadeAnimator?.start()
+    }
+
+    private fun clearCallbacks() {
+        onAnimationStarted = null
+        onAnimationEnded = null
+        onAnimationCancelled = null
     }
 
     override fun draw(canvas: Canvas) {

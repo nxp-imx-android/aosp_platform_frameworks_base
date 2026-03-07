@@ -18,7 +18,7 @@ package com.android.systemui.inputdevice.data.repository
 
 import com.android.systemui.kosmos.Kosmos
 
-val Kosmos.pointerDeviceRepository: FakePointerDeviceRepository by
+val Kosmos.pointerDeviceRepository: PointerDeviceRepository by
     Kosmos.Fixture { FakePointerDeviceRepository() }
 
 val PointerDeviceRepository.fake

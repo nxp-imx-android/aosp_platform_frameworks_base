@@ -962,14 +962,6 @@ constructor(
     }
 
     /**
-     * Announces that the app window is now being focused for accessibility. This is used after a
-     * window is minimized/closed, and a new app window gains focus.
-     */
-    fun a11yAnnounceNewFocusedWindow() {
-        (captionController as? AppHeaderController)?.a11yAnnounceFocused()
-    }
-
-    /**
      * Request direct a11y focus on the maximize button. This is used after a maximize/restore to
      * ensure that focus always goes back to the button.
      */

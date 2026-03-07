@@ -291,8 +291,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         onClickListenerCaptor.firstValue.onClick(view)
 
-        verify(mockDesktopTasksController)
-            .getTopTask(taskInfo.displayId, taskInfo.userId, taskInfo.taskId)
         verify(mockDesktopTasksController).closeTask(taskInfo)
     }
 
@@ -326,8 +324,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         onClickListenerCaptor.firstValue.onClick(view)
 
-        verify(mockDesktopTasksController)
-            .getTopTask(taskInfo.displayId, taskInfo.userId, taskInfo.taskId)
         verify(mockDesktopTasksController).minimizeTask(taskInfo, MinimizeReason.MINIMIZE_BUTTON)
     }
 

@@ -102,6 +102,16 @@ flag {
 }
 
 flag {
+  name: "lite_task_description_changed"
+  namespace: "windowing_frontend"
+  description: "Optimize TaskDescription change events dispatching"
+  bug: "489914754"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "one_way_set_task_description"
   namespace: "windowing_frontend"
   description: "Reduce blocking calls that are usually called on UI thread"
@@ -351,16 +361,6 @@ flag {
     namespace: "windowing_frontend"
     description: "Virtual display owners can create system application overlays"
     bug: "432521645"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    name: "displayinfo_state_deferrable"
-    namespace: "windowing_frontend"
-    description: "Display state should be a deferrable WM property"
-    bug: "423701190"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

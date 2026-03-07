@@ -159,6 +159,56 @@ class AutofillRendererServiceTest : SysuiTestCase() {
                 .containsExactly(*inlineSuggestionHints)
         }
 
+    @Test
+    fun testOnRender_displayInsight_withDatasetIds() =
+        kosmos.runTest {
+            val sessionId = 42
+            val inlineSuggestionsRequest =
+                InlineSuggestionsRequest.Builder(
+                        listOf<InlinePresentationSpec?>(AUTOFILL_INLINE_PRESENTATION_SPEC)
+                    )
+                    .build()
+            val originHint =
+                AutofillInlineRequestHint.Builder(
+                        sessionId,
+                        0,
+                        Instant.now(),
+                        ComponentName("test_package", "test_component"),
+                        AutofillId(0),
+                        AutofillValue.forText("test"),
+                        inlineSuggestionsRequest,
+                        Binder(),
+                    )
+                    .build()
+            val expectedDatasetId = "test dataset ID"
+            val bundleHint =
+                BundleHint.Builder()
+                    .setDataBundle(
+                        Bundle().also {
+                            it.putString(AutofillRendererService.KEY_DATASET_ID, expectedDatasetId)
+                        }
+                    )
+                    .build()
+            underTest.onRender(
+                DisplayInsight.Builder(InsightDisplayDetails.Builder("title").build())
+                    .addOriginHint(
+                        PublishedContextHint.Builder(originHint, generateSignedHintKey()).build()
+                    )
+                    .addOriginHint(
+                        PublishedContextHint.Builder(bundleHint, generateSignedHintKey()).build()
+                    )
+                    .build()
+                    .fakePublish(),
+                RenderToken(UUID.randomUUID(), null),
+            )
+
+            val datasetCaptor = argumentCaptor<MutableList<Dataset>>()
+            verify(autofillManager)
+                .notifySystemInlineSuggestions(eq(sessionId), datasetCaptor.capture())
+            assertThat(datasetCaptor.firstValue).hasSize(1)
+            assertThat(datasetCaptor.firstValue.first().id).isEqualTo(expectedDatasetId)
+        }
+
     private companion object {
         /** Generates a key to use when signing hints. */
         fun generateSignedHintKey(): SecretKeySpec {

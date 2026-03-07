@@ -47,7 +47,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
-import android.view.animation.AnimationSet;
 import android.view.animation.TranslateYAnimation;
 import android.view.animation.Animation;
 import android.widget.ImageView;
@@ -59,6 +58,7 @@ import com.android.internal.util.UserIcons;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Dialog to show during the user switch. This dialog shows target user's name and their profile
@@ -227,18 +227,12 @@ class UserSwitchingDialog extends Dialog {
         }
         asyncTraceBegin("showAnimation", 1);
 
-        final Animation animation;
-        if (Flags.userSwitchingDialogEntryExitAnimations()) {
-            final AnimationSet animationSet = new AnimationSet(true);
-            animationSet.addAnimation(new AlphaAnimation(0, 1));
-            animationSet.addAnimation(
-                    new TranslateYAnimation(DIALOG_SHOW_HIDE_ANIMATION_TRANSLATE_Y_PX, 0));
-            animation = animationSet;
-        } else {
-            animation = new AlphaAnimation(0, 1);
-        }
+        final Animation outerContainerAnimation = new AlphaAnimation(0, 1);
+        final Animation innerContainerAnimation = Flags.userSwitchingDialogEntryExitAnimations()
+                ? new TranslateYAnimation(DIALOG_SHOW_HIDE_ANIMATION_TRANSLATE_Y_PX, 0)
+                : null;
 
-        startDialogAnimation("show", animation, () -> {
+        startDialogAnimation("show", outerContainerAnimation, innerContainerAnimation, () -> {
             asyncTraceEnd("showAnimation", 1);
 
             asyncTraceBegin("spinnerAnimation", 2);
@@ -257,19 +251,13 @@ class UserSwitchingDialog extends Dialog {
             return;
         }
 
-        final Animation animation;
-        if (Flags.userSwitchingDialogEntryExitAnimations()) {
-            final AnimationSet animationSet = new AnimationSet(true);
-            animationSet.addAnimation(new AlphaAnimation(1, 0));
-            animationSet.addAnimation(
-                    new TranslateYAnimation(0, -DIALOG_SHOW_HIDE_ANIMATION_TRANSLATE_Y_PX));
-            animation = animationSet;
-        } else {
-            animation = new AlphaAnimation(1, 0);
-        }
+        final Animation outerContainerAnimation = new AlphaAnimation(1, 0);
+        final Animation innerContainerAnimation = Flags.userSwitchingDialogEntryExitAnimations()
+                ? new TranslateYAnimation(0, -DIALOG_SHOW_HIDE_ANIMATION_TRANSLATE_Y_PX)
+                : null;
 
         asyncTraceBegin("dismissAnimation", 3);
-        startDialogAnimation("dismiss", animation, () -> {
+        startDialogAnimation("dismiss", outerContainerAnimation, innerContainerAnimation, () -> {
             asyncTraceEnd("dismissAnimation", 3);
 
             onAnimationEnd.run();
@@ -303,31 +291,47 @@ class UserSwitchingDialog extends Dialog {
         return null;
     }
 
-    private void startDialogAnimation(String name, Animation animation, Runnable onAnimationEnd) {
-        final View view = findViewById(R.id.content);
-        if (mDisableAnimations || view == null) {
+    private void startDialogAnimation(String name, Animation outerContainerAnimation,
+            Animation innerContainerAnimation, Runnable onAnimationEnd) {
+        final View outerContainerView = findViewById(R.id.outer_container);
+        final View innerContainerView = findViewById(R.id.inner_container);
+        if (mDisableAnimations || outerContainerView == null || innerContainerView == null) {
             onAnimationEnd.run();
             return;
         }
         final Runnable onAnimationEndWithTimeout = animationWithTimeout(name, onAnimationEnd);
-        animation.setDuration(DIALOG_SHOW_HIDE_ANIMATION_DURATION_MS);
-        animation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
+        final AtomicInteger pendingAnimations =
+                new AtomicInteger(
+                        (outerContainerAnimation != null ? 1 : 0)
+                                + (innerContainerAnimation != null ? 1 : 0));
+        final Runnable onStepEnd = () -> {
+            if (pendingAnimations.decrementAndGet() == 0) {
+                onAnimationEndWithTimeout.run();
             }
+        };
+
+        final Animation.AnimationListener listener = new Animation.AnimationListener() {
+            @Override public void onAnimationStart(Animation animation) {}
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                onAnimationEndWithTimeout.run();
+                onStepEnd.run();
             }
 
-            @Override
-            public void onAnimationRepeat(Animation animation) {
+            @Override public void onAnimationRepeat(Animation animation) {}
+        };
 
-            }
-        });
-        view.startAnimation(animation);
+        if (outerContainerAnimation != null) {
+            outerContainerAnimation.setDuration(DIALOG_SHOW_HIDE_ANIMATION_DURATION_MS);
+            outerContainerAnimation.setAnimationListener(listener);
+            outerContainerView.startAnimation(outerContainerAnimation);
+        }
+
+        if (innerContainerAnimation != null) {
+            innerContainerAnimation.setDuration(DIALOG_SHOW_HIDE_ANIMATION_DURATION_MS);
+            innerContainerAnimation.setAnimationListener(listener);
+            innerContainerView.startAnimation(innerContainerAnimation);
+        }
     }
 
     private Runnable animationWithTimeout(String name, Runnable onAnimationEnd) {

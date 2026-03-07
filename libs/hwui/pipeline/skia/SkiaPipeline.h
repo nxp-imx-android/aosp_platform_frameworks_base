@@ -73,6 +73,19 @@ public:
 #ifdef __ANDROID__
     virtual void setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) { mBLASTBufferQueue = bbq; }
 
+    void setCornerRadiiCallback(
+            std::function<void(const gui::CornerRadii&)> cornerRadiiCallback) override {
+        if (mBLASTBufferQueue != nullptr) {
+            mBLASTBufferQueue->setCornerRadiiCallback(std::move(cornerRadiiCallback));
+        }
+    }
+
+    void setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback) override {
+        if (mBLASTBufferQueue != nullptr) {
+            mBLASTBufferQueue->setWaitForBufferReleaseCallback(std::move(callback));
+        }
+    }
+
     bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> callback,
                              bool acquireSingleBuffer = true) override {
         if (mBLASTBufferQueue != nullptr) {
@@ -113,6 +126,11 @@ public:
 #endif
 
     uint64_t getFrameNumber() override;
+    int getFrameTimestamps(uint64_t frameNumber, nsecs_t* outRequestedPresentTime,
+                           nsecs_t* outAcquireTime, nsecs_t* outLatchTime,
+                           nsecs_t* outFirstRefreshStartTime, nsecs_t* outLastRefreshStartTime,
+                           nsecs_t* outGpuCompositionDoneTime, nsecs_t* outDisplayPresentTime,
+                           nsecs_t* outDequeueReadyTime, nsecs_t* outReleaseTime) override;
     void setFrameTimelineInfo(const ANativeWindowFrameTimelineInfo& info) override;
     int64_t getLastDequeueDuration() override;
 

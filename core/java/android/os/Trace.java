@@ -594,10 +594,13 @@ public final class Trace {
         if (android.os.Flags.perfettoSdkTracingV3()) {
             // TODO(475548318): Once all categories are migrated, replace with
             // PerfettoCategories.registerCategories()
+            PerfettoCategories.CC_CATEGORY.register();
             PerfettoCategories.MQ_CATEGORY.register();
             PerfettoCategories.JOB_SCHEDULER_CATEGORY.register();
             PerfettoCategories.PROC_STATE_COUNTER_CATEGORY.register();
             PerfettoCategories.GFX_CATEGORY.register();
+            PerfettoCategories.FREEZER_CATEGORY.register();
+            PerfettoCategories.BROADCASTS_CATEGORY.register();
         }
     }
 }

@@ -358,7 +358,6 @@ import android.content.pm.ProviderInfoList;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.SharedLibraryInfo;
-import android.content.pm.Signature;
 import android.content.pm.SignedPackage;
 import android.content.pm.SigningDetails;
 import android.content.pm.SystemFeaturesCache;
@@ -3023,6 +3022,12 @@ public class ActivityManagerService extends IActivityManager.Stub
      * Checks if {@code policyOwnerPkg} has an {@code <allow-component-access>} policy, and if so,
      * verifies that {@code candidatePkg} is explicitly allowed. Returns true if no policy is
      * specified for {@code policyOwnerPkg}.
+     *
+     * <p>If a policy rule specifies a package name but NO certificate digest:
+     * <ul>
+     * <li>If the target is a <b>preinstalled package</b>, association with it is allowed.</li>
+     * <li>If the target is a <b>non-preinstalled package</b>, association with it is denied.</li>
+     * </ul>
      */
     private boolean isComponentAccessAllowedByPolicyLocked(
             String policyOwnerPkg, int policyOwnerUid, String candidatePkg, int candidateUid) {
@@ -3053,9 +3058,11 @@ public class ActivityManagerService extends IActivityManager.Stub
         final List<String> expectedDigests = new ArrayList<>();
         final List<SignedPackage> rules = policy.getAllowlistedSignedPackages();
         final int rulesSize = rules.size();
+        boolean packageFoundInPolicy = false;
         for (int i = 0; i < rulesSize; i++) {
             SignedPackage rule = rules.get(i);
             if (rule.getPackageName().equals(candidatePkg)) {
+                packageFoundInPolicy = true;
                 if (rule.hasCertificateDigest()) {
                     if (candidateInfo
                             .getSigningDetails()
@@ -3065,46 +3072,60 @@ public class ActivityManagerService extends IActivityManager.Stub
                     expectedDigests.add(
                             HexDump.toHexString(rule.getCertificateDigest()).toUpperCase());
                 } else {
-                    return true;
-                }
-            }
-        }
-
-        logAssociationDenialLocked(policyOwnerPkg, candidatePkg, candidateUid,
-                expectedDigests, candidateInfo.getSigningDetails());
-        return false;
-    }
-
-    private void logAssociationDenialLocked(String owner, String target, int targetUid,
-            List<String> expectedDigests, SigningDetails details) {
-        if (expectedDigests.isEmpty()) {
-            Slog.w(TAG, "Access denied: " + owner + " blocks " + target
-                    + " (uid " + targetUid + "): package not listed in policy");
-            return;
-        }
-
-        List<String> actualDigests = new ArrayList<>();
-        if (details != null) {
-            final Signature[] signatures = details.getSignatures();
-            if (signatures != null) {
-                for (int i = 0; i < signatures.length; i++) {
-                    final Signature sig = signatures[i];
-                    byte[] digest = PackageUtils.computeSha256DigestBytes(sig.toByteArray());
-                    if (digest != null) {
-                        actualDigests.add(HexDump.toHexString(digest).toUpperCase());
+                    // For non system apps ensure a signature is present
+                    final ApplicationInfo appInfo = packageManagerInternal.getApplicationInfo(
+                            candidatePkg, /*flags*/0, Process.SYSTEM_UID, UserHandle.USER_SYSTEM);
+                    final boolean isSystem = (appInfo != null)
+                            && (appInfo.flags & (ApplicationInfo.FLAG_SYSTEM
+                            | ApplicationInfo.FLAG_UPDATED_SYSTEM_APP)) != 0;
+                    if (isSystem) {
+                        return true;
                     }
                 }
             }
         }
 
-        final String actualOutput =
-                actualDigests.isEmpty() ? "unknown" : actualDigests.toString();
-
-        Slog.w(TAG, "Access denied: " + owner + " has a policy for " + target
-                + " but the certificate digest did not match. Expected one of: "
-                + expectedDigests + ". Package on device has: " + actualOutput);
+        logAssociationDenialLocked(policyOwnerPkg, candidatePkg, candidateUid,
+                packageFoundInPolicy, expectedDigests, candidateInfo.getSigningDetails());
+        return false;
     }
 
+    private void logAssociationDenialLocked(
+            String owner, String target, int targetUid, boolean isPackageInPolicy,
+            List<String> expectedDigests, SigningDetails details) {
+        final String baseMsg =
+                "Access denied: " + owner + " blocks " + target + " (uid " + targetUid + "): ";
+        if (!isPackageInPolicy) {
+            Slog.w(TAG, baseMsg + "Package not listed in policy");
+            return;
+        }
+
+        if (expectedDigests == null || expectedDigests.isEmpty()) {
+            Slog.w(TAG, baseMsg + "A certDigest must be specified for non-preinstalled packages.");
+            return;
+        }
+
+        final List<String> actualDigests = new ArrayList<>();
+        if (details != null && details.getSignatures() != null) {
+            for (int i = 0; i < details.getSignatures().length; i++) {
+                byte[] digest =
+                        PackageUtils.computeSha256DigestBytes(
+                                details.getSignatures()[i].toByteArray());
+                if (digest != null) {
+                    actualDigests.add(HexDump.toHexString(digest).toUpperCase());
+                }
+            }
+        }
+
+        final String actualOutput = actualDigests.isEmpty() ? "unknown" : actualDigests.toString();
+        Slog.w(
+                TAG,
+                baseMsg
+                        + "Certificate digest did not match. Expected one of: "
+                        + expectedDigests
+                        + ". Package on device has: "
+                        + actualOutput);
+    }
 
     /**
      * Checks if the association is allowed by the App's own Manifest policy (the {@code

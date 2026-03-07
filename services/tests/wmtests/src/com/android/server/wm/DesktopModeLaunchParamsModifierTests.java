@@ -2070,6 +2070,54 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(expectedBounds, mResult.mBounds);
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_PRIORITIZE_VISIBLE_TASK_DISPLAY_OVER_SOURCE)
+    public void test_taskLaunchFromSource_visibleTask_tasksDisplayAreaPrioritized() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final TestDisplayContent primaryDisplay =
+                createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        final TestDisplayContent secondaryDisplay =
+                createNewDisplayContent(WINDOWING_MODE_FREEFORM);
+        final Task launchingTask = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setDisplay(primaryDisplay).build();
+        final Task sourceTask = new TaskBuilder(mSupervisor)
+                .setActivityType(ACTIVITY_TYPE_STANDARD).setDisplay(secondaryDisplay)
+                .setCreateActivity(true).build();
+
+        // Mark task as already visible.
+        launchingTask.setVisibleRequested(true);
+
+        new CalculateRequestBuilder().setTask(launchingTask)
+                .setSource(sourceTask.getRootActivity()).calculate();
+        assertNotEquals(sourceTask.getTaskDisplayArea(), mResult.mPreferredTaskDisplayArea);
+        assertEquals(launchingTask.getTaskDisplayArea(), mResult.mPreferredTaskDisplayArea);
+
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PRIORITIZE_VISIBLE_TASK_DISPLAY_OVER_SOURCE)
+    public void test_taskLaunchFromSource_notVisibleTask_sourceDisplayAreaPrioritized() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final TestDisplayContent primaryDisplay =
+                createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        final TestDisplayContent secondaryDisplay =
+                createNewDisplayContent(WINDOWING_MODE_FREEFORM);
+        final Task launchingTask = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setDisplay(primaryDisplay).build();
+        final Task sourceTask = new TaskBuilder(mSupervisor)
+                .setActivityType(ACTIVITY_TYPE_STANDARD).setDisplay(secondaryDisplay)
+                .setCreateActivity(true).build();
+
+        // Mark task not already visible.
+        launchingTask.setVisibleRequested(false);
+
+        new CalculateRequestBuilder().setTask(launchingTask)
+                .setSource(sourceTask.getRootActivity()).calculate();
+        assertNotEquals(launchingTask.getTaskDisplayArea(), mResult.mPreferredTaskDisplayArea);
+        assertEquals(sourceTask.getTaskDisplayArea(), mResult.mPreferredTaskDisplayArea);
+    }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)

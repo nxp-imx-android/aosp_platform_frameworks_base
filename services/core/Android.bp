@@ -269,7 +269,6 @@ java_library_static {
         "aconfig_adbdauth_flags_java_lib",
         "AvfBuildFlags",
         "textclassifier_flags_lib",
-        "accounts_flags_lib",
         "lights_flags_lib",
         "android.bpfprogs.flags-aconfig-java",
         "services.signal-collector-manager-internal",
@@ -301,17 +300,15 @@ filegroup {
 
 java_genrule {
     name: "services.core.priorityboosted",
-    srcs: [":services.core.unboosted"],
+    srcs: [
+        ":services.core.unboosted",
+        "services.core.priorityboosted.cfg",
+    ],
     tools: ["lockedregioncodeinjection"],
     cmd: "$(location lockedregioncodeinjection) " +
-        " --targets \"Lcom/android/server/am/ActivityManagerService;,Lcom/android/server/am/ActivityManagerGlobalLock;,Lcom/android/server/wm/WindowManagerGlobalLock;,Lcom/android/server/pm/PackageManagerTracedLock;\" " +
-        " --pre \"com/android/server/am/ActivityManagerService.boostPriorityForLockedSection,com/android/server/am/ActivityManagerService.boostPriorityForProcLockedSection,com/android/server/wm/WindowManagerService.boostPriorityForLockedSection,com/android/server/pm/PackageManagerService.boostPriorityForPackageManagerTracedLockedSection\" " +
-        " --post \"com/android/server/am/ActivityManagerService.resetPriorityAfterLockedSection,com/android/server/am/ActivityManagerService.resetPriorityAfterProcLockedSection,com/android/server/wm/WindowManagerService.resetPriorityAfterLockedSection,com/android/server/pm/PackageManagerService.resetPriorityAfterPackageManagerTracedLockedSection\" " +
-        " --trace-before-acquire \"com/android/server/am/ActivityManagerService.traceBeforeAmsLock,com/android/server/am/ActivityManagerService.traceBeforeProcLock,com/android/server/wm/WindowManagerService.traceBeforeWmsLock,com/android/server/pm/PackageManagerService.traceBeforePmsLock\" " +
-        " --trace-after-acquire \"com/android/server/am/ActivityManagerService.traceAfterAmsLock,com/android/server/am/ActivityManagerService.traceAfterProcLock,com/android/server/wm/WindowManagerService.traceAfterWmsLock,com/android/server/pm/PackageManagerService.traceAfterPmsLock\" " +
-        " --trace-after-release \"com/android/server/am/ActivityManagerService.traceAfterAmsUnlock,com/android/server/am/ActivityManagerService.traceAfterProcUnlock,com/android/server/wm/WindowManagerService.traceAfterWmsUnlock,com/android/server/pm/PackageManagerService.traceAfterPmsUnlock\" " +
+        " --config $(location services.core.priorityboosted.cfg) " +
         " -o $(out) " +
-        " -i $(in)",
+        " -i $(location :services.core.unboosted)",
     out: ["services.core.priorityboosted.jar"],
 }
 

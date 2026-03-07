@@ -477,12 +477,12 @@ public class ActivityManagerServiceTest {
         setupAllowComponentAccessPolicy(
                 TEST_CALLER_PKG,
                 TEST_USER_ID,
-                List.of(createSignedPackage(TEST_TARGET_PKG, /* cert= */ null)));
+                List.of(createSignedPackage(TEST_TARGET_PKG, CERT_B)));
 
         setupAllowComponentAccessPolicy(
                 TEST_TARGET_PKG,
                 TEST_USER_ID,
-                List.of(createSignedPackage(TEST_CALLER_PKG, /* cert= */ null)));
+                List.of(createSignedPackage(TEST_CALLER_PKG, CERT_A)));
 
         setupPackageSigning(TEST_CALLER_PKG, CERT_A);
         setupPackageSigning(TEST_TARGET_PKG, CERT_B);
@@ -564,12 +564,12 @@ public class ActivityManagerServiceTest {
     public void testValidateAssociation_ComponentAccess_PccUid_AllowedByManifest() {
         // Manifest explicitly allows PCC package
         List<SignedPackage> targetRules =
-                List.of(createSignedPackage(PCC_PACKAGE_1, /* cert= */ null));
+                List.of(createSignedPackage(PCC_PACKAGE_1, CERT_A));
         setupAllowComponentAccessPolicy(TEST_TARGET_PKG, TEST_USER_ID, targetRules);
 
         // Mutual trust setup
         List<SignedPackage> pccRules =
-                List.of(createSignedPackage(TEST_TARGET_PKG, /* cert= */ null));
+                List.of(createSignedPackage(TEST_TARGET_PKG, CERT_B));
         setupAllowComponentAccessPolicy(PCC_PACKAGE_1, TEST_USER_ID, pccRules);
         setupPackageSigning(TEST_TARGET_PKG, CERT_B);
         setupPackageSigning(PCC_PACKAGE_1, CERT_A);
@@ -585,6 +585,40 @@ public class ActivityManagerServiceTest {
         assertTrue("PCC UID accessing an Untrusted App should be allowed"
                         + " if the manifest explicitly permits it", result);
     }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_ALLOW_COMPONENT_ACCESS)
+    public void testValidateAssociation_ComponentAccess_NonPreInstalledApp_NoDigest_Rejected() {
+        // Set up a policy for the caller that allows the target, but with NO certificate digest
+        List<SignedPackage> callerRules = List.of(
+                createSignedPackage(TEST_TARGET_PKG, /* cert= */ null));
+        setupAllowComponentAccessPolicy(TEST_CALLER_PKG, TEST_USER_ID, callerRules);
+
+        // Standard setup for the target app (assumed to be non-system/untrusted by default)
+        setupPackageSigning(TEST_TARGET_PKG, CERT_B);
+
+        boolean result = mAms.validateAssociationAllowedLocked(
+                TEST_CALLER_PKG, TEST_CALLER_UID, TEST_TARGET_PKG, TEST_TARGET_UID,
+                ActivityManagerService.ASSOCIATION_TYPE_SERVICE, /* debugTag= */ null);
+
+        assertFalse("Non-preinstalled apps without a certificate digest must be rejected", result);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.app.privatecompute.flags.Flags.FLAG_ENABLE_ALLOW_COMPONENT_ACCESS)
+    public void testValidateAssociation_ComponentAccess_PreinstalledApp_NoDigest_Allowed() {
+        // Set up a policy for the caller that allows a SYSTEM package without a digest
+        List<SignedPackage> callerRules = List.of(
+                createSignedPackage(SYSTEM_PKG, /* cert= */ null));
+        setupAllowComponentAccessPolicy(TEST_CALLER_PKG, TEST_USER_ID, callerRules);
+
+        boolean result = mAms.validateAssociationAllowedLocked(
+                TEST_CALLER_PKG, TEST_CALLER_UID, SYSTEM_PKG, Process.SYSTEM_UID,
+                ActivityManagerService.ASSOCIATION_TYPE_SERVICE, /* debugTag= */ null);
+
+        assertTrue("Preinstalled apps should be allowed without a digest", result);
+    }
+
     private void mockNoteOperation() {
         SyncNotedAppOp allowed = new SyncNotedAppOp(AppOpsManager.MODE_ALLOWED,
                 AppOpsManager.OP_GET_USAGE_STATS, null, mContext.getPackageName());

@@ -10466,7 +10466,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     /* triggerTask = */ null,
                     /* remoteTransition= */ null,
                 )
-                .apply { setDisplayChange(displayChange) }
+                .apply { setDisplayChanges(listOf(displayChange)) }
         val focusedTaskId =
             if (taskOnSecondDisplayHasFocus) {
                 secondDisplayTask?.taskId ?: error("Cannot have a focused null task")

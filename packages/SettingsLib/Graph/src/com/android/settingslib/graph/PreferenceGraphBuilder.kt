@@ -44,14 +44,12 @@ import com.android.settingslib.graph.proto.PreferenceProto
 import com.android.settingslib.graph.proto.PreferenceProto.ActionTarget
 import com.android.settingslib.graph.proto.PreferenceScreenProto
 import com.android.settingslib.graph.proto.PreferenceValueDescriptorProto
-import com.android.settingslib.graph.proto.SetWarningProto
 import com.android.settingslib.graph.proto.TextProto
 import com.android.settingslib.metadata.CatalystFlagProviderFactory
 import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
 import com.android.settingslib.metadata.IntRangeValuePreference
 import com.android.settingslib.metadata.KeyParametersSchema
 import com.android.settingslib.metadata.PersistentPreference
-import com.android.settingslib.metadata.KEY_PACKAGE_NAME
 import com.android.settingslib.metadata.PreferenceAvailabilityProvider
 import com.android.settingslib.metadata.PreferenceHierarchy
 import com.android.settingslib.metadata.PreferenceMetadata
@@ -66,6 +64,7 @@ import com.android.settingslib.metadata.PreferenceSummaryProvider
 import com.android.settingslib.metadata.PreferenceTitleProvider
 import com.android.settingslib.metadata.ReadWritePermit
 import com.android.settingslib.metadata.SensitivityLevel.Companion.DEEP_LINK_ONLY
+import com.android.settingslib.metadata.SensitivityLevel.Companion.REQUIRES_CONFIRMATION
 import com.android.settingslib.metadata.SensitivityLevel.Companion.DO_NOT_EXPOSE
 import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.getPreferenceIcon
@@ -84,7 +83,6 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue
 import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
@@ -117,8 +115,6 @@ private constructor(
                 "com.android.settings.EXCLUDE_UI_ONLY_PREFERENCES",
                 1,
             ) == 1
-
-    private val HIERARCHY_CHILD_LIMIT = 50
 
     private suspend fun init() {
         val factories = PreferenceScreenRegistry.preferenceScreenMetadataFactories
@@ -293,17 +289,16 @@ private constructor(
             }
         }
         if (includeHierarchy) {
-            val takeCount = if (factory.parametersSchema.containsKey(KEY_PACKAGE_NAME)) 1 else HIERARCHY_CHILD_LIMIT
             var flagEnabled: Boolean? = null
             if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
-                factory.keyParameters(context).take(takeCount).collect {
+                factory.keyParameters(context).collect {
                     if (flagEnabled == false) return@collect
                     val screenMetadata = factory.createWithKeyParameters(context, it)
                     if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
                     if (flagEnabled) addPreferenceScreen(screenMetadata)
                 }
             } else {
-                factory.parameters(context).take(takeCount).collect {
+                factory.parameters(context).collect {
                     if (flagEnabled == false) return@collect
                     val screenMetadata = factory.create(context, it)
                     if (flagEnabled == null) flagEnabled = checkScreenFlag(screenMetadata)
@@ -790,6 +785,7 @@ fun <T> PersistentPreference<T>.evalWritePermit(
     return when {
         // High sensitivity is strictly disallowed.
         sensitivityLevel == DEEP_LINK_ONLY -> ReadWritePermit.DISALLOW
+        sensitivityLevel == REQUIRES_CONFIRMATION -> ReadWritePermit.DISALLOW
 
         // Unknown sensitivity is disallowed, unless we are on a debuggable build
         // and the caller holds the WRITE_SECURE_SETTINGS permission.

@@ -49,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -108,9 +109,10 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
         }
     }
 
-    // set the focus, so adb can send the key events for testing.
+    // Set the focus, so adb can send the key events for testing and the user can type the pin using
+    // a phyiscal keyboard.
     val focusRequester = remember { FocusRequester() }
-    LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    RequestFocus(focusRequester = focusRequester, viewModel = viewModel)
 
     VerticalGrid(
         columns = columns,
@@ -118,9 +120,11 @@ fun PinPad(viewModel: PinBouncerViewModel, verticalSpacing: Dp, modifier: Modifi
         horizontalSpacing = calculateHorizontalSpacingBetweenColumns(gridWidth = 300.dp),
         placeRelative = false,
         modifier =
-            modifier.focusRequester(focusRequester).sysuiResTag("pin_pad_grid").semantics {
-                isTraversalGroup = true
-            },
+            modifier
+                .onFocusChanged { viewModel.onFocusChanged(it.isFocused) }
+                .focusRequester(focusRequester)
+                .sysuiResTag("pin_pad_grid")
+                .semantics { isTraversalGroup = true },
     ) {
         repeat(9) { index ->
             DigitButton(
@@ -191,11 +195,12 @@ fun DigitButton(
     onPointerDown: () -> Unit,
     scaling: () -> Float,
     isAnimationEnabled: Boolean,
+    backgroundColor: Color = LocalAndroidColorScheme.current.surfaceEffect1,
 ) {
     PinPadButton(
         onClicked = { onClicked(digit) },
         isEnabled = isInputEnabled,
-        backgroundColor = LocalAndroidColorScheme.current.surfaceEffect1,
+        backgroundColor = backgroundColor,
         foregroundColor = MaterialTheme.colorScheme.onSurface,
         isAnimationEnabled = isAnimationEnabled,
         onPointerDown = onPointerDown,
@@ -225,15 +230,16 @@ fun ActionButton(
     onLongClickLabel: String? = null,
     appearance: ActionButtonAppearance,
     scaling: () -> Float,
+    backgroundColor: Color = LocalAndroidColorScheme.current.surfaceEffect0,
 ) {
     val isHidden = appearance == ActionButtonAppearance.Hidden
     val hiddenAlpha by animateFloatAsState(if (isHidden) 0f else 1f, label = "Action button alpha")
 
     val foregroundColor = MaterialTheme.colorScheme.onSurface
 
-    val backgroundColor =
+    val color =
         when (appearance) {
-            ActionButtonAppearance.Shown -> LocalAndroidColorScheme.current.surfaceEffect0
+            ActionButtonAppearance.Shown -> backgroundColor
             else -> Color.Transparent
         }
 
@@ -241,7 +247,7 @@ fun ActionButton(
         onClicked = onClicked,
         onLongPressed = onLongPressed,
         isEnabled = isInputEnabled && !isHidden,
-        backgroundColor = backgroundColor,
+        backgroundColor = color,
         foregroundColor = foregroundColor,
         isAnimationEnabled = true,
         elementId = elementId,
@@ -502,6 +508,20 @@ private fun Modifier.pinPadButtonInput(
                     }
                 }
             }
+    }
+}
+
+/**
+ * (Re)requests focus as needed. Done as a separate `@Composable` function to make sure that the
+ * caller doesn't need to recompose every time the state in the view-model is changed.
+ */
+@Composable
+private fun RequestFocus(focusRequester: FocusRequester, viewModel: PinBouncerViewModel) {
+    val isFocusRequested by viewModel.isFocusRequested.collectAsStateWithLifecycle()
+    LaunchedEffect(isFocusRequested) {
+        if (isFocusRequested) {
+            focusRequester.requestFocus()
+        }
     }
 }
 

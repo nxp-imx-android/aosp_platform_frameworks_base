@@ -19,6 +19,8 @@ package com.android.server.am;
 import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_BACKGROUND;
 import static android.app.AppProtoEnums.BROADCAST_TYPE_DEFERRABLE_UNTIL_ACTIVE;
+import static android.app.AppProtoEnums.BROADCAST_TYPE_MANIFEST_RECEIVER;
+import static android.app.AppProtoEnums.BROADCAST_TYPE_REGISTERED_RECEIVER_ONLY;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.server.am.BroadcastRecord.DELIVERY_DEFERRED;
@@ -48,6 +50,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import android.app.AppProtoEnums;
 import android.app.BackgroundStartPrivileges;
 import android.app.BroadcastOptions;
 import android.content.IIntentReceiver;
@@ -62,6 +65,7 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.telephony.SubscriptionManager;
+import android.util.DebugUtils;
 
 import androidx.test.filters.SmallTest;
 
@@ -103,6 +107,8 @@ public class BroadcastRecordTest {
 
     private static final String PROCESS1 = "process1";
     private static final String PROCESS2 = "process2";
+
+    private static final String RECEIVER = "com.pkg.receiver";
 
     private static final int SYSTEM_UID = android.os.Process.SYSTEM_UID;
     private static final int APP_UID = android.os.Process.FIRST_APPLICATION_UID;
@@ -653,7 +659,8 @@ public class BroadcastRecordTest {
                 record.getBroadcastProcessedRecordsForTest().get(
                         BroadcastRecord.getReceiverProcessName(receiver));
         final int[] expectedBroadcastTypes =
-                new int[]{BROADCAST_TYPE_BACKGROUND, BROADCAST_TYPE_DEFERRABLE_UNTIL_ACTIVE};
+                new int[]{BROADCAST_TYPE_BACKGROUND, BROADCAST_TYPE_DEFERRABLE_UNTIL_ACTIVE,
+                        BROADCAST_TYPE_REGISTERED_RECEIVER_ONLY};
 
         assertBroadcastProcessedEvent(
                 broadcastProcessedEventRecord,
@@ -689,7 +696,8 @@ public class BroadcastRecordTest {
                 record.getBroadcastProcessedRecordsForTest().get(
                         BroadcastRecord.getReceiverProcessName(receiver2));
         final int[] expectedBroadcastTypes =
-                new int[]{BROADCAST_TYPE_BACKGROUND, BROADCAST_TYPE_DEFERRABLE_UNTIL_ACTIVE};
+                new int[]{BROADCAST_TYPE_BACKGROUND, BROADCAST_TYPE_DEFERRABLE_UNTIL_ACTIVE,
+                        BROADCAST_TYPE_REGISTERED_RECEIVER_ONLY};
 
         assertBroadcastProcessedEvent(
                 broadcastProcessedEventRecord1,
@@ -712,6 +720,38 @@ public class BroadcastRecordTest {
     @Test
     public void testLogBroadcastProcessedEventRecord_allBroadcastProcessedEventLogged() {
         testLogBroadcastProcessedEventRecord(1);
+    }
+
+    @Test
+    public void testCalculateTypeForLogging_manifest_explicit() {
+        final Intent intent = new Intent()
+                .setClassName(PACKAGE1, RECEIVER);
+        final BroadcastRecord r = createBroadcastRecord(intent, List.of());
+        assertTypeManifest(r.calculateTypeForLogging());
+    }
+
+    @Test
+    public void testCalculateTypeForLogging_manifest_includeBackground() {
+        final Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+                .addFlags(Intent.FLAG_RECEIVER_INCLUDE_BACKGROUND);
+        final BroadcastRecord r = createBroadcastRecord(intent, List.of());
+        assertTypeManifest(r.calculateTypeForLogging());
+    }
+
+    @Test
+    public void testCalculateTypeForLogging_registered_implicit() {
+        final Intent intent = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        final BroadcastRecord r = createBroadcastRecord(intent, List.of());
+        assertTypeRegisteredOnly(r.calculateTypeForLogging());
+    }
+
+    @Test
+    public void testCalculateTypeForLogging_registered_excludeBackground() {
+        final Intent intent = new Intent()
+                .setClassName(PACKAGE1, RECEIVER);
+        intent.addFlags(Intent.FLAG_RECEIVER_EXCLUDE_BACKGROUND);
+        final BroadcastRecord r = createBroadcastRecord(intent, List.of());
+        assertTypeRegisteredOnly(r.calculateTypeForLogging());
     }
 
     @Test
@@ -894,6 +934,20 @@ public class BroadcastRecordTest {
 
         return errorMsg.length() == 0 ? null
                 : errorMsg.insert(0, "Contains unexpected receiver: ").toString();
+    }
+
+    private void assertTypeManifest(int actualType) {
+        final String errMsg = "Expected to be of type manifest; actual: "
+                + DebugUtils.flagsToString(AppProtoEnums.class, "BROADCAST_TYPE_", actualType);
+        assertTrue(errMsg, (actualType & BROADCAST_TYPE_MANIFEST_RECEIVER) != 0);
+        assertFalse(errMsg, (actualType & BROADCAST_TYPE_REGISTERED_RECEIVER_ONLY) != 0);
+    }
+
+    private void assertTypeRegisteredOnly(int actualType) {
+        final String errMsg = "Expected to be of type registered only; actual: "
+                + DebugUtils.flagsToString(AppProtoEnums.class, "BROADCAST_TYPE_", actualType);
+        assertTrue(errMsg, (actualType & BROADCAST_TYPE_REGISTERED_RECEIVER_ONLY) != 0);
+        assertFalse(errMsg, (actualType & BROADCAST_TYPE_MANIFEST_RECEIVER) != 0);
     }
 
     private static ResolveInfo createResolveInfoWithPriority(int priority) {

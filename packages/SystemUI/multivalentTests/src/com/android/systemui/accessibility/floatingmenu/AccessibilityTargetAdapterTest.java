@@ -21,10 +21,12 @@ import static com.android.internal.accessibility.AccessibilityShortcutController
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.content.ComponentName;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.InsetDrawable;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper;
@@ -244,5 +246,41 @@ public class AccessibilityTargetAdapterTest extends SysuiTestCase {
                         ? com.android.internal.R.string.accessibility_shortcut_menu_item_status_on
                         : com.android.internal.R.string.accessibility_shortcut_menu_item_status_off;
         return mContext.getString(statusResId);
+    }
+
+    @Test
+    public void onBindViewHolder_moreOptionsTarget_largeSize_usesInsetDrawable() {
+        final MoreOptionsTarget moreOptionsTarget = mock(MoreOptionsTarget.class);
+        when(moreOptionsTarget.getIcon()).thenReturn(mIcon);
+        when(mIcon.getIntrinsicWidth()).thenReturn(24);
+        mTargets.clear();
+        mTargets.add(moreOptionsTarget);
+        mAdapter.setIconWidthHeight(56);
+
+        mAdapter.onBindViewHolder(mViewHolder, 0);
+
+        assertThat(mViewHolder.mIconView.getBackground()).isInstanceOf(InsetDrawable.class);
+    }
+
+    @Test
+    public void onBindViewHolder_moreOptionsTarget_smallSize_noInsetDrawableIfEqual() {
+        final MoreOptionsTarget moreOptionsTarget = mock(MoreOptionsTarget.class);
+        when(moreOptionsTarget.getIcon()).thenReturn(mIcon);
+        when(mIcon.getIntrinsicWidth()).thenReturn(24);
+        mTargets.clear();
+        mTargets.add(moreOptionsTarget);
+        mAdapter.setIconWidthHeight(24);
+
+        mAdapter.onBindViewHolder(mViewHolder, 0);
+
+        assertThat(mViewHolder.mIconView.getBackground()).isEqualTo(mIcon);
+    }
+
+    @Test
+    public void onBindViewHolder_regularTarget_doesNotUseInsetDrawable() {
+        mAdapter.setIconWidthHeight(56);
+        mAdapter.onBindViewHolder(mViewHolder, 0);
+
+        assertThat(mViewHolder.mIconView.getBackground()).isEqualTo(mIcon);
     }
 }

@@ -3096,7 +3096,6 @@ public abstract class ConnectionService extends Service {
      * @param conference The new conference object.
      * @param originalConnection The original connection object.
      */
-    @FlaggedApi(Flags.FLAG_REUSE_ORIGINAL_CONN_REMOTE_CONF_API)
     public final void addConferenceFromConnection(@NonNull Conference conference,
             @NonNull Connection originalConnection) {
         Log.d(this, "addConferenceFromConnection: conference=%s "

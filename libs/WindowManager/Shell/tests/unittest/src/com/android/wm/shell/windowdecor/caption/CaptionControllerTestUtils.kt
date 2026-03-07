@@ -17,16 +17,21 @@
 package com.android.wm.shell.windowdecor.caption
 
 import com.android.wm.shell.windowdecor.HandleMenu
-import org.mockito.ArgumentMatchers.anyBoolean
-import org.mockito.ArgumentMatchers.anyInt
-import org.mockito.ArgumentMatchers.eq
+import org.mockito.ArgumentMatcher
 import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
-/** Verifies a handle menu was created the given number of times. */
-fun HandleMenu.HandleMenuFactory.verifyHandleMenuCreated(times: Int = 1) {
+/**
+ * Verifies a handle menu was created the given number of times matching the given [appToWebData]
+ * matcher.
+ */
+fun HandleMenu.HandleMenuFactory.verifyHandleMenuCreated(
+    times: Int = 1,
+    appToWebData: ArgumentMatcher<HandleMenu.AppToWebData> =
+        ArgumentMatcher<HandleMenu.AppToWebData> { true },
+) {
     verify(this, times(times))
         .create(
             mainDispatcher = any(),
@@ -38,57 +43,22 @@ fun HandleMenu.HandleMenuFactory.verifyHandleMenuCreated(times: Int = 1) {
             windowManagerWrapper = any(),
             windowDecorationActions = any(),
             taskResourceLoader = any(),
-            layoutResId = anyInt(),
+            layoutResId = any(),
             splitScreenController = any(),
-            shouldShowWindowingPill = anyBoolean(),
-            shouldShowNewWindowButton = anyBoolean(),
-            shouldShowManageWindowsButton = anyBoolean(),
-            shouldShowChangeAspectRatioButton = anyBoolean(),
-            shouldShowGameControlsButton = anyBoolean(),
-            shouldShowDesktopModeButton = anyBoolean(),
-            shouldShowRestartButton = anyBoolean(),
-            appToWebData = anyOrNull(),
+            shouldShowWindowingPill = any(),
+            shouldShowNewWindowButton = any(),
+            shouldShowManageWindowsButton = any(),
+            shouldShowChangeAspectRatioButton = any(),
+            shouldShowGameControlsButton = any(),
+            shouldShowDesktopModeButton = any(),
+            shouldShowRestartButton = any(),
+            appToWebData = argThat(appToWebData),
             desktopModeUiEventLogger = any(),
             captionView = any(),
-            captionWidth = anyInt(),
-            captionHeight = anyInt(),
-            captionX = anyInt(),
-            captionY = anyInt(),
-            surfaceControlBuilderSupplier = any(),
-            surfaceControlTransactionSupplier = any(),
-            surfaceControlViewHostFactory = any(),
-        )
-}
-
-/** Verifies a handle menu was created with the given [AppToWebData]. */
-fun HandleMenu.HandleMenuFactory.verifyHandleMenuCreated(appToWebData: HandleMenu.AppToWebData?) {
-    verify(this)
-        .create(
-            mainDispatcher = any(),
-            mainScope = any(),
-            context = any(),
-            taskInfo = any(),
-            parentSurface = any(),
-            display = any(),
-            windowManagerWrapper = any(),
-            windowDecorationActions = any(),
-            taskResourceLoader = any(),
-            layoutResId = anyInt(),
-            splitScreenController = any(),
-            shouldShowWindowingPill = anyBoolean(),
-            shouldShowNewWindowButton = anyBoolean(),
-            shouldShowManageWindowsButton = anyBoolean(),
-            shouldShowChangeAspectRatioButton = anyBoolean(),
-            shouldShowGameControlsButton = anyBoolean(),
-            shouldShowDesktopModeButton = anyBoolean(),
-            shouldShowRestartButton = anyBoolean(),
-            appToWebData = eq(appToWebData),
-            desktopModeUiEventLogger = any(),
-            captionView = any(),
-            captionWidth = anyInt(),
-            captionHeight = anyInt(),
-            captionX = anyInt(),
-            captionY = anyInt(),
+            captionWidth = any(),
+            captionHeight = any(),
+            captionX = any(),
+            captionY = any(),
             surfaceControlBuilderSupplier = any(),
             surfaceControlTransactionSupplier = any(),
             surfaceControlViewHostFactory = any(),

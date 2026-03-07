@@ -28,6 +28,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.Companion.device
 import com.android.systemui.keyguard.shared.model.KeyguardTransitionKeys.WithAnimationOverLockscreen
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.power.domain.interactor.PowerInteractor
+import com.android.systemui.power.shared.model.WakefulnessState
 import com.android.systemui.scene.data.model.asIterable
 import com.android.systemui.scene.domain.interactor.SceneBackInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
@@ -53,7 +54,7 @@ import kotlinx.coroutines.flow.map
 class WindowManagerLockscreenVisibilityInteractor
 @Inject
 constructor(
-    keyguardInteractor: KeyguardInteractor,
+    private val keyguardInteractor: KeyguardInteractor,
     transitionRepository: KeyguardTransitionRepository,
     transitionInteractor: KeyguardTransitionInteractor,
     surfaceBehindInteractor: KeyguardSurfaceBehindInteractor,
@@ -223,14 +224,22 @@ constructor(
      */
     private val goneToLockscreenLsVisibility =
         powerInteractor.detailedWakefulness
-            .distinctUntilChangedBy { it.isAwake() }
             .map {
                 if (it.powerButtonLaunchGestureTriggered) {
-                    false to "ChangeScene Gone -> LS, power button launch"
+                    false to "Gone -> Lockscreen, power button launch"
+                } else if (!keyguardInteractor.isAodAvailable.value) {
+                    // If AOD is disabled, we don't need to keep the app content visible for the
+                    // screen off animation since we're doing the screenshot fade. However, to
+                    // ensure there's no flicker when doing the double-tap power gesture, we need
+                    // to wait until we're fully asleep (rather than GOING_TO_SLEEP) since the
+                    // display remains on briefly before starting the screenshot fade.
+                    (it.internalWakefulnessState == WakefulnessState.ASLEEP) to
+                        "Gone -> Lockscreen, no AOD, wakefulness=${it.internalWakefulnessState}"
                 } else {
-                    it.isAwake() to "ChangeScene Gone -> LS, awake w/ no power button launch"
+                    it.isAwake() to "Gone -> Lockscreen, awake: ${it.isAwake()}"
                 }
             }
+            .distinctUntilChanged()
 
     /**
      * The lockscreen is visible when dreaming if the device is locked, or if the lockscreen scene

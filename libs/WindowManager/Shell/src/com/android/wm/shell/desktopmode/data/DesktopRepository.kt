@@ -458,11 +458,7 @@ class DesktopRepository(
         val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
         desk.leftTiledTaskId = taskId
         if (!desk.transientDesk && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
-            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
-                updatePersistentRepository(displayId)
-            } else {
-                updatePersistentRepositoryForDesk(deskId)
-            }
+            updatePersistentRepository(displayId)
         }
     }
 
@@ -476,11 +472,7 @@ class DesktopRepository(
         val desk = checkNotNull(desktopData.getDesk(deskId)) { "Did not find desk: $deskId" }
         desk.rightTiledTaskId = taskId
         if (!desk.transientDesk && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
-            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
-                updatePersistentRepository(displayId)
-            } else {
-                updatePersistentRepositoryForDesk(deskId)
-            }
+            updatePersistentRepository(displayId)
         }
     }
 
@@ -502,11 +494,7 @@ class DesktopRepository(
         if (desk == null) return
         desk.leftTiledTaskId = null
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
-            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
-                updatePersistentRepository(displayId)
-            } else {
-                updatePersistentRepositoryForDesk(deskId)
-            }
+            updatePersistentRepository(displayId)
         }
     }
 
@@ -516,11 +504,7 @@ class DesktopRepository(
         if (desk == null) return
         desk.rightTiledTaskId = null
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
-            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
-                updatePersistentRepository(displayId)
-            } else {
-                updatePersistentRepositoryForDesk(deskId)
-            }
+            updatePersistentRepository(displayId)
         }
     }
 
@@ -1087,11 +1071,7 @@ class DesktopRepository(
         updateTaskInDesk(displayId, deskId, taskId, isVisible = false, taskBounds = null)
         if (desk?.transientDesk == true) return
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
-            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
-                updatePersistentRepository(displayId)
-            } else {
-                updatePersistentRepositoryForDesk(deskId)
-            }
+            updatePersistentRepository(displayId)
         }
     }
 
@@ -1168,11 +1148,7 @@ class DesktopRepository(
         removeActiveTaskFromDesk(deskId = deskId, taskId = taskId)
         removeVisibleTaskFromDesk(deskId = deskId, taskId = taskId)
         if (!desk.transientDesk && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
-            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
-                updatePersistentRepository(desk.displayId)
-            } else {
-                updatePersistentRepositoryForDesk(deskId)
-            }
+            updatePersistentRepository(desk.displayId)
         }
     }
 
@@ -1213,11 +1189,7 @@ class DesktopRepository(
             DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue &&
                 DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         ) {
-            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
-                updatePersistentRepository(desk.displayId)
-            } else {
-                removeDeskFromPersistentRepository(desk)
-            }
+            updatePersistentRepository(desk.displayId)
         }
         return activeTasks
     }
@@ -1350,91 +1322,24 @@ class DesktopRepository(
             if (displayId == INVALID_DISPLAY) return
 
             val desks = desktopData.desksSequence().map { it.deepCopy() }.toList()
-            if (DesktopExperienceFlags.REPOSITORY_BASED_PERSISTENCE.isTrue) {
-                persistentUpdateQueue.post {
-                    Trace.beginSection("DesktopRepository#UpdateRepoWork")
-                    logD("updatePersistentRepository user=%d", userId)
-                    try {
-                        persistentRepository.addOrUpdateRepository(
-                            userId,
-                            desks,
-                            desktopData
-                                .getAllActiveDesks()
-                                .map { desk -> desk.uniqueDisplayId to desk.deskId }
-                                .toMap(),
+            persistentUpdateQueue.post {
+                Trace.beginSection("DesktopRepository#UpdateRepoWork")
+                logD("updatePersistentRepository user=%d", userId)
+                try {
+                    persistentRepository.addOrUpdateRepository(
+                        userId,
+                        desks,
+                        desktopData
+                            .getAllActiveDesks()
+                            .map { desk -> desk.uniqueDisplayId to desk.deskId }
+                            .toMap(),
                             preservedDisplaysByUniqueId,
                             rememberedBoundsRatioByPackageName,
-                        )
-                    } catch (exception: Exception) {
-                        logE(
-                            "An exception occurred while updating the persistent repository \n%s",
-                            exception.stackTrace,
-                        )
-                    } finally {
-                        Trace.endSection()
-                    }
-                }
-            } else {
-                mainCoroutineScope.launch {
-                    desks.forEach { desk -> updatePersistentRepositoryForDesk(desk) }
-                }
-            }
-        }
-
-    @Deprecated(
-        "Use updatePersistentRepository() instead.",
-        ReplaceWith("updatePersistentRepository()"),
-    )
-    private fun updatePersistentRepositoryForDesk(deskId: Int): Unit =
-        traceSection("DesktopRepository#updatePersistentRepositoryForDeskId") {
-            val desk = desktopData.getDesk(deskId)?.deepCopy() ?: return
-            mainCoroutineScope.launch { updatePersistentRepositoryForDesk(desk) }
-        }
-
-    @Deprecated(
-        "Use updatePersistentRepository() instead.",
-        ReplaceWith("updatePersistentRepository()"),
-    )
-    private suspend fun updatePersistentRepositoryForDesk(desk: Desk): Unit =
-        traceSection("DesktopRepository#updatePersistentRepositoryForDesk") {
-            try {
-                persistentRepository.addOrUpdateDesktop(
-                    userId = userId,
-                    desktopId = desk.deskId,
-                    uniqueDisplayId = desk.uniqueDisplayId,
-                    visibleTasks = desk.visibleTasks,
-                    minimizedTasks = desk.minimizedTasks,
-                    freeformTasksInZOrder = desk.freeformTasksInZOrder,
-                    leftTiledTask = desk.leftTiledTaskId,
-                    rightTiledTask = desk.rightTiledTaskId,
-                )
-            } catch (exception: Exception) {
-                logE(
-                    "An exception occurred while updating the persistent repository \n%s",
-                    exception.stackTrace,
-                )
-            }
-        }
-
-    @Deprecated(
-        "Use updatePersistentRepository() instead.",
-        ReplaceWith("updatePersistentRepository()"),
-    )
-    private fun removeDeskFromPersistentRepository(desk: Desk) =
-        traceSection("DesktopRepository#removeDeskFromPersistentRepository") {
-            mainCoroutineScope.launch {
-                logD(
-                    "updatePersistentRepositoryForRemovedDesk user=%d desk=%d",
-                    userId,
-                    desk.deskId,
-                )
-                Trace.beginSection("DesktopRepository#removeDeskWork")
-                try {
-                    persistentRepository.removeDesktop(userId = userId, desktopId = desk.deskId)
-                } catch (throwable: Throwable) {
+                    )
+                } catch (exception: Exception) {
                     logE(
                         "An exception occurred while updating the persistent repository \n%s",
-                        throwable.stackTrace,
+                        exception.stackTrace,
                     )
                 } finally {
                     Trace.endSection()

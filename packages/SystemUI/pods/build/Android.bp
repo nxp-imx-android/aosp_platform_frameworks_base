@@ -96,7 +96,6 @@ java_defaults {
         "mockito-target-extended-minus-junit4",
         "truth",
     ],
-    resource_dirs: ["testRes"],
     visibility: ["//visibility:public"],
     defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
 }

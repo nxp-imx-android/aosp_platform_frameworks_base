@@ -121,6 +121,7 @@ import com.android.systemui.statusbar.notification.row.NotificationGuts;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
 import com.android.systemui.statusbar.notification.row.NotificationSnooze;
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix;
+import com.android.systemui.statusbar.notification.shared.NsslTouchDispatchFix;
 import com.android.systemui.statusbar.notification.stack.ui.viewbinder.NotificationListViewBinder;
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
@@ -2137,21 +2138,40 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             final boolean longPressWantsIt = mLongPressedView != null
                     && !skipForDragging && mSwipeHelper.onInterceptTouchEvent(ev);
 
-            final boolean expandWantsIt = mLongPressedView == null
-                    && !mSwipeHelper.isSwiping()
-                    && !mView.getOnlyScrollingInThisMotion()
-                    && guts == null && !skipForDragging
-                    && mView.getExpandHelper().onInterceptTouchEvent(ev);
+            final boolean expandWantsIt;
+            if (NsslTouchDispatchFix.isEnabled()) {
+                // Intercept the touches as soon as the swipe starts to expand a Notification,
+                // otherwise this gesture might be interpreted as a click on the Notification.
+                expandWantsIt = mView.isExpandingNotification();
+            } else {
+                expandWantsIt = mLongPressedView == null
+                        && !mSwipeHelper.isSwiping()
+                        && !mView.getOnlyScrollingInThisMotion()
+                        && guts == null && !skipForDragging
+                        && mView.getExpandHelper().onInterceptTouchEvent(ev);
+            }
 
             final boolean lockscreenExpandWantsIt = shouldLockscreenExpandHandleTouch()
                     && getLockscreenExpandTouchHelper().onInterceptTouchEvent(ev);
 
-            final boolean scrollWantsIt = mLongPressedView == null
-                    && !mSwipeHelper.isSwiping() // horizontal swipe to dismiss
-                    && !mView.isExpandingNotification() // vertical swipe to expand
-                    && !lockscreenExpandWantsIt // vertical swipe to expand over lockscreen
-                    && !skipForDragging
-                    && mView.onInterceptTouchEventScroll(ev);
+            final boolean scrollWantsIt;
+            if (NsslTouchDispatchFix.isEnabled()) {
+                // Send this touch event to the scroller if it might be used for:
+                //  - Dragging over Lockscreen (to open the Shade)
+                //  - Dragging on the scrollable stack (to scroll the placeholder)
+                //  - Drag down on a Notif to expand it (to avoid Scene changes in the same motion)
+                scrollWantsIt = mLongPressedView == null
+                        && !mSwipeHelper.isSwiping() // horizontal swipe to dismiss
+                        && !lockscreenExpandWantsIt // vertical swipe to expand over lockscreen
+                        && mView.onInterceptTouchEventScroll(ev);
+            } else {
+                scrollWantsIt = mLongPressedView == null
+                        && !mSwipeHelper.isSwiping() // horizontal swipe to dismiss
+                        && !mView.isExpandingNotification() // vertical swipe to expand
+                        && !lockscreenExpandWantsIt // vertical swipe to expand over lockscreen
+                        && !skipForDragging
+                        && mView.onInterceptTouchEventScroll(ev);
+            }
 
             final boolean hunWantsIt = shouldHeadsUpHandleTouch()
                     && mHeadsUpTouchHelper.onInterceptTouchEvent(ev);
@@ -2232,8 +2252,20 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             boolean expandWantsIt = false;
             boolean onlyScrollingInThisMotion = mView.getOnlyScrollingInThisMotion();
             boolean expandingNotification = mView.isExpandingNotification();
-            if (mLongPressedView == null && mView.getIsExpanded()
-                    && !mSwipeHelper.isSwiping() && !onlyScrollingInThisMotion && guts == null) {
+
+            final boolean showTouchToExpandHelper;
+            if (NsslTouchDispatchFix.isEnabled()) {
+                showTouchToExpandHelper = false;
+                // Handle the touch if it was used for expanding a notification.
+                expandWantsIt = mView.isExpandingNotification() || mView.getExpandedInThisMotion();
+            } else {
+                showTouchToExpandHelper = mLongPressedView == null
+                        && mView.getIsExpanded()
+                        && !mSwipeHelper.isSwiping()
+                        && !onlyScrollingInThisMotion
+                        && guts == null;
+            }
+            if (showTouchToExpandHelper) {
                 ExpandHelper expandHelper = mView.getExpandHelper();
                 if (isCancelOrUp) {
                     expandHelper.onlyObserveMovements(false);
@@ -2272,13 +2304,38 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     && !mView.getDisallowDismissInThisMotion()
                     && mSwipeHelper.onTouchEvent(ev);
 
-            final boolean scrollerWantsIt = mLongPressedView == null
-                    && mView.isExpanded()
-                    && !mSwipeHelper.isSwiping()
-                    && !expandingNotification
-                    && !lockscreenExpandWantsIt
-                    && !mView.getDisallowScrollingInThisMotion()
-                    && mView.onScrollTouch(ev);
+            final boolean scrollerWantsIt;
+            if (NsslTouchDispatchFix.isEnabled()) {
+                // Propose this touch event to the scroller if it might be used for:
+                //  - Dragging over Lockscreen (to open the Shade)
+                //  - Dragging on the scrollable stack (to scroll the placeholder)
+                //  - Drag down on a Notif to expand it (to avoid Scene changes in the same motion)
+                scrollerWantsIt = mLongPressedView == null
+                        && mView.isExpanded()
+                        && !mSwipeHelper.isSwiping()
+                        && !lockscreenExpandWantsIt
+                        && !mView.getDisallowScrollingInThisMotion()
+                        && mView.offerScrollTouchToScroller(ev);
+
+                // Claim this motion from the SceneContainer if it is used for:
+                //  - Long press
+                //  - Horizontal swipe
+                boolean shouldClaimTouchFromSceneFramework = mLongPressedView != null
+                        || mSwipeHelper.isSwiping()
+                        || mView.getDisallowScrollingInThisMotion();
+
+                if (shouldClaimTouchFromSceneFramework) {
+                    mView.claimTouchFromSceneFramework(ev);
+                }
+            } else {
+                scrollerWantsIt = mLongPressedView == null
+                        && mView.isExpanded()
+                        && !mSwipeHelper.isSwiping()
+                        && !expandingNotification
+                        && !lockscreenExpandWantsIt
+                        && !mView.getDisallowScrollingInThisMotion()
+                        && mView.onScrollTouch(ev);
+            }
 
             // hunWantsIt means that the hun would like to keep listening to the rest of gesture
             // this is different to: the HUN claims the gesture and marks NSSL as being dragged

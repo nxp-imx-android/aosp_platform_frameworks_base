@@ -17,12 +17,13 @@
 #pragma once
 
 #include <android-base/thread_annotations.h>
+#include <android/gui/FrameTimelineInfo.h>
 #include <android/hardware_buffer.h>
 #include <android/ipcrenderbuffer/IPCRecordingCanvas.h>
 #include <android/ipcrenderbuffer/RenderBufferOps.h>
+#include <gui/FrameTimestamps.h>
 #include <gui/SurfaceComposerClient.h>
 #include <gui/SurfaceControl.h>
-#include <android/gui/FrameTimelineInfo.h>
 
 #include <memory>
 #include <mutex>
@@ -97,8 +98,17 @@ public:
     bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)> callback,
                              bool acquireSingleBuffer) override;
 
+    void setCornerRadiiCallback(
+        std::function<void(const gui::CornerRadii&)> cornerRadiiCallback) override;
+    void setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback) override;
+
     ANativeWindow* getSurface() override { return nullptr; }
     uint64_t getFrameNumber() override;
+    int getFrameTimestamps(uint64_t frameNumber, nsecs_t* outRequestedPresentTime,
+                           nsecs_t* outAcquireTime, nsecs_t* outLatchTime,
+                           nsecs_t* outFirstRefreshStartTime, nsecs_t* outLastRefreshStartTime,
+                           nsecs_t* outGpuCompositionDoneTime, nsecs_t* outDisplayPresentTime,
+                           nsecs_t* outDequeueReadyTime, nsecs_t* outReleaseTime) override;
 
     void updateRenderTargetSize(uint64_t width, uint64_t height) override;
 
@@ -127,7 +137,31 @@ private:
 
     uint64_t mWidth = 0;
     uint64_t mHeight = 0;
+
     OoprClient* mOoprClient;
+
+    static constexpr size_t kFrameEventsSize = 10;
+    FrameEvents mFrameEvents[kFrameEventsSize] GUARDED_BY(mLock);
+    size_t mFrameEventIndex GUARDED_BY(mLock) = 0;
+    FrameEvents* getFrameEvents(uint64_t frameNumber) REQUIRES(mLock);
+
+    std::queue<sp<SurfaceControl>> mSurfaceControlsWithPendingCallback GUARDED_BY(mLock);
+
+    void transactionCallback(nsecs_t latchTime, const sp<Fence>& presentFence,
+                             const std::vector<SurfaceControlStats>& stats);
+
+    struct CallbackHandler {
+        std::mutex lock;
+        SkiaIpcPipeline* pipeline;
+        void onTransactionCompleted(nsecs_t latchTime, const sp<Fence>& presentFence,
+                                    const std::vector<SurfaceControlStats>& stats) {
+            std::lock_guard<std::mutex> lg(lock);
+            if (pipeline) {
+                pipeline->transactionCallback(latchTime, presentFence, stats);
+            }
+        }
+    };
+    std::shared_ptr<CallbackHandler> mCallbackHandler;
 };
 
 } /* namespace skiapipeline */

@@ -19,6 +19,7 @@ package com.android.systemui.notifications.intelligence.rules.ui.viewmodel
 import android.annotation.Px
 import android.content.ContentResolver
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.runtime.getValue
@@ -29,7 +30,10 @@ import com.android.systemui.notifications.intelligence.rules.domain.interactor.I
 import com.android.systemui.notifications.intelligence.rules.shared.NmContextualDisplayLaunch
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.ContactModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.ContactsModel
 import com.android.systemui.notifications.intelligence.rules.shared.model.DraftRuleModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.IncludedAppsModel
+import com.android.systemui.notifications.intelligence.rules.shared.model.RuleValue
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -43,6 +47,50 @@ constructor(
 ) : NotificationRuleEditViewModel {
 
     override var rule: DraftRuleModel by mutableStateOf(startingRule)
+
+    override fun buildRuleText(
+        onEnterEditField: (RulesScreenViewState.EditField) -> Unit,
+        onExitEditField: () -> Unit,
+        resources: Resources,
+    ): RuleDisplayModel {
+        return buildEditableRuleText(
+            this,
+            onEnterEditField,
+            onAppsSaved = { onAppsSaved(it, onExitEditField) },
+            onContactsSaved = { onContactsSaved(it, onExitEditField) },
+            resources = resources,
+        )
+    }
+
+    override fun onAppsSaved(newApps: List<AppModel>, onExitEditField: () -> Unit) {
+        rule =
+            rule.copy(
+                includedApps =
+                    if (newApps.isNotEmpty()) {
+                        RuleValue.Specified(IncludedAppsModel(newApps))
+                    } else {
+                        // Saving with no selected apps is effectively removing apps from the
+                        // filter.
+                        null
+                    }
+            )
+        onExitEditField()
+    }
+
+    override fun onContactsSaved(newContacts: List<ContactModel>, onExitEditField: () -> Unit) {
+        rule =
+            rule.copy(
+                contacts =
+                    if (newContacts.isNotEmpty()) {
+                        RuleValue.Specified(ContactsModel(newContacts))
+                    } else {
+                        // Saving with no selected contacts is effectively removing contacts from
+                        // the filter.
+                        null
+                    }
+            )
+        onExitEditField()
+    }
 
     override suspend fun fetchContacts(
         searchQuery: String,

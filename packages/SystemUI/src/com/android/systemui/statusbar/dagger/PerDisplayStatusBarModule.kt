@@ -311,18 +311,12 @@ interface PerDisplayStatusBarModule {
         @DisplayAware
         fun avControlsChipInteractor(
             avControlsChipNotSupported: Provider<NoOpAvControlsChipInteractor>,
-            @Default defaultInteractorLazy: Lazy<AvControlsChipInteractor>,
             factory: AvControlsChipInteractorImpl.Factory,
             @DisplayAware scope: CoroutineScope,
-            @DisplayAware displayId: Int,
             @DisplayAware statusBarModeRepo: StatusBarModePerDisplayRepository,
         ): AvControlsChipInteractor {
             return if (Flags.expandedPrivacyIndicatorsOnLargeScreen()) {
-                if (Flags.avControlsChipPerDisplay()) {
-                    factory.create(scope, statusBarModeRepo)
-                } else {
-                    defaultInteractorLazy.get()
-                }
+                factory.create(scope, statusBarModeRepo)
             } else {
                 avControlsChipNotSupported.get()
             }

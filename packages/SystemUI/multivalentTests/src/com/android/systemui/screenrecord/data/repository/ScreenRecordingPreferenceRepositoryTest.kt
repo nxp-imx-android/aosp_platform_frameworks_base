@@ -20,8 +20,11 @@ import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.testKosmosNew
+import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,76 +34,80 @@ import org.junit.runner.RunWith
 class ScreenRecordingPreferenceRepositoryTest : SysuiTestCase() {
 
     private val kosmos = testKosmosNew()
-    private val underTest by lazy { kosmos.screenRecordingPreferenceRepository }
+
+    private val Kosmos.underTest
+        get() = screenRecordingPreferenceRepository
 
     @Test
-    fun setShouldShowTaps_true_updatesSettings() {
-        underTest.setShouldShowTaps(true)
+    fun setShouldShowTaps_true_updatesSettings() =
+        kosmos.runTest {
+            underTest.setShouldShowTaps(true)
 
-        val value = Settings.System.getInt(context.contentResolver, Settings.System.SHOW_TOUCHES)
-        assertThat(value).isEqualTo(1)
-    }
-
-    @Test
-    fun setShouldShowTaps_false_updatesSettings() {
-        underTest.setShouldShowTaps(false)
-
-        val value = Settings.System.getInt(context.contentResolver, Settings.System.SHOW_TOUCHES)
-        assertThat(value).isEqualTo(0)
-    }
+            val value = fakeSettings.getInt(Settings.System.SHOW_TOUCHES)
+            assertThat(value).isEqualTo(1)
+        }
 
     @Test
-    fun setShouldShowSeconds_true_updatesSettings() {
-        underTest.setShouldShowSeconds(true)
+    fun setShouldShowTaps_false_updatesSettings() =
+        kosmos.runTest {
+            underTest.setShouldShowTaps(false)
 
-        val value = Settings.Secure.getInt(context.contentResolver, Clock.CLOCK_SECONDS)
-        assertThat(value).isEqualTo(1)
-    }
-
-    @Test
-    fun setShouldShowSeconds_false_updatesSettings() {
-        underTest.setShouldShowSeconds(false)
-
-        val value = Settings.Secure.getInt(context.contentResolver, Clock.CLOCK_SECONDS)
-        assertThat(value).isEqualTo(0)
-    }
+            val value = fakeSettings.getInt(Settings.System.SHOW_TOUCHES)
+            assertThat(value).isEqualTo(0)
+        }
 
     @Test
-    fun maybeRestoreSetting_restoresOriginalTapsOnlyIfChanged() {
-        Settings.System.putInt(context.contentResolver, Settings.System.SHOW_TOUCHES, 1)
+    fun setShouldShowSeconds_true_updatesSettings() =
+        kosmos.runTest {
+            underTest.setShouldShowSeconds(true)
 
-        underTest.setShouldShowTaps(false)
-        assertThat(Settings.System.getInt(context.contentResolver, Settings.System.SHOW_TOUCHES))
-            .isEqualTo(0)
-
-        underTest.maybeRestoreSetting()
-        assertThat(Settings.System.getInt(context.contentResolver, Settings.System.SHOW_TOUCHES))
-            .isEqualTo(1)
-    }
+            val value = fakeSettings.getInt(Clock.CLOCK_SECONDS)
+            assertThat(value).isEqualTo(1)
+        }
 
     @Test
-    fun maybeRestoreSetting_restoresOriginalSecondsOnlyIfChanged() {
-        Settings.Secure.putInt(context.contentResolver, Clock.CLOCK_SECONDS, 1)
+    fun setShouldShowSeconds_false_updatesSettings() =
+        kosmos.runTest {
+            underTest.setShouldShowSeconds(false)
 
-        underTest.setShouldShowSeconds(false)
-        assertThat(Settings.Secure.getInt(context.contentResolver, Clock.CLOCK_SECONDS))
-            .isEqualTo(0)
-
-        underTest.maybeRestoreSetting()
-        assertThat(Settings.Secure.getInt(context.contentResolver, Clock.CLOCK_SECONDS))
-            .isEqualTo(1)
-    }
+            val value = fakeSettings.getInt(Clock.CLOCK_SECONDS)
+            assertThat(value).isEqualTo(0)
+        }
 
     @Test
-    fun setShouldShowTaps_doesNotSaveOriginalIfAlreadySaving() {
-        Settings.System.putInt(context.contentResolver, Settings.System.SHOW_TOUCHES, 1)
+    fun maybeRestoreSetting_restoresOriginalTapsOnlyIfChanged() =
+        kosmos.runTest {
+            fakeSettings.putInt(Settings.System.SHOW_TOUCHES, 1)
 
-        underTest.setShouldShowTaps(false)
+            underTest.setShouldShowTaps(false)
+            assertThat(fakeSettings.getInt(Settings.System.SHOW_TOUCHES)).isEqualTo(0)
 
-        underTest.setShouldShowTaps(true)
+            underTest.maybeRestoreSetting()
+            assertThat(fakeSettings.getInt(Settings.System.SHOW_TOUCHES)).isEqualTo(1)
+        }
 
-        underTest.maybeRestoreSetting()
-        assertThat(Settings.System.getInt(context.contentResolver, Settings.System.SHOW_TOUCHES))
-            .isEqualTo(1)
-    }
+    @Test
+    fun maybeRestoreSetting_restoresOriginalSecondsOnlyIfChanged() =
+        kosmos.runTest {
+            fakeSettings.putInt(Clock.CLOCK_SECONDS, 1)
+
+            underTest.setShouldShowSeconds(false)
+            assertThat(fakeSettings.getInt(Clock.CLOCK_SECONDS)).isEqualTo(0)
+
+            underTest.maybeRestoreSetting()
+            assertThat(fakeSettings.getInt(Clock.CLOCK_SECONDS)).isEqualTo(1)
+        }
+
+    @Test
+    fun setShouldShowTaps_doesNotSaveOriginalIfAlreadySaving() =
+        kosmos.runTest {
+            fakeSettings.putInt(Settings.System.SHOW_TOUCHES, 1)
+
+            underTest.setShouldShowTaps(false)
+
+            underTest.setShouldShowTaps(true)
+
+            underTest.maybeRestoreSetting()
+            assertThat(fakeSettings.getInt(Settings.System.SHOW_TOUCHES)).isEqualTo(1)
+        }
 }

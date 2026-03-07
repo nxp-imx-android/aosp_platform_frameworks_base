@@ -18,12 +18,16 @@ package com.android.systemui.keyguard.ui.viewmodel
 
 import com.android.systemui.keyguard.domain.interactor.aodDimInteractor
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 
 val Kosmos.lockscreenBehindScrimViewModelFactory by
     Kosmos.Fixture {
         object : LockscreenBehindScrimViewModel.Factory {
             override fun create(): LockscreenBehindScrimViewModel {
-                return LockscreenBehindScrimViewModel(aodDimInteractor = aodDimInteractor)
+                return LockscreenBehindScrimViewModel(
+                    aodDimInteractor = aodDimInteractor,
+                    sceneInteractor = sceneInteractor,
+                )
             }
         }
     }

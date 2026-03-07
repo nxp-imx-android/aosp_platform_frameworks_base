@@ -6377,6 +6377,7 @@ package android.hardware.display {
     method @RequiresPermission(android.Manifest.permission.CONFIGURE_DISPLAY_BRIGHTNESS) public void setBrightnessConfiguration(android.hardware.display.BrightnessConfiguration);
     method @RequiresPermission(android.Manifest.permission.CONFIGURE_DISPLAY_BRIGHTNESS) public void setBrightnessConfigurationForDisplay(@NonNull android.hardware.display.BrightnessConfiguration, @NonNull String);
     method @Deprecated @RequiresPermission(android.Manifest.permission.CONTROL_DISPLAY_SATURATION) public void setSaturationLevel(float);
+    field @FlaggedApi("com.android.server.display.feature.flags.virtual_displays_support_desktop_mode") public static final int VIRTUAL_DISPLAY_FLAG_ALLOWS_CONTENT_MODE_SWITCH = 131072; // 0x20000
     field public static final int VIRTUAL_DISPLAY_FLAG_ROTATES_WITH_CONTENT = 128; // 0x80
     field public static final int VIRTUAL_DISPLAY_FLAG_STEAL_TOP_FOCUS_DISABLED = 65536; // 0x10000
     field public static final int VIRTUAL_DISPLAY_FLAG_TRUSTED = 1024; // 0x400
@@ -6384,6 +6385,7 @@ package android.hardware.display {
 
   public final class VirtualDisplayConfig implements android.os.Parcelable {
     method @Nullable public android.view.DisplayCutout getDisplayCutout();
+    method @FlaggedApi("com.android.server.display.feature.flags.virtual_displays_support_desktop_mode") @Nullable public String getUniqueId();
     method public boolean isHomeSupported();
     method @FlaggedApi("com.android.window.flags.vdm_force_app_universal_resizable_api") public boolean isIgnoreActivitySizeRestrictions();
   }
@@ -6392,6 +6394,7 @@ package android.hardware.display {
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setDisplayCutout(@Nullable android.view.DisplayCutout);
     method @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setHomeSupported(boolean);
     method @FlaggedApi("com.android.window.flags.vdm_force_app_universal_resizable_api") @NonNull public android.hardware.display.VirtualDisplayConfig.Builder setIgnoreActivitySizeRestrictions(boolean);
+    method @FlaggedApi("com.android.server.display.feature.flags.virtual_displays_support_desktop_mode") @NonNull @RequiresPermission(android.Manifest.permission.ADD_TRUSTED_DISPLAY) public android.hardware.display.VirtualDisplayConfig.Builder setUniqueId(@Nullable String);
   }
 
 }

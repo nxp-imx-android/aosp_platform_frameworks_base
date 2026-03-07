@@ -28,6 +28,7 @@ import android.content.pm.PackageManagerInternal;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.appfunctions.allowlist.SystemAppFunctionAllowlistReader;
+import com.android.server.appfunctions.dynamic.MultiUserDynamicAppFunctionRegistry;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.appinteraction.AppInteractionServiceImpl;
 import com.android.server.uri.UriGrantsManagerInternal;

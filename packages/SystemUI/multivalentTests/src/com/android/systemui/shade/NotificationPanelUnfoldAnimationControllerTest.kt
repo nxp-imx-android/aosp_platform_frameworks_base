@@ -84,7 +84,9 @@ class NotificationPanelUnfoldAnimationControllerTest : SysuiTestCase() {
         MockitoAnnotations.initMocks(this)
         if (Looper.myLooper() == null) Looper.prepare()
         xTranslationMax =
-            context.resources.getDimensionPixelSize(R.dimen.notification_side_paddings).toFloat()
+            context.resources
+                .getDimensionPixelSize(R.dimen.notification_side_paddings_single)
+                .toFloat()
 
         underTest =
             NotificationPanelUnfoldAnimationController(

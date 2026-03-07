@@ -36,6 +36,7 @@ import android.os.SystemClock
 import android.os.UserHandle
 import android.os.UserManager
 import android.os.test.TestLooper
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
@@ -102,7 +103,6 @@ import org.mockito.kotlin.times
     com.android.hardware.input.Flags.FLAG_ENABLE_TALKBACK_KEY_GESTURES,
     com.android.hardware.input.Flags.FLAG_ENABLE_NEW_26Q2_KEYCODES,
     com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
-    com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT,
     com.android.hardware.input.Flags.FLAG_KEYBOARD_BACKLIGHT_SHORTCUTS,
     com.android.hardware.input.Flags.FLAG_ENABLE_CONTEXTUAL_SEARCH_DESKTOP_ENTRYPOINTS,
     com.android.hardware.input.Flags.FLAG_ENABLE_NOTE_TAKING_KEYBOARD_SHORTCUT,
@@ -347,6 +347,7 @@ class KeyGestureControllerTests {
 
     @Test
     @Parameters(method = "systemGesturesTestArguments")
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
     fun testKeyGestures(test: KeyGestureData) {
         setupKeyGestureController()
         testKeyGestureProduced(test, PASS_THROUGH_APP)
@@ -365,6 +366,7 @@ class KeyGestureControllerTests {
     }
 
     @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
     fun testCustomKeyGesturesNotAllowedForSystemGestures() {
         setupKeyGestureController()
         for (systemGesture in systemGesturesTestArguments()) {
@@ -447,6 +449,7 @@ class KeyGestureControllerTests {
 
     @Test
     @Parameters(method = "nonCapturableKeyGestures")
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
     fun testKeyGestures_withKeyCapture_nonCapturableGestures(test: KeyGestureData) {
         setupKeyGestureController()
         enableKeyCaptureForFocussedWindow()
@@ -461,6 +464,7 @@ class KeyGestureControllerTests {
 
     @Test
     @Parameters(method = "capturableKeyGestures")
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
     fun testKeyGestures_withKeyCapture_capturableGestures(test: KeyGestureData) {
         setupKeyGestureController()
         enableKeyCaptureForFocussedWindow()
@@ -474,6 +478,7 @@ class KeyGestureControllerTests {
 
     @Test
     @Parameters(method = "capturableKeyGestures_handledAsFallback")
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
     fun testKeyGestures_withKeyCapture_capturableGesturesHandledAsFallback(test: KeyGestureData) {
         setupKeyGestureController()
         enableKeyCaptureForFocussedWindow()
@@ -1142,6 +1147,7 @@ class KeyGestureControllerTests {
 
     @Test
     @Parameters(method = "screenshotTestArguments")
+    @DisableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
     fun testScreenshotShortcuts(testData: KeyGestureData) {
         setupKeyGestureController()
         sendKeys(testData.keys, displayId = RANDOM_DISPLAY_ID)
@@ -1159,6 +1165,78 @@ class KeyGestureControllerTests {
             RANDOM_DISPLAY_ID,
             requestCaptor.lastValue.displayId,
         )
+    }
+
+    @Keep
+    private fun partialScreenshotTestArguments(): Array<KeyGestureData> {
+        return arrayOf(
+            KeyGestureData(
+                "SYSRQ -> Take Screenshot (Flag ON, No Handler)",
+                intArrayOf(KeyEvent.KEYCODE_SYSRQ),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
+                intArrayOf(KeyEvent.KEYCODE_SYSRQ),
+                0,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+                // Prevent testKeyGestureProduced() helper from registering a dummy handler.
+                isGestureHandlerRegistered = true,
+            ),
+            KeyGestureData(
+                "SCREENSHOT -> Take Screenshot (Flag ON, No Handler)",
+                intArrayOf(KeyEvent.KEYCODE_SCREENSHOT),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
+                intArrayOf(KeyEvent.KEYCODE_SCREENSHOT),
+                0,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+                // Prevent testKeyGestureProduced() helper from registering a dummy handler.
+                isGestureHandlerRegistered = true,
+            ),
+            KeyGestureData(
+                "SYSRQ -> Take Partial Screenshot (Flag ON, Handler registered)",
+                intArrayOf(KeyEvent.KEYCODE_SYSRQ),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
+                intArrayOf(KeyEvent.KEYCODE_SYSRQ),
+                0,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+                // Tells testKeyGestureProduced() helper to register a dummy handler.
+                isGestureHandlerRegistered = false,
+            ),
+            KeyGestureData(
+                "SCREENSHOT -> Take Partial Screenshot (Flag ON, Handler registered)",
+                intArrayOf(KeyEvent.KEYCODE_SCREENSHOT),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT,
+                intArrayOf(KeyEvent.KEYCODE_SCREENSHOT),
+                0,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+                // Tells testKeyGestureProduced() helper to register a dummy handler.
+                isGestureHandlerRegistered = false,
+            ),
+        )
+    }
+
+    @Test
+    @Parameters(method = "partialScreenshotTestArguments")
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_PARTIAL_SCREENSHOT_KEYBOARD_SHORTCUT)
+    fun testPartialScreenshotShortcuts(testData: KeyGestureData) {
+        setupKeyGestureController()
+        testKeyGestureProduced(testData, PASS_THROUGH_APP)
+
+        if (testData.isGestureHandlerRegistered) {
+            // Dummy handler was not registered for KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT.
+            // Default action of taking a screenshot is expected.
+            val requestCaptor = argumentCaptor<ScreenshotRequest>()
+            Mockito.verify(screenshotHelper, times(1))
+                .takeScreenshot(requestCaptor.capture(), any(), any())
+            assertEquals(
+                /* message= */ testData.name,
+                WindowManager.ScreenshotSource.SCREENSHOT_KEY_OTHER,
+                requestCaptor.lastValue.source,
+            )
+        } else {
+            // A dummy handler is registered for KEY_GESTURE_TYPE_TAKE_PARTIAL_SCREENSHOT. No
+            // screenshot should be taken.
+            Mockito.verify(screenshotHelper, never())
+                .takeScreenshot(any(ScreenshotRequest::class.java), any(), any())
+        }
     }
 
     @Test

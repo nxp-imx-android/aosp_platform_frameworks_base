@@ -67,6 +67,9 @@ sealed class AuthMethodBouncerViewModel(
 
     protected abstract val _readyToTryAuthenticate: MutableStateFlow<Boolean>
 
+    /** This will be true if an authentication attempt was successful. */
+    protected var wasSuccessfullyAuthenticated = false
+
     /**
      * Whether the authentication method is ready to be invoked.
      *
@@ -86,30 +89,38 @@ sealed class AuthMethodBouncerViewModel(
     private val authenticationRequests = Channel<AuthenticationRequest>(Channel.BUFFERED)
 
     override suspend fun onActivated(): Nothing {
-        authenticationRequests.receiveAsFlow().collectLatest { request ->
-            if (!isInputEnabled.value) {
-                return@collectLatest
+        try {
+            authenticationRequests.receiveAsFlow().collectLatest { request ->
+                if (!isInputEnabled.value) {
+                    return@collectLatest
+                }
+
+                val authenticationResult =
+                    interactor.authenticate(
+                        input = request.input,
+                        tryAutoConfirm = request.useAutoConfirm,
+                    )
+
+                if (
+                    authenticationResult == AuthenticationResult.SKIPPED && request.useAutoConfirm
+                ) {
+                    return@collectLatest
+                }
+
+                performAuthenticationHapticFeedback(authenticationResult)
+
+                _animateFailure.value = authenticationResult != AuthenticationResult.SUCCEEDED
+                clearInput()
+                if (authenticationResult == AuthenticationResult.SUCCEEDED) {
+                    wasSuccessfullyAuthenticated = true
+                    onSuccessfulAuthentication()
+                }
             }
-
-            val authenticationResult =
-                interactor.authenticate(
-                    input = request.input,
-                    tryAutoConfirm = request.useAutoConfirm,
-                )
-
-            if (authenticationResult == AuthenticationResult.SKIPPED && request.useAutoConfirm) {
-                return@collectLatest
-            }
-
-            performAuthenticationHapticFeedback(authenticationResult)
-
-            _animateFailure.value = authenticationResult != AuthenticationResult.SUCCEEDED
-            clearInput()
-            if (authenticationResult == AuthenticationResult.SUCCEEDED) {
-                onSuccessfulAuthentication()
-            }
+            awaitCancellation()
+        } finally {
+            // reset whenever the view model is "deactivated"
+            wasSuccessfullyAuthenticated = false
         }
-        awaitCancellation()
     }
 
     /**

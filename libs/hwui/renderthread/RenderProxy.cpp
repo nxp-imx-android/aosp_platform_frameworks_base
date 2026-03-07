@@ -142,6 +142,15 @@ void RenderProxy::setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) {
 }
 
 #ifdef __ANDROID__
+void RenderProxy::setCornerRadiiCallback(
+        std::function<void(const gui::CornerRadii&)> cornerRadiiCallback) {
+    mContext->setCornerRadiiCallback(std::move(cornerRadiiCallback));
+}
+
+void RenderProxy::setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback) {
+    mContext->setWaitForBufferReleaseCallback(std::move(callback));
+}
+
 void RenderProxy::mergeWithNextTransaction(SurfaceComposerClient::Transaction* t,
                                            uint64_t frameNumber) {
     mContext->mergeWithNextTransaction(t, frameNumber);

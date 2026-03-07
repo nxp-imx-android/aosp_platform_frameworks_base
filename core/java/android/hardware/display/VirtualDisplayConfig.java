@@ -18,12 +18,14 @@ package android.hardware.display;
 
 import static android.view.Display.DEFAULT_DISPLAY;
 
+import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.hardware.display.DisplayManager.VirtualDisplayFlag;
@@ -205,7 +207,10 @@ public final class VirtualDisplayConfig implements Parcelable {
      * Returns the unique identifier for the display. Shouldn't be displayed to the user.
      * @hide
      */
+    @SystemApi
     @Nullable
+    @FlaggedApi(com.android.server.display.feature.flags.Flags
+            .FLAG_VIRTUAL_DISPLAYS_SUPPORT_DESKTOP_MODE)
     public String getUniqueId() {
         return mUniqueId;
     }
@@ -509,10 +514,17 @@ public final class VirtualDisplayConfig implements Parcelable {
         }
 
         /**
-         * Sets the unique identifier for the display.
+         * Sets the unique identifier for the display, this identifier will be used to persist
+         * some display settings and preferences like resolution and orientation like internal
+         * displays.
+         *
          * @hide
          */
         @NonNull
+        @SystemApi
+        @RequiresPermission(Manifest.permission.ADD_TRUSTED_DISPLAY)
+        @FlaggedApi(com.android.server.display.feature.flags.Flags
+                .FLAG_VIRTUAL_DISPLAYS_SUPPORT_DESKTOP_MODE)
         public Builder setUniqueId(@Nullable String uniqueId) {
             mUniqueId = uniqueId;
             return this;

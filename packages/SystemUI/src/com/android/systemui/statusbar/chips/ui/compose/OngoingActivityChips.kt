@@ -78,8 +78,9 @@ fun OngoingActivityChips(
                     val chipModifier =
                         Modifier.sysuiResTag(it.key).onGloballyPositioned { coordinates ->
                             val bounds = coordinates.boundsInWindow().toAndroidRectF()
-                            if (it.notificationKey != null) {
-                                onChipBoundsChanged(it.notificationKey, bounds)
+                            val notificationKey = it.notificationKey
+                            if (notificationKey != null) {
+                                onChipBoundsChanged(notificationKey, bounds)
                             }
                         }
                     if (activeChips.size == 1) {

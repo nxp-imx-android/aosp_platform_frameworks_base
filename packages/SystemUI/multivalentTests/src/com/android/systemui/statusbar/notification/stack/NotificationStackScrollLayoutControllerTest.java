@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.stack;
 
 import static com.android.server.notification.Flags.FLAG_SCREENSHARE_NOTIFICATION_HIDING;
+import static com.android.systemui.Flags.FLAG_NSSL_TOUCH_DISPATCH_FIX;
 import static com.android.systemui.log.LogBufferHelperKt.logcatLogBuffer;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 import static com.android.systemui.statusbar.StatusBarState.SHADE;
@@ -703,6 +704,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX) // Not relevant, because ExpandHelper is removed.
     public void onTouchEvent_stopExpandingNotification_sceneContainerEnabled() {
         stopExpandingNotification();
 
@@ -820,6 +822,7 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
 
     @Test
     @EnableSceneContainer
+    @DisableFlags(FLAG_NSSL_TOUCH_DISPATCH_FIX) // Not relevant, because ExpandHelper is removed.
     public void onTouchEvent_shadeState_lockScreenExpandIgnored() {
         // GIVEN: Controller is attached and SceneContainer is enabled
         initController(/* viewIsAttached= */ true);

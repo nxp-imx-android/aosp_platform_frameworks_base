@@ -85,6 +85,8 @@ public:
 #ifdef __ANDROID__
     virtual void setSurfaceControl(const sp<SurfaceControl>&) {}
     virtual void setBLASTBufferQueue(const sp<BLASTBufferQueue>&) {}
+    virtual void setCornerRadiiCallback(std::function<void(const gui::CornerRadii&)>) {}
+    virtual void setWaitForBufferReleaseCallback(std::function<void(int64_t)>) {}
     virtual bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>,
                                      bool) {
         return false;
@@ -123,6 +125,13 @@ public:
 
     virtual ANativeWindow* getSurface() = 0;
     virtual uint64_t getFrameNumber() = 0;
+    virtual int getFrameTimestamps(uint64_t frameNumber, nsecs_t* outRequestedPresentTime,
+                                   nsecs_t* outAcquireTime, nsecs_t* outLatchTime,
+                                   nsecs_t* outFirstRefreshStartTime,
+                                   nsecs_t* outLastRefreshStartTime,
+                                   nsecs_t* outGpuCompositionDoneTime,
+                                   nsecs_t* outDisplayPresentTime, nsecs_t* outDequeueReadyTime,
+                                   nsecs_t* outReleaseTime) = 0;
     virtual void setFrameTimelineInfo(const ANativeWindowFrameTimelineInfo& info) = 0;
     virtual int64_t getLastDequeueDuration() = 0;
 

@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.stack.ui.view
 
 import android.view.View
+import com.android.systemui.ExpandHelper
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import org.mockito.Mockito.mock
@@ -27,5 +28,6 @@ val Kosmos.notificationScrollView: NotificationScrollView by Fixture { mockNotif
 val Kosmos.mockNotificationScrollView: NotificationScrollView by Fixture {
     mock(NotificationScrollView::class.java).apply {
         whenever(asView()).thenReturn(mock(View::class.java))
+        whenever(getExpandHelperCallback()).thenReturn(mock(ExpandHelper.Callback::class.java))
     }
 }
