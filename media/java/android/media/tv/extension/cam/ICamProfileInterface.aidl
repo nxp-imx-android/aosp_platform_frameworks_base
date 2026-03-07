@@ -44,9 +44,10 @@ interface ICamProfileInterface {
     /**
      * Checks if CAM scanning is enabled for the current profile based on its settings.
      *
+     * @param slotNumber The ID of the slot to query.
      * @return true if CAM scanning is enabled, false otherwise.
      */
-    boolean isCamScanEnabled();
+    boolean isCamScanEnabled(int slotNumber);
     /**
      * Registers a listener to receive callbacks when CAM profile changes.
      *
