@@ -18,8 +18,6 @@ package com.android.server.am.psc;
 
 import static android.content.Context.BIND_ABOVE_CLIENT;
 
-import static com.android.server.am.Flags.FLAG_INCREMENTAL_HAS_ABOVE_CLIENT;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
@@ -28,33 +26,12 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.flag.junit.FlagsParameterization;
-import android.platform.test.flag.junit.SetFlagsRule;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import java.util.List;
 
 @Presubmit
-@RunWith(Parameterized.class)
 public class ProcessServiceRecordInternalTest {
-
-    @Rule
-    public final SetFlagsRule mSetFlagsRule;
-
-    /** This ensures all tests in this class run for both enabled and disabled flag states. */
-    @Parameterized.Parameters(name = "{0}")
-    public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(FLAG_INCREMENTAL_HAS_ABOVE_CLIENT);
-    }
-
-    public ProcessServiceRecordInternalTest(FlagsParameterization flags) {
-        mSetFlagsRule = new SetFlagsRule(flags);
-    }
 
     private ProcessServiceRecordInternal mPsr;
 
