@@ -99,4 +99,32 @@ public class TvPipScheduler {
         wct.reorder(pipTaskToken, false);
         return wct;
     }
+
+
+    /**
+     * Schedules exit PiP via expand transition.
+     *
+     * @param wasVisible Whether the underlying activity was visible before entering PiP.
+     */
+    public void scheduleExitPipViaExpand(boolean wasVisible) {
+        ProtoLog.d(WM_SHELL_PICTURE_IN_PICTURE,
+                "%s: scheduleExitViaExpandPip()", TAG);
+        mMainExecutor.execute(() -> {
+            if (!mPipTransitionState.isInPip()) return;
+            mPipTransitionController.startExpandTransition(getExitPipViaExpandTransaction(),
+                    /* toSplit= */ false, wasVisible);
+        });
+    }
+
+    @Nullable
+    private WindowContainerTransaction getExitPipViaExpandTransaction() {
+        WindowContainerToken pipTaskToken = mPipTransitionState.getPipTaskToken();
+        if (pipTaskToken == null) {
+            return null;
+        }
+        WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.setBounds(pipTaskToken, null);
+        wct.setWindowingMode(pipTaskToken, WINDOWING_MODE_UNDEFINED);
+        return wct;
+    }
 }
