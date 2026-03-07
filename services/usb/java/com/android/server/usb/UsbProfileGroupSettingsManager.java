@@ -1327,14 +1327,40 @@ public class UsbProfileGroupSettingsManager {
     }
 
     /**
+     * Removes a package if it is set as a default handler for a device.
+     *
+     * @param device - The device that may have a default package
+     * @param packageName - The default handler package
+     * @param user - The user the package belongs to
+     */
+    void removePackageIfDeviceDefault(
+            @NonNull UsbDevice device, @NonNull String packageName, @NonNull UserHandle user) {
+        boolean changed = false;
+
+        if (android.hardware.usb.flags.Flags.enablePersistentUsbDevicePermissions()) {
+            synchronized (mLock) {
+                DeviceFilter filter = new DeviceFilter(device);
+                UserPackage userPackage = new UserPackage(packageName, user);
+                if (userPackage.equals(mDevicePreferenceMap.get(filter))) {
+                    changed = (mDevicePreferenceMap.remove(filter) != null);
+                }
+
+                if (changed) {
+                    scheduleWriteSettingsLocked();
+                }
+            }
+        }
+    }
+
+    /**
      * Set a package as default handler for a device.
      *
      * @param device The device that should be handled by default
      * @param packageName The default handler package
      * @param user The user the package belongs to
      */
-    void setDevicePackage(@NonNull UsbDevice device, @Nullable String packageName,
-            @NonNull UserHandle user) {
+    void setDevicePackage(
+            @NonNull UsbDevice device, @Nullable String packageName, @NonNull UserHandle user) {
         DeviceFilter filter = new DeviceFilter(device);
         boolean changed;
         synchronized (mLock) {

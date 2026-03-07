@@ -19,7 +19,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -55,6 +58,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 
 /** Unit tests for {@link com.android.server.usb.UsbUserPermissionManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -136,6 +140,9 @@ public class UsbUserPermissionManagerTest {
         mContext = spy(InstrumentationRegistry.getInstrumentation().getContext());
 
         doReturn(mPackageManager).when(mContext).getPackageManager();
+        // Intercept broadcast for permission changed.
+        // Unit tests don't have the necessary permission to send this.
+        doNothing().when(mContext).sendBroadcastAsUser(any(), any(), anyString());
 
         // Wire up the valid packages list
         when(mPackageManager.getPackagesForUid(anyInt()))
@@ -257,6 +264,33 @@ public class UsbUserPermissionManagerTest {
     }
 
     @Test
+    public void testDevice_revokePermission() {
+        grantDevicePersistedAndTemporaryInitial();
+
+        TestData persisted = mTestData.get(PERSISTED_PACKAGE);
+        TestData temporary = mTestData.get(TEMPORARY_PACKAGE);
+
+        assertTrue(
+                mPermissionManager.hasPermissionInternal(
+                        mUsbDevice, mUsbDeviceFingerprint, temporary.packageName, temporary.uid));
+        assertTrue(
+                mPermissionManager.hasPermissionInternal(
+                        mUsbDevice, mUsbDeviceFingerprint, persisted.packageName, persisted.uid));
+
+        mPermissionManager.revokeDevicePermission(
+                mUsbDevice, mUsbDeviceFingerprint, temporary.packageName, temporary.uid);
+        assertFalse(
+                mPermissionManager.hasPermissionInternal(
+                        mUsbDevice, mUsbDeviceFingerprint, temporary.packageName, temporary.uid));
+
+        mPermissionManager.revokeDevicePermission(
+                mUsbDevice, mUsbDeviceFingerprint, persisted.packageName, persisted.uid);
+        assertFalse(
+                mPermissionManager.hasPermissionInternal(
+                        mUsbDevice, mUsbDeviceFingerprint, persisted.packageName, persisted.uid));
+    }
+
+    @Test
     public void testRemovePackage() {
         grantAccessoryTemporaryInitial();
         grantDevicePersistedAndTemporaryInitial();
@@ -319,5 +353,25 @@ public class UsbUserPermissionManagerTest {
                 outputPermissions
                         .get(mUsbDeviceFingerprint)
                         .contains(new PackageAndUid(validNew.packageName, validNew.uid)));
+    }
+
+    @Test
+    public void testGetPackagesWithDevicePermission() {
+        grantDevicePersistedAndTemporaryInitial();
+        TestData temporary = mTestData.get(TEMPORARY_PACKAGE);
+        TestData persisted = mTestData.get(PERSISTED_PACKAGE);
+
+        ArraySet<String> expectedPackages = new ArraySet<>();
+        expectedPackages.add(persisted.packageName);
+        expectedPackages.add(temporary.packageName);
+
+        List<String> actualPackagesList =
+                mPermissionManager.getPackagesWithDevicePermission(
+                        mUsbDevice, mUsbDeviceFingerprint);
+        ArraySet<String> actualPackages = new ArraySet<>(actualPackagesList);
+
+        // Expect there not to be any duplicates and to match expected packages
+        assertEquals(actualPackages.size(), actualPackagesList.size());
+        assertEquals(actualPackages, expectedPackages);
     }
 }

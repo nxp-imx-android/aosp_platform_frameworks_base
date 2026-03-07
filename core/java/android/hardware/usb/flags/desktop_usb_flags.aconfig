@@ -4,6 +4,7 @@ container: "system"
 flag {
     name: "enable_persistent_usb_device_permissions"
     namespace: "usb_desktop"
+    is_exported: true
     description: "Feature flag to persist permissions after device disconnect"
     bug: "389062495"
 }
