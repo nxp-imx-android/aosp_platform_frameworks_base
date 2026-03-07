@@ -25,6 +25,7 @@ import android.compat.annotation.EnabledSince;
 import android.graphics.PointF;
 import android.os.Build;
 import android.os.RemoteException;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
@@ -41,6 +42,7 @@ import java.io.Closeable;
  * @hide
  */
 @SystemApi
+@RavenwoodKeepWholeClass
 public class VirtualMouse implements Closeable {
 
     private static final String TAG = "VirtualMouse";

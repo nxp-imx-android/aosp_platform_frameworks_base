@@ -41,7 +41,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -104,7 +104,7 @@ Running: export ROLLING_TF_SUBPROCESS_OUTPUT
 Running: export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodCoreTest=0
 Running: export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodBivalentTest=0
 Running: export RAVENWOOD_BUGREPORT_DIR=/tmp/ravenwood-bugreports/20250102-030405
-smoke_exclude_re=^(SystemUiRavenTests|CtsIcuTestCasesRavenwood|CarSystemUIRavenTests|PowerStatsTestsRavenwood|CarServiceHostUnitTest|CarLibHostUnitTest)$
+smoke_exclude_re=^(SystemUiRavenTests|CtsIcuTestCasesRavenwood|CarSystemUIRavenTests|PowerStatsTestsRavenwood|CarServiceHostUnitTest|CarLibHostUnitTest|CtsViewTestCasesRavenwood_exp)$
 Target tests:
   hoststubgentest
   tiny-framework-dump-test
@@ -120,7 +120,7 @@ Excluded tests:
 < SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 Running: export RAVENWOOD_SKIP_LARGE_TESTS=1
 RAVENWOOD_RUN_DISABLED_TESTS=
@@ -156,7 +156,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 Running: export RAVENWOOD_SKIP_LARGE_TESTS=1
 RAVENWOOD_RUN_DISABLED_TESTS=
@@ -192,7 +192,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -213,7 +213,7 @@ Running: export ROLLING_TF_SUBPROCESS_OUTPUT
 Running: export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodCoreTest=0
 Running: export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodBivalentTest=0
 Running: export RAVENWOOD_BUGREPORT_DIR=/tmp/ravenwood-bugreports/20250102-030405
-smoke_exclude_re=^(SystemUiRavenTests|CtsIcuTestCasesRavenwood|CarSystemUIRavenTests|PowerStatsTestsRavenwood|CarServiceHostUnitTest|CarLibHostUnitTest)$
+smoke_exclude_re=^(SystemUiRavenTests|CtsIcuTestCasesRavenwood|CarSystemUIRavenTests|PowerStatsTestsRavenwood|CarServiceHostUnitTest|CarLibHostUnitTest|CtsViewTestCasesRavenwood_exp)$
 Target tests:
   hoststubgentest
   tiny-framework-dump-test
@@ -229,7 +229,7 @@ Excluded tests:
 < SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 Running: export RAVENWOOD_SKIP_LARGE_TESTS=1
 RAVENWOOD_RUN_DISABLED_TESTS=
@@ -251,7 +251,7 @@ Running: export ROLLING_TF_SUBPROCESS_OUTPUT
 Running: export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodCoreTest=0
 Running: export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodBivalentTest=0
 Running: export RAVENWOOD_BUGREPORT_DIR=/tmp/ravenwood-bugreports/20250102-030405
-smoke_exclude_re=^(SystemUiRavenTests|CtsIcuTestCasesRavenwood|CarSystemUIRavenTests|PowerStatsTestsRavenwood|CarServiceHostUnitTest|CarLibHostUnitTest)$
+smoke_exclude_re=^(SystemUiRavenTests|CtsIcuTestCasesRavenwood|CarSystemUIRavenTests|PowerStatsTestsRavenwood|CarServiceHostUnitTest|CarLibHostUnitTest|CtsViewTestCasesRavenwood_exp)$
 Target tests:
   TestX
   TestY
@@ -269,7 +269,7 @@ Excluded tests:
 > TestY
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 Running: export RAVENWOOD_SKIP_LARGE_TESTS=1
 RAVENWOOD_RUN_DISABLED_TESTS=
@@ -291,7 +291,7 @@ Running: export ROLLING_TF_SUBPROCESS_OUTPUT
 Running: export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodCoreTest=0
 Running: export RAVENWOOD_HIDE_DISABLED_TESTS_RavenwoodBivalentTest=0
 Running: export RAVENWOOD_BUGREPORT_DIR=/tmp/ravenwood-bugreports/20250102-030405
-smoke_exclude_re=^(SystemUiRavenTests|CtsIcuTestCasesRavenwood|CarSystemUIRavenTests|PowerStatsTestsRavenwood|CarServiceHostUnitTest|CarLibHostUnitTest)$
+smoke_exclude_re=^(SystemUiRavenTests|CtsIcuTestCasesRavenwood|CarSystemUIRavenTests|PowerStatsTestsRavenwood|CarServiceHostUnitTest|CarLibHostUnitTest|CtsViewTestCasesRavenwood_exp)$
 Target tests:
   TestX
   TestY
@@ -309,7 +309,7 @@ Excluded tests:
 > TestY
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 Running: export RAVENWOOD_SKIP_LARGE_TESTS=1
 RAVENWOOD_RUN_DISABLED_TESTS=
@@ -350,7 +350,7 @@ Excluded tests:
 > TestZ
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -385,7 +385,7 @@ Excluded tests:
 < SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -418,7 +418,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -444,7 +444,7 @@ Target tests:
   DeviceTest2
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -481,7 +481,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=1
 RAVENWOOD_FILTER_REGEX=
@@ -516,7 +516,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=xxx
 RAVENWOOD_FILTER_REGEX=
@@ -552,7 +552,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=2
 RAVENWOOD_FILTER_REGEX=
@@ -588,7 +588,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -623,7 +623,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -659,7 +659,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -694,7 +694,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -730,7 +730,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -766,7 +766,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=FilterRegex
@@ -804,7 +804,7 @@ Excluded tests:
 > FilterRegex
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -844,7 +844,7 @@ Excluded tests:
 > FilterRegex
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=
@@ -879,7 +879,7 @@ Target tests:
   SystemUiRavenTests
 RAVENWOOD_TEST_ENABLEMENT_POLICY=...
 Test "RavenwoodUiTest_exp" can use experimental APIs.
-Test "CtsViewTestCasesRavenwood" can use experimental APIs.
+Test "CtsViewTestCasesRavenwood_exp" can use experimental APIs.
 Test "SystemUiRavenTests" can use experimental APIs.
 RAVENWOOD_RUN_DISABLED_TESTS=
 RAVENWOOD_FILTER_REGEX=

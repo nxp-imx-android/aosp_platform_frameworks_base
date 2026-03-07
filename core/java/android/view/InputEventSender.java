@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.MessageQueue;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 
 import dalvik.system.CloseGuard;
@@ -37,6 +38,7 @@ import java.util.concurrent.RunnableFuture;
  * Provides a low-level mechanism for an application to send input events.
  * @hide
  */
+@RavenwoodKeepWholeClass
 public abstract class InputEventSender {
     private static final String TAG = "InputEventSender";
 

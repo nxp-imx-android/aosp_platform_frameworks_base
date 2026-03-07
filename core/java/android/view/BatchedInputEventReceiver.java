@@ -20,11 +20,13 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Trace;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 /**
  * Similar to {@link InputEventReceiver}, but batches events to vsync boundaries when possible.
  * @hide
  */
+@RavenwoodKeepWholeClass
 public class BatchedInputEventReceiver extends InputEventReceiver {
     private final Choreographer mChoreographer;
     private boolean mBatchingEnabled;

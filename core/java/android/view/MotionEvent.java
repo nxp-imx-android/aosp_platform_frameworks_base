@@ -32,6 +32,7 @@ import android.os.MotionEventFlag;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -194,6 +195,7 @@ import java.util.Objects;
  * received an {@link #ACTION_UP} for the prior gesture.
  * </p>
  */
+@RavenwoodKeepWholeClass
 public final class MotionEvent extends InputEvent implements Parcelable {
     private static final String TAG = "MotionEvent";
     private static final long NS_PER_MS = 1000000;

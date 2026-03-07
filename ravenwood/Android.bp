@@ -268,6 +268,7 @@ cc_library_host_shared {
         "libbase",
         "libcutils",
         "libutils",
+        "libinput",
         "libandroid_runtime_ravenwood",
     ],
 }
@@ -342,6 +343,7 @@ filegroup {
     name: "ravenwood-data",
     device_common_srcs: [
         ":framework-res",
+        ":motion_predictor_model",
         ":ravenwood-empty-res",
         ":ravenwood-framework-platform-compat-config",
         ":ravenwood-services.core-platform-compat-config",
@@ -571,6 +573,16 @@ filegroup {
     visibility: ["//visibility:private"],
 }
 
+filegroup {
+    name: "ravenwood-keyboard-files",
+    device_first_srcs: [
+        ":keylayout_data",
+        ":keychars_data",
+        ":idc_data",
+    ],
+    visibility: ["//visibility:private"],
+}
+
 // The libraries listed in ravenwood-runtime.* should be in sync with
 // texts/ravenwood-classpath.txt.
 // ravenwood-classpath.txt determines the order of the jar files in the classpath.
@@ -647,6 +659,10 @@ android_ravenwood_libgroup {
         {
             path: "hyph-data",
             srcs: [":hyph-data"],
+        },
+        {
+            path: "keymaps",
+            srcs: [":ravenwood-keyboard-files"],
         },
     ],
     subruntimes: [

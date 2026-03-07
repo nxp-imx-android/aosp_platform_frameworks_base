@@ -833,7 +833,8 @@ static void android_view_MotionEvent_nativeScale(CRITICAL_JNI_PARAMS_COMMA jlong
     event->scale(scale);
 }
 
-static jint android_view_MotionEvent_nativeGetSurfaceRotation(jlong nativePtr) {
+static jint android_view_MotionEvent_nativeGetSurfaceRotation(
+        CRITICAL_JNI_PARAMS_COMMA jlong nativePtr) {
     MotionEvent* event = reinterpret_cast<MotionEvent*>(nativePtr);
     auto rotation = event->getSurfaceRotation();
     if (rotation) {

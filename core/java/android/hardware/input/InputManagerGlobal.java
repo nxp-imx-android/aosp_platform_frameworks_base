@@ -49,6 +49,7 @@ import android.os.ServiceManager;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.IntArray;
 import android.util.Log;
 import android.util.SparseArray;
@@ -80,6 +81,11 @@ import java.util.concurrent.Executor;
  *
  * @hide
  */
+@RavenwoodKeepWholeClass(conditional = true, comment = """
+        Need to provide an implementation of IInputManager and initialize with
+        InputManagerGlobal#createTestSession before using any of its methods.
+        The behavior of this class fully depends on the provided IInputManager.
+        """)
 public final class InputManagerGlobal {
     private static final String TAG = "InputManagerGlobal";
     // To enable these logs, run: 'adb shell setprop log.tag.InputManagerGlobal DEBUG'

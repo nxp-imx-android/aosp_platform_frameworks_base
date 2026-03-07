@@ -18,6 +18,7 @@ package android.platform.test.ravenwood;
 
 import static android.platform.test.ravenwood.RavenwoodExperimentalApiChecker.isExperimentalApiEnabled;
 import static android.platform.test.ravenwood.RavenwoodProxyHelper.newExperimentalProxy;
+import static android.platform.test.ravenwood.RavenwoodProxyHelper.newProxy;
 import static android.platform.test.ravenwood.RavenwoodProxyHelper.sDefaultHandler;
 import static android.platform.test.ravenwood.RavenwoodProxyHelper.sNotImplementedHandler;
 
@@ -31,6 +32,7 @@ import android.content.IContentService;
 import android.content.IIntentSender;
 import android.hardware.display.IDisplayManager;
 import android.hardware.input.IInputManager;
+import android.hardware.input.IInputManager_ravenwood;
 import android.os.IUserManager;
 import android.os.ServiceManager;
 import android.os.SystemClock;
@@ -44,8 +46,6 @@ import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.IWindowManager;
 import android.view.IWindowSession;
-import android.view.InputDevice;
-import android.view.KeyCharacterMap;
 import android.view.WindowManagerGlobal;
 import android.view.autofill.IAutoFillManager;
 
@@ -107,6 +107,9 @@ public class RavenwoodSystemServer {
         ServiceManager.addService(Context.PLATFORM_COMPAT_NATIVE_SERVICE,
                 new PlatformCompatNative(platformCompat));
 
+        ServiceManager.addService(Context.INPUT_SERVICE,
+                newProxy(IInputManager.class, new IInputManager_ravenwood()).asBinder());
+
         maybeRegisterExperimentalServices();
 
         sStartedServices = new ArraySet<>();
@@ -140,9 +143,6 @@ public class RavenwoodSystemServer {
 
         ServiceManager.addService(Context.DISPLAY_SERVICE,
                 IDisplayManager_ravenwood.sIBinder.asBinder());
-
-        ServiceManager.addService(Context.INPUT_SERVICE,
-                IInputManager_ravenwood.sIBinder.asBinder());
 
         ServiceManager.addService(Context.INPUT_METHOD_SERVICE,
                 IInputMethodManager_ravenwood.sIBinder.asBinder());
@@ -221,34 +221,6 @@ public class RavenwoodSystemServer {
                         case "getOverlaySupport",
                              "getPreferredWideGamutColorSpaceId",
                              "registerCallbackWithEventMask" ->
-                                sDefaultHandler.invoke(proxy, method, args);
-                        default -> sNotImplementedHandler.invoke(proxy, method, args);
-                    };
-                });
-    }
-
-    /**
-     * Minimal implementation of {@link IInputManager} to allow experimental APIs to work.
-     */
-    public static class IInputManager_ravenwood {
-        private static final String TAG = "IInputManager_ravenwood";
-
-        private static InputDevice getDefaultInputDevice() {
-            return new InputDevice.Builder()
-                    .setId(KeyCharacterMap.VIRTUAL_KEYBOARD)
-                    .setKeyCharacterMap(
-                            KeyCharacterMap.obtainEmptyMap(KeyCharacterMap.VIRTUAL_KEYBOARD))
-                    .build();
-        }
-
-        public static final IInputManager sIBinder =
-                newExperimentalProxy(IInputManager.class, (proxy, method, args) -> {
-                    return switch (method.getName()) {
-                        case "getInputDeviceIds" -> new int[]{KeyCharacterMap.VIRTUAL_KEYBOARD};
-                        case "getInputDevice" -> getDefaultInputDevice(); // TODO Cache it?
-                        case "getVelocityTrackerStrategy",
-                             "injectInputEventToTarget",
-                             "registerInputDevicesChangedListener" ->
                                 sDefaultHandler.invoke(proxy, method, args);
                         default -> sNotImplementedHandler.invoke(proxy, method, args);
                     };

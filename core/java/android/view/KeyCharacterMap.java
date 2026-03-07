@@ -26,6 +26,7 @@ import android.hardware.input.InputManagerGlobal;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.text.method.MetaKeyKeyListener;
 import android.util.AndroidRuntimeException;
 import android.util.SparseIntArray;
@@ -37,6 +38,7 @@ import java.text.Normalizer;
 /**
  * Describes the keys provided by a keyboard device and their associated labels.
  */
+@RavenwoodKeepWholeClass
 public class KeyCharacterMap implements Parcelable {
     /**
      * The id of the device's primary built in keyboard is always 0.
