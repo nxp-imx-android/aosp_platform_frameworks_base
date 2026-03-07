@@ -214,14 +214,14 @@ class BackupRestoreProcessor {
                     + "]. Restoring...");
         }
         for (AssociationInfo association : pendingAssociations) {
-            AssociationInfo newAssociation = new AssociationInfo.Builder(association)
-                    .setPending(false)
-                    .build();
-            if (newAssociation.getDeviceProfile() == null) {
+            if (association.getDeviceProfile() == null) {
                 try {
                     mAssociationRequestsProcessor
-                            .grantExtraPermissionsForNonProfile(newAssociation);
-                    mAssociationStore.updateAssociation(newAssociation);
+                            .grantExtraPermissionsForNonProfile(association);
+                    mAssociationStore.updateAssociation(association.getId(),
+                            a -> (new AssociationInfo.Builder(a))
+                                    .setPending(false)
+                                    .build());
                     Slog.i(TAG, "Association=[" + association + "] is restored.");
                 } catch (SecurityException se) {
                     Slog.e(TAG, "Failed to restore association=[" + association + "]"
@@ -234,9 +234,12 @@ class BackupRestoreProcessor {
                             + "due to an unexpected runtime error", e);
                 }
             } else {
-                addRoleHolderForAssociation(mContext, newAssociation, success -> {
+                addRoleHolderForAssociation(mContext, association, success -> {
                     if (success) {
-                        mAssociationStore.updateAssociation(newAssociation);
+                        mAssociationStore.updateAssociation(association.getId(),
+                                a -> (new AssociationInfo.Builder(a))
+                                        .setPending(false)
+                                        .build());
                         Slog.i(TAG, "Association=[" + association + "] is restored.");
                     } else {
                         Slog.e(TAG, "Failed to restore association=[" + association + "].");

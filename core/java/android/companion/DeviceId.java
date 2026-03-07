@@ -219,7 +219,7 @@ public final class DeviceId implements Parcelable {
         @NonNull
         public DeviceId build() {
             if (mCustomId == null && mMacAddress == null) {
-                throw new IllegalArgumentException("At least one device id property must be"
+                throw new IllegalArgumentException("At least one device id property must be "
                         + "non-null to build a DeviceId.");
             }
             return new DeviceId(this);

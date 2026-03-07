@@ -45,6 +45,7 @@ import static com.android.server.companion.utils.PermissionsUtils.enforceCallerI
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerIsSystemOrCanInteractWithUserId;
 import static com.android.server.companion.utils.PermissionsUtils.enforceMessagePermissions;
 import static com.android.server.companion.utils.PermissionsUtils.enforceValidServiceName;
+import static com.android.server.companion.utils.Utils.generateRandom128BitKey;
 
 import static java.util.Objects.requireNonNull;
 
@@ -720,7 +721,7 @@ public class CompanionDeviceManagerService extends SystemService {
         public void enableSystemDataSync(int associationId, int flags) {
             enforceCallerCanInteractWithSystemDataSyncFlags(getContext(), flags);
 
-            mAssociationRequestsProcessor.enableSystemDataSync(associationId, flags);
+            mDataSyncProcessor.enableSystemDataSync(associationId, flags);
         }
 
         @Override
@@ -728,7 +729,7 @@ public class CompanionDeviceManagerService extends SystemService {
         public void disableSystemDataSync(int associationId, int flags) {
             enforceCallerCanInteractWithSystemDataSyncFlags(getContext(), flags);
 
-            mAssociationRequestsProcessor.disableSystemDataSync(associationId, flags);
+            mDataSyncProcessor.disableSystemDataSync(associationId, flags);
         }
 
         @Override
@@ -870,7 +871,21 @@ public class CompanionDeviceManagerService extends SystemService {
 
         @Override
         public DeviceId setDeviceId(int associationId, DeviceId deviceId) {
-            return mAssociationRequestsProcessor.setDeviceId(associationId, deviceId);
+            Slog.i(TAG, "Setting DeviceId=[" + deviceId + "] to id=[" + associationId + "]...");
+
+            DeviceId newDeviceId = deviceId != null
+                    ? new DeviceId.Builder()
+                    .setCustomId(deviceId.getCustomId())
+                    .setMacAddress(deviceId.getMacAddress())
+                    .setKey(generateRandom128BitKey())
+                    .build()
+                    : null;
+            mAssociationStore.updateAssociation(associationId,
+                    a -> (new AssociationInfo.Builder(a))
+                            .setDeviceId(newDeviceId)
+                            .build());
+
+            return newDeviceId;
         }
 
         @Override

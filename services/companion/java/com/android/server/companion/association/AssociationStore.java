@@ -55,6 +55,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.UnaryOperator;
 
 /**
  * Association store for CRUD.
@@ -238,22 +239,24 @@ public class AssociationStore {
     }
 
     /**
-     * Update an association.
+     * Update an association by applying an updater function on an association.
      */
-    public void updateAssociation(@NonNull AssociationInfo updated) {
+    public void updateAssociation(int associationId,
+            @NonNull UnaryOperator<AssociationInfo> updater) {
+        synchronized (mLock) {
+            AssociationInfo current = getAssociationWithCallerChecks(associationId);
+            updateAssociation(current, updater.apply(current));
+        }
+    }
+
+    private void updateAssociation(@NonNull AssociationInfo current,
+            @NonNull AssociationInfo updated) {
         Slog.i(TAG, "Updating new association=[" + updated + "]...");
 
         final int id = updated.getId();
-        final AssociationInfo current;
         final boolean macAddressChanged;
 
         synchronized (mLock) {
-            current = mIdToAssociationMap.get(id);
-            if (current == null) {
-                Slog.w(TAG, "Can't update association id=[" + id + "]. It does not exist.");
-                return;
-            }
-
             if (current.equals(updated)) {
                 Slog.w(TAG, "Association is the same.");
                 return;
