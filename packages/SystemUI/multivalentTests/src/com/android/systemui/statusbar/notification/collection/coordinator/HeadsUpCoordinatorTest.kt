@@ -1427,6 +1427,29 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
             assertTrue(coordinator.isCandidateForFSIReconsideration(entry))
         }
 
+    @Test
+    fun onEntryCleanUp_removesFromLifetimeExtensionMapWithoutCancellingTask() =
+        kosmos.runTest {
+            // GIVEN a sticky HUN that is being lifetime extended
+            whenever(headsUpManager.canRemoveImmediately(entry.key)).thenReturn(false)
+            whenever(headsUpManager.isSticky(anyString())).thenReturn(true)
+            whenever(headsUpManager.getEarliestRemovalTime(anyString())).thenReturn(1000L)
+            assertTrue(notifLifetimeExtender.maybeExtendLifetime(entry, /* reason= */ 0))
+
+            // GIVEN the entry IS in the extension map and there is 1 pending task
+            assertTrue(coordinator.mNotifsExtendingLifetime.containsKey(entry))
+            assertEquals(1, executor.numPending())
+
+            // WHEN the entry is cleaned up
+            collectionListener.onEntryCleanUp(entry)
+
+            // VERIFY the entry is GONE from the map (no memory leak)
+            assertFalse(coordinator.mNotifsExtendingLifetime.containsKey(entry))
+
+            // VERIFY the removal task is still pending
+            assertEquals(1, executor.numPending())
+        }
+
     private fun Kosmos.setAllNotifs(entries: List<NotificationEntry>) {
         // defining this as a function ensures that the entries are created (and any fixtures are
         // resolved) before `whenever` is called, rather than between `whenever` and `thenReturn`,
