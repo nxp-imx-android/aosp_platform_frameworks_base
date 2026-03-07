@@ -1620,16 +1620,27 @@ class DesktopTasksController(
                 excludeTaskId = taskId,
                 reason = DesktopImmersiveController.ExitReason.TASK_LAUNCH,
             )
+        val initialBounds = getInitialBounds(displayLayout, task, deskId)
         wct.startTask(
             taskId,
             ActivityOptions.makeBasic()
                 .apply {
                     launchWindowingMode = WINDOWING_MODE_FREEFORM
-                    launchBounds = getInitialBounds(displayLayout, task, deskId)
+                    launchBounds = initialBounds
                     launchDisplayId = targetDisplayId
                 }
                 .toBundle(),
         )
+
+        if (Flags.updateDesktopScrimOnMoveTaskToDesk()) {
+            desktopScrimController.updateDesktopScrimIfNeeded(
+                targetDisplayId,
+                userId,
+                excludeTaskId = taskId,
+                targetDeskId = deskId,
+                pendingTaskBounds = initialBounds,
+            )
+        }
 
         val transition: IBinder
         if (targetTransition != null) {
@@ -5103,7 +5114,17 @@ class DesktopTasksController(
                 userId = task.userId,
                 enterReason = transitionSource.getEnterReason(),
             )
-        addMoveToDeskTaskChanges(wct = wct, task = task, deskId = deskId)
+        val taskBounds = addMoveToDeskTaskChanges(wct = wct, task = task, deskId = deskId)
+        if (Flags.updateDesktopScrimOnMoveTaskToDesk() && taskBounds != null) {
+            val repository = userRepositories.getProfile(task.userId)
+            desktopScrimController.updateDesktopScrimIfNeeded(
+                repository.getDisplayForDesk(deskId),
+                task.userId,
+                excludeTaskId = task.taskId,
+                targetDeskId = deskId,
+                pendingTaskBounds = taskBounds,
+            )
+        }
         return runOnTransitStart
     }
 
@@ -5122,26 +5143,24 @@ class DesktopTasksController(
         wct: WindowContainerTransaction,
         task: RunningTaskInfo,
         deskId: Int,
-    ) {
+    ): Rect? {
         val repository = userRepositories.getProfile(task.userId)
         val targetDisplayId = repository.getDisplayForDesk(deskId)
-        val displayLayout = displayController.getDisplayLayout(targetDisplayId) ?: return
+        val displayLayout = displayController.getDisplayLayout(targetDisplayId) ?: return null
         logV(
             "addMoveToDeskTaskChanges taskId=%d deskId=%d displayId=%d",
             task.taskId,
             deskId,
             targetDisplayId,
         )
-        val inheritedTaskBounds =
+
+        // Inherit bounds from closing task instance whenever applicable to prevent application
+        // jumping different cascading positions.
+        val taskBounds =
             getInheritedExistingTaskBounds(repository, shellTaskOrganizer, task, deskId)
-        if (inheritedTaskBounds != null) {
-            // Inherit bounds from closing task instance to prevent application jumping different
-            // cascading positions.
-            wct.setBounds(task.token, inheritedTaskBounds)
-        } else {
-            val initialBounds = getInitialBounds(displayLayout, task, deskId)
-            wct.setBounds(task.token, initialBounds)
-        }
+                ?: getInitialBounds(displayLayout, task, deskId)
+        wct.setBounds(task.token, taskBounds)
+
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.moveTaskToDesk(wct = wct, deskId = deskId, task = task)
         } else {
@@ -5160,6 +5179,7 @@ class DesktopTasksController(
         if (desktopConfig.useDesktopOverrideDensity) {
             wct.setDensityDpi(task.token, desktopConfig.desktopDensityOverride)
         }
+        return taskBounds
     }
 
     /**
