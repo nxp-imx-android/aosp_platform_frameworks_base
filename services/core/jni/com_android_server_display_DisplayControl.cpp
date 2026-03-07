@@ -80,6 +80,7 @@ static int nativeSetHdrConversionMode(JNIEnv* env, jclass clazz, jint hdrConvers
             for (int i = 0; i < autoHdrOutputTypesLength; i++) {
                 autoHdrOutputTypesVector[i] = autoHdrOutputTypesArray[i];
             }
+            env->ReleaseIntArrayElements(autoHdrOutputTypes, autoHdrOutputTypesArray, JNI_ABORT);
             hdrConversionStrategy.set<gui::HdrConversionStrategy::Tag::autoAllowedHdrTypes>(
                     autoHdrOutputTypesVector);
             break;
