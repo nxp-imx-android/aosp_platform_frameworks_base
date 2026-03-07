@@ -217,7 +217,11 @@ final class RemoteAugmentedAutofillService {
                                         }
                                         // TODO(b/478044353): allow choosing priority for which
                                         //  future to look at the result of first.
-                                        if (personalContextResponse != null) {
+                                        if (personalContextResponse != null
+                                                // Personal context does not always generate
+                                                // suggestions.
+                                                && !personalContextResponse.inlineSuggestionsData
+                                                        .isEmpty()) {
                                             if (sDebug) {
                                                 Slog.d(
                                                         TAG,
