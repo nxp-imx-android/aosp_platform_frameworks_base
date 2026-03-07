@@ -361,6 +361,13 @@ flag {
 }
 
 flag {
+    name: "system_selection_toolbar_session_enabled"
+    namespace: "permissions"
+    description: "Enables the session implementation of the selection toolbar."
+    bug: "462206038"
+}
+
+flag {
     name: "note_op_batching_enabled"
     is_fixed_read_only: true
     is_exported: true
