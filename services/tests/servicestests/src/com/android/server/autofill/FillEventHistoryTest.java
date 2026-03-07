@@ -18,6 +18,7 @@ package android.service.autofill;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Bundle;
+import android.os.Parcel;
 import android.util.ArraySet;
 import android.view.autofill.AutofillId;
 
@@ -29,6 +30,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class FillEventHistoryTest {
@@ -133,5 +135,30 @@ public class FillEventHistoryTest {
 
         assertThat(mHistory1).isEqualTo(mHistory2);
         assertThat(mHistory1).isNotEqualTo(mHistory3);
+    }
+
+    @Test
+    public void fillEventHistory_parcelUnparcel_hashCodeAndEquals() throws Exception {
+        FillEventHistory mHistory1 = new FillEventHistory(123, new Bundle());
+        mHistory1.addEvent(mEvent1);
+        mHistory1.addEvent(mEvent3);
+
+        final Parcel parcel = Parcel.obtain();
+        try {
+            mHistory1.writeToParcel(parcel, 0);
+            final int dataSize = parcel.dataPosition();
+            // Reset data position for read.
+            parcel.setDataPosition(0);
+            final FillEventHistory fromParcel = mHistory1.CREATOR.createFromParcel(parcel);
+
+            // Same size of data is written and read.
+            assertThat(dataSize).isEqualTo(parcel.dataPosition());
+
+            // Unparceled object is equal to and has same hashCode as original.
+            assertThat(mHistory1).isEqualTo(fromParcel);
+            assertThat(mHistory1.hashCode()).isEqualTo(fromParcel.hashCode());
+        } finally {
+            parcel.recycle();
+        }
     }
 }

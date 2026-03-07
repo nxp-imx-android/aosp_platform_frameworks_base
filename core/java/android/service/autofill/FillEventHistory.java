@@ -71,7 +71,7 @@ public final class FillEventHistory implements Parcelable {
     /**
      * The ID of the autofill session that created the {@link FillResponse}.
      *
-     * TODO: add this to the parcel.
+     * Not in parcel.
      */
     private final int mSessionId;
 
@@ -148,13 +148,12 @@ public final class FillEventHistory implements Parcelable {
         if (o == null || getClass() != o.getClass()) return false;
         @SuppressWarnings("unchecked")
         FillEventHistory that = (FillEventHistory) o;
-        return mSessionId == that.mSessionId && Objects.equals(mEvents, that.mEvents);
+        return Objects.equals(mEvents, that.mEvents);
     }
 
     @Override
     public int hashCode() {
         int _hash = 1;
-        _hash = 31 * _hash + mSessionId;
         _hash = 31 * _hash + (mEvents != null ? mEvents.hashCode() : 0);
         return _hash;
     }
