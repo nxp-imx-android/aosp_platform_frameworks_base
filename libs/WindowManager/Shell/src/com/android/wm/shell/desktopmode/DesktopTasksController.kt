@@ -3275,12 +3275,30 @@ class DesktopTasksController(
         displayId: Int,
         userId: Int,
         excludeTaskId: Int? = null,
+        targetDeskId: Int? = null,
+        pendingTaskBounds: Rect? = null,
     ): Boolean {
-        val repository = userRepositories.getProfile(userId)
-        val deskId = repository.getActiveDeskId(displayId)
-        if (deskId == null) {
-            return false
+        if (
+            pendingTaskBounds != null &&
+                isMaximizedToStableBoundsEdges(displayId, pendingTaskBounds)
+        ) {
+            return true
         }
+        val repository = userRepositories.getProfile(userId)
+        val deskId =
+            if (targetDeskId != null) {
+                if (!repository.getDeskIds(displayId).contains(targetDeskId)) {
+                    logW(
+                        "isAnyTaskMaximizedAndVisible: target desk %d does not belong to display %d",
+                        targetDeskId,
+                        displayId,
+                    )
+                    return false
+                }
+                targetDeskId
+            } else {
+                repository.getActiveDeskId(displayId) ?: return false
+            }
         return repository
             .getExpandedTasksIdsInDeskOrdered(deskId)
             .filter { taskId ->
@@ -3301,12 +3319,23 @@ class DesktopTasksController(
         userId: Int,
         position: SnapPosition,
         excludeTaskId: Int? = null,
+        targetDeskId: Int? = null,
     ): Boolean {
         val repository = userRepositories.getProfile(userId)
-        val deskId = repository.getActiveDeskId(displayId)
-        if (deskId == null) {
-            return false
-        }
+        val deskId =
+            if (targetDeskId != null) {
+                if (!repository.getDeskIds(displayId).contains(targetDeskId)) {
+                    logW(
+                        "isAnyTaskTiledAndVisible: target desk %d does not belong to display %d",
+                        targetDeskId,
+                        displayId,
+                    )
+                    return false
+                }
+                targetDeskId
+            } else {
+                repository.getActiveDeskId(displayId) ?: return false
+            }
         val taskId =
             when (position) {
                 SnapPosition.LEFT -> repository.getLeftTiledTask(deskId)
@@ -3322,11 +3351,32 @@ class DesktopTasksController(
         displayId: Int,
         userId: Int,
         excludeTaskId: Int? = null,
+        targetDeskId: Int? = null,
+        pendingTaskBounds: Rect? = null,
     ): Boolean {
         val isDoubleTiled =
-            isAnyTaskTiledAndVisible(displayId, userId, SnapPosition.LEFT, excludeTaskId) &&
-                isAnyTaskTiledAndVisible(displayId, userId, SnapPosition.RIGHT, excludeTaskId)
-        return isDoubleTiled || isAnyTaskMaximizedAndVisible(displayId, userId, excludeTaskId)
+            isAnyTaskTiledAndVisible(
+                displayId,
+                userId,
+                SnapPosition.LEFT,
+                excludeTaskId,
+                targetDeskId,
+            ) &&
+                isAnyTaskTiledAndVisible(
+                    displayId,
+                    userId,
+                    SnapPosition.RIGHT,
+                    excludeTaskId,
+                    targetDeskId,
+                )
+        return isDoubleTiled ||
+            isAnyTaskMaximizedAndVisible(
+                displayId,
+                userId,
+                excludeTaskId,
+                targetDeskId,
+                pendingTaskBounds,
+            )
     }
 
     /**

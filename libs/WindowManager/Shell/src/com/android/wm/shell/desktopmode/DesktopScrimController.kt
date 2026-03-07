@@ -63,14 +63,32 @@ class DesktopScrimController(
         mDesktopScrimListeners.remove(listener)
     }
 
-    /** Check the current desktop condition and if should apply, apply the scrim effect. */
-    fun updateDesktopScrimIfNeeded(displayId: Int, userId: Int, excludeTaskId: Int? = null) {
+    /**
+     * Check the current desktop condition and if should apply, apply the scrim effect.
+     *
+     * @param displayId the display ID.
+     * @param userId the user ID.
+     * @param excludeTaskId the task ID to exclude from consideration. May be null.
+     * @param targetDeskId the desk ID for which the condition is checked. If null, the active desk
+     *   of [displayId] will be used.
+     * @param pendingTaskBounds the bounds of a task which might not be visible in the desk but
+     *   needs to be considered, e.g., a newly launching task. May be null.
+     */
+    fun updateDesktopScrimIfNeeded(
+        displayId: Int,
+        userId: Int,
+        excludeTaskId: Int? = null,
+        targetDeskId: Int? = null,
+        pendingTaskBounds: Rect? = null,
+    ) {
         val applyLightOutEffect =
             if (Flags.fixWallpaperDimIssues26q2()) {
                 desktopTasksController.isAnyTaskMaximizedOrDoubleTiled(
                     displayId,
                     userId,
                     excludeTaskId,
+                    targetDeskId,
+                    pendingTaskBounds,
                 )
             } else {
                 desktopTasksController.isAnyTaskMaximizedOrSnapped(displayId, userId, excludeTaskId)
