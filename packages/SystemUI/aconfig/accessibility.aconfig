@@ -85,16 +85,6 @@ flag {
 }
 
 flag {
-    name: "hearing_devices_dialog_related_tools"
-    namespace: "accessibility"
-    description: "Shows the related tools for hearing devices dialog."
-    bug: "341648471"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "launch_accessibility_quick_access_dialog_permission"
     namespace: "accessibility"
     description: "Adds a permission to allow applications to launch the accessibility quick access dialog."
