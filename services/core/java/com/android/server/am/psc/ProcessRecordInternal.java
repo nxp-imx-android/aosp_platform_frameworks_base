@@ -87,6 +87,8 @@ public abstract class ProcessRecordInternal {
 
         /**
          * Called when mCurProcState changes.
+         * TODO: b/485394632 - Remove this method after the {@link Flags#encapsulateCurProcState()}
+         *                     is enabled.
          *
          * @param curProcState The new mCurProcState value.
          */
@@ -1084,7 +1086,9 @@ public abstract class ProcessRecordInternal {
     @GuardedBy({"mServiceLock", "mProcLock"})
     void setCurProcState(int curProcState) {
         mCurProcState = curProcState;
-        mObserver.onCurProcStateChanged(mCurProcState);
+        if (!Flags.encapsulateCurProcState()) {
+            mObserver.onCurProcStateChanged(mCurProcState);
+        }
     }
 
     @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
