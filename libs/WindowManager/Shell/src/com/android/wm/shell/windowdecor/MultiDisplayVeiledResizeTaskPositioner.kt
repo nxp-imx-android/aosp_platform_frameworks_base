@@ -379,11 +379,13 @@ class MultiDisplayVeiledResizeTaskPositioner(
             // Update taskbar rounding once the drag/resize has registered a move event - in case
             // the moved task is no longer maximized. Only call this once per resize/drag so we
             // don't call into Launcher with each drag/resize frame to try to update the taskbar.
-            desktopTasksController.updateTaskbarRoundingOnTaskResize(
-                displayId,
-                windowDecoration.taskInfo.taskId,
-                Rect(repositionTaskBounds),
-            )
+            desktopTasksController
+                .getDesktopScrimController()
+                .updateDesktopScrimOnResize(
+                    displayId,
+                    windowDecoration.taskInfo.taskId,
+                    Rect(repositionTaskBounds),
+                )
             hasMoved = true
         }
         return Rect(repositionTaskBounds)

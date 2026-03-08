@@ -92,7 +92,6 @@ import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
-import android.window.WindowContainerTransaction.HierarchyOp
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_LAUNCH_TASK
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK
@@ -12110,8 +12109,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         taskRepository.addDesk(DEFAULT_DISPLAY, suggestedDeskId)
         taskRepository.addDesk(DEFAULT_DISPLAY, 1)
         taskRepository.setActiveDesk(DEFAULT_DISPLAY, 1)
-        val task =
-            setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
 
         controller.handleFreeformTaskPlacement(
             task = task,
@@ -12417,7 +12415,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         }
         if (addToRepository) {
             if (deskId != null) {
-                taskRepository.addTaskToDesk(displayId, deskId, task.taskId, isVisible = active, bounds)
+                taskRepository.addTaskToDesk(
+                    displayId,
+                    deskId,
+                    task.taskId,
+                    isVisible = active,
+                    bounds,
+                )
             } else {
                 taskRepository.addTask(displayId, task.taskId, isVisible = active, bounds)
             }
