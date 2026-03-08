@@ -107,7 +107,8 @@ constructor(
     private val mPostedEntries = LinkedHashMap<String, PostedEntry>()
 
     // notifs we've extended the lifetime for with cancellation callbacks
-    private val mNotifsExtendingLifetime = ArrayMap<NotificationEntry, Runnable?>()
+    @VisibleForTesting
+    val mNotifsExtendingLifetime = ArrayMap<NotificationEntry, Runnable?>()
 
     override fun attach(pipeline: NotifPipeline) {
         mNotifPipeline = pipeline
@@ -721,6 +722,7 @@ constructor(
             }
 
             override fun onEntryCleanUp(entry: NotificationEntry) {
+                mNotifsExtendingLifetime.remove(entry)
                 mHeadsUpViewBinder.abortBindCallback(entry)
             }
 
