@@ -39,7 +39,7 @@ abstract class OpenAppFromAllApps(val rotation: Rotation = Rotation.ROTATION_0) 
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+    val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     val calculatorApp = CalculatorAppHelper(instrumentation)
 
     @Before

@@ -71,7 +71,7 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
     private final int mCameraPolicy;
     private final int mDeviceId;
 
-    @GuardedBy("mCameras")
+    @GuardedBy("mRegisteredCameras")
     private final Map<IBinder, CameraDescriptor> mRegisteredCameras = new ArrayMap<>();
 
     public VirtualCameraController(@DevicePolicy int cameraPolicy, int deviceId) {
@@ -318,7 +318,7 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
         synchronized (mServiceLock) {
             // Try to connect to service if not connected already.
             if (mVirtualCameraService == null) {
-                connectVirtualCameraService();
+                connectVirtualCameraServiceLocked();
             }
             // Throw exception if we are unable to connect to service.
             if (mVirtualCameraService == null) {
@@ -328,13 +328,14 @@ public final class VirtualCameraController implements IBinder.DeathRecipient {
         }
     }
 
-    private void connectVirtualCameraService() {
+    @GuardedBy("mServiceLock")
+    private void connectVirtualCameraServiceLocked() {
         final long callingId = Binder.clearCallingIdentity();
         try {
             IBinder virtualCameraServiceBinder =
                     ServiceManager.waitForService(VIRTUAL_CAMERA_SERVICE_NAME);
             if (virtualCameraServiceBinder == null) {
-                Slog.e(TAG, "connectVirtualCameraService: Failed to connect to the virtual "
+                Slog.e(TAG, "connectVirtualCameraServiceLocked: Failed to connect to the virtual "
                         + "camera service");
                 return;
             }

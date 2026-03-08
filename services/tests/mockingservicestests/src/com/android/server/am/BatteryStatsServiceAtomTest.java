@@ -22,9 +22,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static org.mockito.Mockito.times;
 
 import android.content.Context;
-import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.view.Display;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -40,9 +37,6 @@ import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class BatteryStatsServiceAtomTest {
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Rule
     public final ExtendedMockitoRule mExtendedMockitoRule =
@@ -70,7 +64,6 @@ public class BatteryStatsServiceAtomTest {
                 FrameworkStatsLog.SCREEN_STATE_CHANGED, Display.STATE_ON));
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_BATTERY_STATS_LOG_COMBINED_DISPLAY_STATE)
     @Test
     public void noteScreenState_specialOn_logsStateChangedOn() {
         mBatteryStatsService.setDisplayCount(2);
@@ -125,7 +118,6 @@ public class BatteryStatsServiceAtomTest {
                 FrameworkStatsLog.SCREEN_STATE_CHANGED, Display.STATE_ON), times(2));
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_BATTERY_STATS_LOG_COMBINED_DISPLAY_STATE)
     @Test
     public void noteScreenState_onAndOff_logsCorrectStates() {
         mBatteryStatsService.setDisplayCount(2);
@@ -139,7 +131,6 @@ public class BatteryStatsServiceAtomTest {
                 FrameworkStatsLog.SCREEN_STATE_CHANGED, Display.STATE_ON), times(2));
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_BATTERY_STATS_LOG_COMBINED_DISPLAY_STATE)
     @Test
     public void noteScreenState_offAfterOns_logsCorrectStates() {
         mBatteryStatsService.setDisplayCount(2);
@@ -155,7 +146,6 @@ public class BatteryStatsServiceAtomTest {
                 FrameworkStatsLog.SCREEN_STATE_CHANGED, Display.STATE_ON), times(3));
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_BATTERY_STATS_LOG_COMBINED_DISPLAY_STATE)
     @Test
     public void noteScreenState_offsAfterOns_logsCorrectStates() {
         mBatteryStatsService.setDisplayCount(2);
@@ -175,7 +165,6 @@ public class BatteryStatsServiceAtomTest {
                 FrameworkStatsLog.SCREEN_STATE_CHANGED, Display.STATE_OFF));
     }
 
-    @RequiresFlagsEnabled(Flags.FLAG_BATTERY_STATS_LOG_COMBINED_DISPLAY_STATE)
     @Test
     public void noteScreenState_noDisplaysSet_logStateChangedNotCalled() {
         mBatteryStatsService.setDisplayCount(0);

@@ -15,12 +15,16 @@
  */
 package com.android.wm.shell.dagger.hierarchy
 
+import android.content.Context
+import android.hardware.devicestate.DeviceStateManager
+import android.os.Handler
 import com.android.wm.shell.Flags
 import com.android.wm.shell.RootDisplayAreaOrganizer
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayInsetsController
+import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.dagger.WMShellConcurrencyModule
 import com.android.wm.shell.dagger.WMShellCoroutinesModule
 import com.android.wm.shell.dagger.WMSingleton
@@ -28,12 +32,13 @@ import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.ContainerHierarchyCommandHandler
 import com.android.wm.shell.hierarchy.ContainerHierarchyController
 import com.android.wm.shell.hierarchy.modes.FormFactorModes
-import com.android.wm.shell.hierarchy.transitions.HierarchyTransitionPlanner
 import com.android.wm.shell.hierarchy.updates.HierarchyUpdateRequester
 import com.android.wm.shell.hierarchy.updates.HierarchyUpdateRequesterImpl
 import com.android.wm.shell.hierarchy.updates.HierarchyUpdater
 import com.android.wm.shell.hierarchy.updates.InitialHierarchyPopulator
+import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.sysui.ShellCommandHandler
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import dagger.Module
@@ -98,36 +103,30 @@ abstract class ContainerHierarchyModule {
         @WMSingleton
         @Provides
         fun provideHierarchyUpdater(
+            appContext: Context,
+            shellController: ShellController,
             shellTaskOrganizer: ShellTaskOrganizer,
             transitions: Transitions,
             displayInsetsController: DisplayInsetsController,
+            deviceStateManager: DeviceStateManager,
             hierarchy: ContainerHierarchy,
             formFactorModes: FormFactorModes,
             shellInit: ShellInit,
+            @ShellMainThread mainExector: ShellExecutor,
+            @ShellMainThread mainHandler: Handler,
         ): HierarchyUpdater {
             return HierarchyUpdater(
+                appContext,
+                shellController,
                 shellTaskOrganizer,
                 transitions,
                 displayInsetsController,
+                deviceStateManager,
                 hierarchy,
                 formFactorModes,
-                shellInit
-            )
-        }
-
-        @WMSingleton
-        @Provides
-        fun provideHierarchyTransitionPlanner(
-            transitions: Transitions,
-            hierarchy: ContainerHierarchy,
-            updater: HierarchyUpdater,
-            shellInit: ShellInit,
-        ): HierarchyTransitionPlanner {
-            return HierarchyTransitionPlanner(
-                transitions,
-                hierarchy,
-                updater,
-                shellInit
+                shellInit,
+                mainExector,
+                mainHandler,
             )
         }
 
@@ -195,7 +194,6 @@ abstract class ContainerHierarchyModule {
             initialContainerHierarchyPopulator: InitialHierarchyPopulator,
             containerHierarchyUpdater: HierarchyUpdater,
             containerHierarchyUpdateRequester: HierarchyUpdateRequester,
-            containerHierarchyTransitionPlanner: HierarchyTransitionPlanner,
             containerHierarchyCommandHandler: ContainerHierarchyCommandHandler,
             containerHierarchyController: Optional<ContainerHierarchyController>
         ): Object {

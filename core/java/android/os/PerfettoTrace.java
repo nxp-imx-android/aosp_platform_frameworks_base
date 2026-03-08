@@ -69,23 +69,6 @@ public final class PerfettoTrace {
      */
     private static final AtomicInteger sFlowEventId = new AtomicInteger();
 
-    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace
-            .Category PROC_STATE_CATEGORY = getProcStateCategory();
-
-    @RavenwoodIgnore // Just use null on Ravenwood.
-    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace
-            .Category getProcStateCategory() {
-        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("proc_state");
-    }
-
-    public static final com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category
-            BIG_LOCKS_V3 = getBigLocksV3();
-
-    @RavenwoodIgnore // Just use null on Ravenwood.
-    private static com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category getBigLocksV3() {
-        return new com.android.internal.dev.perfetto.sdk.PerfettoTrace.Category("big_locks");
-    }
-
     /**
      * This is temporary wrapper to check if "mq" category is enabled, should
      * be called only from the MessageQueue.java and Looper.java.
@@ -423,12 +406,6 @@ public final class PerfettoTrace {
     /** Registers categories with Perfetto. */
     @RavenwoodIgnore
     public static void registerCategories() {
-        if (IS_USE_SDK_TRACING_API_V3) {
-            BIG_LOCKS_V3.register();
-        }
-        if (android.os.Flags.perfettoSdkTracingV3()) {
-            PROC_STATE_CATEGORY.register();
-        }
     }
 
     /**

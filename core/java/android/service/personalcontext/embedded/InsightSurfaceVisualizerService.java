@@ -17,6 +17,7 @@
 package android.service.personalcontext.embedded;
 
 import static android.annotation.SystemApi.Client.PRIVILEGED_APPS;
+import static android.service.personalcontext.embedded.InsightSurfaceSessionException.ERROR_FAILED_TO_CREATE_SESSION;
 
 import android.Manifest;
 import android.annotation.FlaggedApi;
@@ -45,6 +46,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.SurfaceControlViewHost;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.window.InputTransferToken;
@@ -169,7 +171,8 @@ public abstract class InsightSurfaceVisualizerService extends Service {
         /**
          * Create a new root view to hold the surface view.
          */
-        FrameLayout createRootView(Context context);
+        RootView createRootView(
+                Context context, InsightSurfaceClientInfo clientInfo, SurfaceControlViewHost host);
     }
 
     private static final class DefaultInjector implements Injector {
@@ -202,8 +205,9 @@ public abstract class InsightSurfaceVisualizerService extends Service {
         }
 
         @Override
-        public FrameLayout createRootView(Context context) {
-            return new FrameLayout(context);
+        public RootView createRootView(
+                Context context, InsightSurfaceClientInfo clientInfo, SurfaceControlViewHost host) {
+            return new RootView(context, clientInfo, host);
         }
     }
 
@@ -331,22 +335,6 @@ public abstract class InsightSurfaceVisualizerService extends Service {
         private final Map<UUID, SurfaceInfo> mSurfacesByClient = new HashMap<>();
         private final BinderRequestProcessor<InsightSurfaceVisualizerService> mRequestProcessor;
 
-        private record SurfaceLayoutChangeListener(
-                InsightSurfaceClientInfo clientInfo,
-                SurfaceControlViewHost surfaceHost) implements View.OnLayoutChangeListener {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                remeasureView(clientInfo, surfaceHost);
-            }
-        }
-
-        private record SurfaceInfo(
-                FrameLayout rootView,
-                SurfaceControlViewHost host,
-                SurfaceControlViewHost.SurfacePackage surfacePackage,
-                SurfaceLayoutChangeListener surfaceLayoutChangeListener) {}
-
         BinderService(
                 InsightSurfaceVisualizerService service,
                 Context context,
@@ -383,6 +371,7 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                                     + clientInfo);
                             if (existingSurface != null) {
                                 clientInfo.onSurfaceReleased(existingSurface.surfacePackage());
+                                existingSurface.rootView().onDestroy();
                             }
                             disconnectClient(clientInfo, serviceInstance);
                             sendResult(/*visualizationCreated= */ false, result);
@@ -390,46 +379,29 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                         }
 
                         if (existingSurface == null) {
-                            final FrameLayout rootView =
-                                    serviceInstance.mInjector.createRootView(mContext);
-                            rootView.addView(view);
                             final SurfaceControlViewHost newSurfaceHost =
                                     mSurfaceControlViewHostFactory.createSurfaceControlViewHost(
-                                        mContext, mDisplay, null);
-                            final SurfaceLayoutChangeListener listener =
-                                    new SurfaceLayoutChangeListener(clientInfo, newSurfaceHost);
+                                            mContext, mDisplay, null);
 
+                            final RootView rootView =
+                                    serviceInstance.mInjector.createRootView(
+                                            mContext, clientInfo, newSurfaceHost);
                             newSurfaceHost.setView(rootView, 0, 0);
-                            rootView.addOnLayoutChangeListener(listener);
+                            rootView.setContentView(view);
 
                             final SurfaceInfo newSurface =
                                     new SurfaceInfo(
                                             rootView,
                                             newSurfaceHost,
-                                            newSurfaceHost.getSurfacePackage(),
-                                            listener);
+                                            newSurfaceHost.getSurfacePackage());
                             mSurfacesByClient.put(clientInfo.getId(), newSurface);
-
-                            clientInfo.onSurfaceCreated(
-                                    newSurface.surfacePackage(),
-                                    new IInsightSurfaceSession.Stub() {
-                                        @Override
-                                        public void onClientUpdated(
-                                                InsightSurfaceClientInfo oldClientInfo,
-                                                InsightSurfaceClientInfo newClientInfo,
-                                                ResultReceiver receiver,
-                                                IOpCallback opCallback) {
-                                            handleClientUpdate(oldClientInfo, newClientInfo,
-                                                    receiver, opCallback);
-                                        }
-                                    });
+                            scheduleOnSurfaceCreated(
+                                    rootView, clientInfo, newSurface.surfacePackage);
 
                             // Tell the visualizer that a new client is now connected.
                             serviceInstance.onClientConnected(clientInfo);
                         } else {
-                            existingSurface.rootView().removeAllViews();
-                            existingSurface.rootView().addView(view);
-                            remeasureView(clientInfo, existingSurface.host());
+                            existingSurface.rootView().setContentView(view);
                             clientInfo.onSurfaceUpdated(existingSurface.surfacePackage());
                         }
 
@@ -437,29 +409,54 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                     }).build());
         }
 
-        private static void remeasureView(
+        private void scheduleOnSurfaceCreated(
+                RootView rootView,
                 InsightSurfaceClientInfo clientInfo,
-                SurfaceControlViewHost surfaceHost) {
-            final View rootView = surfaceHost.getView();
-            rootView.measure(
-                    clientInfo.getMeasureSpecWidth(),
-                    clientInfo.getMeasureSpecHeight());
-            final int measuredWidth = rootView.getMeasuredWidth();
-            final int measuredHeight = rootView.getMeasuredHeight();
-            surfaceHost.relayout(
-                    measuredWidth, measuredHeight);
-            clientInfo.onSizeChanged(measuredWidth, measuredHeight);
+                SurfaceControlViewHost.SurfacePackage surfacePackage) {
+            rootView.getViewTreeObserver().addOnPreDrawListener(
+                    new ViewTreeObserver.OnPreDrawListener() {
+                        @Override
+                        public boolean onPreDraw() {
+                            clientInfo.onSurfaceCreated(
+                                    surfacePackage,
+                                    new IInsightSurfaceSession.Stub() {
+                                        @Override
+                                        public void onClientUpdated(
+                                                InsightSurfaceClientInfo oldInfo,
+                                                InsightSurfaceClientInfo newInfo,
+                                                ResultReceiver receiver,
+                                                IOpCallback opCallback) {
+                                            handleClientUpdate(
+                                                    oldInfo,
+                                                    newInfo,
+                                                    receiver,
+                                                    opCallback);
+                                        }
+                                    });
+                            rootView.getViewTreeObserver()
+                                    .removeOnPreDrawListener(this);
+                            return true;
+                        }
+                    });
         }
 
-        private void handleClientUpdate(InsightSurfaceClientInfo oldClientInfo,
+        private void handleClientUpdate(
+                InsightSurfaceClientInfo oldClientInfo,
                 InsightSurfaceClientInfo newClientInfo,
                 ResultReceiver receiver,
                 IOpCallback opCallback) {
             mRequestProcessor.execute(new BinderRequestProcessor
                     .ExecutionParams.Builder<InsightSurfaceVisualizerService>(
                             opCallback,
-                            serviceInstance -> serviceInstance.onClientUpdated(
-                                    oldClientInfo, newClientInfo, receiver)).build());
+                            serviceInstance -> {
+                                final SurfaceInfo surface =
+                                        mSurfacesByClient.get(oldClientInfo.getId());
+                                if (surface != null) {
+                                    surface.rootView().updateClientInfo(newClientInfo);
+                                }
+                                serviceInstance.onClientUpdated(
+                                        oldClientInfo, newClientInfo, receiver);
+                            }).build());
         }
 
         @Override
@@ -467,9 +464,7 @@ public abstract class InsightSurfaceVisualizerService extends Service {
             mRequestProcessor.execute(new BinderRequestProcessor
                     .ExecutionParams.Builder<InsightSurfaceVisualizerService>(
                             callback,
-                            serviceInstance -> {
-                                disconnectClient(client, serviceInstance);
-                            }
+                            serviceInstance -> disconnectClient(client, serviceInstance)
                     ).build());
         }
 
@@ -487,7 +482,7 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                 return false;
             }
 
-            surface.rootView().removeOnLayoutChangeListener(surface.surfaceLayoutChangeListener);
+            surface.rootView().onDestroy();
             surface.host().release();
             return true;
         }
@@ -498,6 +493,111 @@ public abstract class InsightSurfaceVisualizerService extends Service {
                 result.onResult(visualizationCreated);
             } catch (RemoteException e) {
                 Log.e(TAG, "Error sending result", e);
+            }
+        }
+    }
+
+    private record SurfaceInfo(
+            RootView rootView,
+            SurfaceControlViewHost host,
+            SurfaceControlViewHost.SurfacePackage surfacePackage) {}
+
+    /**
+     * @hide
+     */
+    @VisibleForTesting
+    public static class RootView extends FrameLayout {
+        private InsightSurfaceClientInfo mClientInfo;
+        private final SurfaceControlViewHost mHost;
+
+        private Runnable mOnRequestLayoutAction = null;
+        private final Runnable mOnRequestLayoutRunnable = () -> {
+            if (mOnRequestLayoutAction != null) {
+                mOnRequestLayoutAction.run();
+            }
+        };
+
+        public RootView(
+                @NonNull Context context,
+                @NonNull InsightSurfaceClientInfo clientInfo,
+                @NonNull SurfaceControlViewHost host) {
+            super(context);
+            mClientInfo = clientInfo;
+            mHost = host;
+        }
+
+        @Override
+        public void requestLayout() {
+            removeCallbacks(mOnRequestLayoutRunnable);
+            if (mOnRequestLayoutAction != null) {
+                post(mOnRequestLayoutRunnable);
+            }
+
+            super.requestLayout();
+        }
+
+        /**
+         * Update the root view's {@link InsightSurfaceClientInfo} reference.
+         *
+         * @param clientInfo the new {@link InsightSurfaceClientInfo}
+         */
+        public void updateClientInfo(@NonNull InsightSurfaceClientInfo clientInfo) {
+            mClientInfo = clientInfo;
+            requestLayout();
+        }
+
+        /**
+         * Set the root view's content view.
+         *
+         * @param view the {@link View} to be set as the content view
+         */
+        public void setContentView(View view) {
+            mOnRequestLayoutAction = null;
+
+            removeAllViews();
+            addView(view);
+
+            mOnRequestLayoutAction = this::remeasure;
+            requestLayout();
+        }
+
+        /**
+         * Called when the root view is being destroyed.
+         */
+        public void onDestroy() {
+            mOnRequestLayoutAction = null;
+            removeCallbacks(mOnRequestLayoutRunnable);
+        }
+
+        /**
+         * Execute the on request layout action, if there is one. The is only intended to be called
+         * by tests.
+         */
+        @VisibleForTesting
+        public void executeOnRequestLayoutAction() {
+            if (mOnRequestLayoutAction != null) {
+                mOnRequestLayoutAction.run();
+            }
+        }
+
+        private void remeasure() {
+            final int prevMeasuredWidth = getMeasuredWidth();
+            final int prevMeasuredHeight = getMeasuredHeight();
+
+            try {
+                measure(mClientInfo.getMeasureSpecWidth(), mClientInfo.getMeasureSpecHeight());
+            } catch (Exception e) {
+                // TODO(b/485873401): Create and use a better error code.
+                mClientInfo.onVisualizationError(ERROR_FAILED_TO_CREATE_SESSION);
+                throw e;
+            }
+
+            final int newMeasuredWidth = getMeasuredWidth();
+            final int newMeasuredHeight = getMeasuredHeight();
+
+            if (newMeasuredWidth != prevMeasuredWidth || newMeasuredHeight != prevMeasuredHeight) {
+                mHost.relayout(newMeasuredWidth, newMeasuredHeight);
+                mClientInfo.onSizeChanged(newMeasuredWidth, newMeasuredHeight);
             }
         }
     }

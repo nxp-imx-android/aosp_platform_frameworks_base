@@ -9069,6 +9069,11 @@ package android.app.admin {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.admin.NetworkEvent> CREATOR;
   }
 
+  @FlaggedApi("android.app.admin.flags.policy_streamlining") public final class PackageIdentifier {
+    ctor public PackageIdentifier(@NonNull String);
+    method @NonNull public String getPackageName();
+  }
+
   public final class PackagePolicy implements android.os.Parcelable {
     ctor public PackagePolicy(int);
     ctor public PackagePolicy(int, @NonNull java.util.Set<java.lang.String>);

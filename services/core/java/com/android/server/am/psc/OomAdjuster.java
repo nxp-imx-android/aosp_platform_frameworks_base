@@ -62,7 +62,7 @@ import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_SYSTEM_INIT;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UID_IDLE;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UI_VISIBILITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_UNBIND_SERVICE;
-import static android.os.PerfettoTrace.PROC_STATE_CATEGORY;
+import static android.os.PerfettoCategories.PROC_STATE_CATEGORY;
 import static android.os.PerfettoCategories.PROC_STATE_COUNTER_CATEGORY;
 import static android.os.Process.THREAD_GROUP_BACKGROUND;
 import static android.os.Process.THREAD_GROUP_DEFAULT;

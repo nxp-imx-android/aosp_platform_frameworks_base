@@ -22,12 +22,10 @@ import com.android.systemui.scene.shared.model.TransitionKeys.ToSplitShade
 import com.android.systemui.scene.ui.composable.transitions.aodToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.bouncerToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.bouncerToLockscreenTransition
-import com.android.systemui.scene.ui.composable.transitions.communalToBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToQuickSettingsTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToSingleShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.communalToSplitShadeTransition
-import com.android.systemui.scene.ui.composable.transitions.dreamToBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToCommunalTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToGoneTransition
 import com.android.systemui.scene.ui.composable.transitions.dreamToNotificationsShadeTransition
@@ -58,8 +56,10 @@ import com.android.systemui.scene.ui.composable.transitions.quickSettingsToShade
 import com.android.systemui.scene.ui.composable.transitions.shadeToAlwaysOnDisplayTransition
 import com.android.systemui.scene.ui.composable.transitions.shadeToQuickSettingsTransition
 import com.android.systemui.scene.ui.composable.transitions.sharedBouncerTransitions
+import com.android.systemui.scene.ui.composable.transitions.toBouncerTransition
 import com.android.systemui.scene.ui.composable.transitions.toNotificationsShadeTransition
 import com.android.systemui.scene.ui.composable.transitions.toQuickSettingsShadeTransition
+import com.android.systemui.scene.ui.viewmodel.ToBouncerTransitionViewModel
 import com.android.systemui.shade.ui.composable.Shade
 
 /**
@@ -79,6 +79,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
         shadeExpansionMotion: VerticalExpandContainerSpec,
         revealHaptics: ContainerRevealHaptics,
         animateQsTilesViewModel: AnimateQsTilesViewModel,
+        toBouncerTransitionViewModel: ToBouncerTransitionViewModel,
         resources: Resources,
     ): SceneTransitions {
         return transitions {
@@ -406,9 +407,11 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
 
             // Overlay transitions
 
-            sharedBouncerTransitions()
+            sharedBouncerTransitions(toBouncerTransitionViewModel = toBouncerTransitionViewModel)
             from(Overlays.Bouncer, to = Scenes.Gone) { bouncerToGoneTransition() }
-            from(Scenes.Dream, to = Overlays.Bouncer) { dreamToBouncerTransition() }
+            from(Scenes.Dream, to = Overlays.Bouncer) {
+                toBouncerTransition(viewModel = toBouncerTransitionViewModel)
+            }
             from(
                 Scenes.Dream,
                 to = Overlays.NotificationsShade,
@@ -466,7 +469,11 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 fromBouncerTransition()
             }
-            from(Scenes.Lockscreen, to = Overlays.Bouncer) { lockscreenToBouncerTransition() }
+            from(Scenes.Lockscreen, to = Overlays.Bouncer) {
+                lockscreenToBouncerTransition(
+                    toBouncerTransitionViewModel = toBouncerTransitionViewModel
+                )
+            }
             from(Overlays.Bouncer, to = Scenes.Lockscreen) { bouncerToLockscreenTransition() }
             from(
                 Overlays.Bouncer,
@@ -476,7 +483,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
             ) {
                 bouncerToLockscreenTransition()
             }
-            from(Scenes.Communal, to = Overlays.Bouncer) { communalToBouncerTransition() }
+            from(Scenes.Communal, to = Overlays.Bouncer) {
+                toBouncerTransition(viewModel = toBouncerTransitionViewModel)
+            }
             from(Scenes.Communal, to = Scenes.Gone, key = TransitionKeys.SwipeUpToGone) {
                 communalToGoneTransition()
             }

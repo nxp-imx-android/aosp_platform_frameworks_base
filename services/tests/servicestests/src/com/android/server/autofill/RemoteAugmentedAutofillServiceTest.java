@@ -247,6 +247,42 @@ public class RemoteAugmentedAutofillServiceTest {
 
     @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
     @Test
+    public void onRequestAutofillLocked_emptyPersonalContextResponse_choosesAutofillResults()
+            throws Exception {
+        final int sessionId = 1234;
+        AutofillId focusedId = new AutofillId(3);
+        final InlineSuggestionsRequest inlineSuggestionsRequest =
+                new InlineSuggestionsRequest.Builder(List.of(AUTOFILL_INLINE_PRESENTATION_SPEC))
+                        .build();
+        // Request augmented autofill.
+        mService.onRequestAutofillLocked(
+                sessionId,
+                mClient,
+                4567, // taskId
+                ACTIVITY_COMPONENT_NAME,
+                mActivityToken,
+                focusedId,
+                AUTOFILL_VALUE,
+                inlineSuggestionsRequest,
+                mInlineSuggestionsCallback,
+                () -> {}, // onErrorCallback
+                mRemoteInlineSuggestionRenderService,
+                USER_ID);
+
+        // Augmented autofill service receives fill request.
+        IFillCallback fillCallback =
+                triggerAugmentedAutofillRequest(sessionId, ACTIVITY_COMPONENT_NAME, focusedId);
+
+        // Both augmented autofill and personal context provide a response.
+        sendAutofillResponse(focusedId, fillCallback, false);
+        sendEmptyPersonalContextResponse(sessionId);
+
+        // Autofill result is chosen as the personal context response is empty.
+        assertInlinePresentationResult(AUTOFILL_INLINE_PRESENTATION_SPEC);
+    }
+
+    @EnableFlags(FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE)
+    @Test
     public void onRequestAutofillLocked_onlyAutofillResponse_choosesAutofillResult()
             throws Exception {
         final int sessionId = 1234;
@@ -660,6 +696,11 @@ public class RemoteAugmentedAutofillServiceTest {
                         .setField(focusedId, new Field.Builder().setValue(AUTOFILL_VALUE).build())
                         .build());
         mService.notifySystemInlineSuggestions(sessionId, datasets2);
+        mTestExecutor.runAll();
+    }
+
+    private void sendEmptyPersonalContextResponse(int sessionId) {
+        mService.notifySystemInlineSuggestions(sessionId, new ArrayList<>());
         mTestExecutor.runAll();
     }
 

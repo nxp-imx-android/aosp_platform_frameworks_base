@@ -31,7 +31,7 @@ object PreferenceScreenRegistry {
     private lateinit var keyValueStoreProvider: KeyValueStoreProvider
 
     /** The default permit for external application to read preference values. */
-    var defaultReadPermit: @ReadWritePermit Int = ReadWritePermit.DISALLOW
+    var defaultReadPermit: @ReadWritePermit Int = ReadWritePermit.ALLOW
 
     /** The default permit for external application to write preference values. */
     var defaultWritePermit: @ReadWritePermit Int = ReadWritePermit.DISALLOW

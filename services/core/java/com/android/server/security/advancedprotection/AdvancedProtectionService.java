@@ -169,7 +169,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             }
         }
 
-        if (android.security.Flags.aapmFeatureDisableInsecureWifiAutojoin()) {
+        if (android.security.Flags.aapmFeatureDisableInsecureWifiAutojoinV2()) {
             try {
                 mProviders.add(new WifiManagerFeatureProvider());
             } catch (Exception e) {

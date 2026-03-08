@@ -16,6 +16,7 @@
 
 package com.android.server.usb;
 
+import android.Manifest;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
@@ -67,7 +68,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * UsbUserPermissionManager manages usb device or accessory access permissions.
@@ -240,6 +243,23 @@ class UsbUserPermissionManager {
         return packages != null && Arrays.asList(packages).contains(packageAndUid.packageName);
     }
 
+    // Send broadcast intent for permission changes on a device or accessory.
+    //
+    // The broadcast is informational to make sure stale data about permissions
+    // isn't used by system applications and will only be sent to registered
+    // listeners.
+    private void permissionChangedBroadcastIntent(UsbDevice device, UsbAccessory accessory) {
+        Intent intent = new Intent(UsbManager.ACTION_USB_PERMISSION_CHANGED);
+        if (device != null) {
+            intent.putExtra(UsbManager.EXTRA_DEVICE, device);
+        } else {
+            intent.putExtra(UsbManager.EXTRA_ACCESSORY, accessory);
+        }
+
+        intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+        mContext.sendBroadcastAsUser(intent, UserHandle.ALL, Manifest.permission.MANAGE_USB);
+    }
+
     @VisibleForTesting
     void grantDevicePermissionInternal(
             @NonNull UsbDevice device,
@@ -247,6 +267,8 @@ class UsbUserPermissionManager {
             String packageName,
             int uid,
             boolean isPersistent) {
+        boolean wasAdded = false;
+
         synchronized (mLock) {
             PackageAndUid identifier = new PackageAndUid(packageName, uid);
             String deviceAddr = device.getDeviceName();
@@ -280,11 +302,16 @@ class UsbUserPermissionManager {
                 }
             }
 
-            permissions.add(identifier);
+            // Only send broadcast for it didn't already exist
+            wasAdded = permissions.add(identifier);
 
-            if (needsWrite) {
+            if (wasAdded && needsWrite) {
                 scheduleWritePermissionsLocked();
             }
+        }
+
+        if (wasAdded) {
+            permissionChangedBroadcastIntent(device, null);
         }
     }
 
@@ -317,6 +344,8 @@ class UsbUserPermissionManager {
     @VisibleForTesting
     void grantAccessoryPermissionInternal(
             @NonNull UsbAccessory accessory, String packageName, int uid) {
+        boolean wasAdded = false;
+
         synchronized (mLock) {
             PackageAndUid identifier = new PackageAndUid(packageName, uid);
             if (!isValidPackageUidPair(identifier)) {
@@ -330,7 +359,11 @@ class UsbUserPermissionManager {
                 mTemporaryAccessoryPermissionMap.put(accessory, permissions);
             }
 
-            permissions.add(identifier);
+            wasAdded = permissions.add(identifier);
+        }
+
+        if (wasAdded) {
+            permissionChangedBroadcastIntent(null, accessory);
         }
     }
 
@@ -887,5 +920,82 @@ class UsbUserPermissionManager {
 
         requestPermissionDialog(null, accessory,
                 mUsbUserSettingsManager.canBeDefault(accessory, packageName), packageName, pi, uid);
+    }
+
+    /** Revoke device access permission for packageName + uid. */
+    public void revokeDevicePermission(
+            @NonNull UsbDevice device,
+            UsbDeviceFingerprint fingerprint,
+            String packageName,
+            int uid) {
+        if (!android.hardware.usb.flags.Flags.enablePersistentUsbDevicePermissions()) {
+            return;
+        }
+
+        PackageAndUid identifier = new PackageAndUid(packageName, uid);
+        String deviceAddr = device.getDeviceName();
+        boolean removed = false;
+
+        if (!isValidPackageUidPair(identifier)) {
+            throw new IllegalArgumentException(
+                    "Provided packageName and uid pair are not valid");
+        }
+
+
+        synchronized (mLock) {
+            if (fingerprint != null) {
+                ArraySet<PackageAndUid> permissionsForDevice =
+                        mPersistentDevicePermissionMap.get(fingerprint);
+                if (permissionsForDevice != null) {
+                    if (permissionsForDevice.remove(identifier)) {
+                        scheduleWritePermissionsLocked();
+                        removed = true;
+                    }
+                }
+            }
+
+            ArraySet<PackageAndUid> temporaryPermissions =
+                    mTemporaryDevicePermissionMap.get(deviceAddr);
+            if (temporaryPermissions != null) {
+                removed |= temporaryPermissions.remove(identifier);
+            }
+        }
+
+        if (removed) {
+            permissionChangedBroadcastIntent(device, null);
+        }
+    }
+
+    /**
+     * Get a list of packages that have both temporary and persistent permissions for given device.
+     *
+     * @param device - USB device to check
+     * @return list of packages that have permissions to this UsbDevice.
+     */
+    public List<String> getPackagesWithDevicePermission(
+            UsbDevice device, UsbDeviceFingerprint fingerprint) {
+        ArraySet<String> packages = new ArraySet<>();
+
+        if (android.hardware.usb.flags.Flags.enablePersistentUsbDevicePermissions()) {
+            synchronized (mLock) {
+                String deviceAddr = device.getDeviceName();
+                if (fingerprint != null
+                        && mPersistentDevicePermissionMap.get(fingerprint) != null) {
+                    for (PackageAndUid entry : mPersistentDevicePermissionMap.get(fingerprint)) {
+                        packages.add(entry.packageName);
+                    }
+                }
+
+                ArraySet<PackageAndUid> tmpPermissions =
+                        mTemporaryDevicePermissionMap.get(deviceAddr);
+                if (tmpPermissions != null) {
+                    for (PackageAndUid entry : tmpPermissions) {
+                        packages.add(entry.packageName);
+                    }
+                }
+            }
+        }
+
+        return new ArrayList<String>(packages);
     }
 }

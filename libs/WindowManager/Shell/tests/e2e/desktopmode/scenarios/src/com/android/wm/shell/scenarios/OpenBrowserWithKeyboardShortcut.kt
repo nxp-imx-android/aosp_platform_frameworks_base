@@ -38,7 +38,7 @@ open class OpenBrowserWithKeyboardShortcut(val rotation: Rotation = Rotation.ROT
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val keyEventHelper = KeyEventHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+    val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     val browserAppHelper = BrowserAppHelper(instrumentation)
 
     @Before
