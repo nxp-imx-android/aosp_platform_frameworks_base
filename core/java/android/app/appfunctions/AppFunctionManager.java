@@ -32,6 +32,7 @@ import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
@@ -322,7 +323,11 @@ public final class AppFunctionManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface EnabledState {}
 
-    private final AppFunctionRegistry mRegistry;
+    private final Object mRegistryLock = new Object();
+
+    @GuardedBy("mRegistryLock")
+    @Nullable
+    private AppFunctionRegistry mRegistry;
 
     /**
      * Creates an instance.
@@ -334,7 +339,16 @@ public final class AppFunctionManager {
     public AppFunctionManager(IAppFunctionManager service, Context context) {
         mService = service;
         mContext = context;
-        mRegistry = new AppFunctionRegistry(mContext);
+    }
+
+    @NonNull
+    private AppFunctionRegistry ensureRegistry() {
+        synchronized (mRegistryLock) {
+            if (mRegistry == null) {
+                mRegistry = new AppFunctionRegistry(mContext);
+            }
+            return mRegistry;
+        }
     }
 
     /**
@@ -839,7 +853,7 @@ public final class AppFunctionManager {
             @NonNull String functionIdentifier,
             @NonNull Executor executor,
             @NonNull AppFunction appFunction) {
-        return mRegistry.register(
+        return ensureRegistry().register(
                 List.of(new RegisterAppFunctionRequest(functionIdentifier, executor, appFunction)));
     }
 
@@ -882,7 +896,7 @@ public final class AppFunctionManager {
         if (requests.isEmpty()) {
             throw new IllegalArgumentException("No functions provided.");
         }
-        return mRegistry.register(requests);
+        return ensureRegistry().register(requests);
     }
 
     /**
@@ -1298,7 +1312,13 @@ public final class AppFunctionManager {
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
     public void unregisterAllAppFunctions(@NonNull String callerDescription) {
         Objects.requireNonNull(callerDescription);
-        mRegistry.unregisterAllAppFunctions(callerDescription);
+        AppFunctionRegistry registry;
+        synchronized (mRegistryLock) {
+            registry = mRegistry;
+        }
+        if (registry != null) {
+            registry.unregisterAllAppFunctions(callerDescription);
+        }
     }
 
     /**
