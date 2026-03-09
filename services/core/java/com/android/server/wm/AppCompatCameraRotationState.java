@@ -28,7 +28,6 @@ import android.annotation.Nullable;
 import android.view.Display;
 import android.view.OrientationEventListener;
 import android.view.Surface;
-import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 
@@ -165,7 +164,6 @@ class AppCompatCameraRotationState {
     }
 
     private boolean isExternalDisplay() {
-        return DesktopExperienceFlags.ENABLE_CAMERA_COMPAT_EXTERNAL_DISPLAY_ROTATION_BUGFIX.isTrue()
-                && mDisplayContent.getDisplay().getType() == Display.TYPE_EXTERNAL;
+        return mDisplayContent.getDisplay().getType() == Display.TYPE_EXTERNAL;
     }
 }
