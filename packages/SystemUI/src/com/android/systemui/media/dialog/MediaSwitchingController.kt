@@ -969,23 +969,13 @@ constructor(
             return null
         }
 
-        if (Flags.enableUseOfSessionReleaseTypeForStopButton()) {
-            return when (getSessionReleaseType()) {
-                RoutingSessionInfo.RELEASE_TYPE_SHARING ->
-                    R.string.media_output_dialog_button_stop_sharing
-                RoutingSessionInfo.RELEASE_TYPE_CASTING ->
-                    R.string.media_output_dialog_button_stop_casting
-                else -> null
-            }
-        } else {
-            val inBroadcast = getSessionReleaseType() == RoutingSessionInfo.RELEASE_TYPE_SHARING
-            if (inBroadcast) {
-                return R.string.media_output_dialog_button_stop_sharing
-            } else if (isCurrentConnectedDeviceRemote()) {
-                return R.string.media_output_dialog_button_stop_casting
-            }
+        return when (getSessionReleaseType()) {
+            RoutingSessionInfo.RELEASE_TYPE_SHARING ->
+                R.string.media_output_dialog_button_stop_sharing
+            RoutingSessionInfo.RELEASE_TYPE_CASTING ->
+                R.string.media_output_dialog_button_stop_casting
+            else -> null
         }
-        return null
     }
 
     private fun startActivity(intent: Intent, controller: ActivityTransitionAnimator.Controller?) {
