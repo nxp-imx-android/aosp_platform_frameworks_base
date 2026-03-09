@@ -106,6 +106,10 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         } else {
             enterDesktopModeFromAppHandleMenu(wmHelper, device, isImmersiveApp = isImmersiveApp)
         }
+
+        // TODO(b/491062938): Remove this once the bug is fixed.
+        // Click on the app handle to ensure the app is in focus
+        getCaptionForTheApp(wmHelper, device)?.click()
     }
 
     /** Move an app to Desktop by dragging the app handle at the top. */
