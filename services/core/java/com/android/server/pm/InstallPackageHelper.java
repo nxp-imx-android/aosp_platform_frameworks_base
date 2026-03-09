@@ -1915,8 +1915,9 @@ final class InstallPackageHelper {
                 if (DEBUG_INSTALL) Slog.d(TAG, "Existing package: " + ps);
 
                 systemApp = ps.isSystem();
-                request.setOriginUsers(ps.queryUsersInstalledOrHasData(
-                        allUsers));
+                // The list of users that would get "update" broadcasts instead of
+                // "first time install" broadcasts if the package ends up being updated on them.
+                request.setOriginUsers(ps.queryUsersInstalledOrHasData(allUsers));
             }
 
             final int numGroups = ArrayUtils.size(parsedPackage.getPermissionGroups());
@@ -2697,7 +2698,10 @@ final class InstallPackageHelper {
             // so we enable the package.
             final PackageSetting ps = mPm.mSettings.getPackageLPr(pkgName);
             if (ps != null) {
-                final int[] installedForUsers = ps.queryUsersInstalledOrHasData(allUsers);
+                // Retrieve the users that already have the package installed. This might include
+                // users that have just been created at the same time of this installation because
+                // of the default installed=true state for new users.
+                final int[] installedForUsers = ps.queryInstalledUsers(allUsers, true);
                 if (ps.isSystem()) {
                     if (DEBUG_INSTALL) {
                         Slog.d(TAG, "Implicitly enabling system package on upgrade: " + pkgName);
@@ -2785,10 +2789,16 @@ final class InstallPackageHelper {
                         // DISALLOW_INSTALL_APPS or DISALLOW_DEBUGGING_FEATURES device policy.
                         // Install / update the app if the user isn't restricted. Skip otherwise.
 
-                        // The result of ps.queryUsersInstalledOrHasData() will contains users
-                        // that is restricted by device policy if the package is first time
-                        // installed. In the case, the originUsers will be null since there is
-                        // no package setting when scanning package.
+                        // The result of ps.queryUsersInstalled() might mistakenly contain users
+                        // that did not have the package installed, if the package is installed for
+                        // the first time and there were new users created at the same time, with
+                        // whom the package is by default set as installed=true, which is
+                        // unreliable and should not be used to bypass the policy check.
+                        // However, in this case, the originUsers will be null since there is
+                        // no existing package setting when the package was first scanned, so we use
+                        // that to determine if the package is installed for the first time.
+                        // Only when the package is not installed for the first time,
+                        // then the result of ps.queryUsersInstalled() is reliable.
                         final boolean installedForCurrentUser = isPackageExisted
                                 && ArrayUtils.contains(installedForUsers, currentUserId);
                         final boolean restrictedByPolicy =
