@@ -289,14 +289,19 @@ class CapabilityController {
         // LINT.ThenChange(OomAdjuster.java:getCpuCapabilitiesFromTransmissionType)
     }
 
-    /** Performs a partial update from a list of edges. */
-    void update(@NonNull ArrayList<GraphEdge> edges) {
+    /**
+     * Performs a partial update from a list of edges.
+     *
+     * @param edges          The list of edges that have triggered the update.
+     * @param reachableNodes The list of nodes that are reachable from {@code edges} and may have
+     *                       their capabilities changed in the update.
+     */
+    void update(@NonNull ArrayList<GraphEdge> edges,
+            @NonNull ArrayList<ProcessNode> reachableNodes) {
         for (int i = 0, size = edges.size(); i < size; i++) {
-            final GraphEdge edge = edges.get(i);
-            edge.updateCachedCapabilityFilter();
-            // TODO(b/466961280): Set edge target to be reachable.
+            edges.get(i).updateCachedCapabilityFilter();
         }
 
-        // TODO(b/466961280): Search for all other reachable nodes and propagate capabilities.
+        // TODO(b/466961280): Reset capabilities of all reachable nodes and propagate capabilities.
     }
 }
