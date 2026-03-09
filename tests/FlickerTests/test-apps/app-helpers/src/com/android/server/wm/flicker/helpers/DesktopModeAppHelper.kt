@@ -533,6 +533,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     fun dragToSnapResizeRegion(
         wmHelper: WindowManagerStateHelper,
         device: UiDevice,
+        context: Context,
         isLeft: Boolean,
     ) {
         val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
@@ -551,10 +552,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
 
         // drag the window to snap resize
         device.drag(startX, startY, endX, endY, /* steps= */ 100)
-        wmHelper
-            .StateSyncBuilder()
-            .withAppTransitionIdle()
-            .waitForAndVerify()
+        waitAndVerifySnapResize(wmHelper, context, isLeft)
     }
 
     fun dragRight(wmHelper: WindowManagerStateHelper, device: UiDevice, distance: Int) {
