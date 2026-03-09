@@ -27,7 +27,6 @@ import com.android.settingslib.volume.domain.interactor.AudioVolumeInteractor
 import com.android.settingslib.volume.shared.model.AudioStream
 import com.android.settingslib.volume.shared.model.AudioStreamModel
 import com.android.settingslib.volume.shared.model.RingerMode
-import com.android.systemui.Flags
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.qualifiers.UiBackground
 import com.android.systemui.haptics.slider.SliderHapticFeedbackFilter
@@ -254,11 +253,7 @@ constructor(
         inAudioSharing: Boolean,
         primaryDevice: CachedBluetoothDevice?,
     ): String =
-        if (
-            Flags.showAudioSharingSliderInVolumePanel() &&
-                audioStream.value == AudioManager.STREAM_MUSIC &&
-                inAudioSharing
-        ) {
+        if (audioStream.value == AudioManager.STREAM_MUSIC && inAudioSharing) {
             primaryDevice?.name ?: context.getString(R.string.stream_music)
         } else {
             labelsByStream[audioStream]?.let(context::getString)
@@ -278,11 +273,7 @@ constructor(
                         R.drawable.ic_volume_off
                     }
                 } else {
-                    if (
-                        Flags.showAudioSharingSliderInVolumePanel() &&
-                            audioStream.value == AudioManager.STREAM_MUSIC &&
-                            inAudioSharing
-                    ) {
+                    if (audioStream.value == AudioManager.STREAM_MUSIC && inAudioSharing) {
                         R.drawable.ic_volume_media_bt_mute
                     } else {
                         R.drawable.ic_volume_off
@@ -302,7 +293,7 @@ constructor(
     private fun getIconByStream(audioStream: AudioStream, inAudioSharing: Boolean): Int =
         when (audioStream.value) {
             AudioManager.STREAM_MUSIC ->
-                if (Flags.showAudioSharingSliderInVolumePanel() && inAudioSharing) {
+                if (inAudioSharing) {
                     R.drawable.ic_volume_media_bt
                 } else R.drawable.ic_music_note
             AudioManager.STREAM_VOICE_CALL -> R.drawable.ic_call
