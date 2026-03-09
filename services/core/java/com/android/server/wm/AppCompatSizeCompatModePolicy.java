@@ -413,6 +413,10 @@ class AppCompatSizeCompatModePolicy {
                         letterboxedContainerBounds,
                         mActivityRecord.mAppCompatController.getSandboxingPolicy()
                                 .getResolveConfigHint().shouldUseOverrideInsetsForConfig());
+        final Task task = mActivityRecord.getTask();
+        if (task != null) {
+            task.updateCompatAspectRatioIfNeeded(mAppCompatDisplayInsets.mAspectRatio);
+        }
     }
 
     /**
