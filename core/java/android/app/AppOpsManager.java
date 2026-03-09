@@ -3177,8 +3177,7 @@ public class AppOpsManager {
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_READ_CLIPBOARD, OPSTR_READ_CLIPBOARD, "READ_CLIPBOARD")
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
-        new AppOpInfo.Builder(OP_WRITE_CLIPBOARD, OPSTR_WRITE_CLIPBOARD, "WRITE_CLIPBOARD",
-                AppOpsManager.MODE_ERRORED)
+        new AppOpInfo.Builder(OP_WRITE_CLIPBOARD, OPSTR_WRITE_CLIPBOARD, "WRITE_CLIPBOARD")
             .setDefaultMode(AppOpsManager.MODE_ALLOWED).build(),
         new AppOpInfo.Builder(OP_TAKE_MEDIA_BUTTONS, OPSTR_TAKE_MEDIA_BUTTONS, "TAKE_MEDIA_BUTTONS")
             .setDefaultMode(AppOpsManager.MODE_ALLOWED)
