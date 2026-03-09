@@ -59,17 +59,19 @@ class GraphTestUtilsTest {
     }
 
     @Test
-    fun createScreen_hasCorrectKeyTitleAndPurpose() {
+    fun createScreen_hasCorrectKeyTitleSummaryAndPurpose() {
         val screen = GraphTestUtils.createScreen(
             GraphTestUtils.PreferenceScreenConfig(
                 "test_screen",
                 title = R.string.preference_screen_title,
+                summary = R.string.preference_screen_summary,
                 purpose = R.string.preference_screen_purpose,
                 preferences = listOf()
             )
         )
         assertThat(screen.key).isEqualTo("test_screen")
         assertThat(screen.title).isEqualTo(R.string.preference_screen_title)
+        assertThat(screen.summary).isEqualTo(R.string.preference_screen_summary)
         assertThat(screen.purpose).isEqualTo(R.string.preference_screen_purpose)
     }
 
@@ -139,6 +141,7 @@ class GraphTestUtilsTest {
             GraphTestUtils.PreferenceConfig(
                 "test_preference",
                 purpose = R.string.preference_purpose,
+                summary = R.string.preference_summary,
                 isAvailable = false,
                 isRestricted = true,
                 isEnabled = false,
@@ -146,6 +149,7 @@ class GraphTestUtilsTest {
         )
         assertThat(preference.key).isEqualTo("test_preference")
         assertThat(preference.purpose).isEqualTo(R.string.preference_purpose)
+        assertThat(preference.summary).isEqualTo(R.string.preference_summary)
         assertThat(preference.isEnabled(context)).isEqualTo(false)
         assertThat((preference as PreferenceAvailabilityProvider).isAvailable(context))
             .isEqualTo(false)
@@ -223,6 +227,7 @@ class GraphTestUtilsTest {
         val config = GraphTestUtils.PreferenceConfig(
             key = "test_key",
             purpose = R.string.preference_purpose,
+            summary = R.string.preference_summary,
             isAvailable = false,
             isRestricted = true,
             isEnabled = false
@@ -233,6 +238,7 @@ class GraphTestUtilsTest {
 
         assertThat(preference.key).isEqualTo("test_key")
         assertThat(preference.purpose).isEqualTo(R.string.preference_purpose)
+        assertThat(preference.summary).isEqualTo(R.string.preference_summary)
         assertThat((preference as PreferenceAvailabilityProvider).isAvailable(context)).isFalse()
         assertThat((preference as PreferenceRestrictionProvider).isRestricted(context)).isTrue()
         assertThat((preference).isEnabled(context)).isFalse()
@@ -376,6 +382,53 @@ class GraphTestUtilsTest {
             )
         )
         assertThat(screen.sensitivityLevel).isEqualTo(SensitivityLevel.DO_NOT_EXPOSE)
+    }
+
+    @Test
+    fun createScreen_withNestedCategories_hasCorrectHierarchy() = runTest {
+        val metadata1 = GraphTestUtils.createSimplePreference(
+            GraphTestUtils.PreferenceConfig(
+                "preference_key1",
+                R.string.preference_purpose,
+            )
+        )
+        val metadata2 = GraphTestUtils.createSimplePreference(
+            GraphTestUtils.PreferenceConfig(
+                "preference_key2",
+                R.string.preference_purpose
+            )
+        )
+        val metadata3 = GraphTestUtils.createSimplePreference(
+            GraphTestUtils.PreferenceConfig(
+                "preference_key3",
+                R.string.preference_purpose
+            )
+        )
+        val innerCategory = GraphTestUtils.PreferenceCategoryConfig(
+            "inner_category",
+            preferences = listOf(metadata3)
+        )
+        val outerCategory = GraphTestUtils.PreferenceCategoryConfig(
+            "outer_category",
+            preferences = listOf(metadata2),
+            innerCategories = listOf(innerCategory)
+        )
+        val screen = GraphTestUtils.createScreen(
+            GraphTestUtils.PreferenceScreenConfig(
+                "test_screen",
+                purpose = R.string.preference_screen_purpose,
+                title = R.string.preference_screen_title,
+                preferences = listOf(metadata1),
+                preferencesInCategories = listOf(outerCategory)
+            )
+        )
+
+        val hierarchy = screen.getPreferenceHierarchy(context, this)
+        assertThat(hierarchy.find("preference_key1")).isEqualTo(metadata1)
+        assertThat(hierarchy.find("preference_key2")).isEqualTo(metadata2)
+        assertThat(hierarchy.find("preference_key3")).isEqualTo(metadata3)
+        assertThat(hierarchy.find("outer_category")).isNotNull()
+        assertThat(hierarchy.find("inner_category")).isNotNull()
     }
 
     @Test
