@@ -24,6 +24,7 @@ import static com.android.server.devicepolicy.DeviceStateCacheImpl.NO_DEVICE_OWN
 import android.annotation.Nullable;
 import android.app.ActivityManagerInternal;
 import android.app.AppOpsManagerInternal;
+import android.app.admin.DevicePolicyManager.MultiuserManagedDeviceProvisioningState;
 import android.app.admin.DevicePolicyManager.DeviceOwnerType;
 import android.app.admin.SystemUpdateInfo;
 import android.app.admin.SystemUpdatePolicy;
@@ -114,6 +115,8 @@ class Owners {
                 mDeviceStateCache.setHasProfileOwner(userId, hasProfileOwner(userId));
             }
             mDeviceStateCache.setDeviceManaged(mData.mDeviceManaged);
+            mDeviceStateCache.setMultiuserManagedDeviceProvisioningState(
+                    mData.mMultiuserManagedDeviceProvisioningState);
 
             notifyChangeLocked();
             pushDeviceOwnerUidToActivityTaskManagerLocked();
@@ -443,6 +446,21 @@ class Owners {
         synchronized (mData) {
             mData.mDeviceManaged = deviceManaged;
             mDeviceStateCache.setDeviceManaged(deviceManaged);
+        }
+    }
+
+    @MultiuserManagedDeviceProvisioningState int getMultiuserManagedDeviceProvisioningState() {
+        synchronized (mData) {
+            return mData.mMultiuserManagedDeviceProvisioningState;
+        }
+    }
+
+    void setMultiuserManagedDeviceProvisioningState(
+            @MultiuserManagedDeviceProvisioningState int state) {
+        synchronized (mData) {
+            mData.mMultiuserManagedDeviceProvisioningState = state;
+            mDeviceStateCache.setMultiuserManagedDeviceProvisioningState(state);
+            writeDeviceOwner();
         }
     }
 

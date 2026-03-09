@@ -51,6 +51,7 @@ import static android.Manifest.permission.MANAGE_DEVICE_POLICY_STORAGE_LIMIT;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_USB_DATA_SIGNALLING;
 import static android.Manifest.permission.MANAGE_DEVICE_POLICY_WIPE_DATA;
 import static android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS;
+import static android.Manifest.permission.MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE;
 import static android.Manifest.permission.MASTER_CLEAR;
 import static android.Manifest.permission.NOTIFY_PENDING_SYSTEM_UPDATE;
 import static android.Manifest.permission.QUERY_ADMIN_POLICY;
@@ -190,6 +191,10 @@ import static android.app.admin.DevicePolicyManager.WIPE_EUICC;
 import static android.app.admin.DevicePolicyManager.WIPE_EXTERNAL_STORAGE;
 import static android.app.admin.DevicePolicyManager.WIPE_RESET_PROTECTION_DATA;
 import static android.app.admin.DevicePolicyManager.WIPE_SILENTLY;
+import static android.app.admin.DevicePolicyManager.MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_COMPLETED;
+import static android.app.admin.DevicePolicyManager.MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_STARTED;
+import static android.app.admin.DevicePolicyManager.MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED;
+import static android.app.admin.DevicePolicyManager.MultiuserManagedDeviceProvisioningState;
 import static android.app.admin.DevicePolicyResources.Strings.Core.LOCATION_CHANGED_MESSAGE;
 import static android.app.admin.DevicePolicyResources.Strings.Core.LOCATION_CHANGED_TITLE;
 import static android.app.admin.DevicePolicyResources.Strings.Core.NETWORK_LOGGING_MESSAGE;
@@ -1174,6 +1179,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         // NOTE: called by SystemServer on boot
         public boolean isDeviceManaged() {
             return mService.isDeviceManagedUnchecked();
+        }
+
+        public @MultiuserManagedDeviceProvisioningState int
+                getMultiuserManagedDeviceProvisioningState() {
+            return mService.getMultiuserManagedDeviceProvisioningStateUnchecked();
         }
     }
 
@@ -9240,19 +9250,71 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         return isDeviceManaged;
     }
 
+    /**
+     * Returns a string representation of the multiuser managed device provisioning state.
+     */
+    @Nullable
+    public static String multiuserManagedDeviceProvisioningStateToString(
+            @MultiuserManagedDeviceProvisioningState int state) {
+        return DebugUtils.constantToString(
+                DevicePolicyManager.class, "MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_", state);
+    }
+
+    @Override
+    public void startMultiuserManagedDeviceProvisioning() {
+        if (!Flags.multiUserManagementDeviceProvisioning()) {
+            return;
+        }
+        Preconditions.checkCallAuthorization(
+                hasCallingOrSelfPermission(MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE));
+        int currentState = getMultiuserManagedDeviceProvisioningStateUnchecked();
+        if (currentState != MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED) {
+            throw new IllegalStateException(
+                    "Cannot start the multiuser managed device provisioning when the device's state"
+                    + " is " + multiuserManagedDeviceProvisioningStateToString(currentState));
+        }
+        mDeviceAdmins.getOwners().setMultiuserManagedDeviceProvisioningState(
+                MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_STARTED);
+    }
+
+    @Override
+    public @MultiuserManagedDeviceProvisioningState int
+            getMultiuserManagedDeviceProvisioningState() {
+        Preconditions.checkCallAuthorization(
+                hasCallingOrSelfPermission(MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE));
+        return getMultiuserManagedDeviceProvisioningStateUnchecked();
+    }
+
+    private @MultiuserManagedDeviceProvisioningState int
+            getMultiuserManagedDeviceProvisioningStateUnchecked() {
+        if (Flags.multiUserManagementDeviceProvisioning()) {
+            return mStateCache.getMultiuserManagedDeviceProvisioningState();
+        }
+        return MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED;
+    }
+
     @Override
     public void clearMultiuserDeviceManagement(String deviceControllerPackageName) {
         Objects.requireNonNull(deviceControllerPackageName, "deviceControllerPackageName is null");
+        CallerIdentity caller = getCallerIdentity();
+
+        Preconditions.checkCallAuthorization(
+                isAdb(caller)
+                        || (mPermissions.hasPermission(MANAGE_PROFILE_AND_DEVICE_OWNERS, caller)
+                            && mPermissions.hasPermission(
+                                        MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE, caller)),
+                "Caller must be shell or hold both MANAGE_PROFILE_AND_DEVICE_OWNERS and "
+                + "MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE to call "
+                + "clearMultiuserDeviceManagement");
+
         ComponentName adminReceiver = findDeviceAdminComponent(deviceControllerPackageName);
         Objects.requireNonNull(
                 adminReceiver, "Admin receiver not found for " + deviceControllerPackageName);
-        Preconditions.checkCallAuthorization(
-                isAdb(getCallerIdentity())
-                        || hasCallingOrSelfPermission(MANAGE_PROFILE_AND_DEVICE_OWNERS),
-                "Caller must be shell or hold MANAGE_PROFILE_AND_DEVICE_OWNERS to call "
-                        + "clearMultiuserDeviceManagement");
+
         synchronized (getLockObject()) {
             mDeviceAdmins.getOwners().setDeviceManaged(false);
+            mDeviceAdmins.getOwners().setMultiuserManagedDeviceProvisioningState(
+                    MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED);
             mDeviceAdmins.getOwners().writeDeviceOwner();
             if (Flags.managedDeviceDefinitionExtended()) {
                 invalidateBinderCaches();
@@ -10361,7 +10423,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             case STATUS_HEADLESS_SYSTEM_USER_MODE_NOT_SUPPORTED:
                 return "Cannot provision an unsupported DPC into DO on a headless device";
             case STATUS_HEADLESS_SYSTEM_USER_MODE_REQUIRED:
-                return "Provisioning a multi-user device requires a headless user mode.";
+                return "Provisioning a multiuser device requires a headless user mode.";
             case STATUS_HEADLESS_ONLY_SYSTEM_USER:
                 return "Cannot provision DPC on single user mode on headless device when only the "
                         + "system user exists in the device";
@@ -16886,7 +16948,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
 
     private int checkMultiuserManagedDeviceProvisioningPreCondition(@UserIdInt int callingUserId) {
         synchronized (getLockObject()) {
-            // Device needs to support multi-user management.
+            // Device needs to support multiuser management.
             if (!isMultiuserManagementEnabledUnchecked()) {
                 return STATUS_MULTIUSER_MANAGEMENT_NOT_SUPPORTED;
             }
@@ -16961,7 +17023,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     }
 
     private int checkMultiuserManagedUserProvisioningPreCondition(@UserIdInt int userId) {
-        // Device needs to support multi-user management.
+        // Device needs to support multiuser management.
         if (!isMultiuserManagementEnabledUnchecked()) {
             return STATUS_MULTIUSER_MANAGEMENT_NOT_SUPPORTED;
         }
@@ -21876,6 +21938,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
             enableAndSetActiveAdmin(UserHandle.USER_SYSTEM, UserHandle.USER_SYSTEM, deviceAdmin);
 
             mDeviceAdmins.getOwners().setDeviceManaged(true);
+            mDeviceAdmins.getOwners().setMultiuserManagedDeviceProvisioningState(
+                    MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_COMPLETED);
             mDeviceAdmins.getOwners().writeDeviceOwner();
             if (Flags.managedDeviceDefinitionExtended()) {
                 invalidateBinderCaches();

@@ -3853,6 +3853,14 @@
         android:featureFlag="android.permission.flags.use_loopback_interface_permission_enabled" />
 
     <!-- @SystemApi @hide Allows an application to call APIs that allow it to query and manage
+         device provisioning state. This permission is not available to third party applications.
+         @FlaggedApi(android.app.admin.flags.Flags.FLAG_MULTI_USER_MANAGEMENT_DEVICE_PROVISIONING)
+         -->
+    <permission android:name="android.permission.MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE"
+        android:protectionLevel="signature|privileged"
+        android:featureFlag="android.app.admin.flags.multi_user_management_device_provisioning" />
+
+    <!-- @SystemApi @hide Allows an application to call APIs that allow it to query and manage
          users on the device. This permission is not available to
          third party applications. -->
     <permission android:name="android.permission.MANAGE_USERS"

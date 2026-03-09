@@ -264,6 +264,7 @@ package android {
     field @FlaggedApi("android.security.afl_api") public static final String MANAGE_INTRUSION_DETECTION_STATE = "android.permission.MANAGE_INTRUSION_DETECTION_STATE";
     field public static final String MANAGE_IPSEC_TUNNELS = "android.permission.MANAGE_IPSEC_TUNNELS";
     field public static final String MANAGE_LOW_POWER_STANDBY = "android.permission.MANAGE_LOW_POWER_STANDBY";
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final String MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE = "android.permission.MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE";
     field public static final String MANAGE_MUSIC_RECOGNITION = "android.permission.MANAGE_MUSIC_RECOGNITION";
     field @FlaggedApi("android.companion.enable_medical_profile") public static final String MANAGE_NOTIFICATIONS = "android.permission.MANAGE_NOTIFICATIONS";
     field public static final String MANAGE_NOTIFICATION_LISTENERS = "android.permission.MANAGE_NOTIFICATION_LISTENERS";
@@ -1597,6 +1598,7 @@ package android.app.admin {
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public android.app.admin.DevicePolicyState getDevicePolicyState();
     method @Nullable @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public String getFinancedDeviceKioskRoleHolder();
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public int getMaxPolicyStorageLimit();
+    method @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") @RequiresPermission(value=android.Manifest.permission.MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE, conditional=true) public int getMultiuserManagedDeviceProvisioningState();
     method @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_ADMIN_POLICY}) public java.util.List<java.lang.String> getPermittedAccessibilityServices(int);
     method @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.QUERY_ADMIN_POLICY}) public java.util.List<java.lang.String> getPermittedInputMethodsForCurrentUser();
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public java.util.List<android.os.UserHandle> getPolicyManagedProfiles(@NonNull android.os.UserHandle);
@@ -1634,6 +1636,7 @@ package android.app.admin {
     method @FlaggedApi("android.app.admin.flags.secondary_lockscreen_api_enabled") public void setSecondaryLockscreenEnabled(boolean, @Nullable android.os.PersistableBundle);
     method @RequiresPermission(android.Manifest.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS) public void setUserProvisioningState(int, @NonNull android.os.UserHandle);
     method @RequiresPermission(android.Manifest.permission.MANAGE_ROLE_HOLDERS) public boolean shouldAllowBypassingDevicePolicyManagementRoleQualification();
+    method @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") @RequiresPermission(value=android.Manifest.permission.MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE, conditional=true) public void startMultiuserManagedDeviceProvisioning();
     field public static final String ACCOUNT_FEATURE_DEVICE_OR_PROFILE_OWNER_ALLOWED = "android.account.DEVICE_OR_PROFILE_OWNER_ALLOWED";
     field public static final String ACCOUNT_FEATURE_DEVICE_OR_PROFILE_OWNER_DISALLOWED = "android.account.DEVICE_OR_PROFILE_OWNER_DISALLOWED";
     field public static final String ACTION_BIND_SECONDARY_LOCKSCREEN_SERVICE = "android.app.action.BIND_SECONDARY_LOCKSCREEN_SERVICE";
@@ -1681,6 +1684,9 @@ package android.app.admin {
     field public static final int FLAG_SUPPORTED_MODES_ORGANIZATION_OWNED = 1; // 0x1
     field public static final int FLAG_SUPPORTED_MODES_PERSONALLY_OWNED = 2; // 0x2
     field @FlaggedApi("android.app.supervision.flags.enable_lock_task_feature_quick_settings") public static final int LOCK_TASK_FEATURE_QUICK_SETTINGS = 128; // 0x80
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_COMPLETED = 3; // 0x3
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_STARTED = 2; // 0x2
+    field @FlaggedApi("android.app.admin.flags.multi_user_management_device_provisioning") public static final int MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED = 1; // 0x1
     field public static final int PROVISIONING_TRIGGER_CLOUD_ENROLLMENT = 1; // 0x1
     field public static final int PROVISIONING_TRIGGER_MANAGED_ACCOUNT = 4; // 0x4
     field public static final int PROVISIONING_TRIGGER_NFC = 5; // 0x5
