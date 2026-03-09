@@ -19,6 +19,7 @@ package com.android.systemui.notifications.content.ui.composable.component
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
@@ -31,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteraction
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -49,7 +49,6 @@ import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import org.junit.Assume
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -78,29 +77,30 @@ class PrioritizedRowTest : SysuiTestCase() {
         Assume.assumeFalse(isRobolectricTest())
     }
 
-    @Ignore("b/439930983")
     @Test
     fun widthFull_allChildrenAreVisible() {
         rule.setContent {
             CompositionLocalProvider(LocalDensity provides density) {
                 PlatformTheme {
-                    PrioritizedRow(modifier = Modifier.testTag("row")) { TestContent() }
+                    PrioritizedRow(modifier = Modifier.requiredWidth(420.dp).testTag("row")) {
+                        TestContent()
+                    }
                 }
             }
         }
 
         // All the content is displayed
-        rule.onNodeWithTag("icon0").assertIsDisplayedWithWidth(iconWidth)
-        rule.onNodeWithTag("spacer0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("icon1").assertIsDisplayedWithWidth(iconWidth)
-        rule.onNodeWithTag("spacer1").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(importantWidth)
-        rule.onNodeWithTag("dot0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("Medium (Shrinkable)").assertIsDisplayedWithWidth(shrinkableWidth)
-        rule.onNodeWithTag("dot1").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("Low (Hideable)").assertIsDisplayedWithWidth(hideableWidth)
-        rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
+        rule.onNodeWithTag("icon0").assertExistsWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon1").assertExistsWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer1").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("High Importance").assertExistsWithWidth(importantWidth)
+        rule.onNodeWithTag("dot0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("Medium (Shrinkable)").assertExistsWithWidth(shrinkableWidth)
+        rule.onNodeWithTag("dot1").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithTag("Low (Hideable)").assertExistsWithWidth(hideableWidth)
+        rule.onNodeWithTag("spacer2").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("FIXED").assertExistsWithWidth(fixedWidth)
 
         rule.onNodeWithTag("row").assertWidthIsEqualTo(420.dp)
     }
@@ -110,7 +110,7 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.setContent {
             CompositionLocalProvider(LocalDensity provides density) {
                 PlatformTheme {
-                    PrioritizedRow(modifier = Modifier.width(320.dp).testTag("row")) {
+                    PrioritizedRow(modifier = Modifier.requiredWidth(320.dp).testTag("row")) {
                         // All children have the same importance (everything else stays the same)
                         TestContent(forceSameImportance = true)
                     }
@@ -118,30 +118,29 @@ class PrioritizedRowTest : SysuiTestCase() {
             }
         }
 
-        rule.onNodeWithTag("icon0").assertIsDisplayedWithWidth(iconWidth)
-        rule.onNodeWithTag("spacer0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("icon1").assertIsDisplayedWithWidth(iconWidth)
-        rule.onNodeWithTag("spacer1").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon0").assertExistsWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon1").assertExistsWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer1").assertExistsWithWidth(separatorWidth)
         // The required space is distributed across all 3 shrinkables, but they can't go below
         // reducedWidth.
-        rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("dot0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("Medium (Shrinkable)").assertIsDisplayedWithWidth(57.5.dp)
-        rule.onNodeWithTag("dot1").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("Low (Hideable)").assertIsDisplayedWithWidth(64.5.dp)
-        rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
+        rule.onNodeWithText("High Importance").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("dot0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("Medium (Shrinkable)").assertExistsWithWidth(57.5.dp)
+        rule.onNodeWithTag("dot1").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithTag("Low (Hideable)").assertExistsWithWidth(64.5.dp)
+        rule.onNodeWithTag("spacer2").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("FIXED").assertExistsWithWidth(fixedWidth)
 
         rule.onNodeWithTag("row").assertWidthIsEqualTo(320.dp)
     }
 
-    @Ignore("b/439930983")
     @Test
     fun width400dp_lowPriorityRowShrinks() {
         rule.setContent {
             CompositionLocalProvider(LocalDensity provides density) {
                 PlatformTheme {
-                    PrioritizedRow(modifier = Modifier.width(400.dp).testTag("row")) {
+                    PrioritizedRow(modifier = Modifier.requiredWidth(400.dp).testTag("row")) {
                         TestContent()
                     }
                 }
@@ -149,18 +148,18 @@ class PrioritizedRowTest : SysuiTestCase() {
         }
 
         // Icons are not affected yet, as we haven't reached the hiding stage
-        rule.onNodeWithTag("icon0").assertIsDisplayedWithWidth(iconWidth)
-        rule.onNodeWithTag("spacer0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("icon1").assertIsDisplayedWithWidth(iconWidth)
-        rule.onNodeWithTag("spacer1").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(importantWidth)
-        rule.onNodeWithTag("dot0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("Medium (Shrinkable)").assertIsDisplayedWithWidth(shrinkableWidth)
-        rule.onNodeWithTag("dot1").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon0").assertExistsWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon1").assertExistsWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer1").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("High Importance").assertExistsWithWidth(importantWidth)
+        rule.onNodeWithTag("dot0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("Medium (Shrinkable)").assertExistsWithWidth(shrinkableWidth)
+        rule.onNodeWithTag("dot1").assertExistsWithWidth(separatorWidth)
         // Hideable row shrinks as much as necessary
-        rule.onNodeWithTag("Low (Hideable)").assertIsDisplayedWithWidth(82.dp)
-        rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
+        rule.onNodeWithTag("Low (Hideable)").assertExistsWithWidth(82.dp)
+        rule.onNodeWithTag("spacer2").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("FIXED").assertExistsWithWidth(fixedWidth)
 
         rule.onNodeWithTag("row").assertWidthIsEqualTo(400.dp)
     }
@@ -170,26 +169,26 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.setContent {
             CompositionLocalProvider(LocalDensity provides density) {
                 PlatformTheme {
-                    PrioritizedRow(modifier = Modifier.width(360.dp).testTag("row")) {
+                    PrioritizedRow(modifier = Modifier.requiredWidth(360.dp).testTag("row")) {
                         TestContent()
                     }
                 }
             }
         }
 
-        rule.onNodeWithTag("icon0").assertIsDisplayedWithWidth(iconWidth)
-        rule.onNodeWithTag("spacer0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("icon1").assertIsDisplayedWithWidth(iconWidth)
-        rule.onNodeWithTag("spacer1").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(importantWidth)
-        rule.onNodeWithTag("dot0").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon0").assertExistsWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon1").assertExistsWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer1").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("High Importance").assertExistsWithWidth(importantWidth)
+        rule.onNodeWithTag("dot0").assertExistsWithWidth(separatorWidth)
         // Medium priority text shrinks as much as necessary
-        rule.onNodeWithText("Medium (Shrinkable)").assertIsDisplayedWithWidth(87.dp)
-        rule.onNodeWithTag("dot1").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithText("Medium (Shrinkable)").assertExistsWithWidth(87.dp)
+        rule.onNodeWithTag("dot1").assertExistsWithWidth(separatorWidth)
         // Low priority row doesn't shrink beyond reducedWidth
-        rule.onNodeWithTag("Low (Hideable)").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
+        rule.onNodeWithTag("Low (Hideable)").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("spacer2").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("FIXED").assertExistsWithWidth(fixedWidth)
 
         rule.onNodeWithTag("row").assertWidthIsEqualTo(360.dp)
     }
@@ -199,26 +198,26 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.setContent {
             CompositionLocalProvider(LocalDensity provides density) {
                 PlatformTheme {
-                    PrioritizedRow(modifier = Modifier.width(310.dp).testTag("row")) {
+                    PrioritizedRow(modifier = Modifier.requiredWidth(310.dp).testTag("row")) {
                         TestContent()
                     }
                 }
             }
         }
 
-        rule.onNodeWithTag("icon0").assertIsDisplayedWithWidth(iconWidth)
-        rule.onNodeWithTag("spacer0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("icon1").assertIsDisplayedWithWidth(iconWidth)
-        rule.onNodeWithTag("spacer1").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon0").assertExistsWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon1").assertExistsWithWidth(iconWidth)
+        rule.onNodeWithTag("spacer1").assertExistsWithWidth(separatorWidth)
         // High priority text shrinks as much as necessary
-        rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(62.dp)
-        rule.onNodeWithTag("dot0").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithText("High Importance").assertExistsWithWidth(62.dp)
+        rule.onNodeWithTag("dot0").assertExistsWithWidth(separatorWidth)
         // Medium priority text doesn't shrink beyond reducedWidth
-        rule.onNodeWithText("Medium (Shrinkable)").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("dot1").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("Low (Hideable)").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
+        rule.onNodeWithText("Medium (Shrinkable)").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("dot1").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithTag("Low (Hideable)").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("spacer2").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("FIXED").assertExistsWithWidth(fixedWidth)
 
         rule.onNodeWithTag("row").assertWidthIsEqualTo(310.dp)
     }
@@ -228,7 +227,7 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.setContent {
             CompositionLocalProvider(LocalDensity provides density) {
                 PlatformTheme {
-                    PrioritizedRow(modifier = Modifier.width(280.dp).testTag("row")) {
+                    PrioritizedRow(modifier = Modifier.requiredWidth(280.dp).testTag("row")) {
                         TestContent()
                     }
                 }
@@ -236,19 +235,19 @@ class PrioritizedRowTest : SysuiTestCase() {
         }
 
         // Start icons have the same importance, so they both start shrinking
-        rule.onNodeWithTag("icon0").assertIsDisplayedWithWidth(15.dp)
-        rule.onNodeWithTag("spacer0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("icon1").assertIsDisplayedWithWidth(15.dp)
-        rule.onNodeWithTag("spacer1").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon0").assertExistsWithWidth(15.dp)
+        rule.onNodeWithTag("spacer0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithTag("icon1").assertExistsWithWidth(15.dp)
+        rule.onNodeWithTag("spacer1").assertExistsWithWidth(separatorWidth)
         // High priority text doesn't shrink beyond reducedWidth
-        rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("dot0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("Medium (Shrinkable)").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("dot1").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithText("High Importance").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("dot0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("Medium (Shrinkable)").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("dot1").assertExistsWithWidth(separatorWidth)
         // Hideable row doesn't start shrinking yet, its priority is higher than the icons
-        rule.onNodeWithTag("Low (Hideable)").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
+        rule.onNodeWithTag("Low (Hideable)").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("spacer2").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("FIXED").assertExistsWithWidth(fixedWidth)
 
         rule.onNodeWithTag("row").assertWidthIsEqualTo(280.dp)
     }
@@ -258,7 +257,7 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.setContent {
             CompositionLocalProvider(LocalDensity provides density) {
                 PlatformTheme {
-                    PrioritizedRow(modifier = Modifier.width(230.dp).testTag("row")) {
+                    PrioritizedRow(modifier = Modifier.requiredWidth(230.dp).testTag("row")) {
                         TestContent()
                     }
                 }
@@ -271,13 +270,13 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.onNodeWithTag("icon1").assertIsNotDisplayed()
         rule.onNodeWithTag("spacer1").assertIsNotDisplayed()
         // High importance text gets some space back
-        rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(60.dp)
-        rule.onNodeWithTag("dot0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("Medium (Shrinkable)").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("dot1").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithTag("Low (Hideable)").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
+        rule.onNodeWithText("High Importance").assertExistsWithWidth(60.dp)
+        rule.onNodeWithTag("dot0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("Medium (Shrinkable)").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("dot1").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithTag("Low (Hideable)").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("spacer2").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("FIXED").assertExistsWithWidth(fixedWidth)
 
         rule.onNodeWithTag("row").assertWidthIsEqualTo(230.dp)
     }
@@ -287,7 +286,7 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.setContent {
             CompositionLocalProvider(LocalDensity provides density) {
                 PlatformTheme {
-                    PrioritizedRow(modifier = Modifier.width(200.dp).testTag("row")) {
+                    PrioritizedRow(modifier = Modifier.requiredWidth(200.dp).testTag("row")) {
                         TestContent()
                     }
                 }
@@ -298,14 +297,14 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.onNodeWithTag("spacer0").assertIsNotDisplayed()
         rule.onNodeWithTag("icon1").assertIsNotDisplayed()
         rule.onNodeWithTag("spacer1").assertIsNotDisplayed()
-        rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("dot0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("Medium (Shrinkable)").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("dot1").assertIsDisplayedWithWidth(separatorWidth)
+        rule.onNodeWithText("High Importance").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("dot0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("Medium (Shrinkable)").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("dot1").assertExistsWithWidth(separatorWidth)
         // Low priority row shrinks further before hiding
-        rule.onNodeWithTag("Low (Hideable)").assertIsDisplayedWithWidth(30.dp)
-        rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
+        rule.onNodeWithTag("Low (Hideable)").assertExistsWithWidth(30.dp)
+        rule.onNodeWithTag("spacer2").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("FIXED").assertExistsWithWidth(fixedWidth)
 
         rule.onNodeWithTag("row").assertWidthIsEqualTo(200.dp)
     }
@@ -315,7 +314,7 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.setContent {
             CompositionLocalProvider(LocalDensity provides density) {
                 PlatformTheme {
-                    PrioritizedRow(modifier = Modifier.width(140.dp).testTag("row")) {
+                    PrioritizedRow(modifier = Modifier.requiredWidth(140.dp).testTag("row")) {
                         TestContent()
                     }
                 }
@@ -328,13 +327,13 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.onNodeWithTag("spacer0").assertIsNotDisplayed()
         rule.onNodeWithTag("icon1").assertIsNotDisplayed()
         rule.onNodeWithTag("spacer1").assertIsNotDisplayed()
-        rule.onNodeWithText("High Importance").assertIsDisplayedWithWidth(reducedWidth)
-        rule.onNodeWithTag("dot0").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("Medium (Shrinkable)").assertIsDisplayedWithWidth(reducedWidth)
+        rule.onNodeWithText("High Importance").assertExistsWithWidth(reducedWidth)
+        rule.onNodeWithTag("dot0").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("Medium (Shrinkable)").assertExistsWithWidth(reducedWidth)
         rule.onNodeWithTag("dot1").assertIsNotDisplayed()
         rule.onNodeWithTag("Low (Hideable)").assertIsNotDisplayed()
-        rule.onNodeWithTag("spacer2").assertIsDisplayedWithWidth(separatorWidth)
-        rule.onNodeWithText("FIXED").assertIsDisplayedWithWidth(fixedWidth)
+        rule.onNodeWithTag("spacer2").assertExistsWithWidth(separatorWidth)
+        rule.onNodeWithText("FIXED").assertExistsWithWidth(fixedWidth)
 
         rule.onNodeWithTag("row").assertWidthIsEqualTo(140.dp)
     }
@@ -437,8 +436,8 @@ class PrioritizedRowTest : SysuiTestCase() {
         )
     }
 
-    private fun SemanticsNodeInteraction.assertIsDisplayedWithWidth(width: Dp) {
-        assertIsDisplayed()
+    private fun SemanticsNodeInteraction.assertExistsWithWidth(width: Dp) {
+        assertExists()
         assertWidthIsEqualTo(width)
     }
 }
