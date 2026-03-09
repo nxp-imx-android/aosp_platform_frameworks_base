@@ -31,9 +31,7 @@ class IntInRangeTest {
 
     @Test
     fun initialize_noMinAndMax_throwsException() {
-        assertThrows(IllegalArgumentException::class.java) {
-            IntInRange(null, null)
-        }
+        assertThrows(IllegalArgumentException::class.java) { IntInRange(null, null) }
     }
 
     @Test
@@ -54,4 +52,10 @@ class IntInRangeTest {
             .isEqualTo("An integer in a given range [6, 10], with step 2.")
     }
 
+    @Test
+    fun percentageInt_usesCorrectRange() {
+        assertThat(PercentageInt.min).isEqualTo(0)
+        assertThat(PercentageInt.max).isEqualTo(100)
+        assertThat(PercentageInt.step).isEqualTo(1)
+    }
 }
