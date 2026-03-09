@@ -7762,7 +7762,13 @@ public class WindowManagerService extends IWindowManager.Stub
         mH.post(() -> {
             synchronized (mGlobalLock) {
                 mAtmService.deferWindowLayout();
-                mRoot.forAllDisplays(dc -> dc.getDisplayPolicy().onOverlayChanged());
+                if (Flags.syncedDisplayModeUpdates()) {
+                    mRoot.forAllDisplays(dc -> dc.getDisplayPolicy().updateCurrentUserResources());
+                    mRoot.mDisplayUpdater.updateDisplays(() -> mRoot.forAllDisplays(
+                            dc -> dc.getDisplayPolicy().onResourcesUpdated()));
+                } else {
+                    mRoot.forAllDisplays(dc -> dc.getDisplayPolicy().onOverlayChanged());
+                }
                 mAtmService.continueWindowLayout();
             }
         });

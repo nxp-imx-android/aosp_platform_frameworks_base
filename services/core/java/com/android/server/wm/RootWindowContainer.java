@@ -225,7 +225,9 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     ActivityTaskSupervisor mTaskSupervisor;
     WindowManagerService mWindowManager;
     DisplayManager mDisplayManager;
-    private DisplayManagerInternal mDisplayManagerInternal;
+    DisplayManagerInternal mDisplayManagerInternal;
+    @Nullable
+    DisplayUpdater mDisplayUpdater;
     @NonNull
     private final DeviceStateController mDeviceStateController;
     @NonNull
@@ -1149,8 +1151,13 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     void setWindowManager(WindowManagerService wm) {
         mWindowManager = wm;
         mDisplayManager = mService.mContext.getSystemService(DisplayManager.class);
-        mDisplayManager.registerDisplayListener(this, mService.mUiHandler);
         mDisplayManagerInternal = LocalServices.getService(DisplayManagerInternal.class);
+
+        if (com.android.window.flags.Flags.syncedDisplayModeUpdates()) {
+            mDisplayUpdater = new DisplayUpdater(this);
+        } else {
+            mDisplayManager.registerDisplayListener(this, mService.mUiHandler);
+        }
 
         final Display[] displays = mDisplayManager.getDisplays();
         for (int displayNdx = 0; displayNdx < displays.length; ++displayNdx) {
