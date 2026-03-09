@@ -160,6 +160,8 @@ object Generator {
             TypeMetadataCase.LONG_METADATA -> generateLongPolicyMetadata(policy)
             TypeMetadataCase.STRING_METADATA -> generateStringPolicyMetadata(policy)
             TypeMetadataCase.LIST_METADATA -> generateListPolicyMetadata(policy)
+            TypeMetadataCase.PACKAGE_METADATA,
+                // TODO: b/475749429 - Generate package policy metadata
             TypeMetadataCase.TYPEMETADATA_NOT_SET ->
                 throw IllegalArgumentException("Type specific metadata unset")
         }
