@@ -20,6 +20,9 @@ import com.android.systemui.screencapture.common.ScreenCaptureScope
 import com.android.systemui.screencapture.record.camera.data.repository.ScreenCaptureCameraTransformationRepository
 import javax.inject.Inject
 
+private const val MIN_SCALE = 0.3f
+private const val MAX_SCALE = 3f
+
 @ScreenCaptureScope
 class ScreenCaptureCameraTransformationInteractor
 @Inject
@@ -28,6 +31,11 @@ constructor(private val repository: ScreenCaptureCameraTransformationRepository)
     var isTransforming: Boolean by repository::isTransforming
     var offsetX: Float by repository::offsetX
     var offsetY: Float by repository::offsetY
-    var scale: Float by repository::scale
+    var scale: Float
+        get() = repository.scale
+        set(value) {
+            repository.scale = value.coerceIn(MIN_SCALE, MAX_SCALE)
+        }
+
     var rotation: Float by repository::rotation
 }
