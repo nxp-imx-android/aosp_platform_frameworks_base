@@ -98,6 +98,14 @@ interface PreferenceIndexableProvider {
 interface PreferenceAvailabilityProvider {
 
     /**
+     * Returns a human readable description of the availability of the preference.
+     *
+     * This should describe any preconditions that must be met for the
+     * preference to be available.
+     */
+    val availabilityDescription: String
+
+    /**
      * Returns if the preference is available.
      *
      * When unavailable (i.e. `false` returned),

@@ -48,6 +48,8 @@ class HelpPreference : PreferenceMetadata, PreferenceAvailabilityProvider {
         }
     }
 
+    override val availabilityDescription = "Must not be during setup. The intent must resolve to an activity."
+
     override fun isAvailable(context: Context): Boolean {
         // Do not allow access to web during setup.
         val inSetupWizard =

@@ -172,6 +172,8 @@ object GraphTestUtils {
         override fun isEnabled(context: Context): Boolean =
             preferenceConfig.isEnabled
 
+        override val availabilityDescription: String = "availability description"
+
         override fun isAvailable(context: Context): Boolean =
             preferenceConfig.isAvailable
 
@@ -236,6 +238,8 @@ object GraphTestUtils {
             persistentPreferenceConfig.writePermission?.let {
                 Permissions.allOf(it)
             }
+
+        override val availabilityDescription: String = "availability description"
 
         override fun isAvailable(context: Context): Boolean =
             persistentPreferenceConfig.preferenceConfig.isAvailable
