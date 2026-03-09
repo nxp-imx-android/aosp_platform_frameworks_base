@@ -94,6 +94,7 @@ class DevicePolicyAnnotationProcessorTest {
                 import android.processor.devicepolicy.IntegerPolicyDefinition;
                 import android.processor.devicepolicy.ListOfStringPolicyDefinition;
                 import android.processor.devicepolicy.LongPolicyDefinition;
+                import android.processor.devicepolicy.PackagePolicyDefinition;
                 import android.processor.devicepolicy.PolicyDefinition;
                 import android.processor.devicepolicy.StringPolicyDefinition;
 
@@ -833,6 +834,34 @@ class DevicePolicyAnnotationProcessorTest {
 
         assertThat(mCompilerWithoutProcessor.compile(policyIdentifier)).succeeded()
         assertThat(compilation).succeeded()
+    }
+
+    @Test
+    fun test_packageProcessorWithoutPackageType_failsToCompile() {
+        val policyIdentifier =
+            buildPolicyIdentifier(
+                """
+                    /**
+                     * PackagePolicyDefinition can only be applied to policies of type PackageIdentifier.
+                     */
+                    @PackagePolicyDefinition(
+                            base = @PolicyDefinition(
+                                    allowedScopes = { POLICY_SCOPE_USER },
+                                    affectedResource = RESOURCE_DEVICE_WIDE,
+                                    $ALLOWED_DPC_TYPES_SNIPPET
+                            )
+                    )
+                    public static final PolicyIdentifier<String> POLICY_KEY =
+                        new PolicyIdentifier<>("POLICY_KEY");
+                """
+            )
+
+        compileExpectError(
+            policyIdentifier,
+            expectedError =
+                "@PackagePolicyDefinition can only be applied to policies of type " +
+                    "android.app.admin.PackageIdentifier",
+        )
     }
 
     private fun compileExpectError(

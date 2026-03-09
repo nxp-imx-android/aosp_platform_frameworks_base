@@ -130,6 +130,8 @@ message TypeSpecificPolicyMetadata {
     bool empty_list_allowed = 4;
   }
 
+  message PackagePolicyMetadata {}
+
   oneof type_metadata {
     BooleanPolicyMetadata boolean_metadata = 1;
     IntegerPolicyMetadata integer_metadata = 2;
@@ -137,6 +139,7 @@ message TypeSpecificPolicyMetadata {
     StringPolicyMetadata string_metadata = 4;
     ListPolicyMetadata list_metadata = 6;
     LongPolicyMetadata long_metadata = 7;
+    PackagePolicyMetadata package_metadata = 8;
   }
 
   reserved 5;
