@@ -17,8 +17,12 @@ package com.android.wm.shell.hierarchy.modes.handheld
 
 import com.android.wm.shell.Flags
 import com.android.wm.shell.hierarchy.ContainerHierarchy
+import com.android.wm.shell.hierarchy.experimental.AlwaysOnTopMode
+import com.android.wm.shell.hierarchy.experimental.HandheldRootMode
+import com.android.wm.shell.hierarchy.experimental.MultiContainerMode
 import com.android.wm.shell.hierarchy.modes.FormFactorModes
 import com.android.wm.shell.hierarchy.modes.Mode
+import com.android.wm.shell.hierarchy.experimental.testsplit.SplitMode
 import com.android.wm.shell.sysui.ShellInit
 
 /**
@@ -27,6 +31,9 @@ import com.android.wm.shell.sysui.ShellInit
 class HandheldModes(
     private val hierarchy: ContainerHierarchy,
     private val rootMode: HandheldRootMode,
+    private val alwaysOnTopMode: AlwaysOnTopMode,
+    private val multiContainerMode: MultiContainerMode,
+    private val splitMode: SplitMode,
     shellInit: ShellInit,
 ) : FormFactorModes {
 
@@ -43,6 +50,6 @@ class HandheldModes(
 
     /** @see FormFactorModes.getAvailableModesForDisplay */
     override fun getAvailableModesForDisplay(displayId: Int): List<Mode> {
-        return listOf(rootMode)
+        return listOf(rootMode, alwaysOnTopMode, multiContainerMode, splitMode)
     }
 }

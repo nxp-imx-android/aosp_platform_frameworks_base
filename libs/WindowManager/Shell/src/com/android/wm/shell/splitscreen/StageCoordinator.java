@@ -39,6 +39,7 @@ import static com.android.window.flags.Flags.enableAppRestartAfterUpdateSplitScr
 import static com.android.window.flags.Flags.enableNonDefaultDisplaySplitBugfix;
 import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.Flags.enableFlexibleTwoAppSplit;
+import static com.android.wm.shell.Flags.enableShellModes;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_ALIGN_CENTER;
 import static com.android.wm.shell.common.split.SplitLayout.PARALLAX_FLEX_HYBRID;
 import static com.android.wm.shell.common.split.SplitLayout.RESTING_DIM_LAYER;
@@ -2699,8 +2700,10 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         if (!enableFlexibleSplit()) {
             // TODO: consider support 3 splits
 
-            // Make the stages adjacent to each other so they occlude what's behind them.
-            wct.setAdjacentRoots(mMainStage.mRootTaskInfo.token, mSideStage.mRootTaskInfo.token);
+            if (!enableShellModes()) {
+                // Make the stages adjacent to each other so they occlude what's behind them.
+                wct.setAdjacentRoots(mMainStage.mRootTaskInfo.token, mSideStage.mRootTaskInfo.token);
+            }
             mSplitLayout.getInvisibleBounds(mTempRect1);
             wct.setBounds(mSideStage.mRootTaskInfo.token, mTempRect1);
         }
@@ -2709,7 +2712,9 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             mSyncQueue.runInSync(t -> {
                 t.setPosition(mSideStage.mRootLeash, mTempRect1.left, mTempRect1.top);
             });
-            mLaunchAdjacentController.setLaunchAdjacentRoot(mSideStage.mRootTaskInfo.token);
+            if (!enableShellModes()) {
+                mLaunchAdjacentController.setLaunchAdjacentRoot(mSideStage.mRootTaskInfo.token);
+            }
         } else {
             // TODO: consider support 3 splits
         }

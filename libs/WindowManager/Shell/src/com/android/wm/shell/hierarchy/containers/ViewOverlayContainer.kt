@@ -108,6 +108,8 @@ class ViewOverlayContainer(
      * Releases all surfaces & internal state associated with the overlay.
      * The caller must provide a SurfaceControl.Transaction to synchronize the removal of the
      * surface, and the caller must apply the provided transaction after this method is called.
+     *
+     * FUTURE: We should probably track these for cleanup
      */
     fun release(tx: SurfaceControl.Transaction) {
         if (viewHost != null) {

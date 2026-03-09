@@ -13,16 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.wm.shell.hierarchy.modes.handheld
+package com.android.wm.shell.hierarchy.experimental
 
-import android.content.Context
-import com.android.wm.shell.hierarchy.ContainerHierarchy
 import com.android.wm.shell.hierarchy.modes.Mode
 
 /**
  * The root mode for handling default behavior on handhelds.
  */
-class HandheldRootMode(
-    private val context: Context,
-    private val hierarchy: ContainerHierarchy,
-) : Mode {}
+class HandheldRootMode : Mode
