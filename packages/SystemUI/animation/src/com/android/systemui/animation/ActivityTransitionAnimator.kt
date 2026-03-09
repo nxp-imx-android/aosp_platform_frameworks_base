@@ -72,6 +72,7 @@ import com.android.wm.shell.shared.IShellTransitions
 import com.android.wm.shell.shared.ShellTransitions
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.compat.AnimatedSurface
+import com.android.wm.shell.shared.compat.AnimatedSurfaceUtils
 import java.util.concurrent.Executor
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
@@ -2044,7 +2045,7 @@ constructor(
             }
 
             return if (candidate != null && candidateOrder != null) {
-                AnimatedSurface.from(candidate, state, candidateOrder)
+                AnimatedSurfaceUtils.from(candidate, state, candidateOrder)
             } else null
         }
 
@@ -2189,7 +2190,7 @@ constructor(
                 }
             }
 
-            return candidate?.let { AnimatedSurface.from(it, state) }
+            return candidate?.let { AnimatedSurfaceUtils.from(it, state) }
         }
 
         private fun IRemoteAnimationFinishedCallback.invoke() {
