@@ -595,9 +595,12 @@ public final class ViewRootImpl implements ViewParent,
 
     final Thread mThread;
 
-    /** The throwable with the stack trace filled when this ViewRootImpl was initialized. */
+    /**
+     * The exception with the stack trace filled when this ViewRootImpl was initialized, only if
+     * {@link #sDebugWrongThreadInit} is enabled.
+     */
     @Nullable
-    private final Throwable mInitStack;
+    private final CalledFromWrongThreadException mInitStack;
 
     final WindowLeaked mLocation;
 
@@ -1370,6 +1373,12 @@ public final class ViewRootImpl implements ViewParent,
         sToolkitMetricsForFrameRateDecisionFlagValue = toolkitMetricsForFrameRateDecision();
     }
 
+    /**
+     * Per-process flag to allow recording the stack trace when this ViewRootImpl is initialized,
+     * which can be dumped as additional context to {@link CalledFromWrongThreadException}.
+     */
+    private static boolean sDebugWrongThreadInit = false;
+
     // The latest input event from the gesture that was used to resolve the pointer icon.
     private MotionEvent mPointerIconEvent = null;
     private @ActivityInfo.ColorMode int mCurrentColorMode = ActivityInfo.COLOR_MODE_DEFAULT;
@@ -1395,7 +1404,7 @@ public final class ViewRootImpl implements ViewParent,
         final String name = DisplayProperties.debug_vri_package().orElse(null);
         mExtraDisplayListenerLogging = !TextUtils.isEmpty(name) && name.equals(mBasePackageName);
         mThread = Thread.currentThread();
-        mInitStack = Build.isDebuggable() ? new Throwable("Created") : null;
+        mInitStack = sDebugWrongThreadInit ? new CalledFromWrongThreadException("Created") : null;
         mLocation = new WindowLeaked(null);
         mWidth = -1;
         mHeight = -1;
@@ -14637,5 +14646,21 @@ public final class ViewRootImpl implements ViewParent,
 
     public boolean isDisablingViewAnimationsRequested() {
         return mIsDisablingViewAnimationsRequested;
+    }
+
+    /**
+     * Enables additional debugging logs to track the initialization stack trace when calling a
+     * method from the wrong thread for all ViewRootImpls in this process.
+     *
+     * @param enabled the value to set.
+     *
+     * @return {@code true} if it was successfully set, {@code false} otherwise.
+     */
+    public static boolean setDebugWrongThreadInit(boolean enabled) {
+        if (!Build.isDebuggable()) {
+            return false;
+        }
+        sDebugWrongThreadInit = enabled;
+        return true;
     }
 }
