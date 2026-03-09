@@ -55,7 +55,10 @@ class EnterDesktopWithAppHandleMenuFlickerTest(flicker: FlickerTest) :
 
     override val transition: FlickerBuilder.() -> Unit
         get() = {
-            setup { scenario.baseSetup() }
+            setup {
+                scenario.baseSetup()
+                scenario.setup()
+            }
             transitions { scenario.enterDesktopWithAppHandleMenu() }
             teardown { scenario.teardown() }
         }
