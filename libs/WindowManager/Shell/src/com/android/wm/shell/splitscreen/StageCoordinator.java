@@ -1941,7 +1941,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
 
     void dismissSplitScreen(int toTopTaskId, @ExitReason int exitReason) {
         if (!isSplitActive()) return;
-        final int stage = getStageOfTask(toTopTaskId);
+        final int stage = getCurrentStageTypeOfTask(toTopTaskId);
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         prepareExitSplitScreen(stage, wct, exitReason);
         mSplitTransitions.startDismissTransition(wct, this, stage, exitReason);
@@ -3268,7 +3268,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
      * Get the stage that should contain this `taskInfo`. The stage doesn't necessarily contain
      * this task (yet) so this can also be used to identify which stage to put a task into.
      */
-    private StageTaskListener getStageOfTask(RunningTaskInfo taskInfo) {
+    private StageTaskListener getStageOfTaskByParent(RunningTaskInfo taskInfo) {
         if (enableFlexibleSplit()) {
             return mStageOrderOperator.getActiveStages().stream()
                     .filter((stage) -> stage.mRootTaskInfo != null &&
@@ -3290,9 +3290,17 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         return null;
     }
 
+    /**
+     * Returns the {@link StageType} of the stage that contains the specified task.
+     *
+     * @param taskId The ID of the task to check.
+     * @return The {@link StageType} (e.g. {@link SplitScreen#STAGE_TYPE_MAIN} or
+     *         {@link SplitScreen#STAGE_TYPE_SIDE}) if the task is found in a stage,
+     *         otherwise {@link SplitScreen#STAGE_TYPE_UNDEFINED}.
+     */
     @Override
     @StageType
-    int getStageOfTask(int taskId) {
+    int getCurrentStageTypeOfTask(int taskId) {
         return getStageType(getCurrentStageOfTask(taskId));
     }
 
@@ -3337,7 +3345,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 return null;
             }
         } else if (triggerTask.displayId != mDisplayId
-                && getStageOfTask(triggerTask.taskId) == STAGE_TYPE_UNDEFINED
+                && getCurrentStageTypeOfTask(triggerTask.taskId) == STAGE_TYPE_UNDEFINED
                 && !isPendingEnter(transition)) {
             // Skip handling tasks on other displays unless they are already in a split stage
             // or are part of a pending split entry.
@@ -3356,7 +3364,9 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         final boolean isClientRequestedFullscreenRequest =
                 Flags.delegateRequestFullscreenHandlingToShell()
                 && request != null && request.getFullscreenRequestChange() != null;
-        final StageTaskListener stage = getStageOfTask(triggerTask);
+        // Task end stage after the transition. This may be different from the current stage from
+        // getCurrentStageOfTask.
+        final StageTaskListener endStage = getStageOfTaskByParent(triggerTask);
 
         if (isClientRequestedFullscreenRequest) {
             // Let the request be handled by the ClientFullscreenRequestController.
@@ -3390,11 +3400,11 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                             + " sideChildren=%d", triggerTask.taskId, transitTypeToString(type),
                     primaryStage.getChildCount(), secondaryStage.getChildCount());
             out = new WindowContainerTransaction();
-            if (stage != null) {
-                if (isClosingType(type) && stage.getChildCount() == 1) {
+            if (endStage != null) {
+                if (isClosingType(type) && endStage.getChildCount() == 1) {
                     // Dismiss split if the last task in one of the stages is going away
                     // The top should be the opposite side that is closing:
-                    int dismissTop = getStageType(stage) == STAGE_TYPE_MAIN
+                    int dismissTop = getStageType(endStage) == STAGE_TYPE_MAIN
                             ? STAGE_TYPE_SIDE : STAGE_TYPE_MAIN;
                     prepareExitSplitScreen(dismissTop, out, EXIT_REASON_APP_FINISHED);
                     mSplitTransitions.setDismissTransition(transition, dismissTop,
@@ -3422,7 +3432,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                         && !Flags.delegateRequestFullscreenHandlingToShell()) {
                     // If the trigger task is in fullscreen and in split, exit split and place
                     // task on top
-                    final int stageType = getStageOfTask(triggerTask.taskId);
+                    final int stageType = getCurrentStageTypeOfTask(triggerTask.taskId);
                     prepareExitSplitScreen(stageType, out, EXIT_REASON_FULLSCREEN_REQUEST);
                     mSplitTransitions.setDismissTransition(transition, stageType,
                             EXIT_REASON_FULLSCREEN_REQUEST);
@@ -3444,8 +3454,8 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                     } else {
                         // The task is moving to a different display.
                         // We must dismiss the split, keep the other stage on this display.
-                        int dismissTop = getStageOfTask(triggerTask.taskId) == STAGE_TYPE_MAIN
-                                ? STAGE_TYPE_SIDE : STAGE_TYPE_MAIN;
+                        int dismissTop = getCurrentStageTypeOfTask(triggerTask.taskId)
+                                == STAGE_TYPE_MAIN ? STAGE_TYPE_SIDE : STAGE_TYPE_MAIN;
 
                         prepareExitSplitScreen(dismissTop, out, EXIT_REASON_FULLSCREEN_REQUEST);
                         mSplitTransitions.setDismissTransition(transition, dismissTop,
@@ -3492,7 +3502,10 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             // Don't intercept the transition if we are not handling it as a part of one of the
             // cases above and it is not already visible
             return null;
-        } else if (stage != null) {
+        }
+
+        // Split is not active, but we have a stage target (e.g. entering split)
+        if (endStage != null) {
             if (isOpening) {
                 ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "handleRequest: transition=%d enter split",
                         request.getDebugId());
@@ -3550,7 +3563,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
         }
         final TaskInfo info = request.getPipChange().getTaskInfo();
         @StageType int topStage = STAGE_TYPE_UNDEFINED;
-        @StageType int pipStage = getStageOfTask(info.taskId);
+        @StageType int pipStage = getCurrentStageTypeOfTask(info.taskId);
         if (pipStage == STAGE_TYPE_MAIN) {
             topStage = STAGE_TYPE_SIDE;
         } else if (pipStage == STAGE_TYPE_SIDE) {
@@ -3604,7 +3617,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             return false;
         }
 
-        int stageForTask = getStageOfTask(openingTask.taskId);
+        int stageForTask = getCurrentStageTypeOfTask(openingTask.taskId);
         if (stageForTask == STAGE_TYPE_UNDEFINED) {
             return false;
         }
@@ -3643,7 +3656,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
 
         int topStage = STAGE_TYPE_UNDEFINED;
         if (isSplitScreenVisible()) {
-            int stage = getStageOfTask(triggerTask.taskId);
+            int stage = getCurrentStageTypeOfTask(triggerTask.taskId);
             topStage = (stage == STAGE_TYPE_MAIN)
                     ? STAGE_TYPE_SIDE
                     : STAGE_TYPE_MAIN;
@@ -3726,7 +3739,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             if (!isSplitActive()) {
                 final WindowContainerTransaction wct =
                         SplitTransitionUtils.handleMalformedEnterTransition(info,
-                                (taskInfo) -> getStageOfTask(taskInfo));
+                                (taskInfo) -> getStageOfTaskByParent(taskInfo));
                 if (wct != null) {
                     mTransitions.startTransition(TRANSIT_CLOSE, wct, null);
                 }
@@ -3795,7 +3808,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
 
                 final int taskId = taskInfo.taskId;
                 StageTaskListener lastStage = getCurrentStageOfTask(taskId);
-                StageTaskListener nextStage = getStageOfTask(taskInfo);
+                StageTaskListener nextStage = getStageOfTaskByParent(taskInfo);
 
                 // Record task moving into {@code nextStage} unexpectedly.
                 if (nextStage != null && !nextStage.containsTask(taskId)
@@ -4107,7 +4120,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
                 foundPausingTask = true;
                 continue;
             }
-            StageTaskListener stage = getStageOfTask(taskInfo);
+            StageTaskListener stage = getStageOfTaskByParent(taskInfo);
             final @StageType int stageType = getStageType(stage);
             final boolean isMainStage = stageType
                     == (enableFlexibleSplit() ? STAGE_TYPE_A : STAGE_TYPE_MAIN);
@@ -4118,7 +4131,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             if (mainChild == null && isMainStage && isVisibleTask) {
                 // Includes TRANSIT_CHANGE to cover reparenting top-most task to split.
                 mainChild = change;
-                firstAppStage = getStageOfTask(taskInfo);
+                firstAppStage = getStageOfTaskByParent(taskInfo);
             } else if (sideChild == null && isSideStage && isVisibleTask) {
                 sideChild = change;
                 secondAppStage = stage;
@@ -4343,7 +4356,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             return CloseTaskResult.NO_TASK_INFO;
         }
 
-        final StageTaskListener stage = getStageOfTask(taskInfo);
+        final StageTaskListener stage = getStageOfTaskByParent(taskInfo);
         if (stage == null) {
             ProtoLog.w(WM_SHELL_SPLIT_SCREEN, "closeTask: taskId=%d: %s", taskId,
                     CloseTaskResult.NO_STAGE);
@@ -4479,7 +4492,7 @@ public class StageCoordinator extends StageCoordinatorAbstract {
             final TransitionInfo.Change change = info.getChanges().get(i);
             final RunningTaskInfo taskInfo = change.getTaskInfo();
             if (taskInfo == null) continue;
-            if (getStageOfTask(taskInfo) != null
+            if (getStageOfTaskByParent(taskInfo) != null
                     || getSplitItemPosition(change.getLastParent()) != SPLIT_POSITION_UNDEFINED) {
                 dismissingTasks.put(taskInfo.taskId, change.getLeash());
             }

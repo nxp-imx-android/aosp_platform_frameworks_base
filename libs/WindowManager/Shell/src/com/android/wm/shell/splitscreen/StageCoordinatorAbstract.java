@@ -458,7 +458,7 @@ public abstract class StageCoordinatorAbstract implements SplitLayout.SplitLayou
     ///
     /// ////////////////////////////////////////////////////////////////////////////////////////////
     @SplitScreen.StageType
-    abstract int getStageOfTask(int taskId);
+    abstract int getCurrentStageTypeOfTask(int taskId);
 
     abstract boolean isRootOrStageRoot(int taskId);
 
