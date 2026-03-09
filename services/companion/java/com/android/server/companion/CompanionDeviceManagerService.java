@@ -87,6 +87,7 @@ import android.content.Intent;
 import android.content.pm.PackageManagerInternal;
 import android.net.MacAddress;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.PersistableBundle;
@@ -357,9 +358,11 @@ public class CompanionDeviceManagerService extends SystemService {
         @Override
         public void associate(AssociationRequest request, IAssociationRequestCallback callback,
                 String packageName, int userId) throws RemoteException {
-            Slog.i(TAG, "associate() "
-                    + "request=" + request + ", "
-                    + "package=u" + userId + "/" + packageName);
+            if (Build.isDebuggable()) {
+                Slog.d(TAG, "associate() "
+                        + "request=" + request + ", "
+                        + "package=u" + userId + "/" + packageName);
+            }
             enforceCallerCanManageAssociationsForPackage(getContext(), userId, packageName,
                     "create associations");
 
