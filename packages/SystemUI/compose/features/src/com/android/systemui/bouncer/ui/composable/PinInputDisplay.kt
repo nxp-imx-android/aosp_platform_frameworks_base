@@ -22,6 +22,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.view.Gravity
 import android.view.WindowManager
+import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
@@ -38,10 +39,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -70,6 +71,13 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.accessibilityClassName
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.isEditable
+import androidx.compose.ui.semantics.password
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.text
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -105,13 +113,22 @@ fun ContentScope.PinInputDisplay(viewModel: PinBouncerViewModel, modifier: Modif
     val pinInputHeight = dimensionResource(id = R.dimen.keyguard_password_field_height)
     val pinInputWidth = dimensionResource(id = R.dimen.keyguard_password_field_width)
     val roundedShape = remember { RoundedCornerShape(16.dp) }
+    val accessibilityLabel = stringResource(R.string.keyguard_accessibility_pin_area)
     val pinInputModifier =
-        modifier.thenIf(isPinDisplayBorderVisible) {
-            Modifier.border(width = 3.dp, color = borderColor, shape = roundedShape)
-                .height(pinInputHeight)
-                .width(pinInputWidth)
-                .clip(roundedShape)
-        }
+        modifier
+            .thenIf(isPinDisplayBorderVisible) {
+                Modifier.border(width = 3.dp, color = borderColor, shape = roundedShape)
+                    .height(pinInputHeight)
+                    .width(pinInputWidth)
+                    .clip(roundedShape)
+            }
+            .semantics {
+                contentDescription = accessibilityLabel
+                text = AnnotatedString(PinInputBullet.repeat(viewModel.enteredPinLength))
+                accessibilityClassName = EditText::class.qualifiedName!!
+                isEditable = true
+                password()
+            }
 
     // The display comes in two different flavors:
     // 1) hinting: shows a circle (◦) per expected pin input, and dot (●) per entered digit.
@@ -386,7 +403,7 @@ private class PinInputRow(val shapeAnimations: ShapeAnimations) {
 
         // Wrap PIN entry in a Box so it is visible to accessibility (even if empty).
         Box(
-            modifier = modifier.fillMaxWidth().wrapContentHeight(),
+            modifier = modifier.fillMaxWidth().heightIn(min = shapeAnimations.shapeSize),
             contentAlignment = Alignment.Center,
         ) {
             Row(

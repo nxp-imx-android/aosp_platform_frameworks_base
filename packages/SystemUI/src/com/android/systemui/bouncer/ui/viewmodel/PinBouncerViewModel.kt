@@ -90,8 +90,7 @@ constructor(
     /** Currently entered pin keys. */
     val pinInput: StateFlow<PinInputViewModel> = mutablePinInput
     /** The length of the currently inputted PIN so far. */
-    val enteredPinLength: Int
-        get() = pinInput.value.getPin().size
+    val enteredPinLength: Int by pinInput.map { it.getPin().size }.hydratedStateOf(initialValue = 0)
 
     private val _hintedPinLength = MutableStateFlow<Int?>(null)
     /** The length of the PIN for which we should show a hint. */
