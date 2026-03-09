@@ -191,6 +191,16 @@ flag {
 }
 
 flag {
+    name: "cache_emergency_callback_mode"
+    namespace: "location"
+    description: "Cache the value of Emergency callback mode from the broadcast extra to avoid direct querying the TelephonyManager API"
+    bug: "426562854"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "support_codetype_in_gnss_status"
     namespace: "location"
     description: "Support code type and elapsed real time in GnssStatus"
