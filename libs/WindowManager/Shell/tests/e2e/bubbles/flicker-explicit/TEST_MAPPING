@@ -105,6 +105,14 @@
       "keywords": ["device"]
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterOverviewWhenAppBubbleIsExpandedTest",
+      "keywords": ["device"]
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterOverviewWhenChatBubbleIsExpandedTest",
+      "keywords": ["device"]
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaRelaunchInDesktopTest",
       // The "desktop" keyword is used by the _device_desktop template in
       // //configs/wireless/android/testing/atp/prod/android-window-manager/wm-presubmit.gcl

@@ -38,6 +38,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController
 import com.android.wm.shell.bubbles.BubbleController
+import com.android.wm.shell.bubbles.BubbleData
 import com.android.wm.shell.bubbles.BubbleHelperImpl
 import com.android.wm.shell.bubbles.BubbleRootTask
 import com.android.wm.shell.bubbles.transitions.BubbleTransitions
@@ -84,7 +85,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
     private val activityEmbeddingController = mock<ActivityEmbeddingController>()
     private val bubbleController = mock<BubbleController>()
     private val bubbleRootTask = mock<BubbleRootTask>()
-    private val bubbleHelper = spy(BubbleHelperImpl(bubbleRootTask = bubbleRootTask))
+    private val bubbleHelper = spy(BubbleHelperImpl(bubbleRootTask, mock<BubbleData>()))
     private val pinnedLayerHandler = mock<PinnedLayerHandler>()
     private val normalAppLayerHandler = mock<NormalAppLayerHandler>()
     private val pipScheduler = mock<PipScheduler>()

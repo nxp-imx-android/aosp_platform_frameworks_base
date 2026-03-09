@@ -1379,6 +1379,18 @@ public class BubbleData {
         return b;
     }
 
+    /** Whether there is a bubble with the given task id. */
+    public boolean hasAnyBubbleWithTaskId(int taskId) {
+        Predicate<Bubble> taskIdPredicate = b -> b.getTaskId() == taskId;
+        if (getBubbleWithPredicate(mBubbles, taskIdPredicate) != null) {
+            return true;
+        }
+        if (getBubbleWithPredicate(mOverflowBubbles, taskIdPredicate) != null) {
+            return true;
+        }
+        return getBubbleWithPredicate(mSuppressedBubbles.values(), taskIdPredicate) != null;
+    }
+
     /** @return the bubble in the stack that matches the provided taskId. */
     @Nullable
     public Bubble getBubbleInStackWithTaskId(int taskId) {

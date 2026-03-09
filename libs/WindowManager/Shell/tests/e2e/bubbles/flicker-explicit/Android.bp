@@ -215,6 +215,20 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-EnterOverviewWhenAppBubbleIsExpandedTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.EnterOverviewWhenAppBubbleIsExpandedTest"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-EnterOverviewWhenChatBubbleIsExpandedTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.bubbles.EnterOverviewWhenChatBubbleIsExpandedTest"],
+}
+
+test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaBubbleStackTest",
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],

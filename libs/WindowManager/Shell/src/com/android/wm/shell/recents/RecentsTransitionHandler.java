@@ -1201,7 +1201,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             for (int i = 0; i < info.getChanges().size(); ++i) {
                 final TransitionInfo.Change change = info.getChanges().get(i);
                 final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
-                if (taskInfo != null && mBubbleHelper.isAppBubbleTask(taskInfo)) {
+                if (taskInfo != null && mBubbleHelper.isBubbleTask(taskInfo)) {
                     ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                             "[%d]   Canceling due to bubble task", mInstanceId);
                     // Explicitly check for bubble tasks as bubbles may have always_on_top reset

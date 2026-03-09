@@ -28,7 +28,9 @@ import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import javax.inject.Inject
 
 /** Helper class to query Bubble info from other components. */
-class BubbleHelperImpl @Inject constructor(private val bubbleRootTask: BubbleRootTask) :
+class BubbleHelperImpl
+@Inject
+constructor(private val bubbleRootTask: BubbleRootTask, private val bubbleData: BubbleData) :
     BubbleHelper {
     override fun getAppBubbleRootTaskToken(): WindowContainerToken? =
         bubbleRootTask.windowContainerToken
@@ -64,6 +66,9 @@ class BubbleHelperImpl @Inject constructor(private val bubbleRootTask: BubbleRoo
 
         return taskInfo.isAppBubble
     }
+
+    override fun isBubbleTask(taskInfo: ActivityManager.RunningTaskInfo) =
+        isAppBubbleTask(taskInfo) || bubbleData.hasAnyBubbleWithTaskId(taskInfo.taskId)
 
     override fun getEnterBubbleTask(info: TransitionInfo): TransitionInfo.Change? =
         info.changes.firstOrNull { change ->
