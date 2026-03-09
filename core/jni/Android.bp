@@ -116,6 +116,7 @@ cc_defaults_for_libandroid_runtime {
 
     static_libs: [
         "android.content.res.flags-aconfig-cc-host-ro",
+        "libkernelconfigs",
         "libziparchive_for_incfs",
         "libguiflags",
     ],
@@ -311,7 +312,6 @@ cc_defaults_for_libandroid_runtime {
                 "libdmabufinfo",
                 "libgenfslabelsversion.ffi",
                 "libgui_window_info_static",
-                "libkernelconfigs",
                 "libnativehelper_lazy",
                 "libseccomp_policy",
                 "libgrallocusage",
