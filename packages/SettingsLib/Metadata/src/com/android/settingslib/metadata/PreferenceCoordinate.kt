@@ -58,6 +58,8 @@ open class PreferenceCoordinate : PreferenceScreenCoordinate {
 
     override fun hashCode() = super.hashCode() xor key.hashCode()
 
+    override fun toString() = "PreferenceCoordinate(screenKey=$screenKey, keyParameters=$keyParameters, key=$key)"
+
     companion object CREATOR : Parcelable.Creator<PreferenceCoordinate> {
 
         override fun createFromParcel(parcel: Parcel) = PreferenceCoordinate(parcel)
@@ -118,6 +120,9 @@ open class PreferenceScreenCoordinate : Parcelable {
             parcel.writeBundle(args)
         }
     }
+
+        override fun toString() = "PreferenceCoordinate(screenKey=$screenKey, keyParameters=$keyParameters)"
+
 
     override fun describeContents() = 0
 
