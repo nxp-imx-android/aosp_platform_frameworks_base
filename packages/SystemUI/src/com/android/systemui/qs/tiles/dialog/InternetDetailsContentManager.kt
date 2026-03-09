@@ -74,19 +74,14 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.user.data.repository.UserRepository
-import com.android.systemui.user.domain.interactor.HeadlessSystemUserMode
-import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.wifitrackerlib.WifiEntry
 import com.google.common.annotations.VisibleForTesting
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.concurrent.Executor
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * View content for the Internet tile details that handles all UI interactions and state management.
@@ -102,9 +97,6 @@ constructor(
     @Main private val handler: Handler,
     @Background private val backgroundExecutor: Executor,
     private val keyguard: KeyguardStateController,
-    @Main private val mainDispatcher: CoroutineDispatcher,
-    private val selectedUserInteractor: SelectedUserInteractor,
-    private val hsum: HeadlessSystemUserMode,
     private val userRepository: UserRepository,
 ) {
     private val isFlagEnabledAndInDialog: Boolean
@@ -130,7 +122,6 @@ constructor(
     private lateinit var wifiScanNotifyTextView: TextView
     private var internetDialogTitle: TextView? = null
     private var internetDialogSubTitle: TextView? = null
-    private var loginScreenConnectedWifiNotifyLayout: LinearLayout? = null
     private lateinit var connectedWifiListLayout: LinearLayout
     private lateinit var connectedWifiIcon: ImageView
     private lateinit var connectedWifiTitleTextView: TextView
@@ -339,10 +330,6 @@ constructor(
         wifiToggleTitleTextView = contentView.requireViewById(R.id.wifi_toggle_title)
         wifiScanNotifyLayout = contentView.requireViewById(R.id.wifi_scan_notify_layout)
         wifiScanNotifyTextView = contentView.requireViewById(R.id.wifi_scan_notify_text)
-        if (!isFlagEnabledAndInDialog) {
-            loginScreenConnectedWifiNotifyLayout =
-                contentView.requireViewById(R.id.login_screen_change_connected_wifi_notify_layout)
-        }
         connectedWifiListLayout = contentView.requireViewById(R.id.wifi_connected_layout)
         connectedWifiIcon = contentView.requireViewById(R.id.wifi_connected_icon)
         connectedWifiTitleTextView = contentView.requireViewById(R.id.wifi_connected_title)
@@ -561,6 +548,7 @@ constructor(
         return InternetContent(
             isWifiEnabled = internetDetailsContentController.isWifiEnabled,
             isDeviceLocked = internetDetailsContentController.isDeviceLocked,
+            isHeadlessSystemUser = internetDetailsContentController.isHeadlessSystemUser,
         )
     }
 
@@ -970,11 +958,11 @@ constructor(
         if (
             !internetContent.isWifiEnabled ||
                 connectedWifiEntry == null ||
-                internetContent.isDeviceLocked
+                internetContent.isDeviceLocked ||
+                internetContent.isHeadlessSystemUser
         ) {
             connectedWifiListLayout.visibility = View.GONE
             shareWifiButton.visibility = View.GONE
-            loginScreenConnectedWifiNotifyLayout?.visibility = View.GONE
             return
         }
         connectedWifiListLayout.visibility = View.VISIBLE
@@ -983,21 +971,6 @@ constructor(
         connectedWifiIcon.setImageDrawable(
             internetDetailsContentController.getInternetWifiDrawable(connectedWifiEntry!!)
         )
-
-        coroutineScope.launch {
-            val isHsu = hsum.isHeadlessSystemUser(selectedUserInteractor.getSelectedUserId())
-            withContext(mainDispatcher) {
-                if (QsWifiConfig.isEnabled && isHsu) {
-                    wifiSettingsIcon.visibility = View.GONE
-                    loginScreenConnectedWifiNotifyLayout?.visibility = View.VISIBLE
-                    connectedWifiListLayout.setClickable(false)
-                } else {
-                    wifiSettingsIcon.visibility = View.VISIBLE
-                    loginScreenConnectedWifiNotifyLayout?.visibility = View.GONE
-                    connectedWifiListLayout.setClickable(true)
-                }
-            }
-        }
 
         val canShareWifi =
             internetDetailsContentController.getConfiguratorQrCodeGeneratorIntentOrNull(
@@ -1010,7 +983,10 @@ constructor(
 
     @MainThread
     private fun updateWifiListAndSeeAll(internetContent: InternetContent) {
-        if (!internetContent.isWifiEnabled || internetContent.isDeviceLocked) {
+        if (!internetContent.isWifiEnabled ||
+                internetContent.isDeviceLocked ||
+                internetContent.isHeadlessSystemUser
+        ) {
             wifiRecyclerView.visibility = View.GONE
             seeAllLayout.visibility = View.GONE
             addNetworkButton?.visibility = View.GONE
@@ -1167,6 +1143,7 @@ constructor(
             hasActiveSubIdOnDds = internetDetailsContentController.hasActiveSubIdOnDds(),
             isDeviceLocked = internetDetailsContentController.isDeviceLocked,
             isWifiScanEnabled = internetDetailsContentController.isWifiScanEnabled(),
+            isHeadlessSystemUser = internetDetailsContentController.isHeadlessSystemUser,
             activeAutoSwitchNonDdsSubId =
                 internetDetailsContentController.getActiveAutoSwitchNonDdsSubId(),
             showAllWifiInList = hasSeeAllClicked,
@@ -1293,6 +1270,7 @@ constructor(
         val hasActiveSubIdOnDds: Boolean = false,
         val isDeviceLocked: Boolean = false,
         val isWifiScanEnabled: Boolean = false,
+        val isHeadlessSystemUser: Boolean = false,
         val showAllWifiInList: Boolean = false,
         val activeAutoSwitchNonDdsSubId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID,
         val activeDataSubId: Int = SubscriptionManager.INVALID_SUBSCRIPTION_ID,

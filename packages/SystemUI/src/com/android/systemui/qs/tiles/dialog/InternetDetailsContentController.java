@@ -489,11 +489,17 @@ public class InternetDetailsContentController implements AccessPointController.A
             return mContext.getText(SUBTITLE_TEXT_WIFI_IS_OFF);
         }
 
-        if (isDeviceLocked()) {
-            // When the device is locked.
-            //   Sub-Title: Unlock to view networks
+        boolean isLocked = isDeviceLocked();
+        boolean isHsu = isHeadlessSystemUser();
+        if (isLocked || isHsu) {
+            // When the device is locked or in login page.
+            // Sub-Title: Unlock to view networks
             if (DEBUG) {
-                Log.d(TAG, "The device is locked.");
+                if (isLocked) {
+                    Log.d(TAG, "The device is locked.");
+                } else {
+                    Log.d(TAG, "The device is on HSU.");
+                }
             }
             return mContext.getText(SUBTITLE_TEXT_UNLOCK_TO_VIEW_NETWORKS);
         }
