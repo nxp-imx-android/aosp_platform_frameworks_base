@@ -41,6 +41,16 @@ class BubbleLogTest {
     }
 
     @Test
+    fun addLogger_offTheSameTypeTwice_onlyFirstAdded() {
+        // Adding logger first time
+        assertThat(BubbleLog.addLogger(LogcatDebugLogger())).isTrue()
+        val loggersCount = BubbleLog.loggers.size
+        // Adding the same logger second time
+        assertThat(BubbleLog.addLogger(LogcatDebugLogger())).isFalse()
+        assertThat(BubbleLog.loggers.size).isEqualTo(loggersCount)
+    }
+
+    @Test
     fun addLogger_addedLoggerHasAllNonHistoryEvents() {
         assertThat(BubbleLog.loggers.size).isEqualTo(1)
         val testLogger = TestLogger()
