@@ -16,10 +16,11 @@
 
 package com.android.systemui.notifications.intelligence.rules.data.repository
 
+import android.content.Context
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 
 /** A repository to fetch installed app information for notification rules. */
-public interface InstalledAppsRepository {
+interface InstalledAppsRepository {
     /**
      * Fetches all apps installed on the device.
      *
@@ -27,5 +28,5 @@ public interface InstalledAppsRepository {
      *   [InstalledAppsInteractor] passing in the user-specific package manager from
      *   [SelectedUserInteractor].
      */
-    public suspend fun fetchInstalledApps(): List<AppModel>
+    suspend fun fetchInstalledApps(context: Context): List<AppModel>
 }

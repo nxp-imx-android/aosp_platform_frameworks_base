@@ -17,9 +17,13 @@
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
@@ -30,6 +34,7 @@ import com.android.systemui.res.R
 /** Renders a fullscreen page to select 1 or more apps matching a search string. */
 @Composable
 fun AppChoiceScreen(viewState: RulesScreenViewState.EditField.Apps, onDismissRequest: () -> Unit) {
+    val context = LocalContext.current
     val viewModel = viewState.viewModel
 
     val initialSelection: List<AppModel> =
@@ -42,7 +47,7 @@ fun AppChoiceScreen(viewState: RulesScreenViewState.EditField.Apps, onDismissReq
     // All apps on the device. Null while the apps are being fetched.
     val allApps by
         produceState<List<AppModel>?>(initialValue = null, key1 = viewModel) {
-            value = viewModel.fetchInstalledApps()
+            value = viewModel.fetchInstalledApps(context)
         }
 
     EditScreen(
@@ -60,9 +65,12 @@ fun AppChoiceScreen(viewState: RulesScreenViewState.EditField.Apps, onDismissReq
 }
 
 @Composable
-private fun AppIcon(appModel: AppModel) {
-    // TODO: b/478225883 - Use AppIconProvider to fetch the icons instead.
-    Image(rememberDrawablePainter(appModel.icon), contentDescription = null)
+private fun AppIcon(appModel: AppModel, modifier: Modifier = Modifier) {
+    Image(
+        rememberDrawablePainter(appModel.icon),
+        contentDescription = null,
+        modifier = modifier.clip(CircleShape),
+    )
 }
 
 /** Returns the subset of [allApps] that match [query]. */

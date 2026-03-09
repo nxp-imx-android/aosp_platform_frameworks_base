@@ -16,12 +16,13 @@
 
 package com.android.systemui.notifications.intelligence.rules.domain.interactor
 
+import android.content.Context
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
 
 class FakeInstalledAppsInteractor : InstalledAppsInteractor {
     var installedApps: List<AppModel> = emptyList()
 
-    override suspend fun fetchInstalledApps(): List<AppModel> {
+    override suspend fun fetchInstalledApps(context: Context): List<AppModel> {
         return installedApps
     }
 }

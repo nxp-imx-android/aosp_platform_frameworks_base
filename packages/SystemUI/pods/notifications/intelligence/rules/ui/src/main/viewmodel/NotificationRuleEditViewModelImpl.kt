@@ -110,8 +110,8 @@ constructor(
         return contactsInteractor.loadBitmapFromUri(uri, userContext, sizePx)
     }
 
-    override suspend fun fetchInstalledApps(): List<AppModel> {
-        return installedAppsInteractor.fetchInstalledApps()
+    override suspend fun fetchInstalledApps(context: Context): List<AppModel> {
+        return installedAppsInteractor.fetchInstalledApps(context)
     }
 
     @AssistedFactory

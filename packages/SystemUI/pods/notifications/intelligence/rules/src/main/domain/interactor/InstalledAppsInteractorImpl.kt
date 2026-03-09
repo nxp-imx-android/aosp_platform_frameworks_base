@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.intelligence.rules.domain.interactor
 
+import android.content.Context
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.notifications.intelligence.rules.data.repository.InstalledAppsRepository
 import com.android.systemui.notifications.intelligence.rules.shared.model.AppModel
@@ -25,7 +26,7 @@ import javax.inject.Inject
 class InstalledAppsInteractorImpl
 @Inject
 constructor(private val repository: InstalledAppsRepository) : InstalledAppsInteractor {
-    override suspend fun fetchInstalledApps(): List<AppModel> {
-        return repository.fetchInstalledApps()
+    override suspend fun fetchInstalledApps(context: Context): List<AppModel> {
+        return repository.fetchInstalledApps(context)
     }
 }

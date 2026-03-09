@@ -30,7 +30,9 @@ java_library {
     defaults: ["sysui_main"],
     static_libs: [
         "com.android.systemui.graphics_api",
+        "com.android.systemui.notifications.content.icon_api",
         "com.android.systemui.notifications.intelligence.rules_api",
+        "com.android.systemui.user.data-api",
         "kotlinx_coroutines",
         "SystemUISharedLib",
     ],
