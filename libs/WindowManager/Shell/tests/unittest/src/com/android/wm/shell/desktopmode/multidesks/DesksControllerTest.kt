@@ -29,15 +29,16 @@ import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer.DeskRootHelper.DeskRootRemovalRequest
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.TestScope
-import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
-import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer.DeskRootHelper.DeskRootRemovalRequest
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
@@ -100,34 +101,42 @@ class DesksControllerTest : ShellTestCase() {
             )
     }
 
+    @After
+    fun tearDown() {
+        testScope.cancel()
+    }
+
     @Test
-    fun testRecreateDesk() = testScope.runTest {
-        val userId = 1
-        val displayId = 2
-        val deskId = 3
-        val newDeskId = 4
-        whenever(mockDesksOrganizer.createDesk(eq(displayId), eq(userId), any())).thenAnswer {
-            val callback = it.getArgument<DesksOrganizer.OnCreateCallback>(2)
-            callback.onCreated(newDeskId)
+    fun testRecreateDesk() =
+        testScope.runTest {
+            val userId = 1
+            val displayId = 2
+            val deskId = 3
+            val newDeskId = 4
+            whenever(mockDesksOrganizer.createDesk(eq(displayId), eq(userId), any())).thenAnswer {
+                val callback = it.getArgument<DesksOrganizer.OnCreateCallback>(2)
+                callback.onCreated(newDeskId)
+            }
+
+            val result = controller.recreateDeskRoot(userId, displayId, deskId)
+
+            assertThat(result).isEqualTo(newDeskId)
         }
 
-        val result = controller.recreateDeskRoot(userId, displayId, deskId)
-
-        assertThat(result).isEqualTo(newDeskId)
-    }
-
     @Test
-    fun testRemoveDeskRoots() = testScope.runTest {
-        val requests = listOf(
-            DeskRootRemovalRequest(deskId = 1, userId = 2),
-            DeskRootRemovalRequest(deskId = 3, userId = 4),
-        )
+    fun testRemoveDeskRoots() =
+        testScope.runTest {
+            val requests =
+                listOf(
+                    DeskRootRemovalRequest(deskId = 1, userId = 2),
+                    DeskRootRemovalRequest(deskId = 3, userId = 4),
+                )
 
-        controller.removeDeskRoots(requests)
+            controller.removeDeskRoots(requests)
 
-        verify(mockDesksOrganizer).removeDesk(any(), eq(1), eq(2))
-        verify(mockDesksOrganizer).removeDesk(any(), eq(3), eq(4))
-    }
+            verify(mockDesksOrganizer).removeDesk(any(), eq(1), eq(2))
+            verify(mockDesksOrganizer).removeDesk(any(), eq(3), eq(4))
+        }
 
     @Test
     fun testCanCreateDesks_noLimit_returnsTrue() {
@@ -197,7 +206,7 @@ class DesksControllerTest : ShellTestCase() {
     }
 
     @Test
-    fun testCreateDesk() {
+    fun testCreateDesk_createsDesk() {
         desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
         val currentDeskCount = repository.getNumberOfDesks(DEFAULT_DISPLAY)
         whenever(mockDesksOrganizer.createDesk(eq(DEFAULT_DISPLAY), any(), any())).thenAnswer {
@@ -237,18 +246,88 @@ class DesksControllerTest : ShellTestCase() {
         repository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
         val currentDeskCount = repository.getNumberOfDesks(DEFAULT_DISPLAY)
         whenever(mockDesksOrganizer.createDesk(eq(DEFAULT_DISPLAY), any(), any())).thenAnswer {
-                invocation ->
+            invocation ->
             (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(deskId = 5)
         }
 
         controller.createDesk(
             displayId = DEFAULT_DISPLAY,
             userId = repository.userId,
-            enforceDeskLimit = false
+            enforceDeskLimit = false,
         )
 
         assertThat(repository.getNumberOfDesks(DEFAULT_DISPLAY)).isEqualTo(currentDeskCount + 1)
     }
+
+    @Test
+    fun testCreateDeskSuspending_createsDeskReturningId() =
+        testScope.runTest {
+            val newDeskId = 5
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+            val currentDeskCount = repository.getNumberOfDesks(DEFAULT_DISPLAY)
+            whenever(mockDesksOrganizer.createDesk(eq(DEFAULT_DISPLAY), any(), any())).thenAnswer {
+                invocation ->
+                (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(newDeskId)
+            }
+
+            assertThat(controller.createDeskSuspending(DEFAULT_DISPLAY, repository.userId))
+                .isEqualTo(newDeskId)
+
+            assertThat(repository.getNumberOfDesks(DEFAULT_DISPLAY)).isEqualTo(currentDeskCount + 1)
+        }
+
+    @Test
+    fun testCreateDeskSuspending_displayNotSupported_returnsNull() =
+        testScope.runTest {
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = false
+
+            assertThat(controller.createDeskSuspending(DEFAULT_DISPLAY)).isNull()
+        }
+
+    @Test
+    fun testCreateDeskSuspending_invalidDisplay_returnsNull() =
+        testScope.runTest {
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+
+            assertThat(controller.createDeskSuspending(INVALID_DISPLAY)).isNull()
+        }
+
+    @Test
+    fun testCreateDeskSuspending_systemUser_returnsNull() =
+        testScope.runTest {
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+            assumeTrue(UserManager.isHeadlessSystemUserMode())
+
+            assertThat(controller.createDeskSuspending(DEFAULT_DISPLAY, UserHandle.USER_SYSTEM))
+                .isNull()
+        }
+
+    @Test
+    fun testCreateDeskSuspending_atLimit_limitNotEnforced_createsDeskReturningId() =
+        testScope.runTest {
+            val newDeskId = 5
+            desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
+            desktopConfig.maxDeskLimit = 2
+            // Add two desks to bring the number up to the limit.
+            repository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
+            repository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
+            val currentDeskCount = repository.getNumberOfDesks(DEFAULT_DISPLAY)
+            whenever(mockDesksOrganizer.createDesk(eq(DEFAULT_DISPLAY), any(), any())).thenAnswer {
+                invocation ->
+                (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(newDeskId)
+            }
+
+            assertThat(
+                    controller.createDeskSuspending(
+                        displayId = DEFAULT_DISPLAY,
+                        userId = repository.userId,
+                        enforceDeskLimit = false,
+                    )
+                )
+                .isEqualTo(newDeskId)
+
+            assertThat(repository.getNumberOfDesks(DEFAULT_DISPLAY)).isEqualTo(currentDeskCount + 1)
+        }
 
     private companion object {
         private const val USER_ID_1 = 6
