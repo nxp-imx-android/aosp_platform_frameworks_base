@@ -588,11 +588,11 @@ interface IAudioService {
 
     int getDeviceMaskForStream(in int streamType);
 
-    int[] getAvailableCommunicationDeviceIds();
+    List<AudioDeviceAttributes> getAvailableCommunicationDevices();
 
-    boolean setCommunicationDevice(IBinder cb, int portId, in AttributionSource attributionSource);
+    boolean setCommunicationDevice(IBinder cb, in AudioDeviceAttributes device, in AttributionSource attributionSource);
 
-    int getCommunicationDevice();
+    AudioDeviceAttributes getCommunicationDevice();
 
     void registerCommunicationDeviceDispatcher(ICommunicationDeviceDispatcher dispatcher);
 
