@@ -16,6 +16,7 @@
 
 package com.android.systemui.notifications.intelligence.rules.ui.composable
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -35,7 +36,11 @@ import com.android.systemui.res.R
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Header(title: String, onDismissRequest: () -> Unit) {
+fun Header(
+    title: String,
+    onDismissRequest: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
     CenterAlignedTopAppBar(
         title = { Text(title) },
         navigationIcon = {
@@ -46,5 +51,6 @@ fun Header(title: String, onDismissRequest: () -> Unit) {
                 )
             }
         },
+        actions = actions,
     )
 }
