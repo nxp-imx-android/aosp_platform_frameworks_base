@@ -44,7 +44,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.launchIn
@@ -73,7 +72,7 @@ constructor(
     val isConnected: Flow<Boolean> = repository.isConnected
     val cameraSubjectBounds: StateFlow<Region?> = repository.cameraSubjectBounds
 
-    private val _cameraBackground = MutableStateFlow(cameraBackgroundColors.first())
+    private val _cameraBackground = MutableStateFlow(Color.TRANSPARENT)
     val cameraBackground: StateFlow<Int> = _cameraBackground
 
     private val surfaceParameters = MutableStateFlow<CameraSurfaceParameters?>(null)
@@ -187,7 +186,9 @@ constructor(
     }
 
     fun setBackgroundColor(@ColorInt color: Int) {
-        require(color in cameraBackgroundColors) { "color should be one of cameraBackgroundColors" }
+        require(color in cameraBackgroundColors || color == Color.TRANSPARENT) {
+            "color should be one of cameraBackgroundColors or transparent"
+        }
         _cameraBackground.value = color
     }
 
