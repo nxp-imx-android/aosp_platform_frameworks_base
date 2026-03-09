@@ -344,6 +344,22 @@ public class AndroidKeyStoreSpi extends KeyStoreSpi {
             // Disable randomized encryption requirement to support encryption
             // padding NONE above.
             specBuilder.setRandomizedEncryptionRequired(false);
+        } else if (KeyProperties.KEY_ALGORITHM_XDH.equalsIgnoreCase(keyAlgorithm)) {
+            specBuilder = new KeyProtection.Builder(KeyProperties.PURPOSE_AGREE_KEY);
+        } else if (ED25519_OID.equalsIgnoreCase(keyAlgorithm)) {
+            // Why compare with the Ed25519 OID? Conscrypt's EdDSA public keys return the OID from
+            // their `getAlgorithm()` method in order to be backwards-compatible with
+            // AndroidKeyStore provider implementations in the wild that use the OID and shipped
+            // prior to full Ed25519 support existing in Conscrypt (which was pushed to devices via
+            // mainline).
+            specBuilder =
+                    new KeyProtection.Builder(
+                            KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY);
+            specBuilder.setDigests(KeyProperties.DIGEST_NONE);
+        } else if (KeyProperties.KEY_ALGORITHM_ML_DSA.equalsIgnoreCase(keyAlgorithm)) {
+            specBuilder =
+                    new KeyProtection.Builder(
+                            KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY);
         } else {
             throw new KeyStoreException("Unsupported key algorithm: " + keyAlgorithm);
         }
