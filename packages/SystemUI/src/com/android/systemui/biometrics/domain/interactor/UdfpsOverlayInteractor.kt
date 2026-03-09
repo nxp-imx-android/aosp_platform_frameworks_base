@@ -24,7 +24,7 @@ import com.android.systemui.biometrics.AuthController
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
 import com.android.systemui.biometrics.ui.viewmodel.UdfpsTouchOverlayViewModel
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
@@ -104,7 +104,7 @@ constructor(
 
     /** Returns the current udfpsOverlayParams */
     val udfpsOverlayParams: StateFlow<UdfpsOverlayParams> =
-        ConflatedCallbackFlow.conflatedCallbackFlow {
+        conflatedCallbackFlow {
                 val callback =
                     object : AuthController.Callback {
                         override fun onUdfpsLocationChanged(

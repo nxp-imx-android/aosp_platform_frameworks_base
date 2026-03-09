@@ -22,7 +22,7 @@ import android.annotation.UserIdInt
 import android.database.ContentObserver
 import androidx.annotation.WorkerThread
 import com.android.systemui.Flags
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 
