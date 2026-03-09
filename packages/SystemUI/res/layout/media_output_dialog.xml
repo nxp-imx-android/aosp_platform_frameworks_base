@@ -139,39 +139,6 @@
             app:layout_constraintHeight_max="@dimen/media_output_dialog_list_max_height"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <LinearLayout
-        android:id="@+id/warning_section"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:padding="16dp"
-        android:orientation="vertical"
-        android:gravity="start">
-        <ImageView
-            android:id="@+id/ic_info_outline"
-            android:src="@drawable/ic_info_outline"
-            android:tint="@color/materialColorError"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:importantForAccessibility="no"/>
-        <TextView
-            android:id="@+id/warning_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:paddingTop="8dp"
-            android:textColor="@color/materialColorError" />
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/warning_fix_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:gravity="start|center_vertical"
-            android:paddingStart="0dp"
-            style="@style/MediaOutput.Dialog.FixPermissionsButton" />
-    </LinearLayout>
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/dialog_footer"
         android:background="@drawable/media_output_dialog_footer_background"
@@ -183,6 +150,42 @@
         android:paddingBottom="@dimen/dialog_bottom_padding"
         android:orientation="horizontal"
         android:gravity="end">
+
+        <LinearLayout
+            android:id="@+id/warning_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:paddingTop="16dp"
+            android:visibility="gone"
+            android:orientation="vertical"
+            android:gravity="start">
+            <ImageView
+                android:id="@+id/ic_info_outline"
+                android:src="@drawable/ic_info_outline"
+                android:tint="@color/materialColorError"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:importantForAccessibility="no"/>
+            <TextView
+                android:id="@+id/warning_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:paddingTop="8dp"
+                android:textColor="@color/materialColorError" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/warning_fix_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:gravity="start|center_vertical"
+                android:paddingStart="0dp"
+                style="@style/MediaOutput.Dialog.FixPermissionsButton" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/stop"
@@ -207,7 +210,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/warning_section"
             android:orientation="horizontal"
             app:flow_wrapMode="chain"
             app:constraint_referenced_ids="stop,done"
