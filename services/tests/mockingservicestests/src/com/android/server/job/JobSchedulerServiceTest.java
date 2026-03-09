@@ -2875,18 +2875,14 @@ public class JobSchedulerServiceTest {
         }
 
         // Try to schedule one more, it should fail.
-        try {
-            final JobInfo extraJob =
-                    createJobInfo(TEST_MAX_PROXIED_JOBS_PER_APP)
-                            .setMinimumLatency(3600_000).build();
-            mService.scheduleAsPackage(
-                    extraJob, null, Process.SYSTEM_UID, sourcePackage,
-                    sourceUserId, TEST_NAMESPACE, "");
-            fail("Scheduling proxied job beyond limit should have failed");
-        } catch (IllegalStateException e) {
-            // Expected
-            assertTrue(e.getMessage().contains("Too many proxied sync jobs"));
-        }
+        final JobInfo extraJob =
+                createJobInfo(TEST_MAX_PROXIED_JOBS_PER_APP)
+                        .setMinimumLatency(3600_000).build();
+        assertEquals("Scheduling proxied job beyond limit should have failed",
+                JobScheduler.RESULT_FAILURE,
+                mService.scheduleAsPackage(
+                        extraJob, null, Process.SYSTEM_UID, sourcePackage,
+                        sourceUserId, TEST_NAMESPACE, ""));
     }
 
     @Test
