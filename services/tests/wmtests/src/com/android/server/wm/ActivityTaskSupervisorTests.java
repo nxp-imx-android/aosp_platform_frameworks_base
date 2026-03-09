@@ -494,10 +494,6 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
         // Resume another activity, which should trigger top resumed state loss for activity1.
         final ActivityRecord activity2 = new ActivityBuilder(mAtm).setCreateTask(true).build();
         activity2.setState(ActivityRecord.State.RESUMED, "test");
-
-        // TODO: b/275026461 - Remove this when this issue is resolved, we should not report
-        // state loss.
-        verify(activity1).scheduleTopResumedActivityChanged(eq(false));
     }
 
     /**

@@ -2434,7 +2434,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         if (topRootTask == null || topRootTask.getTopResumedActivity() == prevTopActivity) {
             if (topRootTask == null) {
                 // There's no focused task and there won't have any resumed activity either.
-                scheduleTopResumedActivityStateLossIfNeeded();
+                scheduleTopResumedStateLossIfNeeded();
                 mTopResumedActivity = null;
             }
             if (mService.isSleepingLocked()) {
@@ -2446,7 +2446,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         }
 
         // Ask previous activity to release the top state.
-        scheduleTopResumedActivityStateLossIfNeeded();
+        scheduleTopResumedStateLossIfNeeded();
 
         // Update the current top activity.
         mTopResumedActivity = topRootTask.getTopResumedActivity();
@@ -2467,7 +2467,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         if (mTopResumedActivity != null) {
             mService.setLastResumedActivityUncheckLocked(mTopResumedActivity, reason);
         }
-        scheduleTopResumedActivityStateIfNeeded();
+        scheduleTopResumedStateGainIfNeeded();
         // If the device is not sleeping and there is no top resumed, do not update top app because
         // it may be an intermediate state while moving a task to front. The actual top will be set
         // when TaskFragment#setResumedActivity is called.
@@ -2479,8 +2479,16 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     }
 
     /** Schedule current top resumed activity state loss */
-    private void scheduleTopResumedActivityStateLossIfNeeded() {
+    private void scheduleTopResumedStateLossIfNeeded() {
         if (mLastReportedTopResumedActivity == null) {
+            return;
+        }
+
+        final TransitionController transitionController =
+                mLastReportedTopResumedActivity.mTransitionController;
+        if (transitionController.isTransientVisible(mLastReportedTopResumedActivity.getTask())) {
+            // Do not schedule top-resume-loss if the activity is currently transient visible
+            // (e.g. running recents-animation)
             return;
         }
 
@@ -2497,7 +2505,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     }
 
     /** Schedule top resumed state change if previous top activity already reported back. */
-    private void scheduleTopResumedActivityStateIfNeeded() {
+    private void scheduleTopResumedStateGainIfNeeded() {
         if (mTopResumedActivity != null && mWaitingTopResumedLostActivity == null
                 && readyToResume()) {
             mTopResumedActivity.scheduleTopResumedActivityChanged(true /* onTop */);
@@ -2536,7 +2544,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
 
         mHandler.removeMessages(TOP_RESUMED_STATE_LOSS_TIMEOUT_MSG);
         mWaitingTopResumedLostActivity = null;
-        scheduleTopResumedActivityStateIfNeeded();
+        scheduleTopResumedStateGainIfNeeded();
     }
 
     /** Returns {@code true} if there will be a RESUMED state change of top app. */
@@ -2772,12 +2780,17 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                 mHasPendingTopResumedProcessState = false;
                 updateTopResumedProcessState();
             }
-            if (mLastReportedTopResumedActivity != null
-                    && mTopResumedActivity != mLastReportedTopResumedActivity) {
-                scheduleTopResumedActivityStateLossIfNeeded();
-            } else if (mLastReportedTopResumedActivity == null) {
-                scheduleTopResumedActivityStateIfNeeded();
-            }
+            rescheduleTopResumedStateIfNeeded();
+        }
+    }
+
+    /** Reschedule the top resumed activity state after deferring if needed */
+    void rescheduleTopResumedStateIfNeeded() {
+        if (mLastReportedTopResumedActivity != null
+                && mTopResumedActivity != mLastReportedTopResumedActivity) {
+            scheduleTopResumedStateLossIfNeeded();
+        } else if (mLastReportedTopResumedActivity == null) {
+            scheduleTopResumedStateGainIfNeeded();
         }
     }
 
