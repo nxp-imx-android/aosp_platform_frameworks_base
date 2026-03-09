@@ -35,6 +35,7 @@ import android.content.pm.UserInfo;
 import android.content.pm.VersionedPackage;
 import android.os.Environment;
 import android.os.FileUtils;
+import android.os.Process;
 import android.os.UserHandle;
 import android.os.storage.StorageEventListener;
 import android.os.storage.StorageManager;
@@ -266,7 +267,8 @@ public final class StorageEventHelper extends StorageEventListener {
                              UserHandle.USER_ALL, deleteFlags,
                             "unloadPrivatePackagesInner", ApplicationExitInfo.REASON_OTHER)) {
                         if (mDeletePackageHelper.deletePackageLIF(ps.getPackageName(), null, false,
-                                userIds, deleteFlags, new PackageRemovedInfo(), false)) {
+                                userIds, deleteFlags, new PackageRemovedInfo(), false,
+                                Process.SYSTEM_UID)) {
                             unloaded.add(pkg);
                         } else {
                             Slog.w(TAG, "Failed to unload " + ps.getPath());

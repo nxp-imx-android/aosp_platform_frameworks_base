@@ -387,7 +387,8 @@ public final class SharedLibrariesImpl implements SharedLibrariesRead, Watchable
             if (mDeletePackageHelper.deletePackageX(pkgToDelete.getPackageName(),
                     pkgToDelete.getLongVersionCode(), UserHandle.USER_SYSTEM,
                     PackageManager.DELETE_ALL_USERS,
-                    true /*removedBySystem*/) == PackageManager.DELETE_SUCCEEDED) {
+                    true /*removedBySystem*/,
+                    Process.SYSTEM_UID) == PackageManager.DELETE_SUCCEEDED) {
                 if (volume.getUsableSpace() >= neededSpace) {
                     return true;
                 }
@@ -726,7 +727,7 @@ public final class SharedLibrariesImpl implements SharedLibrariesRead, Watchable
                         try (var installLock = mPm.mInstallLock.acquireLock()) {
                             mDeletePackageHelper.deletePackageLIF(pkg.getPackageName(), null, true,
                                     mPm.mUserManager.getUserIds(), flags, new PackageRemovedInfo(),
-                                    true);
+                                    true, Process.SYSTEM_UID);
                         }
                     }
                     Slog.e(TAG, "updateAllSharedLibrariesLPw failed: " + e.getMessage());
