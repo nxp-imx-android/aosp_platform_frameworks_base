@@ -17,7 +17,6 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.ActivityTaskManager.INVALID_TASK_ID
-import android.window.DesktopExperienceFlags
 import com.android.window.flags.Flags
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.EnterReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason

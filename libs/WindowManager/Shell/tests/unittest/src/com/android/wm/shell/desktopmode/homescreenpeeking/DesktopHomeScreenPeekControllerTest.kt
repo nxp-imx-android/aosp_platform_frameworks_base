@@ -23,6 +23,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.WindowContainerTransaction
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
@@ -32,6 +33,8 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.data.DesktopRepository
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityUtils
 import com.android.wm.shell.shared.R
 import com.android.wm.shell.sysui.ShellController
 import com.google.common.truth.Truth.assertThat
@@ -66,6 +69,11 @@ class DesktopHomeScreenPeekControllerTest : ShellTestCase() {
     private val userRepositories = mock<DesktopUserRepositories>()
     private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
     private val desktopRepository = mock<DesktopRepository>()
+    private val desktopWallpaperActivityUtils = mock<DesktopWallpaperActivityUtils>()
+    private val desktopWallpaperActivityTokenProvider =
+        mock<DesktopWallpaperActivityTokenProvider>()
+    private val wallpaperToken = mock<android.window.WindowContainerToken>()
+    private val wallpaperBinder = mock<android.os.IBinder>()
 
     private lateinit var peekController: DesktopHomeScreenPeekController
 
@@ -79,6 +87,10 @@ class DesktopHomeScreenPeekControllerTest : ShellTestCase() {
         whenever(displayLayout.width()).thenReturn(SCREEN_WIDTH)
         val resources = mContext.getOrCreateTestableResources()
         resources.addOverride(R.dimen.desktop_home_screen_peeking_visible_peek_amount, PEEK_AMOUNT)
+        whenever(wallpaperToken.asBinder()).thenReturn(wallpaperBinder)
+        whenever(desktopWallpaperActivityTokenProvider.getToken(any())).thenReturn(wallpaperToken)
+        whenever(desktopWallpaperActivityUtils.hasDesktopWallpaperActivityEnabled(any()))
+            .thenReturn(true)
         peekController =
             DesktopHomeScreenPeekController(
                 mContext,
@@ -87,6 +99,8 @@ class DesktopHomeScreenPeekControllerTest : ShellTestCase() {
                 shellController,
                 userRepositories,
                 shellTaskOrganizer,
+                desktopWallpaperActivityUtils,
+                desktopWallpaperActivityTokenProvider,
             )
     }
 
@@ -238,6 +252,51 @@ class DesktopHomeScreenPeekControllerTest : ShellTestCase() {
         // Run the animationFinishedCallback to set peek state.
         unpeekAnimationFinishedCallback.firstValue.invoke()
         assertFalse(peekController.isPeeking)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_HOME_SCREEN_PEEKING,
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+    )
+    fun peek_wallpaperActivityEnabled_hidesWallpaperActivity() {
+        val initialBounds = Rect(100, 100, 600, 600)
+        val desktopTask = createTask(initialBounds)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(any())).thenReturn(desktopTask)
+
+        peekController.peek()
+
+        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+        verify(peekTransitionHandler).startTransition(wctCaptor.capture(), anyOrNull())
+        val wct = wctCaptor.firstValue
+        val change = wct.changes.entries.find { it.key == wallpaperToken.asBinder() }
+        assertTrue(change!!.value.hidden)
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_HOME_SCREEN_PEEKING,
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
+    )
+    fun unpeek_wallpaperActivityEnabled_restoresWallpaperActivity() {
+        val originalBounds = Rect(10, 10, 200, 200)
+        val desktopTask = createTask(originalBounds)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(any())).thenReturn(desktopTask)
+        peekAndRunAnimationFinishCallback()
+
+        peekController.unpeek()
+
+        val wctCaptor = argumentCaptor<WindowContainerTransaction>()
+        verify(peekTransitionHandler).startTransition(wctCaptor.capture(), anyOrNull())
+        val wct = wctCaptor.firstValue
+        val change = wct.changes.entries.find { it.key == wallpaperToken.asBinder() }
+        assertFalse(change!!.value.hidden)
+        // Check reorder for wallpaper
+        val reorderChange =
+            wct.hierarchyOps.find {
+                it.type == HIERARCHY_OP_TYPE_REORDER && it.container == wallpaperToken.asBinder()
+            }
+        assertTrue(reorderChange != null && reorderChange.toTop)
     }
 
     private fun createTask(bounds: Rect): RunningTaskInfo {

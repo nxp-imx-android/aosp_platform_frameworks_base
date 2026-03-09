@@ -51,6 +51,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createHomeTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
+import com.android.wm.shell.desktopmode.homescreenpeeking.DesktopHomeScreenPeekController
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
@@ -96,6 +97,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
         mock<DesktopWallpaperActivityTokenProvider>()
     private val mockDesktopModeEventLogger = mock<DesktopModeEventLogger>()
     private val mockDisplayController = mock<DisplayController>()
+    private val mockDesktopHomeScreenPeekController = mock<DesktopHomeScreenPeekController>()
     val testScope = TestScope()
 
     private lateinit var desktopUserRepositories: DesktopUserRepositories
@@ -133,6 +135,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                 desktopModeEventLogger = mockDesktopModeEventLogger,
                 shellController = mockShellController,
                 displayController = mockDisplayController,
+                desktopHomeScreenPeekController = mockDesktopHomeScreenPeekController,
             )
         whenever(mockDesksOrganizer.activateDesk(wct = any(), deskId = any(), skipReorder = any()))
             .thenAnswer { invocationOnMock ->
@@ -694,6 +697,34 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
+    fun onTransitionReady_deactivateDesk_isPeekingHomeScreen_keepsDeskActiveInRepo() {
+        val transition = Binder()
+        val deskChange = Change(mock(), mock())
+        whenever(mockDesksOrganizer.isDeskChange(deskChange, deskId = 5)).thenReturn(true)
+        whenever(mockDesktopHomeScreenPeekController.isPeeking).thenReturn(true)
+        val deactivateTransition =
+            DeskTransition.DeactivateDesk(
+                transition,
+                userId = USER_ID_1,
+                deskId = 5,
+                displayId = DEFAULT_DISPLAY,
+                switchingUser = true,
+                exitReason = ExitReason.UNKNOWN_EXIT,
+            )
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        observer.addPendingTransition(deactivateTransition)
+        observer.onTransitionReady(
+            transition = transition,
+            info = TransitionInfo(TRANSIT_CHANGE, /* flags= */ 0).apply { addChange(deskChange) },
+        )
+
+        assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isEqualTo(5)
+        verify(mockDesktopModeEventLogger, never()).logPendingSessionExit(any(), any())
+    }
+
+    @Test
     fun onTransitionReady_addTaskToDesk_restoresMinimizedTask() {
         val transition = Binder()
         repository.addDesk(SECOND_DISPLAY_ID, deskId = 5)
@@ -980,9 +1011,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
-    )
+    @EnableFlags(Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT)
     fun independentDeskTransition_deskToBack_deactivatesSkippingReorder() =
         testScope.runTest {
             val deskId = 5
@@ -1020,9 +1049,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
-    )
+    @EnableFlags(Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT)
     fun independentDeskTransition_deskToBack_deskWithNonCurrentUserId_deactivatesCurrentUserDesk() =
         testScope.runTest {
             val deskId = 5
@@ -1689,7 +1716,7 @@ class DesksTransitionObserverTest : ShellTestCase() {
                     .addDeskChange(
                         deskId = 3,
                         mode = TRANSIT_TO_FRONT,
-                        displayId = SECOND_DISPLAY_ID
+                        displayId = SECOND_DISPLAY_ID,
                     ),
         )
 

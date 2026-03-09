@@ -157,12 +157,14 @@ import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeControlle
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager;
 import com.android.wm.shell.desktopmode.desktoptaskshandlers.DesktopTasksTransitionHandler;
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityUtils;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationFilter;
 import com.android.wm.shell.desktopmode.education.AppToWebEducationController;
 import com.android.wm.shell.desktopmode.education.AppToWebEducationFilter;
 import com.android.wm.shell.desktopmode.education.data.AppHandleEducationDatastoreRepository;
 import com.android.wm.shell.desktopmode.education.data.AppToWebEducationDatastoreRepository;
+import com.android.wm.shell.desktopmode.homescreenpeeking.DesktopHomeScreenPeekController;
 import com.android.wm.shell.desktopmode.multidesks.DeskSwitchTransitionHandler;
 import com.android.wm.shell.desktopmode.multidesks.DesksController;
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
@@ -892,7 +894,8 @@ public abstract class WMShellModule {
             DesksController desksController,
             Optional<DesktopTasksTransitionObserver> desktopTasksTransitionObserver,
             SnapController snapController,
-            DesktopRemoteListener desktopRemoteListener) {
+            DesktopRemoteListener desktopRemoteListener,
+            DesktopWallpaperActivityUtils desktopWallpaperActivityUtils) {
         return new DesktopTasksController(
                 context,
                 desktopAnimationConfiguration,
@@ -954,7 +957,8 @@ public abstract class WMShellModule {
                 desksController,
                 desktopTasksTransitionObserver.get(),
                 snapController,
-                desktopRemoteListener);
+                desktopRemoteListener,
+                desktopWallpaperActivityUtils);
     }
 
     @WMSingleton
@@ -1702,13 +1706,15 @@ public abstract class WMShellModule {
             DesktopState desktopState,
             @NonNull DesktopModeEventLogger desktopModeEventLogger,
             @NonNull ShellController shellController,
-            @NonNull DisplayController displayController
+            @NonNull DisplayController displayController,
+            DesktopHomeScreenPeekController desktopHomeScreenPeekController
     ) {
         if (desktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.of(
                     new DesksTransitionObserver(desktopUserRepositories, desksOrganizer,
                             transitions, desktopWallpaperActivityTokenProvider, mainScope,
-                            desktopModeEventLogger, shellController, displayController));
+                            desktopModeEventLogger, shellController, displayController,
+                            desktopHomeScreenPeekController));
         }
         return Optional.empty();
     }

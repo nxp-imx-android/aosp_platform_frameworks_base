@@ -31,6 +31,8 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.ShellDesktopState;
 import com.android.wm.shell.desktopmode.SnapController;
 import com.android.wm.shell.desktopmode.desktoptaskshandlers.DesktopTasksTransitionHandler;
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
+import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityUtils;
 import com.android.wm.shell.desktopmode.homescreenpeeking.DesktopHomeScreenPeekController;
 import com.android.wm.shell.desktopmode.homescreenpeeking.DesktopHomeScreenPeekTransitionHandler;
 import com.android.wm.shell.desktopmode.multidesks.DesksController;
@@ -95,11 +97,14 @@ public class DesktopModule {
             DisplayController displayController,
             ShellController shellController,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
-            ShellTaskOrganizer shellTaskOrganizer
+            ShellTaskOrganizer shellTaskOrganizer,
+            DesktopWallpaperActivityUtils desktopWallpaperActivityUtils,
+            DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider
     ) {
         return new DesktopHomeScreenPeekController(context, peekTransitionHandlerLazy,
                 displayController, shellController, desktopUserRepositories,
-                shellTaskOrganizer);
+                shellTaskOrganizer, desktopWallpaperActivityUtils,
+                desktopWallpaperActivityTokenProvider);
     }
 
     @WMSingleton
@@ -109,10 +114,12 @@ public class DesktopModule {
             Transitions transitions,
             TransactionSupplier transactionSupplier,
             ShellController shellController,
-            @DynamicOverride DesktopUserRepositories desktopUserRepositories
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+            DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider
     ) {
         return new DesktopHomeScreenPeekTransitionHandler(mainExecutor, transitions,
-                transactionSupplier, shellController, desktopUserRepositories);
+                transactionSupplier, shellController, desktopUserRepositories,
+                desktopWallpaperActivityTokenProvider);
     }
 
     @WMSingleton
@@ -130,5 +137,13 @@ public class DesktopModule {
         return new DesktopModeShellCommandHandler(controller, focusTransitionObserver,
                 userRepositories, shellController, shellDesktopState, shellCommandHandler,
                 shellInit, desktopHomeScreenPeekController);
+    }
+
+    @WMSingleton
+    @Provides
+    static DesktopWallpaperActivityUtils provideDesktopWallpaperActivityUtils(
+            ShellDesktopState shellDesktopState
+    ) {
+        return new DesktopWallpaperActivityUtils(shellDesktopState);
     }
 }
