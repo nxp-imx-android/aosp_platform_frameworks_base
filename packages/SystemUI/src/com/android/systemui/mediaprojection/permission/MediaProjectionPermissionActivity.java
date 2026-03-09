@@ -34,7 +34,6 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.app.Activity;
 import android.app.ActivityOptions.LaunchCookie;
-import android.app.AlertDialog;
 import android.app.KeyguardManager;
 import android.app.StatusBarManager;
 import android.app.compat.CompatChanges;
@@ -64,10 +63,8 @@ import com.android.systemui.mediaprojection.SessionCreationSource;
 import com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity;
 import com.android.systemui.mediaprojection.devicepolicy.ScreenCaptureDevicePolicyResolver;
 import com.android.systemui.mediaprojection.devicepolicy.ScreenCaptureDisabledDialogDelegate;
-import com.android.systemui.res.R;
 import com.android.systemui.screencapture.sharescreen.domain.interactor.ScreenCaptureShareScreenFeaturesInteractor;
 import com.android.systemui.screencapture.ui.ShareScreenActivity;
-import com.android.systemui.statusbar.phone.AlertDialogWithDelegate;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 
 import dagger.Lazy;
@@ -90,7 +87,7 @@ public class MediaProjectionPermissionActivity extends Activity {
     private String mPackageName;
     private int mUid;
 
-    private AlertDialog mDialog;
+    private SystemUIDialog mDialog;
 
     // Indicates if user must review already-granted consent that the MediaProjection app is
     // attempting to re-use.
@@ -102,6 +99,8 @@ public class MediaProjectionPermissionActivity extends Activity {
     private final ScreenCaptureShareScreenFeaturesInteractor
             mScreenCaptureShareScreenFeaturesInteractor;
 
+    private final SystemUIDialog.Factory mSystemUIDialogFactory;
+
     @Inject
     public MediaProjectionPermissionActivity(
             Lazy<ScreenCaptureDevicePolicyResolver> screenCaptureDevicePolicyResolver,
@@ -109,13 +108,15 @@ public class MediaProjectionPermissionActivity extends Activity {
             KeyguardManager keyguardManager,
             MediaProjectionMetricsLogger mediaProjectionMetricsLogger,
             ScreenCaptureDisabledDialogDelegate screenCaptureDisabledDialogDelegate,
-            ScreenCaptureShareScreenFeaturesInteractor screenCaptureShareScreenFeaturesInteractor) {
+            ScreenCaptureShareScreenFeaturesInteractor screenCaptureShareScreenFeaturesInteractor,
+            SystemUIDialog.Factory systemUIDialogFactory) {
         mScreenCaptureDevicePolicyResolver = screenCaptureDevicePolicyResolver;
         mStatusBarManager = statusBarManager;
         mKeyguardManager = keyguardManager;
         mMediaProjectionMetricsLogger = mediaProjectionMetricsLogger;
         mScreenCaptureDisabledDialogDelegate = screenCaptureDisabledDialogDelegate;
         mScreenCaptureShareScreenFeaturesInteractor = screenCaptureShareScreenFeaturesInteractor;
+        mSystemUIDialogFactory = systemUIDialogFactory;
     }
 
     @Override
@@ -216,11 +217,9 @@ public class MediaProjectionPermissionActivity extends Activity {
             // Using application context for the dialog, instead of the activity context, so we get
             // the correct screen width when in split screen.
             Context dialogContext = createDisplayContext(getDisplay());
-            BaseMediaProjectionPermissionDialogDelegate<AlertDialog> delegate =
+            BaseMediaProjectionPermissionDialogDelegate delegate =
                     createPermissionDialogDelegate(appName, hasCastingCapabilities, dialogContext);
-            mDialog =
-                    new AlertDialogWithDelegate(
-                            dialogContext, R.style.Theme_SystemUI_Dialog, delegate);
+            mDialog = delegate.createDialog();
 
             setUpDialog(mDialog);
             screenShareDialogRunnable = mDialog::show;
@@ -280,7 +279,7 @@ public class MediaProjectionPermissionActivity extends Activity {
         return appName;
     }
 
-    private BaseMediaProjectionPermissionDialogDelegate<AlertDialog> createPermissionDialogDelegate(
+    private BaseMediaProjectionPermissionDialogDelegate createPermissionDialogDelegate(
             String appName,
             boolean hasCastingCapabilities,
             Context dialogContext) {
@@ -289,7 +288,7 @@ public class MediaProjectionPermissionActivity extends Activity {
                         OVERRIDE_DISABLE_MEDIA_PROJECTION_SINGLE_APP_OPTION,
                         mPackageName, getHostUserHandle());
         MediaProjectionConfig mediaProjectionConfig = getMediaProjectionConfig();
-        Consumer<BaseMediaProjectionPermissionDialogDelegate<AlertDialog>> onStartRecordingClicked =
+        Consumer<BaseMediaProjectionPermissionDialogDelegate> onStartRecordingClicked =
                 dialog -> {
                     ScreenShareOption selectedOption = dialog.getSelectedScreenShareOption();
                     grantMediaProjectionPermission(
@@ -307,7 +306,8 @@ public class MediaProjectionPermissionActivity extends Activity {
                     appName,
                     overrideDisableSingleAppOption,
                     mUid,
-                    mMediaProjectionMetricsLogger);
+                    mMediaProjectionMetricsLogger,
+                    mSystemUIDialogFactory);
         } else {
             return new ShareToAppPermissionDialogDelegate(
                     dialogContext,
@@ -317,7 +317,8 @@ public class MediaProjectionPermissionActivity extends Activity {
                     appName,
                     overrideDisableSingleAppOption,
                     mUid,
-                    mMediaProjectionMetricsLogger);
+                    mMediaProjectionMetricsLogger,
+                    mSystemUIDialogFactory);
         }
     }
 
@@ -331,7 +332,7 @@ public class MediaProjectionPermissionActivity extends Activity {
         }
     }
 
-    private void setUpDialog(AlertDialog dialog) {
+    private void setUpDialog(SystemUIDialog dialog) {
         SystemUIDialog.registerDismissListener(dialog, this::onDialogDismissedOrCancelled);
         SystemUIDialog.applyFlags(dialog, /* showWhenLocked= */ false);
         SystemUIDialog.setDialogSize(dialog);
@@ -348,7 +349,7 @@ public class MediaProjectionPermissionActivity extends Activity {
         final UserHandle hostUserHandle = getHostUserHandle();
         if (mScreenCaptureDevicePolicyResolver.get()
                 .isScreenCaptureCompletelyDisabled(hostUserHandle)) {
-            AlertDialog dialog = mScreenCaptureDisabledDialogDelegate.createPlainDialog();
+            SystemUIDialog dialog = mScreenCaptureDisabledDialogDelegate.createDialog();
             setUpDialog(dialog);
             dialog.show();
             return true;
