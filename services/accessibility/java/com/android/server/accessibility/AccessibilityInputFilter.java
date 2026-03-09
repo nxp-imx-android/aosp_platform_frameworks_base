@@ -352,23 +352,12 @@ public class AccessibilityInputFilter extends InputFilter implements EventStream
                     "event=" + event + ";policyFlags=" + policyFlags);
         }
 
-        // 1. Handle multi-device logic
-        if (Flags.handleMultiDeviceInput() && Flags.useStateForActionUpInjection()) {
-            // Note: shouldProcessMultiDeviceEvent() calls updateLastActiveDeviceMotionEvent()
-            // internally to update the mLastActiveDeviceMotionEvent which is required for
-            // sending cancel motion event when resetting stream.
-            if (!shouldProcessMultiDeviceEvent(event, policyFlags)) {
-                return;
-            }
+        // Note: shouldProcessMultiDeviceEvent() calls updateLastActiveDeviceMotionEvent()
+        // internally to update the mLastActiveDeviceMotionEvent which is required for
+        // sending cancel motion event when resetting stream.
+        if (!shouldProcessMultiDeviceEvent(event, policyFlags)) {
+            return;
         }
-        // 2. Handle single-device logic
-        else if (Flags.sendA11yActionCancelOnReset()) {
-            // Even if multi-device support is disabled, we must track the
-            // mLastActiveDeviceMotionEvent to send the cancel motion
-            // event when resetting stream.
-            updateLastActiveDeviceMotionEvent(event);
-        }
-
 
         if (mInputDebugger != null) {
             mInputDebugger.onReceiveEvent(event);
