@@ -17,8 +17,10 @@
 package com.android.systemui.screencapture.sharescreen.domain.interactor
 
 import android.content.applicationContext
+import com.android.systemui.activity.data.repository.activityManagerRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.screencapture.common.domain.interactor.screenCaptureRecentTaskInteractor
 import com.android.systemui.util.AsyncActivityLauncher
 import org.mockito.kotlin.mock
@@ -34,5 +36,7 @@ val Kosmos.shareScreenUiInteractor: ShareScreenUiInteractor by Fixture {
         asyncActivityLauncher = mockAsyncActivityLauncher,
         mediaProjectionHelper = fakeMediaProjectionServiceHelperWrapper,
         context = applicationContext,
+        activityManagerRepository = activityManagerRepository,
+        logBuffer = logcatLogBuffer("TestShareScreen"),
     )
 }
