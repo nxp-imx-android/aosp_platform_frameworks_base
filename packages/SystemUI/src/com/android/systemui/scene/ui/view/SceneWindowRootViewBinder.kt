@@ -302,7 +302,6 @@ object SceneWindowRootViewBinder {
             setSnapshotBinding {
                 accessibilityPaneTitle = viewModel.accessibilityTitle?.let(context::getString)
             }
-
             setContent {
                 SceneContainerContainer(
                     windowInsets = windowInsets,

@@ -2,6 +2,7 @@ package com.android.systemui.scene
 
 import android.content.res.mainResources
 import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.accessibility.domain.interactor.accessibilityInteractor
 import com.android.systemui.classifier.domain.interactor.falsingInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
@@ -159,6 +160,7 @@ val Kosmos.sceneContainerViewModelFactory by Fixture {
                     object : BurnInMovementState.Factory {
                         override fun create() = BurnInMovementState(aodBurnInViewModel)
                     },
+                accessibilityInteractor = accessibilityInteractor,
             )
     }
 }
