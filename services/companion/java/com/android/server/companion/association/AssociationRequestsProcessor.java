@@ -42,7 +42,6 @@ import static com.android.server.companion.utils.RolesUtils.addRoleHolderForAsso
 import static com.android.server.companion.utils.RolesUtils.getPermsForProfile;
 import static com.android.server.companion.utils.RolesUtils.isRoleHolder;
 import static com.android.server.companion.utils.RolesUtils.isRolelessProfile;
-import static com.android.server.companion.utils.Utils.generateRandom128BitKey;
 import static com.android.server.companion.utils.Utils.prepareForIpc;
 
 import static java.util.Objects.requireNonNull;
@@ -57,7 +56,6 @@ import android.companion.AssociatedDevice;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
-import android.companion.DeviceId;
 import android.companion.Flags;
 import android.companion.IAssociationRequestCallback;
 import android.companion.ICompanionDeviceManager;
@@ -403,48 +401,6 @@ public class AssociationRequestsProcessor {
                 sendCallbackAndFinish(null, callback, resultReceiver);
             }
         });
-    }
-
-    /**
-     * Enable system data sync.
-     */
-    public void enableSystemDataSync(int associationId, int flags) {
-        AssociationInfo association = mAssociationStore.getAssociationWithCallerChecks(
-                associationId);
-        AssociationInfo updated = (new AssociationInfo.Builder(association))
-                .setSystemDataSyncFlags(association.getSystemDataSyncFlags() | flags).build();
-        mAssociationStore.updateAssociation(updated);
-    }
-
-    /**
-     * Disable system data sync.
-     */
-    public void disableSystemDataSync(int associationId, int flags) {
-        AssociationInfo association = mAssociationStore.getAssociationWithCallerChecks(
-                associationId);
-        AssociationInfo updated = (new AssociationInfo.Builder(association))
-                .setSystemDataSyncFlags(association.getSystemDataSyncFlags() & (~flags)).build();
-        mAssociationStore.updateAssociation(updated);
-    }
-
-    /**
-     * Set Device id for the association.
-     */
-    public DeviceId setDeviceId(int associationId, DeviceId deviceId) {
-        Slog.i(TAG, "Setting DeviceId=[" + deviceId + "] to id=[" + associationId + "]...");
-
-        AssociationInfo association = mAssociationStore.getAssociationWithCallerChecks(
-                associationId);
-        DeviceId newDeviceId = null;
-
-        if (deviceId != null) {
-            newDeviceId = new DeviceId.Builder().setCustomId(deviceId.getCustomId()).setMacAddress(
-                    deviceId.getMacAddress()).setKey(generateRandom128BitKey()).build();
-        }
-        association = (new AssociationInfo.Builder(association)).setDeviceId(newDeviceId).build();
-        mAssociationStore.updateAssociation(association);
-
-        return newDeviceId;
     }
 
     /**

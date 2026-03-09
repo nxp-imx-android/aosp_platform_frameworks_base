@@ -249,6 +249,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                         "Association is not found for DeviceId=(" + deviceId + ")"
                 );
             }
+            final int associationId = associationInfo.getId();
 
             if (callingPackage.equals(associationInfo.getPackageName())) {
                 throw new IllegalArgumentException(
@@ -272,17 +273,18 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                 return;
             }
 
-            associationInfo = (new AssociationInfo.Builder(associationInfo))
-                    .setPackagesToNotify(packagesToNotify).build();
-            mAssociationStore.updateAssociation(associationInfo);
+            mAssociationStore.updateAssociation(associationId,
+                    a -> (new AssociationInfo.Builder(a))
+                            .setPackagesToNotify(packagesToNotify)
+                            .build());
 
             // Device already present, trigger the callback immediately.
             if (associationInfo.shouldBindWhenPresent()) {
-                if (isBlePresent(associationInfo.getId())) {
+                if (isBlePresent(associationId)) {
                     notifyAndExemptApp(
                             EVENT_BLE_APPEARED, associationInfo, callingPackage, userId);
                 }
-                if (isBtConnected(associationInfo.getId())) {
+                if (isBtConnected(associationId)) {
                     notifyAndExemptApp(
                             EVENT_BT_CONNECTED, associationInfo, callingPackage, userId);
                 }
@@ -299,9 +301,10 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                 return;
             }
 
-            association = (new AssociationInfo.Builder(association)).setNotifyOnDeviceNearby(true)
-                    .build();
-            mAssociationStore.updateAssociation(association);
+            mAssociationStore.updateAssociation(associationId,
+                    a -> (new AssociationInfo.Builder(a))
+                            .setNotifyOnDeviceNearby(true)
+                            .build());
 
             // Send callback immediately if the device is present.
             if (isDevicePresent(associationId)) {
@@ -361,17 +364,21 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                 );
             }
 
-            if (associationInfo.getPackagesToNotify() != null
-                    && associationInfo.getPackagesToNotify().contains(packageName)) {
-                List<String> packagesToNotify =
-                        new ArrayList<>(associationInfo.getPackagesToNotify());
+            final List<String> packagesToNotify =
+                    new ArrayList<>(associationInfo.getPackagesToNotify());
+            if (packagesToNotify != null && packagesToNotify.contains(packageName)) {
                 packagesToNotify.remove(packageName);
                 if (packagesToNotify.isEmpty()) {
-                    packagesToNotify = null;
+                    mAssociationStore.updateAssociation(associationInfo.getId(),
+                            a -> (new AssociationInfo.Builder(a))
+                                    .setPackagesToNotify(null)
+                                    .build());
+                } else {
+                    mAssociationStore.updateAssociation(associationInfo.getId(),
+                            a -> (new AssociationInfo.Builder(a))
+                                    .setPackagesToNotify(packagesToNotify)
+                                    .build());
                 }
-                associationInfo = (new AssociationInfo.Builder(associationInfo))
-                        .setPackagesToNotify(packagesToNotify).build();
-                mAssociationStore.updateAssociation(associationInfo);
             } else {
                 Slog.w(TAG, "DeviceId: " + request.getDeviceId() + " is not currently observed");
                 return;
@@ -388,9 +395,10 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
                 return;
             }
 
-            association = (new AssociationInfo.Builder(association)).setNotifyOnDeviceNearby(false)
-                    .build();
-            mAssociationStore.updateAssociation(association);
+            mAssociationStore.updateAssociation(associationId,
+                    a -> (new AssociationInfo.Builder(a))
+                            .setNotifyOnDeviceNearby(false)
+                            .build());
         }
 
         Slog.i(TAG, "Unregistered device presence listener.");
@@ -1060,10 +1068,10 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         }
 
         // 2. Update the last connected timestamp.
-        association = (new AssociationInfo.Builder(association))
-                .setLastTimeConnected(System.currentTimeMillis())
-                .build();
-        mAssociationStore.updateAssociation(association);
+        mAssociationStore.updateAssociation(associationId,
+                a -> (new AssociationInfo.Builder(a))
+                        .setLastTimeConnected(System.currentTimeMillis())
+                        .build());
 
         final String deviceProfile = association.getDeviceProfile();
         if (DEVICE_PROFILE_AUTOMOTIVE_PROJECTION.equals(deviceProfile)) {
