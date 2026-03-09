@@ -130,19 +130,51 @@ public class PersonalContextBridgeImpl extends PersonalContextBridge {
                             List<RemoteAction> mergedActions = new ArrayList<>();
                             switch (mergeStrategy) {
                                 case DEFAULT_PRIORITY:
+                                    if (Log.isLoggable(TAG, Log.DEBUG)) {
+                                        Log.d(
+                                                TAG,
+                                                "Adding "
+                                                        + originalActions.size()
+                                                        + " default actions then "
+                                                        + personalContextActions.size()
+                                                        + "personal context actions");
+                                    }
                                     mergedActions.addAll(originalActions);
                                     mergedActions.addAll(
                                             dedupeActions(originalActions, personalContextActions));
                                     break;
                                 case PERSONAL_CONTEXT_PRIORITY:
+                                    if (Log.isLoggable(TAG, Log.DEBUG)) {
+                                        Log.d(
+                                                TAG,
+                                                "Adding "
+                                                        + personalContextActions.size()
+                                                        + "personal context actions then "
+                                                        + originalActions.size()
+                                                        + " default actions");
+                                    }
                                     mergedActions.addAll(personalContextActions);
                                     mergedActions.addAll(
                                             dedupeActions(personalContextActions, originalActions));
                                     break;
                                 case PERSONAL_CONTEXT_OVERRIDE:
                                     if (personalContextActions.isEmpty()) {
+                                        if (Log.isLoggable(TAG, Log.DEBUG)) {
+                                            Log.d(
+                                                    TAG,
+                                                    "Personal context actions empty. Using "
+                                                            + originalActions.size()
+                                                            + " default actions");
+                                        }
                                         mergedActions.addAll(originalActions);
                                     } else {
+                                        if (Log.isLoggable(TAG, Log.DEBUG)) {
+                                            Log.d(
+                                                    TAG,
+                                                    "Using "
+                                                            + personalContextActions.size()
+                                                            + " personal context actions");
+                                        }
                                         mergedActions.addAll(personalContextActions);
                                     }
                                     break;
