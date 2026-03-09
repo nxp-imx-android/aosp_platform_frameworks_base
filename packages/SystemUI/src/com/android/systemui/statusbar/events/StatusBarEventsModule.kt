@@ -16,21 +16,17 @@
 
 package com.android.systemui.statusbar.events
 
-import android.content.Context
 import android.view.Display
 import com.android.app.displaylib.PerDisplayRepository
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import dagger.Module
 import dagger.Provides
-import kotlinx.coroutines.CoroutineScope
 
-@Module(includes = [SystemEventChipAnimationControllerModule::class])
+@Module
 interface StatusBarEventsModule {
 
     companion object {
@@ -53,33 +49,9 @@ interface StatusBarEventsModule {
         @Default
         @SysUISingleton
         fun provideSystemStatusAnimationScheduler(
-            factory: SystemStatusAnimationSchedulerImpl.Factory,
-            @Default systemEventCoordinator: SystemEventCoordinator,
-            chipAnimationController: SystemEventChipAnimationController,
-            @Application coroutineScope: CoroutineScope,
-            displaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
+            displaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>
         ): SystemStatusAnimationScheduler {
-            return if (Flags.systemStatusAnimationPerDisplay()) {
-                displaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!.systemStatusAnimationScheduler
-            } else {
-                return factory.create(
-                    systemEventCoordinator,
-                    chipAnimationController,
-                    Display.DEFAULT_DISPLAY,
-                    coroutineScope,
-                )
-            }
-        }
-
-        @Provides
-        @Default
-        @SysUISingleton
-        fun providesSystemEventCoordinator(
-            context: Context,
-            @Application applicationScope: CoroutineScope,
-            factory: SystemEventCoordinator.Factory,
-        ): SystemEventCoordinator {
-            return factory.create(context, applicationScope)
+            return displaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!.systemStatusAnimationScheduler
         }
     }
 }

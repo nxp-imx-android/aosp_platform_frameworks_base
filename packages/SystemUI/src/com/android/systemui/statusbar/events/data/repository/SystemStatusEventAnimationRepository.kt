@@ -16,11 +16,11 @@
 
 package com.android.systemui.statusbar.events.data.repository
 
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import javax.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
 
 /** Repository to expose the [SystemStatusAnimationScheduler] state via flows */
@@ -28,16 +28,10 @@ interface SystemStatusEventAnimationRepository {
     val animationState: StateFlow<SystemEventAnimationState>
 }
 
+@PerDisplaySingleton
 class SystemStatusEventAnimationRepositoryImpl
-@AssistedInject
-constructor(@Assisted scheduler: SystemStatusAnimationScheduler) :
+@Inject
+constructor(@DisplayAware scheduler: SystemStatusAnimationScheduler) :
     SystemStatusEventAnimationRepository {
     override val animationState = scheduler.animationState
-
-    @AssistedFactory
-    interface Factory {
-        fun create(
-            scheduler: SystemStatusAnimationScheduler
-        ): SystemStatusEventAnimationRepositoryImpl
-    }
 }

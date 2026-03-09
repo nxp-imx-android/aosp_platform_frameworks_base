@@ -31,11 +31,9 @@ import com.android.app.animation.Interpolators
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.annotations.GuardedBy
-import com.android.systemui.Flags
 import com.android.systemui.ScreenDecorationsThread
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.plugins.statusbar.StatusBarStateController
@@ -44,8 +42,6 @@ import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
-import com.android.systemui.statusbar.StatusBarState.SHADE
-import com.android.systemui.statusbar.StatusBarState.SHADE_LOCKED
 import com.android.systemui.statusbar.events.PrivacyDotCorner.BottomLeft
 import com.android.systemui.statusbar.events.PrivacyDotCorner.BottomRight
 import com.android.systemui.statusbar.events.PrivacyDotCorner.TopLeft
@@ -779,21 +775,14 @@ object PrivacyDotViewControllerModule {
         @Application scope: CoroutineScope,
         configurationController: ConfigurationController,
         perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
-        @Default defaultAnimationSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
     ): PrivacyDotViewController {
         val displaySubcomponent = perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!
-        val animationScheduler =
-            if (Flags.systemStatusAnimationPerDisplay()) {
-                displaySubcomponent.systemStatusAnimationScheduler
-            } else {
-                defaultAnimationSchedulerLazy.get()
-            }
         return factory.create(
             scope,
             configurationController,
             displaySubcomponent.statusBarContentInsetsProvider,
             Display.DEFAULT_DISPLAY,
-            animationScheduler,
+            displaySubcomponent.systemStatusAnimationScheduler,
             displaySubcomponent.avControlsChipInteractor,
         )
     }

@@ -17,23 +17,12 @@
 package com.android.systemui.statusbar.pipeline.dagger
 
 import android.net.wifi.WifiManager
-import android.view.Display
-import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags
-import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dagger.qualifiers.Default
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.TableLogBufferFactory
-import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
-import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAnimationRepository
-import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAnimationRepositoryImpl
-import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModel
 import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModelImpl
 import com.android.systemui.statusbar.pipeline.audio.data.repository.WiredAudioDeviceRepository
@@ -93,13 +82,11 @@ import com.android.systemui.statusbar.pipeline.wifi.domain.interactor.WifiIntera
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepositoryImpl
 import dagger.Binds
-import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import javax.inject.Provider
-import kotlinx.coroutines.CoroutineScope
 
 @Module(
     includes =
@@ -308,38 +295,6 @@ abstract class StatusBarPipelineModule {
         @BatteryTableLog
         fun provideBatteryTableLog(factory: TableLogBufferFactory): TableLogBuffer {
             return factory.create("BatteryTableLog", 100)
-        }
-
-        @Provides
-        @SysUISingleton
-        @Default
-        fun systemStatusEventAnimationRepository(
-            @Default defaultSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
-            factory: SystemStatusEventAnimationRepositoryImpl.Factory,
-            displaySubcomponentRepositoryLazy:
-                Lazy<PerDisplayRepository<SystemUIDisplaySubcomponent>>,
-        ): SystemStatusEventAnimationRepository {
-            val scheduler =
-                if (Flags.systemStatusAnimationPerDisplay()) {
-                    displaySubcomponentRepositoryLazy
-                        .get()[Display.DEFAULT_DISPLAY]!!
-                        .systemStatusAnimationScheduler
-                } else {
-                    defaultSchedulerLazy.get()
-                }
-            return factory.create(scheduler)
-        }
-
-        @Provides
-        @SysUISingleton
-        @Default
-        fun systemStatusEventAnimationInteractor(
-            factory: SystemStatusEventAnimationInteractor.Factory,
-            @Default repo: SystemStatusEventAnimationRepository,
-            configurationInteractor: ConfigurationInteractor,
-            @Application scope: CoroutineScope,
-        ): SystemStatusEventAnimationInteractor {
-            return factory.create(repo, configurationInteractor, scope)
         }
 
         @Provides

@@ -54,7 +54,6 @@ import com.android.keyguard.logging.KeyguardLogger;
 import com.android.systemui.Flags;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.dagger.qualifiers.Background;
-import com.android.systemui.dagger.qualifiers.Default;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.dreams.ui.viewmodel.DreamViewModel;
@@ -186,13 +185,11 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
 
                 @Override
                 public void onMovedToDisplay(int newDisplayId, Configuration newConfiguration) {
-                    if (Flags.systemStatusAnimationPerDisplay()) {
-                        if (mAnimationScheduler != null) {
-                            mAnimationScheduler.removeCallback(mAnimationCallback);
-                        }
-                        mAnimationScheduler = getAnimationSchedulerForDisplay(newDisplayId);
-                        mAnimationScheduler.addCallback(mAnimationCallback);
+                    if (mAnimationScheduler != null) {
+                        mAnimationScheduler.removeCallback(mAnimationCallback);
                     }
+                    mAnimationScheduler = getAnimationSchedulerForDisplay(newDisplayId);
+                    mAnimationScheduler.addCallback(mAnimationCallback);
                 }
             };
 
@@ -350,10 +347,8 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
             @ShadeDisplayAware Context context,
             KeyguardStatusBarView view,
             CarrierTextController carrierTextController,
-            Lazy<ConfigurationController> defaultConfigurationControllerLazy,
             @ShadeDisplayAware
                     Lazy<ConfigurationController> displayAwareConfigurationControllerLazy,
-            @Default Lazy<SystemStatusAnimationScheduler> animationSchedulerLazy,
             UserInfoController userInfoController,
             StatusBarIconController statusBarIconController,
             TintedIconManager.Factory tintedIconManagerFactory,
@@ -386,12 +381,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mCoroutineDispatcher = dispatcher;
         mContext = context;
         mCarrierTextController = carrierTextController;
-        if (Flags.systemStatusAnimationPerDisplay()) {
-            mConfigurationController = displayAwareConfigurationControllerLazy.get();
-        } else {
-            mConfigurationController = defaultConfigurationControllerLazy.get();
-            mAnimationScheduler = animationSchedulerLazy.get();
-        }
+        mConfigurationController = displayAwareConfigurationControllerLazy.get();
         mUserInfoController = userInfoController;
         mStatusBarIconController = statusBarIconController;
         mTintedIconManagerFactory = tintedIconManagerFactory;
@@ -469,7 +459,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         }
         mView.init(mStatusBarUserChipViewModel);
         mConfigurationController.addCallback(mConfigurationListener);
-        if (Flags.systemStatusAnimationPerDisplay() && mAnimationScheduler == null) {
+        if (mAnimationScheduler == null) {
             mAnimationScheduler = getAnimationSchedulerForDisplay(mContext.getDisplayId());
         }
         mAnimationScheduler.addCallback(mAnimationCallback);
