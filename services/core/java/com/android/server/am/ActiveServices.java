@@ -65,7 +65,7 @@ import static android.os.PowerExemptionManager.REASON_COMPANION_DEVICE_MANAGER;
 import static android.os.PowerExemptionManager.REASON_CURRENT_INPUT_METHOD;
 import static android.os.PowerExemptionManager.REASON_DENIED;
 import static android.os.PowerExemptionManager.REASON_DEVICE_DEMO_MODE;
-import static android.os.PowerExemptionManager.REASON_DEVICE_OWNER;
+import static android.os.PowerExemptionManager.REASON_DEVICE_DPC;
 import static android.os.PowerExemptionManager.REASON_DISALLOW_APPS_CONTROL;
 import static android.os.PowerExemptionManager.REASON_DPO_PROTECTED_APP;
 import static android.os.PowerExemptionManager.REASON_FGS_BINDING;
@@ -78,7 +78,7 @@ import static android.os.PowerExemptionManager.REASON_PACKAGE_INSTALLER;
 import static android.os.PowerExemptionManager.REASON_PROC_STATE_PERSISTENT;
 import static android.os.PowerExemptionManager.REASON_PROC_STATE_PERSISTENT_UI;
 import static android.os.PowerExemptionManager.REASON_PROC_STATE_TOP;
-import static android.os.PowerExemptionManager.REASON_PROFILE_OWNER;
+import static android.os.PowerExemptionManager.REASON_USER_DPC;
 import static android.os.PowerExemptionManager.REASON_ROLE_EMERGENCY;
 import static android.os.PowerExemptionManager.REASON_SERVICE_LAUNCH;
 import static android.os.PowerExemptionManager.REASON_START_ACTIVITY_FLAG;
@@ -3059,8 +3059,8 @@ public final class ActiveServices {
                 case REASON_SYSTEM_ALLOW_LISTED:
                 case REASON_DEVICE_DEMO_MODE:
                 case REASON_DISALLOW_APPS_CONTROL:
-                case REASON_DEVICE_OWNER:
-                case REASON_PROFILE_OWNER:
+                case REASON_DEVICE_DPC:
+                case REASON_USER_DPC:
                 case REASON_PROC_STATE_PERSISTENT:
                 case REASON_PROC_STATE_PERSISTENT_UI:
                 case REASON_SYSTEM_MODULE:
@@ -9276,7 +9276,7 @@ public final class ActiveServices {
             // Allow FGS while-in-use if the caller is the device owner.
             final boolean isDeviceOwner = mAm.mInternal.isDeviceOwner(callingUid);
             if (isDeviceOwner) {
-                ret = REASON_DEVICE_OWNER;
+                ret = REASON_DEVICE_DPC;
             }
         }
         return ret;
@@ -9604,7 +9604,7 @@ public final class ActiveServices {
             // Is the calling UID a profile owner app?
             final boolean isProfileOwner = mAm.mInternal.isProfileOwner(callingUid);
             if (isProfileOwner) {
-                ret = REASON_PROFILE_OWNER;
+                ret = REASON_USER_DPC;
             }
         }
 
