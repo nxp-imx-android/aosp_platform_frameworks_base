@@ -24,4 +24,6 @@ data class MediaDeviceChipViewModel(
     val text: String? = null,
     val isConnecting: Boolean = false,
     val onClick: (Expandable) -> Unit,
+    /** Fallback for chip's content description if [text] is null */
+    val defaultDescription: String,
 )

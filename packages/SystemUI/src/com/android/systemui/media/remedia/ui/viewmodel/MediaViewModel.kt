@@ -310,6 +310,8 @@ constructor(
                                             it.onClick(expandable)
                                         }
                                     },
+                                    defaultDescription =
+                                        context.getString(R.string.controls_media_output_chip),
                                 )
                             }
                         }
@@ -334,6 +336,8 @@ constructor(
                                         session.outputDevice.onClick(expandable)
                                     }
                                 },
+                                defaultDescription =
+                                    context.getString(R.string.controls_media_output_chip),
                             )
                         }
 
