@@ -160,8 +160,7 @@ object Generator {
             TypeMetadataCase.LONG_METADATA -> generateLongPolicyMetadata(policy)
             TypeMetadataCase.STRING_METADATA -> generateStringPolicyMetadata(policy)
             TypeMetadataCase.LIST_METADATA -> generateListPolicyMetadata(policy)
-            TypeMetadataCase.PACKAGE_METADATA,
-                // TODO: b/475749429 - Generate package policy metadata
+            TypeMetadataCase.PACKAGE_METADATA -> generatePackagePolicyMetadata(policy)
             TypeMetadataCase.TYPEMETADATA_NOT_SET ->
                 throw IllegalArgumentException("Type specific metadata unset")
         }
@@ -377,6 +376,21 @@ object Generator {
             .addPolicyArguments(policy, policyId)
             .add(",\n")
             .addStringMetadataInformation(stringMetadata)
+            .add("\n")
+            .unindent()
+            .add(")")
+            .build()
+
+    private val packagePolicyMetadataType = ClassName.get(METADATA_PACKAGE, "PackagePolicyMetadata")
+
+    private fun generatePackagePolicyMetadata(
+        policy: PolicyMetadata,
+        policyId: CodeBlock = policy.getPolicyIdCodeBlock(),
+    ) =
+        CodeBlock.builder()
+            .add("new \$T(\n", packagePolicyMetadataType)
+            .indent()
+            .addPolicyArguments(policy, policyId)
             .add("\n")
             .unindent()
             .add(")")
