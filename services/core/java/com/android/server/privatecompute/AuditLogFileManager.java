@@ -16,6 +16,7 @@
 
 package com.android.server.privatecompute;
 
+import android.util.Log;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.privatecompute.AuditModeContext.Injector;
@@ -57,6 +58,29 @@ class AuditLogFileManager {
             File file = new File(mFolder, fileName);
             mFileCounter = (mFileCounter + 1) % this.mInjector.auditModeMaxLogFiles();
             return file;
+        }
+    }
+
+    /** Deletes all audit log files from the provided audit log directory. */
+    public static void deleteAuditLogFiles(File folder) {
+        if (!folder.exists()) {
+            return;
+        }
+        File[] files = folder.listFiles();
+        if (files == null) {
+            return;
+        }
+        for (File file : files) {
+            if (file.getName().startsWith(AUDIT_LOG_FILE_PREFIX)
+                    && file.getName().endsWith(AUDIT_LOG_FILE_SUFFIX)) {
+                try {
+                    if (!file.delete()) {
+                        Log.w(TAG, "Failed to delete audit log file: " + file.getAbsolutePath());
+                    }
+                } catch (SecurityException e) {
+                    Log.w(TAG, "Failed to delete audit log file: " + file.getAbsolutePath(), e);
+                }
+            }
         }
     }
 }

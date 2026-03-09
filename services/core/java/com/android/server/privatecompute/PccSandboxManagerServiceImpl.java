@@ -19,6 +19,7 @@ package com.android.server.privatecompute;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresNoPermission;
+import android.app.AlarmManager;
 import android.app.privatecompute.DataMigrationToPccService;
 import android.app.privatecompute.IDataMigrationToPccService;
 import android.app.privatecompute.IMigrationRequestResultReceiver;
@@ -44,6 +45,7 @@ import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
 import android.os.ShellCommand;
+import android.os.SystemClock;
 import android.os.UserHandle;
 import android.sysprop.PccProperties;
 import android.util.Log;
@@ -68,6 +70,9 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
     private static final String TAG = "PccSandboxManagerServiceImpl";
 
+    @VisibleForTesting(visibility = VisibleForTesting.Visibility.PRIVATE)
+    static final long AUDIT_LOG_CLEANUP_INTERVAL_MS = 12 * 60 * 60 * 1000L; // 12 hours
+
     private final Context mContext;
     private final PackageManagerInternal mPackageManagerInternal;
     private final Injector mInjector;
@@ -82,6 +87,9 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
     private PccSandboxManagerInternal mInternal;
     private final PccSandboxManagerNativeImpl mNativeImpl = new PccSandboxManagerNativeImpl();
 
+    private final AlarmManager.OnAlarmListener mAuditLogCleanupListener =
+            () -> mExecutorService.execute(this::runAuditLogCleanupTask);
+
     public PccSandboxManagerServiceImpl(Context context) {
         this(context, new Injector());
     }
@@ -91,6 +99,30 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
         mContext = context;
         mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
         mInjector = injector;
+
+        // Run the audit log cleanup task upon booting.
+        mExecutorService.execute(this::runAuditLogCleanupTask);
+    }
+
+    private void runAuditLogCleanupTask() {
+        mInjector.deleteAuditLogFiles();
+        rescheduleAuditLogCleanup();
+    }
+
+    private void rescheduleAuditLogCleanup() {
+        AlarmManager am = mInjector.getAlarmManager(mContext);
+        if (am == null) {
+            return;
+        }
+        // Cancel any existing alarm to avoid duplicate alarms.
+        am.cancel(mAuditLogCleanupListener);
+        long triggerAtMillis = mInjector.getElapsedRealtime() + AUDIT_LOG_CLEANUP_INTERVAL_MS;
+        am.set(
+                AlarmManager.ELAPSED_REALTIME,
+                triggerAtMillis,
+                TAG,
+                mAuditLogCleanupListener,
+                mInjector.getHandler(mInjector.getBackgroundLooper()));
     }
 
     @VisibleForTesting
@@ -105,6 +137,22 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
 
         boolean auditModeEnabled() {
             return PccProperties.audit_mode_enabled().orElse(false);
+        }
+
+        AlarmManager getAlarmManager(Context context) {
+            return context.getSystemService(AlarmManager.class);
+        }
+
+        Looper getBackgroundLooper() {
+            return BackgroundThread.get().getLooper();
+        }
+
+        long getElapsedRealtime() {
+            return SystemClock.elapsedRealtime();
+        }
+
+        void deleteAuditLogFiles() {
+            AuditModeContext.deleteAuditLogFiles();
         }
     }
 
@@ -206,25 +254,18 @@ public class PccSandboxManagerServiceImpl extends IPccSandboxManager.Stub {
                     "Package name " + packageName + " does not match calling UID " + callingUid);
         }
 
-        // Sanitize before locking.
-        /* TODO: PccBundleSanitizationUtil should accept a PersistableBundle or BaseBundle
-        try {
-            PccBundleSanitizationUtil.sanitizeBundle(bundle);
-        } catch (IllegalArgumentException e) {
-            throw new SecurityException("Failed to sanitize bundle: " + e.getMessage());
-        }
-        */
-
         synchronized (mAuditModeLock) {
             if (!mInjector.auditModeEnabled()) {
                 // If audit mode was toggled off, clean up, including writing pending data to disk.
                 if (mAuditModeContext != null) {
                     mAuditModeContext.stopAuditing();
                     mAuditModeContext = null;
+                    rescheduleAuditLogCleanup();
                 }
                 return false;
             }
             if (mAuditModeContext == null) {
+                runAuditLogCleanupTask();
                 mAuditModeContext = AuditModeContext.create();
             }
             for (PersistableBundle bundle : data) {
