@@ -37,6 +37,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.dump.DumpManager;
 import com.android.systemui.plugins.PluginManager;
 import com.android.systemui.statusbar.NotificationListener.NotificationHandler;
 import com.android.systemui.statusbar.data.repository.NotificationListenerSettingsRepository;
@@ -73,7 +74,7 @@ public class NotificationListenerTest extends SysuiTestCase {
                 mContext,
                 mNotificationManager,
                 new SilentNotificationStatusIconsVisibilityInteractor(
-                        new NotificationListenerSettingsRepository()),
+                        new NotificationListenerSettingsRepository(mock(DumpManager.class))),
                 mFakeSystemClock,
                 mFakeExecutor,
                 mPluginManager);
