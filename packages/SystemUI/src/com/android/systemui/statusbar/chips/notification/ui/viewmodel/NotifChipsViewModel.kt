@@ -139,7 +139,7 @@ constructor(
         // Chips are never shown when locked, so it's safe to use the version with sensitive content
         val content = promotedContent.privateVersion
 
-        val chipText: String?
+        val chipTextVariants: List<String>?
         val chipTime: PromotedNotificationContentModel.When?
         val chipChronometer: Chronometer?
         val chipChronometerFormat: OngoingActivityChipModel.Content.Timer.Format?
@@ -148,12 +148,11 @@ constructor(
         if (NotificationChipFromCompactContent.isEnabled) {
             if (content.compactContent is ResolvedBasicCompactContent) {
                 val contentText = content.compactContent.text
-                chipText =
+                chipTextVariants =
                     contentText
                         ?.takeUnless { it is Notification.Metric.TimeDifference }
                         ?.toValueString(context)
                         ?.textVariants
-                        ?.first()
                 chipChronometer =
                     (contentText as? Notification.Metric.TimeDifference)?.toChronometer()
                 chipChronometerFormat =
@@ -196,7 +195,7 @@ constructor(
                     is PromotedNotificationContentModel.When.Chronometer -> rawTime
                 }
 
-            chipText = content.shortCriticalText ?: textFromMetric
+            chipTextVariants = (content.shortCriticalText ?: textFromMetric)?.let { x -> listOf(x) }
             chipTime = timeFromMetric ?: timeFromWhen
             chipChronometer = null
             chipChronometerFormat = null
@@ -209,7 +208,7 @@ constructor(
             appName = appName,
             componentName = componentName,
             statusBarChipIconView = statusBarChipIconView,
-            text = chipText,
+            textVariants = chipTextVariants,
             time = chipTime,
             chronometer = chipChronometer,
             chronometerFormat =
@@ -392,7 +391,10 @@ constructor(
                     // Similar behavior to [CallChipViewModel].
                     OngoingActivityChipModel.Content.IconOnly
                 }
-                text != null -> OngoingActivityChipModel.Content.Text(text = text)
+                textVariants != null && textVariants.size == 1 ->
+                    OngoingActivityChipModel.Content.Text(text = textVariants.first())
+                textVariants != null ->
+                    OngoingActivityChipModel.Content.TextVariants(textVariants = textVariants)
                 NotificationChipFromCompactContent.isEnabled && chronometer != null ->
                     OngoingActivityChipModel.Content.Timer(
                         value = chronometer,
@@ -493,10 +495,10 @@ constructor(
         val componentName: ComponentName?,
         val statusBarChipIconView: StatusBarIconView?,
         /**
-         * The text to show in the chip, or null if text shouldn't be shown. Text takes precedence
-         * over [time]/[chronometer].
+         * Options for the text to show in the chip, or null if text shouldn't be shown. Text takes
+         * precedence over [time]/[chronometer].
          */
-        val text: String?,
+        val textVariants: List<String>?,
         /** The chronometer to show in the chip, or null if it shouldn't be shown. */
         val chronometer: Chronometer?,
         val chronometerFormat: OngoingActivityChipModel.Content.Timer.Format =

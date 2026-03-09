@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.notification.ui.viewmodel
 
+import android.app.Flags.FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS
 import android.app.Notification
 import android.app.Notification.Metric.TimeDifference
 import android.app.PendingIntent
@@ -1325,6 +1326,43 @@ class NotifChipsViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Content.ShortTimeDelta::class.java)
             val timeDelta = latest!![0].content as OngoingActivityChipModel.Content.ShortTimeDelta
             assertThat(timeDelta.time).isEqualTo(52.minutes.inWholeMilliseconds)
+        }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT, FLAG_METRIC_VALUE_ALTERNATIVE_STRINGS)
+    fun chips_compactContentMetricWithTextVariants_hasTextVariants() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val promotedContentBuilder =
+                newPromotedNotificationContentBuilder("notif").applyToShared {
+                    this.compactContent =
+                        Notification.ResolvedBasicCompactContent(
+                            COMPACT_ICON,
+                            Notification.Metric.FixedInt(123_456),
+                            Notification.SEMANTIC_STYLE_UNSPECIFIED,
+                        )
+                }
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = null,
+                        promotedContent = promotedContentBuilder.build(),
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0].content)
+                .isInstanceOf(OngoingActivityChipModel.Content.TextVariants::class.java)
+            assertThat(
+                    (latest!![0].content as OngoingActivityChipModel.Content.TextVariants)
+                        .textVariants
+                )
+                .containsExactly("123,456", "123K")
+                .inOrder()
         }
 
     @Test

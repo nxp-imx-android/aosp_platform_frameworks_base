@@ -17,6 +17,8 @@
 package com.android.systemui.statusbar.chips.ui.compose
 
 import androidx.annotation.VisibleForTesting
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -128,6 +130,63 @@ fun ChipContent(
         is OngoingActivityChipModel.Content.Text -> {
             val text = viewModel.text
             if (text.isNotBlank()) {
+                Text(
+                    text = text,
+                    color = textColor,
+                    style = textStyle,
+                    softWrap = false,
+                    modifier =
+                        modifier.hideTextIfDoesNotFit(
+                            text = text,
+                            textStyle = textStyle,
+                            textMeasurer = textMeasurer,
+                            maxTextWidth = maxTextWidth,
+                            startPadding = startPadding,
+                            endPadding = endPadding,
+                        ),
+                )
+            }
+        }
+
+        is OngoingActivityChipModel.Content.TextVariants -> {
+            if (android.app.Flags.metricValueAlternativeStrings()) {
+                val textVariants = viewModel.textVariants
+
+                BoxWithConstraints(modifier = modifier) {
+                    val horizontalPadding = startPadding + endPadding
+                    val maxWidth =
+                        minOf(
+                                with(density) { maxTextWidth.roundToPx() },
+                                (constraints.maxWidth -
+                                    with(density) { horizontalPadding.roundToPx() }),
+                            )
+                            .coerceAtLeast(constraints.minWidth)
+
+                    // Look for a text variant that fits, respecting order of preference. If none
+                    // fit, we give up and display no text.
+                    val fittingText =
+                        textVariants.firstOrNull { variant ->
+                            val result =
+                                textMeasurer.measure(
+                                    text = variant,
+                                    style = textStyle,
+                                    softWrap = false,
+                                )
+                            result.size.width <= maxWidth
+                        }
+
+                    if (fittingText != null) {
+                        Text(
+                            text = fittingText,
+                            color = textColor,
+                            style = textStyle,
+                            softWrap = false,
+                            modifier = Modifier.padding(start = startPadding, end = endPadding),
+                        )
+                    }
+                }
+            } else {
+                val text = viewModel.textVariants.first()
                 Text(
                     text = text,
                     color = textColor,
@@ -258,7 +317,7 @@ private class NeverDecreaseWidthNode(
 
 /**
  * A custom layout modifier for text that ensures the text is only visible if it completely fits
- * within the constrained bounds. Imposes a provided [maxTextWidthPx]. Also, accounts for provided
+ * within the constrained bounds. Imposes a provided [maxTextWidth]. Also, accounts for provided
  * padding values if provided and ensures its text is placed with the provided padding included
  * around it.
  */

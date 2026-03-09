@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
 import android.graphics.RectF
-import com.android.systemui.Flags
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
@@ -159,7 +158,8 @@ constructor(
             // The other chips have icon+text, so we can squish them by hiding text
             is OngoingActivityChipModel.Content.Timer,
             is OngoingActivityChipModel.Content.ShortTimeDelta,
-            is OngoingActivityChipModel.Content.Text -> true
+            is OngoingActivityChipModel.Content.Text,
+            is OngoingActivityChipModel.Content.TextVariants -> true
         }
     }
 
@@ -244,9 +244,7 @@ constructor(
 
     /** A flow modeling just the keys for the currently visible notification chips. */
     private val visibleNotificationChipKeys: Flow<List<String>> =
-        activeChips.map { chips ->
-            chips.filter { !it.isHidden }.mapNotNull { it.notificationKey }
-        }
+        activeChips.map { chips -> chips.filter { !it.isHidden }.mapNotNull { it.notificationKey } }
 
     /** Placeholder chip bounds to use if {@link StatusBarChipToHunAnimation} is disabled. */
     private val placeholderChipBounds = RectF()
@@ -254,8 +252,8 @@ constructor(
     /**
      * A flow modeling the keys and on-screen bounds for the currently visible chips.
      *
-     * This only contains bounds for chips tied to notifications. Other chips, like screen
-     * sharing chips, are *NOT* in this list.
+     * This only contains bounds for chips tied to notifications. Other chips, like screen sharing
+     * chips, are *NOT* in this list.
      */
     val visibleNotificationChipsWithBounds: Flow<Map<String, RectF>> =
         if (StatusBarChipToHunAnimation.isEnabled) {
