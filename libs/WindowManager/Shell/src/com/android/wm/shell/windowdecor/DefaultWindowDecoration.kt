@@ -17,6 +17,7 @@
 package com.android.wm.shell.windowdecor
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.compat.CompatChanges
 import android.content.Context
 import android.content.pm.ActivityInfo
@@ -66,6 +67,7 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
+import com.android.wm.shell.desktopmode.desktopfirst.isDisplayDesktopFirst
 import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.recents.PerDisplayRecentsTransitionStateListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
@@ -87,6 +89,7 @@ import com.android.wm.shell.windowdecor.caption.AppHandleController
 import com.android.wm.shell.windowdecor.caption.AppHeaderController
 import com.android.wm.shell.windowdecor.caption.AppPinnedController
 import com.android.wm.shell.windowdecor.caption.CaptionController
+import com.android.wm.shell.windowdecor.caption.FullscreenHeaderController
 import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.ExclusionRegionListener
@@ -99,6 +102,7 @@ import com.android.wm.shell.windowdecor.extension.isDragResizable
 import com.android.wm.shell.windowdecor.extension.isFullscreen
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
+import com.android.wm.shell.windowdecor.viewholder.FullscreenHeaderViewHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -157,6 +161,8 @@ constructor(
     private val lockTaskChangeListener: LockTaskChangeListener,
     private val appHeaderViewHolderFactory: AppHeaderViewHolder.Factory =
         AppHeaderViewHolder.DefaultFactory(),
+    private val fullscreenHeaderViewHolderFactory: FullscreenHeaderViewHolder.Factory =
+        FullscreenHeaderViewHolder.DefaultFactory(),
     val pinnedLayerController: PinnedLayerController?,
     private val desktopTasksController: DesktopTasksController,
 ) :
@@ -447,6 +453,20 @@ constructor(
             updateOpenByDefaultFirstRunPromptIfNeeded(configChanged, taskInfo)
         }
 
+    /**
+     * Returns `true` if the task is in desktop windowing mode and is currently in fullscreen.
+     *
+     * This is distinct from an app requesting immersive mode while in freeform.
+     */
+    private fun isFullscreenDesktop(taskInfo: RunningTaskInfo): Boolean =
+        if (DesktopExperienceFlags.ENABLE_FULLSCREEN_WINDOW_CONTROLS.isTrue()) {
+            taskInfo.configuration.windowConfiguration.getWindowingMode() ==
+                WINDOWING_MODE_FULLSCREEN &&
+                rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(taskInfo.displayId)
+        } else {
+            false
+        }
+
     @VisibleForTesting
     fun getRelayoutParams(
         taskInfo: RunningTaskInfo,
@@ -469,6 +489,7 @@ constructor(
                 !shouldCreateCaption -> CaptionController.CaptionType.NO_CAPTION
                 isPinnedLayer -> CaptionController.CaptionType.APP_PINNED
                 taskInfo.isFreeform -> CaptionController.CaptionType.APP_HEADER
+                isFullscreenDesktop(taskInfo) -> CaptionController.CaptionType.FULLSCREEN_HEADER
                 else -> CaptionController.CaptionType.APP_HANDLE
             }
         val isAppHeader = captionType == CaptionController.CaptionType.APP_HEADER
@@ -966,7 +987,12 @@ constructor(
      * ensure that focus always goes back to the button.
      */
     fun a11yFocusMaximizeButton() {
-        (captionController as? AppHeaderController)?.a11yFocusMaximizeButton()
+        when (captionController) {
+            is AppHeaderController ->
+                (captionController as AppHeaderController).a11yFocusMaximizeButton()
+            is FullscreenHeaderController ->
+                (captionController as FullscreenHeaderController).a11yFocusExitFullscreenButton()
+        }
     }
 
     private fun createOpenByDefaultFirstRunPrompt() {
@@ -1121,6 +1147,44 @@ constructor(
                     taskResourceLoader,
                     taskOrganizer,
                     bgScope,
+                )
+            }
+
+            CaptionController.CaptionType.FULLSCREEN_HEADER -> {
+                FullscreenHeaderController(
+                    taskInfo = taskInfo,
+                    windowDecorViewHostSupplier = windowDecorViewHostSupplier,
+                    userContext = userContext,
+                    displayController = displayController,
+                    taskResourceLoader = taskResourceLoader,
+                    splitScreenController = splitScreenController,
+                    desktopUserRepositories = desktopUserRepositories,
+                    transitions = transitions,
+                    taskSurface = taskSurface,
+                    decorationSurface =
+                        checkNotNull(decorationContainerSurface) {
+                            "Expected non-null decoration container surface"
+                        },
+                    taskOrganizer = taskOrganizer,
+                    mainHandler = handler,
+                    mainDispatcher = mainDispatcher,
+                    mainScope = mainScope,
+                    bgScope = bgScope,
+                    syncQueue = syncQueue,
+                    rootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer,
+                    windowManagerWrapper = windowManagerWrapper,
+                    multiInstanceHelper = multiInstanceHelper,
+                    windowDecorCaptionRepository = windowDecorCaptionRepository,
+                    desktopModeUiEventLogger = desktopModeUiEventLogger,
+                    desktopState = desktopState,
+                    windowDecorationActions = windowDecorationActions,
+                    decorWindowContext = decorWindowContext,
+                    gestureInterceptor = gestureInterceptor,
+                    onLongClickListener = onLongClickListener,
+                    onCaptionGenericMotionListener = onGenericMotionListener,
+                    appToWebRepository = appToWebRepository,
+                    focusTransitionObserver = focusTransitionObserver,
+                    fullscreenHeaderViewHolderFactory = fullscreenHeaderViewHolderFactory,
                 )
             }
 

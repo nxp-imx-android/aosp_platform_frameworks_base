@@ -273,8 +273,10 @@
     <string name="maximize_button_text">Maximize <xliff:g id="app_name" example="Chrome">%1$s</xliff:g></string>
     <!-- Accessibility text for the restore window button [CHAR LIMIT=NONE] -->
     <string name="restore_button_text">Restore <xliff:g id="app_name" example="Chrome">%1$s</xliff:g></string>
-     <!-- Accessibility text for the minimize window button [CHAR LIMIT=NONE] -->
-     <string name="minimize_button_text">Minimize <xliff:g id="app_name" example="Chrome">%1$s</xliff:g></string>
+    <!-- Accessibility text for the minimize window button [CHAR LIMIT=NONE] -->
+    <string name="minimize_button_text">Minimize <xliff:g id="app_name" example="Chrome">%1$s</xliff:g></string>
+    <!-- Accessibility text for the exit fullscreen window button [CHAR LIMIT=NONE] -->
+    <string name="exit_fullscreen_button_text">Exit fullscreen for <xliff:g id="app_name" example="Chrome">%1$s</xliff:g></string>
     <!-- Accessibility text for the close window button [CHAR LIMIT=NONE] -->
     <string name="close_button_text">Close <xliff:g id="app_name" example="Chrome">%1$s</xliff:g></string>
     <!-- Accessibility text for the caption back button [CHAR LIMIT=NONE] -->
@@ -354,6 +356,8 @@
     <string name="desktop_mode_a11y_action_snap_right">Resize app window right</string>
     <!-- Accessibility text for the Layout Menu's snap maximize/restore [CHAR LIMIT=NONE] -->
     <string name="desktop_mode_a11y_action_maximize_restore">Maximize or restore window size</string>
+    <!-- Accessibility text for the fullscreen header exit fullscreen button [CHAR LIMIT=NONE] -->
+    <string name="desktop_mode_a11y_action_exit_fullscreen">Exit Fullscreen</string>
 
     <!-- Accessibility action replacement for caption handle app chip buttons [CHAR LIMIT=NONE] -->
     <string name="app_handle_chip_accessibility_announce">Open Menu</string>
@@ -379,6 +383,8 @@
     <string name="app_header_talkback_action_minimize_button_text">Minimize app window</string>
     <!-- Accessibility action replacement for app header close button [CHAR LIMIT=NONE] -->
     <string name="app_header_talkback_action_close_button_text">Close app window</string>
+    <!-- Accessibility action replacement for fullscreen header exit fullscreen button [CHAR LIMIT=NONE] -->
+    <string name="fullscreen_header_talkback_action_exit_fullscreen_button_text">Exit Fullscreen</string>
 
     <!-- Accessibility text for open by default settings button [CHAR LIMIT=NONE] -->
     <string name="open_by_default_settings_text">Open by default settings</string>
