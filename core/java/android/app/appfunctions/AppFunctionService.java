@@ -39,7 +39,6 @@ import android.os.IBinder;
 import android.os.OutcomeReceiver;
 import android.util.Log;
 
-// TODO: b/483628788 - Explain XSD and compatibility (v1).
 /**
  * Extend this class to implement app functions, that can be executed by {@link
  * AppFunctionManager#executeAppFunction}.
@@ -69,7 +68,7 @@ import android.util.Log;
  *     android:name=".YourAppFunctionService"
  *     android:permission="android.permission.BIND_APP_FUNCTION_SERVICE">
  *   <property
- *       android:name="android.app.appfunctions.v2"
+ *       android:name="android.app.appfunctions"
  *       android:value="your_app_functions.xml" />
  *   <intent-filter>
  *     <action android:name="android.app.appfunctions.AppFunctionService" />

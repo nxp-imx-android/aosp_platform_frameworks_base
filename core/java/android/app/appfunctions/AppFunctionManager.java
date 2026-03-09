@@ -790,7 +790,6 @@ public final class AppFunctionManager {
         isAppFunctionEnabledInternal(functionIdentifier, targetPackage, executor, callback);
     }
 
-    // TODO: b/483628788 - Explain XSD.
     /**
      * Registers a runtime implementation for an app function, that can be executed using {@link
      * #executeAppFunction}.
@@ -810,7 +809,7 @@ public final class AppFunctionManager {
      * <pre>{@code
      * <application ...>
      *   <property
-     *       android:name="android.app.appfunctions.v2"
+     *       android:name="android.app.appfunctions"
      *       android:value="your_app_functions.xml" />
      *   ...
      * </application>
@@ -1302,11 +1301,10 @@ public final class AppFunctionManager {
      * Unregisters all app functions that were registered through this {@code AppFunctionManager}
      * instance.
      *
-     * <p>This method should be called to clean up all registrations when the associated
-     * {@link Context} is destroyed.
+     * <p>This method should be called to clean up all registrations when the associated {@link
+     * Context} is destroyed.
      *
      * @param callerDescription A description of the caller, used for logging.
-     *
      * @hide
      */
     @FlaggedApi(FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
@@ -1464,9 +1462,7 @@ public final class AppFunctionManager {
                 }
                 try {
                     mService.unregisterAppFunctions(
-                            mContext.getPackageName(),
-                            functionIdsToUnregister,
-                            mExecutor);
+                            mContext.getPackageName(), functionIdsToUnregister, mExecutor);
                 } catch (RemoteException e) {
                     throw e.rethrowFromSystemServer();
                 }
@@ -1479,8 +1475,12 @@ public final class AppFunctionManager {
                 if (mRegistrations.isEmpty()) {
                     return;
                 }
-                Slog.e(TAG, "Leaked AppFunction registrations detected from " + callerDescription
-                                + ". Functions: [" + String.join(", ", mRegistrations.keySet())
+                Slog.e(
+                        TAG,
+                        "Leaked AppFunction registrations detected from "
+                                + callerDescription
+                                + ". Functions: ["
+                                + String.join(", ", mRegistrations.keySet())
                                 + "]. Ensure AppFunctionRegistration.unregister() is called to"
                                 + " prevent memory leaks.");
                 try {
