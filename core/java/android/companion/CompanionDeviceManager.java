@@ -724,9 +724,26 @@ public final class CompanionDeviceManager {
         }
     }
 
-    // TODO(b/473574965): Update the javadoc after 26Q2 release.
     /**
      * <p>Enable system data sync for an associated device.</p>
+     * {@if (flag(Flags.FLAG_ENABLE_DATA_SYNC)) {
+     * <p>For Android versions prior to {@link android.os.Build.VERSION_CODES#CINNAMON_BUN},
+     * only the following flags are supported:
+     * <ul>
+     *   <li>{@link #FLAG_CALL_METADATA}</li>
+     * </ul>
+     * </p>
+     *
+     * <p>Android versions above {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} supports
+     * the following additional flags, each of which has its own default toggle state and
+     * may require specific permissions:
+     * <ul>
+     *   <li>{@link #FLAG_TASK_CONTINUITY}</li>
+     *   <li>{@link #FLAG_UNIVERSAL_MODES}</li>
+     *   <li>{@link #FLAG_UNIVERSAL_CLIPBOARD}</li>
+     *   <li>{@link #FLAG_AIRPLANE_MODE}</li>
+     * </ul>
+     * </p>}
      *
      * <p>Calling this API requires a uses-feature
      * {@link PackageManager#FEATURE_COMPANION_DEVICE_SETUP} declaration in the manifest</p>
@@ -748,9 +765,26 @@ public final class CompanionDeviceManager {
         }
     }
 
-    // TODO(b/473574965): Update the javadoc after 26Q2 release.
     /**
      * <p>Disable system data sync for an associated device.</p>
+     * {@if (flag(Flags.FLAG_ENABLE_DATA_SYNC)) {
+     * <p>For Android versions prior to {@link android.os.Build.VERSION_CODES#CINNAMON_BUN},
+     * only the following flags are supported:
+     * <ul>
+     *   <li>{@link #FLAG_CALL_METADATA}</li>
+     * </ul>
+     * </p>
+     *
+     * <p>Android versions above {@link android.os.Build.VERSION_CODES#CINNAMON_BUN} supports
+     * the following additional flags, each of which has its own default toggle state and
+     * may require specific permissions:
+     * <ul>
+     *   <li>{@link #FLAG_TASK_CONTINUITY}</li>
+     *   <li>{@link #FLAG_UNIVERSAL_MODES}</li>
+     *   <li>{@link #FLAG_UNIVERSAL_CLIPBOARD}</li>
+     *   <li>{@link #FLAG_AIRPLANE_MODE}</li>
+     * </ul>
+     * </p>}
      *
      * <p>Calling this API requires a uses-feature
      * {@link PackageManager#FEATURE_COMPANION_DEVICE_SETUP} declaration in the manifest</p>
