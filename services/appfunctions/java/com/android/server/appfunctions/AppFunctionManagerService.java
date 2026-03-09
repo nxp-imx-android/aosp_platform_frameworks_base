@@ -27,6 +27,7 @@ import android.content.pm.PackageManagerInternal;
 
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.appfunctions.allowlist.AppFunctionAllowlistReader;
 import com.android.server.appfunctions.allowlist.SystemAppFunctionAllowlistReader;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.appinteraction.AppInteractionServiceImpl;
@@ -51,6 +52,10 @@ public class AppFunctionManagerService extends SystemService {
         if (Flags.enableAppInteractionApi()) {
             mAppInteractionService = new AppInteractionServiceImpl(context);
         }
+        AppFunctionAllowlistReader allowlistReader = null;
+        if (Flags.enableAppFunctionPermissionV2()) {
+            allowlistReader = SystemAppFunctionAllowlistReader.getInstance(context);
+        }
         mServiceImpl =
                 new AppFunctionManagerServiceImpl(
                         context,
@@ -66,7 +71,7 @@ public class AppFunctionManagerService extends SystemService {
                                 new AppFunctionsMetadataCache(context),
                                 new ServiceConfigImpl()),
                         LocalServices.getService(ActivityTaskManagerInternal.class),
-                        SystemAppFunctionAllowlistReader.getInstance());
+                        allowlistReader);
     }
 
     @Override
