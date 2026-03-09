@@ -24,6 +24,7 @@ import android.app.admin.metadata.LongPolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.StringPolicyMetadata;
 
+import java.lang.Character;
 import java.util.List;
 
 /**
@@ -99,6 +100,18 @@ public abstract class PolicyValidator<T> {
                     if (!stringPolicy.isEmptyStringAllowed() && value.isEmpty()) {
                         throw new IllegalArgumentException(
                                 "Empty string is not allowed for policy " + policy.getId());
+                    }
+
+                    if (!stringPolicy.isUnprintableCharactersAllowed()
+                            && value.codePoints().anyMatch(Character::isISOControl)) {
+                        throw new IllegalArgumentException(
+                                "Unprintable characters are not allowed for policy "
+                                        + policy.getId()
+                                        + ", the first unprintable character is "
+                                        + value
+                                            .codePoints()
+                                            .filter(Character::isISOControl)
+                                            .findFirst());
                     }
                 }
             };
