@@ -19,14 +19,26 @@ package com.android.server.textclassifier.personalcontext;
 import static android.service.personalcontext.Flags.enablePersonalContextService;
 import static android.service.personalcontext.Flags.enableTextClassifier;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.content.Context;
 import android.service.textclassifier.ITextClassifierCallback;
 import android.view.textclassifier.TextClassification;
 
+import com.android.internal.R;
 import com.android.server.personalcontext.PersonalContextManagerInternal;
+import com.android.server.textclassifier.TextClassificationManagerService;
 
 /** Local bridge service to trigger and receive insights from Personal Context Service */
 public abstract class PersonalContextBridge {
+
+    @IntDef({DEFAULT_PRIORITY, PERSONAL_CONTEXT_PRIORITY, PERSONAL_CONTEXT_OVERRIDE})
+    @interface MergeStrategy {}
+
+    @MergeStrategy static final int DEFAULT_PRIORITY = 0;
+    @MergeStrategy static final int PERSONAL_CONTEXT_PRIORITY = 1;
+    @MergeStrategy static final int PERSONAL_CONTEXT_OVERRIDE = 2;
+
     /**
      * Sends a {@link TextClassification.Request} to the Personal Context service to trigger
      * TextClassification insight generation. {@link
@@ -58,5 +70,22 @@ public abstract class PersonalContextBridge {
     /** Checks that personal context is enabled. */
     public static boolean isPersonalContextEnabled() {
         return enablePersonalContextService() && enableTextClassifier();
+    }
+
+    public record Config(long mTimeoutInMillis, @MergeStrategy int mMergeStrategy) {
+
+        private static long getTimeoutInMillis(Context context) {
+            return context.getResources()
+                    .getInteger(R.integer.config_textClassifierPersonalContextTimeoutMillis);
+        }
+
+        private static @MergeStrategy int getMergeStrategy(Context context) {
+            return context.getResources()
+                    .getInteger(R.integer.config_textClassifierPersonalContextMergeStrategy);
+        }
+
+        public Config(Context context) {
+            this(getTimeoutInMillis(context), getMergeStrategy(context));
+        }
     }
 }

@@ -8022,6 +8022,20 @@
     <string-array translatable="false" name="config_allowlistPersonalContextInsightReceiving">
     </string-array>
 
+    <!-- Timeout for waiting on text classification suggestions from PersonalContextService (milliseconds).
+         This default is derived from config_smartSelectionInitializedTimeoutMillis. -->
+    <integer name="config_textClassifierPersonalContextTimeoutMillis">180</integer>
+
+    <!-- The merge strategy for default text classifier and personal context results.
+         These three strategies are accepted:
+         * 0 (DEFAULT_PRIORITY): Default text classifier results are prioritized. Personal context
+            results are appended to the end.
+         * 1 (PERSONAL_CONTEXT_PRIORITY): Personal context results are prioritized. Default text
+            classifier results are appended to the end.
+         * 2 (PERSONAL_CONTEXT_OVERRIDE): When present, personal context results are taken and the
+            default text classifier result is dropped. -->
+    <integer name="config_textClassifierPersonalContextMergeStrategy">0</integer>
+
     <!-- Whether the Wear-specific charging experience is enabled -->
     <bool name="config_wearChargingExperienceEnabled">false</bool>
 </resources>
