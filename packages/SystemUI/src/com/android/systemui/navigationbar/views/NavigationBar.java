@@ -108,7 +108,6 @@ import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.statusbar.LetterboxDetails;
-import com.android.internal.util.LatencyTracker;
 import com.android.internal.view.AppearanceRegion;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.LauncherProxyService;
@@ -1532,10 +1531,6 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
     private void onRecentsClick(View v) {
         mNavBarButtonClickLogger.logRecentsButtonClick();
 
-        if (LatencyTracker.isEnabled(mContext)) {
-            LatencyTracker.getInstance(mContext).onActionStart(
-                    LatencyTracker.ACTION_TOGGLE_RECENTS);
-        }
         mCentralSurfacesOptionalLazy.get().ifPresent(CentralSurfaces::awakenDreams);
         mCommandQueue.toggleRecentApps();
     }
