@@ -1016,13 +1016,6 @@ flag {
 }
 
 flag {
-    name: "enter_desktop_by_default_on_freeform_displays"
-    namespace: "lse_desktop_experience"
-    description: "Allow entering desktop mode by default on freeform displays"
-    bug: "361419732"
-}
-
-flag {
   name: "exclude_caption_insets_opt_out_api"
   namespace: "lse_desktop_experience"
   description: "Allow app developers to opt out from OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS"

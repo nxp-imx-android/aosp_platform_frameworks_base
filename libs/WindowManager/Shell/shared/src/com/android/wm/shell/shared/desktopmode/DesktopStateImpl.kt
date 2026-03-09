@@ -83,13 +83,12 @@ class DesktopStateImpl(context: Context) : DesktopState {
 
     override val enterDesktopByDefaultOnFreeformDisplay: Boolean =
         DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX.isTrue ||
-            DesktopExperienceFlags.ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS.isTrue &&
-                SystemProperties.getBoolean(
-                    ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAY_SYS_PROP,
-                    context
-                        .getResources()
-                        .getBoolean(R.bool.config_enterDesktopByDefaultOnFreeformDisplay),
-                )
+            SystemProperties.getBoolean(
+                ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAY_SYS_PROP,
+                context
+                    .getResources()
+                    .getBoolean(R.bool.config_enterDesktopByDefaultOnFreeformDisplay),
+            )
 
     override val isDeviceEligibleForDesktopMode: Boolean
         get() {
