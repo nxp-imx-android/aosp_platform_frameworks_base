@@ -239,7 +239,6 @@ class AppToWebRepositoryImpl(
         if (!isFirstRunPromptSupportedOnDevice()) {
             return false
         }
-        val packageName = taskInfo.topActivity?.packageName ?: return false
         if (taskInfo.capturedLink == null) {
             // No captured link, so no prompt.
             return false
@@ -255,9 +254,24 @@ class AppToWebRepositoryImpl(
             logD("Intent sender prefers non-browser for task %d", taskInfo.taskId)
             return false
         }
-        if (isBrowserApp(context, packageName, taskInfo.userId)) {
+        val topPackageName = taskInfo.topActivity?.packageName ?: return false
+        if (isBrowserApp(context, topPackageName, taskInfo.userId)) {
             // Browser apps are not the target.
-            logD("Browser app %s is not the target for task %d", packageName, taskInfo.taskId)
+            logD(
+                "Browser app %s is not the target for task %d (top)",
+                topPackageName,
+                taskInfo.taskId,
+            )
+            return false
+        }
+        val basePackageName = taskInfo.baseActivity?.packageName ?: return false
+        if (isBrowserApp(context, basePackageName, taskInfo.userId)) {
+            // Browser apps are not the target.
+            logD(
+                "Browser app %s is not the target for task %d (base)",
+                basePackageName,
+                taskInfo.taskId,
+            )
             return false
         }
         if (ALWAYS_SHOW_APP_TO_WEB_FIRST_RUN_PROMPT_FOR_TESTING) {
@@ -265,17 +279,17 @@ class AppToWebRepositoryImpl(
             return true
         }
         val everAcked =
-            firstRunPromptAckedPackagesByUserId[taskInfo.userId]?.contains(packageName) ?: false
+            firstRunPromptAckedPackagesByUserId[taskInfo.userId]?.contains(topPackageName) ?: false
         if (everAcked) {
             // The prompt has been acknowledged before.
             logD("Prompt already acknowledged for task %d", taskInfo.taskId)
             return false
         }
-        if (isPackageInFirstRunPromptExemptList(packageName)) {
-            logD("Package %s is in the exempt list for task %d", packageName, taskInfo.taskId)
+        if (isPackageInFirstRunPromptExemptList(topPackageName)) {
+            logD("Package %s is in the exempt list for task %d", topPackageName, taskInfo.taskId)
             return false
         }
-        logD("Showing prompt for task %s, packageName=%s", taskInfo, packageName)
+        logD("Showing prompt for task %s, topPackageName=%s", taskInfo, topPackageName)
         return true
     }
 
