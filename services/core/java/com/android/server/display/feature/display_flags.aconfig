@@ -371,3 +371,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "display_settings_api_screen_support"
+    namespace: "display_manager"
+    description: "Flag for API screen support in display settings"
+    bug: "464987761"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
