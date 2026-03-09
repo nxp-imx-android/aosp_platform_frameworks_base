@@ -16,8 +16,15 @@
 
 package com.android.server.appfunctions.allowlist;
 
+import static android.os.allowlist.AllowlistManager.RESPONSE_STATUS_ERROR_PROVIDER;
+import static android.os.allowlist.AllowlistManager.RESPONSE_STATUS_ERROR_NETWORK;
+
+import static com.android.server.appfunctions.AppFunctionExecutors.THREAD_POOL_EXECUTOR;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
+import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
@@ -26,7 +33,14 @@ import android.content.pm.SignedPackage;
 import android.content.pm.SigningInfo;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.allowlist.AllowlistManager;
+import android.os.allowlist.AllowlistRequest;
+import android.os.allowlist.AllowlistResponse;
+import android.os.allowlist.AllowlistManager.ResponseStatus;
+import android.os.allowlist.SignedPackageMultiMap;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.LruCache;
 import android.util.PackageUtils;
 import android.util.Slog;
@@ -34,13 +48,23 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.infra.AndroidFuture;
+import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
 import com.android.server.appfunctions.ServiceConfig;
 import com.android.server.appfunctions.ServiceConfigImpl;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 /** Implementation of {@link AppFunctionAllowlistReader} to read allowlist from system service. */
 public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistReader {
@@ -49,25 +73,41 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
 
     private static SystemAppFunctionAllowlistReader sInstance = null;
 
-    private final Object mLock = new Object();
+    private final Object mCacheLock = new Object();
 
     private final AtomicBoolean mEnable = new AtomicBoolean(false);
 
-    @GuardedBy("mLock")
-    private final ArrayMap<SignedPackage, List<SignedPackage>> mTestAllowlist = new ArrayMap<>();
+    @GuardedBy("mCacheLock")
+    private final ArrayMap<SignedPackage, ArraySet<String>> mTestAllowlist = new ArrayMap<>();
 
-    // TODO(b/457349791): Handle cache invalidation by observe the allowlist change
-    @GuardedBy("mLock")
-    private final LruCache<SignedPackage, List<SignedPackage>> mCache;
+    @GuardedBy("mCacheLock")
+    private final LruCache<SignedPackage, ArraySet<String>> mCache;
+
+    private final Object mListenerLock = new Object();
+
+    @GuardedBy("mListenerLock")
+    private OnAllowlistChangedListener mOnAllowlistChangedListener = null;
 
     private final PackageManagerInternal mPackageManagerInternal;
+
+    private final AllowlistManager mAllowlistManager;
+
+    private final Executor mThreadPoolExecutor;
+
+    private final Executor mBackgroundExecutor;
 
     @VisibleForTesting
     public SystemAppFunctionAllowlistReader(
             @NonNull PackageManagerInternal packageManagerInternal,
-            @NonNull ServiceConfig serviceConfig) {
+            @NonNull AllowlistManager allowlistManager,
+            @NonNull ServiceConfig serviceConfig,
+            @NonNull Executor threadPoolExecutor,
+            @NonNull Executor backgroundExecutor) {
         mPackageManagerInternal = Objects.requireNonNull(packageManagerInternal);
+        mAllowlistManager = Objects.requireNonNull(allowlistManager);
         mCache = new LruCache<>(serviceConfig.getAppFunctionAllowlistCacheSize());
+        mThreadPoolExecutor = Objects.requireNonNull(threadPoolExecutor);
+        mBackgroundExecutor = Objects.requireNonNull(backgroundExecutor);
     }
 
     // TODO(b/457349791): Remove this once the source is stable to avoid disruption
@@ -85,32 +125,35 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
     // TODO(b/457349791): Remove once allowlist service is ready
     /** Sets test allowlist. */
     public void setTestAllowlist(
-            @NonNull SignedPackage agentPackage, @NonNull List<SignedPackage> packages) {
-        synchronized (mLock) {
-            mTestAllowlist.put(agentPackage, packages);
+            @NonNull SignedPackage agentPackage, @NonNull List<String> packages) {
+        synchronized (mCacheLock) {
+            mTestAllowlist.put(agentPackage, new ArraySet<String>(packages));
         }
     }
 
     // TODO(b/457349791): Remove once allowlist service is ready
     /** Clear test allowlist. */
     public void clearTestAllowlist() {
-        synchronized (mLock) {
-            mCache.evictAll();
+        synchronized (mCacheLock) {
             mTestAllowlist.clear();
         }
     }
 
     @Override
     @NonNull
-    public AndroidFuture<Boolean> isAllowlisted(
-            @NonNull String agentPackageName, @NonNull String targetPackageName, int userId) {
+    @RequiresPermission(android.Manifest.permission.QUERY_ALLOWLIST)
+    public CompletableFuture<Boolean> isAllowlisted(
+            @NonNull String agentPackageName,
+            @NonNull String targetPackageName,
+            int callingUid,
+            int userId) {
         if (mEnable.get()) {
             if (agentPackageName.equals(targetPackageName)) {
                 // Interaction with the app's own AppFunction is implicitly allowed.
                 return AndroidFuture.completedFuture(true);
             }
 
-            PackageInfo agentPackageInfo = getPackageInfo(agentPackageName, userId);
+            PackageInfo agentPackageInfo = getPackageInfo(agentPackageName, callingUid, userId);
             if (agentPackageInfo == null) {
                 Slog.w(
                         TAG,
@@ -130,20 +173,255 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
                             agentPackageName,
                             PackageUtils.computeSha256DigestBytes(agentLatestCertificate));
 
-            return getAllowlistState(agentSignedPackage)
+            maybeStartAlowlistListener();
+            return getValidTargetPackages(agentSignedPackage)
+                    // TODO(b/457349791): Remove once the AppBinding hanging issue is fixed.
+                    .orTimeout(500, TimeUnit.MILLISECONDS)
                     .thenApply(
                             (allowlistTargets) -> {
-                                for (SignedPackage allowedTarget : allowlistTargets) {
-                                    if (allowedTarget.getPackageName().equals(targetPackageName)) {
+                                if (DEBUG) {
+                                    Slog.d(
+                                            TAG,
+                                            "Allowlist targets for "
+                                                    + agentPackageName
+                                                    + " in user "
+                                                    + userId
+                                                    + " are: "
+                                                    + allowlistTargets.toString());
+                                }
+                                return allowlistTargets.contains(targetPackageName)
+                                        || isInTestAllowlist(agentSignedPackage, targetPackageName);
+                            })
+                    .exceptionally(
+                            (exception) -> {
+                                Slog.w(
+                                        TAG,
+                                        "Fail to validate allowlist for "
+                                                + agentPackageName
+                                                + " to "
+                                                + targetPackageName
+                                                + " in user "
+                                                + userId,
+                                        exception);
+                                if (exception instanceof AllowlistResponseException) {
+                                    int status =
+                                            ((AllowlistResponseException) exception).getStatus();
+                                    if (status == RESPONSE_STATUS_ERROR_PROVIDER
+                                            || status == RESPONSE_STATUS_ERROR_NETWORK) {
+                                        // If the allowlist provider is not available or unable to
+                                        // return the first allowlist due to network issue, it would
+                                        // temporarily allow all interactions.
                                         return true;
                                     }
                                 }
-
+                                if (exception instanceof TimeoutException) {
+                                    // TODO(b/457349791): Remove once the AppBinding hanging issue
+                                    // is fixed.
+                                    return isInTestAllowlist(agentSignedPackage, targetPackageName);
+                                }
                                 return false;
                             });
         } else {
             return AndroidFuture.completedFuture(true);
         }
+    }
+
+    @RequiresPermission(android.Manifest.permission.QUERY_ALLOWLIST)
+    private void maybeStartAlowlistListener() {
+        synchronized (mListenerLock) {
+            if (mOnAllowlistChangedListener != null) {
+                return;
+            }
+            mOnAllowlistChangedListener = new OnAllowlistChangedListener();
+        }
+        Bundle requestData = new Bundle();
+        requestData.putBoolean(AllowlistManager.REQUEST_KEY_INSTALLED_PACKAGES_ONLY, true);
+        AllowlistRequest request =
+                new AllowlistRequest(AllowlistManager.ALLOWLIST_ID_APP_FUNCTION, requestData);
+
+        if (DEBUG) {
+            Slog.d(TAG, "Start allowlist listener");
+        }
+        mAllowlistManager.addOnAllowlistChangedListener(
+                request, mBackgroundExecutor, mOnAllowlistChangedListener);
+    }
+
+    /**
+     * Gets a list of valid targets for {@code agentSignedPackage}.
+     *
+     * <p>Lazily retrieve from the remote source if unavailable in local cache. In most cases, the
+     * caller of AppFunction is very limited. Therefore, the cache miss for follow up query should
+     * be less common. This can reduce the IPC latency for each request.
+     */
+    @NonNull
+    @RequiresPermission(android.Manifest.permission.QUERY_ALLOWLIST)
+    private CompletableFuture<ArraySet<String>> getValidTargetPackages(
+            @NonNull SignedPackage agentSignedPackage) {
+        synchronized (mCacheLock) {
+            ArraySet<String> cachedAllowlistTargets = mCache.get(agentSignedPackage);
+            if (cachedAllowlistTargets != null) {
+                return AndroidFuture.completedFuture(cachedAllowlistTargets);
+            }
+        }
+        ArrayList<SignedPackage> agentSignedPackages = new ArrayList<>();
+        agentSignedPackages.add(agentSignedPackage);
+        AllowlistRequest request = buildAllowlistRequest(agentSignedPackages);
+        return queryAllowlistFuture(request)
+                .thenCompose(
+                        (response) -> {
+                            return processAllowlistResponse(agentSignedPackage, response);
+                        })
+                .thenApply(
+                        (allowlistTargets) -> {
+                            synchronized (mCacheLock) {
+                                mCache.put(agentSignedPackage, allowlistTargets);
+                            }
+                            return allowlistTargets;
+                        });
+    }
+
+    private CompletableFuture<ArraySet<String>> processAllowlistResponse(
+            @NonNull SignedPackage agentSignedPackage, @NonNull AllowlistResponse response) {
+        Objects.requireNonNull(agentSignedPackage);
+        Objects.requireNonNull(response);
+
+        if (response.getStatus() != AllowlistManager.RESPONSE_STATUS_SUCCESS) {
+            return AndroidFuture.failedFuture(
+                    new AllowlistResponseException(
+                            "Unable to resolve allowlist from remote source.",
+                            response.getStatus()));
+        }
+
+        SignedPackageMultiMap allowlistMultiMap =
+                response.getData()
+                        .getParcelable(
+                                AllowlistManager.RESPONSE_KEY_ALLOWED_PACKAGE_MULTI_MAP,
+                                SignedPackageMultiMap.class);
+        ArraySet<String> allowlistTargets = new ArraySet<>();
+        if (allowlistMultiMap != null) {
+            List<SignedPackage> allowlistSignedPackages =
+                    allowlistMultiMap.getMap().getOrDefault(agentSignedPackage, List.of());
+            for (SignedPackage allowlistSignedPackage : allowlistSignedPackages) {
+                allowlistTargets.add(allowlistSignedPackage.getPackageName());
+            }
+        }
+        return AndroidFuture.completedFuture(allowlistTargets);
+    }
+
+    @RequiresPermission(android.Manifest.permission.QUERY_ALLOWLIST)
+    private AndroidFuture<AllowlistResponse> queryAllowlistFuture(
+            @NonNull AllowlistRequest request) {
+        AndroidFuture<AllowlistResponse> future = new AndroidFuture<>();
+        mAllowlistManager.queryAllowlist(
+                request,
+                mThreadPoolExecutor,
+                new Consumer<>() {
+                    @Override
+                    public void accept(@NonNull AllowlistResponse response) {
+                        future.complete(response);
+                    }
+                });
+        return future;
+    }
+
+    @Nullable
+    private PackageInfo getPackageInfo(@NonNull String packageName, int callingUid, int userId) {
+        return mPackageManagerInternal.getPackageInfo(
+                packageName,
+                /* flags= */ PackageManager.GET_SIGNING_CERTIFICATES,
+                callingUid,
+                userId);
+    }
+
+    private final class OnAllowlistChangedListener implements Consumer<AllowlistRequest> {
+        @Override
+        public void accept(AllowlistRequest request) {
+            Set<SignedPackage> cachedAgentPackages;
+            synchronized (mCacheLock) {
+                cachedAgentPackages = mCache.snapshot().keySet();
+            }
+            if (cachedAgentPackages.isEmpty()) {
+                return;
+            }
+            AllowlistRequest updatedRequest =
+                    buildAllowlistRequest(new ArrayList<>(cachedAgentPackages));
+            if (DEBUG) {
+                Slog.d(TAG, "OnAllowlistChangedListener: " + updatedRequest);
+            }
+            queryAllowlistFuture(updatedRequest)
+                    .thenApply(
+                            (response) -> {
+                                if (DEBUG) {
+                                    Slog.d(TAG, "OnAllowlistChangedListener response: " + response);
+                                }
+                                if (response.getStatus()
+                                        != AllowlistManager.RESPONSE_STATUS_SUCCESS) {
+                                    Slog.w(
+                                            TAG,
+                                            "OnAllowlistChangedListener#queryAllowlist failed with "
+                                                    + "status: "
+                                                    + response.getStatus());
+                                    return false;
+                                }
+                                Bundle responseData = response.getData();
+                                SignedPackageMultiMap allowlistMultiMap =
+                                        responseData.getParcelable(
+                                                AllowlistManager
+                                                        .RESPONSE_KEY_ALLOWED_PACKAGE_MULTI_MAP,
+                                                SignedPackageMultiMap.class);
+                                if (allowlistMultiMap == null) return false;
+                                Map<SignedPackage, List<SignedPackage>> allowlistMap =
+                                        allowlistMultiMap.getMap();
+                                if (DEBUG) {
+                                    Slog.d(
+                                            TAG,
+                                            "OnAllowlistChangedListener allowlistMap: "
+                                                    + allowlistMap);
+                                }
+
+                                ArraySet<SignedPackage> deletedAgents =
+                                        new ArraySet<>(cachedAgentPackages);
+                                deletedAgents.removeAll(allowlistMap.keySet());
+                                synchronized (mCacheLock) {
+                                    for (SignedPackage deletedAgent : deletedAgents) {
+                                        mCache.remove(deletedAgent);
+                                    }
+                                }
+                                for (SignedPackage signedPackage : allowlistMap.keySet()) {
+                                    ArraySet<String> allowlistTargets = new ArraySet<>();
+                                    List<SignedPackage> allowlistTargetSignedPackages =
+                                            allowlistMap.getOrDefault(signedPackage, List.of());
+                                    for (SignedPackage allowlistTargetSignedPackage :
+                                            allowlistTargetSignedPackages) {
+                                        allowlistTargets.add(
+                                                allowlistTargetSignedPackage.getPackageName());
+                                    }
+                                    synchronized (mCacheLock) {
+                                        mCache.put(signedPackage, allowlistTargets);
+                                    }
+                                }
+                                return true;
+                            })
+                    .whenComplete(
+                            (unused, exception) -> {
+                                if (exception != null) {
+                                    Slog.w(
+                                            TAG,
+                                            "OnAllowlistChangedListener failed with exception: "
+                                                    + exception);
+                                }
+                            });
+        }
+    }
+
+    @NonNull
+    private AllowlistRequest buildAllowlistRequest(
+            @NonNull ArrayList<SignedPackage> filterAgentPackages) {
+        Bundle requestData = new Bundle();
+        requestData.putParcelableArrayList(
+                AllowlistManager.REQUEST_KEY_FILTER_PACKAGES, filterAgentPackages);
+        requestData.putBoolean(AllowlistManager.REQUEST_KEY_INSTALLED_PACKAGES_ONLY, true);
+        return new AllowlistRequest(AllowlistManager.ALLOWLIST_ID_APP_FUNCTION, requestData);
     }
 
     @Nullable
@@ -167,49 +445,51 @@ public class SystemAppFunctionAllowlistReader implements AppFunctionAllowlistRea
         return histories[histories.length - 1].toByteArray();
     }
 
-    /**
-     * Gets a list of valid targets for {@code agentSignedPackage}.
-     *
-     * <p>Lazily retrieve from the remote source if unavailable in local cache. In most cases, the
-     * caller of AppFunction is very limited. Therefore, the cache miss for follow up query should
-     * be less common. This can reduce the IPC latency for each request.
-     */
-    @NonNull
-    private AndroidFuture<List<SignedPackage>> getAllowlistState(
-            @NonNull SignedPackage agentSignedPackage) {
-        synchronized (mLock) {
-            List<SignedPackage> current = mCache.get(agentSignedPackage);
-            if (current == null) {
-                // TODO(b/457349791): Update to read from allowlist service when ready
-                List<SignedPackage> latestTargets = mTestAllowlist.get(agentSignedPackage);
-                if (latestTargets == null) {
-                    if (DEBUG) {
-                        Slog.d(TAG, "No allowlist state for " + agentSignedPackage);
-                    }
-                    return AndroidFuture.completedFuture(List.of());
-                }
-                mCache.put(agentSignedPackage, latestTargets);
+    private boolean isInTestAllowlist(
+            @NonNull SignedPackage agentPackage, @NonNull String targetPackage) {
+        Objects.requireNonNull(agentPackage);
+        Objects.requireNonNull(targetPackage);
+
+        synchronized (mCacheLock) {
+            ArraySet<String> testAllowlistTargets = mTestAllowlist.get(agentPackage);
+            if (testAllowlistTargets == null) {
+                return false;
             }
-            return AndroidFuture.completedFuture(mCache.get(agentSignedPackage));
+            return testAllowlistTargets.contains(targetPackage);
         }
     }
 
-    @Nullable
-    private PackageInfo getPackageInfo(@NonNull String packageName, int userId) {
-        return mPackageManagerInternal.getPackageInfo(
-                packageName,
-                /* flags= */ PackageManager.GET_SIGNING_CERTIFICATES,
-                Binder.getCallingUid(),
-                userId);
+    private static final class AllowlistResponseException extends Exception {
+        private final int mStatus;
+
+        public AllowlistResponseException(String message, int status) {
+            super(message);
+            mStatus = status;
+        }
+
+        @ResponseStatus
+        public int getStatus() {
+            return mStatus;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + " (status: " + mStatus + ")";
+        }
     }
 
     /** Gets the singleton instance. */
-    public static synchronized SystemAppFunctionAllowlistReader getInstance() {
+    public static synchronized SystemAppFunctionAllowlistReader getInstance(
+            @NonNull Context context) {
+        Objects.requireNonNull(context);
         if (sInstance == null) {
             sInstance =
                     new SystemAppFunctionAllowlistReader(
                             LocalServices.getService(PackageManagerInternal.class),
-                            new ServiceConfigImpl());
+                            context.getSystemService(AllowlistManager.class),
+                            new ServiceConfigImpl(),
+                            THREAD_POOL_EXECUTOR,
+                            BackgroundThread.getExecutor());
         }
         return sInstance;
     }

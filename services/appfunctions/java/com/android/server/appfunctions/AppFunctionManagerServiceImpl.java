@@ -186,7 +186,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @Nullable AppInteractionService appInteractionService,
             @NonNull AppFunctionMetadataReader appFunctionMetadataReader,
             @NonNull ActivityTaskManagerInternal activityTaskManagerInternal,
-            @NonNull AppFunctionAllowlistReader allowlistReader) {
+            @Nullable AppFunctionAllowlistReader allowlistReader) {
         this(
                 context,
                 new RemoteServiceCallerImpl<>(

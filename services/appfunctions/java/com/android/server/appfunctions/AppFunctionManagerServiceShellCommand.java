@@ -808,7 +808,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
     private int setTestAllowlistEntry() {
         final PrintWriter pw = getOutPrintWriter();
         SignedPackage agentPackage = null;
-        List<SignedPackage> appPackages = null;
+        List<String> appPackages = null;
 
         String opt;
         while ((opt = getNextOption()) != null) {
@@ -822,7 +822,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     for (String rawAppPackage : rawAppPackages) {
                         SignedPackage appPackage = parseSignedPackage(rawAppPackage);
                         if (appPackage != null) {
-                            appPackages.add(appPackage);
+                            appPackages.add(appPackage.getPackageName());
                         } else {
                             throw new IllegalArgumentException("Unable to parse " + rawAppPackage);
                         }
@@ -846,7 +846,8 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             return -1;
         }
 
-        SystemAppFunctionAllowlistReader.getInstance().setTestAllowlist(agentPackage, appPackages);
+        SystemAppFunctionAllowlistReader.getInstance(mContext)
+                .setTestAllowlist(agentPackage, appPackages);
 
         pw.println("Set test allowlist entry");
         return 0;
@@ -859,21 +860,21 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
 
     private int clearTestAllowlist() {
         final PrintWriter pw = getOutPrintWriter();
-        SystemAppFunctionAllowlistReader.getInstance().clearTestAllowlist();
+        SystemAppFunctionAllowlistReader.getInstance(mContext).clearTestAllowlist();
         pw.println("Clear test allowlist");
         return 0;
     }
 
     private int enableAllowlist() {
         final PrintWriter pw = getOutPrintWriter();
-        SystemAppFunctionAllowlistReader.getInstance().enableAllowlist();
+        SystemAppFunctionAllowlistReader.getInstance(mContext).enableAllowlist();
         pw.println("Enable allowlist");
         return 0;
     }
 
     private int disableAllowlist() {
         final PrintWriter pw = getOutPrintWriter();
-        SystemAppFunctionAllowlistReader.getInstance().disableAllowlist();
+        SystemAppFunctionAllowlistReader.getInstance(mContext).disableAllowlist();
         pw.println("Disable allowlist");
         return 0;
     }
