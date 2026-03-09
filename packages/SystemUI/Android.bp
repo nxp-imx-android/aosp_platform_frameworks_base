@@ -44,10 +44,6 @@ java_library {
         type: "nano",
         canonical_path_from_root: false,
     },
-
-    libs: [
-        "WindowManager-Shell-proto",
-    ],
 }
 
 java_library {
