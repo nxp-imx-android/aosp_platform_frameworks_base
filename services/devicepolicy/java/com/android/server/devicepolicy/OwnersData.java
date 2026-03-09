@@ -16,6 +16,9 @@
 package com.android.server.devicepolicy;
 
 import static android.app.admin.DevicePolicyManager.DEVICE_OWNER_TYPE_DEFAULT;
+import static android.app.admin.DevicePolicyManager.MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED;
+import static android.app.admin.DevicePolicyManager.MultiuserManagedDeviceProvisioningState;
+import static com.android.server.devicepolicy.DevicePolicyManagerService.multiuserManagedDeviceProvisioningStateToString;
 
 import android.annotation.Nullable;
 import android.app.admin.SystemUpdateInfo;
@@ -59,6 +62,8 @@ class OwnersData {
     private static final String TAG_ROOT = "root";
     private static final String TAG_DEVICE_OWNER = "device-owner";
     private static final String TAG_DEVICE_MANAGED = "device-managed";
+    private static final String TAG_MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE =
+            "multiuser-managed-device-provisioning-state";
     private static final String TAG_SYSTEM_UPDATE_POLICY = "system-update-policy";
     private static final String TAG_FREEZE_PERIOD_RECORD = "freeze-record";
     private static final String TAG_PENDING_OTA_INFO = "pending-ota-info";
@@ -73,6 +78,7 @@ class OwnersData {
     private static final String ATTR_NAME = "name";
     private static final String ATTR_PACKAGE = "package";
     private static final String ATTR_COMPONENT_NAME = "component";
+    private static final String ATTR_MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE = "state";
     private static final String ATTR_SIZE = "size";
     private static final String ATTR_REMOTE_BUGREPORT_URI = "remoteBugreportUri";
     private static final String ATTR_REMOTE_BUGREPORT_HASH = "remoteBugreportHash";
@@ -117,6 +123,10 @@ class OwnersData {
 
     // Whether the device is managed. This can be true even if the device owner is null.
     boolean mDeviceManaged = false;
+
+    // The multiuser managed device state.
+    @MultiuserManagedDeviceProvisioningState int mMultiuserManagedDeviceProvisioningState =
+            MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED;
 
     // Device owner type for a managed device.
     final ArrayMap<String, Integer> mDeviceOwnerTypes = new ArrayMap<>();
@@ -208,6 +218,10 @@ class OwnersData {
                 pw.println();
             }
             pw.println("Is Device Managed: " + mDeviceManaged);
+            pw.println("Multiuser Managed Device Provisioning State: "
+            + mMultiuserManagedDeviceProvisioningState
+            + " (" + multiuserManagedDeviceProvisioningStateToString(
+                    mMultiuserManagedDeviceProvisioningState) +")");
             needBlank = true;
         }
         if (mSystemUpdatePolicy != null) {
@@ -415,6 +429,10 @@ class OwnersData {
                     out.startTag(null, TAG_DEVICE_MANAGED);
                     out.endTag(null, TAG_DEVICE_MANAGED);
                 }
+                out.startTag(null, TAG_MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE);
+                out.attributeInt(null, ATTR_MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE,
+                        mMultiuserManagedDeviceProvisioningState);
+                out.endTag(null, TAG_MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE);
             }
 
             if (!mDeviceOwnerTypes.isEmpty()) {
@@ -508,6 +526,12 @@ class OwnersData {
                     break;
                 case TAG_DEVICE_MANAGED:
                     mDeviceManaged = true;
+                    break;
+                case TAG_MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE:
+                    mMultiuserManagedDeviceProvisioningState =
+                            parser.getAttributeInt(null,
+                            ATTR_MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE,
+                                    MULTIUSER_MANAGED_DEVICE_PROVISIONING_STATE_UNMANAGED);
                     break;
                 case TAG_DEVICE_OWNER_CONTEXT: {
                     mDeviceOwnerUserId =

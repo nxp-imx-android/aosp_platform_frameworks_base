@@ -193,6 +193,10 @@ interface IDevicePolicyManager {
     void clearDeviceOwner(String packageName);
     int getDeviceOwnerUserId();
     boolean isDeviceManaged(String packageName);
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE)")
+    int getMultiuserManagedDeviceProvisioningState();
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.MANAGE_MULTIUSER_DEVICE_PROVISIONING_STATE)")
+    void startMultiuserManagedDeviceProvisioning();
 
     boolean setProfileOwner(in ComponentName who, int userHandle);
     ComponentName getProfileOwnerAsUser(int userHandle);
