@@ -648,10 +648,11 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     }
 
     private fun clickAppHandle(wmHelper: WindowManagerStateHelper, device: UiDevice) {
-        val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
-        val startX = windowRect.centerX()
+        val task = wmHelper.currentState.wmState.getTaskForActivity(innerHelper)
+            ?: error("Unable to find task for $innerHelper")
+        val startX = task.bounds.centerX()
         // Click a little under the top to prevent opening the notification shade.
-        val startY = windowRect.top + 30
+        val startY = task.bounds.top + 30
 
         // Click on the app handle coordinates.
         device.click(startX, startY)
