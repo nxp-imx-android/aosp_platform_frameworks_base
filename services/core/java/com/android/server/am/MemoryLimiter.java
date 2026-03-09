@@ -62,6 +62,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 
@@ -153,6 +154,18 @@ class MemoryLimiter implements AutoCloseable {
      */
     static final String CONFIG_PATH = "/vendor/etc/memory-limiter-config.xml";
 
+    // The system configuration information needed to construct limits.  The "valid" flag is false
+    // if any of the values could not be determined.  The iteration count is used to track how
+    // many times the limit initialization code has run.
+    private record LimitConfig(long memTotal, long swapTotal, long pageSize, boolean valid,
+                               int iteration) {}
+
+    // A single set of limits.  memHigh is applied to memory.high and swapMax is applied to
+    // memory.swap.max.  See {@link memLimit()} for details on how special limit values are
+    // interpreted.
+    @VisibleForTesting
+    public record Limits(long memHigh, long swapMax) {}
+
     /**
      * A controller specializes the behavior of an individual MemoryLimiter.
      */
@@ -169,10 +182,10 @@ class MemoryLimiter implements AutoCloseable {
         void setPidUid(int pid, int uid);
 
         // The process limit has changed.  Push the update to the native layer.
-        void setLimit(int pid, int uid, Long limit);
+        void setLimit(int pid, int uid, Limits limit);
 
         // Get the memory limit for the process state.
-        Long getStateLimit(@ProcessState int newState);
+        Limits getStateLimit(@ProcessState int newState);
 
         // Block or unblock the limiter from monitoring/configuring the UID.
         void ignoreUid(int uid, boolean ignore);
@@ -205,11 +218,11 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void setLimit(int pid, int uid, Long limit) {
+        public void setLimit(int pid, int uid, Limits limit) {
         }
 
         @Override
-        public Long getStateLimit(@ProcessState int newState) {
+        public Limits getStateLimit(@ProcessState int newState) {
             return null;
         }
 
@@ -240,6 +253,12 @@ class MemoryLimiter implements AutoCloseable {
         // the feature flag.
         boolean isMonitoringEnabled() {
             return Flags.memoryLimiterTrigger();
+        }
+
+        // Return true if memory.swap.max should be configured.  The default behavior returns the
+        // value of the feature flag.
+        boolean isSwapMonitoringEnabled() {
+            return Flags.memoryLimiterSwap();
         }
 
         // True if running in test mode.  The default implementation assumes that test mode is
@@ -280,6 +299,9 @@ class MemoryLimiter implements AutoCloseable {
         // The Injector to modify behavior.
         private final Injector mInjector;
 
+        // The configuration for this object.
+        private final Configuration mConfiguration;
+
         // The message queue that distributes calls into the native layer.
         private final Handler mQueue;
 
@@ -296,16 +318,31 @@ class MemoryLimiter implements AutoCloseable {
         // The opcode to close the controller.
         private static final int MESSAGE_CLOSE = 3;
 
+        // The opcode to refresh the known memory limits.
+        private static final int MESSAGE_INIT_LIMITS = 4;
+
+        // The polling cycle for initializing limits. MemInfo values seem to stabilize roughly 30s
+        // after system_server starts, so the poll is set to 10s.
+        private static final long INIT_POLL_MS = 10 * 1000;
+
+        // The maximum number of times the service will attempt to initialize the limits.  After
+        // this many retries, it just gives up.  A value of 30, in combination with the pol time
+        // above, means system_server will try for 5 minutes total.
+        private static final int MAX_LIMIT_INIT_ATTEMPTS = 30;
+
         // Well-known memory limits.
         private static final Long MAX_MEMORY = -1L;     // Maximum memory
-        private final Long mMemoryVisible;
-        private final Long mMemoryNotVisible;
 
-        private final long mVmem;
-        private final long mPageSize;
+        // The extracted system configuration values.
+        private volatile LimitConfig mLimitConfig;
+
+        // The well-known limits.  These are used only by dumpsys.
+        private volatile Limits mLimitsNotVisible;
+        private volatile Limits mLimitsVisible;
 
         // An array of limits, indexed by proc state.
-        private final Long[] mStateLimit = new Long[ActivityManager.MAX_PROCESS_STATE + 1];
+        private final AtomicReferenceArray<Limits> mStateLimit =
+                new AtomicReferenceArray<>(ActivityManager.MAX_PROCESS_STATE + 1);
 
         // The ignore list.  The code supports exactly one ignored uid.  The invalid uid never
         // matches a uid, so that value turns off ignoring.  It is set and read by the handler
@@ -355,8 +392,8 @@ class MemoryLimiter implements AutoCloseable {
 
                             case MESSAGE_CONFIG -> {
                                 if (msg.obj != null && !shouldIgnore(uid)) {
-                                    long limit = (Long) msg.obj;
-                                    configureLimit(service, pid, uid, limit);
+                                    Limits limit = (Limits) msg.obj;
+                                    configureLimit(service, pid, uid, limit.memHigh, limit.swapMax);
                                 }
                             }
 
@@ -377,33 +414,95 @@ class MemoryLimiter implements AutoCloseable {
                                 mOpen = false;
                             }
 
+                            case MESSAGE_INIT_LIMITS -> {
+                                initializeMemoryLimits();
+                            }
+
                             default ->
                                     Slog.e(TAG, "invalid message: op=" + op);
                         }
                     }
                 };
 
+            // Note that getConfiguration() accepts a null input.
+            mConfiguration = getConfiguration(mInjector.configFile());
+            // Initialize the memory limits.
+            initializeMemoryLimits();
+        }
+
+        // Initialize the memory limits.  This exits immediately if memTotal or swapTotal is not
+        // ready.
+        private void initializeMemoryLimits() {
             MemInfoReader memInfo = new MemInfoReader();
             memInfo.readMemInfo();
-            mVmem = memInfo.getTotalSize();
-            mPageSize = Os.sysconf(OsConstants._SC_PAGE_SIZE);
-            // If either system parameter is invalid, log an error but keep going.  Limit checks
-            // will be disabled.
-            if (mVmem <= 0 || mPageSize <= 0) {
-                Slog.e(TAG, formatSimple("Invalid system config: vmem=%d pageSize=%d",
-                                mVmem, mPageSize));
+            long memTotal = memInfo.getTotalSize();
+            long swapTotal = memInfo.getSwapTotalSizeKb() * 1024;
+            long pageSize = Os.sysconf(OsConstants._SC_PAGE_SIZE);
+
+            if (memTotal <= 0) {
+                Slog.e(TAG, formatSimple("invalid MemTotal: %d", memTotal));
+                // The effects of returning here are that no further initialization will occur.
+                // If mStateLimits has never been initialized then all limits will be null and no
+                // limiting will take place.
+                return;
             }
 
-            // Note that getConfiguration() accepts a null input.
-            Configuration cfg = getConfiguration(mInjector.configFile());
-            mMemoryVisible = memLimit(mVmem, mPageSize, cfg.visible);
-            mMemoryNotVisible = memLimit(mVmem, mPageSize, cfg.notVisible);
+            if (pageSize <= 0) {
+                // Pagesize is used mostly for testing.  It's very likely that the page size will
+                // never become valid, so if it is invalid here, just assume 4096.  That's a
+                // pretty safe assumption until 16K pages are deployed.
+                Slog.e(TAG, formatSimple("invalid page size: %d - assuming 4096", pageSize));
+                pageSize = 4096;
+            }
+            // Remember if any of the following parameters are just estimates.
+            boolean finalized = true;
 
-            // Initialize the procState/limit map.
+            if (swapTotal <= 0) {
+                Slog.w(TAG, "swap not ready - assuming half of ram");
+                swapTotal = memTotal / 2;
+                finalized = false;
+            }
+
+            Slog.i(TAG, formatSimple("vmem=%d swap=%d page=%d", memTotal, swapTotal, pageSize));
+            mLimitConfig = new LimitConfig(memTotal, swapTotal, pageSize, finalized,
+                    mLimitConfig == null ? 0 : mLimitConfig.iteration + 1);
+
+            final int visiblePct = mConfiguration.visible;
+            final int notVisiblePct = mConfiguration.notVisible;
+            final boolean setSwap = mInjector.isSwapMonitoringEnabled();
+
+            Limits noop = new Limits(0, 0);
+            Limits cached = new Limits(MAX_MEMORY,
+                    setSwap ? MAX_MEMORY : 0);
+            Limits notVisible = new Limits(memLimit(memTotal, pageSize, notVisiblePct),
+                    setSwap ? memLimit(swapTotal, pageSize, notVisiblePct) : 0);
+            Limits visible = new Limits(memLimit(memTotal, pageSize, visiblePct),
+                    setSwap ? memLimit(swapTotal, pageSize, visiblePct) : 0);
+
+            // Initialize the procstate/bucket map.
             for (int state = ActivityManager.MIN_PROCESS_STATE;
                     state <= ActivityManager.MAX_PROCESS_STATE;
                     state++) {
-                mStateLimit[state] = initStateLimit(state);
+                if (state == ActivityManager.PROCESS_STATE_UNKNOWN
+                        || state == ActivityManager.PROCESS_STATE_NONEXISTENT) {
+                    // Never try to configure a process that does not exist or is cached.
+                    mStateLimit.set(state, noop);
+                } else if (ActivityManager.isProcStateCached(state)) {
+                    mStateLimit.set(state, cached);
+                } else if (ActivityManager.isProcStateJankPerceptible(state)) {
+                    mStateLimit.set(state, visible);
+                } else {
+                    mStateLimit.set(state, notVisible);
+                }
+            }
+
+            // Save the configured limits for dumpsys.
+            mLimitsNotVisible = notVisible;
+            mLimitsVisible = visible;
+
+            // If the limits have not been finalized, cue up a retry.
+            if (!finalized && mLimitConfig.iteration < MAX_LIMIT_INIT_ATTEMPTS) {
+                mQueue.sendMessageDelayed(mQueue.obtainMessage(MESSAGE_INIT_LIMITS), INIT_POLL_MS);
             }
         }
 
@@ -426,21 +525,6 @@ class MemoryLimiter implements AutoCloseable {
             }
         }
 
-        // Compute the memory limit by state.
-        private Long initStateLimit(@ProcessState int newState) {
-            // Never try to configure a process that does not exist or is cached.
-            if (newState == ActivityManager.PROCESS_STATE_UNKNOWN
-                    || newState == ActivityManager.PROCESS_STATE_NONEXISTENT) {
-                return null;
-            } else if (ActivityManager.isProcStateCached(newState)) {
-                return null;
-            } else if (ActivityManager.isProcStateJankPerceptible(newState)) {
-                return mMemoryVisible;
-            } else {
-                return mMemoryNotVisible;
-            }
-        }
-
         @Override
         public boolean isEnabled() {
             return true;
@@ -459,13 +543,13 @@ class MemoryLimiter implements AutoCloseable {
         }
 
         @Override
-        public void setLimit(int pid, int uid, Long limit) {
+        public void setLimit(int pid, int uid, Limits limit) {
             sendCommand(MESSAGE_CONFIG, pid, uid, limit);
         }
 
         @Override
-        public Long getStateLimit(@ProcessState int newState) {
-            return mStateLimit[newState];
+        public Limits getStateLimit(@ProcessState int newState) {
+            return mStateLimit.get(newState);
         }
 
         // Allow burst of up to MAX_TOKENS reports in any period.
@@ -518,17 +602,22 @@ class MemoryLimiter implements AutoCloseable {
             Slog.i(TAG, formatSimple("onLimitExceeded: pid=%d uid=%d type=%s limit=%d pkg=%s",
                     pid, uid, limitTypeToString(type), limit, pkg));
 
-            // If mVmem is zero, something is badly wrong with the system.  The code should never
-            // reach this point, because an invalid mVmem should disable limits, but just in case
-            // we do reach this point, log and exit immediately.
-            if (mVmem <= 0) {
-                Slog.e(TAG, formatSimple("onLimitExceeded: invalid mVmem=%d", mVmem));
+            MemInfoReader memInfo = new MemInfoReader();
+            memInfo.readMemInfo();
+            long memTotal = memInfo.getTotalSize();
+            long swapTotal = memInfo.getSwapTotalSizeKb() * 1024;
+
+            // If memTotal is zero, something is badly wrong with the system.  The code should
+            // never reach this point, because an invalid memTotal should disable limits, but just
+            // in case we do reach this point, log and exit immediately.
+            if (memTotal <= 0) {
+                Slog.e(TAG, formatSimple("onLimitExceeded: invalid memTotal=%d", memTotal));
                 return;
             }
 
             // Convert the limit into a percentage of available memory.  The next two lines
             // safely generate the percentage between 0 and 100.
-            final double ratio = (100.0D * limit) / mVmem;
+            final double ratio = (100.0D * limit) / memTotal;
             final int percent = (int) Math.round(Math.max(0.0, Math.min(100.0, ratio)));
 
             // statsd logging is throttled to at most 28 events per day.
@@ -570,13 +659,11 @@ class MemoryLimiter implements AutoCloseable {
 
         @Override
         public void setManualLimit(int pid, int uid, int limitPercent) {
-            long limitBytes;
-            if (limitPercent < 0) {
-                limitBytes = MAX_MEMORY;
-            } else {
-                limitBytes = memLimit(mVmem, mPageSize, limitPercent);
-            }
-            setLimit(pid, uid, limitBytes);
+            final long memTotal = mLimitConfig.memTotal;
+            final long swapTotal = mLimitConfig.swapTotal;
+            final long pageSize = mLimitConfig.pageSize;
+            setLimit(pid, uid, new Limits(memLimit(memTotal, pageSize, limitPercent),
+                            memLimit(swapTotal, pageSize, limitPercent)));
         }
 
         @Override
@@ -629,9 +716,16 @@ class MemoryLimiter implements AutoCloseable {
             }
 
             final long meg = 1024 * 1024;
-            dumpLine(pw, formatSimple("enabled monitoring=%s low=%dMB high=%dMB ignored=%s",
-                            mInjector.isMonitoringEnabled(),
-                            mMemoryNotVisible / meg, mMemoryVisible / meg, ignoredUid()));
+            final String a = "enabled monitoring=%s ignored=%s";
+            dumpLine(pw, formatSimple(a, mInjector.isMonitoringEnabled(), ignoredUid()));
+
+            final Limits vis = mLimitsVisible;
+            final Limits notVis = mLimitsNotVisible;
+            final String b =
+                    "visibleMem=%dMB visibleSwap=%dMB notVisibleMem=%dMB notVisibleSwap=%dMB";
+            dumpLine(pw, formatSimple(b, vis.memHigh / meg, vis.swapMax / meg,
+                            notVis.memHigh / meg, notVis.swapMax / meg));
+
             if (stats != null) {
                 // Format the output.  Use the line splits provided by the native layer but put
                 // the key/value pairs into columns.
@@ -733,7 +827,7 @@ class MemoryLimiter implements AutoCloseable {
         // The uid that this instance controls.
         private int mUid = INVALID_UID;
         // The last limit assigned to the process.
-        private Long mLimit = null;
+        private Limits mLimit = null;
 
         /**
          * Return true if the process should be monitored and limited.
@@ -804,7 +898,7 @@ class MemoryLimiter implements AutoCloseable {
             // Do not assign limits if the process should not be monitored.
             if (!shouldMonitor()) return;
 
-            final Long newLimit = mController.getStateLimit(newState);
+            final Limits newLimit = mController.getStateLimit(newState);
             if (newLimit != null && !Objects.equals(mLimit, newLimit)) {
                 mLimit = newLimit;
                 mController.setLimit(mPid, mUid, mLimit);
@@ -879,25 +973,26 @@ class MemoryLimiter implements AutoCloseable {
     /**
      * Release the native handler.
      */
-    private static native void closeLimiter(long servicePtr);
+    private static native void closeLimiter(long service);
 
     /**
      * Inform the native layer that a process has started.  No profile is assigned to the process
      * but the native service prepares to monitor the process, if monitoring was enabled when the
      * native service was initialized.
      */
-    private static native void onProcessStarted(long servicePtr, int pid, int uid);
+    private static native void onProcessStarted(long service, int pid, int uid);
 
     /**
-     * Request that a process's memory.high be configured to limit.  Negative values for the limit
-     * mean "maximum memory".
+     * Request that a process's memory.high and memory.swap.max be configured to the respective
+     * limits.  Negative values for the limit mean "maximum memory".
      */
-    private static native void configureLimit(long servicePtr, int pid, int uid, long limit);
+    private static native void configureLimit(long service, int pid, int uid, long memHigh,
+            long swapMax);
 
     /**
      * Fetch the native statistics.  This returns an null pointer if the service pointer is
      * invalid.  The returned string is a list of key/value pairs with the format "key=value",
      * separated by whitespace.
      */
-    private static native @Nullable String getStatistics(long servicePtr);
+    private static native @Nullable String getStatistics(long service);
 }
