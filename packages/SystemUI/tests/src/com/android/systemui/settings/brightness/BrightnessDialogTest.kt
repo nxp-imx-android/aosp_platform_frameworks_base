@@ -33,6 +33,8 @@ import com.android.systemui.activity.SingleActivityFactory
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.brightness.ui.viewmodel.brightnessSliderViewModelFactory
 import com.android.systemui.broadcast.BroadcastSender
+import com.android.systemui.desktop.domain.interactor.DesktopInteractor
+import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.Flags
@@ -95,6 +97,7 @@ class BrightnessDialogTest : SysuiTestCase() {
                     accessibilityMgr,
                     shadeInteractor,
                     broadcastSender,
+                    kosmos.desktopInteractor,
                     kosmos.expandedAudioTileDetailsFeatureInteractor,
                     kosmos.brightnessSliderViewModelFactory,
                     onDestroyLatch,
@@ -107,6 +110,7 @@ class BrightnessDialogTest : SysuiTestCase() {
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
+        whenever(shadeInteractor.isAnyExpanded).thenReturn(MutableStateFlow(false))
         whenever(shadeInteractor.isQsExpanded).thenReturn(MutableStateFlow(false))
     }
 
@@ -198,14 +202,14 @@ class BrightnessDialogTest : SysuiTestCase() {
     @OptIn(FlowPreview::class)
     @FlakyTest(bugId = 326186573)
     @Test
-    fun testFinishOnQSExpanded() = runTest {
-        val isQSExpanded = MutableStateFlow(false)
-        `when`(shadeInteractor.isQsExpanded).thenReturn(isQSExpanded)
+    fun testFinishOnAnyExpanded() = runTest {
+        val isAnyExpanded = MutableStateFlow(false)
+        `when`(shadeInteractor.isAnyExpanded).thenReturn(isAnyExpanded)
         activityRule.launchActivity(Intent(Intent.ACTION_SHOW_BRIGHTNESS_DIALOG))
 
         assertThat(activityRule.activity.isFinishing()).isFalse()
 
-        isQSExpanded.value = true
+        isAnyExpanded.value = true
         // Observe the activity's state until is it finishing or the timeout is reached, whatever
         // comes first. This fixes the flakiness seen when using advanceUntilIdle().
         activityRule.activity.finishing.timeout(100.milliseconds).takeWhile { !it }.collect {}
@@ -239,6 +243,7 @@ class BrightnessDialogTest : SysuiTestCase() {
         accessibilityMgr: AccessibilityManagerWrapper,
         shadeInteractor: ShadeInteractor,
         broadcastSender: BroadcastSender,
+        desktopInteractor: DesktopInteractor,
         expandedAudioTileDetailsFeatureInteractor: ExpandedAudioTileDetailsFeatureInteractor,
         brightnessSliderViewModelFactory: BrightnessSliderViewModel.Factory,
         private val countdownLatch: CountDownLatch,

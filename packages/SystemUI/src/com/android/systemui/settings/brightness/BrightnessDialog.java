@@ -109,10 +109,16 @@ public class BrightnessDialog extends ComponentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (brightnessDialogOnSystemUser() && getUserId() != UserHandle.USER_SYSTEM) {
             requestFinish();
-        } else if (mShadeInteractorLazy.get().isQsExpanded().getValue()) {
+            return;
+        }
+
+        boolean isShadeExpanded = mIsExpandedAudioTileDetailsEnabled
+                ? mShadeInteractorLazy.get().isAnyExpanded().getValue()
+                : mShadeInteractorLazy.get().isQsExpanded().getValue();
+
+        if (isShadeExpanded) {
             requestFinish();
         } else {
             initializeDialog();
@@ -136,13 +142,14 @@ public class BrightnessDialog extends ComponentActivity {
 
         collectFlow(
                 composeView,
-                mShadeInteractorLazy.get().isQsExpanded(),
+                mIsExpandedAudioTileDetailsEnabled ? mShadeInteractorLazy.get().isAnyExpanded()
+                        : mShadeInteractorLazy.get().isQsExpanded(),
                 this::onShadeStateChange
         );
     }
 
-    private void onShadeStateChange(boolean isQsExpanded) {
-        if (isQsExpanded) {
+    private void onShadeStateChange(boolean isExpanded) {
+        if (isExpanded) {
             requestFinish();
         }
     }
