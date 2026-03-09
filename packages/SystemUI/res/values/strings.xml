@@ -432,6 +432,8 @@
     <string name="screen_record_settings">Screen recording settings</string>
     <!-- Label for markup functionality in screen recording. [CHAR LIMIT=NONE] -->
     <string name="screen_record_markup">Markup</string>
+    <!-- Label for a button opening a color picker menu in screen recording. [CHAR LIMIT=NONE] -->
+    <string name="screen_record_color_picker">Color picker</string>
     <!-- Snackbar shows after the screen recording is saved [CHAR LIMIT=20] -->
     <string name="screen_record_video_saved">Video saved</string>
     <!-- Snackbar shows after the screen recording is deleted [CHAR LIMIT=20] -->

@@ -74,7 +74,7 @@ fun RecordDetailsColorPicker(
                     selected = color == viewModel.cameraColor,
                     modifier =
                         Modifier.size(48.dp).clip(CircleShape).clickable {
-                            viewModel.setCameraColor(color)
+                            viewModel.onCameraColorClicked(color)
                         },
                 )
             }

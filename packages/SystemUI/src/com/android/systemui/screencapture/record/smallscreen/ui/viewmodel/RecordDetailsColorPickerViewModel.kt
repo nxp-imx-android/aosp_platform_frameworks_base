@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 
+import android.graphics.Color
 import androidx.annotation.ColorInt
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.HydratedActivatable
@@ -49,8 +50,14 @@ constructor(
             "RecordDetailsMarkupColorPickerViewModel#cameraColor"
         )
 
-    fun setCameraColor(@ColorInt color: Int) {
-        cameraInteractor.setBackgroundColor(color)
+    fun onCameraColorClicked(@ColorInt color: Int) {
+        cameraInteractor.setBackgroundColor(
+            if (color == cameraColor) {
+                Color.TRANSPARENT
+            } else {
+                color
+            }
+        )
     }
 
     @AssistedFactory
