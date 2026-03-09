@@ -252,9 +252,15 @@ constructor(
     val dequeueLightModeBundle: Runnable =
         object : Runnable {
             override fun run() {
-                if (callback == null || bundlesQueueLightMode.isEmpty()) return
+                if (callback == null) return
 
-                bundleLightMode = bundlesQueueLightMode.removeAt(0)
+                val bundle = try {
+                    bundlesQueueLightMode.removeAt(0)
+                } catch (e: IndexOutOfBoundsException) {
+                    return
+                }
+
+                bundleLightMode = bundle
 
                 if (DEBUG)
                     Log.d(TAG, "dequeued a light mode bundle of size ${bundleLightMode.size}")
@@ -266,9 +272,15 @@ constructor(
     val dequeueDarkModeBundle: Runnable =
         object : Runnable {
             override fun run() {
-                if (callback == null || bundlesQueueDarkMode.isEmpty()) return
+                if (callback == null) return
 
-                bundleDarkMode = bundlesQueueDarkMode.removeAt(0)
+                val bundle = try {
+                    bundlesQueueDarkMode.removeAt(0)
+                } catch (e: IndexOutOfBoundsException) {
+                    return
+                }
+
+                bundleDarkMode = bundle
 
                 if (DEBUG) Log.d(TAG, "dequeued a dark mode bundle of size ${bundleDarkMode.size}")
             }
@@ -343,7 +355,9 @@ constructor(
 
         immediateResult = true
 
-        lightSensorStateRecords.clear()
+        synchronized(lock) {
+            lightSensorStateRecords.clear()
+        }
     }
 
     /**
