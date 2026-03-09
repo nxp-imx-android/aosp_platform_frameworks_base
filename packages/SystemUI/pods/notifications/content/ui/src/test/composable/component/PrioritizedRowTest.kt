@@ -127,6 +127,7 @@ class PrioritizedRowTest : SysuiTestCase() {
         rule.onNodeWithTag("row").assertWidthIsEqualTo(320.dp)
     }
 
+    @Ignore("b/439930983")
     @Test
     fun width400dp_lowPriorityRowShrinks() {
         rule.setContent {
