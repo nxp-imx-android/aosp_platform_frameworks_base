@@ -38,7 +38,6 @@ import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.settings.flags.Flags
-import com.android.settings.flags.Flags.FLAG_SHOW_TABBED_CONNECTED_DISPLAY_SETTING
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.wm.shell.Utils
 import com.android.wm.shell.shared.desktopmode.DesktopState
@@ -60,7 +59,6 @@ import platform.test.desktop.PeripheralType
 @RequiresFlagsEnabled(
     FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
     FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-    FLAG_SHOW_TABBED_CONNECTED_DISPLAY_SETTING,
 )
 abstract class SettingsConnectedDisplayTestBase(
     private val peripheralRequest: Peripheral =
