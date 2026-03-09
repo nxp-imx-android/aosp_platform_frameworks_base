@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -54,8 +55,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.toggleableState
-import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.load
@@ -208,18 +207,18 @@ private fun RichSwitch(
         visible = visible,
         modifier =
             modifier
-                .clickable(
-                    onClick = {
+                .toggleable(
+                    value = checked,
+                    role = Role.Switch,
+                    onValueChange = { newValue ->
                         if (enabled) {
-                            onCheckedChange(!checked)
+                            onCheckedChange(newValue)
                         } else {
                             Toast.makeText(context, disabledMessage, Toast.LENGTH_SHORT).show()
                         }
-                    }
+                    },
                 )
                 .clearAndSetSemantics {
-                    role = Role.Switch
-                    toggleableState = if (checked) ToggleableState.On else ToggleableState.Off
                     if (enabled) {
                         contentDescription = label
                     } else {
