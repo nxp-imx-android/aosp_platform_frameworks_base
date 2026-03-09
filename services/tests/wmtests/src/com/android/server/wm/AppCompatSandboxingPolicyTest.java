@@ -16,10 +16,12 @@
 
 package com.android.server.wm;
 
+import static android.app.TaskInfo.PROPERTY_VALUE_UNSET;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.content.pm.ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED;
 import static android.content.pm.ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_EXCLUDE_CAPTION_INSETS;
 
@@ -256,6 +258,21 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
         });
     }
 
+    @Test
+    public void testUpdateAppCompatDisplayInsets_updatesTaskCompatAspectRatio() {
+        runTestScenario((robot) -> {
+            robot.applyOnActivity(AppCompatActivityRobot::createActivityWithComponent);
+
+            robot.checkTaskCompatAspectRatioUnset();
+
+            robot.applyOnActivity((a) -> {
+                a.configureUnresizableTopActivity(SCREEN_ORIENTATION_PORTRAIT);
+            });
+
+            robot.checkTaskCompatAspectRatioNotUnset();
+        });
+    }
+
     /**
      * Runs a test scenario providing a Robot.
      */
@@ -277,6 +294,16 @@ public class AppCompatSandboxingPolicyTest extends WindowTestsBase {
 
         void recomputeConfiguration() {
             activity().top().recomputeConfiguration();
+        }
+
+        void checkTaskCompatAspectRatioUnset() {
+            assertEquals(PROPERTY_VALUE_UNSET, activity().top().getTask().getCompatAspectRatio(),
+                    FLOAT_TOLLERANCE);
+        }
+
+        void checkTaskCompatAspectRatioNotUnset() {
+            assertNotEquals(PROPERTY_VALUE_UNSET, activity().top().getTask().getCompatAspectRatio(),
+                    FLOAT_TOLLERANCE);
         }
 
         void checkBoundsSandboxed() {

@@ -405,9 +405,11 @@ class Task extends TaskFragment {
     String mCallingPackage;
     String mCallingFeatureId;
 
+    // If the activity that started this task has caption insets excluded from its app bounds.
     private boolean mIsCaptionInsetsExcluded;
 
-    private float mCompatAspectRatio;
+    // The aspect ratio of the non-resizeable activity that started this task.
+    private float mCompatAspectRatio = TaskInfo.PROPERTY_VALUE_UNSET;
 
     // Last non-fullscreen bounds the task was launched in or resized to.
     // The information is persisted and used to determine the appropriate root task to launch the
@@ -3153,6 +3155,17 @@ class Task extends TaskFragment {
      */
     float getCompatAspectRatio() {
         return mCompatAspectRatio;
+    }
+
+    /**
+     * Updates the aspect ratio of the non-resizeable activity if AppCompatDisplayInsets was
+     * not initialised yet when the activity started this task.
+     * @param aspectRatio
+     */
+    void updateCompatAspectRatioIfNeeded(float aspectRatio) {
+        if (mCompatAspectRatio == TaskInfo.PROPERTY_VALUE_UNSET) {
+            mCompatAspectRatio = aspectRatio;
+        }
     }
 
     boolean cropWindowsToRootTaskBounds() {
