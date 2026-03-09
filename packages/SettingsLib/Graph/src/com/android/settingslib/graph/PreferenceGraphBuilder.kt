@@ -669,6 +669,13 @@ fun PreferenceMetadata.toProto(
                     parametersSchema = it.toProto(context, valueDescriptors)
                 }
                 metadata.getParameters()?.let { keyParameters = it.toProto() }
+            } else {
+                // We don't automatically add key parameters onto the
+                // preferences in catalyst v1 so we can add them here.
+                screenMetadata.keyParametersSchema?.let {
+                    parametersSchema = it.toProto(context, valueDescriptors)
+                }
+                screenMetadata.keyParameters?.let { keyParameters = it.toProto() }
             }
         }
 

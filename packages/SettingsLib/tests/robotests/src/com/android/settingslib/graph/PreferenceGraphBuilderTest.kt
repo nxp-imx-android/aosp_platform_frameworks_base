@@ -595,6 +595,36 @@ class PreferenceGraphBuilderTest {
         assertThat(proto.setWarning.warning).isEqualTo("set_warning_with_value_preconditions_message")
     }
 
+    @Test
+    fun toProto_standardPreference_inheritsKeyParametersAndSchemaFromScreen() {
+        setCatalystUseKeyParameters(true)
+        val schema = KeyParametersSchema {
+            parameter("test_param", "test_purpose", required = true, type = AnyString)
+        }
+        val params = schema.prepare("test_param" to "value")
+
+        val screenMetadataWithParams = object : PreferenceScreenMetadata {
+            override val bindingKey: String = "screen_key"
+            override val key: String = "screen_key"
+            override val purpose: Int = 0
+            override fun fragmentClass(): Class<out Fragment>? = null
+            override val keyParametersSchema: KeyParametersSchema = schema
+            override val keyParameters: ValidatedKeyParameters = params
+
+            override fun getPreferenceHierarchy(
+                context: Context,
+                coroutineScope: CoroutineScope
+            ): PreferenceHierarchy = preferenceHierarchy(context) {}
+        }
+
+        val preference = TestPreference(SensitivityLevel.NO_SENSITIVITY)
+        val proto = preference.toProto(context, 0, 0, screenMetadataWithParams, false, PreferenceGetterFlags.METADATA)
+
+        assertThat(proto.hasParametersSchema()).isTrue()
+        assertThat(proto.hasKeyParameters()).isTrue()
+        assertThat(proto.keyParameters.valuesMap).containsEntry("test_param", "value")
+    }
+
     companion object {
         private const val SETTING_KEY = "com.android.settings.UNKNOWN_SENSITIVITY_IS_AVAILABLE"
     }
