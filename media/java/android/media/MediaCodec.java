@@ -16,7 +16,6 @@
 
 package android.media;
 
-import static android.media.codec.Flags.FLAG_CODEC_AVAILABILITY;
 import static android.media.codec.Flags.FLAG_NULL_OUTPUT_SURFACE;
 import static android.media.codec.Flags.FLAG_REGION_OF_INTEREST;
 import static android.media.codec.Flags.FLAG_SUBSESSION_METRICS;
@@ -47,8 +46,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.PersistableBundle;
 import android.os.Trace;
-import android.view.Surface;
 import android.util.Log;
+import android.view.Surface;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -2037,9 +2036,7 @@ final public class MediaCodec {
                 }
 
                 case CB_REQUIRED_RESOURCES_CHANGE: {
-                    if (android.media.codec.Flags.codecAvailability()) {
-                        mCallback.onRequiredResourcesChanged(mCodec);
-                    }
+                    mCallback.onRequiredResourcesChanged(mCodec);
                     break;
                 }
 
@@ -2329,7 +2326,6 @@ final public class MediaCodec {
      * globally available codec resources are exposed only as TestApi.
      * This will be tracked and verified through cts.
      */
-    @FlaggedApi(FLAG_CODEC_AVAILABILITY)
     @TestApi
     public static final class GlobalResourceInfo {
         /**
@@ -2375,7 +2371,6 @@ final public class MediaCodec {
      *         device codec resources are available.
      * @throws UnsupportedOperationException if not implemented.
      */
-    @FlaggedApi(FLAG_CODEC_AVAILABILITY)
     @TestApi
     public static @NonNull List<GlobalResourceInfo> getGloballyAvailableResources() {
         return native_getGloballyAvailableResources();
@@ -2577,7 +2572,6 @@ final public class MediaCodec {
      * required codec resources are exposed only as TestApi.
      * This will be tracked and verified through cts.
      */
-    @FlaggedApi(FLAG_CODEC_AVAILABILITY)
     @TestApi
     public static final class InstanceResourceInfo {
         /**
@@ -2626,7 +2620,6 @@ final public class MediaCodec {
      * @throws IllegalStateException if the codec wasn't configured yet.
      * @throws UnsupportedOperationException if not implemented.
      */
-    @FlaggedApi(FLAG_CODEC_AVAILABILITY)
     @TestApi
     public @NonNull List<InstanceResourceInfo> getRequiredResources() {
         return native_getRequiredResources();
@@ -6010,7 +6003,6 @@ final public class MediaCodec {
          *
          * @param codec The MediaCodec object.
          */
-        @FlaggedApi(FLAG_CODEC_AVAILABILITY)
         @TestApi
         public void onRequiredResourcesChanged(@NonNull MediaCodec codec) {
             /*
