@@ -2905,7 +2905,8 @@ public final class DisplayPowerControllerTest {
 
         @Override
         DisplayWhiteBalanceController getDisplayWhiteBalanceController(Handler handler,
-                SensorManager sensorManager, Resources resources) {
+                SensorManager sensorManager, Resources resources,
+                DisplayDeviceConfig displayDeviceConfig) {
             return mDisplayWhiteBalanceControllerMock;
         }
 
