@@ -191,7 +191,8 @@ public class PersonalContextManagerService extends SystemService {
     }
 
     private boolean isEnabled() {
-        return Flags.enablePersonalContextServiceFeature();
+        // TODO(b/477958468): check top-level setting
+        return true;
     }
 
     private boolean checkAndLogEnabledState(String stage) {

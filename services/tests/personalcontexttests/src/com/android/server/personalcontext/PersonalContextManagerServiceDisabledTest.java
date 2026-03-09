@@ -53,6 +53,7 @@ import com.android.internal.util.test.LocalServiceKeeperRule;
 import com.android.server.SystemService;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -115,6 +116,8 @@ public class PersonalContextManagerServiceDisabledTest {
         mSystemUser = new SystemService.TargetUser(SYSTEM_USER_INFO);
     }
 
+    // TODO(b/477958468): Re-enable test once top-level personal context setting is in use.
+    @Ignore("b/477958468")
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE_FEATURE)
     public void testOnUserStartingWhenDisabled_doesNotRegistersSettingContentObserver() {
@@ -129,9 +132,11 @@ public class PersonalContextManagerServiceDisabledTest {
                         eq(UserHandle.USER_ALL));
     }
 
+    // TODO(b/477958468): Re-enable test once top-level personal context setting is in use.
+    @Ignore("b/477958468")
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_PERSONAL_CONTEXT_SERVICE_FEATURE)
-    public void testOnUserUnlocked_systemUser_doesNotregisterInternalComponents() {
+    public void testOnUserUnlocked_systemUser_doesNotRegisterInternalComponents() {
         mService.onUserStarting(mSystemUser);
         mService.onUserUnlocked(mSystemUser);
 
