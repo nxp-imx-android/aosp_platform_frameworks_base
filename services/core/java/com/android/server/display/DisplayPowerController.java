@@ -584,8 +584,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         mTempBrightnessEvent = new BrightnessEvent(mDisplayId);
         mLastLoggedBrightnessEvent = new BrightnessEvent(mDisplayId);
 
-        if (flags.isBatteryStatsEnabledForAllDisplays()
-                && isDisplaySupportedForBatteryStats(displayDeviceInfo)) {
+        if (isDisplaySupportedForBatteryStats(displayDeviceInfo)) {
             mBatteryStats = BatteryStatsService.getService();
         } else if (mDisplayId == Display.DEFAULT_DISPLAY) {
             mBatteryStats = BatteryStatsService.getService();

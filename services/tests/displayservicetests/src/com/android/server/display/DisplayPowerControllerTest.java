@@ -2372,33 +2372,13 @@ public final class DisplayPowerControllerTest {
     }
 
     @Test
-    public void testBatteryStatNotes_enabledOnDefaultDisplayWhenDisabledOnOthers()
-            throws Exception {
-        when(mDisplayManagerFlagsMock.isBatteryStatsEnabledForAllDisplays()).thenReturn(false);
-
+    public void testBatteryStatNotes_enabledOnDefaultDisplay() throws Exception {
         verifyNoteScreenState(
                 Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL, /* expectNote= */ true);
-    }
-
-    @Test
-    public void testBatteryStatNotes_enabledOnDefaultDisplayWhenEnabledOnOthers() throws Exception {
-        when(mDisplayManagerFlagsMock.isBatteryStatsEnabledForAllDisplays()).thenReturn(true);
-
-        verifyNoteScreenState(
-                Display.DEFAULT_DISPLAY, Display.TYPE_INTERNAL, /* expectNote= */ true);
-    }
-
-    @Test
-    public void testBatteryStatNotes_flagOff_disabledForNonDefaultDisplays() throws Exception {
-        when(mDisplayManagerFlagsMock.isBatteryStatsEnabledForAllDisplays()).thenReturn(false);
-
-        verifyNoteScreenState(/* displayId= */ 2, Display.TYPE_INTERNAL, /* expectNote= */ false);
     }
 
     @Test
     public void testBatteryStatNotes_enabledOnlyOnInternalOrExternalDisplays() throws Exception {
-        when(mDisplayManagerFlagsMock.isBatteryStatsEnabledForAllDisplays()).thenReturn(true);
-
         for (int displayType = 0; displayType < Display.TYPE_MAX; displayType++) {
             boolean expectNote =
                     (displayType == Display.TYPE_INTERNAL)
