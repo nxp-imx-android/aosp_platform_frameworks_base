@@ -26,6 +26,9 @@ import android.content.pm.UserInfo
 import android.os.Binder
 import android.os.Process
 import android.os.UserHandle
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
+import android.security.Flags
 import android.util.ArrayMap
 import android.util.ArraySet
 import androidx.test.platform.app.InstrumentationRegistry
@@ -49,6 +52,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
@@ -65,6 +69,7 @@ import org.mockito.Mockito.verify
 @RunWith(TestParameterInjector::class)
 class AppLockPackageHelperTest : PackageHelperTestBase() {
 
+    @get:Rule val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
     private lateinit var appLockPackageHelper: AppLockPackageHelper
     private val testInjector = TestInjector()
     private val testLauncherIntentFilter =
@@ -357,8 +362,12 @@ class AppLockPackageHelperTest : PackageHelperTestBase() {
         verifyNoWriteOrPackageUpdate()
     }
 
+    // @RequiresFlagsEnabled must be used instead of @EnableFlags here because TEST_LOCK_APPS,
+    // which is gated by the flag, is a signature permission, and thus cannot be granted at runtime.
+    // @RequiresFlagsEnabled therefore ensures this only runs on devices with the flag enabled.
     @Test
     @Throws(Exception::class)
+    @RequiresFlagsEnabled(Flags.FLAG_APP_LOCK_APIS)
     fun setPackageAppLockEnabled_unauthorizedUidWithTestPermission_noSecurityException_success() {
         val currentEnabledState = false
         val newEnabledState = true

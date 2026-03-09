@@ -1142,7 +1142,8 @@
     <uses-permission android:name="android.permission.BIND_ALTERNATIVE_MESSAGE_TRANSPORT_SERVICE" />
 
     <!-- Permission required for App Lock CTS tests -->
-    <uses-permission android:name="android.permission.TEST_LOCK_APPS"/>
+    <uses-permission android:name="android.permission.TEST_LOCK_APPS"
+        android:featureFlag="android.security.app_lock_apis" />
 
     <!-- Permission required for personal context testing  -->
     <uses-permission android:name="android.permission.CHANGE_PERSONAL_CONTEXT_MODE" />
