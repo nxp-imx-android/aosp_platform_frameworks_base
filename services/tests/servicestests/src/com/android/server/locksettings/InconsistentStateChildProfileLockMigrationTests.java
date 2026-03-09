@@ -23,14 +23,12 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import android.platform.test.annotations.Presubmit;
-import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.widget.LockscreenCredential;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,11 +38,8 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class InconsistentStateChildProfileLockMigrationTests
         extends BaseChildProfileLockMigrationTests {
-    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-
     @Test
     public void testMigrateChildProfileLock_profilePwdAlreadyExists() throws Exception {
-        mSetFlagsRule.enableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
         LockscreenCredential unifiedProfilePassword =
                 LockscreenCredential.createUnifiedProfilePassword(new byte[] {1, 2, 3});
         mService.setLockCredential(UNIFIED_PASSWORD, nonePassword(), PRIMARY_USER_ID);
@@ -74,7 +69,6 @@ public class InconsistentStateChildProfileLockMigrationTests
 
     @Test
     public void testMigrateChildProfileLock_undecryptableExistingProfilePwd() throws Exception {
-        mSetFlagsRule.enableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
         LockscreenCredential unifiedProfilePassword =
                 LockscreenCredential.createUnifiedProfilePassword(new byte[] {1, 2, 3});
         mService.setLockCredential(UNIFIED_PASSWORD, nonePassword(), PRIMARY_USER_ID);
@@ -105,14 +99,19 @@ public class InconsistentStateChildProfileLockMigrationTests
 
     @Test
     public void testMigrateChildProfileLock_mismatchingExistingProfilePwd() throws Exception {
-        mSetFlagsRule.enableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
         LockscreenCredential unifiedProfilePassword =
                 LockscreenCredential.createUnifiedProfilePassword(new byte[] {1, 2, 3});
         LockscreenCredential otherUnifiedProfilePassword =
                 LockscreenCredential.createUnifiedProfilePassword(new byte[] {1, 2, 4});
         mService.setLockCredential(UNIFIED_PASSWORD, nonePassword(), PRIMARY_USER_ID);
-        setUpChildProfileLockFileIfNeeded(true, unifiedProfilePassword);
-        setUpSpProtectorPasswordIfNeeded(true, unifiedProfilePassword);
+        setUpChildProfileLockFileIfNeeded(
+                /* hasChildProfileLockBefore= */ true,
+                /* removeExisting= */ false,
+                unifiedProfilePassword);
+        setUpSpProtectorPasswordIfNeeded(
+                /* hasSpProtectorPasswordBefore= */ true,
+                /* removeExisting= */ false,
+                otherUnifiedProfilePassword);
 
         // Double-check that the before state is as expected.
         assertFalse(mService.getSeparateProfileChallengeEnabledInternal(MANAGED_PROFILE_USER_ID));
@@ -121,15 +120,12 @@ public class InconsistentStateChildProfileLockMigrationTests
 
         long parentSid = mGateKeeperService.getSecureUserId(PRIMARY_USER_ID);
         long protectorId = mService.getCurrentLskfBasedProtectorId(MANAGED_PROFILE_USER_ID);
-        LockscreenCredential internalProfilePassword =
-                mService.getDecryptedPasswordForUnifiedProfile(MANAGED_PROFILE_USER_ID);
-        setUpSpProtectorPasswordIfNeeded(true, otherUnifiedProfilePassword);
 
         assertThrows(
                 IllegalStateException.class,
                 () ->
                         mService.migrateChildProfileLockPasswordToProfileProtectorPwd(
-                                internalProfilePassword,
+                                unifiedProfilePassword,
                                 parentSid,
                                 MANAGED_PROFILE_USER_ID,
                                 protectorId));

@@ -218,16 +218,6 @@ flag {
 }
 
 flag {
-    name: "enable_atomic_child_profile_lskf"
-    namespace: "security"
-    description: "Enable atomic cutover for child profile LSKF in LockSettingsService"
-    bug: "412331826"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "apk_pqc_hybrid_signing"
     namespace: "hardware_backed_security"
     description: "Enable support for ML-DSA hybrid signing / verification of APKs"

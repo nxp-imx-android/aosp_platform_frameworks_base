@@ -45,7 +45,6 @@ import java.util.stream.Stream;
 public class ChildProfileLockMigrationTests extends BaseChildProfileLockMigrationTests {
 
     private record Scenario(
-            boolean migrationEnabled,
             boolean hasChildProfileLockBefore,
             boolean hasSpProtectorPasswordBefore,
             boolean expectedToHaveChildProfileLockAfter,
@@ -53,10 +52,7 @@ public class ChildProfileLockMigrationTests extends BaseChildProfileLockMigratio
         @Override
         public String toString() {
             return TextUtils.formatSimple(
-                    "Scenario: migrationEnabled: %b, "
-                            + "hasChildProfileLock: %b->%b, "
-                            + "hasSpProtectorPassword: %b->%b",
-                    migrationEnabled,
+                    "Scenario: hasChildProfileLock: %b->%b, " + "hasSpProtectorPassword: %b->%b",
                     hasChildProfileLockBefore,
                     expectedToHaveChildProfileLockAfter,
                     hasSpProtectorPasswordBefore,
@@ -69,26 +65,12 @@ public class ChildProfileLockMigrationTests extends BaseChildProfileLockMigratio
     public static List<Scenario[]> data() {
         return Stream.of(
                         new Scenario(
-                                /* migrationEnabled= */ false,
-                                /* hasChildProfileLockBefore= */ true,
-                                /* hasSpProtectorPasswordBefore= */ false,
-                                /* hasChildProfileLockAfter= */ true,
-                                /* hasSpProtectorPasswordAfter= */ false),
-                        new Scenario(
-                                /* migrationEnabled= */ false,
-                                /* hasChildProfileLockBefore= */ true,
-                                /* hasSpProtectorPasswordBefore= */ true,
-                                /* hasChildProfileLockAfter= */ true,
-                                /* hasSpProtectorPasswordAfter= */ true),
-                        new Scenario(
-                                /* migrationEnabled= */ true,
                                 /* hasChildProfileLockBefore= */ true,
                                 /* hasSpProtectorPasswordBefore= */ false,
                                 /* hasChildProfileLockAfter= */ false,
                                 /* hasSpProtectorPasswordAfter= */ true),
                         // existing child profile lock won't be cleaned up.
                         new Scenario(
-                                /* migrationEnabled= */ true,
                                 /* hasChildProfileLockBefore= */ true,
                                 /* hasSpProtectorPasswordBefore= */ true,
                                 /* hasChildProfileLockAfter= */ true,
@@ -103,14 +85,12 @@ public class ChildProfileLockMigrationTests extends BaseChildProfileLockMigratio
 
     @Test
     public void testMigrateChildProfileLock() throws Exception {
-        boolean migrationEnabled = scenario.migrationEnabled;
         boolean hasChildProfileLockBefore = scenario.hasChildProfileLockBefore;
         boolean hasSpProtectorPasswordBefore = scenario.hasSpProtectorPasswordBefore;
         boolean expectedToHaveChildProfileLockAfter = scenario.expectedToHaveChildProfileLockAfter;
         boolean expectedToHaveSpProtectorPasswordAfter =
                 scenario.expectedToHaveSpProtectorPasswordAfter;
 
-        mSetFlagsRule.disableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
         LockscreenCredential unifiedProfilePassword =
                 LockscreenCredential.createUnifiedProfilePassword(new byte[] {1, 2, 3});
         mService.setLockCredential(UNIFIED_PASSWORD, nonePassword(), PRIMARY_USER_ID);
@@ -133,9 +113,6 @@ public class ChildProfileLockMigrationTests extends BaseChildProfileLockMigratio
                 hasSpProtectorPasswordBefore,
                 hasSpProtectorPassword(MANAGED_PROFILE_USER_ID));
 
-        if (migrationEnabled) {
-            mSetFlagsRule.enableFlags(android.security.Flags.FLAG_ENABLE_ATOMIC_CHILD_PROFILE_LSKF);
-        }
         mService.getDecryptedPasswordForUnifiedProfile(MANAGED_PROFILE_USER_ID);
 
         assertFalse(
