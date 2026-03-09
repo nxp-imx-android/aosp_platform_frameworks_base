@@ -6799,6 +6799,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     private void clearAllTasksOnDisplay(@Nullable Runnable clearTasksCallback,
             boolean isRemovingDisplay) {
+        final boolean wasFocused = this == mRootWindowContainer.getTopFocusedDisplayContent();
         Task lastReparentedRootTask;
         mRootWindowContainer.mTaskSupervisor.beginDeferResume();
         try {
@@ -6822,7 +6823,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // Only update focus/visibility for the last one because there may be many root tasks are
         // reparented and the intermediate states are unnecessary.
         if (lastReparentedRootTask != null) {
-            lastReparentedRootTask.resumeNextFocusAfterReparent();
+            lastReparentedRootTask.resumeNextFocusAfterReparent(wasFocused);
         }
     }
 
