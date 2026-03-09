@@ -23,7 +23,6 @@ import android.testing.TestableLooper.RunWithLooper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onRoot
@@ -82,10 +81,9 @@ import platform.test.motion.compose.MotionControl
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
-import platform.test.motion.compose.values.MotionTestValueKey
-import platform.test.motion.golden.FeatureCapture
-import platform.test.motion.golden.TimeSeriesCaptureScope
 import platform.test.motion.golden.asDataPoint
+import platform.test.motion.golden.dataPointType
+import platform.test.motion.golden.feature
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.Displays.Phone
 
@@ -256,7 +254,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                                 }
                             }
                         ) {
-                            featureFloat(TileMotionTestKeys.Squishness)
+                            feature(TileMotionTestKeys.Squishness, Float.dataPointType)
                         },
                 )
             assertThat(motion).timeSeriesMatchesGolden()
@@ -336,7 +334,7 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                                 }
                             }
                         ) {
-                            featureFloat(ShadeHeaderMotionTestKeys.Alpha)
+                            feature(ShadeHeaderMotionTestKeys.Alpha, Float.dataPointType)
                         },
                 )
             assertThat(motion).timeSeriesMatchesGolden()
@@ -372,21 +370,6 @@ class GoneSceneToQuickQuickSettingsSceneTest : SysuiTestCase() {
                     )
                 }
             }
-        }
-    }
-
-    private companion object {
-        fun TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.featureFloat(
-            motionTestValueKey: MotionTestValueKey<Float>
-        ) {
-            feature(
-                motionTestValueKey = motionTestValueKey,
-                capture =
-                    FeatureCapture(motionTestValueKey.semanticsPropertyKey.name) {
-                        it.asDataPoint()
-                    },
-                name = motionTestValueKey.semanticsPropertyKey.name,
-            )
         }
     }
 }

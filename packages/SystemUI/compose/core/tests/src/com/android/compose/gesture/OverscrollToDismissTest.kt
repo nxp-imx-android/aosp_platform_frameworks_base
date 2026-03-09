@@ -31,14 +31,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.test.TouchInjectionScope
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.mechanics.debug.LocalMotionValueDebugController
@@ -48,14 +46,13 @@ import kotlin.math.sin
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import platform.test.motion.compose.ComposeFeatureCaptures.x as xPositionInRoot
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
-import platform.test.motion.compose.asDataPoint
 import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
 import platform.test.motion.compose.feature
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
-import platform.test.motion.golden.FeatureCapture
 import platform.test.motion.testing.createGoldenPathManager
 
 @RunWith(AndroidJUnit4::class)
@@ -77,7 +74,7 @@ class OverscrollToDismissTest {
                             swipeRight(startX = centerX, endX = centerX + 100.dp.toPx())
                         }
                     ) {
-                        feature(hasTestTag("Page0"), xPositionInRoot)
+                        feature(hasTestTag("Page0"), xPositionInRoot, name = "position")
                     },
                 )
             assertThat(motion).timeSeriesMatchesGolden()
@@ -95,7 +92,7 @@ class OverscrollToDismissTest {
                             swipeLeft(startX = centerX, endX = centerX - 100.dp.toPx())
                         }
                     ) {
-                        feature(hasTestTag("Page1"), xPositionInRoot)
+                        feature(hasTestTag("Page1"), xPositionInRoot, name = "position")
                     },
                 )
             assertThat(motion).timeSeriesMatchesGolden()
@@ -140,7 +137,7 @@ class OverscrollToDismissTest {
                             )
                         }
                     ) {
-                        feature(hasTestTag("Page0"), xPositionInRoot)
+                        feature(hasTestTag("Page0"), xPositionInRoot, name = "position")
                     },
                 )
             assertThat(motion).timeSeriesMatchesGolden()
@@ -165,7 +162,7 @@ class OverscrollToDismissTest {
                             )
                         }
                     ) {
-                        feature(hasTestTag("Page0"), xPositionInRoot)
+                        feature(hasTestTag("Page0"), xPositionInRoot, name = "position")
                     },
                 )
             assertThat(motion).timeSeriesMatchesGolden()
@@ -245,12 +242,5 @@ class OverscrollToDismissTest {
                 }
             }
         }
-    }
-
-    companion object {
-        val xPositionInRoot =
-            FeatureCapture<SemanticsNode, Dp>("position") {
-                with(it.layoutInfo.density) { it.positionInRoot.x.toDp().asDataPoint() }
-            }
     }
 }
