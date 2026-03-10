@@ -20,6 +20,7 @@ import static android.hardware.display.DisplayManagerInternal.DisplayPowerReques
 
 import static com.android.server.display.AutomaticBrightnessController.AUTO_BRIGHTNESS_MODE_IDLE;
 
+
 import static org.junit.Assert.assertEquals;
 
 import android.hardware.display.BrightnessInfo;
@@ -74,6 +75,8 @@ public final class BrightnessEventTest {
         mBrightnessEvent.setAutoBrightnessMode(AUTO_BRIGHTNESS_MODE_IDLE);
         mBrightnessEvent.setSlowChange(true);
         mBrightnessEvent.setRampSpeed(0.3f);
+        mBrightnessEvent.setAmbientColorTemperature(6500.0f);
+        mBrightnessEvent.setThermalStatus(1);
     }
 
     @Test
@@ -94,7 +97,8 @@ public final class BrightnessEventTest {
                         + "preLux=150.0, wasShortTermModelActive=true, autoBrightness=true (idle), "
                         + "unclampedBrt=0.65, hbmMax=0.62, hbmMode=off, thrmMax=0.65, "
                         + "rbcStrength=-1, powerFactor=0.2, physDisp=display_name(987654321), "
-                        + "logicalId=1, slowChange=true, rampSpeed=0.3";
+                        + "logicalId=1, slowChange=true, rampSpeed=0.3, colorTemp=6500.0, "
+                        + "thermalStatus=light";
         assertEquals(expectedString, actualString);
     }
 
@@ -112,7 +116,8 @@ public final class BrightnessEventTest {
                         + "preLux=150.0, wasShortTermModelActive=true, autoBrightness=true (idle), "
                         + "unclampedBrt=0.65, hbmMax=0.62, hbmMode=off, thrmMax=0.65, "
                         + "rbcStrength=-1, powerFactor=0.2, physDisp=display_name(987654321), "
-                        + "logicalId=1, slowChange=true, rampSpeed=0.3";
+                        + "logicalId=1, slowChange=true, rampSpeed=0.3, colorTemp=6500.0, "
+                        + "thermalStatus=light";
         assertEquals(expectedHdrString, actualString);
     }
 
@@ -128,7 +133,7 @@ public final class BrightnessEventTest {
                         + "autoBrightness=true (idle), unclampedBrt=0.65, hbmMax=0.62, "
                         + "hbmMode=off, thrmMax=0.65, rbcStrength=-1, powerFactor=0.2, "
                         + "physDisp=display_name(987654321), logicalId=1, slowChange=true, "
-                        + "rampSpeed=0.3";
+                        + "rampSpeed=0.3, colorTemp=6500.0, thermalStatus=light";
         assertEquals(expectedString, actualString);
     }
 
@@ -145,7 +150,7 @@ public final class BrightnessEventTest {
                         + "unclampedBrt=0.65, brtRange=[0.05, 0.3], hbmMax=0.62, hbmMode=off, "
                         + "thrmMax=0.65, rbcStrength=-1, powerFactor=0.2, "
                         + "physDisp=display_name(987654321), logicalId=1, slowChange=true, "
-                        + "rampSpeed=0.3";
+                        + "rampSpeed=0.3, colorTemp=6500.0, thermalStatus=light";
         assertEquals(expectedString, actualString);
     }
 
