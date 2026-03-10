@@ -1438,6 +1438,84 @@ public final class ActiveServicesTest {
     }
 
     /**
+     * Verify that {@link ActiveServices#rebindServiceConnectionsLocked} correctly handles
+     * normalization of BIND_EXTERNAL_SERVICE flags, treating BIND_EXTERNAL_SERVICE and
+     * BIND_EXTERNAL_SERVICE_LONG as equivalent.
+     */
+    @Test
+    public void testRebindServiceConnectionsLocked_normalizeExternalServiceFlags() {
+        prepareTestRebindServiceConnections();
+        final IBinder binder = mock(IBinder.class);
+        final ProcessRecord host = mock(ProcessRecord.class);
+
+        // Case 1: Existing has BIND_EXTERNAL_SERVICE
+        final long legacyFlags =
+                Context.BIND_IMPORTANT | Integer.toUnsignedLong(Context.BIND_EXTERNAL_SERVICE);
+        final ConnectionRecord r1 = createConnectionRecord(host, legacyFlags);
+        final ArrayList<ConnectionRecord> clist1 = new ArrayList<>();
+        clist1.add(r1);
+
+        when(mService.mProcessStateController.updateConnectionFlags(eq(r1), anyLong()))
+                .thenReturn(false);
+
+        // rebind with BIND_EXTERNAL_SERVICE_LONG is normalized to BIND_EXTERNAL_SERVICE.
+        final long flags1 = Context.BIND_IMPORTANT | Context.BIND_EXTERNAL_SERVICE_LONG;
+        mActiveServices.rebindServiceConnectionsLocked(binder, clist1, flags1);
+
+        verify(mService.mProcessStateController)
+                .updateConnectionFlags(r1, legacyFlags);
+
+        final long flags2 = Context.BIND_WAIVE_PRIORITY | Context.BIND_EXTERNAL_SERVICE_LONG;
+        mActiveServices.rebindServiceConnectionsLocked(binder, clist1, flags2);
+
+        verify(mService.mProcessStateController)
+                .updateConnectionFlags(
+                        r1,
+                        Context.BIND_WAIVE_PRIORITY
+                                | Integer.toUnsignedLong(Context.BIND_EXTERNAL_SERVICE));
+
+        // Case 2: Existing has BIND_EXTERNAL_SERVICE_LONG
+        final long newFlags = Context.BIND_IMPORTANT | Context.BIND_EXTERNAL_SERVICE_LONG;
+        final ConnectionRecord r2 = createConnectionRecord(host, newFlags);
+        final ArrayList<ConnectionRecord> clist2 = new ArrayList<>();
+        clist2.add(r2);
+
+        when(mService.mProcessStateController.updateConnectionFlags(eq(r2), anyLong()))
+                .thenReturn(false);
+
+        // rebind with the same flag should not trigger update.
+        mActiveServices.rebindServiceConnectionsLocked(binder, clist2, newFlags);
+
+        verify(mService.mProcessStateController)
+                .updateConnectionFlags(r2, newFlags);
+
+        // Existing has BIND_EXTERNAL_SERVICE_LONG, rebind with BIND_EXTERNAL_SERVICE
+        final long flags3 = Context.BIND_IMPORTANT
+                | Integer.toUnsignedLong(Context.BIND_EXTERNAL_SERVICE);
+        mActiveServices.rebindServiceConnectionsLocked(binder, clist2, flags3);
+
+        verify(mService.mProcessStateController, times(2))
+                .updateConnectionFlags(r2, newFlags);
+
+        // Case 3: Existing has both, rebind with BIND_EXTERNAL_SERVICE_LONG
+        final long bothFlags = Context.BIND_IMPORTANT
+                | Context.BIND_EXTERNAL_SERVICE_LONG
+                | Integer.toUnsignedLong(Context.BIND_EXTERNAL_SERVICE);
+        final ConnectionRecord r3 = createConnectionRecord(host, bothFlags);
+        final ArrayList<ConnectionRecord> clist3 = new ArrayList<>();
+        clist3.add(r3);
+
+        when(mService.mProcessStateController.updateConnectionFlags(eq(r3), anyLong()))
+                .thenReturn(false);
+
+        final long flags4 = Context.BIND_IMPORTANT | Context.BIND_EXTERNAL_SERVICE_LONG;
+        mActiveServices.rebindServiceConnectionsLocked(binder, clist3, flags4);
+
+        verify(mService.mProcessStateController)
+                .updateConnectionFlags(r3, bothFlags);
+    }
+
+    /**
      * Helper to prepare {@code mActiveServices} as a real object and mock
      * {@code mService.mProcessStateController}.
      */
