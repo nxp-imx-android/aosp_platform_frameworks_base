@@ -143,8 +143,8 @@ import com.android.wm.shell.desktopmode.VisualIndicatorUpdateScheduler;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.WindowDragTransitionHandler;
 import com.android.wm.shell.desktopmode.api.DesktopMode;
+import com.android.wm.shell.desktopmode.api.impl.DesktopModeAidlProvider;
 import com.android.wm.shell.desktopmode.api.impl.DesktopModeImpl;
-import com.android.wm.shell.desktopmode.api.impl.IDesktopModeProvider;
 import com.android.wm.shell.desktopmode.clientfullscreenrequest.DesktopFullscreenRequestHandler;
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler;
 import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer;
@@ -2290,24 +2290,10 @@ public abstract class WMShellModule {
             QuitFocusedAppKeyGestureHandler quitFocusedAppKeyGestureHandler,
             Optional<DesktopAiInitializer> desktopAiInitializer,
             BubbleRootTask bubbleRootTask,
-            IDesktopModeProvider desktopModeProvider,
+            DesktopModeAidlProvider desktopModeAidlProvider,
             DesktopTasksTransitionHandler desktopTasksTransitionHandler,
             DesktopHomeScreenPeekController desktopHomeScreenPeekController) {
         return new Object();
-    }
-
-    @WMSingleton
-    @Provides
-    static IDesktopModeProvider provideIDesktopModeProvider(
-            ShellInit shellInit,
-            ShellController shellController,
-            Optional<DesktopTasksController> desktopTasksController,
-            DesktopState desktopState) {
-        return new IDesktopModeProvider(
-                shellInit,
-                shellController,
-                desktopTasksController,
-                desktopState);
     }
 
     @WMSingleton
