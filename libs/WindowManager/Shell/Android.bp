@@ -76,16 +76,6 @@ java_genrule {
 // End ProtoLog
 
 java_library {
-    name: "WindowManager-Shell-proto",
-
-    srcs: ["proto/*.proto"],
-
-    proto: {
-        type: "nano",
-    },
-}
-
-java_library {
     name: "WindowManager-Shell-lite-proto",
 
     srcs: [
@@ -120,7 +110,6 @@ android_library {
         "//frameworks/libs/systemui:view_capture",
         "PlatformAnimationLib",
         "WindowManager-Shell-lite-proto",
-        "WindowManager-Shell-proto",
         "WindowManager-Shell-shared",
         "WindowManager-Shell-aidls",
         "WindowManager-Shell-Pip",
