@@ -882,6 +882,15 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
     ){
         List<PolicyHandler<?>> handlers = new ArrayList<PolicyHandler<?>>();
 
+        // DISALLOW_INSTALL_APPS user restriction
+        handlers.add(
+                new EnumStoredAsBooleanPolicyHandler(
+                        PolicyIdentifier.APP_INSTALL,
+                        dpms.getPolicyDefinitionForUserRestriction(
+                                UserManager.DISALLOW_INSTALL_APPS),
+                        /* trueValue= */ PolicyIdentifier.APP_INSTALL_DISALLOWED,
+                        /* falseValue= */ PolicyIdentifier.APP_INSTALL_ALLOWED));
+
         // EASTER_EGGS is mapped to the DISALLOW_FUN user restriction which expects inverted values
         // (DISALLOW_FUN = false is equal to EASTER_EGGS_ALLOWED and vice versa); that's why
         // DISALLOWED is the `true` value here.
