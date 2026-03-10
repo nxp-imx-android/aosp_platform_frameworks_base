@@ -33,7 +33,6 @@ import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIc
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.user.data.repository.UserRepository
-import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -116,48 +115,52 @@ constructor(
 
     private val mobileDescriptionFlow: Flow<CharSequence?> =
         mobileIconsInteractor.activeDataIconInteractor.flatMapLatest { it ->
-            it?.isDataConnected?.flatMapLatest { isConnected ->
-                if (!isConnected) {
-                    flowOf(null)
-                } else {
-                    if (NewSatelliteIcon.isEnabled) {
-                        combine(it.networkName, mobileDataContentName) {
-                            networkNameModel,
-                            dataContentDescription ->
-                            mobileDataContentConcat(networkNameModel.name, dataContentDescription)
-                        }
+            if (it == null) {
+                flowOf(null)
+            } else {
+                it.isDataConnected.flatMapLatest { isConnected ->
+                    if (!isConnected) {
+                        flowOf(null)
                     } else {
                         combine(it.networkName, it.signalLevelIcon, mobileDataContentName) {
-                                networkNameModel,
-                                signalIcon,
-                                dataContentDescription ->
-                                Triple(networkNameModel, signalIcon, dataContentDescription)
-                            }
-                            .mapLatestConflated {
-                                (networkNameModel, signalIcon, dataContentDescription) ->
-                                when (signalIcon) {
-                                    is SignalIconModel.CellularTypeIconModel -> {
-                                        mobileDataContentConcat(
-                                            networkNameModel.name,
-                                            dataContentDescription,
-                                        )
-                                    }
-
-                                    is SignalIconModel.Satellite -> {
-                                        val satelliteDescription =
-                                            signalIcon.icon.contentDescription
-                                                ?.loadContentDescription(context)
-                                        if (satelliteDescription.isNullOrBlank()) {
-                                            null
-                                        } else {
-                                            satelliteDescription
-                                        }
-                                    }
+                            networkNameModel,
+                            signalIcon,
+                            dataContentDescription ->
+                            when (signalIcon) {
+                                is SignalIconModel.CellularTypeIconModel -> {
+                                    mobileDataContentConcat(
+                                        networkNameModel.name,
+                                        dataContentDescription,
+                                    )
+                                }
+                                is SignalIconModel.Satellite -> {
+                                    signalIcon.icon.contentDescription?.loadContentDescription(
+                                        context
+                                    )
                                 }
                             }
+                        }
                     }
                 }
-            } ?: flowOf(null)
+            }
+        }
+
+    fun tileData(): Flow<MobileDataTileModel> =
+        mobileIconsInteractor.defaultDataIconInteractor.flatMapLatest { default ->
+            if (default == null) {
+                flowOf(MobileDataTileModel(isSimActive = false, isEnabled = false))
+            } else {
+                combine(default.isDataEnabled, mobileDescriptionFlow, default.networkName) {
+                    isDataEnabled,
+                    description,
+                    defaultName ->
+                    MobileDataTileModel(
+                        isSimActive = true,
+                        isEnabled = isDataEnabled,
+                        secondaryLabel = description ?: defaultName.name,
+                    )
+                }
+            }
         }
 
     private fun mobileDataContentConcat(
@@ -186,21 +189,6 @@ constructor(
             context.getString(resId)
         } else {
             null
-        }
-
-    fun tileData(): Flow<MobileDataTileModel> =
-        mobileIconsInteractor.activeDataIconInteractor.flatMapLatest {
-            if (it == null) {
-                flowOf(MobileDataTileModel(isSimActive = false, isEnabled = false))
-            } else {
-                combine(it.isDataEnabled, mobileDescriptionFlow) { isDataEnabled, description ->
-                    MobileDataTileModel(
-                        isSimActive = true,
-                        isEnabled = isDataEnabled,
-                        secondaryLabel = description,
-                    )
-                }
-            }
         }
 
     override fun availability(user: UserHandle): Flow<Boolean> {

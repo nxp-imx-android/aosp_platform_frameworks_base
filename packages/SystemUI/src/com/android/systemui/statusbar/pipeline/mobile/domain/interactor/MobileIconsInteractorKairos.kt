@@ -97,6 +97,12 @@ interface MobileIconsInteractorKairos {
      */
     val activeDataIconInteractor: State<MobileIconInteractorKairos?>
 
+    /**
+     * Flow providing a reference to the Interactor for the default data subId. This represents the
+     * [MobileIconInteractorKairos] responsible for the default data connection, if any.
+     */
+    val defaultDataIconInteractor: State<MobileIconInteractorKairos?>
+
     /** True if the RAT icon should always be displayed and false otherwise. */
     val alwaysShowDataRatIcon: State<Boolean>
 
@@ -312,6 +318,18 @@ constructor(
     override val activeDataIconInteractor: State<MobileIconInteractorKairos?> =
         combine(mobileConnectionsRepo.activeMobileDataSubscriptionId, icons) { activeSubId, icons ->
             activeSubId?.let { icons[activeSubId] }
+        }
+
+    override val defaultDataIconInteractor: State<MobileIconInteractorKairos?> =
+        combine(mobileConnectionsRepo.defaultDataSubId, icons) { defaultSubId, icons ->
+            if (
+                defaultSubId != null &&
+                    defaultSubId != android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID
+            ) {
+                icons[defaultSubId]
+            } else {
+                null
+            }
         }
 
     /**

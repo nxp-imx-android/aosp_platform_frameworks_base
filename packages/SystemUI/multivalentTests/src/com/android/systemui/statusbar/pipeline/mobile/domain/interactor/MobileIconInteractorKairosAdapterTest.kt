@@ -103,6 +103,10 @@ class MobileIconInteractorKairosAdapterTest : MobileIconInteractorTestBase() {
                 interactor.activeDataIconInteractor.toState().mapLatestBuild() {
                     it?.let { wrap(it) }
                 },
+            defaultDataIconInteractor =
+                interactor.defaultDataIconInteractor.toState().mapLatestBuild() {
+                    it?.let { wrap(it) }
+                },
             alwaysShowDataRatIcon = interactor.alwaysShowDataRatIcon.toState(),
             alwaysUseCdmaLevel = interactor.alwaysUseCdmaLevel.toState(),
             isSingleCarrier = interactor.isSingleCarrier.toState(),
@@ -127,6 +131,7 @@ class MobileIconInteractorKairosAdapterTest : MobileIconInteractorTestBase() {
         override val isStackable: State<Boolean>,
         override val activeDataConnectionHasDataEnabled: State<Boolean>,
         override val activeDataIconInteractor: State<MobileIconInteractorKairos?>,
+        override val defaultDataIconInteractor: State<MobileIconInteractorKairos?>,
         override val alwaysShowDataRatIcon: State<Boolean>,
         override val alwaysUseCdmaLevel: State<Boolean>,
         override val isSingleCarrier: State<Boolean>,

@@ -33,6 +33,7 @@ import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
 import com.android.systemui.statusbar.connectivity.AccessPointController
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionsRepository
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepository
 import com.android.systemui.testKosmos
@@ -114,17 +115,14 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
     @Test
     fun handleToggleClick_whenDataIsEnabled_setsEnabledFalse() =
         testScope.runTest {
-            mobileConnectionsRepository.activeMobileDataRepository.value?.setDataEnabled(true)
+            getDataRepo()?.setDataEnabled(true)
             runCurrent()
 
             val testData = MobileDataTileModel(true, true)
             underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
             runCurrent()
 
-            assertThat(
-                    mobileConnectionsRepository.activeMobileDataRepository.value?.dataEnabled?.value
-                )
-                .isFalse()
+            assertThat(getDataRepo()?.dataEnabled?.value).isFalse()
         }
 
     @Test
@@ -149,7 +147,7 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
     @Test
     fun handleToggleClick_whenDataIsDisabled_showsDialog() =
         testScope.runTest {
-            mobileConnectionsRepository.activeMobileDataRepository.value?.setDataEnabled(false)
+            getDataRepo()?.setDataEnabled(false)
 
             val testData = MobileDataTileModel(true, false)
             underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
@@ -161,7 +159,7 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
     @Test
     fun dialogPositiveButtonClick_enablesMobileData() =
         testScope.runTest {
-            mobileConnectionsRepository.activeMobileDataRepository.value?.setDataEnabled(false)
+            getDataRepo()?.setDataEnabled(false)
             val captor = argumentCaptor<DialogInterface.OnClickListener>()
             val testData = MobileDataTileModel(true, true)
             underTest.handleInput(QSTileInputTestKtx.toggleClick(testData))
@@ -170,9 +168,12 @@ class MobileDataTileUserActionInteractorTest : SysuiTestCase() {
             captor.firstValue.onClick(mock(), 0)
             runCurrent()
 
-            assertThat(
-                    mobileConnectionsRepository.activeMobileDataRepository.value?.dataEnabled?.value
-                )
-                .isTrue()
+            assertThat(getDataRepo()?.dataEnabled?.value).isTrue()
         }
+
+    private fun getDataRepo(): MobileConnectionRepository? {
+        return mobileConnectionsRepository.defaultDataSubId.value?.let {
+            mobileConnectionsRepository.getRepoForSubId(it)
+        }
+    }
 }
