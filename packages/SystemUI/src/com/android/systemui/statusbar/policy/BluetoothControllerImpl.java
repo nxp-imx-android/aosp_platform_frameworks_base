@@ -35,7 +35,6 @@ import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 import com.android.settingslib.bluetooth.LocalBluetoothManager;
 import com.android.settingslib.bluetooth.LocalBluetoothProfile;
 import com.android.settingslib.bluetooth.LocalBluetoothProfileManager;
-import com.android.systemui.Flags;
 import com.android.systemui.bluetooth.BluetoothLogger;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
@@ -245,24 +244,15 @@ public class BluetoothControllerImpl implements BluetoothController, BluetoothCa
     @WorkerThread
     @Override
     public String getConnectedDeviceName() {
-        if (Flags.getConnectedDeviceNameUnsynchronized()) {
-            CachedBluetoothDevice connectedDevice = null;
-            // Calling the getName() API for CachedBluetoothDevice outside the synchronized block
-            // so that the main thread is not blocked.
-            synchronized (mConnectedDevices) {
-                if (mConnectedDevices.size() == 1) {
-                    connectedDevice = mConnectedDevices.get(0);
-                }
-            }
-            return connectedDevice != null ? connectedDevice.getName() : null;
-        } else {
-            synchronized (mConnectedDevices) {
-                if (mConnectedDevices.size() == 1) {
-                    return mConnectedDevices.get(0).getName();
-                }
+        CachedBluetoothDevice connectedDevice = null;
+        // Calling the getName() API for CachedBluetoothDevice outside the synchronized block
+        // so that the main thread is not blocked.
+        synchronized (mConnectedDevices) {
+            if (mConnectedDevices.size() == 1) {
+                connectedDevice = mConnectedDevices.get(0);
             }
         }
-        return null;
+        return connectedDevice != null ? connectedDevice.getName() : null;
     }
 
     private Collection<CachedBluetoothDevice> getDevices() {
