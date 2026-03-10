@@ -20,6 +20,7 @@
 #include "SpriteController.h"
 
 #include <android-base/logging.h>
+#include <android/gui/CompositionFilterFlag.h>
 #include <gui/Surface.h>
 #include <utils/String8.h>
 
@@ -360,6 +361,17 @@ sp<SurfaceControl> SpriteController::obtainSurface(int32_t width, int32_t height
         ALOGE("Error creating sprite surface.");
         return nullptr;
     }
+
+    const status_t status =
+            SurfaceComposerClient::Transaction()
+                    .setCompositionFilterFlag(surfaceControl,
+                                              static_cast<uint32_t>(gui::CompositionFilterFlag::
+                                                                            FLAG_MOUSE_CURSOR))
+                    .apply();
+    if (status != OK) {
+        ALOGE("Error applying CompositionFilterFlag transaction: %d", status);
+    }
+
     return surfaceControl;
 }
 
