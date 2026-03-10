@@ -2824,7 +2824,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                         mWmService.mSyncEngine);
                 final int disconnectReparentDisplay =
                         mWindowManager.mUmInternal.getMainDisplayAssignedToUser(mCurrentUser);
-                transition.addDisconnectReparentDisplay(disconnectReparentDisplay);
+                transition.addDisconnectReparentDisplay(displayId, disconnectReparentDisplay);
                 mTransitionController.startCollectOrQueue(transition, (deferred) -> {
                     transition.collectExistenceChange(displayContent);
                     transition.setAllReady();
@@ -2873,7 +2873,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                             final boolean displayContentInReparentTransition =
                                     mTransitionController.isCollecting()
                                         && mTransitionController.getCollectingTransition()
-                                            .getDisconnectReparentDisplays().contains(displayId);
+                                            .isDestinationForDisconnectDisplay(displayId);
                             clearDisplayInfoCaches(displayId);
                             if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
                                 // If the display content is in a transition, make the
