@@ -61,7 +61,6 @@ public final class EnforcingAdmin {
     public static final String SYSTEM_AUTHORITY_PREFIX = "system:";
     public static final String DPC_AUTHORITY = "enterprise";
     public static final String DEVICE_ADMIN_AUTHORITY = "device_admin";
-    public static final String DEFAULT_AUTHORITY = "default";
 
     private static final String ATTR_PACKAGE_NAME = "package-name";
     private static final String ATTR_SYSTEM_ENTITY = "system-entity";
@@ -172,13 +171,13 @@ public final class EnforcingAdmin {
         mAuthorities = authorities;
     }
 
-    private static Set<String> getRoleAuthoritiesOrDefault(String packageName, int userId) {
+    private static Set<String> getRoleAuthorities(String packageName, int userId) {
         Set<String> roles = getRoles(packageName, userId);
         Set<String> authorities = new HashSet<>();
         for (String role : roles) {
             authorities.add(ROLE_AUTHORITY_PREFIX + role);
         }
-        return authorities.isEmpty() ? Set.of(DEFAULT_AUTHORITY) : authorities;
+        return authorities;
     }
 
     /**
@@ -209,16 +208,14 @@ public final class EnforcingAdmin {
 
     private Set<String> getAuthorities() {
         if (mAuthorities == null && mIsRoleAuthority) {
-            mAuthorities = getRoleAuthoritiesOrDefault(
-                    mAdminKey.getPackageName(), mAdminKey.getUserId());
+            mAuthorities = getRoleAuthorities(mAdminKey.getPackageName(), mAdminKey.getUserId());
         }
         return mAuthorities;
     }
 
     void reloadRoleAuthorities() {
         if (mIsRoleAuthority) {
-            mAuthorities = getRoleAuthoritiesOrDefault(
-                    mAdminKey.getPackageName(), mAdminKey.getUserId());
+            mAuthorities = getRoleAuthorities(mAdminKey.getPackageName(), mAdminKey.getUserId());
         }
     }
 
