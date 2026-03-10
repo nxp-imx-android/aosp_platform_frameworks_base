@@ -5096,8 +5096,12 @@ class Task extends TaskFragment {
     }
 
     void resumeNextFocusAfterReparent() {
+        resumeNextFocusAfterReparent(true /* moveDisplayToTop */);
+    }
+
+    void resumeNextFocusAfterReparent(boolean moveDisplayToTop) {
         adjustFocusToNextFocusableTask("reparent", true /* allowFocusSelf */,
-                true /* moveDisplayToTop */);
+                moveDisplayToTop);
         mRootWindowContainer.resumeFocusedTasksTopActivities();
         // Update visibility of activities before notifying WM. This way it won't try to resize
         // windows that are no longer visible.
