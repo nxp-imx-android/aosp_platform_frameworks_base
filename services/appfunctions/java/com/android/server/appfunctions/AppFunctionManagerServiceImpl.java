@@ -463,14 +463,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                             }
 
                             if (android.app.appfunctions.flags.Flags.enableDynamicAppFunctions()) {
-                                try {
-                                    validateExecuteAppFunctionRequestTargetScope(
-                                            requestInternal.getClientRequest(),
-                                            targetPackageName,
-                                            targetUser);
-                                } catch (AppFunctionNotFoundException e) {
-                                    return AndroidFuture.failedFuture(e);
-                                }
+                                validateExecuteAppFunctionRequestTargetScope(
+                                        requestInternal.getClientRequest(),
+                                        targetPackageName,
+                                        targetUser);
                             }
 
                             return isAppFunctionEnabledInternal(

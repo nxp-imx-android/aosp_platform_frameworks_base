@@ -105,8 +105,10 @@ class AppFunctionsMetadataCache {
      * @param packageName The package name of the application containing the function.
      * @param functionIdentifier The unique identifier for the function within the package.
      * @return true if the function is dynamic. false otherwise.
+     * @throws IllegalArgumentException if the user is not unlocked.
      */
-    boolean isDynamicFunction(String packageName, String functionIdentifier, UserHandle user) {
+    boolean isDynamicFunction(String packageName, String functionIdentifier, UserHandle user)
+            throws IllegalArgumentException {
         synchronized (mCrossUserLock) {
             if (!mPerUserDynamicFunctionsCache.contains(user.getIdentifier())) {
                 throw new IllegalArgumentException("User is not unlocked");
@@ -124,9 +126,11 @@ class AppFunctionsMetadataCache {
      * @param packageName The package name of the application containing the function.
      * @param functionIdentifier The unique identifier for the function within the package.
      * @return true if the function is dynamic and global scoped. false otherwise.
+     * @throws IllegalArgumentException if the user is not unlocked.
      */
     boolean isGlobalScopedDynamicFunction(
-        String packageName, String functionIdentifier, UserHandle user) {
+        String packageName, String functionIdentifier, UserHandle user)
+            throws IllegalArgumentException {
         synchronized (mCrossUserLock) {
             if (!mPerUserDynamicFunctionsCache.contains(user.getIdentifier())) {
                 throw new IllegalArgumentException("User is not unlocked");
@@ -143,9 +147,11 @@ class AppFunctionsMetadataCache {
      * @param packageName The package name of the application containing the function.
      * @param functionIdentifier The unique identifier for the function within the package.
      * @return true if the function is dynamic and activity scoped. false otherwise.
+     * @throws IllegalArgumentException if the user is not unlocked.
      */
     boolean isActivityScopedDynamicFunction(
-            String packageName, String functionIdentifier, UserHandle user) {
+            String packageName, String functionIdentifier, UserHandle user)
+            throws IllegalArgumentException {
         synchronized (mCrossUserLock) {
             if (!mPerUserDynamicFunctionsCache.contains(user.getIdentifier())) {
                 throw new IllegalArgumentException("User is not unlocked");

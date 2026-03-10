@@ -149,9 +149,11 @@ final class AppFunctionMetadataReader {
      * @param packageName The package name of the application containing the function.
      * @param functionIdentifier The unique identifier for the function within the package.
      * @return {boolean} Whether app function is dynamic.
+     * @throws IllegalArgumentException if the user is not unlocked.
      */
     public boolean isDynamicFunction(
-            String packageName, String functionIdentifier, UserHandle user) {
+            String packageName, String functionIdentifier, UserHandle user)
+            throws IllegalArgumentException {
         if (!Flags.enableDynamicAppFunctions()) {
             return false;
         }
@@ -165,12 +167,14 @@ final class AppFunctionMetadataReader {
      * @param functionIdentifier The unique identifier for the function within the package.
      * @param user The user for which to check the function type.
      * @return The {@link AppFunctionType} of the function.
+     * @throws IllegalArgumentException if the user is not unlocked.
      */
     @AppFunctionType
     public int getAppFunctionType(
             @NonNull String packageName,
             @NonNull String functionIdentifier,
-            @NonNull UserHandle user) {
+            @NonNull UserHandle user)
+            throws IllegalArgumentException {
         Objects.requireNonNull(packageName);
         Objects.requireNonNull(functionIdentifier);
         Objects.requireNonNull(user);
