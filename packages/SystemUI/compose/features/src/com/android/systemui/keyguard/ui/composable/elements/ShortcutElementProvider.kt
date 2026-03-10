@@ -60,6 +60,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -211,7 +212,13 @@ constructor(
                     ),
                 modifier =
                     modifier
-                        .semantics(mergeDescendants = true) {}
+                        .semantics(mergeDescendants = true) {
+                            // This only overrides onClick for Accessibility
+                            onClick {
+                                triggerQuickAffordance(quickAffordanceViewModel, expandable)
+                                true
+                            }
+                        }
                         .size(
                             height = dimensionResource(R.dimen.keyguard_affordance_fixed_height),
                             width = dimensionResource(R.dimen.keyguard_affordance_fixed_width),
