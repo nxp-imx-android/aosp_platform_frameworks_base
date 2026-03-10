@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.bubbles
 
-import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
@@ -25,7 +24,6 @@ import android.view.SurfaceControl
 import android.window.TaskCreationParams
 import android.window.TaskPropertiesRequest
 import android.window.WindowContainerToken
-import android.window.WindowContainerTransaction
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.dagger.WMSingleton
 import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
@@ -75,7 +73,18 @@ constructor(
         // task. Note that bubbles should ignore insets and should not show app compat rounded
         // corners for better UX (e.g. when landscape apps are letterboxed).
         val taskProperties =
-            TaskPropertiesRequest().setIgnoreInsets(true).setDisableAppCompatRoundedCorners(true)
+            TaskPropertiesRequest()
+                .setIgnoreInsets(true)
+                .setDisableAppCompatRoundedCorners(true)
+                .setReparentLeafTaskIfRelaunchFromHome(true)
+                .setDisallowOverrideWindowingModeForChildren(true)
+                // Preserve bubble leaf tasks if relaunched from different windowing mode.
+                .setPreserveLeafTaskIfRelaunch(true)
+                .setInterceptBackPressedOnTaskRoot(true)
+                .setTaskForceExcludedFromRecents(true)
+                .setDisablePip(true)
+                .setDisableLaunchAdjacent(true)
+                .setForceTranslucent(true)
         if (com.android.window.flags.Flags.visibilityManagementInBubbleRoot()) {
             // We are using the visibility barrier to control the task visibility.
             // Force leaf tasks to be non-occluding, so that all tasks above the visibility barrier
@@ -91,6 +100,7 @@ constructor(
                 .setName("Bubbles")
                 .setDisplayId(context.displayId)
                 .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+                .setOnTop(false)
                 .setTaskPropertiesRequest(taskProperties)
                 .build()
         val rootTaskAppearedInfo = taskOrganizer.createTask(params, this)
@@ -104,7 +114,6 @@ constructor(
             return
         }
         rootTaskInfo = taskInfo
-        configRootTask(taskInfo.token)
         addVisibilityBarrier(taskInfo.token)
     }
 
@@ -112,22 +121,6 @@ constructor(
         if (taskInfo?.token == windowContainerToken) {
             rootTaskInfo = taskInfo
         }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun configRootTask(rootTaskToken: WindowContainerToken) {
-        val wct = WindowContainerTransaction()
-        wct.reorder(rootTaskToken, false /* onTop */)
-        wct.setReparentLeafTaskIfRelaunchFromHome(rootTaskToken, true)
-        wct.setDisallowOverrideWindowingModeForChildren(rootTaskToken, true)
-        // Preserve bubble leaf tasks if relaunched from different windowing mode.
-        wct.setPreserveLeafTaskIfRelaunch(rootTaskToken, true)
-        wct.setInterceptBackPressedOnTaskRoot(rootTaskToken, true)
-        wct.setTaskForceExcludedFromRecents(rootTaskToken, true)
-        wct.setDisablePip(rootTaskToken, true)
-        wct.setDisableLaunchAdjacent(rootTaskToken, true)
-        wct.setForceTranslucent(rootTaskToken, true)
-        taskOrganizer.applyTransaction(wct)
     }
 
     private fun addVisibilityBarrier(rootTaskToken: WindowContainerToken) {

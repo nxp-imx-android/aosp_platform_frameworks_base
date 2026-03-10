@@ -4694,6 +4694,15 @@ class Task extends TaskFragment {
     }
 
     @Override
+    boolean setForceTranslucent(boolean set) {
+        if (set && mIsForceOpaque) {
+            Slog.e(TAG, "Can't set forceTranslucent on a task that is already forced opaque.");
+            return false;
+        }
+        return super.setForceTranslucent(set);
+    }
+
+    @Override
     public boolean isAlwaysOnTop() {
         return !isForceHidden() && super.isAlwaysOnTop();
     }
