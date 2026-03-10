@@ -766,6 +766,60 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun isAnyTaskMaximizedOrDoubleTiled_targetDeskSatisfiesCondition_returnTrue() {
+        val activeDeskId = taskRepository.getActiveDeskId(DEFAULT_DISPLAY)!!
+        val taskInActiveDesk = setUpFreeformTask(bounds = TASK_BOUNDS, deskId = activeDeskId)
+
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        val targetDeskId = activeDeskId + 1
+        taskRepository.addDesk(DEFAULT_DISPLAY, targetDeskId)
+        val taskInTargetDesk = setUpFreeformTask(bounds = stableBounds, deskId = targetDeskId)
+
+        assertTrue(
+            controller.isAnyTaskMaximizedOrDoubleTiled(
+                displayId = DEFAULT_DISPLAY,
+                userId = taskRepository.userId,
+                targetDeskId = targetDeskId,
+            )
+        )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun isAnyTaskMaximizedOrDoubleTiled_targetDeskDoesNotSatisfyCondition_returnFalse() {
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+        val activeDeskId = taskRepository.getActiveDeskId(DEFAULT_DISPLAY)!!
+        val taskInActiveDesk = setUpFreeformTask(bounds = stableBounds, deskId = activeDeskId)
+
+        val targetDeskId = activeDeskId + 1
+        taskRepository.addDesk(DEFAULT_DISPLAY, targetDeskId)
+        val taskInTargetDesk = setUpFreeformTask(bounds = TASK_BOUNDS, deskId = targetDeskId)
+
+        assertFalse(
+            controller.isAnyTaskMaximizedOrDoubleTiled(
+                displayId = DEFAULT_DISPLAY,
+                userId = taskRepository.userId,
+                targetDeskId = targetDeskId,
+            )
+        )
+    }
+
+    @Test
+    fun isAnyTaskMaximizedOrDoubleTiled_pendingMaximizedTaskBounds_returnTrue() {
+        val task = setUpFreeformTask(bounds = TASK_BOUNDS)
+        val stableBounds = Rect().also { displayLayout.getStableBounds(it) }
+
+        assertTrue(
+            controller.isAnyTaskMaximizedOrDoubleTiled(
+                displayId = DEFAULT_DISPLAY,
+                userId = taskRepository.userId,
+                pendingTaskBounds = stableBounds,
+            )
+        )
+    }
+
+    @Test
     fun doesAnyTaskRequireTaskbarRounding_onlyFreeFormTaskIsRunning_returnFalse() {
         setUpFreeformTask()
 
