@@ -19,7 +19,13 @@ package com.android.systemui.notifications.intelligence.rules.ui.composable
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -70,5 +76,11 @@ private fun ContactImage(
         loadBitmap = loadBitmap,
         contentDescription = model.displayLabel,
         size = size,
+        modifier = Modifier.clip(CircleShape),
+        // TODO: b/478225883 - Use a better default placeholder, like the first letter of the
+        // contact.
+        placeholderContent = {
+            Box(modifier = Modifier.background(MaterialTheme.colorScheme.secondary))
+        },
     )
 }
