@@ -22,6 +22,8 @@ import android.util.Log
 import com.android.settingslib.datastore.KeyValueStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.runBlocking
 
 /** Registry of all available preference screens in the app. */
 object PreferenceScreenRegistry {
@@ -133,6 +135,43 @@ object PreferenceScreenRegistry {
             if (keyParameters == null) return factory.create(appContext)
             Log.e(TAG, "screen $screenKey is not parameterized but keyParameters is provided")
             return null
+        }
+    }
+
+    /**
+     * Create an instance of a specific screen based on key, regardless of parameterization.
+     * This method is used solely for getting the metadata of a screen.
+     */
+    fun createScreenInstanceForMetadata(context: Context, screenKey:String?) : PreferenceScreenMetadata? {
+        val screenFactory = if(screenKey != null) preferenceScreenMetadataFactories[screenKey] else null
+        if(screenFactory == null)
+            return null
+        return createScreenInstanceForMetadata(context, screenFactory)
+    }
+
+    /**
+     * Create an instance of a specific screen based on key, regardless of parameterization.
+     * This method is used solely for getting the metadata of a screen.
+     */
+    fun createScreenInstanceForMetadata(context: Context, factory: PreferenceScreenMetadataFactory): PreferenceScreenMetadata? {
+        return if (factory !is PreferenceScreenMetadataParameterizedFactory)
+            factory.create(context)
+        else {
+            if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
+                val firstKeyParameter = runBlocking {
+                    factory.keyParameters(context).firstOrNull()
+                }
+                if (firstKeyParameter == null)
+                    null
+                else factory.createWithKeyParameters(context, firstKeyParameter)
+            } else {
+                val firstParameter = runBlocking {
+                    factory.parameters(context).firstOrNull()
+                }
+                if (firstParameter == null)
+                    null
+                else factory.create(context, firstParameter)
+            }
         }
     }
 }

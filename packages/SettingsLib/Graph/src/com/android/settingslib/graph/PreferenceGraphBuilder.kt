@@ -61,6 +61,7 @@ import com.android.settingslib.metadata.PreferenceScreenMetadataFactory
 import com.android.settingslib.metadata.PreferenceScreenMetadataParameterizedFactory
 import com.android.settingslib.metadata.PreferenceScreenRegistry
 import com.android.settingslib.metadata.PreferenceSetWarningProvider
+import com.android.settingslib.metadata.PreferenceScreenRegistry.createScreenInstanceForMetadata
 import com.android.settingslib.metadata.PreferenceSummaryProvider
 import com.android.settingslib.metadata.PreferenceTitleProvider
 import com.android.settingslib.metadata.ReadWritePermit
@@ -69,8 +70,8 @@ import com.android.settingslib.metadata.SensitivityLevel.Companion.REQUIRES_CONF
 import com.android.settingslib.metadata.SensitivityLevel.Companion.DO_NOT_EXPOSE
 import com.android.settingslib.metadata.ValidatedKeyParameters
 import com.android.settingslib.metadata.getPreferenceIcon
+import com.android.settingslib.metadata.isExposable
 import com.android.settingslib.metadata.isPreferenceIndexable
-import com.android.settingslib.metadata.isUiOnlyPreference
 import com.android.settingslib.metadata.preferencesapi.ApiPreference
 import com.android.settingslib.metadata.preferencesapi.PreferencesApiScreen
 import com.android.settingslib.metadata.preferencesapi.types.ApiType
@@ -110,13 +111,6 @@ private constructor(
     private val includeParameters = (request.flags and PreferenceGetterFlags.PARAMETERS) != 0
     private val includeHierarchy = (request.flags and PreferenceGetterFlags.EXCLUDE_HIERARCHY) == 0
     private val shrinkHierarchy = (request.flags and PreferenceGetterFlags.SHRINK_HIERARCHY) != 0
-    private val excludeUiOnlyPreferences =
-        !AppUtils.isDebuggable() ||
-            Settings.Global.getInt(
-                context.contentResolver,
-                "com.android.settings.EXCLUDE_UI_ONLY_PREFERENCES",
-                1,
-            ) == 1
 
     private suspend fun init() {
         val factories = PreferenceScreenRegistry.preferenceScreenMetadataFactories
@@ -269,6 +263,10 @@ private constructor(
         screenKey: String,
         factory: PreferenceScreenMetadataFactory,
     ): Boolean {
+        val screenMetadata = createScreenInstanceForMetadata(context, factory)
+        val isScreenExposable = screenMetadata?.isExposable(context) ?: false
+        if(!isScreenExposable)
+            return false
         if (factory !is PreferenceScreenMetadataParameterizedFactory) {
             return addPreferenceScreen(factory.create(context))
         }
@@ -320,6 +318,7 @@ private constructor(
     @CanIgnoreReturnValue
     private suspend fun addPreferenceScreen(metadata: PreferenceScreenMetadata, coordinate: PreferenceScreenCoordinate = PreferenceScreenCoordinate(metadata.key, metadata.keyParameters)): Boolean {
         if (!checkScreenFlag(metadata)) return false
+        if (!metadata.isExposable(context)) return false
 
         return if (CatalystFlagProviderFactory.catalystUseKeyParameters()) {
             addPreferenceScreenWithKeyParameters(metadata.key, metadata.keyParameters, coordinate) {
@@ -474,18 +473,18 @@ private constructor(
         screenMetadata: PreferenceScreenMetadata,
         isRoot: Boolean,
     ): PreferenceGroupProto = preferenceGroupProto {
-        if (!excludeUiOnlyPreferences || !this@toProto.metadata.isUiOnlyPreference(context)) {
+        if (this@toProto.metadata.isExposable(context)) {
             preference = toProto(screenMetadata, this@toProto.metadata, isRoot)
         }
         forEachAsync {
+            if(it !is PreferenceHierarchy && !it.metadata.isExposable(context))
+                return@forEachAsync
             addPreferences(
                 preferenceOrGroupProto {
                     if (it is PreferenceHierarchy) {
                         group = it.toProto(screenMetadata, false)
                     } else {
-                        if (!excludeUiOnlyPreferences || !it.metadata.isUiOnlyPreference(context)) {
-                            preference = toProto(screenMetadata, it.metadata, false)
-                        }
+                       preference = toProto(screenMetadata, it.metadata, false)
                     }
                 }
             )
