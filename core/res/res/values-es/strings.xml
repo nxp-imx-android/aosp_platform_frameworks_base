@@ -555,10 +555,8 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"Esta aplicación puede hacer fotografías y grabar vídeos con la cámara en cualquier momento."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Permitir que una aplicación o servicio acceda a las cámaras del sistema para hacer fotos y vídeos"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"Esta aplicación del sistema o con privilegios puede hacer fotos y grabar vídeos en cualquier momento con una cámara del sistema, aunque debe tener también el permiso android.permission.CAMERA para hacerlo"</string>
-    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
-    <skip />
-    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
-    <skip />
+    <string name="permlab_warmUpCamera" msgid="6135692056406854923">"Permitir que una aplicación o servicio envíe una señal para activar el subsistema de la cámara"</string>
+    <string name="permdesc_warmUpCamera" msgid="925343364567764736">"Esta aplicación privilegiada o del sistema puede enviar una señal al subsistema de la cámara para preparar el dispositivo de la cámara, mejorando así su rendimiento y ofreciendo otras ventajas"</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Permitir que una aplicación o servicio reciba retrollamadas cada vez que se abra o cierre una cámara."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"Esta aplicación puede recibir retrollamadas cuando se abre o se cierra la cámara con cualquier aplicación."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Permitir que una aplicación o servicio acceda a la cámara como un usuario del sistema sin interfaz gráfica."</string>

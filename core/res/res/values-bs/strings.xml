@@ -555,10 +555,8 @@
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"Ova aplikacija može snimati slike i videozapise koristeći kameru bilo kada."</string>
     <string name="permlab_systemCamera" msgid="3642917457796210580">"Dopustite aplikaciji ili usluzi da pristupa kamerama sistema radi snimanja fotografija i videozapisa"</string>
     <string name="permdesc_systemCamera" msgid="5938360914419175986">"Ova povlaštena ili sistemska aplikacija u svakom trenutku može snimati fotografije i videozapise pomoću kamere sistema. Aplikacija također mora imati odobrenje android.permission.CAMERA"</string>
-    <!-- no translation found for permlab_warmUpCamera (6135692056406854923) -->
-    <skip />
-    <!-- no translation found for permdesc_warmUpCamera (925343364567764736) -->
-    <skip />
+    <string name="permlab_warmUpCamera" msgid="6135692056406854923">"Dozvolite aplikaciji ili usluzi da pošalje signal za zagrijavanje podsistemu kamere"</string>
+    <string name="permdesc_warmUpCamera" msgid="925343364567764736">"Ova povlaštena ili sistemska aplikacija može poslati signal podsistemu kamere da zagrije uređaj s kamerom radi, između ostalih prednosti, poboljšanja performansi"</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"Dozvoliti aplikaciji ili usluzi da prima povratne pozive o otvaranju ili zatvaranju kamera."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"Ova aplikacija može primati povratne pozive kada se otvara ili zatvara bilo koji uređaj s kamerom (putem neke aplikacije)."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"Dozvolite aplikaciji ili usluzi da pristupa kameri kao korisnik sistema bez grafičkog korisničkog interfejsa."</string>
@@ -1871,7 +1869,7 @@
     <string name="accessibility_shortcut_label_gesture" msgid="7987298674836890931">"pokret"</string>
     <string name="accessibility_shortcut_label_quick_settings" msgid="6851280333772213611">"brze postavke"</string>
     <string name="accessibility_shortcut_label_triple_tap" msgid="9058975959054454796">"trostruki dodir"</string>
-    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"tipku za pristupačnost"</string>
+    <string name="accessibility_shortcut_label_top_row_key" msgid="1488840908672437180">"tipka za pristupačnost"</string>
     <string name="accessibility_uncheck_legacy_item_warning" msgid="8047830891064817447">"Usluga <xliff:g id="SERVICE_NAME">%s</xliff:g> je isključena"</string>
     <string name="edit_accessibility_shortcut_menu_button" msgid="8885752738733772935">"Uredi prečice"</string>
     <string name="done_accessibility_shortcut_menu_button" msgid="3668407723770815708">"Gotovo"</string>
