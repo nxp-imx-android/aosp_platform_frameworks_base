@@ -459,6 +459,24 @@ class LightSensorDebounceAlgorithmTest : SysuiTestCase() {
     }
 
     @Test
+    fun shouldSafelyIgnoreEmptyQueueOnDequeue() =
+        kosmos.runTest {
+            startAlgorithm()
+
+            // Explicitly clear the queues to simulate concurrent stop.
+            underTest.bundlesQueueLightMode.clear()
+            underTest.bundlesQueueDarkMode.clear()
+
+            // Run the dequeue runnables. They should not crash.
+            underTest.dequeueLightModeBundle.run()
+            underTest.dequeueDarkModeBundle.run()
+
+            // The bundles shouldn't be affected since the queue was empty.
+            assertThat(underTest.bundleLightMode).isEmpty()
+            assertThat(underTest.bundleDarkMode).isEmpty()
+        }
+
+    @Test
     fun updateMode_withHysteresis_switchesCorrectly() =
         kosmos.runTest {
             // Start in undecided
