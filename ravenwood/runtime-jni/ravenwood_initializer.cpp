@@ -52,13 +52,13 @@ struct prop_info {
 
 struct prop_info_cmp {
     using is_transparent = void;
-    bool operator()(const prop_info& lhs, const prop_info& rhs) {
+    bool operator()(const prop_info& lhs, const prop_info& rhs) const {
         return lhs.key < rhs.key;
     }
-    bool operator()(std::string_view lhs, const prop_info& rhs) {
+    bool operator()(std::string_view lhs, const prop_info& rhs) const {
         return lhs < rhs.key;
     }
-    bool operator()(const prop_info& lhs, std::string_view rhs) {
+    bool operator()(const prop_info& lhs, std::string_view rhs) const {
         return lhs.key < rhs;
     }
 };
