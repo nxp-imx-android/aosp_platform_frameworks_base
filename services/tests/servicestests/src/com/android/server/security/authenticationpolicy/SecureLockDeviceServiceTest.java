@@ -70,6 +70,7 @@ import android.content.Context;
 import android.hardware.biometrics.BiometricEnrollmentStatus;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricStateListener;
+import android.hardware.biometrics.IBiometricEnabledOnKeyguardCallback;
 import android.hardware.biometrics.SensorProperties;
 import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
@@ -264,6 +265,7 @@ public class SecureLockDeviceServiceTest {
     private SecureLockDeviceStore mSecureLockDeviceStore;
     private SecureLockDeviceSettingsManager mSecureLockDeviceSettingsManager;
     private Set<String> mDevicePolicyRestrictions = new HashSet<>();
+    private IBiometricEnabledOnKeyguardCallback mBiometricEnabledOnKeyguardCallback;
 
     @SuppressLint("VisibleForTests")
     @Before
@@ -356,6 +358,14 @@ public class SecureLockDeviceServiceTest {
                         mUserManagerInternal
                 );
 
+        ArgumentCaptor<IBiometricEnabledOnKeyguardCallback>
+                biometricEnabledOnKeyguardCallbackCaptor = ArgumentCaptor.forClass(
+                        IBiometricEnabledOnKeyguardCallback.class);
+        verify(mBiometricManager).registerEnabledOnKeyguardCallback(
+                biometricEnabledOnKeyguardCallbackCaptor.capture());
+
+        mBiometricEnabledOnKeyguardCallback = biometricEnabledOnKeyguardCallbackCaptor.getValue();
+
         File secureLockDeviceStateFile =
                 File.createTempFile(FILE_NAME, ".xml", mTestContext.getCacheDir());
         mSecureLockDeviceStore = mSecureLockDeviceService.getStore();
@@ -396,9 +406,11 @@ public class SecureLockDeviceServiceTest {
     @Test
     public void enableSecureLockDevice_goesToSleep_locksDevice() throws RemoteException {
         setupBiometricState(
-                true, /* deviceHasStrongBiometricSensor */
-                true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                true /* deviceHasStrongBiometricSensor */,
+                true /* primaryUserHasStrongBiometricEnrollment */,
+                false /* otherUserHasStrongBiometricEnrollment */,
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
 
         enableSecureLockDevice(mUser);
@@ -408,11 +420,14 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void disableSecureLockDevice_asUnauthorizedUser_returnsNotAuthorized() {
+    public void disableSecureLockDevice_asUnauthorizedUser_returnsNotAuthorized()
+            throws RemoteException {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         assertThat(enableSecureLockDevice(mUser)).isEqualTo(SUCCESS);
 
@@ -427,11 +442,13 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void disableSecureLockDevice_asAuthorizedUser_returnsSuccess() {
+    public void disableSecureLockDevice_asAuthorizedUser_returnsSuccess() throws RemoteException {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         assertThat(enableSecureLockDevice(mUser)).isEqualTo(SUCCESS);
 
@@ -448,11 +465,13 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void enableSecureLockDeviceReturnsError_whenAlreadyEnabled() {
+    public void enableSecureLockDeviceReturnsError_whenAlreadyEnabled() throws RemoteException {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         enableSecureLockDevice(mUser);
 
@@ -464,11 +483,14 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void enableSecureLockDevice_userSwitchFails_returnsErrorUnknown() {
+    public void enableSecureLockDevice_userSwitchFails_returnsErrorUnknown()
+            throws RemoteException {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         when(mActivityManager.isProfileForeground(eq(mUser))).thenReturn(false);
         when(mActivityManager.switchUser(eq(TEST_USER_ID))).thenReturn(false);
@@ -476,11 +498,13 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void testEnableAndDisableSecureLockDevice_setsAuthFlags() {
+    public void testEnableAndDisableSecureLockDevice_setsAuthFlags() throws RemoteException {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         enableSecureLockDevice(mUser);
 
@@ -497,11 +521,14 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void enableSecureLockDevice_switchesCallingUserToForeground_restrictsUserSwitching() {
+    public void enableSecureLockDevice_switchesCallingUserToForeground_restrictsUserSwitching()
+            throws RemoteException {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 false, /* primaryUserHasStrongBiometricEnrollment */
-                true /* otherUserHasStrongBiometricEnrollment */
+                true, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
 
         // Mock mUser as current user, successful switch to mOtherUser
@@ -520,13 +547,15 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void secureLockDevice_checksBiometricEnrollmentsOfCallingUser() {
+    public void secureLockDevice_checksBiometricEnrollmentsOfCallingUser() throws RemoteException {
         // Calling user TEST_USER_ID has no biometrics enrolled, but some other user on the
         // device has strong biometrics enrolled
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 false, /* primaryUserHasStrongBiometricEnrollment */
-                true /* otherUserHasStrongBiometricEnrollment */
+                true, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
 
         int secureLockDeviceAvailability =
@@ -538,11 +567,13 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void secureLockDeviceUnavailable_whenNoStrongBiometricSensors() {
+    public void secureLockDeviceUnavailable_whenNoStrongBiometricSensors() throws RemoteException {
         setupBiometricState(
                 false, /* deviceHasStrongBiometricSensor */
                 false, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
 
         int secureLockDeviceAvailability =
@@ -554,11 +585,14 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void getSecureLockDeviceAvailability_whenMissingStrongBiometricEnrollments() {
+    public void getSecureLockDeviceAvailability_whenMissingStrongBiometricEnrollments()
+            throws RemoteException {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 false, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         int secureLockDeviceAvailability =
                 mSecureLockDeviceService.getSecureLockDeviceAvailability(mUser);
@@ -569,11 +603,51 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void getSecureLockDeviceAvailability_success() {
+    public void getSecureLockDeviceAvailability_whenStrongBiometricsNotEnabledOnKeyguard()
+            throws RemoteException {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                false /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                false /* otherUserHasEnabledBiometricsOnKeyguard */
+        );
+        int secureLockDeviceAvailability =
+                mSecureLockDeviceService.getSecureLockDeviceAvailability(mUser);
+        int enableSecureLockDeviceRequestStatus = enableSecureLockDevice(mUser);
+
+        assertThat(secureLockDeviceAvailability).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
+        assertThat(enableSecureLockDeviceRequestStatus).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
+    }
+
+    @Test
+    public void notifySecureLockDeviceAvailabilityStatusChanged_whenStrongBiometricsNotEnabledOnKeyguard()
+            throws RemoteException {
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                false /* otherUserHasEnabledBiometricsOnKeyguard */
+        );
+        mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
+                mUser, mSecureLockDeviceStatusListener);
+
+        mBiometricEnabledOnKeyguardCallback.onChanged(false /* enabled */, TEST_USER_ID,
+                BiometricManager.TYPE_FINGERPRINT);
+
+        verify(mSecureLockDeviceStatusListener).onSecureLockDeviceAvailableStatusChanged(
+                ERROR_NO_BIOMETRICS_ENROLLED);
+    }
+
+    @Test
+    public void getSecureLockDeviceAvailability_success() throws RemoteException {
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                false /* otherUserHasEnabledBiometricsOnKeyguard */
         );
 
         int secureLockDeviceAvailability =
@@ -585,11 +659,13 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void isSecureLockDeviceEnabled_updatesState() {
+    public void isSecureLockDeviceEnabled_updatesState() throws RemoteException {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
 
         boolean isSecureLockDeviceEnabled = mSecureLockDeviceService.isSecureLockDeviceEnabled();
@@ -615,7 +691,9 @@ public class SecureLockDeviceServiceTest {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         enableSecureLockDevice(mUser);
 
@@ -679,7 +757,9 @@ public class SecureLockDeviceServiceTest {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         when(mUserManagerInternal.isUserUnlocked(TEST_USER_ID)).thenReturn(true);
         final Map<String, Integer> originalSystemSettings = new HashMap<>();
@@ -743,7 +823,9 @@ public class SecureLockDeviceServiceTest {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
                 mUser, mSecureLockDeviceStatusListener);
@@ -780,7 +862,9 @@ public class SecureLockDeviceServiceTest {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
                 mUser, mSecureLockDeviceStatusListener);
@@ -818,7 +902,9 @@ public class SecureLockDeviceServiceTest {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 false, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
                 mUser, mSecureLockDeviceStatusListener);
@@ -833,8 +919,11 @@ public class SecureLockDeviceServiceTest {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
+        clearInvocations(mSecureLockDeviceStatusListener);
         biometricStateListener.onEnrollmentsChanged(
                 TEST_USER_ID, 1 /* sensorId */, true /* hasEnrollments */
         );
@@ -856,7 +945,9 @@ public class SecureLockDeviceServiceTest {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 true, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
                 mUser, mSecureLockDeviceStatusListener);
@@ -870,7 +961,9 @@ public class SecureLockDeviceServiceTest {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 false, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         clearInvocations(mSecureLockDeviceStatusListener);
         clearInvocations(mSecureLockDeviceStatusOtherListener);
@@ -878,7 +971,9 @@ public class SecureLockDeviceServiceTest {
         setupBiometricState(
                 true, /* deviceHasStrongBiometricSensor */
                 false, /* primaryUserHasStrongBiometricEnrollment */
-                false /* otherUserHasStrongBiometricEnrollment */
+                false, /* otherUserHasStrongBiometricEnrollment */
+                true /* primaryUserHasEnabledBiometricsOnKeyguard */,
+                true /* otherUserHasEnabledBiometricsOnKeyguard */
         );
         biometricStateListener.onEnrollmentsChanged(
                 TEST_USER_ID, 1 /* sensorId */, false /* hasEnrollments */
@@ -906,8 +1001,10 @@ public class SecureLockDeviceServiceTest {
     private void setupBiometricState(
             boolean deviceHasStrongBiometricSensor,
             boolean primaryUserHasStrongBiometricEnrollment,
-            boolean otherUserHasStrongBiometricEnrollment
-    ) {
+            boolean otherUserHasStrongBiometricEnrollment,
+            boolean primaryUserHasEnabledBiometricsOnKeyguard,
+            boolean otherUserHasEnabledBiometricsOnKeyguard
+    ) throws RemoteException {
         if (deviceHasStrongBiometricSensor) {
             when(mBiometricManager.getSensorProperties()).thenReturn(
                     getSensorPropertiesList(STRENGTH_STRONG));
@@ -919,6 +1016,9 @@ public class SecureLockDeviceServiceTest {
         if (primaryUserHasStrongBiometricEnrollment) {
             when(mUserBiometricManager.getEnrollmentStatus()).thenReturn(
                     getEnrollmentStatusMap(BIOMETRIC_STRONG));
+            if (primaryUserHasEnabledBiometricsOnKeyguard) {
+                enableBiometricsOnKeyguardForTestUser();
+            }
         } else {
             when(mUserBiometricManager.getEnrollmentStatus()).thenReturn(
                     getEnrollmentStatusMap(BIOMETRIC_WEAK));
@@ -927,10 +1027,27 @@ public class SecureLockDeviceServiceTest {
         if (otherUserHasStrongBiometricEnrollment) {
             when(mOtherUserBiometricManager.getEnrollmentStatus()).thenReturn(
                     getEnrollmentStatusMap(BIOMETRIC_STRONG));
+            if (otherUserHasEnabledBiometricsOnKeyguard) {
+                enableBiometricsOnKeyguardForOtherUser();
+            }
         } else {
             when(mOtherUserBiometricManager.getEnrollmentStatus()).thenReturn(
                     getEnrollmentStatusMap(BIOMETRIC_WEAK));
         }
+    }
+
+    private void enableBiometricsOnKeyguardForTestUser() throws RemoteException {
+        mBiometricEnabledOnKeyguardCallback.onChanged(true /* enabled */, TEST_USER_ID,
+                BiometricManager.TYPE_FINGERPRINT);
+    }
+
+    private void enableBiometricsOnKeyguardForOtherUser() throws RemoteException {
+        mBiometricEnabledOnKeyguardCallback.onChanged(true /* enabled */, OTHER_USER_ID,
+                BiometricManager.TYPE_FINGERPRINT);
+    }
+
+    private static void waitForIdle() {
+        androidx.test.InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private List<SensorProperties> getSensorPropertiesList(
