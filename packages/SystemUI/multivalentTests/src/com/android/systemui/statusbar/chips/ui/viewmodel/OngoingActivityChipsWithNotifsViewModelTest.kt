@@ -35,6 +35,7 @@ import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.display.data.repository.displayStateRepository
+import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
@@ -1043,8 +1044,9 @@ class OngoingActivityChipsWithNotifsViewModelTest(flags: FlagsParameterization) 
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(
-                com.android.systemui.Flags.FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
-            )
+                    com.android.systemui.Flags.FLAG_NOTIFICATION_CHIP_FROM_COMPACT_CONTENT
+                )
+                .andSceneContainer()
         }
 
         private val COMPACT_ICON =

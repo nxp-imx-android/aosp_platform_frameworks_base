@@ -20,7 +20,6 @@ import android.content.res.mainResources
 import android.content.testableContext
 import com.android.systemui.desktop.domain.interactor.desktopInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
-import com.android.systemui.keyguard.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
@@ -29,7 +28,6 @@ import com.android.systemui.log.logBufferFactory
 import com.android.systemui.log.table.tableLogBufferFactory
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.display.domain.interactor.shadeExpansionTargetDisplayInteractor
-import com.android.systemui.shade.domain.interactor.shadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.shareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsViewModel
@@ -46,6 +44,7 @@ import com.android.systemui.statusbar.phone.domain.interactor.lightsOutInteracto
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewModelBasedOnSettingFactory
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStatusBarIconBlockListInteractor
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStatusBarInteractor
+import com.android.systemui.statusbar.pipeline.shared.domain.interactor.statusBarVisibilityInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinderImpl
 import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
@@ -90,9 +89,9 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 keyguardTransitionInteractor,
                 keyguardInteractor,
                 statusBarNotificationIconsInteractor,
+                statusBarVisibilityInteractor,
                 statusBarOperatorNameViewModel,
                 sceneInteractor,
-                keyguardOcclusionInteractor,
                 shadeInteractor,
                 shadeExpansionTargetDisplayInteractor,
                 shareToAppChipViewModel,
@@ -102,7 +101,6 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 statusBarContentInsetsViewModel,
                 backgroundScope,
                 testDispatcher,
-                { shadeDisplaysInteractor },
                 uiEventLogger = statusBarChipsUiEventLogger,
                 deviceProvisioningInteractor = deviceProvisioningInteractor,
                 userLogoutInteractor = userLogoutInteractor,
