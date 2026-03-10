@@ -17,6 +17,7 @@
 package com.android.server.appfunctions;
 
 import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
+import static android.app.appfunctions.AppFunctionException.ERROR_FUNCTION_NOT_FOUND;
 import static android.app.appfunctions.AppFunctionManager.ACCESS_REQUEST_STATE_UNREQUESTABLE;
 import static android.app.appfunctions.AppFunctionManager.ACTION_REQUEST_APP_FUNCTION_ACCESS;
 import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_DEFAULT;
@@ -113,9 +114,9 @@ import com.android.internal.infra.AndroidFuture;
 import com.android.internal.util.DumpUtils;
 import com.android.server.IoThread;
 import com.android.server.SystemService.TargetUser;
+import com.android.server.appfunctions.allowlist.AppFunctionAllowlistReader;
 import com.android.server.appfunctions.dynamic.MultiUserDynamicAppFunctionRegistry;
 import com.android.server.appfunctions.dynamic.RegistrationScopeId;
-import com.android.server.appfunctions.allowlist.AppFunctionAllowlistReader;
 import com.android.server.appinteraction.AppInteractionService;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
@@ -508,14 +509,25 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                                         safeExecuteAppFunctionCallback,
                                         localCancelTransport);
                             } else {
-                                executeServiceAppFunctionInternal(
-                                        requestInternal,
-                                        callingUid,
-                                        localCancelTransport,
-                                        safeExecuteAppFunctionCallback,
-                                        callerBinder,
-                                        canExecuteResult,
-                                        targetPackageName);
+                                if (android.app.appfunctions.flags.Flags.enableMultiService()) {
+                                    executeMultiServiceAppFunctionInternal(
+                                            requestInternal,
+                                            callingUid,
+                                            localCancelTransport,
+                                            safeExecuteAppFunctionCallback,
+                                            callerBinder,
+                                            canExecuteResult,
+                                            targetPackageName);
+                                } else {
+                                    executeServiceAppFunctionInternal(
+                                            requestInternal,
+                                            callingUid,
+                                            localCancelTransport,
+                                            safeExecuteAppFunctionCallback,
+                                            callerBinder,
+                                            canExecuteResult,
+                                            targetPackageName);
+                                }
                             }
                         })
                 .exceptionally(
@@ -586,12 +598,13 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             String targetPackageName) {
         int bindFlags = Context.BIND_AUTO_CREATE;
         UserHandle targetUser = requestInternal.getUserHandle();
-        if (canExecuteResult == CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION) {
+        if (canExecuteResult == CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION) {
             // If the caller doesn't have the permission, do not use
             // BIND_FOREGROUND_SERVICE to avoid it raising its process state
             // by calling its own AppFunctions.
             bindFlags |= Context.BIND_FOREGROUND_SERVICE;
         }
+
         Intent serviceIntent =
                 mInternalServiceHelper.resolveAppFunctionService(
                         targetPackageName, requestInternal.getUserHandle());
@@ -615,6 +628,99 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 bindFlags,
                 callerBinder,
                 callingUid);
+    }
+
+    private void executeMultiServiceAppFunctionInternal(
+            @NonNull ExecuteAppFunctionAidlRequest requestInternal,
+            int callingUid,
+            @NonNull ICancellationSignal localCancelTransport,
+            @NonNull SafeOneTimeExecuteAppFunctionCallback safeExecuteAppFunctionCallback,
+            @NonNull IBinder callerBinder,
+            Integer canExecuteResult,
+            String targetPackageName) {
+        int bindFlags = Context.BIND_AUTO_CREATE;
+        UserHandle targetUser = requestInternal.getUserHandle();
+        if (canExecuteResult == CallerValidator.CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION) {
+            // If the caller doesn't have the permission, do not use
+            // BIND_FOREGROUND_SERVICE to avoid it raising its process state
+            // by calling its own AppFunctions.
+            bindFlags |= Context.BIND_FOREGROUND_SERVICE;
+        }
+        final int finalBindFlags = bindFlags;
+
+        AppSearchManager perUserAppSearchManager = getAppSearchManagerAsUser(targetUser);
+        if (perUserAppSearchManager == null) {
+            safeExecuteAppFunctionCallback.onError(
+                    new AppFunctionException(ERROR_SYSTEM_ERROR, "AppSearchManager not found."));
+            return;
+        }
+
+        SearchContext staticMetadataSearchContext =
+                new SearchContext.Builder(
+                                AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB)
+                        .build();
+        FutureAppSearchSession futureSession =
+                new FutureAppSearchSessionImpl(
+                        perUserAppSearchManager, THREAD_POOL_EXECUTOR, staticMetadataSearchContext);
+        var unused =
+                mAppFunctionMetadataReader
+                        .getAppFunctionServiceClassName(
+                                futureSession,
+                                new AppFunctionName(
+                                        targetPackageName,
+                                        requestInternal.getClientRequest().getFunctionIdentifier()))
+                        .whenComplete(
+                                (serviceClassName, exception) -> {
+                                    futureSession.close();
+                                    if (exception != null) {
+                                        safeExecuteAppFunctionCallback.onError(
+                                                new AppFunctionException(
+                                                        ERROR_SYSTEM_ERROR,
+                                                        "Failed to get AppFunction service class"
+                                                                + " name."));
+                                        Slog.e(
+                                                TAG,
+                                                "Failed to get AppFunction service class name.",
+                                                exception);
+                                        return;
+                                    }
+                                    if (serviceClassName == null) {
+                                        safeExecuteAppFunctionCallback.onError(
+                                                new AppFunctionException(
+                                                        ERROR_FUNCTION_NOT_FOUND,
+                                                        "Cannot find the target function"
+                                                                + " metadata."));
+                                        return;
+                                    }
+                                    Intent serviceIntent =
+                                            mInternalServiceHelper.resolveAppFunctionService(
+                                                    targetPackageName,
+                                                    serviceClassName,
+                                                    requestInternal.getUserHandle());
+                                    if (serviceIntent == null) {
+                                        safeExecuteAppFunctionCallback.onError(
+                                                new AppFunctionException(
+                                                        ERROR_SYSTEM_ERROR,
+                                                        "Cannot find the target service."));
+                                        return;
+                                    }
+                                    maybeGrantImplicitAccess(
+                                            callingUid,
+                                            serviceIntent,
+                                            targetUser,
+                                            requestInternal
+                                                    .getClientRequest()
+                                                    .getTargetPackageName());
+                                    bindAppFunctionServiceUnchecked(
+                                            requestInternal,
+                                            serviceIntent,
+                                            targetUser,
+                                            localCancelTransport,
+                                            safeExecuteAppFunctionCallback,
+                                            finalBindFlags,
+                                            callerBinder,
+                                            callingUid);
+                                });
     }
 
     private void maybeGrantImplicitAccess(
@@ -1605,7 +1711,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         }
         int resultCode = ERROR_SYSTEM_ERROR;
         if (e instanceof AppFunctionNotFoundException) {
-            resultCode = AppFunctionException.ERROR_FUNCTION_NOT_FOUND;
+            resultCode = ERROR_FUNCTION_NOT_FOUND;
         } else if (e instanceof AppSearchException appSearchException) {
             resultCode =
                     mapAppSearchResultFailureCodeToExecuteAppFunctionResponse(
@@ -1804,13 +1910,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private static class AppFunctionMetadataObserverCallback implements ObserverCallback {
         @Nullable private final MetadataSyncAdapter mPerUserMetadataSyncAdapter;
 
-        @NonNull UserHandle mUserHandle;
-
         AppFunctionMetadataObserverCallback(
                 @NonNull UserHandle userHandle, @NonNull Context userContext) {
             mPerUserMetadataSyncAdapter =
                     MetadataSyncPerUser.getPerUserMetadataSyncAdapter(userHandle, userContext);
-            mUserHandle = userHandle;
         }
 
         @Override
@@ -1818,8 +1921,14 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             if (mPerUserMetadataSyncAdapter == null) {
                 return;
             }
-            if (documentChangeInfo.getDatabaseName().equals(APP_FUNCTION_STATIC_METADATA_DB)
-                    && documentChangeInfo.getNamespace().equals(APP_FUNCTION_STATIC_NAMESPACE)) {
+            if (documentChangeInfo
+                            .getDatabaseName()
+                            .equals(AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB)
+                    && documentChangeInfo
+                            .getNamespace()
+                            .equals(
+                                    AppFunctionStaticMetadataHelper
+                                            .APP_FUNCTION_STATIC_NAMESPACE)) {
                 var unused =
                         mPerUserMetadataSyncAdapter.submitSyncRequest(
                                 /* shouldSetRuntimeMetadataSchemaUnconditionally= */ false);
@@ -1831,7 +1940,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             if (mPerUserMetadataSyncAdapter == null) {
                 return;
             }
-            if (schemaChangeInfo.getDatabaseName().equals(APP_FUNCTION_STATIC_METADATA_DB)) {
+            if (schemaChangeInfo
+                    .getDatabaseName()
+                    .equals(AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_METADATA_DB)) {
                 boolean shouldInitiateSync = false;
                 for (String schemaName : schemaChangeInfo.getChangedSchemaNames()) {
                     if (schemaName.startsWith(AppFunctionStaticMetadataHelper.STATIC_SCHEMA_TYPE)) {
