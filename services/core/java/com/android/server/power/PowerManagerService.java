@@ -785,7 +785,12 @@ public final class PowerManagerService extends SystemService
             }
 
             mDirty |= DIRTY_DISPLAY_GROUP_WAKEFULNESS;
-            mNotifier.onGroupWakefulnessChangeStarted(groupId, wakefulness, reason, eventTime);
+            mNotifier.onGroupWakefulnessChangeStarted(
+                    groupId,
+                    wakefulness,
+                    reason,
+                    isDefaultOrAdjacentGroupInteractiveLocked(),
+                    eventTime);
             updateGlobalWakefulnessLocked(eventTime, reason, uid, opUid, opPackageName, details);
             updatePowerStateLocked();
         }
@@ -2693,8 +2698,11 @@ public final class PowerManagerService extends SystemService
             // Kick user activity to prevent newly added group from timing out instantly.
             userActivityNoUpdateLocked(powerGroup, mClock.uptimeMillis(),
                     PowerManager.USER_ACTIVITY_EVENT_OTHER, /* flags= */ 0, Process.SYSTEM_UID);
-            mNotifier.onGroupWakefulnessChangeStarted(groupId,
-                    powerGroup.getWakefulnessLocked(), WAKE_REASON_DISPLAY_GROUP_ADDED,
+            mNotifier.onGroupWakefulnessChangeStarted(
+                    groupId,
+                    powerGroup.getWakefulnessLocked(),
+                    WAKE_REASON_DISPLAY_GROUP_ADDED,
+                    isDefaultOrAdjacentGroupInteractiveLocked(),
                     mClock.uptimeMillis());
         } else if (event == DisplayGroupPowerChangeListener.DISPLAY_GROUP_REMOVED) {
             mNotifier.onGroupRemoved(groupId);
@@ -3553,6 +3561,19 @@ public final class PowerManagerService extends SystemService
         for (int idx = 0; idx < mPowerGroups.size(); idx++) {
             PowerGroup powerGroup = mPowerGroups.valueAt(idx);
             if (powerGroup.isDefaultGroupAdjacent()) {
+                if (PowerManagerInternal.isInteractive(powerGroup.getWakefulnessLocked())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @GuardedBy("mLock")
+    private boolean isDefaultOrAdjacentGroupInteractiveLocked() {
+        for (int idx = 0; idx < mPowerGroups.size(); idx++) {
+            PowerGroup powerGroup = mPowerGroups.valueAt(idx);
+            if (powerGroup.isDefaultOrAdjacentGroup()) {
                 if (PowerManagerInternal.isInteractive(powerGroup.getWakefulnessLocked())) {
                     return true;
                 }

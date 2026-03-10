@@ -134,16 +134,20 @@ class TestWindowManagerPolicy implements WindowManagerPolicy {
     }
 
     @Override
-    public void startedWakingUp(int displayGroupId, @WakeReason int wakeReason) {
-    }
+    public void startedWakingUp(
+            int displayGroupId,
+            @WakeReason int wakeReason,
+            boolean anyDefaultOrAdjacentGroupInteractive) {}
 
     @Override
     public void finishedWakingUp(int displayGroupId, @WakeReason int wakeReason) {
     }
 
     @Override
-    public void startedGoingToSleep(int displayGroupId, @GoToSleepReason int sleepReason) {
-    }
+    public void startedGoingToSleep(
+            int displayGroupId,
+            @GoToSleepReason int sleepReason,
+            boolean anyDefaultOrAdjacentGroupInteractive) {}
 
     @Override
     public void finishedGoingToSleep(int displayGroupId, @GoToSleepReason int sleepReason) {

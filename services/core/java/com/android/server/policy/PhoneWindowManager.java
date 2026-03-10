@@ -2475,8 +2475,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         // Match current screen state.
         if (!mPowerManager.isInteractive()) {
-            startedGoingToSleep(Display.DEFAULT_DISPLAY_GROUP,
-                    PowerManager.GO_TO_SLEEP_REASON_TIMEOUT);
+            startedGoingToSleep(
+                    Display.DEFAULT_DISPLAY_GROUP,
+                    PowerManager.GO_TO_SLEEP_REASON_TIMEOUT,
+                    /* anyDefaultOrAdjacentGroupInteractive= */ false);
             finishedGoingToSleep(Display.DEFAULT_DISPLAY_GROUP,
                     PowerManager.GO_TO_SLEEP_REASON_TIMEOUT);
         }
@@ -5298,7 +5300,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     // Both the default and default adjacent groups should be non interactive
-    private boolean isReadyToSignalSleep(int displayGroupId) {
+    private boolean isReadyToSignalSleep(
+            int displayGroupId, boolean anyDefaultOrAdjacentGroupInteractive) {
         if (!com.android.server.display.feature.flags.Flags.separateTimeouts()) {
             return displayGroupId == Display.DEFAULT_DISPLAY_GROUP;
         }
@@ -5309,11 +5312,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             return false;
         }
 
-        boolean areAllDefaultAdjacentGroupsNonInteractive =
-                !mPowerManagerInternal.isAnyDefaultAdjacentGroupInteractive();
-        boolean isDefaultGroupNonInteractive =
-                !mPowerManagerInternal.isGroupInteractive(Display.DEFAULT_DISPLAY_GROUP);
-        return areAllDefaultAdjacentGroupsNonInteractive && isDefaultGroupNonInteractive;
+        return !anyDefaultOrAdjacentGroupInteractive;
     }
 
     private boolean shouldFinishSleeping(int displayGroupId) {
@@ -5351,7 +5350,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     // Either of the default or default adjacent groups should be interactive
-    private boolean isReadyToSignalWakeup(int displayGroupId) {
+    private boolean isReadyToSignalWakeup(
+            int displayGroupId, boolean anyDefaultOrAdjacentGroupInteractive) {
         if (!com.android.server.display.feature.flags.Flags.separateTimeouts()) {
             return displayGroupId == Display.DEFAULT_DISPLAY_GROUP;
         }
@@ -5362,18 +5362,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             return false;
         }
 
-        boolean isAnyDefaultAdjacentGroupInteractive =
-                mPowerManagerInternal.isAnyDefaultAdjacentGroupInteractive();
-        boolean isDefaultGroupInteractive = mPowerManagerInternal
-                .isGroupInteractive(DEFAULT_DISPLAY);
-        return isAnyDefaultAdjacentGroupInteractive || isDefaultGroupInteractive;
+        return anyDefaultOrAdjacentGroupInteractive;
     }
 
     // Called on the PowerManager's Notifier thread.
     @Override
-    public void startedGoingToSleep(int displayGroupId,
-            @PowerManager.GoToSleepReason int pmSleepReason) {
-        if (!isReadyToSignalSleep(displayGroupId)) {
+    public void startedGoingToSleep(
+            int displayGroupId,
+            @PowerManager.GoToSleepReason int pmSleepReason,
+            boolean anyDefaultOrAdjacentGroupInteractive) {
+        if (!isReadyToSignalSleep(displayGroupId, anyDefaultOrAdjacentGroupInteractive)) {
             return;
         }
 
@@ -5433,7 +5431,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     // Called on the PowerManager's Notifier thread.
     @Override
-    public void startedWakingUp(int displayGroupId, @WakeReason int pmWakeReason) {
+    public void startedWakingUp(
+            int displayGroupId,
+            @WakeReason int pmWakeReason,
+            boolean anyDefaultOrAdjacentGroupInteractive) {
         if (DEBUG_WAKEUP) {
             Slog.i(TAG, "Started waking up... (groupId=" + displayGroupId + " why="
                     + WindowManagerPolicyConstants.onReasonToString(
@@ -5441,7 +5442,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             pmWakeReason)) + ")");
         }
 
-        if (!isReadyToSignalWakeup(displayGroupId)) {
+        if (!isReadyToSignalWakeup(displayGroupId, anyDefaultOrAdjacentGroupInteractive)) {
             return;
         }
 
@@ -5935,7 +5936,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
         }
         mSideFpsEventHandler.onFingerprintSensorReady();
-        startedWakingUp(Display.DEFAULT_DISPLAY_GROUP, PowerManager.WAKE_REASON_UNKNOWN);
+        startedWakingUp(
+                Display.DEFAULT_DISPLAY_GROUP,
+                PowerManager.WAKE_REASON_UNKNOWN,
+                /* anyDefaultOrAdjacentGroupInteractive= */ true);
         finishedWakingUp(Display.DEFAULT_DISPLAY_GROUP, PowerManager.WAKE_REASON_UNKNOWN);
 
         int defaultDisplayState = mDisplayManager.getDisplay(DEFAULT_DISPLAY).getState();

@@ -16,8 +16,8 @@
 
 package com.android.server.power;
 
-import static android.os.PowerManager.SCREEN_TIMEOUT_KEEP_DISPLAY_ON;
 import static android.os.PowerManager.SCREEN_TIMEOUT_ACTIVE;
+import static android.os.PowerManager.SCREEN_TIMEOUT_KEEP_DISPLAY_ON;
 import static android.os.PowerManagerInternal.WAKEFULNESS_ASLEEP;
 import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 
@@ -377,11 +377,17 @@ public class NotifierTest {
 
         // WHEN a power group wakefulness change starts
         mNotifier.onGroupWakefulnessChangeStarted(
-                groupId, WAKEFULNESS_AWAKE, changeReason, /* eventTime= */ 999);
+                groupId,
+                WAKEFULNESS_AWAKE,
+                changeReason,
+                /* anyDefaultOrAdjacentGroupInteractive= */ true,
+                /* eventTime= */ 999);
         mTestLooper.dispatchAll();
 
         // THEN window manager policy is informed that device has started waking up
-        verify(mPolicy).startedWakingUp(groupId, changeReason);
+        verify(mPolicy)
+                .startedWakingUp(
+                        groupId, changeReason, /* anyDefaultOrAdjacentGroupInteractive= */ true);
         verify(mDisplayManagerInternal, never()).getDisplayIds(eq(false));
         verify(mInputManagerInternal, never()).setDisplayInteractivities(any());
     }
@@ -394,17 +400,29 @@ public class NotifierTest {
         final int changeReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT;
         when(mPowerManagerFlags.isPerDisplayWakeByTouchEnabled()).thenReturn(false);
         mNotifier.onGroupWakefulnessChangeStarted(
-                groupId, WAKEFULNESS_ASLEEP, changeReason, /* eventTime= */ 999);
+                groupId,
+                WAKEFULNESS_ASLEEP,
+                changeReason,
+                /* anyDefaultOrAdjacentGroupInteractive= */ false,
+                /* eventTime= */ 999);
         mTestLooper.dispatchAll();
-        verify(mPolicy, times(1)).startedGoingToSleep(groupId, changeReason);
+        verify(mPolicy, times(1))
+                .startedGoingToSleep(
+                        groupId, changeReason, /* anyDefaultOrAdjacentGroupInteractive= */ false);
 
         // WHEN a power wakefulness change to not interactive starts
         mNotifier.onGroupWakefulnessChangeStarted(
-                groupId, WAKEFULNESS_ASLEEP, changeReason, /* eventTime= */ 999);
+                groupId,
+                WAKEFULNESS_ASLEEP,
+                changeReason,
+                /* anyDefaultOrAdjacentGroupInteractive= */ false,
+                /* eventTime= */ 999);
         mTestLooper.dispatchAll();
 
         // THEN policy is only informed once of non-interactive wakefulness change
-        verify(mPolicy, times(1)).startedGoingToSleep(groupId, changeReason);
+        verify(mPolicy, times(1))
+                .startedGoingToSleep(
+                        groupId, changeReason, /* anyDefaultOrAdjacentGroupInteractive= */ false);
         verify(mDisplayManagerInternal, never()).getDisplayIds(eq(false));
         verify(mInputManagerInternal, never()).setDisplayInteractivities(any());
     }
@@ -417,17 +435,29 @@ public class NotifierTest {
         final int firstChangeReason = PowerManager.GO_TO_SLEEP_REASON_TIMEOUT;
         when(mPowerManagerFlags.isPerDisplayWakeByTouchEnabled()).thenReturn(false);
         mNotifier.onGroupWakefulnessChangeStarted(
-                groupId, WAKEFULNESS_ASLEEP, firstChangeReason, /* eventTime= */ 999);
+                groupId,
+                WAKEFULNESS_ASLEEP,
+                firstChangeReason,
+                /* anyDefaultOrAdjacentGroupInteractive= */ false,
+                /* eventTime= */ 999);
         mTestLooper.dispatchAll();
 
         // WHEN a power wakefulness change to interactive starts
         final int secondChangeReason = PowerManager.WAKE_REASON_TAP;
         mNotifier.onGroupWakefulnessChangeStarted(
-                groupId, WAKEFULNESS_AWAKE, secondChangeReason, /* eventTime= */ 999);
+                groupId,
+                WAKEFULNESS_AWAKE,
+                secondChangeReason,
+                /* anyDefaultOrAdjacentGroupInteractive= */ false,
+                /* eventTime= */ 999);
         mTestLooper.dispatchAll();
 
         // THEN policy is informed of the change
-        verify(mPolicy).startedWakingUp(groupId, secondChangeReason);
+        verify(mPolicy)
+                .startedWakingUp(
+                        groupId,
+                        secondChangeReason,
+                        /* anyDefaultOrAdjacentGroupInteractive= */ false);
         verify(mDisplayManagerInternal, never()).getDisplayIds(eq(false));
         verify(mInputManagerInternal, never()).setDisplayInteractivities(any());
     }
@@ -469,7 +499,11 @@ public class NotifierTest {
 
         // WHEN power group wakefulness change started
         mNotifier.onGroupWakefulnessChangeStarted(
-                groupId, WAKEFULNESS_AWAKE, changeReason, /* eventTime= */ 999);
+                groupId,
+                WAKEFULNESS_AWAKE,
+                changeReason,
+                /* anyDefaultOrAdjacentGroupInteractive= */ true,
+                /* eventTime= */ 999);
         mTestLooper.dispatchAll();
 
         if (expectCallSetDisplayInteractivity) {
@@ -495,7 +529,11 @@ public class NotifierTest {
         when(mDisplayManagerInternal.getDisplayIds(eq(false))).thenReturn(displays);
         when(mDisplayManagerInternal.getDisplayIdsForGroup(groupId)).thenReturn(displays);
         mNotifier.onGroupWakefulnessChangeStarted(
-                groupId, WAKEFULNESS_AWAKE, PowerManager.WAKE_REASON_TAP, /* eventTime= */ 1000);
+                groupId,
+                WAKEFULNESS_AWAKE,
+                PowerManager.WAKE_REASON_TAP,
+                /* anyDefaultOrAdjacentGroupInteractive= */ true,
+                /* eventTime= */ 1000);
         final SparseBooleanArray expectedDisplayInteractivities = new SparseBooleanArray();
         expectedDisplayInteractivities.put(displayId1, true);
         expectedDisplayInteractivities.put(displayId2, true);
@@ -525,7 +563,11 @@ public class NotifierTest {
         displayIdsByGroupId.put(groupId, displays);
         when(mDisplayManagerInternal.getDisplayIdsByGroupsIds()).thenReturn(displayIdsByGroupId);
         mNotifier.onGroupWakefulnessChangeStarted(
-                groupId, WAKEFULNESS_AWAKE, PowerManager.WAKE_REASON_TAP, /* eventTime= */ 1000);
+                groupId,
+                WAKEFULNESS_AWAKE,
+                PowerManager.WAKE_REASON_TAP,
+                /* anyDefaultOrAdjacentGroupInteractive= */ true,
+                /* eventTime= */ 1000);
         final SparseBooleanArray expectedDisplayInteractivities = new SparseBooleanArray();
         expectedDisplayInteractivities.put(displayId1, true);
         expectedDisplayInteractivities.put(displayId2, true);
