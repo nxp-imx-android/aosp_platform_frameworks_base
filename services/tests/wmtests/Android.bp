@@ -319,6 +319,7 @@ test_module_config {
         "com.android.server.wm.SafeActivityOptionsTest",
         "com.android.server.wm.ScreenshotTests",
         "com.android.server.wm.SensitiveContentPackagesTest",
+        "com.android.server.wm.SessionTest",
         "com.android.server.wm.SizeCompatTests",
         "com.android.server.wm.SplashScreenExceptionListTest",
         "com.android.server.wm.SurfaceAnimationRunnerTest",
@@ -1180,6 +1181,13 @@ test_module_config {
     base: "WmTests",
     test_suites: ["device-tests"],
     include_filters: ["com.android.server.wm.SensitiveContentPackagesTest"],
+}
+
+test_module_config {
+    name: "WmTests-wm-SessionTest",
+    base: "WmTests",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.server.wm.SessionTest"],
 }
 
 test_module_config {
