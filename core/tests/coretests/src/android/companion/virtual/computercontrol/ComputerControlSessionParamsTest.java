@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import android.app.AppInteractionAttribution;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.companion.DeviceId;
 import android.companion.virtual.CompanionDeviceId;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Parcel;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -53,6 +55,20 @@ public class ComputerControlSessionParamsTest {
             .setCustomId(SESSION_NAME)
             .build();
     private static final CompanionDeviceId COMPANION_DEVICE_ID = new CompanionDeviceId(DEVICE_ID);
+    private static final String NOTIFICATION_CHANNEL_ID = "TEST_CHANNEL_ID";
+    private static final int NOTIFICATION_ID = 5;
+    private static final String NOTIFICATION_TAG = "TEST_NOTIFICATION_TAG";
+    private static final ComputerControlSessionParams.NotificationParams NOTIFICATION_PARAMS =
+            new ComputerControlSessionParams.NotificationParams.Builder(
+                    new Notification.Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
+                            .setOngoing(true)
+                            .setContentTitle("Hello")
+                            .setRequestPromotedOngoing(true)
+                            .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                            .setColor(Color.WHITE)
+                            .build(), NOTIFICATION_ID)
+                    .setNotificationTag(NOTIFICATION_TAG)
+                    .build();
 
     @Test
     public void parcelable_shouldRecreateSuccessfully() {
@@ -71,6 +87,7 @@ public class ComputerControlSessionParamsTest {
                         .setPreviewIntent(previewIntent)
                         .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                         .setCompanionDeviceId(COMPANION_DEVICE_ID)
+                        .setNotificationParams(NOTIFICATION_PARAMS)
                         .build();
         Parcel parcel = Parcel.obtain();
         originalParams.writeToParcel(parcel, 0);
@@ -85,6 +102,13 @@ public class ComputerControlSessionParamsTest {
         assertThat(params.getPreviewIntent()).isEqualTo(previewIntent);
         assertThat(params.getAppInteractionAttribution()).isEqualTo(APP_INTERACTION_ATTRIBUTION);
         assertThat(params.getCompanionDeviceId().getDeviceId()).isEqualTo(DEVICE_ID);
+        ComputerControlSessionParams.NotificationParams notificationParams =
+                params.getNotificationParams();
+        assertThat(notificationParams.getNotificationId()).isEqualTo(NOTIFICATION_ID);
+        assertThat(notificationParams.getNotificationTag()).isEqualTo(NOTIFICATION_TAG);
+        Notification notification = notificationParams.getNotification();
+        assertThat(notification.getChannelId()).isEqualTo(NOTIFICATION_CHANNEL_ID);
+        assertThat(notification.hasPromotableCharacteristics()).isTrue();
     }
 
     @Test
@@ -135,6 +159,32 @@ public class ComputerControlSessionParamsTest {
     }
 
     @Test
+    public void parcelable_unsetNotificationParams_shouldRecreateSuccessfully() {
+        PendingIntent previewIntent =
+                PendingIntent.getActivity(
+                        getApplicationContext(),
+                        0,
+                        new Intent("PREVIEW"),
+                        PendingIntent.FLAG_IMMUTABLE);
+        ComputerControlSessionParams originalParams =
+                new ComputerControlSessionParams.Builder()
+                        .setName(SESSION_NAME)
+                        .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                        .setPreviewIntent(previewIntent)
+                        .build();
+        Parcel parcel = Parcel.obtain();
+        originalParams.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+
+        ComputerControlSessionParams params =
+                ComputerControlSessionParams.CREATOR.createFromParcel(parcel);
+        assertThat(params.getName()).isEqualTo(SESSION_NAME);
+        assertThat(params.getTargetPackageNames()).containsExactlyElementsIn(TARGET_PACKAGE_NAMES);
+        assertThat(params.getPreviewIntent()).isEqualTo(previewIntent);
+        assertThat(params.getNotificationParams()).isNull();
+    }
+
+    @Test
     public void build_unsetName_throwsException() {
         assertThrows(
                 IllegalArgumentException.class,
@@ -159,6 +209,7 @@ public class ComputerControlSessionParamsTest {
                         .setTargetComputerControlVersion(TARGET_COMPUTER_CONTROL_VERSION)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
+                        .setNotificationParams(NOTIFICATION_PARAMS)
                         .setPreviewIntent(null)
                         .build();
 
@@ -187,10 +238,23 @@ public class ComputerControlSessionParamsTest {
                         .setTargetComputerControlVersion(TARGET_COMPUTER_CONTROL_VERSION)
                         .setTargetPackageNames(TARGET_PACKAGE_NAMES)
                         .setCompanionDeviceId(null)
+                        .setNotificationParams(NOTIFICATION_PARAMS)
                         .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                         .build();
 
         assertThat(params.getCompanionDeviceId()).isNull();
+    }
+
+    @Test
+    public void build_withNullNotificationParams_setsNotificationParamsToNull() {
+        ComputerControlSessionParams params = new ComputerControlSessionParams.Builder()
+                .setName(SESSION_NAME)
+                .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
+                .setNotificationParams(null)
+                .setTargetComputerControlVersion(4)
+                .build();
+        assertThat(params.getNotificationParams()).isNull();
     }
 
     @Test
@@ -201,6 +265,20 @@ public class ComputerControlSessionParamsTest {
                         new ComputerControlSessionParams.Builder()
                                 .setName(SESSION_NAME)
                                 .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                                .setNotificationParams(NOTIFICATION_PARAMS)
+                                .setTargetComputerControlVersion(5)
+                                .build());
+    }
+
+    @Test
+    public void build_withTargetComputerControlVersion5_unsetNotificationParams_throwsException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        new ComputerControlSessionParams.Builder()
+                                .setName(SESSION_NAME)
+                                .setTargetPackageNames(TARGET_PACKAGE_NAMES)
+                                .setAppInteractionAttribution(APP_INTERACTION_ATTRIBUTION)
                                 .setTargetComputerControlVersion(5)
                                 .build());
     }
@@ -216,5 +294,27 @@ public class ComputerControlSessionParamsTest {
                                 .setTargetComputerControlVersion(4)
                                 .setCompanionDeviceId(COMPANION_DEVICE_ID)
                                 .build());
+    }
+
+    @Test
+    public void notificationParams_withoutPromotionalCharacteristics_throwsException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        new ComputerControlSessionParams.NotificationParams.Builder(
+                                new Notification.Builder(getApplicationContext(),
+                                        NOTIFICATION_CHANNEL_ID)
+                                        .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                                        .setColor(Color.WHITE)
+                                        .build(), NOTIFICATION_ID));
+    }
+
+    @Test
+    public void notificationParams_withNullNotification_throwsException() {
+        assertThrows(
+                NullPointerException.class,
+                () ->
+                        new ComputerControlSessionParams.NotificationParams.Builder(null,
+                                NOTIFICATION_ID));
     }
 }

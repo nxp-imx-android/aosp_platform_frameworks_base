@@ -12,7 +12,7 @@ package com.android.extensions.computercontrol {
   }
 
   public final class ComputerControlSession implements AutoCloseable {
-    method public void attachNotificationInfo(int, @Nullable String);
+    method @Deprecated public void attachNotificationInfo(int, @Nullable String);
     method public void clearLifecycleCallback();
     method public void clearStabilityListener();
     method public void close();
@@ -63,11 +63,24 @@ package com.android.extensions.computercontrol {
     method public void onClosed(int);
   }
 
+  public static final class ComputerControlSession.NotificationParams {
+    method @NonNull public android.app.Notification getNotification();
+    method public int getNotificationId();
+    method @Nullable public String getNotificationTag();
+  }
+
+  public static final class ComputerControlSession.NotificationParams.Builder {
+    ctor public ComputerControlSession.NotificationParams.Builder(@NonNull android.app.Notification, int);
+    method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.NotificationParams build();
+    method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.NotificationParams.Builder setNotificationTag(@Nullable String);
+  }
+
   public static class ComputerControlSession.Params {
     method @Nullable public android.app.AppInteractionAttribution getAppInteractionAttribution();
     method @Nullable public android.companion.DeviceId getCompanionDeviceId();
     method @NonNull public android.content.Context getContext();
     method @NonNull public String getName();
+    method @Nullable public com.android.extensions.computercontrol.ComputerControlSession.NotificationParams getNotificationParams();
     method @NonNull public java.util.List<String> getTargetPackageNames();
   }
 
@@ -77,6 +90,7 @@ package com.android.extensions.computercontrol {
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setAppInteractionAttribution(@Nullable android.app.AppInteractionAttribution);
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setCompanionDeviceId(@Nullable android.companion.DeviceId);
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setName(@NonNull String);
+    method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setNotificationParams(@Nullable com.android.extensions.computercontrol.ComputerControlSession.NotificationParams);
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setPreviewIntent(@Nullable android.app.PendingIntent);
     method @NonNull public com.android.extensions.computercontrol.ComputerControlSession.Params.Builder setTargetPackageNames(@NonNull java.util.List<String>);
   }

@@ -256,6 +256,8 @@ public abstract class VirtualDeviceManagerInternal {
      * Returns if the provided notification id and tag are used for a computer control session by
      * the given package.
      */
+    // TODO(b/483645569): Remove when agents start passing a notification as part of the
+    // ComputerControlSessionParams.
     public abstract boolean isComputerControlNotification(int notificationId,
             @Nullable String notificationTag, @NonNull String packageName);
 }
