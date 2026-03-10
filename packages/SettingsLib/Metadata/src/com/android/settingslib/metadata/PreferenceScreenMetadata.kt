@@ -204,8 +204,8 @@ interface PreferenceScreenMetadata : PreferenceGroup {
     companion object {
         internal const val LAUNCH_SETTINGS_PAGES_ACTION =
             "com.android.settings.action.LAUNCH_SETTINGS_PAGES"
-        internal const val EXTRA_SCREEN_KEY = "screen_key"
-        internal const val EXTRA_SCREEN_ARGS = "screen_args"
+        const val EXTRA_SCREEN_KEY = "screen_key"
+        const val EXTRA_SCREEN_ARGS = "screen_args"
         internal const val EXTRA_FRAGMENT_ARG_KEY = ":settings:fragment_args_key"
 
         /** Key for a Bundle of extras to be added to the launch intent. See [launchScreenExtra]. */
