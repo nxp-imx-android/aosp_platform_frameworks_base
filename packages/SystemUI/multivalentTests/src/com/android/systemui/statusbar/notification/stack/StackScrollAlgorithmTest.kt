@@ -2107,6 +2107,37 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         )
     }
 
+    @Test
+    @EnableSceneContainer
+    fun resetViewStates_firstViewInShelf_ignoresDecorViews() {
+        // GIVEN notification row and EmptyShadeView
+        val notificationHeight = 100
+        whenever(notificationRow.intrinsicHeight).thenReturn(notificationHeight)
+
+        hostView.removeAllViews()
+        hostView.addView(notificationRow)
+        hostView.addView(emptyShadeView)
+
+        // Stack only has room for notification row (no room for EmptyShadeView)
+        ambientState.stackEndHeight = notificationHeight.toFloat()
+        ambientState.interpolatedStackHeight = notificationHeight.toFloat()
+        ambientState.stackScrollTop = 0f
+        ambientState.stackBounds = YSpace(top = 0f, bottom = notificationHeight.toFloat())
+
+        val realShelfState = notificationShelf.ShelfState()
+        whenever(notificationShelf.viewState).thenReturn(realShelfState)
+        ambientState.shelf = notificationShelf
+        stackScrollAlgorithm.setIsExpanded(true)
+
+        // RUN algorithm
+        stackScrollAlgorithm.resetViewStates(ambientState, 0)
+
+        // VERIFY EmptyShadeView is not in shelf
+        val stateCaptor = argumentCaptor<StackScrollAlgorithm.StackScrollAlgorithmState>()
+        verify(notificationShelf).updateState(stateCaptor.capture(), eq(ambientState))
+        assertThat(stateCaptor.firstValue.firstViewInShelf).isNull()
+    }
+
     private fun createHunViewMock(
         isShadeOpen: Boolean,
         fullyVisible: Boolean,
