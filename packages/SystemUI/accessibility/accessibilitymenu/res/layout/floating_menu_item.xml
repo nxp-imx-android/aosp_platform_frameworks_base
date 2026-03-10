@@ -18,7 +18,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?android:attr/selectableItemBackground"
-    android:gravity="center_vertical"
+    android:gravity="start|center_vertical"
+    android:layoutDirection="locale"
+    android:textDirection="locale"
     android:orientation="horizontal"
     android:padding="16dp">
 
@@ -31,8 +33,10 @@
 
     <TextView
         android:id="@+id/menu_item_text"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textAlignment="viewStart"
         android:textAppearance="?android:attr/textAppearanceListItemSmall" />
 
 </LinearLayout>

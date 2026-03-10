@@ -17,7 +17,6 @@
 package com.android.systemui.accessibility.floatingmenu
 
 import android.content.Context
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -93,6 +92,7 @@ class MoreOptionsPopup(context: Context, private val listener: OnItemClickListen
                     convertView
                         ?: LayoutInflater.from(getContext())
                             .inflate(FloatingMenuR.layout.floating_menu_item, parent, false)
+
                 val item = getItem(position)!!
                 val icon = view.findViewById<ImageView>(FloatingMenuR.id.menu_item_icon)
                 val text = view.findViewById<TextView>(FloatingMenuR.id.menu_item_text)
@@ -124,38 +124,19 @@ class MoreOptionsPopup(context: Context, private val listener: OnItemClickListen
         )
         popup.isModal = true
 
-        applyPopupOffsets(popup, anchorView, popupWidth)
-    }
-
-    private fun applyPopupOffsets(popup: ListPopupWindow, anchorView: View, popupWidth: Int) {
-        popup.horizontalOffset = calculateHorizontalOffset(anchorView, popupWidth)
-        popup.verticalOffset = calculateVerticalOffset(anchorView)
-    }
-
-    private fun calculateHorizontalOffset(anchorView: View, popupWidth: Int): Int {
-        val context = anchorView.context
-        val edgeGap =
-            TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP,
-                    5f,
-                    context.resources.displayMetrics,
-                )
-                .toInt()
+        val displayRect = android.graphics.Rect()
+        anchorView.getWindowVisibleDisplayFrame(displayRect)
 
         val location = IntArray(2)
-        anchorView.getLocationOnScreen(location)
+        anchorView.getLocationInWindow(location)
         val anchorX = location[0]
-        val screenWidth = context.resources.displayMetrics.widthPixels
 
-        return if (anchorX + anchorView.width > screenWidth / 2) {
-            (screenWidth - edgeGap) - (anchorX + popupWidth)
+        val isOnRightSide = anchorX + (anchorView.width / 2) > displayRect.centerX()
+        if (isOnRightSide) {
+            popup.setDropDownGravity(android.view.Gravity.RIGHT)
         } else {
-            edgeGap - anchorX
+            popup.setDropDownGravity(android.view.Gravity.LEFT)
         }
-    }
-
-    private fun calculateVerticalOffset(anchorView: View): Int {
-        return -anchorView.height / 2
     }
 
     private fun onMoreOptionsItemClicked(item: MoreOptionsItem) {
