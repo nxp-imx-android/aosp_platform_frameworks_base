@@ -294,8 +294,7 @@ public final class PolicyIdentifier<T> {
                                                             unaffiliatedFullUserProfileOwner =
                                                                     DISALLOWED)),
                             emptyStringAllowed = true,
-                            unprintableCharactersAllowed = true),
-            resolutionMechanism = @ListResolutionMechanism(custom = true))
+                            unprintableCharactersAllowed = true))
     public static final PolicyIdentifier<List<String>>
             SIMPLE_STRING_LIST_POLICY_WITH_UNPRINTABLE_CHARACTERS_ALLOWED =
                     new PolicyIdentifier<>(
