@@ -56,6 +56,7 @@ public class CameraSessionStats implements Parcelable {
     private int mApiLevel;
     private boolean mIsNdk;
     private int mLatencyMs;
+    private int mInputFormat;
     private long mLogId;
     private int mSessionType;
     private int mInternalReconfigure;
@@ -80,6 +81,7 @@ public class CameraSessionStats implements Parcelable {
         mApiLevel = -1;
         mIsNdk = false;
         mLatencyMs = -1;
+        mInputFormat = -1;
         mLogId = 0;
         mMaxPreviewFps = 0;
         mSessionType = -1;
@@ -109,6 +111,7 @@ public class CameraSessionStats implements Parcelable {
         mApiLevel = apiLevel;
         mIsNdk = isNdk;
         mLatencyMs = creationDuration;
+        mInputFormat = -1;
         mLogId = logId;
         mMaxPreviewFps = maxPreviewFps;
         mSessionType = sessionType;
@@ -155,6 +158,7 @@ public class CameraSessionStats implements Parcelable {
         dest.writeInt(mApiLevel);
         dest.writeBoolean(mIsNdk);
         dest.writeInt(mLatencyMs);
+        dest.writeInt(mInputFormat);
         dest.writeLong(mLogId);
         dest.writeFloat(mMaxPreviewFps);
         dest.writeInt(mSessionType);
@@ -183,6 +187,7 @@ public class CameraSessionStats implements Parcelable {
         mApiLevel = in.readInt();
         mIsNdk = in.readBoolean();
         mLatencyMs = in.readInt();
+        mInputFormat = in.readInt();
         mLogId = in.readLong();
         mMaxPreviewFps = in.readFloat();
         mSessionType = in.readInt();
@@ -240,6 +245,10 @@ public class CameraSessionStats implements Parcelable {
 
     public int getLatencyMs() {
         return mLatencyMs;
+    }
+
+    public int getInputFormat() {
+        return mInputFormat;
     }
 
     public long getLogId() {
