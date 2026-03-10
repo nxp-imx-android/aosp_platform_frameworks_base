@@ -1023,7 +1023,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mGestureInterceptor,
                     mWindowManagerWrapper,
                     mHandler,
-                    mDesktopModeUiEventLogger
+                    mDesktopModeUiEventLogger,
+                    this,
+                    mFocusTransitionObserver,
+                    mPinnedLayerController,
+                    mDesktopTasksController
             );
         } else if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_header) {
             return mAppHeaderViewHolderFactory.create(
