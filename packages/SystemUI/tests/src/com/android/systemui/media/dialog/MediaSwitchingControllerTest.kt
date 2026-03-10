@@ -1125,88 +1125,95 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         assertThat(mMediaSwitchingController.isSingleConnectedDevice(mMediaDevice2)).isFalse()
     }
 
+    @DisableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
     @Test
-    fun addDeviceToPlayMedia_callsLocalMediaManager() {
-        val testMediaSwitchingController =
-            MediaSwitchingController(
-                mSpyContext,
-                mPackageName = null,
-                mSpyContext.user,
-                mToken = null,
-                mediaSwitchingType = null,
-                mMediaSessionManager,
-                mLocalBluetoothManager,
-                mStarter,
-                mNotifCollection,
-                mDialogTransitionAnimator,
-                mNearbyMediaDevicesManager,
-                mAudioManager,
-                mPowerExemptionManager,
-                mKeyguardManager,
-                mClock,
-                mFakeBackgroundExecutor,
-                mVolumePanelGlobalStateInteractor,
-                mUserTracker,
-                mJavaAdapter,
-                mAudioSharingRepository,
-                mExpandedAudioTileDetailsFeatureInteractor,
-            )
-
+    fun addDeviceToPlayMedia_callsLocalMediaManagerOnMainThread() {
+        val testMediaSwitchingController: MediaSwitchingController =
+            createTestMediaSwitchingController()
         val mockLocalMediaManager = mock<LocalMediaManager>()
         testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager
+        val captor = argumentCaptor<RoutingChangeInfo>()
 
         testMediaSwitchingController.addDeviceToPlayMedia(mMediaDevice2)
-        val captor = argumentCaptor<RoutingChangeInfo>()
+
         verify(mockLocalMediaManager).addDeviceToPlayMedia(eq(mMediaDevice2), captor.capture())
         val capturedInfo = captor.firstValue
-        assertThat(capturedInfo.entryPoint).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER)
-        assertThat(capturedInfo.isSuggested).isEqualTo(false)
-    }
-
-    @Test
-    fun removeDeviceFromPlayMedia_callsLocalMediaManager() {
-        val testMediaSwitchingController =
-            MediaSwitchingController(
-                mSpyContext,
-                mPackageName = null,
-                mSpyContext.user,
-                mToken = null,
-                mediaSwitchingType = null,
-                mMediaSessionManager,
-                mLocalBluetoothManager,
-                mStarter,
-                mNotifCollection,
-                mDialogTransitionAnimator,
-                mNearbyMediaDevicesManager,
-                mAudioManager,
-                mPowerExemptionManager,
-                mKeyguardManager,
-                mClock,
-                mFakeBackgroundExecutor,
-                mVolumePanelGlobalStateInteractor,
-                mUserTracker,
-                mJavaAdapter,
-                mAudioSharingRepository,
-                mExpandedAudioTileDetailsFeatureInteractor,
-            )
-
-        val mockLocalMediaManager = mock<LocalMediaManager>()
-        testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager
-
-        testMediaSwitchingController.removeDeviceFromPlayMedia(mMediaDevice2)
-        val argumentCaptor = argumentCaptor<RoutingChangeInfo>()
-        verify(mockLocalMediaManager)
-            .removeDeviceFromPlayMedia(eq(mMediaDevice2), argumentCaptor.capture())
-        val capturedInfo = argumentCaptor.firstValue
         assertThat(capturedInfo.entryPoint).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER)
         assertThat(capturedInfo.isSuggested).isFalse()
     }
 
+    @DisableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
     @Test
-    fun adjustSessionVolume_adjustWithoutId_triggersFromLocalMediaManager() {
+    fun removeDeviceFromPlayMedia_callsLocalMediaManagerOnMainThread() {
+        val testMediaSwitchingController = createTestMediaSwitchingController()
+        val mockLocalMediaManager = mock<LocalMediaManager>()
+        testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager
+        val captor = argumentCaptor<RoutingChangeInfo>()
+
+        testMediaSwitchingController.removeDeviceFromPlayMedia(mMediaDevice2)
+
+        verify(mockLocalMediaManager).removeDeviceFromPlayMedia(eq(mMediaDevice2), captor.capture())
+        val capturedInfo = captor.firstValue
+        assertThat(capturedInfo.entryPoint).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER)
+        assertThat(capturedInfo.isSuggested).isFalse()
+    }
+
+    @DisableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
+    @Test
+    fun adjustSessionVolume_adjustWithoutId_triggersFromLocalMediaManagerInMainThread() {
         val testVolume = 10
+
         mMediaSwitchingController.adjustSessionVolume(testVolume)
 
+        verify(mLocalMediaManager).adjustSessionVolume(testVolume)
+    }
+
+    @EnableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
+    @Test
+    fun addDeviceToPlayMedia_callsLocalMediaManagerOnBackgroundThread() {
+        val testMediaSwitchingController: MediaSwitchingController =
+            createTestMediaSwitchingController()
+        val mockLocalMediaManager = mock<LocalMediaManager>()
+        testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager
+        val captor = argumentCaptor<RoutingChangeInfo>()
+
+        testMediaSwitchingController.addDeviceToPlayMedia(mMediaDevice2)
+
+        verify(mockLocalMediaManager, never()).addDeviceToPlayMedia(any(), any())
+        mFakeBackgroundExecutor.runAllReady()
+        verify(mockLocalMediaManager).addDeviceToPlayMedia(eq(mMediaDevice2), captor.capture())
+        val capturedInfo = captor.firstValue
+        assertThat(capturedInfo.entryPoint).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER)
+        assertThat(capturedInfo.isSuggested).isFalse()
+    }
+
+    @EnableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
+    @Test
+    fun removeDeviceFromPlayMedia_callsLocalMediaManagerOnBackgroundThread() {
+        val testMediaSwitchingController = createTestMediaSwitchingController()
+        val mockLocalMediaManager = mock<LocalMediaManager>()
+        testMediaSwitchingController.mLocalMediaManager = mockLocalMediaManager
+        val captor = argumentCaptor<RoutingChangeInfo>()
+
+        testMediaSwitchingController.removeDeviceFromPlayMedia(mMediaDevice2)
+
+        verify(mockLocalMediaManager, never()).removeDeviceFromPlayMedia(any(), any())
+        mFakeBackgroundExecutor.runAllReady()
+        verify(mockLocalMediaManager).removeDeviceFromPlayMedia(eq(mMediaDevice2), captor.capture())
+        val capturedInfo = captor.firstValue
+        assertThat(capturedInfo.entryPoint).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER)
+        assertThat(capturedInfo.isSuggested).isFalse()
+    }
+
+    @EnableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
+    @Test
+    fun adjustSessionVolume_adjustWithoutId_triggersFromLocalMediaManagerInBackgroundThread() {
+        val testVolume = 10
+
+        mMediaSwitchingController.adjustSessionVolume(testVolume)
+
+        verify(mLocalMediaManager, never()).adjustSessionVolume(any())
+        mFakeBackgroundExecutor.runAllReady()
         verify(mLocalMediaManager).adjustSessionVolume(testVolume)
     }
 
@@ -1250,8 +1257,19 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         verify(mLocalMediaManager).getSessionName()
     }
 
+    @EnableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
     @Test
-    fun releaseSession_triggersFromLocalMediaManager() {
+    fun releaseSession_triggersFromLocalMediaManagerInBackgroundThread() {
+        mMediaSwitchingController.releaseSession()
+
+        verify(mLocalMediaManager, never()).releaseSession()
+        mFakeBackgroundExecutor.runAllReady()
+        verify(mLocalMediaManager).releaseSession()
+    }
+
+    @DisableFlags(Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD)
+    @Test
+    fun releaseSession_triggersFromLocalMediaManagerInMainThread() {
         mMediaSwitchingController.releaseSession()
 
         verify(mLocalMediaManager).releaseSession()
@@ -2030,6 +2048,32 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         )
     }
 
+    private fun createTestMediaSwitchingController(): MediaSwitchingController {
+        return MediaSwitchingController(
+            mSpyContext,
+            null, /* packageName */
+            mUserHandle, /* userHandle */
+            null, /* token */
+            null, /* mediaSwitchingType */
+            mMediaSessionManager,
+            mLocalBluetoothManager,
+            mStarter,
+            mNotifCollection,
+            mDialogTransitionAnimator,
+            mNearbyMediaDevicesManager,
+            mAudioManager,
+            mPowerExemptionManager,
+            mKeyguardManager,
+            mClock,
+            mFakeBackgroundExecutor,
+            mVolumePanelGlobalStateInteractor,
+            mUserTracker,
+            mJavaAdapter,
+            mAudioSharingRepository,
+            mExpandedAudioTileDetailsFeatureInteractor,
+        )
+    }
+
     private fun setupNotificationMock() {
         val mediaSessionToken =
             mock<MediaSession.Token> { on { binder } doReturn mock<ISessionController>() }
@@ -2069,7 +2113,8 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
         @Parameters(name = "{0}")
         fun getParams(): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL
+                Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL,
+                Flags.FLAG_MOVE_OUTPUT_SWITCHER_CALLS_TO_BACKGROUND_THREAD,
             )
         }
     }

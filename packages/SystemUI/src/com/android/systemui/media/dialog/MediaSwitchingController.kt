@@ -770,28 +770,44 @@ constructor(
         mOutputMediaItemListProxy.clear()
     }
 
-    fun addDeviceToPlayMedia(device: MediaDevice): Boolean {
+    fun addDeviceToPlayMedia(device: MediaDevice) {
         mMetricLogger.logInteractionExpansion(device)
         val routingChangeInfo =
             RoutingChangeInfo(
                 RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
                 device.isSuggestedDevice,
             )
-        return mLocalMediaManager.addDeviceToPlayMedia(device, routingChangeInfo)
+        if (Flags.moveOutputSwitcherCallsToBackgroundThread()) {
+            mBackgroundExecutor.execute {
+                mLocalMediaManager.addDeviceToPlayMedia(device, routingChangeInfo)
+            }
+        } else {
+            mLocalMediaManager.addDeviceToPlayMedia(device, routingChangeInfo)
+        }
     }
 
-    fun removeDeviceFromPlayMedia(device: MediaDevice): Boolean {
+    fun removeDeviceFromPlayMedia(device: MediaDevice) {
         mMetricLogger.logInteractionContraction(device)
         val routingChangeInfo =
             RoutingChangeInfo(
                 RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER,
                 device.isSuggestedDevice,
             )
-        return mLocalMediaManager.removeDeviceFromPlayMedia(device, routingChangeInfo)
+        if (Flags.moveOutputSwitcherCallsToBackgroundThread()) {
+            mBackgroundExecutor.execute {
+                mLocalMediaManager.removeDeviceFromPlayMedia(device, routingChangeInfo)
+            }
+        } else {
+            mLocalMediaManager.removeDeviceFromPlayMedia(device, routingChangeInfo)
+        }
     }
 
     fun adjustSessionVolume(volume: Int) {
-        mLocalMediaManager.adjustSessionVolume(volume)
+        if (Flags.moveOutputSwitcherCallsToBackgroundThread()) {
+            mBackgroundExecutor.execute { mLocalMediaManager.adjustSessionVolume(volume) }
+        } else {
+            mLocalMediaManager.adjustSessionVolume(volume)
+        }
     }
 
     fun getSessionVolumeMax(): Int = mLocalMediaManager.getSessionVolumeMax()
@@ -809,7 +825,11 @@ constructor(
         } else {
             mMetricLogger.logInteractionStopCasting()
         }
-        mLocalMediaManager.releaseSession()
+        if (Flags.moveOutputSwitcherCallsToBackgroundThread()) {
+            mBackgroundExecutor.execute { mLocalMediaManager.releaseSession() }
+        } else {
+            mLocalMediaManager.releaseSession()
+        }
     }
 
     fun getActiveRemoteMediaDevices(): List<RoutingSessionInfo?> =
