@@ -107,7 +107,6 @@ public class SupervisionAppService extends Service {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
     public void onSupervisionEnabled() {}
 
     /**
@@ -116,7 +115,6 @@ public class SupervisionAppService extends Service {
      * @hide
      */
     @SystemApi
-    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
     public void onSupervisionDisabled() {}
 
     /**

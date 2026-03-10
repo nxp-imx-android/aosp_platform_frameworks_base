@@ -884,7 +884,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
             @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
         ArrayList<ISupervisionListener> listeners = new ArrayList<>();
-        if (!Flags.enableSupervisionAppService() || Flags.enableAppServiceConnectionCallbacks()) {
+        if (Flags.enableAppServiceConnectionCallbacks()) {
             return listeners;
         }
 
@@ -937,9 +937,6 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private void dispatchSupervisionAppServiceEvent(
             @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
-        if (!Flags.enableSupervisionAppService()) {
-            return;
-        }
         AppBindingService abs = mInjector.getAppBindingService();
         if (abs == null) {
             Slogf.e(SupervisionLog.TAG, "AppBindingService is not available.");

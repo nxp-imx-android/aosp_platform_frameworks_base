@@ -721,8 +721,7 @@ public class QSSecurityFooterTest extends SysuiTestCase {
 
     @Test
     @EnableFlags({
-        android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS,
-        android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE
+        android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS
     })
     public void testParentalControls_newSupervisionApisGetInfoFromSupervisionModel() {
         // Make sure the security footer is visible, so that the images are updated.
@@ -775,48 +774,8 @@ public class QSSecurityFooterTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags({
-        android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS,
-        android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE
-    })
-    public void testParentalControlsDialog() {
-        when(mSecurityController.isParentalControlsEnabled()).thenReturn(true);
-        when(mSecurityController.getLabel(any())).thenReturn(PARENTAL_CONTROLS_LABEL);
-
-        View view = mFooterUtils.createDialogView(getContext());
-        TextView textView = (TextView) view.findViewById(R.id.parental_controls_title);
-        assertEquals(PARENTAL_CONTROLS_LABEL, textView.getText().toString());
-        TextView contentView = view.findViewById(R.id.parental_controls_warning);
-        assertEquals(
-                mContext.getString(R.string.monitoring_description_parental_controls),
-                contentView.getText().toString());
-    }
-
-    @Test
-    @EnableFlags(android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS)
-    @DisableFlags(android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
-    public void testParentalControlsDialog_newSupervisionApisDefaultDisclaimerText() {
-        FakeSupervisionRepository supervisionRepository = new FakeSupervisionRepository();
-        supervisionRepository.setIsSupervisionEnabled(true);
-        supervisionRepository.setLabel(PARENTAL_CONTROLS_LABEL);
-        when(mSecurityController.isParentalControlsEnabled()).thenReturn(true);
-        when(mSecurityController.getLabel()).thenReturn(PARENTAL_CONTROLS_LABEL);
-        when(mSecurityController.getSupervisionModel())
-                .thenReturn(supervisionRepository.getSupervisionModel());
-
-        View view = mFooterUtils.createDialogView(getContext());
-        TextView textView = (TextView) view.findViewById(R.id.parental_controls_title);
-        assertEquals(PARENTAL_CONTROLS_LABEL, textView.getText().toString());
-        TextView contentView = view.findViewById(R.id.parental_controls_warning);
-        assertEquals(
-                mContext.getString(R.string.monitoring_description_parental_controls),
-                contentView.getText().toString());
-    }
-
-    @Test
     @EnableFlags({
-        android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS,
-        android.app.supervision.flags.Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE
+        android.app.supervision.flags.Flags.FLAG_DEPRECATE_DPM_SUPERVISION_APIS
     })
     public void testParentalControlsDialog_newSupervisionApisCustomDisclaimerText() {
         FakeSupervisionRepository supervisionRepository = new FakeSupervisionRepository();
