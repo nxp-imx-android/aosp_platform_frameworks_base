@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.shared.compat;
 
-import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.app.WindowConfiguration;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -64,7 +64,7 @@ parcelable AnimatedSurface {
     boolean isTranslucent;
 
     /** The [TaskInfo] representing the content of this window. */
-    @nullable ActivityManager.RunningTaskInfo taskInfo;
+    @nullable RunningTaskInfo taskInfo;
 
     /** Whether this Surface is opening, closing, or doing something else during the animation. */
     Mode mode;
