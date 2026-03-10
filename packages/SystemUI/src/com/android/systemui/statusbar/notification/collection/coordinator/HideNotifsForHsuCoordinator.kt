@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator
 
+import android.multiuser.Flags
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
@@ -36,7 +37,8 @@ constructor(private val selectedUserInteractor: SelectedUserInteractor) : Coordi
     private val notifFilter: NotifFilter =
         object : NotifFilter(TAG) {
             override fun shouldFilterOut(entry: NotificationEntry, now: Long): Boolean =
-                selectedUserInteractor.isCurrentUserHeadlessSystemUser.value
+                Flags.hsuDisableNotifications() &&
+                    selectedUserInteractor.isCurrentUserHeadlessSystemUser.value
         }
 
     companion object {
