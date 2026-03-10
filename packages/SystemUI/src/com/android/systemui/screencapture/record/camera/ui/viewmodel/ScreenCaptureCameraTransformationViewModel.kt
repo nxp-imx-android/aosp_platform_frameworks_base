@@ -42,6 +42,8 @@ import com.android.systemui.screencapture.record.camera.domain.interactor.Screen
 import com.android.systemui.screencapture.record.camera.domain.interactor.ScreenRecordCameraInteractor
 import com.android.systemui.screencapture.record.shared.model.ScreenRecordEvent
 import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.ui.geometry.coerceIn
+import com.android.systemui.ui.geometry.rotateBy
 import com.android.systemui.util.isEmpty
 import com.android.systemui.util.kotlin.pairwiseBy
 import dagger.assisted.AssistedFactory
@@ -63,9 +65,7 @@ constructor(
     cameraInteractor: ScreenRecordCameraInteractor,
     private val transformationInteractor: ScreenCaptureCameraTransformationInteractor,
     private val uiEventLogger: UiEventLogger,
-) :
-    HydratedActivatable(),
-    TransformableState by transformationInteractor.createTransformableState() {
+) : HydratedActivatable() {
 
     val shouldShowTouchBounds: Boolean =
         Build.IS_DEBUGGABLE && SystemProperties.getBoolean(SHOW_SELFIE_TOUCH_BOUNDS_PROPERTY, false)
@@ -102,6 +102,7 @@ constructor(
         }
     }
     private var uiBounds: Region by mutableStateOf(Region())
+    private var safeGestureBounds: Rect by mutableStateOf(Rect.Zero)
     private val cameraSubjectBounds: Path? by
         cameraInteractor.cameraSubjectBounds.mapHydrate("$TAG#cameraSubjectBounds") {
             it?.boundaryPath?.asComposePath()
@@ -121,10 +122,46 @@ constructor(
         }
     }
 
-    val offsetX: Float by transformationInteractor::offsetX
-    val offsetY: Float by transformationInteractor::offsetY
-    val scale: Float by transformationInteractor::scale
-    val rotation: Float by transformationInteractor::rotation
+    var offsetX: Float by transformationInteractor::offsetX
+        private set
+
+    var offsetY: Float by transformationInteractor::offsetY
+        private set
+
+    var scale: Float by transformationInteractor::scale
+        private set
+
+    var rotation: Float by transformationInteractor::rotation
+        private set
+
+    val transformableState = TransformableState { _, zoomChange, panChange, rotationChange ->
+        val transformedPath = Path()
+        transformCameraSubjectBounds(
+            cameraSubjectBounds = surfaceScreenBounds.toPath(),
+            outputPath = transformedPath,
+            shouldTransformToScreenSpace = false,
+            offsetX = offsetX + panChange.x,
+            offsetY = offsetY + panChange.y,
+            scale = scale * zoomChange,
+            rotation = rotation + rotationChange,
+        )
+        val center = transformedPath.getBounds().center
+        val coercedInGestureBoundsCenter = center.coerceIn(safeGestureBounds)
+        val diffBetweenCoercedAndNormalCenter = coercedInGestureBoundsCenter - center
+
+        scale *= zoomChange
+        rotation += rotationChange
+        if (transformableByTouchAnywhere) {
+            offsetX += panChange.x
+            offsetY += panChange.y
+        } else {
+            val adjustedPanChange = panChange.rotateBy(rotation) * scale
+            offsetX += adjustedPanChange.x
+            offsetY += adjustedPanChange.y
+        }
+        offsetX += diffBetweenCoercedAndNormalCenter.x
+        offsetY += diffBetweenCoercedAndNormalCenter.y
+    }
 
     val touchableRegion: Region by derivedStateOf {
         Region().apply {
@@ -144,7 +181,7 @@ constructor(
 
     override suspend fun onActivated() {
         coroutineScope {
-            snapshotFlow { isTransformInProgress }
+            snapshotFlow { transformableState.isTransformInProgress }
                 .onEach { transformationInteractor.isTransforming = it }
                 .pairwiseBy { wasTransforming, isTransforming ->
                     if (wasTransforming && !isTransforming) {
@@ -177,8 +214,9 @@ constructor(
      * Notifies the ViewModel that the bounds of the ui has changed. This is an active area for when
      * the [transformableByTouchAnywhere] is true.
      */
-    fun onUiBoundsChanged(bounds: Rect) {
-        uiBounds = bounds.toAndroidRectF().toRegion()
+    fun onUiBoundsChanged(uiBounds: Rect, safeGestureBounds: Rect) {
+        this.uiBounds = uiBounds.toAndroidRectF().toRegion()
+        this.safeGestureBounds = safeGestureBounds
     }
 
     /**
@@ -190,6 +228,10 @@ constructor(
         cameraSubjectBounds: Path,
         outputPath: Path,
         shouldTransformToScreenSpace: Boolean,
+        offsetX: Float = this.offsetX,
+        offsetY: Float = this.offsetY,
+        scale: Float = this.scale,
+        rotation: Float = this.rotation,
     ) {
         outputPath.reset()
         outputPath.addPath(cameraSubjectBounds)
@@ -200,6 +242,10 @@ constructor(
         // Apply screen transformation to path
         outputPath.transform(
             createTransformationMatrix(
+                offsetX = offsetX,
+                offsetY = offsetY,
+                scale = scale,
+                rotation = rotation,
                 // Pivot around the actual center of the bounds taking into account bounds position
                 // because this applies to a figure that is positioned with an arbitrary offset
                 pivotX = surfaceScreenBounds.center.x,
@@ -209,7 +255,14 @@ constructor(
     }
 
     /** Creates a transformation matrix pivoting around ([pivotX], [pivotY]) */
-    private fun createTransformationMatrix(pivotX: Float, pivotY: Float): Matrix =
+    private fun createTransformationMatrix(
+        pivotX: Float,
+        pivotY: Float,
+        offsetX: Float = this.offsetX,
+        offsetY: Float = this.offsetY,
+        scale: Float = this.scale,
+        rotation: Float = this.rotation,
+    ): Matrix =
         Matrix().apply {
             resetToPivotedTransform(
                 translationX = offsetX,
@@ -236,14 +289,6 @@ constructor(
         val SHOW_SELFIE_TOUCH_BOUNDS_PROPERTY: String =
             "debug.sysui.screen_record_show_selfie_touch_bounds"
     }
-}
-
-private fun ScreenCaptureCameraTransformationInteractor.createTransformableState():
-    TransformableState = TransformableState { _, zoomChange, panChange, rotationChange ->
-    scale *= zoomChange
-    rotation += rotationChange
-    offsetX += panChange.x
-    offsetY += panChange.y
 }
 
 private fun Rect.toPath(): Path = Path().apply { addRect(this@toPath, Path.Direction.Clockwise) }

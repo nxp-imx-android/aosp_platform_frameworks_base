@@ -48,6 +48,8 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmosNew()
     private val uiBounds = Rect(0f, 0f, 1080f, 1920f)
+    private val safeGestureBounds = uiBounds.deflate(10f)
+    private val surfaceScreenBounds = safeGestureBounds.deflate(10f)
 
     private val underTest by lazy {
         kosmos.screenCaptureCameraTransformationViewModel.apply { activateIn(kosmos.testScope) }
@@ -69,7 +71,7 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val transform = CompletableDeferred<Unit>()
 
-            testScope.launch { underTest.transform { transform.await() } }
+            testScope.launch { underTest.transformableState.transform { transform.await() } }
             assertThat(screenCaptureCameraTransformationInteractor.isTransforming).isTrue()
 
             transform.complete(Unit)
@@ -82,8 +84,8 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
     @Test
     fun recordingInProgress_useCameraBounds() =
         kosmos.runTest {
-            underTest.onUiBoundsChanged(uiBounds)
-            underTest.onSurfaceScreenBoundsUpdated(uiBounds.deflate(10f))
+            underTest.onUiBoundsChanged(uiBounds = uiBounds, safeGestureBounds = safeGestureBounds)
+            underTest.onSurfaceScreenBoundsUpdated(surfaceScreenBounds)
             screenRecordingServiceInteractor.startRecording(screenRecordingParameters())
             fakeScreenRecordCameraRepository.setCameraSubjectBounds(Region(20, 20, 100, 100))
 
@@ -91,14 +93,14 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
 
             assertThat(underTest.transformableByTouchAnywhere).isFalse()
             assertThat(underTest.touchableRegion.bounds)
-                .isEqualTo(Region(441, 665, 469, 693).bounds)
+                .isEqualTo(Region(434, 659, 461, 686).bounds)
         }
 
     @Test
     fun noRecordingInProgress_useGlobalBounds() =
         kosmos.runTest {
-            underTest.onUiBoundsChanged(uiBounds)
-            underTest.onSurfaceScreenBoundsUpdated(uiBounds.deflate(10f))
+            underTest.onUiBoundsChanged(uiBounds = uiBounds, safeGestureBounds = safeGestureBounds)
+            underTest.onSurfaceScreenBoundsUpdated(surfaceScreenBounds)
 
             screenRecordingServiceInteractor.stopRecording(StopReason.STOP_HOST_APP)
             underTest.transform()
@@ -109,12 +111,25 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun transformation_isCoercedInSafeGestureBounds() =
+        kosmos.runTest {
+            underTest.onUiBoundsChanged(uiBounds = uiBounds, safeGestureBounds = safeGestureBounds)
+            underTest.onSurfaceScreenBoundsUpdated(surfaceScreenBounds)
+
+            // Pan by a large amount to move it outside safeGestureBounds
+            underTest.transformableState.transform { transformBy(panChange = Offset(1000f, 1000f)) }
+
+            assertThat(underTest.offsetX).isEqualTo(530f)
+            assertThat(underTest.offsetY).isEqualTo(950f)
+        }
+
+    @Test
     fun isTransforming_midRecording_uiEventTracked() =
         kosmos.runTest {
             screenRecordingServiceInteractor.startRecording(screenRecordingParameters())
             val transform = CompletableDeferred<Unit>()
 
-            testScope.launch { underTest.transform { transform.await() } }
+            testScope.launch { underTest.transformableState.transform { transform.await() } }
             transform.complete(Unit)
 
             assertThat(uiEventLoggerFake.logs.map { it.eventId })
@@ -123,7 +138,7 @@ class ScreenCaptureCameraTransformationViewModelTest : SysuiTestCase() {
         }
 
     private suspend fun ScreenCaptureCameraTransformationViewModel.transform() {
-        transform {
+        transformableState.transform {
             transformByWithCentroid(
                 centroid = uiBounds.center,
                 zoomChange = 0.01f,
