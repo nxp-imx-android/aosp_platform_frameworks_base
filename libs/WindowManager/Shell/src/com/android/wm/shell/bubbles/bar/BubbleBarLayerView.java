@@ -139,7 +139,8 @@ public class BubbleBarLayerView extends FrameLayout
         mAnimationHelper = new BubbleBarAnimationHelper(context, mPositioner, mainExecutor);
         mEducationViewController = new BubbleEducationViewController(context, (boolean visible) -> {
             if (mExpandedView == null) return;
-            mExpandedView.setObscured(visible);
+            mExpandedView.setObscured(visible,
+                    BubbleBarExpandedView.ObscuredFlag.USER_EDUCATION_VISIBLE);
         });
 
         mScrimView = new View(getContext());
