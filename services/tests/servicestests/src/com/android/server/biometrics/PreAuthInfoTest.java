@@ -222,6 +222,30 @@ public class PreAuthInfoTest {
 
     @Test
     @RequiresFlagsEnabled(com.android.server.biometrics.Flags.FLAG_BP_COMPUTER_CONTROLLED)
+    public void testAuthentication_whenComputerControlledDisplayAndOneSensorAvailable()
+            throws RemoteException {
+        when(mVirtualDeviceManagerInternal.isComputerControlDisplay(DISPLAY_ID)).thenReturn(true);
+        when(mFaceAuthenticator.hasEnrolledTemplates(anyInt(), any())).thenReturn(false);
+
+        final BiometricSensor faceSensor = getFaceSensor();
+        final BiometricSensor fingerprintSensor = getFingerprintSensor();
+        final PromptInfo promptInfo = new PromptInfo();
+
+        promptInfo.setAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK);
+        promptInfo.setDisplayId(DISPLAY_ID);
+        final PreAuthInfo preAuthInfo = PreAuthInfo.create(mTrustManager, mDevicePolicyManager,
+                mSettingObserver, List.of(faceSensor, fingerprintSensor), USER_ID, promptInfo,
+                TEST_PACKAGE_NAME, false /* checkDevicePolicyManager */, mContext,
+                mBiometricCameraManager, mUserManager, mVirtualDeviceManagerInternal);
+
+        assertThat(preAuthInfo.eligibleSensors).hasSize(0);
+        assertThat(preAuthInfo.ineligibleSensors).hasSize(2);
+        assertThat(preAuthInfo.getCanAuthenticateResult()).isEqualTo(
+                BIOMETRIC_ERROR_HW_UNAVAILABLE);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(com.android.server.biometrics.Flags.FLAG_BP_COMPUTER_CONTROLLED)
     public void testVdmInternalNotify_whenComputerControlledDisplayAndAuthenticationRequested()
             throws RemoteException {
         when(mVirtualDeviceManagerInternal.isComputerControlDisplay(DISPLAY_ID)).thenReturn(true);
