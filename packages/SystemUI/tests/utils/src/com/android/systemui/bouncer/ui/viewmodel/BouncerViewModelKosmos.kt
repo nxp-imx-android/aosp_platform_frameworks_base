@@ -33,6 +33,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardDismissActionInte
 import com.android.systemui.keyguard.domain.interactor.keyguardMediaKeyInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.user.domain.interactor.selectedUserInteractor
 import com.android.systemui.user.ui.viewmodel.userSwitcherViewModel
@@ -67,6 +68,7 @@ val Kosmos.bouncerOverlayContentViewModel by Fixture {
         sceneInteractor = sceneInteractor,
         windowRootViewBlurInteractor = windowRootViewBlurInteractor,
         faceAuthInteractor = deviceEntryFaceAuthInteractor,
+        backgroundDispatcher = testDispatcher,
     )
 }
 

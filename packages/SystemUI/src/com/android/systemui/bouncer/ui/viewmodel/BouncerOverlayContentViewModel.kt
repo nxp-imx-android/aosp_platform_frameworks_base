@@ -44,6 +44,7 @@ import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.Text
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissActionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardMediaKeyInteractor
@@ -55,6 +56,7 @@ import com.android.systemui.user.ui.viewmodel.UserSwitcherViewModel
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
@@ -67,7 +69,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 /** Models UI state for the content of the bouncer overlay. */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -90,6 +94,7 @@ constructor(
     private val sceneInteractor: SceneInteractor,
     private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     private val faceAuthInteractor: DeviceEntryFaceAuthInteractor,
+    @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) : HydratedActivatable(enableEnqueuedActivations = enableWeaverWarmup()) {
     private val _selectedUserImage = MutableStateFlow<Bitmap?>(null)
     val selectedUserImage: StateFlow<Bitmap?> = _selectedUserImage.asStateFlow()
@@ -255,6 +260,7 @@ constructor(
             launch {
                 userSwitcher.selectedUser
                     .map { it.image.toBitmap() }
+                    .flowOn(backgroundDispatcher)
                     .collect { _selectedUserImage.value = it }
             }
 
@@ -274,12 +280,14 @@ constructor(
                             actions.map { action ->
                                 UserSwitcherDropdownItemViewModel(
                                     icon =
-                                        Icon.Loaded(
-                                            applicationContext.resources.getDrawable(
-                                                action.iconResourceId
-                                            ),
-                                            contentDescription = null,
-                                        ),
+                                        withContext(backgroundDispatcher) {
+                                            Icon.Loaded(
+                                                applicationContext.resources.getDrawable(
+                                                    action.iconResourceId
+                                                ),
+                                                contentDescription = null,
+                                            )
+                                        },
                                     text = Text.Resource(action.textResourceId),
                                     onClick = action.onClicked,
                                 )
