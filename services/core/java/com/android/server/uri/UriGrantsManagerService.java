@@ -319,9 +319,8 @@ public class UriGrantsManagerService extends IUriGrantsManager.Stub implements
         final int callingUid = Binder.getCallingUid();
         final int callingUserId = UserHandle.getUserId(callingUid);
         final PackageManagerInternal pm = LocalServices.getService(PackageManagerInternal.class);
-        final int packageUid = pm.getPackageUid(packageName,
-                MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE, callingUserId);
-        if (packageUid != callingUid) {
+        if (!pm.isSameApp(packageName, MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE,
+                callingUid, callingUserId)) {
             throw new SecurityException(
                     "Package " + packageName + " does not belong to calling UID " + callingUid);
         }
@@ -1839,7 +1838,8 @@ public class UriGrantsManagerService extends IUriGrantsManager.Stub implements
                     }
                     for (int i = 0; i < mGrantedUriPermissions.size(); i++) {
                         int uid = mGrantedUriPermissions.keyAt(i);
-                        if (dumpUid >= -1 && UserHandle.getAppId(uid) != dumpUid) {
+                        if (dumpUid >= -1 && !mPmInternal.isSameApp(dumpPackage, uid,
+                                UserHandle.getUserId(uid))) {
                             continue;
                         }
                         final ArrayMap<GrantUri, UriPermission> perms =

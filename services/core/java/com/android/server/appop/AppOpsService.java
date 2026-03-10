@@ -5092,6 +5092,9 @@ public class AppOpsService extends IAppOpsService.Stub {
             nonAppUid = resolveNonAppUid(packageName);
         }
         if (nonAppUid != Process.INVALID_UID) {
+            // PCC UIDs passed to this method would've already been converted to appUID using
+            // resolveSpecialUidIfNeeded at this point. Additionally, nonAppUid will only contain
+            // static system UIDs, so a PCC-aware check is not required here.
             if (nonAppUid != UserHandle.getAppId(uid)) {
                 if (!suppressErrorLogs) {
                     Slog.e(TAG, "Bad call made by uid " + callingUid + ". "
