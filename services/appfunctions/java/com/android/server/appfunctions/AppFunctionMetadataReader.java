@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.server.appfunctions;
 
 import static android.app.appfunctions.AppFunctionManager.APP_FUNCTION_STATE_DEFAULT;
@@ -47,6 +48,7 @@ import android.app.appfunctions.IAppFunctionSearchResultCallback;
 import android.app.appfunctions.IAppFunctionSearchResults;
 import android.app.appfunctions.flags.Flags;
 import android.app.appsearch.GenericDocument;
+import android.app.appsearch.GetByDocumentIdRequest;
 import android.app.appsearch.JoinSpec;
 import android.app.appsearch.PropertyPath;
 import android.app.appsearch.SearchResult;
@@ -59,7 +61,6 @@ import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
-import android.util.Pair;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
@@ -89,7 +90,9 @@ final class AppFunctionMetadataReader {
                     .setVerbatimSearchEnabled(true)
                     .build();
     private static final JoinSpec JOIN_SPEC =
-            new JoinSpec.Builder(PROPERTY_APP_FUNCTION_STATIC_METADATA_QUALIFIED_ID)
+            new JoinSpec.Builder(
+                            AppFunctionRuntimeMetadata
+                                    .PROPERTY_APP_FUNCTION_STATIC_METADATA_QUALIFIED_ID)
                     .setNestedSearch("", RUNTIME_SEARCH_SPEC)
                     .build();
 
@@ -262,7 +265,8 @@ final class AppFunctionMetadataReader {
 
         SearchSpec appFunctionDocumentSearchSpec =
                 new SearchSpec.Builder()
-                        .addFilterNamespaces(APP_FUNCTION_STATIC_NAMESPACE)
+                        .addFilterNamespaces(
+                                AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_NAMESPACE)
                         .addFilterPackageNames(APP_FUNCTION_INDEXER_PACKAGE)
                         .addFilterSchemas(AppFunctionPackageMetadata.SCHEMA_TYPE)
                         .setVerbatimSearchEnabled(true)
@@ -479,7 +483,8 @@ final class AppFunctionMetadataReader {
 
         SearchSpec staticMetadataSearchSpec =
                 new SearchSpec.Builder()
-                        .addFilterNamespaces(APP_FUNCTION_STATIC_NAMESPACE)
+                        .addFilterNamespaces(
+                                AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_NAMESPACE)
                         .addFilterPackageNames(APP_FUNCTION_INDEXER_PACKAGE)
                         .addFilterDocumentIds(appFunctionSearchSpec.getQualifiedIdsFilter())
                         .addFilterSchemas(AppFunctionStaticMetadataHelper.STATIC_SCHEMA_TYPE)
@@ -500,6 +505,36 @@ final class AppFunctionMetadataReader {
                         .get();
         return new AppFunctionSearchResultsImpl(
                 this, futureGlobalSearchSession, futureSearchResults, resultExecutor);
+    }
+
+    /* Fetches the service class name for a given function. */
+    @NonNull
+    CompletableFuture<String> getAppFunctionServiceClassName(
+            @NonNull FutureAppSearchSession futureAppSearchSession,
+            @NonNull AppFunctionName targetAppFunction) {
+        String qualifiedId = targetAppFunction.getQualifiedId();
+        GetByDocumentIdRequest request =
+                new GetByDocumentIdRequest.Builder(
+                                AppFunctionStaticMetadataHelper.APP_FUNCTION_STATIC_NAMESPACE)
+                        .addIds(qualifiedId)
+                        .addProjectionPaths(
+                                AppFunctionStaticMetadataHelper.getStaticSchemaNameForPackage(
+                                        targetAppFunction.getPackageName()),
+                                List.of(
+                                        new PropertyPath(
+                                                AppFunctionMetadata.PROPERTY_SERVICE_NAME)))
+                        .build();
+        return futureAppSearchSession
+                .getByDocumentId(request)
+                .thenApply(
+                        result -> {
+                            GenericDocument staticDocument = result.getSuccesses().get(qualifiedId);
+                            if (staticDocument == null) {
+                                return null;
+                            }
+                            return staticDocument.getPropertyString(
+                                    AppFunctionMetadata.PROPERTY_SERVICE_NAME);
+                        });
     }
 
     /**
@@ -591,23 +626,25 @@ final class AppFunctionMetadataReader {
         @PermissionManuallyEnforced
         @Override
         public void getNextPage(IAppFunctionSearchResultCallback callback) {
-            getNextPageInternal()
-                    .whenComplete(
-                            (metadataList, exception) -> {
-                                if (exception != null) {
-                                    try {
-                                        callback.onError(new ParcelableException(exception));
-                                    } catch (RemoteException re) {
-                                        Slog.w(TAG, "Fail to call onError", re);
-                                    }
-                                } else {
-                                    try {
-                                        callback.onResult(metadataList);
-                                    } catch (RemoteException e) {
-                                        Slog.w(TAG, "Fail to call onSuccess", e);
-                                    }
-                                }
-                            });
+            var unused =
+                    getNextPageInternal()
+                            .whenComplete(
+                                    (metadataList, exception) -> {
+                                        if (exception != null) {
+                                            try {
+                                                callback.onError(
+                                                        new ParcelableException(exception));
+                                            } catch (RemoteException re) {
+                                                Slog.w(TAG, "Fail to call onError", re);
+                                            }
+                                        } else {
+                                            try {
+                                                callback.onResult(metadataList);
+                                            } catch (RemoteException e) {
+                                                Slog.w(TAG, "Fail to call onSuccess", e);
+                                            }
+                                        }
+                                    });
         }
 
         /**
