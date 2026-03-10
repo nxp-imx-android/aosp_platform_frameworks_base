@@ -618,16 +618,18 @@ private fun sendAccessibilityEvent(
         AccessibilityEvent(AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED).apply {
             isEnabled = true
             isPassword = true
-            beforeText = Bullet.repeat(event.pinLengthBeforeChange)
+            beforeText = PinInputBullet.repeat(event.pinLengthBeforeChange)
             when (event) {
                 is PinAccessibilityEvent.DigitAdded -> {
-                    text.add(Bullet.repeat(event.pinLengthBeforeChange) + "${event.digitAdded}")
+                    text.add(
+                        PinInputBullet.repeat(event.pinLengthBeforeChange) + "${event.digitAdded}"
+                    )
                     addedCount = 1
                     removedCount = 0
                     fromIndex = event.pinLengthBeforeChange
                 }
                 is PinAccessibilityEvent.CharacterDeleted -> {
-                    text.add(Bullet.repeat(event.pinLengthBeforeChange - 1))
+                    text.add(PinInputBullet.repeat(event.pinLengthBeforeChange - 1))
                     addedCount = 0
                     removedCount = 1
                     fromIndex = event.pinLengthBeforeChange - 1
@@ -667,4 +669,4 @@ private val pinButtonReleasedDuration = 420.milliseconds
 private val pinButtonReleasedEasing = Easings.Standard
 
 /** This is `•`, the bullet character. */
-private val Bullet = "\u2022"
+val PinInputBullet = "\u2022"
