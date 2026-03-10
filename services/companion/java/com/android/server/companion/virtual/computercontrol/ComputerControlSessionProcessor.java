@@ -436,7 +436,8 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
         // seen on the device they claim to be running on, fallback to default.
         final int deviceId;
         if (attributionSource.getDeviceId() != Context.DEVICE_ID_DEFAULT
-                && isDeviceIdAssociationValid(attributionSource)) {
+                && mVirtualDeviceManagerInternal.isDeviceIdAssociationValid(
+                        attributionSource.getUid(), attributionSource.getDeviceId())) {
             deviceId = attributionSource.getDeviceId();
         } else {
             deviceId = Context.DEVICE_ID_DEFAULT;
@@ -453,12 +454,6 @@ public final class ComputerControlSessionProcessor implements Watchdog.Monitor {
                 return mKeyguardManager.isDeviceLocked(userId, deviceId);
             }
         });
-    }
-
-    /** Returns true of the source's UID is seen on the device given by the source's deviceId. */
-    private boolean isDeviceIdAssociationValid(@NonNull AttributionSource attributionSource) {
-        return mVirtualDeviceManagerInternal.getDeviceIdsForUid(attributionSource.getUid())
-                .contains(attributionSource.getDeviceId());
     }
 
     /** Notifies the client that session creation failed. */

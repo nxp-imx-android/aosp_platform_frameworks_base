@@ -97,6 +97,21 @@ public abstract class VirtualDeviceManagerInternal {
     public abstract @NonNull ArraySet<Integer> getDeviceIdsForUid(int uid);
 
     /**
+     * Returns whether the given UID is associated with the virtual device with the given ID.
+     *
+     * <p>A device association is valid when either of the following is true:
+     *
+     * <ul>
+     *   <li>The UID is "seen" on the virtual device, i.e. there's an activity running on one of
+     *       the device's displays. {@link #getDeviceIdForDisplayId(int)} will contain the device ID
+     *       for that UID.
+     *   <li>There exists a service binding or provider use between the UID and the owner of the
+     *       virtual device, with the virtual device owner being the client process.
+     * </ul>
+     */
+    public abstract boolean isDeviceIdAssociationValid(int uid, int deviceId);
+
+    /**
      * Notifies that a virtual display was created.
      *
      * @param virtualDevice The virtual device that owns the virtual display.
