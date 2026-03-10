@@ -349,7 +349,7 @@ class GetPreferenceGraphApiHandlerTest {
     }
 
     @Test
-    fun invoke_onNoSensitivityNestedScreens_includesBothScreens() {
+    fun invoke_onNoSensitivityNestedScreens_includesOnlyOuterScreen() {
         val innerSensitiveScreen = createScreen(
             PreferenceScreenConfig(
                 screenKey = "inner_no_sensitive_screen_key",
@@ -395,8 +395,8 @@ class GetPreferenceGraphApiHandlerTest {
         )
 
         assertThat(responseProto.screensMap["outer_no_sensitivity_screen_key"]?.root?.preference?.key).isEqualTo("outer_no_sensitivity_screen_key")
-        assertThat(responseProto.screensMap["outer_no_sensitivity_screen_key"]?.root?.preferencesList).hasSize(2)
-        assertThat(responseProto.screensMap["outer_no_sensitivity_screen_key"]?.root?.preferencesList[1]?.preference?.key).isEqualTo("inner_no_sensitive_screen_key")
+        assertThat(responseProto.screensMap["outer_no_sensitivity_screen_key"]?.root?.preferencesList).hasSize(1)
+        assertThat(responseProto.screensMap["outer_no_sensitivity_screen_key"]?.root?.preferencesList[0]?.preference?.key).isEqualTo("outer_no_sensitivity_preference")
     }
 
     @Test
