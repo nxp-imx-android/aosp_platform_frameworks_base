@@ -24,6 +24,7 @@ import static com.android.internal.util.Preconditions.checkArgument;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.am.ActivityManagerService.MY_PID;
+import static com.android.server.am.psc.Constants.INVALID_ADJ;
 
 import static java.util.Objects.requireNonNull;
 
@@ -67,6 +68,7 @@ import com.android.internal.app.procstats.ProcessState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.internal.os.Zygote;
 import com.android.server.FgThread;
+import com.android.server.am.psc.Constants.OomAdjust;
 import com.android.server.am.psc.OomAdjuster;
 import com.android.server.am.psc.OomAdjusterImpl.ProcessRecordNode;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
@@ -439,6 +441,12 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
     /** Whether the app was launched from a stopped state and is being unstopped. */
     @GuardedBy("mService")
     volatile boolean mWasForceStopped;
+
+    /**
+     * The last adjustment that was verified as actually being set.
+     */
+    @GuardedBy("mService")
+    private @OomAdjust int mVerifiedAdj = INVALID_ADJ;
 
     void setStartParams(int startUid, HostingRecord hostingRecord, String seInfo,
             long startUptime, long startElapsedTime) {
@@ -1246,6 +1254,16 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         return info;
     }
 
+    @GuardedBy("mService")
+    void setVerifiedAdj(@OomAdjust int verifiedAdj) {
+        mVerifiedAdj = verifiedAdj;
+    }
+
+    @GuardedBy("mService")
+    @OomAdjust int getVerifiedAdj() {
+        return mVerifiedAdj;
+    }
+
     @GuardedBy({"mService", "mProcLock"})
     boolean onCleanupApplicationRecordLSP(ProcessStatsService processStats, boolean allowRestart,
             boolean unlinkDeath) {
@@ -1259,6 +1277,7 @@ class ProcessRecord extends ProcessRecordInternal implements WindowProcessListen
         mService.mProcessStateController.setWaitingToKill(this, /* reason= */ null);
 
         super.onCleanupApplicationRecordLSP();
+        mVerifiedAdj = INVALID_ADJ;
         mService.mProcessStateController.onCleanupApplicationRecord(mServices);
         mReceivers.onCleanupApplicationRecordLocked();
         mService.mOomAdjuster.onProcessEndLocked(this);

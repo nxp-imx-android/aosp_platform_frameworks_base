@@ -2297,9 +2297,6 @@ public abstract class OomAdjuster {
 
         if (state.getCurAdj() != state.getSetAdj()) {
             mCallback.onOomAdjustChanged(state.getSetAdj(), state.getCurAdj(), state);
-        }
-
-        if (state.getCurAdj() != state.getSetAdj()) {
             if (isBatchingOomAdj && mOomConstants.mEnableBatchingOomAdj) {
                 mProcsToOomAdj.add(state);
             } else {
@@ -2319,7 +2316,6 @@ public abstract class OomAdjuster {
             if (uidRec != null) {
                 uidRec.setProcAdjChanged(true);
             }
-            state.setVerifiedAdj(INVALID_ADJ);
         }
     }
 
