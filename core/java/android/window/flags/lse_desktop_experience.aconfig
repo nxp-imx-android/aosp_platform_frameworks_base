@@ -655,6 +655,7 @@ flag {
     description: "Enables the ability for an activity to specify if it should be kept fullscreen /n"
                  "when launching in a new task."
     bug: "473009156"
+    is_exported: true
 }
 
 flag {
