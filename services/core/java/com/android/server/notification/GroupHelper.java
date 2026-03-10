@@ -22,6 +22,7 @@ import static android.app.Notification.FLAG_GROUP_SUMMARY;
 import static android.app.Notification.FLAG_LOCAL_ONLY;
 import static android.app.Notification.FLAG_NO_CLEAR;
 import static android.app.Notification.FLAG_ONGOING_EVENT;
+import static android.app.Notification.FLAG_SILENT;
 import static android.app.Notification.VISIBILITY_PRIVATE;
 import static android.app.Notification.VISIBILITY_PUBLIC;
 import static android.app.NotificationManager.IMPORTANCE_MAX;
@@ -78,8 +79,8 @@ public class GroupHelper {
     // Flags that all autogroup summaries have
     protected static final int BASE_FLAGS =
             FLAG_AUTOGROUP_SUMMARY | FLAG_GROUP_SUMMARY | FLAG_LOCAL_ONLY;
-    // Flag that autogroup summaries inherits if all children have the flag
-    private static final int ALL_CHILDREN_FLAG = FLAG_AUTO_CANCEL;
+    // Flags that autogroup summaries inherits if all children have the flags
+    private static final int ALL_CHILDREN_FLAGS = FLAG_AUTO_CANCEL | FLAG_SILENT;
     // Flags that autogroup summaries inherits if any child has them
     private static final int ANY_CHILDREN_FLAGS = FLAG_ONGOING_EVENT | FLAG_NO_CLEAR;
 
@@ -221,17 +222,15 @@ public class GroupHelper {
     protected static int getAutogroupSummaryFlags(
             @NonNull final ArrayMap<String, NotificationAttributes> childrenMap) {
         final Collection<NotificationAttributes> children = childrenMap.values();
-        boolean allChildrenHasFlag = children.size() > 0;
+        int allChildrenFlagsSet = children.size() > 0 ? ALL_CHILDREN_FLAGS : 0;
         int anyChildFlagSet = 0;
         for (NotificationAttributes childAttr: children) {
-            if (!hasAnyFlag(childAttr.flags, ALL_CHILDREN_FLAG)) {
-                allChildrenHasFlag = false;
-            }
+            allChildrenFlagsSet &= childAttr.flags;
             if (hasAnyFlag(childAttr.flags, ANY_CHILDREN_FLAGS)) {
                 anyChildFlagSet |= (childAttr.flags & ANY_CHILDREN_FLAGS);
             }
         }
-        return BASE_FLAGS | (allChildrenHasFlag ? ALL_CHILDREN_FLAG : 0) | anyChildFlagSet;
+        return BASE_FLAGS | allChildrenFlagsSet | anyChildFlagSet;
     }
 
     private static boolean hasAnyFlag(int flags, int mask) {
