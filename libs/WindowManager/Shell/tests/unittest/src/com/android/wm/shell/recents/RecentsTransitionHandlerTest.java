@@ -632,7 +632,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_TO_BACK)
                 .addChange(TRANSIT_TO_BACK, taskInfo)
                 .build();
-        when(mBubbleHelper.isAppBubbleTask(taskInfo)).thenReturn(true);
+        when(mBubbleHelper.isBubbleTask(taskInfo)).thenReturn(true);
         startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo, true /* useLeashes */);
     }
 

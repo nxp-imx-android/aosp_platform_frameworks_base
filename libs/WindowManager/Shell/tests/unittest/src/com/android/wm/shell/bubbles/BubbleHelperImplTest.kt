@@ -54,6 +54,7 @@ class BubbleHelperImplTest : ShellTestCase() {
     private val leash = mock<SurfaceControl>()
     private val shellInit = mock<ShellInit>()
     private val taskOrganizer = mock<ShellTaskOrganizer>()
+    val bubbleData = mock<BubbleData>()
 
     private lateinit var bubbleRootTask: BubbleRootTask
     private lateinit var bubbleHelper: BubbleHelper
@@ -61,7 +62,7 @@ class BubbleHelperImplTest : ShellTestCase() {
     @Before
     fun setUp() {
         bubbleRootTask = BubbleRootTask(mContext, shellInit, taskOrganizer)
-        bubbleHelper = BubbleHelperImpl(bubbleRootTask = bubbleRootTask)
+        bubbleHelper = BubbleHelperImpl(bubbleRootTask, bubbleData)
     }
 
     @Test
@@ -305,5 +306,36 @@ class BubbleHelperImplTest : ShellTestCase() {
             }
 
         assertThat(bubbleHelper.getClosingBubbleTask(info)).isEqualTo(bubble2)
+    }
+
+    @Test
+    fun isBubbleTask_appBubble() {
+        bubbleRootTask.prepareRootTaskForTest(bubbleRootTaskId = 666)
+        val taskInfo = ActivityManager.RunningTaskInfo().apply { parentTaskId = 666 }
+
+        assertThat(bubbleHelper.isBubbleTask(taskInfo)).isTrue()
+    }
+
+    @Test
+    fun isBubbleTask_chatBubble() {
+        bubbleData.stub { on { hasAnyBubbleWithTaskId(786) } doReturn true }
+        val taskInfo =
+            ActivityManager.RunningTaskInfo().apply {
+                parentTaskId = -1
+                taskId = 786
+            }
+
+        assertThat(bubbleHelper.isBubbleTask(taskInfo)).isTrue()
+    }
+
+    @Test
+    fun isBubbleTask_notBubble() {
+        val taskInfo =
+            ActivityManager.RunningTaskInfo().apply {
+                parentTaskId = -1
+                taskId = 786
+            }
+
+        assertThat(bubbleHelper.isBubbleTask(taskInfo)).isFalse()
     }
 }

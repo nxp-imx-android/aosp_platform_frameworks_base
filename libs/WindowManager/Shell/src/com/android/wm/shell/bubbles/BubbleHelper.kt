@@ -37,8 +37,11 @@ interface BubbleHelper {
     /** Whether the given Task info is the Bubble root Task. */
     fun isAppBubbleRootTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean
 
-    /** Whether the given Task info is a Bubbled Task. */
+    /** Whether the given Task info is an App Bubble Task. */
     fun isAppBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean
+
+    /** Whether the given task is any type of Bubble. */
+    fun isBubbleTask(taskInfo: ActivityManager.RunningTaskInfo): Boolean
 
     /**
      * Finds the Task that is entering Bubble. This can be either a Bubble Task that is becoming
