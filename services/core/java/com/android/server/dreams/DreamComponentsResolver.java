@@ -28,12 +28,14 @@ import android.service.dreams.DreamPlaylist;
 import android.util.IndentingPrintWriter;
 import android.util.Slog;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.server.pm.UserManagerInternal;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /** Resolves the component to use for dreaming or dozing. */
 final class DreamComponentsResolver {
@@ -45,6 +47,12 @@ final class DreamComponentsResolver {
     private final boolean mDreamsOnlyEnabledForDockUser;
     private final int mUserId;
     private final DreamRepository mDreamRepository;
+
+    @GuardedBy("this")
+    private DreamPlaylist mCachedPlaylist;
+
+    @GuardedBy("this")
+    private ComponentName mCachedSystemDreamComponent;
 
     DreamComponentsResolver(
             @NonNull Context context,
@@ -59,6 +67,52 @@ final class DreamComponentsResolver {
         mUserManagerInternal = userManagerInternal;
         mDreamsOnlyEnabledForDockUser = dreamsOnlyEnabledForDockUser;
         mDreamRepository = dreamRepository;
+    }
+
+    /** Clears the cached playlist. */
+    public synchronized void invalidate() {
+        mCachedPlaylist = null;
+        mCachedSystemDreamComponent = null;
+    }
+
+    /** Clears the cache only if the changed package is relevant to the current dream config. */
+    public synchronized void onPackageChanged(@NonNull String packageName) {
+        if (mCachedPlaylist != null && isPackageRelevant(mCachedPlaylist, packageName)) {
+            invalidate();
+        }
+    }
+
+    private boolean isPackageRelevant(@NonNull DreamPlaylist playlist, String packageName) {
+        return isPackageInCurrentPlaylist(playlist, packageName)
+                || isDefaultDreamPackage(packageName)
+                || isConfiguredPackage(packageName);
+    }
+
+    private boolean isPackageInCurrentPlaylist(
+            @NonNull DreamPlaylist playlist, String packageName) {
+        for (DreamItem item : playlist.getDreams()) {
+            if (item.componentName.getPackageName().equals(packageName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isDefaultDreamPackage(String packageName) {
+        final ComponentName defaultDream = getDefaultDreamComponent();
+        return defaultDream != null && defaultDream.getPackageName().equals(packageName);
+    }
+
+    private boolean isConfiguredPackage(String packageName) {
+        final ComponentName[] configured = mDreamRepository.getDreamComponentsForUser(mUserId);
+        if (configured != null) {
+            for (ComponentName component : configured) {
+                if (component.getPackageName().equals(packageName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -80,8 +134,8 @@ final class DreamComponentsResolver {
         }
 
         if (dreamsSwitcher()) {
-            DreamPlaylist playlist = getDreamPlaylist(systemDreamComponent);
-            DreamItem activeItem = playlist.getActiveDream();
+            final DreamPlaylist playlist = getDreamPlaylist(systemDreamComponent);
+            final DreamItem activeItem = playlist.getActiveDream();
             return activeItem != null ? activeItem.componentName : null;
         }
 
@@ -94,40 +148,62 @@ final class DreamComponentsResolver {
     }
 
     @NonNull
-    DreamPlaylist getDreamPlaylist(@Nullable ComponentName systemDreamComponent) {
+    public synchronized DreamPlaylist getDreamPlaylist(
+            @Nullable ComponentName systemDreamComponent) {
+        if (mCachedPlaylist != null
+                && Objects.equals(mCachedSystemDreamComponent, systemDreamComponent)) {
+            return mCachedPlaylist;
+        }
+
+        mCachedPlaylist =
+                (systemDreamComponent != null)
+                        ? resolveSystemDreamPlaylist(systemDreamComponent)
+                        : resolveUserDreamPlaylist();
+        mCachedSystemDreamComponent = systemDreamComponent;
+        return mCachedPlaylist;
+    }
+
+    private DreamPlaylist resolveSystemDreamPlaylist(@NonNull ComponentName systemDreamComponent) {
+        final List<DreamItem> dreams = new ArrayList<>();
+        mDreamRepository.getDreamItem(systemDreamComponent).ifPresent(dreams::add);
+        return new DreamPlaylist(
+                dreams, dreams.isEmpty() ? DreamPlaylist.NO_ACTIVE_DREAM_INDEX : 0);
+    }
+
+    private DreamPlaylist resolveUserDreamPlaylist() {
         final List<DreamItem> dreams = new ArrayList<>();
         int activeIndex = DreamPlaylist.NO_ACTIVE_DREAM_INDEX;
 
-        if (systemDreamComponent != null) {
-            // If system dream is set, it's the only one in playlist and is active.
-            final DreamItem item = mDreamRepository.getDreamItem(systemDreamComponent).orElse(null);
+        if (!dreamsEnabledForUser(mUserId)) {
+            return DreamPlaylist.EMPTY;
+        }
+
+        final ComponentName[] components = mDreamRepository.getDreamComponentsForUser(mUserId);
+        final ComponentName activeComponent =
+                mDreamRepository.getActiveDreamComponentForUser(mUserId);
+
+        for (ComponentName component : components) {
+            // One-pass: get the item directly. MetadataProvider already handles validity caching.
+            final DreamItem item = mDreamRepository.getDreamItem(component).orElse(null);
             if (item != null) {
                 dreams.add(item);
-                activeIndex = 0;
-            }
-        } else {
-            // Get user configured dreams
-            ComponentName[] components = getDreamComponents();
-            if (components != null) {
-                ComponentName activeComponent =
-                        mDreamRepository.getActiveDreamComponentForUser(mUserId);
-                for (ComponentName component : components) {
-                    final DreamItem item = mDreamRepository.getDreamItem(component).orElse(null);
-                    if (item == null) {
-                        continue;
-                    }
-                    dreams.add(item);
-                    if (activeIndex == DreamPlaylist.NO_ACTIVE_DREAM_INDEX
-                            && component.equals(activeComponent)) {
-                        activeIndex = dreams.size() - 1;
-                    }
+                if (activeIndex == DreamPlaylist.NO_ACTIVE_DREAM_INDEX
+                        && component.equals(activeComponent)) {
+                    activeIndex = dreams.size() - 1;
                 }
             }
+        }
 
-            // Fallback active index to first item if current active is invalid or not found
-            if (!dreams.isEmpty() && activeIndex == DreamPlaylist.NO_ACTIVE_DREAM_INDEX) {
-                activeIndex = 0;
+        // Fallback to default dream if no valid dreams found in configuration
+        if (dreams.isEmpty()) {
+            final ComponentName defaultDream = getDefaultDreamComponent();
+            if (defaultDream != null) {
+                mDreamRepository.getDreamItem(defaultDream).ifPresent(dreams::add);
             }
+        }
+
+        if (!dreams.isEmpty() && activeIndex == DreamPlaylist.NO_ACTIVE_DREAM_INDEX) {
+            activeIndex = 0;
         }
 
         return new DreamPlaylist(dreams, activeIndex);

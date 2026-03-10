@@ -273,6 +273,9 @@ public final class DreamManagerService extends SystemService {
                     final DreamUserData userData = getOrCreateUserData(userId);
                     if (userData != null) {
                         userData.mMetadataProvider.invalidateCache();
+                        if (dreamsSwitcher()) {
+                            userData.mResolver.invalidate();
+                        }
                     }
                     notifyPlaylistChanged(userId);
                 }
@@ -299,6 +302,10 @@ public final class DreamManagerService extends SystemService {
                             .equals(uri)
                     || Settings.Secure.getUriFor(Settings.Secure.SCREENSAVER_DEFAULT_COMPONENT)
                             .equals(uri)) {
+                final DreamUserData userData = getOrCreateUserData(userId);
+                if (userData != null) {
+                    userData.mResolver.invalidate();
+                }
                 notifyPlaylistChanged(userId);
             }
         }
@@ -358,6 +365,7 @@ public final class DreamManagerService extends SystemService {
                 if (userData != null) {
                     for (String pkg : packages) {
                         userData.mMetadataProvider.invalidatePackage(pkg);
+                        userData.mResolver.onPackageChanged(pkg);
                     }
                 }
                 notifyPlaylistChanged(userId);
@@ -613,6 +621,7 @@ public final class DreamManagerService extends SystemService {
                         final DreamUserData userData = getOrCreateUserData(userId);
                         if (userData != null) {
                             userData.mMetadataProvider.invalidateCache();
+                            userData.mResolver.invalidate();
                         }
                         notifyPlaylistChanged(userId, true /* immediate */);
                     });
@@ -1195,6 +1204,10 @@ public final class DreamManagerService extends SystemService {
 
         if (dreamsSwitcher()) {
             final int userId = mInjector.getCurrentUser();
+            final DreamUserData userData = mUserData.get(userId);
+            if (userData != null) {
+                userData.mResolver.invalidate();
+            }
             mHandler.post(() -> notifyPlaylistChanged(userId, true /* immediate */));
         } else {
             // Switch dream if currently dreaming and not dozing.

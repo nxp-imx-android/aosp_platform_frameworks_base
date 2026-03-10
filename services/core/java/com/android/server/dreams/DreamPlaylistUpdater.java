@@ -24,19 +24,18 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.service.dreams.DreamPlaylist;
 import android.service.dreams.IDreamManagerListener;
-import android.util.SparseArray;
+import android.util.IndentingPrintWriter;
 import android.util.Slog;
+import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
-
-import android.util.IndentingPrintWriter;
 
 import java.io.PrintWriter;
 import java.util.Objects;
 
 /**
- * Manages the dream playlist state, caching, and notification distribution. Handles debouncing of
- * updates to prevent listener churn.
+ * Manages the dream playlist state notifications. Handles debouncing of updates to prevent listener
+ * churn. Defer data caching and resolution to {@link DreamComponentsResolver}.
  */
 class DreamPlaylistUpdater {
     private static final int DEFAULT_UPDATE_DEBOUNCE_DELAY_MS = 100;
@@ -53,7 +52,7 @@ class DreamPlaylistUpdater {
             new SparseArray<>();
 
     @GuardedBy("mLock")
-    private final SparseArray<DreamPlaylist> mCache = new SparseArray<>();
+    private final SparseArray<DreamPlaylist> mLastNotifiedPlaylist = new SparseArray<>();
 
     @GuardedBy("mLock")
     private final SparseArray<Runnable> mPendingUpdateTasks = new SparseArray<>();
@@ -144,11 +143,11 @@ class DreamPlaylistUpdater {
         final RemoteCallbackList<IDreamManagerListener> listenersForUser;
 
         synchronized (mLock) {
-            final DreamPlaylist cached = mCache.get(userId);
-            if (Objects.equals(cached, playlist)) {
+            final DreamPlaylist lastNotified = mLastNotifiedPlaylist.get(userId);
+            if (Objects.equals(lastNotified, playlist)) {
                 return;
             }
-            mCache.put(userId, playlist);
+            mLastNotifiedPlaylist.put(userId, playlist);
             listenersForUser = mListeners.get(userId);
         }
 
@@ -169,7 +168,7 @@ class DreamPlaylistUpdater {
 
     void clearCache(int userId) {
         synchronized (mLock) {
-            mCache.remove(userId);
+            mLastNotifiedPlaylist.remove(userId);
             final RemoteCallbackList<IDreamManagerListener> listeners = mListeners.get(userId);
             if (listeners != null) {
                 listeners.kill();
@@ -209,12 +208,12 @@ class DreamPlaylistUpdater {
         synchronized (mLock) {
             ipw.println("DreamPlaylistUpdater:");
             ipw.increaseIndent();
-            for (int i = 0; i < mCache.size(); i++) {
-                int userId = mCache.keyAt(i);
-                DreamPlaylist playlist = mCache.valueAt(i);
+            for (int i = 0; i < mLastNotifiedPlaylist.size(); i++) {
+                int userId = mLastNotifiedPlaylist.keyAt(i);
+                DreamPlaylist playlist = mLastNotifiedPlaylist.valueAt(i);
                 ipw.println("User " + userId + ":");
                 ipw.increaseIndent();
-                ipw.println("Playlist: " + playlist);
+                ipw.println("Last Notified Playlist: " + playlist);
                 RemoteCallbackList<IDreamManagerListener> listeners = mListeners.get(userId);
                 ipw.println(
                         "Listeners: "
