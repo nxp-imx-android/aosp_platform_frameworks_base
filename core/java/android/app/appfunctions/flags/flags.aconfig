@@ -57,3 +57,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_multi_service_bugfix"
+    namespace: "app_function"
+    description: "Enables indexing and serving app functions from multiple services."
+    bug: "468288106"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
