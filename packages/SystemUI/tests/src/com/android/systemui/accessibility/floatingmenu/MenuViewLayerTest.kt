@@ -16,21 +16,18 @@
 
 package com.android.systemui.accessibility.floatingmenu
 
-import android.accessibilityservice.AccessibilityServiceInfo
+import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
-import android.content.pm.ServiceInfo
 import android.graphics.Insets
 import android.graphics.PointF
 import android.graphics.Rect
-import android.os.Build
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -52,6 +49,7 @@ import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.accessibility.common.ShortcutConstants
+import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE
 import com.android.internal.accessibility.dialog.AccessibilityTarget
 import com.android.internal.messages.nano.SystemMessageProto
 import com.android.systemui.Flags
@@ -63,7 +61,7 @@ import com.android.systemui.accessibility.floatingmenu.MenuViewLayer.LayerIndex
 import com.android.systemui.accessibility.utils.TestUtils
 import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.res.R
-import com.android.systemui.testKosmos
+import com.android.systemui.testKosmosNew
 import com.android.systemui.util.settings.SecureSettings
 import com.android.wm.shell.shared.magnetictarget.MagnetizedObject
 import com.google.common.truth.Truth.assertThat
@@ -72,22 +70,18 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
-import org.mockito.Mock
-import org.mockito.Mockito.clearInvocations
-import org.mockito.Mockito.doNothing
-import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.never
-import org.mockito.Mockito.spy
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Spy
-import org.mockito.junit.MockitoJUnit
-import org.mockito.junit.MockitoRule
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.clearInvocations
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /** Tests for [MenuViewLayer]. */
@@ -95,32 +89,27 @@ import org.mockito.kotlin.whenever
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
 class MenuViewLayerTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmosNew()
 
-    @get:Rule val mockito: MockitoRule = MockitoJUnit.rule()
     @get:Rule val setFlagsRule = SetFlagsRule()
 
-    @Spy private var spyContext: SysuiTestableContext = context
-    @Mock private lateinit var floatingMenu: IAccessibilityFloatingMenu
-    @Mock private lateinit var mockPackageManager: PackageManager
-    @Mock private lateinit var mockMoreOptionsView: View
-    @Mock private lateinit var mockMoreOptionsPopup: MoreOptionsPopup
+    private val spyContext: SysuiTestableContext = spy(context)
+    private val floatingMenu = mock<IAccessibilityFloatingMenu>()
+    private val mockPackageManager = mock<PackageManager>()
+    private val mockMoreOptionsView = mock<View>()
+    private val mockMoreOptionsPopup = mock<MoreOptionsPopup>()
 
     private val secureSettings: SecureSettings = TestUtils.mockSecureSettings(mContext)
-    private val mockNotificationManager = mock(NotificationManager::class.java)
-    private val onItemClickListenerCaptor =
-        ArgumentCaptor.forClass(MoreOptionsPopup.OnItemClickListener::class.java)
+    private val mockNotificationManager = mock<NotificationManager>()
 
     private var lastAccessibilityButtonTargets: String? = null
     private var lastEnabledAccessibilityServices: String? = null
     private lateinit var windowMetrics: WindowMetrics
-    private lateinit var menuViewModel: MenuViewModel
     private lateinit var menuView: MenuView
     private lateinit var menuAnimationController: MenuAnimationController
     private lateinit var underTest: MenuViewLayer
 
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         spyContext.addMockSystemService(Context.NOTIFICATION_SERVICE, mockNotificationManager)
         whenever(spyContext.packageManager).thenReturn(mockPackageManager)
@@ -129,8 +118,7 @@ class MenuViewLayerTest : SysuiTestCase() {
         windowMetrics = spy(WindowMetrics(displayBounds, fakeDisplayInsets(), 0f))
         whenever(kosmos.windowManager.currentWindowMetrics).thenReturn(windowMetrics)
 
-        menuViewModel = spy(kosmos.menuViewModel)
-        menuView = spy(kosmos.menuView)
+        menuView = spy(kosmos.menuView) { on { incrementTexMetric(any()) } doAnswer {} }
         menuAnimationController = spy(menuView.menuAnimationController)
         doReturn(menuAnimationController).whenever(menuView).menuAnimationController
 
@@ -140,16 +128,15 @@ class MenuViewLayerTest : SysuiTestCase() {
                     spyContext,
                     kosmos.windowManager,
                     kosmos.accessibilityManager,
-                    menuViewModel,
+                    kosmos.menuViewModel,
                     kosmos.menuViewAppearance,
                     menuView,
                     floatingMenu,
                     secureSettings,
-                    mock(NavigationModeController::class.java),
+                    mock<NavigationModeController>(),
                 )
             )
-
-        doNothing().whenever(menuView).incrementTexMetric(any())
+        // doReturn avoids problems when trying to stub a spy via other methods
         doReturn(mockMoreOptionsPopup).whenever(underTest).createMoreOptionsPopup(any())
 
         lastAccessibilityButtonTargets =
@@ -182,14 +169,16 @@ class MenuViewLayerTest : SysuiTestCase() {
     }
 
     private fun showMoreOptionsPopup(): MoreOptionsPopup.OnItemClickListener {
+        clearInvocations(underTest)
+        clearInvocations(mockMoreOptionsPopup)
+        val onItemClickListenerCaptor = argumentCaptor<MoreOptionsPopup.OnItemClickListener>()
         underTest.onMoreOptionsClicked(mockMoreOptionsView)
         verify(underTest).createMoreOptionsPopup(onItemClickListenerCaptor.capture())
         verify(mockMoreOptionsPopup).show(mockMoreOptionsView)
-        return onItemClickListenerCaptor.value
+        return onItemClickListenerCaptor.firstValue
     }
 
     @After
-    @Throws(Exception::class)
     fun tearDown() {
         Settings.Secure.putStringForUser(
             spyContext.contentResolver,
@@ -232,14 +221,11 @@ class MenuViewLayerTest : SysuiTestCase() {
         verify(floatingMenu).hide()
     }
 
+    @SuppressLint("MissingPermission")
     @Test
     fun triggerDismissMenuAction_callsA11yManagerEnableShortcutsForTargets() {
         val stubShortcutTargets = arrayListOf(TEST_SELECT_TO_SPEAK_COMPONENT_NAME.flattenToString())
-        whenever(
-                kosmos.accessibilityManager.getAccessibilityShortcutTargets(
-                    ShortcutConstants.UserShortcutType.SOFTWARE
-                )
-            )
+        whenever(kosmos.accessibilityManager.getAccessibilityShortcutTargets(SOFTWARE))
             .thenReturn(stubShortcutTargets)
 
         underTest.mDismissMenuAction.run()
@@ -247,22 +233,24 @@ class MenuViewLayerTest : SysuiTestCase() {
         verify(kosmos.accessibilityManager)
             .enableShortcutsForTargets(
                 false,
-                ShortcutConstants.UserShortcutType.SOFTWARE,
+                SOFTWARE,
                 ArraySet(stubShortcutTargets),
                 secureSettings.getRealUserHandle(UserHandle.USER_CURRENT),
             )
     }
 
+    @SuppressLint("MissingPermission")
     @Test
     fun onEditAction_startsActivity() {
         mockActivityQuery(true)
         underTest.dispatchAccessibilityAction(R.id.action_edit)
 
-        val intentCaptor = ArgumentCaptor.forClass(Intent::class.java)
+        val intentCaptor = argumentCaptor<Intent>()
         verify(spyContext).startActivityAsUser(intentCaptor.capture(), eq(UserHandle.CURRENT))
-        assertThat(intentCaptor.value.action).isEqualTo(underTest.intentForEditScreen.action)
+        assertThat(intentCaptor.firstValue.action).isEqualTo(underTest.intentForEditScreen.action)
     }
 
+    @SuppressLint("MissingPermission")
     @Test
     fun onEditAction_noResolve_doesNotStart() {
         mockActivityQuery(false)
@@ -301,7 +289,7 @@ class MenuViewLayerTest : SysuiTestCase() {
         val menuTop = STATUS_BAR_HEIGHT + 100f
         menuAnimationController.moveAndPersistPosition(PointF(0f, menuTop))
 
-        dispatchShowingImeInsets()
+        dispatchImeInsets(isVisible = true)
 
         assertThat(menuView.translationX).isEqualTo(0f)
         assertThat(menuView.translationY).isEqualTo(menuTop)
@@ -312,7 +300,7 @@ class MenuViewLayerTest : SysuiTestCase() {
         menuAnimationController.moveAndPersistPosition(PointF(0f, IME_TOP + 100f))
         val beforePosition = menuView.menuPosition
 
-        dispatchShowingImeInsets()
+        dispatchImeInsets(isVisible = true)
         assertThat(isPositionAnimationRunning).isTrue()
         skipPositionAnimations()
 
@@ -327,11 +315,11 @@ class MenuViewLayerTest : SysuiTestCase() {
         menuAnimationController.moveAndPersistPosition(PointF(0f, IME_TOP + 200f))
         val beforePosition = menuView.menuPosition
 
-        dispatchShowingImeInsets()
+        dispatchImeInsets(isVisible = true)
         assertThat(isPositionAnimationRunning).isTrue()
         skipPositionAnimations()
 
-        dispatchHidingImeInsets()
+        dispatchImeInsets(isVisible = false)
         assertThat(isPositionAnimationRunning).isTrue()
         skipPositionAnimations()
 
@@ -359,7 +347,7 @@ class MenuViewLayerTest : SysuiTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_FLOATING_MENU_DRAG_TO_HIDE)
     fun receiveActionUndo_dismissNotificationAndMenuVisible() {
-        val broadcastReceiverCaptor = ArgumentCaptor.forClass(BroadcastReceiver::class.java)
+        val broadcastReceiverCaptor = argumentCaptor<BroadcastReceiver>()
         dragMenuThenReleasedInTarget(R.id.action_remove_menu)
 
         verify(spyContext)
@@ -370,9 +358,9 @@ class MenuViewLayerTest : SysuiTestCase() {
                 },
                 any(),
             )
-        broadcastReceiverCaptor.value.onReceive(spyContext, Intent(ACTION_UNDO))
+        broadcastReceiverCaptor.firstValue.onReceive(spyContext, Intent(ACTION_UNDO))
 
-        verify(spyContext).unregisterReceiver(broadcastReceiverCaptor.value)
+        verify(spyContext).unregisterReceiver(broadcastReceiverCaptor.firstValue)
         verify(mockNotificationManager)
             .cancel(SystemMessageProto.SystemMessage.NOTE_A11Y_FLOATING_MENU_HIDDEN)
         assertThat(menuView.visibility).isEqualTo(VISIBLE)
@@ -381,7 +369,7 @@ class MenuViewLayerTest : SysuiTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_FLOATING_MENU_DRAG_TO_HIDE)
     fun receiveActionDelete_dismissNotificationAndHideMenu() {
-        val broadcastReceiverCaptor = ArgumentCaptor.forClass(BroadcastReceiver::class.java)
+        val broadcastReceiverCaptor = argumentCaptor<BroadcastReceiver>()
         dragMenuThenReleasedInTarget(R.id.action_remove_menu)
 
         verify(spyContext)
@@ -392,9 +380,9 @@ class MenuViewLayerTest : SysuiTestCase() {
                 },
                 any(),
             )
-        broadcastReceiverCaptor.value.onReceive(spyContext, Intent(ACTION_DELETE))
+        broadcastReceiverCaptor.firstValue.onReceive(spyContext, Intent(ACTION_DELETE))
 
-        verify(spyContext).unregisterReceiver(broadcastReceiverCaptor.value)
+        verify(spyContext).unregisterReceiver(broadcastReceiverCaptor.firstValue)
         verify(mockNotificationManager)
             .cancel(SystemMessageProto.SystemMessage.NOTE_A11Y_FLOATING_MENU_HIDDEN)
         verify(floatingMenu).hide()
@@ -407,7 +395,7 @@ class MenuViewLayerTest : SysuiTestCase() {
                 TestAccessibilityTarget(spyContext, 1234),
                 TestAccessibilityTarget(spyContext, 5678),
             )
-        menuViewModel.onTargetFeaturesChanged(testTargets as List<AccessibilityTarget>)
+        kosmos.menuViewModel.onTargetFeaturesChanged(testTargets as List<AccessibilityTarget>)
 
         underTest.dispatchAccessibilityAction(R.id.action_remove_menu)
 
@@ -421,7 +409,7 @@ class MenuViewLayerTest : SysuiTestCase() {
                 TestAccessibilityTarget(spyContext, 1234),
                 TestAccessibilityTarget(spyContext, 5678),
             )
-        menuViewModel.onTargetFeaturesChanged(testTargets as List<AccessibilityTarget>)
+        kosmos.menuViewModel.onTargetFeaturesChanged(testTargets as List<AccessibilityTarget>)
 
         underTest.dispatchAccessibilityAction(R.id.action_edit)
 
@@ -430,11 +418,11 @@ class MenuViewLayerTest : SysuiTestCase() {
 
     @Test
     fun onMoveToTuckedChanged_updatesDockTooltipVisibility() {
-        menuViewModel.updateDockTooltipVisibility(false)
+        kosmos.menuViewModel.updateDockTooltipVisibility(false)
 
         menuView.updateMenuMoveToTucked(true)
 
-        assertThat(menuViewModel.dockTooltipVisibilityData.value).isTrue()
+        assertThat(kosmos.menuViewModel.dockTooltipVisibilityData.value).isTrue()
     }
 
     @Test
@@ -444,23 +432,41 @@ class MenuViewLayerTest : SysuiTestCase() {
     }
 
     @Test
-    fun onMoreOptionsClicked_move_cyclesPosition() {
-        showMoreOptionsPopup().onMoveClicked()
-        verify(menuViewModel).cycleMenuPosition()
-    }
-
-    @Test
     fun onMoreOptionsClicked_removeAll_dismissesMenu() {
         showMoreOptionsPopup().onRemoveAllClicked()
         verify(floatingMenu).hide()
+    }
+
+    @Test
+    fun onMoreOptionsClicked_move_cyclesPositionInSequence() {
+        clearInvocations(menuAnimationController)
+
+        showMoreOptionsPopup().onMoveClicked()
+        verify(menuAnimationController).moveToBottomLeftPosition()
+        clearInvocations(menuAnimationController)
+
+        showMoreOptionsPopup().onMoveClicked()
+        verify(menuAnimationController).moveToTopLeftPosition()
+        clearInvocations(menuAnimationController)
+
+        showMoreOptionsPopup().onMoveClicked()
+        verify(menuAnimationController).moveToTopRightPosition()
+        clearInvocations(menuAnimationController)
+
+        showMoreOptionsPopup().onMoveClicked()
+        verify(menuAnimationController).moveToBottomRightPosition()
+        clearInvocations(menuAnimationController)
+
+        showMoreOptionsPopup().onMoveClicked()
+        verify(menuAnimationController).moveToBottomLeftPosition()
     }
 
     /** Simplified AccessibilityTarget for testing MenuViewLayer. */
     private class TestAccessibilityTarget(context: Context, uid: Int) :
         AccessibilityTarget(
             context,
-            ShortcutConstants.UserShortcutType.SOFTWARE,
-            0,
+            SOFTWARE,
+            ShortcutConstants.AccessibilityFragmentType.VOLUME_SHORTCUT_TOGGLE,
             false,
             TEST_SELECT_TO_SPEAK_COMPONENT_NAME.flattenToString(),
             uid,
@@ -469,44 +475,10 @@ class MenuViewLayerTest : SysuiTestCase() {
             null,
         )
 
-    private fun setupEnabledAccessibilityServiceList() {
-        Settings.Secure.putStringForUser(
-            spyContext.contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
-            TEST_SELECT_TO_SPEAK_COMPONENT_NAME.flattenToString(),
-            secureSettings.getRealUserHandle(UserHandle.USER_CURRENT),
-        )
-
-        val resolveInfo = ResolveInfo()
-        val serviceInfo = ServiceInfo()
-        val applicationInfo = ApplicationInfo()
-        resolveInfo.serviceInfo = serviceInfo
-        serviceInfo.applicationInfo = applicationInfo
-        applicationInfo.targetSdkVersion = Build.VERSION_CODES.R
-        val accessibilityServiceInfo = AccessibilityServiceInfo()
-        accessibilityServiceInfo.resolveInfo = resolveInfo
-        accessibilityServiceInfo.flags = AccessibilityServiceInfo.FLAG_REQUEST_ACCESSIBILITY_BUTTON
-        val serviceInfoList = arrayListOf<AccessibilityServiceInfo>()
-        accessibilityServiceInfo.componentName = TEST_SELECT_TO_SPEAK_COMPONENT_NAME
-        serviceInfoList.add(accessibilityServiceInfo)
-        whenever(
-                kosmos.accessibilityManager.getEnabledAccessibilityServiceList(
-                    AccessibilityServiceInfo.FEEDBACK_ALL_MASK
-                )
-            )
-            .thenReturn(serviceInfoList)
-    }
-
-    private fun dispatchShowingImeInsets() {
-        val fakeShowingImeInsets = fakeImeInsets(true)
-        doReturn(fakeShowingImeInsets).whenever(windowMetrics).windowInsets
-        underTest.dispatchApplyWindowInsets(fakeShowingImeInsets)
-    }
-
-    private fun dispatchHidingImeInsets() {
-        val fakeHidingImeInsets = fakeImeInsets(false)
-        doReturn(fakeHidingImeInsets).whenever(windowMetrics).windowInsets
-        underTest.dispatchApplyWindowInsets(fakeHidingImeInsets)
+    private fun dispatchImeInsets(isVisible: Boolean) {
+        val fakeImeInsets = fakeImeInsets(isVisible)
+        whenever(windowMetrics.windowInsets).doReturn(fakeImeInsets)
+        underTest.dispatchApplyWindowInsets(fakeImeInsets)
     }
 
     private fun fakeDisplayInsets(): WindowInsets {
@@ -541,11 +513,11 @@ class MenuViewLayerTest : SysuiTestCase() {
 
     private fun dragMenuThenReleasedInTarget(id: Int) {
         val magnetListener = underTest.dragToInteractAnimationController.getMagnetListener(id)
-        val view = mock(View::class.java)
+        val view = mock<View>()
         whenever(view.id).thenReturn(id)
         magnetListener.onReleasedInTarget(
             MagnetizedObject.MagneticTarget(view, 200),
-            mock(MagnetizedObject::class.java),
+            mock<MagnetizedObject<MenuView>>(),
         )
     }
 
@@ -561,30 +533,6 @@ class MenuViewLayerTest : SysuiTestCase() {
     }
 
     @Test
-    fun cycleMenuPosition_triggersCorrectMovementsInSequence() {
-        clearInvocations(menuAnimationController)
-
-        menuViewModel.cycleMenuPosition()
-        verify(menuAnimationController).moveToBottomLeftPosition()
-        clearInvocations(menuAnimationController)
-
-        menuViewModel.cycleMenuPosition()
-        verify(menuAnimationController).moveToTopLeftPosition()
-        clearInvocations(menuAnimationController)
-
-        menuViewModel.cycleMenuPosition()
-        verify(menuAnimationController).moveToTopRightPosition()
-        clearInvocations(menuAnimationController)
-
-        menuViewModel.cycleMenuPosition()
-        verify(menuAnimationController).moveToBottomRightPosition()
-        clearInvocations(menuAnimationController)
-
-        menuViewModel.cycleMenuPosition()
-        verify(menuAnimationController).moveToBottomLeftPosition()
-    }
-
-    @Test
     fun onAttachedToWindow_initialState_doesNotTriggerSnapToCorner() {
         verify(menuAnimationController, never()).moveToTopLeftPosition()
         verify(menuAnimationController, never()).moveToTopRightPosition()
@@ -594,7 +542,7 @@ class MenuViewLayerTest : SysuiTestCase() {
 
     @Test
     fun cycleThenDragThenAttach_staysAtDragPosition() {
-        menuViewModel.cycleMenuPosition()
+        kosmos.menuViewModel.cycleMenuPosition()
         verify(menuAnimationController).moveToBottomLeftPosition()
         clearInvocations(menuAnimationController)
 
