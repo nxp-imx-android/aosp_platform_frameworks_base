@@ -44,6 +44,7 @@ import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -369,6 +370,38 @@ public class ServiceRestartDeferralTest {
 
         // Should return early and not call performServiceRestartLocked
         verify(mActiveServices, never()).performServiceRestartLocked(any());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_DEFER_SERVICE_RESTART_WHEN_FROZEN)
+    public void testOnProcessUnfrozenLocked_respectsNextRestartTime() {
+        final ArrayList<ServiceRecord> restartingServices = new ArrayList<>();
+        setFieldValue(ActiveServices.class, mActiveServices, "mRestartingServices",
+                restartingServices);
+
+        final long now = SystemClock.uptimeMillis();
+        final ServiceRecord sr = createMockServiceRecord();
+        final ConnectionRecord cr = initMockConnectionRecord(sr);
+        restartingServices.add(sr);
+
+        final ServiceRecord sr2 = createMockServiceRecord();
+        final ConnectionRecord cr2 = initMockConnectionRecord(sr2);
+        restartingServices.add(sr2);
+
+        // nextRestartTime has passed
+        sr.nextRestartTime = now - 1000;
+        // nextRestartTime is in the future
+        sr2.nextRestartTime = now + 1000;
+
+        final ProcessServiceRecord psr = initMockProcessServiceRecord(cr, cr2);
+        doNothing().when(mActiveServices).performServiceRestartLocked(any());
+
+        mActiveServices.onProcessUnfrozenLocked(psr);
+
+        // sr should be restarted, as nextRestartTime has passed
+        verify(mActiveServices, times(1)).performServiceRestartLocked(sr);
+        // sr2 should not be restarted, as nextRestartTime is in the future
+        verify(mActiveServices, never()).performServiceRestartLocked(sr2);
     }
 
     @NonNull
