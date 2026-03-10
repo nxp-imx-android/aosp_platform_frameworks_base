@@ -1244,4 +1244,14 @@ flag {
     }
 }
 
+flag {
+    name: "update_desktop_scrim_when_locked_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes the issue that desktop scrim effect not get updated when device locked and unlocked."
+    bug: "484800239"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
 # go/keep-sorted end

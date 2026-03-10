@@ -316,7 +316,13 @@ class DesktopTasksController(
     // TODO(b/489936769): Isolate relevant logic from DesktopTasksController to decouple
     //  DesktopScrimController.
     private val desktopScrimController =
-        DesktopScrimController(desktopRemoteListener, this, shellController)
+        DesktopScrimController(
+            desktopRemoteListener,
+            this,
+            shellController,
+            rootTaskDisplayAreaOrganizer,
+            keyguardManager,
+        )
 
     private val mOnAnimationFinishedCallback = { releaseVisualIndicator() }
     private lateinit var mPipScheduler: PipScheduler

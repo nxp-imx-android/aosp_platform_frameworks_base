@@ -17,6 +17,7 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.IWallpaperManager
+import android.app.KeyguardManager
 import android.content.Context
 import android.graphics.Rect
 import android.os.ServiceManager
@@ -24,6 +25,7 @@ import android.os.SystemProperties
 import android.util.ArrayMap
 import com.android.internal.annotations.VisibleForTesting
 import com.android.window.flags.Flags
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.shared.desktopmode.DesktopScrimListener
@@ -35,7 +37,9 @@ class DesktopScrimController(
     private val desktopRemoteListener: DesktopRemoteListener,
     private val desktopTasksController: DesktopTasksController,
     private val shellController: ShellController,
-) {
+    private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
+    private val keyguardManager: KeyguardManager,
+) : KeyguardManager.KeyguardLockedStateListener {
     private val mDesktopScrimListeners = ArrayMap<DesktopScrimListener, Executor>()
 
     private val wallpaperService: IWallpaperManager =
@@ -66,7 +70,9 @@ class DesktopScrimController(
     /** Check the current desktop condition and if should apply, apply the scrim effect. */
     fun updateDesktopScrimIfNeeded(displayId: Int, userId: Int, excludeTaskId: Int? = null) {
         val applyLightOutEffect =
-            if (Flags.fixWallpaperDimIssues26q2()) {
+            if (Flags.updateDesktopScrimWhenLockedBugfix() && keyguardManager.isKeyguardLocked) {
+                false
+            } else if (Flags.fixWallpaperDimIssues26q2()) {
                 desktopTasksController.isAnyTaskMaximizedOrDoubleTiled(
                     displayId,
                     userId,
@@ -99,6 +105,15 @@ class DesktopScrimController(
             displayId,
             true, /* temporary */
         )
+    }
+
+    override fun onKeyguardLockedStateChanged(isKeyguardLocked: Boolean) {
+        if (!Flags.updateDesktopScrimWhenLockedBugfix()) {
+            return
+        }
+        rootTaskDisplayAreaOrganizer.displayIds.forEach { displayId ->
+            updateDesktopScrimIfNeeded(displayId, shellController.currentUserId)
+        }
     }
 
     /** Response to a task size toggle event, to update the scrim effect when needed. */
