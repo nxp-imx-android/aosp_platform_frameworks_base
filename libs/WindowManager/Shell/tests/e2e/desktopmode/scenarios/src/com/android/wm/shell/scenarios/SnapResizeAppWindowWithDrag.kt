@@ -54,7 +54,7 @@ constructor(
 
     @Test
     open fun snapResizeAppWindowWithDrag() {
-        testApp.dragToSnapResizeRegion(wmHelper, device, toLeft)
+        testApp.dragToSnapResizeRegion(wmHelper, device, instrumentation.context, toLeft)
     }
 
     @After

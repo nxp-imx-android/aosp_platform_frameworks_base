@@ -46,7 +46,7 @@ abstract class FocusAppByDragResize : TestScenarioBase() {
         simpleApp.launchViaIntent(wmHelper)
 
         // Snap Simple App to the left to expose Mail App's right top corner
-        simpleApp.dragToSnapResizeRegion(wmHelper, device, isLeft = true)
+        simpleApp.dragToSnapResizeRegion(wmHelper, device, instrumentation.context, isLeft = true)
 
         // Verify Simple App is focused
         wmHelper

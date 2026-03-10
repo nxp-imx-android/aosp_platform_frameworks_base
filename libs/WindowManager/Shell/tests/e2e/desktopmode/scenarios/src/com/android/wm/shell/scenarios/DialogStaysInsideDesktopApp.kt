@@ -56,14 +56,24 @@ abstract class DialogStaysInsideDesktopApp(val rotation: Rotation = Rotation.ROT
             BrowserAppHelper.getSpecialBrowserIntent(BrowserAppHelper.EBAY_INTENT),
         )
         browserAppHelper.clickShareButtonInToolbar()
-        browserDesktopAppHelper.dragToSnapResizeRegion(wmHelper, device, isLeft = true)
+        browserDesktopAppHelper.dragToSnapResizeRegion(
+            wmHelper,
+            device,
+            instrumentation.context,
+            isLeft = true,
+        )
     }
 
     @Test
     open fun triggerSystemDialogAndDrag() {
         // Trigger a permission dialog which is a system dialog.
         browserAppHelper.clickVoiceButtonInSearchBox()
-        browserDesktopAppHelper.dragToSnapResizeRegion(wmHelper, device, isLeft = true)
+        browserDesktopAppHelper.dragToSnapResizeRegion(
+            wmHelper,
+            device,
+            instrumentation.context,
+            isLeft = true,
+        )
     }
 
     @After

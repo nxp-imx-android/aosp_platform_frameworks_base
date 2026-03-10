@@ -190,14 +190,14 @@ abstract class RememberedBounds(val rotation: Rotation = Rotation.ROTATION_0) :
 
     private fun verifySnapRightRememberedBounds(launchApp: () -> Unit) {
         // Place another app in snapped right below the browser app to verify no cascading
-        otherApp.dragToSnapResizeRegion(wmHelper, device, isLeft = false)
+        otherApp.dragToSnapResizeRegion(wmHelper, device, instrumentation.context, isLeft = false)
 
         // 1. Launch
         launchApp()
         targetApp.waitForTransitionToFreeform(wmHelper)
 
         // 2. Snap it to right
-        targetApp.dragToSnapResizeRegion(wmHelper, device, isLeft = false)
+        targetApp.dragToSnapResizeRegion(wmHelper, device, instrumentation.context, isLeft = false)
         val snappedBounds = wmHelper.getWindowRegion(targetApp).bounds
 
         // 3. Close it
