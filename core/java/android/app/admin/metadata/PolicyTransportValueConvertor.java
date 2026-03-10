@@ -17,6 +17,8 @@
 package android.app.admin.metadata;
 
 import android.annotation.NonNull;
+import android.app.admin.PackageIdentifier;
+import android.app.admin.PackageIdentifierTransport;
 import android.app.admin.PolicyIdentifier;
 import android.app.admin.PolicyValueTransport;
 import android.app.admin.metadata.LongPolicyMetadata;
@@ -111,6 +113,27 @@ public abstract class PolicyTransportValueConvertor<T> {
                     return transport.getStringField();
                 }
             };
+    private static final PolicyTransportValueConvertor<PackageIdentifier> PACKAGE_CONVERTOR =
+            new PolicyTransportValueConvertor<>() {
+                @Override
+                @NonNull
+                public PolicyValueTransport toTransport(@NonNull PackageIdentifier value) {
+                    return PolicyValueTransport.packageField(value.createTransport());
+                }
+
+                @NonNull
+                @Override
+                public PackageIdentifier fromTransport(@NonNull PolicyValueTransport transport) {
+                    if (transport.getTag() != PolicyValueTransport.packageField) {
+                        throw new IllegalArgumentException(
+                                "Policy value " + transport + " is not a package"
+                        );
+                    }
+
+                    return new PackageIdentifier(transport.getPackageField());
+                }
+            };
+
     private static final PolicyTransportValueConvertor<List<String>> LIST_OF_STRING_CONVERTOR =
             new PolicyTransportValueConvertor<>() {
                 @Override
@@ -153,6 +176,7 @@ public abstract class PolicyTransportValueConvertor<T> {
             case LongPolicyMetadata m -> LONG_CONVERTOR;
             case EnumPolicyMetadata m -> INTEGER_CONVERTOR;
             case StringPolicyMetadata m -> STRING_CONVERTOR;
+            case PackagePolicyMetadata m -> PACKAGE_CONVERTOR;
             // Need to use a raw type here since we can't extract the element E of T=List<E>.
             case ListPolicyMetadata m -> getListInstance(m);
             default -> throw new UnsupportedOperationException(

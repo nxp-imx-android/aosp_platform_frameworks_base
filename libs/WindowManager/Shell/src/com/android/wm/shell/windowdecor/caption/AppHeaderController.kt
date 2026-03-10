@@ -461,8 +461,7 @@ class AppHeaderController(
                         appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
                     } else {
                         // Skip request for assist content as it is only used for links, which are
-                        // not
-                        // supported
+                        // not supported
                         null
                     }
                 createHandleMenu(

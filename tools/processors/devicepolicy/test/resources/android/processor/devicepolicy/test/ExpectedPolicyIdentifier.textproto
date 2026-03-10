@@ -481,3 +481,21 @@ policy_metadata {
   allowed_scopes: POLICY_SCOPE_USER
   affected_resource: RESOURCE_DEVICE_WIDE
 }
+policy_metadata {
+  identifier {
+    field_name: "SIMPLE_PACKAGE_POLICY"
+    class_name: "PolicyIdentifier"
+    package_name: "android.app.admin"
+  }
+  type {
+    class_name: "PackageIdentifier"
+    package_name: "android.app.admin"
+  }
+  documentation: "Test policy for Package "
+  type_specific_metadata {
+    package_metadata {
+    }
+  }
+  allowed_scopes: POLICY_SCOPE_USER
+  affected_resource: RESOURCE_DEVICE_WIDE
+}

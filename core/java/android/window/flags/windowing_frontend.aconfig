@@ -74,6 +74,13 @@ flag {
 }
 
 flag {
+    name: "synced_display_mode_updates"
+    namespace: "windowing_frontend"
+    description: "Synchronized multi-display mode updates"
+    bug: "448471638"
+}
+
+flag {
   name: "avoid_intermediate_destroying_state"
   namespace: "windowing_frontend"
   description: "Prevent intermediate destroying state from affecting visibility"

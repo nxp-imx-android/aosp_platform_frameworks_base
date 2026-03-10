@@ -35,11 +35,7 @@ import java.util.concurrent.TimeoutException;
 class PersonalContextAsyncReceiver {
 
     private static final String TAG = "PersonalContextAsyncReceiver";
-    /**
-     * Default timeout is based on restrictions from ui tool kit ViewConfiguration See
-     * SMART_SELECTION_INITIALIZED_TIMEOUT_IN_MILLISECOND.
-     */
-    private static final long DEFAULT_TIMEOUT_IN_MILLISECOND = 180;
+
     /** Based on MAX_PENDING_REQUESTS of TextClassificationManagerService */
     @VisibleForTesting static final int MAX_SESSIONS = 20;
 
@@ -54,8 +50,12 @@ class PersonalContextAsyncReceiver {
     private final ConcurrentHashMap<String, PersonalContextBridgeTask> mIdToTasks =
             new ConcurrentHashMap<>(MAX_SESSIONS);
 
-    PersonalContextAsyncReceiver(ScheduledExecutorService scheduledExecutorService) {
+    private final long mTimeoutInMillis;
+
+    PersonalContextAsyncReceiver(
+            ScheduledExecutorService scheduledExecutorService, long timeoutInMillis) {
         mScheduledExecutorService = scheduledExecutorService;
+        mTimeoutInMillis = timeoutInMillis;
     }
 
     /**
@@ -91,14 +91,6 @@ class PersonalContextAsyncReceiver {
     public void getAsync(
             @NonNull String sessionId,
             @NonNull OutcomeReceiver<TextClassification, TimeoutException> callback) {
-        getAsync(sessionId, DEFAULT_TIMEOUT_IN_MILLISECOND, callback);
-    }
-
-    @VisibleForTesting
-    void getAsync(
-            @NonNull String sessionId,
-            long timeoutInMillis,
-            @NonNull OutcomeReceiver<TextClassification, TimeoutException> callback) {
         if (mIdToTasks.containsKey(sessionId)) {
             Slog.d(TAG, "Only one callback is allowed to wait on given sessionId.");
             return;
@@ -119,7 +111,7 @@ class PersonalContextAsyncReceiver {
                                             "Timed out while waiting for personal context result"));
                             clearSession(sessionId);
                         },
-                        timeoutInMillis,
+                        mTimeoutInMillis,
                         TimeUnit.MILLISECONDS);
         synchronized (mIdToResults) {
             mIdToTasks.put(sessionId, new PersonalContextBridgeTask(callback, cancellationTask));

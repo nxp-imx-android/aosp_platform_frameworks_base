@@ -26,13 +26,14 @@
 #include <com_android_graphics_libgui_flags.h>
 #include <gui/GraphicBuffersRegisterInfo.h>
 #include <gui/GraphicBuffersUnregisterInfo.h>
+#include <gui/ISurfaceComposer.h>
 #include <gui/LocklessQueue.h>
 #include <gui/TraceUtils.h>
 #include <include/android/GrAHardwareBufferUtils.h>
 #include <inttypes.h>
 #include <log/log.h>
 #include <private/android/AHardwareBufferHelpers.h>
-#include <private/gui/ComposerServiceAIDL.h>
+#include <private/gui/ComposerService.h>
 #include <ui/GraphicBuffer.h>
 
 #include <thread>
@@ -50,9 +51,7 @@ sp<GraphicBuffer> allocGraphicBufferFromBitmap(const SkImageInfo& info) {
     uint32_t usage = GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_SW_WRITE_RARELY;
 
     // Map SkColorType to Android PixelFormat
-    SkBitmap bitmap;
-    bitmap.setInfo(info);
-    auto formatInfo = HardwareBitmapUploader::determineFormat(bitmap);
+    auto formatInfo = HardwareBitmapUploader::determineFormat(info);
     if (!formatInfo.isSupported || !formatInfo.valid) {
         ALOGE("Missing format: %d", info.colorType());
         // Fallback or skip if format is not supported by GraphicBuffer easily
@@ -194,7 +193,10 @@ void OoprNode::registerSnapshot(const sk_sp<SkImage>& image) {
     sk_sp<SkImage> oldImage = mLastImage;
     mLastImage = image;
 
-    LOG_ALWAYS_FATAL_IF(!mBuffer, "buffer should never be null");
+    if (!mBuffer) {
+        ALOGE("Buffer unexpectedly null!");
+        return;
+    }
 
     if (oldImage) {
         oopr->deregisterBuffer(oldImage);
@@ -214,41 +216,18 @@ void OoprBitmap::createAndRegisterShadowBuffer(const SkBitmap& bitmap, sk_sp<SkI
 
     ATRACE_CALL();
 
-    // Shadow the heap buffer with a GraphicBuffer
-    // Note: This creates a copy of the pixel data into the GraphicBuffer.
-
     // Check if the image has changed. If not, we're done.
-    if (mShadowBuffer && mLastImage && mLastImage->uniqueID() == image->uniqueID()) {
+    if (mLastImage && mLastImage->uniqueID() == image->uniqueID()) {
         return;
     }
 
     sk_sp<SkImage> oldImage = mLastImage;
-
-    // Allocate or re-allocate the shadow buffer if needed.
-    bool needsAllocation = !mShadowBuffer;
-    if (mShadowBuffer) {
-        if (!oldImage || oldImage->imageInfo() != bitmap.info()) {
-            needsAllocation = true;
-        }
-    }
-
-    if (needsAllocation) {
-        mShadowBuffer = allocGraphicBufferFromBitmap(bitmap.info());
-        if (!mShadowBuffer) {
-            // Error logging handled inside allocGraphicBufferFromBitmap
-            return;
-        }
-    }
-
-    copyBitmapToGraphicBuffer(mShadowBuffer, bitmap);
     mLastImage = image;
 
-    // If there was a previous image, we should deregister it.
-    if (oldImage && oldImage->uniqueID() != image->uniqueID()) {
+    if (oldImage) {
         oopr->deregisterBuffer(oldImage);
     }
-
-    oopr->registerBitmap(bitmap, image, mShadowBuffer);
+    oopr->registerBitmap(bitmap, image);
 }
 
 // This function is called from Bitmap.cpp, potentially from any thread.
@@ -257,29 +236,40 @@ void OoprBitmap::createAndRegisterShadowBuffer(const SkBitmap& bitmap, sk_sp<SkI
 void OoprClient::registerBuffer(const sp<GraphicBuffer>& buffer, const sk_sp<SkImage>& image) {
     if (!mEnableOOPR || !image) return;
     ATRACE_FORMAT("registerBuffer bufferId=%llu imageId=%u", buffer->getId(), image->uniqueID());
-    mCache->bitmaps[image->uniqueID()] =
-            IPCClientBitmap{buffer->getId(), IPCClientBitmap::PENDING_REGISTER, buffer};
+
+    IPCClientBitmap clientBitmap;
+    clientBitmap.id = image->uniqueID();
+    clientBitmap.buffer = buffer;
+    mCache->bitmaps.emplace(clientBitmap.id, clientBitmap);
+
+    Registration r;
+    r.buffer = buffer;
+    r.image = image;
+    mRegistrations.push_back(r);
 }
 
-void OoprClient::registerBitmap(const SkBitmap& bitmap, const sk_sp<SkImage>& image,
-                                const sp<GraphicBuffer>& buffer) {
+void OoprClient::registerBitmap(const SkBitmap& bitmap, const sk_sp<SkImage>& image) {
     if (!mEnableOOPR || !image) return;
-    ATRACE_FORMAT("registerBitmap bufferId=%llu imageId=%u bitmap=%u", buffer->getId(),
-                  image->uniqueID(), bitmap.getGenerationID());
+    ATRACE_FORMAT("registerBitmap imageId=%u bitmap=%u", image->uniqueID(),
+                  bitmap.getGenerationID());
 
-    mCache->bitmaps[image->uniqueID()] = IPCClientBitmap{.id = buffer->getId(),
-                                                         .state = IPCClientBitmap::PENDING_REGISTER,
-                                                         .buffer = buffer,
-                                                         .bitmap = bitmap};
+    IPCClientBitmap clientBitmap;
+    clientBitmap.id = image->uniqueID();
+    clientBitmap.bitmap = bitmap;
+    mCache->bitmaps.emplace(clientBitmap.id, clientBitmap);
+
+    Registration r;
+    r.image = image;
+    r.bitmap = bitmap;
+    mRegistrations.push_back(r);
 }
 
-void OoprClient::registerPendingBitmaps() {
+void OoprClient::sendPendingBitmapRegistrations(RenderCommandBuffer* cmds) {
     if (!mEnableOOPR) {
         return;
     }
     ATRACE_CALL();
 
-    // TODO: deregister here too
     gui::GraphicBuffersUnregisterInfo unregisterInfo;
     gui::GraphicBuffersRegisterInfo registerInfo;
 
@@ -287,29 +277,35 @@ void OoprClient::registerPendingBitmaps() {
     unregisterInfo.renderResourceToken = mToken;
 
     // We need to iterate and possibly remove elements, so use iterator
-    auto it = mCache->bitmaps.begin();
-    while (it != mCache->bitmaps.end()) {
-        IPCClientBitmap& bitmap = it->second;
 
-        if (bitmap.state == IPCClientBitmap::PENDING_REGISTER) {
-            registerInfo.buffers.push_back(bitmap.buffer);
-            bitmap.state = IPCClientBitmap::REGISTERED;
-            ++it;
-        } else if (bitmap.state == IPCClientBitmap::PENDING_DEREGISTER) {
-            unregisterInfo.bufferIds.push_back(bitmap.id);
-            // Remove from map as it is being unregistered
-            it = mCache->bitmaps.erase(it);
+    for (const auto& reg : mRegistrations) {
+        IPCClientBitmap clientBitmap;
+        clientBitmap.id = reg.image->uniqueID();
+        if (reg.buffer) {
+            clientBitmap.buffer = reg.buffer;
+            registerInfo.buffers.push_back(reg.buffer);
         } else {
-            ++it;
+            clientBitmap.bitmap = reg.bitmap;
+            UploadBitmap_Create(cmds, clientBitmap.id, reg.bitmap);
         }
     }
+    mRegistrations.clear();
+
+    for (const auto& dereg : mDeregistrations) {
+        if (dereg.bufferId) {
+            unregisterInfo.bufferIds.push_back(dereg.bufferId);
+        } else {
+            FreeBitmap_Create(cmds, dereg.imageId);
+        }
+    }
+    mDeregistrations.clear();
 
     if (!registerInfo.buffers.empty()) {
-        ComposerServiceAIDL::getComposerService()->registerGraphicBuffers(registerInfo);
+        ComposerService::getComposerService()->registerGraphicBuffers(registerInfo);
     }
 
     if (!unregisterInfo.bufferIds.empty()) {
-        ComposerServiceAIDL::getComposerService()->unregisterGraphicBuffers(unregisterInfo);
+        ComposerService::getComposerService()->unregisterGraphicBuffers(unregisterInfo);
     }
 }
 
@@ -317,27 +313,22 @@ void OoprClient::deregisterBuffer(const sk_sp<SkImage>& image) {
     if (!mEnableOOPR) {
         return;
     }
-    if (!image) {
-        LOG_ALWAYS_FATAL("Trying to deregister null image.");
-        return;
-    }
+
+    ATRACE_FORMAT("deregisterBuffer  bitmap=%u", image->uniqueID());
 
     auto it = mCache->bitmaps.find(image->uniqueID());
     if (it == mCache->bitmaps.end()) {
-        // LOG_ALWAYS_FATAL("Trying to deregister image that was never registered.");
         return;
     }
 
-    switch (it->second.state) {
-        case IPCClientBitmap::PENDING_REGISTER:
-        case IPCClientBitmap::PENDING_DEREGISTER:
-        case IPCClientBitmap::UNREGISTERED:
-            mCache->bitmaps.erase(it);
-            break;
-        case IPCClientBitmap::REGISTERED:
-            it->second.state = IPCClientBitmap::PENDING_DEREGISTER;
-            break;
+    Deregistration d;
+    d.imageId = image->uniqueID();
+    if (it->second.buffer) {
+        d.bufferId = it->second.buffer->getId();
     }
+    mDeregistrations.push_back(d);
+
+    mCache->bitmaps.erase(it);
 }
 
 #endif

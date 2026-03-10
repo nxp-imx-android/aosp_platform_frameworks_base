@@ -569,6 +569,50 @@ class GeneratorTest {
             )
     }
 
+    private fun packageTestPolicy(name: String): PolicyMetadata.Builder =
+        PolicyMetadata.newBuilder()
+            .setIdentifier(simpleNameToFieldName(name))
+            .setTypeSpecificMetadata(
+                TypeSpecificPolicyMetadata.newBuilder()
+                    .setPackageMetadata(
+                        TypeSpecificPolicyMetadata.PackagePolicyMetadata.newBuilder()
+                    )
+            )
+
+    @Test
+    fun test_packagePolicy_outputMatches() {
+        val policyList =
+            PolicyMetadataList.newBuilder()
+                .addPolicyMetadata(
+                    packageTestPolicy("test.package.PolicyContainer.MY_TEST_PACKAGE_POLICY")
+                        .addAllAllowedScopes(
+                            listOf(PolicyMetadata.PolicyScope.POLICY_SCOPE_DEVICE)
+                        )
+                        .setAffectedResource(PolicyMetadata.ResourceType.RESOURCE_DEVICE_WIDE)
+                )
+                .build()
+        val javaFile = Generator.generate(policyList)
+        assertThat(javaFileToString(javaFile))
+            .isEqualTo(
+                fillInFile(
+                    staticImports = listOf("test.package.PolicyContainer.MY_TEST_PACKAGE_POLICY"),
+                    code =
+                        """
+                            policies.add(new PackagePolicyMetadata(
+                                /* id= */ MY_TEST_PACKAGE_POLICY,
+                                /* allowedScopes= */ Set.of(
+                                    2
+                                ),
+                                /* affectedResource= */ 1,
+                                /* requiredPermission= */ null,
+                                /* requiredCrossUserPermission= */ null,
+                                /* allowedDpcTypes= */ Set.of()
+                            ));
+                        """,
+                )
+            )
+    }
+
     private fun listOfStringTestPolicy(name: String): PolicyMetadata.Builder =
         PolicyMetadata.newBuilder()
             .setIdentifier(simpleNameToFieldName(name))

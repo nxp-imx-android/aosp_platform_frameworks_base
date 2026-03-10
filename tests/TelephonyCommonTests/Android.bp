@@ -51,6 +51,8 @@ android_test {
     // through the renamed classes.
     platform_apis: true,
 
+    certificate: "platform",
+
     libs: [
         "android.test.runner.stubs.system",
         "android.test.mock.stubs.system",

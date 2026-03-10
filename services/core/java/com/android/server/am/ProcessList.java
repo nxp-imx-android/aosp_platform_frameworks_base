@@ -2487,7 +2487,7 @@ public final class ProcessList extends ProcessListInternal
                 // Use has-foreground-activities as a temporary hint so the current scheduling
                 // group won't be lost when the process is attaching. The actual state will be
                 // refreshed when computing oom-adj.
-                app.setHasForegroundActivities(true);
+                mService.mProcessStateController.setHasForegroundActivities(app, true);
             }
 
             Map<String, Pair<String, Long>> pkgDataInfoMap;
@@ -3552,8 +3552,8 @@ public final class ProcessList extends ProcessListInternal
                 && (info.flags & PERSISTENT_MASK) == PERSISTENT_MASK
                 && (TextUtils.equals(proc, info.processName))) {
             // The system process is initialized to SCHED_GROUP_DEFAULT in init.rc.
-            state.setCurrentSchedulingGroup(SCHED_GROUP_DEFAULT);
-            state.setSetSchedGroup(SCHED_GROUP_DEFAULT);
+            mService.mProcessStateController.setCurrentSchedulingGroup(state, SCHED_GROUP_DEFAULT);
+            mService.mProcessStateController.setSetSchedGroup(state, SCHED_GROUP_DEFAULT);
             r.setPersistent(true);
             mService.mProcessStateController.setMaxAdj(r, PERSISTENT_PROC_ADJ);
         }

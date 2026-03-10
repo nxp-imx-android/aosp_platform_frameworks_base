@@ -32,6 +32,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.input.data.TestDataStore
 import com.android.server.testutils.TestUtils
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.anEmptyMap
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -695,6 +697,53 @@ class InputDeviceRemapperTests {
                 eq(intArrayOf(MotionEvent.AXIS_X)),
                 eq(intArrayOf(MotionEvent.AXIS_Y)),
             )
+    }
+
+    @Test
+    fun emptyRemappingsGetPersisted() {
+        val inputDeviceRemapper = setupControllerRemapper()
+        val device =
+            createDevice(
+                deviceId = 1,
+                vendorId = 123,
+                productId = 456,
+                sources = InputDevice.SOURCE_JOYSTICK or InputDevice.SOURCE_KEYBOARD,
+            )
+        inputDeviceRemapper.remapKey(
+            USER_ID,
+            device.identifier,
+            KeyEvent.KEYCODE_BUTTON_A,
+            KeyEvent.KEYCODE_BUTTON_B,
+        )
+        inputDeviceRemapper.remapAxis(
+            USER_ID,
+            device.identifier,
+            MotionEvent.AXIS_X,
+            MotionEvent.AXIS_Y,
+        )
+        TestUtils.flushLoopers(mainLooperManager)
+        // Now clear them
+        inputDeviceRemapper.clearAllKeyRemappings(USER_ID, device.identifier)
+        inputDeviceRemapper.clearAllAxisRemappings(USER_ID, device.identifier)
+        TestUtils.flushLoopers(mainLooperManager)
+        // Recreate and check that they are still cleared
+        val recreatedInputDeviceRemapper = setupControllerRemapper()
+        addInputDevice(device.id, device.descriptor, device)
+        reset(native)
+
+        recreatedInputDeviceRemapper.onInputDeviceAdded(device.id)
+
+        // The remappings should be cleared on the native side
+        verify(native).setKeyRemappingForDevice(eq(device.id), eq(intArrayOf()), eq(intArrayOf()))
+        verify(native).setAxisRemappingForDevice(eq(device.id), eq(intArrayOf()), eq(intArrayOf()))
+        assertThat(
+            recreatedInputDeviceRemapper.getKeyRemappings(USER_ID, device.identifier),
+            anEmptyMap(),
+        )
+        assertThat(
+            recreatedInputDeviceRemapper.getAxisRemappings(USER_ID, device.identifier),
+            anEmptyMap(),
+        )
     }
 
     private fun addInputDevice(deviceId: Int, descriptor: String, device: InputDevice) {

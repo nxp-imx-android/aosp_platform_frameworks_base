@@ -68,7 +68,7 @@ class IntegerProcessor(processingEnv: ProcessingEnvironment) :
             integerMetadataBuilder.setMaxValue(integerDefinition.maxValue)
         }
         if (integerDefinition.minValue > integerDefinition.maxValue) {
-          printError(element, "minValue cannot be larger than maxValue.")
+            printError(element, "minValue cannot be larger than maxValue.")
         }
 
         val typeSpecificMetadata =

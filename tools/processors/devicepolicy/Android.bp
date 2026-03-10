@@ -51,7 +51,10 @@ java_library {
 java_test_host {
     name: "DevicePolicyAnnotationProcessorTests",
 
-    srcs: ["test/src/**/*.kt"],
+    srcs: [
+        "test/src/**/*.kt",
+        "test/src/**/*.java",
+    ],
 
     static_libs: [
         "DevicePolicyAnnotationProcessorHostLibrary",

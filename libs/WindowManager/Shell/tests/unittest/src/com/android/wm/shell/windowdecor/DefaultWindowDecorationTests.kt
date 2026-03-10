@@ -181,6 +181,18 @@ class DefaultWindowDecorationTests : ShellTestCase() {
         assertTrue(relayoutParams.isCaptionVisible)
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_ADD_WINDOW_DECORATION_TO_ALL_TASKS)
+    fun isCaptionVisible_fullscreen_returnsTrue() {
+        insetsState.addInsetsSource(type = statusBars(), visible = true)
+        val task = createFullscreenTask()
+        val decoration = setUpWindowDecoration(task)
+
+        val relayoutParams = decoration.getRelayoutParams(task)
+
+        assertTrue(relayoutParams.isCaptionVisible)
+    }
+
     private fun setUpWindowDecoration(taskInfo: RunningTaskInfo): DefaultWindowDecoration {
         val wrappedDecoration =
             WindowDecorationTestHelper.createWindowDecoration(
