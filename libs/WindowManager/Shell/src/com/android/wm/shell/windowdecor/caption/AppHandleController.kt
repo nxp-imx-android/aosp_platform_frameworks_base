@@ -45,10 +45,8 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.desktopmode.CaptionState
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
-import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
-import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.recents.PerDisplayRecentsTransitionStateListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
@@ -56,7 +54,6 @@ import com.android.wm.shell.shared.bubbles.BubbleFlagHelper
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.splitscreen.SplitScreenController
-import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.DesktopHandleManageWindowsMenu
 import com.android.wm.shell.windowdecor.HandleMenu
@@ -113,9 +110,6 @@ class AppHandleController(
     private val onCaptionTouchListener: View.OnTouchListener,
     private val appToWebRepository: AppToWebRepository,
     private val recentsTransitionStateListener: PerDisplayRecentsTransitionStateListener,
-    private val focusTransitionObserver: FocusTransitionObserver,
-    private val pinnedLayerController: PinnedLayerController?,
-    private val desktopTasksController: DesktopTasksController,
     private val handleMenuFactory: HandleMenuFactory = HandleMenuFactory,
     private val appHandleViewHolderFactory: AppHandleViewHolder.Factory =
         AppHandleViewHolder.Factory(),
@@ -139,7 +133,6 @@ class AppHandleController(
     private var openByDefaultDialog: OpenByDefaultDialog? = null
     private var manageWindowsMenu: DesktopHandleManageWindowsMenu? = null
 
-    override val handleMenuController = this
     override val manageWindowsMenuController = this
 
     private var handleMenuCreationJob: Job? = null
@@ -498,10 +491,6 @@ class AppHandleController(
                 windowManagerWrapper = windowManagerWrapper,
                 handler = mainHandler,
                 desktopModeUiEventLogger = desktopModeUiEventLogger,
-                handleMenuController = handleMenuController,
-                focusTransitionObserver = focusTransitionObserver,
-                pinnedLayerController = pinnedLayerController,
-                desktopTasksController = desktopTasksController,
             )
         viewHolder = appHandleViewHolder
         return appHandleViewHolder

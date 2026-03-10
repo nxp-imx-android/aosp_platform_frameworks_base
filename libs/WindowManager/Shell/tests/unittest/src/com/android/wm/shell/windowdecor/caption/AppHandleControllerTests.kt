@@ -222,9 +222,6 @@ class AppHandleControllerTests : ShellTestCase() {
             appToWebRepository = appToWebRepository,
             handleMenuFactory = mockHandleMenuFactory,
             recentsTransitionStateListener = recentsTransitionStateListener,
-            focusTransitionObserver = mockFocusTransitionObserver,
-            pinnedLayerController = mockPinnedLayerController,
-            desktopTasksController = mockDesktopTasksController,
         )
 
     private fun AppHandleController.relayout(taskInfo: RunningTaskInfo) {
