@@ -23,9 +23,11 @@ import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.WindowConfiguration;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.view.RemoteAnimationTarget;
+import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.TransitionInfo;
 import android.window.WindowAnimationState;
@@ -71,29 +73,28 @@ public class AnimatedSurfaceUtils {
             default -> AnimatedSurface.Mode.OTHER;
         };
 
-        AnimatedSurface surface = new AnimatedSurface();
-        surface.leash = target.leash;
-        surface.startState = startState;
-        surface.endState = endState;
-        surface.backgroundColor = target.backgroundColor;
-        surface.isTranslucent = target.isTranslucent;
-        surface.taskInfo = target.taskInfo;
-        surface.mode = mode;
-        surface.screenSpaceBounds = target.screenSpaceBounds;
-        surface.localBounds = target.localBounds;
-        surface.position = target.position;
-        surface.rotationChange = target.rotationChange;
-        surface.windowConfiguration = target.windowConfiguration;
-        surface.taskId = target.taskId;
-        surface.windowType = target.windowType;
-        surface.startLeash = target.startLeash;
-        surface.startBounds = target.startBounds;
-        surface.contentInsets = target.contentInsets;
-        surface.willShowImeOnTarget = target.willShowImeOnTarget;
-        surface.isNotInRecents = target.isNotInRecents;
-        surface.allowEnterPip = target.allowEnterPip;
-        surface.order = target.prefixOrderIndex;
-        return surface;
+        return createAnimatedSurface(
+                /* leash= */ target.leash,
+                /* startLeash= */ target.startLeash,
+                /* startState= */ startState,
+                /* endState= */ endState,
+                /* backgroundColor= */ target.backgroundColor,
+                /* isTranslucent= */ target.isTranslucent,
+                /* taskInfo= */ target.taskInfo,
+                /* mode= */ mode,
+                /* screenSpaceBounds= */ target.screenSpaceBounds,
+                /* localBounds= */ target.localBounds,
+                /* startBounds= */ target.startBounds,
+                /* contentInsets= */ target.contentInsets,
+                /* position= */ target.position,
+                /* rotationChange= */ target.rotationChange,
+                /* windowConfiguration= */ target.windowConfiguration,
+                /* taskId= */ target.taskId,
+                /* windowType= */ target.windowType,
+                /* willShowImeOnTarget= */ target.willShowImeOnTarget,
+                /* isNotInRecents= */ target.isNotInRecents,
+                /* allowEnterPip= */ target.allowEnterPip,
+                /* order= */ target.prefixOrderIndex);
     }
 
     /** See {@link AnimatedSurfaceUtils#from(TransitionInfo.Change, WindowAnimationState, int)}. */
@@ -139,27 +140,73 @@ public class AnimatedSurfaceUtils {
 
         boolean willShowImeOnTarget = (change.getFlags() & TransitionInfo.FLAG_WILL_IME_SHOWN) != 0;
 
+        return createAnimatedSurface(
+                /* leash= */ change.getLeash(),
+                /* startLeash= */ null,
+                /* startState= */ startState,
+                /* endState= */ endState,
+                /* backgroundColor= */ change.getBackgroundColor(),
+                /* isTranslucent= */ change.hasFlags(TransitionInfo.FLAG_TRANSLUCENT),
+                /* taskInfo= */ taskInfo,
+                /* mode= */ mode,
+                /* screenSpaceBounds= */ new Rect(change.getEndAbsBounds()),
+                /* localBounds= */ localBounds,
+                /* startBounds= */ new Rect(change.getStartAbsBounds()),
+                /* contentInsets= */ new Rect(0, 0, 0, 0),
+                /* position= */ null,
+                /* rotationChange= */ rotationChange,
+                /* windowConfiguration= */ windowConfiguration,
+                /* taskId= */ taskId,
+                /* windowType= */ INVALID_WINDOW_TYPE,
+                /* willShowImeOnTarget= */ willShowImeOnTarget,
+                /* isNotInRecents= */ isNotInRecents,
+                /* allowEnterPip= */ change.isAllowEnterPip(),
+                /* order= */ order);
+    }
+
+    private static AnimatedSurface createAnimatedSurface(
+            SurfaceControl leash,
+            SurfaceControl startLeash,
+            @Nullable WindowAnimationState startState,
+            WindowAnimationState endState,
+            int backgroundColor,
+            boolean isTranslucent,
+            @Nullable ActivityManager.RunningTaskInfo taskInfo,
+            int mode,
+            Rect screenSpaceBounds,
+            Rect localBounds,
+            Rect startBounds,
+            Rect contentInsets,
+            Point position,
+            int rotationChange,
+            WindowConfiguration windowConfiguration,
+            int taskId,
+            int windowType,
+            boolean willShowImeOnTarget,
+            boolean isNotInRecents,
+            boolean allowEnterPip,
+            int order) {
         AnimatedSurface surface = new AnimatedSurface();
-        surface.leash = change.getLeash();
+        surface.leash = leash;
+        surface.startLeash = startLeash;
         surface.startState = startState;
         surface.endState = endState;
-        surface.backgroundColor = change.getBackgroundColor();
-        surface.isTranslucent = change.hasFlags(TransitionInfo.FLAG_TRANSLUCENT);
+        surface.backgroundColor = backgroundColor;
+        surface.isTranslucent = isTranslucent;
         surface.taskInfo = taskInfo;
         surface.mode = mode;
-        surface.screenSpaceBounds = new Rect(change.getEndAbsBounds());
+        surface.screenSpaceBounds = screenSpaceBounds;
         surface.localBounds = localBounds;
-        surface.position = null;
+        surface.startBounds = startBounds;
+        surface.contentInsets = contentInsets;
+        surface.position = position;
         surface.rotationChange = rotationChange;
         surface.windowConfiguration = windowConfiguration;
         surface.taskId = taskId;
-        surface.windowType = INVALID_WINDOW_TYPE;
-        surface.startLeash = null;
-        surface.startBounds = new Rect(change.getStartAbsBounds());
-        surface.contentInsets = new Rect(0, 0, 0, 0);
+        surface.windowType = windowType;
         surface.willShowImeOnTarget = willShowImeOnTarget;
         surface.isNotInRecents = isNotInRecents;
-        surface.allowEnterPip = change.isAllowEnterPip();
+        surface.allowEnterPip = allowEnterPip;
         surface.order = order;
         return surface;
     }
