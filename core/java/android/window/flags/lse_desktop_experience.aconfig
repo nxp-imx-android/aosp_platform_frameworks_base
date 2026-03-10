@@ -1052,6 +1052,16 @@ flag {
 }
 
 flag {
+    name: "handle_overview_desktop_scrim_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Force disable scrim effect for overview"
+    bug: "487785554"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "home_package_windowing_exemptions_bug_fix"
     namespace: "lse_desktop_experience"
     description: "Fixes issue with retrieving the home package during the windowing exemptions \n"

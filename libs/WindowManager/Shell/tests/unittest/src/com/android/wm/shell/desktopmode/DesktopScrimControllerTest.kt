@@ -100,5 +100,20 @@ class DesktopScrimControllerTest : ShellTestCase() {
         // The effect should be gone
         verify(desktopScrimListener).onDesktopScrimEffectChanged(DEFAULT_DISPLAY, false)
     }
+
+    @Test
+    @EnableFlags(
+        com.android.window.flags.Flags.FLAG_HANDLE_OVERVIEW_DESKTOP_SCRIM_BUGFIX,
+        com.android.systemui.Flags.FLAG_OPAQUE_STATUS_BAR,
+    )
+    fun disableScrimEffectWhenOverviewShown_bugFixEnabled() {
+        controller.onInit()
+        controller.addDesktopScrimListener(desktopScrimListener, shellExecutor)
+        // Send the overview shown callback
+        controller.onOverviewShown(DEFAULT_DISPLAY)
+        shellExecutor.flushAll()
+        // The effect should be gone
+        verify(desktopScrimListener).onDesktopScrimEffectChanged(DEFAULT_DISPLAY, false)
+    }
     // TODO(b/489916353): Add tests to cover all other methods in DesktopScrimController
 }

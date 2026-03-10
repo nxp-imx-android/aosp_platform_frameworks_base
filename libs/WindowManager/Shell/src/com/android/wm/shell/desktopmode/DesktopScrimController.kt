@@ -31,6 +31,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitRea
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopScrimListener
+import com.android.wm.shell.sysui.OverviewVisibilityChangeListener
 import com.android.wm.shell.sysui.ShellController
 import java.util.concurrent.Executor
 
@@ -42,7 +43,7 @@ class DesktopScrimController(
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val keyguardManager: KeyguardManager,
     @ShellMainThread private val mainExecutor: ShellExecutor,
-) : KeyguardManager.KeyguardLockedStateListener {
+) : KeyguardManager.KeyguardLockedStateListener, OverviewVisibilityChangeListener {
     private val mDesktopScrimListeners = ArrayMap<DesktopScrimListener, Executor>()
 
     private val wallpaperService: IWallpaperManager =
@@ -54,6 +55,9 @@ class DesktopScrimController(
     fun onInit() {
         if (Flags.updateDesktopScrimWhenLockedBugfix()) {
             keyguardManager.addKeyguardLockedStateListener(mainExecutor, this)
+        }
+        if (Flags.handleOverviewDesktopScrimBugfix()) {
+            shellController.addOverviewVisibilityChangeListener(this)
         }
     }
 
@@ -122,6 +126,14 @@ class DesktopScrimController(
                 updateDesktopScrimIfNeeded(displayId, shellController.currentUserId)
             }
         }
+    }
+
+    override fun onOverviewHidden(displayId: Int) {
+        updateDesktopScrimIfNeeded(displayId, shellController.currentUserId)
+    }
+
+    override fun onOverviewShown(displayId: Int) {
+        updateDesktopScrim(displayId, false)
     }
 
     /** Response to a task size toggle event, to update the scrim effect when needed. */
