@@ -2013,18 +2013,21 @@ class StorageManagerService extends IStorageManager.Stub
         return isUsbRestricted || isTypeRestricted;
     }
 
-    private void enforceAdminUser() {
+    private void enforceAdminUserOrSystemUser() {
         UserManager um = (UserManager) mContext.getSystemService(Context.USER_SERVICE);
         final int callingUserId = UserHandle.getCallingUserId();
-        boolean isAdmin;
+        boolean isAdminOrSystemUser;
         final long token = Binder.clearCallingIdentity();
         try {
-            isAdmin = um.getUserInfo(callingUserId).isAdmin();
+            isAdminOrSystemUser = (android.multiuser.Flags.hsuNotAdmin()
+                                       && callingUserId == UserHandle.USER_SYSTEM)
+                                     || um.getUserInfo(callingUserId).isAdmin();
         } finally {
             Binder.restoreCallingIdentity(token);
         }
-        if (!isAdmin) {
-            throw new SecurityException("Only admin users can adopt sd cards");
+        if (!isAdminOrSystemUser) {
+            throw new SecurityException("Only admin users and system users can adopt sd"
+                    + "cards");
         }
     }
 
@@ -2602,7 +2605,7 @@ class StorageManagerService extends IStorageManager.Stub
     public void partitionPrivate(String diskId) {
         super.partitionPrivate_enforcePermission();
 
-        enforceAdminUser();
+        enforceAdminUserOrSystemUser();
 
         final CountDownLatch latch = findOrCreateDiskScanLatch(diskId);
 
@@ -2620,7 +2623,7 @@ class StorageManagerService extends IStorageManager.Stub
     public void partitionMixed(String diskId, int ratio) {
         super.partitionMixed_enforcePermission();
 
-        enforceAdminUser();
+        enforceAdminUserOrSystemUser();
 
         final CountDownLatch latch = findOrCreateDiskScanLatch(diskId);
 
