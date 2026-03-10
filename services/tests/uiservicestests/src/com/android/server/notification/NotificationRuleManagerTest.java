@@ -21,13 +21,12 @@ import static android.app.Notification.CATEGORY_ALARM;
 import static android.app.Notification.CATEGORY_MESSAGE;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
 import static android.app.NotificationLoggingConstants.DATA_TYPE_NOTIFICATION_RULES;
-import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.app.NotificationManager.IMPORTANCE_NONE;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_BLOCK;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_BUNDLE;
-import static android.app.NotificationRule.Action.PRIMARY_ACTION_DEFAULT;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT;
+import static android.app.NotificationRule.Action.PRIMARY_ACTION_HIGHLIGHT_AND_ALERT;
 import static android.app.NotificationRule.Action.PRIMARY_ACTION_LOW;
 import static android.app.NotificationRule.Filter.CONVERSATION_LEVEL_PRIORITY;
 import static android.app.NotificationRule.RESERVED_ID_IMPORTANT_NOTIFICATIONS;
@@ -35,10 +34,11 @@ import static android.app.NotificationRule.RESERVED_ID_PRIORITY_CONVERSATIONS;
 import static android.app.NotificationRule.RESERVED_ID_PROMOTED;
 import static android.app.NotificationRule.RESERVED_ID_STATIC_BUNDLES;
 import static android.os.UserHandle.USER_ALL;
+import static android.service.notification.Adjustment.KEY_BREAKTHROUGH_ALL_MODES;
 import static android.service.notification.Adjustment.KEY_HIGHLIGHT;
 import static android.service.notification.Adjustment.KEY_IMPORTANCE;
 import static android.service.notification.Adjustment.KEY_LIGHT;
-import static android.service.notification.Adjustment.KEY_MODE_BREAKTHROUGHS;
+import static android.service.notification.Adjustment.KEY_MODE_BREAKTHROUGH_LIST;
 import static android.service.notification.Adjustment.KEY_NOTIFICATION_RULES;
 import static android.service.notification.Adjustment.KEY_SOUND;
 import static android.service.notification.Adjustment.KEY_TYPE;
@@ -157,8 +157,9 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
                 (forBackupRestore && Flags.backupRestoreLogging()) ? mLogger : null);
     }
 
-    private NotificationRule createRule(int id, String name, boolean isEnabled) {
-        return new NotificationRule.Builder(id, name).setEnabled(isEnabled).build();
+    private NotificationRule createRule(int id, boolean isEnabled) {
+        return new NotificationRule.Builder(id, new NotificationRule.Action(PRIMARY_ACTION_LOW))
+                .setEnabled(isEnabled).build();
     }
 
     static NotificationRule createFullRule(int id, String name, boolean isEnabled) {
@@ -189,8 +190,8 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         double longitude = 20.0;
         float radius = 10f;
 
-        return new NotificationRule.Builder(id, name)
-                .setAction(new NotificationRule.Action.Builder(primaryAction)
+        return new NotificationRule.Builder(id,
+                new NotificationRule.Action.Builder(primaryAction)
                         .setDynamicBundleName(bundleName)
                         .setDynamicBundleEmojiIcon(emojiIcon)
                         .setLightColorOverride(lightColor)
@@ -224,7 +225,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void addRule() {
-        NotificationRule rule = createRule(100, "test", true);
+        NotificationRule rule = createRule(100, true);
         underTest.addNotificationRule(mUser.id, 0, rule);
 
         assertThat(underTest.getNotificationRule(mUser.id, 100)).isEqualTo(rule);
@@ -232,7 +233,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void addRule_outOfRange_negative() {
-        NotificationRule rule = createRule(100, "test", true);
+        NotificationRule rule = createRule(100, true);
         underTest.addNotificationRule(mUser.id, -10, rule);
 
         assertThat(underTest.getNotificationRule(mUser.id, 100)).isEqualTo(rule);
@@ -240,7 +241,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void addRule_outOfRange_positive() {
-        NotificationRule rule = createRule(100, "test", true);
+        NotificationRule rule = createRule(100, true);
         underTest.addNotificationRule(mUser.id, 10, rule);
 
         assertThat(underTest.getNotificationRule(mUser.id, 100)).isEqualTo(rule);
@@ -248,9 +249,9 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void addRule_withSameId() {
-        NotificationRule rule = createRule(100, "test", true);
+        NotificationRule rule = createRule(100, true);
         underTest.addNotificationRule(mUser.id, 0, rule);
-        NotificationRule rule2 = createRule(100, "test2", true);
+        NotificationRule rule2 = createRule(100, true);
         underTest.addNotificationRule(mUser.id, 0, rule2);
 
         assertThat(underTest.getNotificationRules(mUser.id).size()).isEqualTo(1);
@@ -259,9 +260,9 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void addRule_multiUser() {
-        NotificationRule rule = createRule(100, "test", true);
+        NotificationRule rule = createRule(100, true);
         underTest.addNotificationRule(mUser.id, 0, rule);
-        NotificationRule rule2 = createRule(100, "test2", true);
+        NotificationRule rule2 = createRule(100, true);
         underTest.addNotificationRule(mUserSecondary.id, 0, rule2);
 
         assertThat(underTest.getNotificationRules(mUser.id)).containsExactly(rule);
@@ -270,10 +271,10 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void updateRule() {
-        NotificationRule rule = createRule(100, "test", true);
+        NotificationRule rule = createRule(100, true);
         underTest.addNotificationRule(mUser.id, 0, rule);
 
-        NotificationRule updatedRule = createRule(100, "test", false);
+        NotificationRule updatedRule = createRule(100, false);
         underTest.updateNotificationRule(mUser.id, updatedRule);
 
         assertThat(underTest.getNotificationRules(mUser.id)).contains(updatedRule);
@@ -282,7 +283,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void removeRule() {
-        NotificationRule rule = createRule(100, "test", true);
+        NotificationRule rule = createRule(100, true);
         underTest.addNotificationRule(mUser.id, 0, rule);
         assertThat(underTest.getNotificationRules(mUser.id)).contains(rule);
 
@@ -297,13 +298,13 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void removeRule_failsForReservedIds() {
-        NotificationRule rule1 = createRule(RESERVED_ID_PROMOTED, "test", true);
+        NotificationRule rule1 = createRule(RESERVED_ID_PROMOTED, true);
         underTest.addNotificationRule(mUser.id, 0, rule1);
-        NotificationRule rule2 = createRule(RESERVED_ID_STATIC_BUNDLES, "test", true);
+        NotificationRule rule2 = createRule(RESERVED_ID_STATIC_BUNDLES, true);
         underTest.addNotificationRule(mUser.id, 0, rule2);
-        NotificationRule rule3 = createRule(RESERVED_ID_IMPORTANT_NOTIFICATIONS, "test", true);
+        NotificationRule rule3 = createRule(RESERVED_ID_IMPORTANT_NOTIFICATIONS, true);
         underTest.addNotificationRule(mUser.id, 0, rule3);
-        NotificationRule rule4 = createRule(RESERVED_ID_PRIORITY_CONVERSATIONS, "test", true);
+        NotificationRule rule4 = createRule(RESERVED_ID_PRIORITY_CONVERSATIONS, true);
         underTest.addNotificationRule(mUser.id, 0, rule4);
 
         underTest.removeNotificationRule(mUser.id, rule1.getId());
@@ -317,11 +318,11 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void setNotificationRules() {
-        NotificationRule rule1 = createRule(RESERVED_ID_PROMOTED, "test", true);
-        NotificationRule rule2 = createRule(RESERVED_ID_STATIC_BUNDLES, "test", true);
-        NotificationRule rule3 = createRule(RESERVED_ID_IMPORTANT_NOTIFICATIONS, "test", true);
-        NotificationRule rule4 = createRule(RESERVED_ID_PRIORITY_CONVERSATIONS, "test", true);
-        NotificationRule rule5 = createRule(101, "test", true);
+        NotificationRule rule1 = createRule(RESERVED_ID_PROMOTED, true);
+        NotificationRule rule2 = createRule(RESERVED_ID_STATIC_BUNDLES, true);
+        NotificationRule rule3 = createRule(RESERVED_ID_IMPORTANT_NOTIFICATIONS, true);
+        NotificationRule rule4 = createRule(RESERVED_ID_PRIORITY_CONVERSATIONS, true);
+        NotificationRule rule5 = createRule(101, true);
         underTest.setNotificationRules(mUser.id, List.of(rule1, rule2, rule3, rule4, rule5));
 
         assertThat(underTest.getNotificationRules(mUser.id)).containsExactly(
@@ -330,7 +331,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void onUserRemoved() {
-        NotificationRule rule = createRule(RESERVED_ID_PROMOTED, "test", true);
+        NotificationRule rule = createRule(RESERVED_ID_PROMOTED, true);
         underTest.addNotificationRule(mUser.id, 0, rule);
 
         underTest.onUserRemoved(mUser.id);
@@ -340,11 +341,11 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void onNotificationAssistantChanged() {
-        NotificationRule rule = createRule(100, "test", true);
-        NotificationRule rule1 = createRule(RESERVED_ID_PROMOTED, "test", true);
-        NotificationRule rule2 = createRule(RESERVED_ID_STATIC_BUNDLES, "test", true);
-        NotificationRule rule3 = createRule(RESERVED_ID_IMPORTANT_NOTIFICATIONS, "test", true);
-        NotificationRule rule4 = createRule(RESERVED_ID_PRIORITY_CONVERSATIONS, "test", true);
+        NotificationRule rule = createRule(100, true);
+        NotificationRule rule1 = createRule(RESERVED_ID_PROMOTED, true);
+        NotificationRule rule2 = createRule(RESERVED_ID_STATIC_BUNDLES, true);
+        NotificationRule rule3 = createRule(RESERVED_ID_IMPORTANT_NOTIFICATIONS, true);
+        NotificationRule rule4 = createRule(RESERVED_ID_PRIORITY_CONVERSATIONS, true);
         underTest.setNotificationRules(mUser.id, List.of(rule, rule1, rule2, rule3, rule4));
 
         underTest.onNotificationAssistantChanged(mUser.id);
@@ -354,8 +355,8 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void getAdjustmentsForRules_singleRule_highlight() {
-        NotificationRule rule = new NotificationRule.Builder(100, "test")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT)
+        NotificationRule rule = new NotificationRule.Builder(100,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT)
                         .setSoundHapticOverride(Uri.EMPTY)
                         .setModeBreakthroughIds(List.of("manual"))
                         .setLightColorOverride(Color.parseColor("blue"))
@@ -379,15 +380,15 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
         assertThat(actualSignals.getBoolean(KEY_HIGHLIGHT)).isEqualTo(true);
         assertThat(actualSignals.getParcelable(KEY_SOUND, Uri.class)).isEqualTo(Uri.EMPTY);
-        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGHS))
+        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGH_LIST))
                 .containsExactly("manual");
         assertThat(actualSignals.getInt(KEY_LIGHT)).isEqualTo(Color.parseColor("blue"));
     }
 
     @Test
-    public void getAdjustmentsForRules_singleRule_default() {
-        NotificationRule rule = new NotificationRule.Builder(100, "test")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_DEFAULT)
+    public void getAdjustmentsForRules_singleRule_highlightAndAlert() {
+        NotificationRule rule = new NotificationRule.Builder(100,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT_AND_ALERT)
                         .setSoundHapticOverride(Uri.EMPTY)
                         .setModeBreakthroughIds(List.of("manual"))
                         .setLightColorOverride(Color.parseColor("blue"))
@@ -404,17 +405,18 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         Adjustment behavioralAdjustment = behavioralAdjustments.get(0);
         Bundle actualSignals = behavioralAdjustment.getSignals();
 
-        assertThat(actualSignals.getInt(KEY_IMPORTANCE)).isEqualTo(IMPORTANCE_DEFAULT);
+        assertThat(actualSignals.getBoolean(KEY_BREAKTHROUGH_ALL_MODES, false)).isTrue();
+        assertThat(actualSignals.getBoolean(KEY_HIGHLIGHT, false)).isTrue();
         assertThat(actualSignals.getParcelable(KEY_SOUND, Uri.class)).isEqualTo(Uri.EMPTY);
-        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGHS)).
+        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGH_LIST)).
                 containsExactly("manual");
         assertThat(actualSignals.getInt(KEY_LIGHT)).isEqualTo(Color.parseColor("blue"));
     }
 
     @Test
     public void getAdjustmentsForRules_singleRule_low() {
-        NotificationRule rule = new NotificationRule.Builder(100, "test")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_LOW)
+        NotificationRule rule = new NotificationRule.Builder(100,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_LOW)
                         .build())
                 .build();
         underTest.addNotificationRule(mUser.id, 0, rule);
@@ -430,14 +432,14 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
         assertThat(actualSignals.getInt(KEY_IMPORTANCE)).isEqualTo(IMPORTANCE_LOW);
         assertThat(actualSignals.getParcelable(KEY_SOUND, Uri.class)).isNull();
-        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGHS)).isNull();
+        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGH_LIST)).isNull();
         assertThat(actualSignals.getInt(KEY_LIGHT)).isEqualTo(0);
     }
 
     @Test
     public void getAdjustmentsForRules_singleRule_bundle() {
-        NotificationRule rule = new NotificationRule.Builder(100, "test")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE)
+        NotificationRule rule = new NotificationRule.Builder(100,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE)
                         .build())
                 .build();
         underTest.addNotificationRule(mUser.id, 0, rule);
@@ -456,8 +458,8 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void getAdjustmentsForRules_singleRule_block() {
-        NotificationRule rule = new NotificationRule.Builder(100, "test")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK)
+        NotificationRule rule = new NotificationRule.Builder(100,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_BLOCK)
                         .build())
                 .build();
         underTest.addNotificationRule(mUser.id, 0, rule);
@@ -476,22 +478,22 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
 
     @Test
     public void getAdjustmentsForRules_multipleRules() {
-        NotificationRule rule = new NotificationRule.Builder(100, "test")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT)
+        NotificationRule rule = new NotificationRule.Builder(100,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT)
                         .setSoundHapticOverride(Uri.EMPTY)
                         .setModeBreakthroughIds(List.of("manual"))
                         .setLightColorOverride(Color.parseColor("blue"))
                         .build())
                 .build();
-        NotificationRule rule2 = new NotificationRule.Builder(101, "test")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_DEFAULT)
+        NotificationRule rule2 = new NotificationRule.Builder(101,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_HIGHLIGHT_AND_ALERT)
                         .setSoundHapticOverride(Uri.fromParts("hi", "hi", "hi"))
                         .setModeBreakthroughIds(List.of("bedtime"))
                         .setLightColorOverride(Color.parseColor("red"))
                         .build())
                 .build();
-        NotificationRule rule3 = new NotificationRule.Builder(RESERVED_ID_STATIC_BUNDLES, "test")
-                .setAction(new NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE).build())
+        NotificationRule rule3 = new NotificationRule.Builder(RESERVED_ID_STATIC_BUNDLES,
+                new NotificationRule.Action.Builder(PRIMARY_ACTION_BUNDLE).build())
                 .build();
         underTest.setNotificationRules(mUser.id, List.of(rule, rule2, rule3));
 
@@ -509,17 +511,18 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         Bundle actualSignals = behavioralAdjustment100.getSignals();
         assertThat(actualSignals.getBoolean(KEY_HIGHLIGHT)).isEqualTo(true);
         assertThat(actualSignals.getParcelable(KEY_SOUND, Uri.class)).isEqualTo(Uri.EMPTY);
-        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGHS))
+        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGH_LIST))
                 .containsExactly("manual");
         assertThat(actualSignals.getInt(KEY_LIGHT)).isEqualTo(Color.parseColor("blue"));
 
         Adjustment behavioralAdjustment101 = behavioralAdjustments.get(1);
         assertThat(behavioralAdjustment101.getOriginatingRuleId()).isEqualTo(rule2.getId());
         actualSignals = behavioralAdjustment101.getSignals();
-        assertThat(actualSignals.getInt(KEY_IMPORTANCE)).isEqualTo(IMPORTANCE_DEFAULT);
+        assertThat(actualSignals.getBoolean(KEY_HIGHLIGHT)).isEqualTo(true);
+        assertThat(actualSignals.getBoolean(KEY_BREAKTHROUGH_ALL_MODES)).isTrue();
         assertThat(actualSignals.getParcelable(KEY_SOUND, Uri.class)).isEqualTo(
                 Uri.fromParts("hi", "hi", "hi"));
-        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGHS))
+        assertThat(actualSignals.getStringArrayList(KEY_MODE_BREAKTHROUGH_LIST))
                 .containsExactly("bedtime");
         assertThat(actualSignals.getInt(KEY_LIGHT)).isEqualTo(Color.parseColor("red"));
 
@@ -534,7 +537,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
     public void readWriteXml_local() throws Exception {
         NotificationRule rule1User1 = createFullRule(100, "test", true);
         NotificationRule rule2User1 = createFullRule(101, "another", false);
-        NotificationRule rule3User1 = createRule(103, "boo", true);
+        NotificationRule rule3User1 = createRule(103, true);
         underTest.setNotificationRules(mUser.id, List.of(rule1User1, rule2User1, rule3User1));
         NotificationRule rule1User2 = createFullRule(101, "secondary", true);
         NotificationRule rule2User2 = createFullRule(102, "third", false);
@@ -590,7 +593,7 @@ public class NotificationRuleManagerTest extends UiServiceTestCase {
         underTest.setNotificationRules(mUser.id, List.of(rule1User1, rule2User1));
         NotificationRule rule1User2 = createFullRule(101, "secondary", true);
         NotificationRule rule2User2 = createFullRule(102, "third", false);
-        NotificationRule rule3User2 = createRule(103, "boo", true);
+        NotificationRule rule3User2 = createRule(103, true);
         underTest.setNotificationRules(mUserSecondary.id,
                 List.of(rule1User2, rule2User2, rule3User2));
 
