@@ -46,10 +46,10 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
-import com.android.systemui.statusbar.chips.ui.viewmodel.Formatter
 import com.android.systemui.statusbar.chips.ui.viewmodel.formatTimeRemainingData
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerState
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberTimeRemainingState
+import com.android.systemui.statusbar.chips.ui.viewmodel.toFormatter
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.min
@@ -237,12 +237,6 @@ fun ChipContent(
         }
     }
 }
-
-fun OngoingActivityChipModel.Content.Timer.Format.toFormatter() =
-    when (this) {
-        OngoingActivityChipModel.Content.Timer.Format.CHRONOMETER -> Formatter.Chronometer
-        OngoingActivityChipModel.Content.Timer.Format.ADAPTIVE -> Formatter.Adaptive
-    }
 
 /** A modifier that ensures the width of the content only increases and never decreases. */
 @VisibleForTesting

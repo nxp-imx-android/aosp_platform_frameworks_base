@@ -94,7 +94,6 @@ import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.StatusBarEventForwardingModernization
 import com.android.systemui.statusbar.core.StatusBarForDesktop
-import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.layout.ui.viewmodel.AppHandlesViewModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
@@ -119,6 +118,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.policy.Clock
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.systemstatusicons.ui.compose.SystemStatusIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import com.android.systemui.statusbar.ui.viewmodel.StatusBarRegionSamplingViewModel
@@ -214,7 +214,7 @@ fun StatusBarRoot(
     val displayId = parent.context.displayId
     val statusBarViewModel =
         rememberViewModel("HomeStatusBar") { statusBarViewModelFactory.create() }
-    val iconViewStore: NotificationIconContainerViewBinder.IconViewStore? =
+    val iconViewStore: NotificationIconContainerViewBinder.IconViewStore =
         rememberViewModel("HomeStatusBar.IconViewStore[$displayId]") {
             iconViewStoreFactory.create(displayId)
         }
