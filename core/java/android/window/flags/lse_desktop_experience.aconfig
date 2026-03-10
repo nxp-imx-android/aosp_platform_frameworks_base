@@ -1225,6 +1225,36 @@ flag {
 }
 
 flag {
+    name: "update_desktop_scrim_on_desktop_task_launch"
+    namespace: "lse_desktop_experience"
+    description: "Updates the desktop scrim when a desktop task is launched."
+    bug: "489912400"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "update_desktop_scrim_on_drag_resize_end"
+    namespace: "lse_desktop_experience"
+    description: "Updates the desktop scrim when drag resize is finihsed"
+    bug: "484100709"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "update_desktop_scrim_on_move_task_to_desk"
+    namespace: "lse_desktop_experience"
+    description: "Updates the desktop scrim when a task is moved to desktop."
+    bug: "489912261"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "update_desktop_scrim_when_locked_bugfix"
     namespace: "lse_desktop_experience"
     description: "Fixes the issue that desktop scrim effect not get updated when device locked and unlocked."

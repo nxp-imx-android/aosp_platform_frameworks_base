@@ -450,6 +450,17 @@ class MultiDisplayVeiledResizeTaskPositioner(
                 // won't be called.
                 resetVeilIfVisible()
             }
+            if (Flags.updateDesktopScrimOnDragResizeEnd()) {
+                // Update desktop scrim for b/484100709. This covers drag-resize cases like
+                // (maximized ->) unmaximized -> maximized.
+                desktopTasksController
+                    .getDesktopScrimController()
+                    .updateDesktopScrimOnResize(
+                        displayId,
+                        windowDecoration.taskInfo.taskId,
+                        repositionTaskBounds,
+                    )
+            }
         } else {
             val startDisplayLayout = displayController.getDisplayLayout(startDisplayId)
             val currentDisplayLayout = displayController.getDisplayLayout(displayId)
