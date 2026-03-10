@@ -775,6 +775,19 @@ public final class JobStatus {
     private boolean mIsAbandoned;
 
     /**
+     * Interface for listening to when a {@link JobWorkItem} is being added or removed from a Job.
+     */
+    public interface JobWorkItemChangeListener {
+        /** Called before a {@link JobWorkItem} is added to a {@link JobStatus} */
+        void onJobWorkItemAdd(int uid, JobWorkItem work);
+        /** Called after a {@link JobWorkItem} is removed from a {@link JobStatus} */
+        void onJobWorkItemRemoved(int uid, JobWorkItem work);
+    }
+
+    @Nullable
+    private JobWorkItemChangeListener mJobWorkItemChangeListener;
+
+    /**
      * Core constructor for JobStatus instances.  All other ctors funnel down to this one.
      *
      * @param job The actual requested parameters for the job
@@ -1071,6 +1084,10 @@ public final class JobStatus {
                 /*innerFlags=*/ 0, /* dynamicConstraints */ 0);
     }
 
+    public void setJobWorkItemChangeListener(JobWorkItemChangeListener listener) {
+        mJobWorkItemChangeListener = listener;
+    }
+
     private long generateLoggingId(@Nullable String namespace, int jobId) {
         if (namespace == null) {
             return jobId;
@@ -1128,7 +1145,13 @@ public final class JobStatus {
         return hash;
     }
 
+    /** Enqueue a {@link JobWorkItem} to this Job. */
     public void enqueueWorkLocked(JobWorkItem work) {
+        if (mJobWorkItemChangeListener != null) {
+            // Notify that a JobWorkItem is about to be added to this JobStatus.
+            // An exception may be thrown here to prevent the add.
+            mJobWorkItemChangeListener.onJobWorkItemAdd(callingUid, work);
+        }
         if (pendingWork == null) {
             pendingWork = new ArrayList<>();
         }
@@ -1143,6 +1166,7 @@ public final class JobStatus {
         updateNetworkBytesLocked();
     }
 
+    /** Pop a {@link JobWorkItem} from this Job, if available. Otherwise, returns null */
     public JobWorkItem dequeueWorkLocked() {
         if (pendingWork != null && pendingWork.size() > 0) {
             JobWorkItem work = pendingWork.remove(0);
@@ -1192,6 +1216,9 @@ public final class JobStatus {
                     executingWork.remove(i);
                     ungrantWorkItem(work);
                     updateNetworkBytesLocked();
+                    if (mJobWorkItemChangeListener != null) {
+                        mJobWorkItemChangeListener.onJobWorkItemRemoved(callingUid, work);
+                    }
                     return true;
                 }
             }
