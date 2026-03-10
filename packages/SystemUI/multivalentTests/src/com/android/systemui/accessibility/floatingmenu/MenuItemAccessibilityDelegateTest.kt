@@ -31,7 +31,9 @@ import com.android.systemui.accessibility.Magnification
 import com.android.systemui.accessibility.utils.TestUtils
 import com.android.systemui.inputdevice.data.repository.pointerDeviceRepository
 import com.android.systemui.keyboard.data.repository.keyboardRepository
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.res.R
+import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.testKosmosNew
 import com.android.systemui.util.settings.SecureSettings
 import com.google.common.truth.Truth.assertThat
@@ -77,6 +79,8 @@ class MenuItemAccessibilityDelegateTest : SysuiTestCase() {
                 hearingAidDeviceManager,
                 kosmos.keyboardRepository,
                 kosmos.pointerDeviceRepository,
+                kosmos.keyguardTransitionInteractor,
+                kosmos.sceneInteractor,
             )
 
         val halfScreenHeight = stubWindowManager!!.currentWindowMetrics.bounds.height() / 2

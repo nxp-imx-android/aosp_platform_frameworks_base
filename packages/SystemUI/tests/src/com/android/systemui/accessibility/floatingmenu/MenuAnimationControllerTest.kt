@@ -34,6 +34,9 @@ import com.android.systemui.accessibility.Magnification
 import com.android.systemui.accessibility.utils.TestUtils
 import com.android.systemui.inputdevice.data.repository.FakePointerDeviceRepository
 import com.android.systemui.keyboard.data.repository.FakeKeyboardRepository
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
+import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.testKosmosNew
 import com.google.common.truth.Truth
 import org.junit.After
 import org.junit.Before
@@ -52,6 +55,7 @@ import org.mockito.kotlin.whenever
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
 class MenuAnimationControllerTest : SysuiTestCase() {
+    private val kosmos = testKosmosNew()
     private var lastIsMoveToTucked = false
     private lateinit var viewPropertyAnimator: ViewPropertyAnimator
     private lateinit var menuView: MenuView
@@ -76,6 +80,8 @@ class MenuAnimationControllerTest : SysuiTestCase() {
                 hearingAidDeviceManager,
                 keyboardRepository,
                 pointerDeviceRepository,
+                kosmos.keyguardTransitionInteractor,
+                kosmos.sceneInteractor,
             )
         menuView =
             spy(
@@ -175,11 +181,10 @@ class MenuAnimationControllerTest : SysuiTestCase() {
 
     @Test
     fun startTuckedAnimationPreview_hasAnimation() {
-        menuView.clearAnimation()
-
         menuAnimationController.startTuckedAnimationPreview()
 
-        Truth.assertThat(menuView.animation).isNotNull()
+        verify(menuView).clearAnimation()
+        verify(menuView).startAnimation(any())
     }
 
     @Test

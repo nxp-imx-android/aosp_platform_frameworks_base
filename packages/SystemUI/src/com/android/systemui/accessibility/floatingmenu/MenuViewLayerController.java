@@ -29,7 +29,9 @@ import com.android.settingslib.bluetooth.HearingAidDeviceManager;
 import com.android.systemui.accessibility.Magnification;
 import com.android.systemui.inputdevice.data.repository.PointerDeviceRepository;
 import com.android.systemui.keyboard.data.repository.KeyboardRepository;
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.navigationbar.NavigationModeController;
+import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.util.settings.SecureSettings;
 
 /**
@@ -49,7 +51,9 @@ class MenuViewLayerController implements IAccessibilityFloatingMenu {
             NavigationModeController navigationModeController,
             HearingAidDeviceManager hearingAidDeviceManager,
             KeyboardRepository keyboardRepository,
-            PointerDeviceRepository pointerDeviceRepository, Magnification magnification) {
+            PointerDeviceRepository pointerDeviceRepository, Magnification magnification,
+            KeyguardTransitionInteractor keyguardTransitionInteractor,
+            SceneInteractor sceneInteractor) {
         mWindowManager = windowManager;
 
         MenuViewModel menuViewModel =
@@ -59,7 +63,9 @@ class MenuViewLayerController implements IAccessibilityFloatingMenu {
                         secureSettings,
                         hearingAidDeviceManager,
                         keyboardRepository,
-                        pointerDeviceRepository);
+                        pointerDeviceRepository,
+                        keyguardTransitionInteractor,
+                        sceneInteractor);
         MenuViewAppearance menuViewAppearance = new MenuViewAppearance(context, windowManager);
 
         mMenuViewLayer =
