@@ -385,12 +385,16 @@ public class ContentRestrictionService extends IContentRestrictionManager.Stub {
         }
 
         try (var pw = new IndentingPrintWriter(printWriter, "  ")) {
-            pw.println("ContentRestricitionService state:");
+            pw.println("ContentRestrictionService state:");
             pw.increaseIndent();
 
             pw.println("allowContentRestrictionDevicePolicyBypassing: "
                     + mAllowContentRestrictionDevicePolicyBypassing);
             pw.println();
+
+            synchronized (mLock) {
+                mContentRestrictionSettings.dump(pw);
+            }
         }
     }
 }

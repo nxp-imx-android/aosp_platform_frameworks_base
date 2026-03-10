@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.os.Environment;
 import android.util.AtomicFile;
+import android.util.IndentingPrintWriter;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.Xml;
@@ -212,5 +213,18 @@ public class ContentRestrictionSettings {
             }
         }
         return packageNames;
+    }
+
+    void dump(IndentingPrintWriter pw) {
+        pw.println("ContentRestrictionSettings:");
+        pw.increaseIndent();
+        if (mUserData.size() == 0) {
+            pw.println("No user data");
+        } else {
+            for (int i = 0; i < mUserData.size(); i++) {
+                mUserData.valueAt(i).dump(pw);
+            }
+        }
+        pw.decreaseIndent();
     }
 }
