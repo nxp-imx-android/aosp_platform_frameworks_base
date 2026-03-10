@@ -62,6 +62,13 @@ public class TaskBroadcasterTest extends TaskContinuityTest {
             new FakeTask(
                     2,
                     USER_ID,
+                    "com.example.app3",
+                    100,
+                    new HandoffOptions(true, false),
+                    AppOpsManager.MODE_ALLOWED),
+            new FakeTask(
+                    3,
+                    USER_ID,
                     "com.example.app2",
                     200,
                     new HandoffOptions(false, true),
@@ -77,7 +84,7 @@ public class TaskBroadcasterTest extends TaskContinuityTest {
         setupRunningTasks(tasks);
         mTaskBroadcaster.onDeviceConnected();
         verify(mMockTaskContinuityMessenger, times(1))
-                .sendMessage(eq(createExpectedTaskContinuityMessage(tasks[0])));
+                .sendMessage(eq(createExpectedTaskContinuityMessage(tasks[0], tasks[1])));
     }
 
     @Test
@@ -240,7 +247,8 @@ public class TaskBroadcasterTest extends TaskContinuityTest {
         when(mMockActivityTaskManagerInternal.getHandoffActivityParamsForTask(task.taskId))
                 .thenReturn(
                         new HandoffActivityParams.Builder()
-                                .setAllowHandoffWithoutPackageInstalled(true)
+                                .setAllowHandoffWithoutPackageInstalled(
+                                        !task.handoffOptions.requirePackageInstalled())
                                 .build());
         int uid = 10000 + task.taskId;
         try {

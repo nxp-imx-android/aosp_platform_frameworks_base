@@ -150,7 +150,7 @@ public class TaskBroadcaster extends TaskStackListener
                 activityTaskManagerInternal.getHandoffActivityParamsForTask(taskInfo.taskId);
         if (params != null) {
             handoffOptionsBuilder.setRequirePackageInstalled(
-                    params.isAllowHandoffWithoutPackageInstalled());
+                    !params.isAllowHandoffWithoutPackageInstalled());
         }
 
         return remoteTaskInfoBuilder.setHandoffOptions(handoffOptionsBuilder.build()).build();
