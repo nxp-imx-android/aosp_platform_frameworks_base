@@ -16,6 +16,7 @@
 package com.android.wm.shell.hierarchy.properties
 
 import android.window.DisplayAreaOrganizer.FEATURE_DEFAULT_TASK_CONTAINER
+import android.window.TransitionInfo
 import com.android.wm.shell.dagger.hierarchy.WmSyncedProperty
 
 /**
@@ -24,6 +25,12 @@ import com.android.wm.shell.dagger.hierarchy.WmSyncedProperty
 class DisplayAreaContainerProperties(
     @WmSyncedProperty val featureId: Int,
 ) : ContainerProperties() {
+
+    /** @see ContainerProperties.updateFromWindowChange */
+    override fun updateFromWindowChange(change: TransitionInfo.Change) {
+        // TODO(b/491214137): Update configuration once we have display area info
+        super.updateFromWindowChange(change)
+    }
 
     /** @see ContainerProperties.copy */
     override fun copy(): DisplayAreaContainerProperties {

@@ -47,12 +47,13 @@ class TaskContainerProperties(
 
     /** @see ContainerProperties.updateFromWindowChange */
     override fun updateFromWindowChange(change: TransitionInfo.Change) {
+        val info = change.taskInfo
         super.updateFromWindowChange(change)
-        if (change.taskInfo == null) {
+        if (info == null) {
             return
         }
-        taskInfo = change.taskInfo!!
-        config.windowConfiguration.windowingMode = change.taskInfo!!.windowingMode
+        taskInfo = info
+        config = info.configuration
     }
 
     /** @see ContainerProperties.diff */
