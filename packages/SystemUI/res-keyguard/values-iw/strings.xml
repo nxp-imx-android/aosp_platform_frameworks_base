@@ -25,7 +25,7 @@
     <string name="keyguard_enter_your_pattern" msgid="351503370332324745">"יש להזין קו ביטול נעילה"</string>
     <string name="keyguard_enter_pattern" msgid="7616595160901084119">"צריך לצייר את קו פתיחת הנעילה"</string>
     <string name="keyguard_enter_your_password" msgid="7225626204122735501">"יש להזין סיסמה"</string>
-    <string name="keyguard_enter_password" msgid="6483623792371009758">"צריך להזין סיסמה"</string>
+    <string name="keyguard_enter_password" msgid="6483623792371009758">"מה הסיסמה?"</string>
     <string name="keyguard_sim_error_message_short" msgid="633630844240494070">"כרטיס לא חוקי."</string>
     <string name="keyguard_charged" msgid="5478247181205188995">"הסוללה טעונה"</string>
     <string name="keyguard_plugged_in_wireless" msgid="2537874724955057383">"<xliff:g id="PERCENTAGE">%s</xliff:g> • בטעינה אלחוטית"</string>
