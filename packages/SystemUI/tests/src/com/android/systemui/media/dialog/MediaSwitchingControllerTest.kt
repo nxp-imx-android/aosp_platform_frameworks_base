@@ -1844,69 +1844,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    fun getStopButtonText_remotePlaybackDevice_returnDefaultText() {
-        doReturn(mMediaDevice1).whenever(mLocalMediaManager).currentConnectedDevice
-        whenever(mMediaDevice1.features).thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK))
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes())
-            .isEqualTo(R.string.media_output_dialog_button_stop_casting)
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    fun getStopButtonText_remoteAudioPlaybackDevice_returnDefaultText() {
-        doReturn(mMediaDevice1).whenever(mLocalMediaManager).currentConnectedDevice
-        whenever(mMediaDevice1.features)
-            .thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_AUDIO_PLAYBACK))
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes())
-            .isEqualTo(R.string.media_output_dialog_button_stop_casting)
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    fun getStopButtonText_remoteVideoPlaybackDevice_returnDefaultText() {
-        doReturn(mMediaDevice1).whenever(mLocalMediaManager).currentConnectedDevice
-        whenever(mMediaDevice1.features)
-            .thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_VIDEO_PLAYBACK))
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes())
-            .isEqualTo(R.string.media_output_dialog_button_stop_casting)
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    fun getStopButtonText_remoteGroupPlaybackDevice_returnDefaultText() {
-        doReturn(mMediaDevice1).whenever(mLocalMediaManager).currentConnectedDevice
-        whenever(mMediaDevice1.features)
-            .thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_GROUP_PLAYBACK))
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes())
-            .isEqualTo(R.string.media_output_dialog_button_stop_casting)
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    fun getStopButtonText_localDevice_returnNull() {
-        whenever(mMediaDevice1.features).thenReturn(listOf(MediaRoute2Info.FEATURE_LOCAL_PLAYBACK))
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull()
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
-    fun getStopButtonText_mediaSwitchingTypeIsInput_returnNull() {
-        mMediaSwitchingController = createDefaultMediaSwitchingController(MediaSwitchingType.INPUT)
-
-        doReturn(mMediaDevice1).whenever(mLocalMediaManager).currentConnectedDevice
-        whenever(mMediaDevice1.features).thenReturn(listOf(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK))
-
-        assertThat(mMediaSwitchingController.getStopButtonStringRes()).isNull()
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
     fun getStopButtonText_sessionReleaseSharing_returnsSharingText() {
         doReturn(RoutingSessionInfo.RELEASE_TYPE_SHARING)
             .whenever(mLocalMediaManager)
@@ -1917,7 +1854,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
     fun getStopButtonText_sessionReleaseCasting_returnsCastingText() {
         doReturn(RoutingSessionInfo.RELEASE_TYPE_CASTING)
             .whenever(mLocalMediaManager)
@@ -1928,7 +1864,6 @@ class MediaSwitchingControllerTest(flags: FlagsParameterization) : SysuiTestCase
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_USE_OF_SESSION_RELEASE_TYPE_FOR_STOP_BUTTON)
     fun getStopButtonText_sessionReleaseUnsupported_returnsNull() {
         doReturn(RoutingSessionInfo.RELEASE_UNSUPPORTED)
             .whenever(mLocalMediaManager)
