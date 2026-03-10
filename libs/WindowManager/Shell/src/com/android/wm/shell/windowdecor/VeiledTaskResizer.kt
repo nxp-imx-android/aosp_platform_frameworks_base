@@ -40,7 +40,7 @@ class VeiledTaskResizer(
         }
     }
 
-    override fun onResizeUpdate(session: DragSession, x: Float, y: Float) {
+    override fun onResizeUpdate(session: DragSession, x: Float, y: Float): Boolean {
         DragPositioningCallbackUtility.changeBounds(
             session.ctrlType,
             session.repositionTaskBounds,
@@ -70,6 +70,7 @@ class VeiledTaskResizer(
                 session.windowDecoration.updateResizeVeil(session.repositionTaskBounds)
             }
         }
+        return changeBoundsResult.violatingSizeConstraints
     }
 
     override fun onResizeEnd(
