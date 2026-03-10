@@ -183,7 +183,6 @@ import static android.service.notification.NotificationListenerService.TRIM_LIGH
 import static android.service.personalcontext.Flags.enablePersonalContextService;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.contentprotection.flags.Flags.rapidClearNotificationsByListenerAppOpEnabled;
-import static com.android.server.notification.Flags.favoritesIncomingCallLights;
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.NLS_COMPLETION_DURATION_MS;
 import static com.android.internal.util.FrameworkStatsLog.DND_MODE_RULE;
@@ -197,6 +196,7 @@ import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_BROADCAST_SENDER;
 import static com.android.server.am.PendingIntentRecord.FLAG_SERVICE_SENDER;
 import static com.android.server.bitmapoffload.BitmapOffload.BITMAP_SOURCE_NOTIFICATIONS;
+import static com.android.server.notification.Flags.favoritesIncomingCallLights;
 import static com.android.server.notification.Flags.managedServicesConcurrentMultiuser;
 import static com.android.server.notification.NotificationManagerService.NotificationPostEvent.NOTIFICATION_POSTED_CACHED;
 import static com.android.server.policy.PhoneWindowManager.TOAST_WINDOW_ANIM_BUFFER;
@@ -8080,6 +8080,20 @@ public class NotificationManagerService extends SystemService {
             }
 
             return mNotificationRuleManager.getNotificationRule(userId, ruleId);
+        }
+
+        // Suppressing warning otherwise we'd need to add a new method (called
+        // logHsuNotificationPostStatus_enforcePermission) just to make ErrorProne happy.
+        @SuppressWarnings("MissingEnforcePermissionHelper")
+        @Override
+        @EnforcePermission(android.Manifest.permission.STATUS_BAR_SERVICE)
+        public void logHsuNotificationPostStatus(StatusBarNotification sbn, int status) {
+            if (!isCallerSystemOrSystemUi()) {
+                getContext().enforceCallingPermission(
+                        android.Manifest.permission.STATUS_BAR_SERVICE,
+                        "logNotificationPostStatus");
+            }
+            mUmInternal.logNotificationPostStatus(sbn, UserHandle.USER_SYSTEM, status);
         }
     }
 

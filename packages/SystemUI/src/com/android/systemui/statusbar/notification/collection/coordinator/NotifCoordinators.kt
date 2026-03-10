@@ -114,7 +114,10 @@ constructor(
         if (NmHighlights.isEnabled) {
             mCoordinators.add(highlightsCoordinator)
         }
-        if (Flags.hsuDisableNotifications() && UserManager.isHeadlessSystemUserMode()) {
+        if (
+            (Flags.hsuDisableNotifications() || Flags.hsuAllowlistNotifications()) &&
+                UserManager.isHeadlessSystemUserMode()
+        ) {
             mCoordinators.add(hideNotifsForHsuCoordinator)
         }
 

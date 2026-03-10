@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator
 
+import android.app.NotificationManager
 import android.multiuser.Flags
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -24,11 +25,22 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import javax.inject.Inject
 
-/** A coordinator that filters out notifications for users who are not the headless system user. */
+// TODO(b/491189122): rename to just HsuCoordinator (or something like that) as it's also logging
+// now - will be done in a separate CL to mitigate the git changes
+
+/**
+ * A coordinator that handles notifications posted to the HSU (Headless System User).
+ *
+ * <p>HSU notifications are restrict (currently they're disabled, but in the future they will be
+ * managed by an allowlist), and should be logged.
+ */
 @CoordinatorScope
 class HideNotifsForHsuCoordinator
 @Inject
-constructor(private val selectedUserInteractor: SelectedUserInteractor) : Coordinator {
+constructor(
+    private val selectedUserInteractor: SelectedUserInteractor,
+    private val notificationManager: NotificationManager,
+) : Coordinator {
 
     override fun attach(pipeline: NotifPipeline) {
         pipeline.addPreGroupFilter(notifFilter)
@@ -36,12 +48,30 @@ constructor(private val selectedUserInteractor: SelectedUserInteractor) : Coordi
 
     private val notifFilter: NotifFilter =
         object : NotifFilter(TAG) {
-            override fun shouldFilterOut(entry: NotificationEntry, now: Long): Boolean =
-                Flags.hsuDisableNotifications() &&
-                    selectedUserInteractor.isCurrentUserHeadlessSystemUser.value
+            override fun shouldFilterOut(entry: NotificationEntry, now: Long): Boolean {
+                if (!selectedUserInteractor.isCurrentUserHeadlessSystemUser.value) {
+                    // NOTE: currently this mechanism is just used to log notifications shown in a
+                    // login screen (when the current user is the HSU), so we don't need to log
+                    // notifications posted on other users.
+                    return false
+                }
+                val filteredOut = Flags.hsuDisableNotifications()
+                // NOTE: despite the name, flag hsuAllowlistNotifications is only used for logging
+                if (Flags.hsuAllowlistNotifications()) {
+                    val status =
+                        if (filteredOut) STATUS_DISALLOWED_FEATURE_DISABLED
+                        else STATUS_ALLOWED_DISABLED_MODE
+                    notificationManager.logHsuNotificationPostStatus(entry.sbn, status)
+                }
+                return filteredOut
+            }
         }
 
     companion object {
         private const val TAG = "HideNotifsForHsuCoordinator"
+
+        // TODO(b/414326600): use proper constants from allowlist class (once available)
+        const val STATUS_ALLOWED_DISABLED_MODE = 2
+        const val STATUS_DISALLOWED_FEATURE_DISABLED = -3
     }
 }

@@ -287,4 +287,7 @@ interface INotificationManager
     boolean removeNotificationRule(int userId, int ruleId);
     ParceledListSlice getNotificationRules(in INotificationListener token, int userId);
     NotificationRule getNotificationRule(int userId, int ruleId);
+
+    @EnforcePermission("STATUS_BAR_SERVICE")
+    oneway void logHsuNotificationPostStatus(in StatusBarNotification sbn, int status);
 }
