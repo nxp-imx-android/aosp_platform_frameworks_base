@@ -169,23 +169,23 @@ public class AgentSessionMap {
 
     /** Key for an AgentSessionMap entry. */
     public static final class Key {
-        private final int id;
-        private final int sourceType;
+        private final int mId;
+        private final int mSourceType;
 
         private static final int SOURCE_TYPE_CDM_ASSOCIATION_ID = 1;
         private static final int SOURCE_TYPE_VDM_DISPLAY_ID = 2;
 
         public Key(int id, int sourceType) {
-            this.id = id;
-            this.sourceType = sourceType;
+            this.mId = id;
+            this.mSourceType = sourceType;
         }
 
         public int id() {
-            return id;
+            return mId;
         }
 
         public int sourceType() {
-            return sourceType;
+            return mSourceType;
         }
 
         /**
@@ -213,19 +213,19 @@ public class AgentSessionMap {
             if (this == o) return true;
             if (!(o instanceof Key)) return false;
             Key key = (Key) o;
-            return id == key.id && sourceType == key.sourceType;
+            return mId == key.mId && mSourceType == key.mSourceType;
         }
 
         @Override
         public int hashCode() {
-            return 31 * id + sourceType;
+            return 31 * mId + mSourceType;
         }
 
         @Override
         public String toString() {
-            if (sourceType == SOURCE_TYPE_CDM_ASSOCIATION_ID) return "remote_" + id;
-            if (sourceType == SOURCE_TYPE_VDM_DISPLAY_ID) return "local_" + id;
-            return Integer.toString(id);
+            if (mSourceType == SOURCE_TYPE_CDM_ASSOCIATION_ID) return "remote_" + mId;
+            if (mSourceType == SOURCE_TYPE_VDM_DISPLAY_ID) return "local_" + mId;
+            return Integer.toString(mId);
         }
     }
 }

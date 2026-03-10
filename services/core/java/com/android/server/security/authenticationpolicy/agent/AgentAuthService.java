@@ -33,6 +33,7 @@ import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener;
 import android.content.Context;
 import android.hardware.biometrics.BiometricManager;
+import android.hardware.biometrics.Flags;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -101,6 +102,11 @@ public class AgentAuthService implements AgentAuthServiceInternal {
             // check for valid VDM managed local agents first
             if (mVirtualDeviceManager != null
                     && mVirtualDeviceManager.isValidVirtualDeviceId(deviceId)) {
+                // TODO: delete this block when AAP flag is removed
+                if (isAAP(mVirtualDeviceManager.getVirtualDevice(deviceId)) && !Flags.agentAuthAllowAap()) {
+                    Slog.w(TAG, "Skip AAP");
+                    return !mKeyguardManager.isDeviceLocked(userId, Context.DEVICE_ID_DEFAULT);
+                }
                 return isAgentAuthorizedByDeviceId(userId, deviceId);
             }
 
@@ -288,19 +294,27 @@ public class AgentAuthService implements AgentAuthServiceInternal {
         }
     }
 
+    private void handleVirtualDeviceClosed(int deviceId) {
+        Slog.d(TAG, "End local session (if any) for deviceId: " + deviceId);
+        mAgentSessionList.remove(Key.ofLocal(deviceId));
+    }
+
     private boolean requiresRecentUnlockOnHost(@Nullable VirtualDevice virtualDevice) {
         if (virtualDevice != null) {
-            final String profile = virtualDevice.getDeviceProfile();
-
-            // only auto projected supports this, all others should use the device lock state
-            return AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION.equals(profile);
+            // only auto projected supports this, others use only the virtual device lock state
+            if (Flags.agentAuthAllowAap() && isAAP(virtualDevice)) {
+                return true;
+            }
         }
         return false;
     }
 
-    private void handleVirtualDeviceClosed(int deviceId) {
-        Slog.d(TAG, "End local session (if any) for deviceId: " + deviceId);
-        mAgentSessionList.remove(Key.ofLocal(deviceId));
+    private boolean isAAP(@Nullable VirtualDevice virtualDevice) {
+        if(virtualDevice != null) {
+            final String profile = virtualDevice.getDeviceProfile();
+            return AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION.equals(profile);
+        }
+        return false;
     }
 
     private void onStrongAuthForUser(@UserIdInt int userId) {
