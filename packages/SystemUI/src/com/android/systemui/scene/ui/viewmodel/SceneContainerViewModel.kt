@@ -296,10 +296,10 @@ constructor(
             shadeModeInteractor.isDualShade &&
                 isDesktopStatusBarEnabled &&
                 event.action == MotionEvent.ACTION_OUTSIDE &&
-                sceneInteractor.currentOverlays.value.isNotEmpty() &&
+                sceneInteractor.transitionState.currentOverlays.isNotEmpty() &&
                 sceneInteractor.transitionState.isIdle()
         ) {
-            sceneInteractor.currentOverlays.value.forEach {
+            sceneInteractor.transitionState.currentOverlays.forEach {
                 sceneInteractor.hideOverlay(it, "Empty space touch")
             }
         }
