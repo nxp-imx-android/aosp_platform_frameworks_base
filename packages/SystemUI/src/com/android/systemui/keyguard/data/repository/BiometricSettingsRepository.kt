@@ -25,6 +25,7 @@ import android.hardware.biometrics.BiometricAuthenticator.TYPE_FINGERPRINT
 import android.hardware.biometrics.BiometricAuthenticator.TYPE_NONE
 import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.IBiometricEnabledOnKeyguardCallback
+import android.os.Looper
 import android.os.UserHandle
 import android.security.Flags.secureLockDevice
 import android.util.Log
@@ -160,6 +161,7 @@ constructor(
     devicePolicyManager: DevicePolicyManager,
     @Application scope: CoroutineScope,
     @Background backgroundDispatcher: CoroutineDispatcher,
+    @Background backgroundLooper: Looper,
     biometricManager: BiometricManager?,
     devicePostureRepository: DevicePostureRepository,
     facePropertyRepository: FacePropertyRepository,
@@ -174,7 +176,8 @@ constructor(
 
     override val isFaceAuthSupportedInCurrentPosture: StateFlow<Boolean>
 
-    private val strongAuthTracker = StrongAuthTracker(userRepository, context, scope)
+    private val strongAuthTracker =
+        StrongAuthTracker(userRepository, context, backgroundLooper, scope)
 
     override val authenticationFlags: StateFlow<AuthenticationFlags> =
         strongAuthTracker.currentUserAuthFlags
@@ -471,8 +474,9 @@ constructor(
 private class StrongAuthTracker(
     private val userRepository: UserRepository,
     @ShadeDisplayAware context: Context?,
+    @Background backgroundLooper: Looper,
     scope: CoroutineScope,
-) : LockPatternUtils.StrongAuthTracker(context) {
+) : LockPatternUtils.StrongAuthTracker(context, backgroundLooper) {
 
     private val selectedUserId =
         userRepository.selectedUserInfo.map { it.id }.distinctUntilChanged()
