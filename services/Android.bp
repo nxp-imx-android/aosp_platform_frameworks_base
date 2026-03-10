@@ -338,7 +338,10 @@ java_library {
         d8_on_eng: true,
     },
 
-    srcs: [":services-main-sources"],
+    srcs: [
+        ":services-main-sources",
+        ":statslog-privatecompute-java-gen",
+    ],
 
     // The convention is to name each service module 'services.$(module_name)'
     static_libs: [
