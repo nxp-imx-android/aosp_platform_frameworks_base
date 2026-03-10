@@ -21,12 +21,20 @@ import android.provider.Settings
 import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.uiautomator.By
 import org.junit.After
+import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 
 /** Base scenario test to set toggle mirroring switch via Connected Display Settings */
 @Ignore("Test Base Class")
 abstract class SettingsToggleMirroringSwitch : SettingsConnectedDisplayTestBase() {
+
+    @Before
+    fun setup() {
+        // PeripheralDeviceRule monitoring ensures that launched displays keeps the same
+        // DisplayTopology after. Stop monitoring since DisplayTopology will change on mirroring
+        peripheralDeviceRule.stopMonitoring()
+    }
 
     @Test
     open fun enableMirrorBuiltInDisplaySwitch() {
