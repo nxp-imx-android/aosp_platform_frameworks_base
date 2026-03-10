@@ -36,9 +36,8 @@ public class ProcessStateControllerTest {
         final ProcessList pl = mock(ProcessList.class);
         final ActiveUids au = new ActiveUids(null);
         final OomAdjuster.Callback callback = mock(OomAdjuster.Callback.class);
-        final OomAdjuster.StateGetter stateGetter = mock(OomAdjuster.StateGetter.class);
         return new ProcessStateController.Builder(pl, au,
-                new OomAdjuster.Constants(), callback, stateGetter).build();
+                new OomAdjuster.Constants(), callback).build();
     }
 
     private static ConnectionRecord createConnectionRecord(long flags) {
