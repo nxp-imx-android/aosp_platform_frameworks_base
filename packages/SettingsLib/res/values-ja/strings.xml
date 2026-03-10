@@ -233,7 +233,7 @@
     <string name="tts_engine_network_required" msgid="8722087649733906851">"この言語でテキスト読み上げを出力するには、ネットワーク接続が正常に機能している必要があります。"</string>
     <string name="tts_default_sample_string" msgid="6388016028292967973">"これは音声合成のサンプルです"</string>
     <string name="tts_status_title" msgid="8190784181389278640">"デフォルトの言語のステータス"</string>
-    <string name="tts_status_ok" msgid="8583076006537547379">"<xliff:g id="LOCALE">%1$s</xliff:g>は完全サポート対象です"</string>
+    <string name="tts_status_ok" msgid="8583076006537547379">"<xliff:g id="LOCALE">%1$s</xliff:g>は完全サ⁠ポ⁠ー⁠ト⁠対⁠象⁠で⁠す"</string>
     <string name="tts_status_requires_network" msgid="8327617638884678896">"<xliff:g id="LOCALE">%1$s</xliff:g>ではネットワーク接続が必要です"</string>
     <string name="tts_status_not_supported" msgid="2702997696245523743">"<xliff:g id="LOCALE">%1$s</xliff:g>はサポート対象ではありません"</string>
     <string name="tts_status_checking" msgid="8026559918948285013">"確認しています…"</string>
