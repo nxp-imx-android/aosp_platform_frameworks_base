@@ -28,6 +28,7 @@ import android.os.IBinder
 import android.os.UserHandle
 import android.platform.test.annotations.RequiresFlagsEnabled
 import com.google.common.truth.Truth.assertThat
+import com.google.common.util.concurrent.MoreExecutors
 import java.util.concurrent.ScheduledExecutorService
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,6 +41,7 @@ import org.mockito.kotlin.whenever
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_DYNAMIC_APP_FUNCTIONS)
 @RunWith(JUnit4::class)
 class InternalObserverCallbackRouterTest {
+    private val mockFutureAppGlobalSearchSession: FutureGlobalSearchSession = mock()
     private val mockServiceConfig: ServiceConfig = mock()
     private val mockVisibilityHelper: VisibilityHelper = mock()
 
@@ -68,13 +70,19 @@ class InternalObserverCallbackRouterTest {
 
         return if (debounceExecutor is FakeScheduledExecutorService) {
             InternalObserverCallbackRouter(
+                mockFutureAppGlobalSearchSession,
                 mockServiceConfig,
                 mockVisibilityHelper,
                 debounceExecutor,
                 InternalObserverCallbackRouter.TimeSource { debounceExecutor.clockTimeNanos },
+                MoreExecutors.directExecutor(),
             )
         } else {
-            InternalObserverCallbackRouter(mockServiceConfig, mockVisibilityHelper)
+            InternalObserverCallbackRouter(
+                mockFutureAppGlobalSearchSession,
+                mockServiceConfig,
+                mockVisibilityHelper,
+            )
         }
     }
 

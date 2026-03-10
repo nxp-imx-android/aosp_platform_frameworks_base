@@ -88,7 +88,8 @@ public class AppFunctionMetadataObserver {
                 new FutureGlobalSearchSession(perUserAppSearchManager, THREAD_POOL_EXECUTOR);
 
         InternalObserverCallbackRouter userCallbackRouter =
-                new InternalObserverCallbackRouter(mServiceConfig, mVisibilityHelper);
+                new InternalObserverCallbackRouter(
+                        futureGlobalSearchSession, mServiceConfig, mVisibilityHelper);
         AppFunctionMetadataObserverCallback2 observerCallback =
                 new AppFunctionMetadataObserverCallback2(
                         mPerUserMetadataSyncAdapter,

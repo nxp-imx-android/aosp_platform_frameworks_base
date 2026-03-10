@@ -62,6 +62,21 @@ public final class CallerIdentity {
     }
 
     @Override
+    public String toString() {
+        return "CallerIdentity{"
+                + "callingPackageName='"
+                + mCallingPackageName
+                + '\''
+                + ", userHandle="
+                + mUserHandle
+                + ", callingUid="
+                + mCallingUid
+                + ", callingPid="
+                + mCallingPid
+                + '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
