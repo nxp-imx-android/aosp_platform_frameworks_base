@@ -96,6 +96,7 @@ constructor(
         data: MediaData,
         immediately: Boolean,
     ) {
+        logger.logMediaNotificationEnteredDeviceManager(data.packageName, data.song)
         bgExecutor.execute { onMediaLoaded(key, oldKey, data) }
     }
 

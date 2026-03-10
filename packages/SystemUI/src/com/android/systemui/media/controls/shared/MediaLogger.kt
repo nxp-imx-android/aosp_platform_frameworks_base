@@ -26,6 +26,8 @@ import javax.inject.Inject
 interface MediaLogger {
     fun logMediaNotificationEnteredPipeline(packageName: String, title: CharSequence?)
 
+    fun logLoadingMediaDataCanceled(key: String)
+
     fun logMediaNotificationExitedPipeline(packageName: String, title: CharSequence?)
 
     fun logMediaLoaded(instanceId: InstanceId, active: Boolean, reason: String)
@@ -56,6 +58,15 @@ class MediaLoggerImpl @Inject constructor(@MediaLog private val buffer: LogBuffe
                 str2 = title.toString()
             },
             { "media notification entered pipeline, packageName: $str1, title: $str2" },
+        )
+    }
+
+    override fun logLoadingMediaDataCanceled(key: String) {
+        buffer.log(
+            TAG,
+            LogLevel.DEBUG,
+            { str1 = key },
+            { "loading media data is canceled, key: $str1" },
         )
     }
 
