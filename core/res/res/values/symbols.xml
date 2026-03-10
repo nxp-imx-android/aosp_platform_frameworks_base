@@ -6567,8 +6567,6 @@
    <!-- The package name of the AllowlistProviderService -->
    <java-symbol type="string" name="config_allowlistProviderServicePackage"/>
 
-  <!-- Whether Personal Context is enabled -->
-  <java-symbol type="bool" name ="config_enablePersonalContextManagerService"/>
   <!-- Packages allowed to publish context hints -->
   <java-symbol type="array" name="config_allowlistPersonalContextHintPublishing" />
   <!-- Packages allowed to receive context hints -->
