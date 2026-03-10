@@ -203,6 +203,14 @@ public class AppBindingService extends Binder {
                 serviceConnections.addAll(getConnectionsLocked(userId, app));
             }
         }
+
+        if (serviceConnections.isEmpty()) {
+            mHandler.post(() -> {
+                action.accept(null);
+            });
+            return;
+        }
+
         for (AppServiceConnection conn: serviceConnections) {
             conn.addCallback(action);
             conn.bind();
