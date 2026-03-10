@@ -162,7 +162,8 @@ public class ProcessStartTimeTest {
                 eq(CALLER_UID),
                 eq(CALLER_PROCESS_NAME),
                 eq(hostingRecord.getHostingAuthority()),
-                eq(hostingRecord.isProviderStable())
+                eq(hostingRecord.isProviderStable()),
+                eq(HostingRecord.ZYGOTE_TYPE_REGULAR)
         ));
     }
 
@@ -199,7 +200,8 @@ public class ProcessStartTimeTest {
                 eq(CALLER_UID),
                 eq(CALLER_PROCESS_NAME),
                 eq(PROVIDER_AUTHORITY),
-                eq(stable)
+                eq(stable),
+                eq(HostingRecord.ZYGOTE_TYPE_REGULAR)
         ));
     }
 
