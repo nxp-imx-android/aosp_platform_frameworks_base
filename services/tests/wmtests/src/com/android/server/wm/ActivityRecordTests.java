@@ -37,7 +37,6 @@ import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_ALWAYS;
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_DEFAULT;
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_IF_ALLOWLISTED;
 import static android.content.pm.ActivityInfo.LOCK_TASK_LAUNCH_MODE_NEVER;
-import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT;
 import static android.content.pm.ActivityInfo.PERSIST_ACROSS_REBOOTS;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_UNRESIZEABLE;
@@ -757,7 +756,6 @@ public class ActivityRecordTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_CAMERA_COMPAT_UNIFY_CAMERA_POLICIES)
-    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOrientation_allowFixedOrientationForCameraCompatWhenEnabledForAll() {
         final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
                 /* isCameraRunning= */ true, WINDOWING_MODE_FREEFORM);
@@ -771,7 +769,6 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOrientation_noFixedOrientationForCameraCompatFreeformIfCameraNotRunning() {
         final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
                 /* isCameraRunning= */ false, WINDOWING_MODE_FREEFORM);
