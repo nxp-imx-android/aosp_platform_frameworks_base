@@ -2671,8 +2671,7 @@ public final class SystemServer implements Dumpable {
                     new GraphicsStatsService(context));
             t.traceEnd();
 
-            if (context.getResources().getBoolean(
-                    R.bool.config_enablePersonalContextManagerService)) {
+            if (android.service.personalcontext.Flags.enablePersonalContextService()) {
                 t.traceBegin("StartPersonalContextService");
                 mSystemServiceManager.startService(PersonalContextManagerService.class);
                 t.traceEnd();
