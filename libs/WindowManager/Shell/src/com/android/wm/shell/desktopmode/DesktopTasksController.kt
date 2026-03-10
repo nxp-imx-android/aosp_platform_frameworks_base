@@ -322,6 +322,7 @@ class DesktopTasksController(
             shellController,
             rootTaskDisplayAreaOrganizer,
             keyguardManager,
+            mainExecutor,
         )
 
     private val mOnAnimationFinishedCallback = { releaseVisualIndicator() }
@@ -451,6 +452,7 @@ class DesktopTasksController(
         desksOrganizer.setBackPressOnDeskListener { task ->
             minimizeTask(task, MinimizeReason.KEY_GESTURE)
         }
+        desktopScrimController.onInit()
     }
 
     @VisibleForTesting

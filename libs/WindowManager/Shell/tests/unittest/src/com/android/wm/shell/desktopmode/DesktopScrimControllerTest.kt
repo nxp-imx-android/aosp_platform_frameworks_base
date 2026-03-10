@@ -17,7 +17,6 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager
 import android.app.KeyguardManager
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
@@ -33,7 +32,6 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -68,6 +66,7 @@ class DesktopScrimControllerTest : ShellTestCase() {
                 shellController,
                 rootTaskDisplayAreaOrganizer,
                 keyguardManager,
+                shellExecutor,
             )
     }
 
@@ -92,6 +91,7 @@ class DesktopScrimControllerTest : ShellTestCase() {
         com.android.systemui.Flags.FLAG_OPAQUE_STATUS_BAR,
     )
     fun disableScrimEffectWhenKeyguardStateChanged_bugFixEnabled() {
+        controller.onInit()
         controller.addDesktopScrimListener(desktopScrimListener, shellExecutor)
         // Set the keyguard to be locked
         whenever(keyguardManager.isKeyguardLocked).thenReturn(true)
@@ -99,19 +99,6 @@ class DesktopScrimControllerTest : ShellTestCase() {
         shellExecutor.flushAll()
         // The effect should be gone
         verify(desktopScrimListener).onDesktopScrimEffectChanged(DEFAULT_DISPLAY, false)
-    }
-
-    @Test
-    @EnableFlags(com.android.systemui.Flags.FLAG_OPAQUE_STATUS_BAR)
-    @DisableFlags(com.android.window.flags.Flags.FLAG_UPDATE_DESKTOP_SCRIM_WHEN_LOCKED_BUGFIX)
-    fun noScrimEffectCallbackWhenKeyguardStateChanged_bugFixDisabled() {
-        controller.addDesktopScrimListener(desktopScrimListener, shellExecutor)
-        // Set the keyguard to be locked
-        whenever(keyguardManager.isKeyguardLocked).thenReturn(true)
-        controller.onKeyguardLockedStateChanged(true /* isKeyguardLocked */)
-        shellExecutor.flushAll()
-        // No callback call when the bugfix flag is not enabled.
-        verify(desktopScrimListener, never()).onDesktopScrimEffectChanged(any(), any())
     }
     // TODO(b/489916353): Add tests to cover all other methods in DesktopScrimController
 }

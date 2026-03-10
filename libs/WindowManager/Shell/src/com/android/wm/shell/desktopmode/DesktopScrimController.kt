@@ -26,8 +26,10 @@ import android.util.ArrayMap
 import com.android.internal.annotations.VisibleForTesting
 import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ExitReason
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
+import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopScrimListener
 import com.android.wm.shell.sysui.ShellController
 import java.util.concurrent.Executor
@@ -39,6 +41,7 @@ class DesktopScrimController(
     private val shellController: ShellController,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val keyguardManager: KeyguardManager,
+    @ShellMainThread private val mainExecutor: ShellExecutor,
 ) : KeyguardManager.KeyguardLockedStateListener {
     private val mDesktopScrimListeners = ArrayMap<DesktopScrimListener, Executor>()
 
@@ -47,6 +50,12 @@ class DesktopScrimController(
 
     private val wallpaperDimAmount: Float =
         SystemProperties.getInt("persist.wm.debug.wallpaper_dim_amount", 100).toFloat() / 100
+
+    fun onInit() {
+        if (Flags.updateDesktopScrimWhenLockedBugfix()) {
+            keyguardManager.addKeyguardLockedStateListener(mainExecutor, this)
+        }
+    }
 
     /**
      * Adds a listener to the desktop scrim effect changes.
@@ -70,9 +79,7 @@ class DesktopScrimController(
     /** Check the current desktop condition and if should apply, apply the scrim effect. */
     fun updateDesktopScrimIfNeeded(displayId: Int, userId: Int, excludeTaskId: Int? = null) {
         val applyLightOutEffect =
-            if (Flags.updateDesktopScrimWhenLockedBugfix() && keyguardManager.isKeyguardLocked) {
-                false
-            } else if (Flags.fixWallpaperDimIssues26q2()) {
+            if (Flags.fixWallpaperDimIssues26q2()) {
                 desktopTasksController.isAnyTaskMaximizedOrDoubleTiled(
                     displayId,
                     userId,
@@ -108,11 +115,12 @@ class DesktopScrimController(
     }
 
     override fun onKeyguardLockedStateChanged(isKeyguardLocked: Boolean) {
-        if (!Flags.updateDesktopScrimWhenLockedBugfix()) {
-            return
-        }
         rootTaskDisplayAreaOrganizer.displayIds.forEach { displayId ->
-            updateDesktopScrimIfNeeded(displayId, shellController.currentUserId)
+            if (isKeyguardLocked) {
+                updateDesktopScrim(displayId, false)
+            } else {
+                updateDesktopScrimIfNeeded(displayId, shellController.currentUserId)
+            }
         }
     }
 
