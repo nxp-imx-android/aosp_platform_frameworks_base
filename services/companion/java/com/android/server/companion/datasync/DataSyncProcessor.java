@@ -51,14 +51,16 @@ public class DataSyncProcessor {
 
     private static final String TAG = "CDM_DataSyncProcessor";
 
+    private final Object mRemoteMetadataLock = new Object();
+
+    @GuardedBy("mRemoteMetadataLock")
     private final AssociationStore mAssociationStore;
+
     private final LocalMetadataStore mLocalMetadataStore;
     private final CompanionTransportManager mTransportManager;
 
     @GuardedBy("mAssociationsWithTransport")
     private final Set<Integer> mAssociationsWithTransport = new HashSet<>();
-
-    private final Object mRemoteMetadataLock = new Object();
 
     public DataSyncProcessor(
             AssociationStore associationStore,
@@ -162,19 +164,30 @@ public class DataSyncProcessor {
 
 
     private void broadcastMetadata(List<AssociationInfo> associations) {
+        SparseArray<List<AssociationInfo>> newAssociations = new SparseArray<>();
         synchronized (mAssociationsWithTransport) {
             // Isolate newly attached associations and group by user.
-            associations.stream()
-                    .filter(association ->
-                            !mAssociationsWithTransport.contains(association.getId()))
-                    .collect(Collectors.groupingBy(AssociationInfo::getUserId))
-                    .forEach(this::sendMetadataUpdate);
+            for (AssociationInfo association : associations) {
+                if (!mAssociationsWithTransport.contains(association.getId())) {
+                    int userId = association.getUserId();
+                    List<AssociationInfo> userAssociations = newAssociations.get(userId);
+                    if (userAssociations == null) {
+                        userAssociations = new java.util.ArrayList<>();
+                        newAssociations.put(userId, userAssociations);
+                    }
+                    userAssociations.add(association);
+                }
+            }
 
             // Update the set of associations with transport.
             mAssociationsWithTransport.clear();
-            mAssociationsWithTransport.addAll(associations.stream()
-                    .map(AssociationInfo::getId)
-                    .collect(Collectors.toSet()));
+            for (AssociationInfo association : associations) {
+                mAssociationsWithTransport.add(association.getId());
+            }
+        }
+
+        for (int i = 0; i < newAssociations.size(); i++) {
+            sendMetadataUpdate(newAssociations.keyAt(i), newAssociations.valueAt(i));
         }
     }
 
