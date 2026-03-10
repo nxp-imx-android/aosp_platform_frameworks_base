@@ -903,6 +903,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub
         //
         // NEW HANDLERS SHOULD GO IN {@link PolicyHandlerFactory}, NOT HERE!
 
+        // go/keep-sorted start ignore_prefixes='handlers.add(new '
+        handlers.add(
+               new EnumStoredAsBooleanPolicyHandler(
+                    PolicyIdentifier.FACTORY_RESET,
+                    dpms.mPolicyDefinitionMap.getPolicyDefinitionForUserRestriction(
+                            UserManager.DISALLOW_FACTORY_RESET),
+                       /* trueValue= */ PolicyIdentifier.FACTORY_RESET_DISALLOWED,
+                       /* falseValue= */ PolicyIdentifier.FACTORY_RESET_ALLOWED));
+
+        // go/keep-sorted end
         return handlers;
     }
 

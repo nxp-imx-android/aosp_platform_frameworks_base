@@ -716,3 +716,12 @@ flag {
   bug: "434919316"
   is_exported: true
 }
+
+flag {
+  name: "policy_streamlining_disallow_factory_reset"
+  is_exported: true
+  namespace: "enterprise"
+  description: "Policy streamlining for the DISALLOW_FACTORY_RESET API."
+  bug: "444380537"
+}
+

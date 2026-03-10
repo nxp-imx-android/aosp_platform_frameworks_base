@@ -9105,6 +9105,9 @@ package android.app.admin {
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_easter_eggs") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> EASTER_EGGS;
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_easter_eggs") public static final int EASTER_EGGS_ALLOWED = 2; // 0x2
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_easter_eggs") public static final int EASTER_EGGS_DISALLOWED = 1; // 0x1
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_disallow_factory_reset") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.Integer> FACTORY_RESET;
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_disallow_factory_reset") public static final int FACTORY_RESET_ALLOWED = 2; // 0x2
+    field @FlaggedApi("android.app.admin.flags.policy_streamlining_disallow_factory_reset") public static final int FACTORY_RESET_DISALLOWED = 1; // 0x1
     field @FlaggedApi("android.app.admin.flags.policy_streamlining_lockscreen_message") @NonNull public static final android.app.admin.PolicyIdentifier<java.lang.String> LOCKSCREEN_MESSAGE;
     field @FlaggedApi("android.app.admin.flags.managed_esim_outgoing_transfer_policy") public static final int MANAGED_ESIM_OUTGOING_TRANSFER_ALLOWED = 1; // 0x1
     field @FlaggedApi("android.app.admin.flags.managed_esim_outgoing_transfer_policy") public static final int MANAGED_ESIM_OUTGOING_TRANSFER_DISALLOWED = 2; // 0x2
