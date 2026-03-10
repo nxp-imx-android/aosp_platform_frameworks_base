@@ -16,7 +16,7 @@
 
 package com.android.server.multisensory.repository.sound;
 
-import android.os.multisensory.MultisensoryToken;
+import android.os.multisensory.MultisensoryManager;
 import android.provider.Settings;
 import android.util.SparseArray;
 
@@ -32,28 +32,28 @@ public class MultisensorySoundData {
 
     // TODO (b/462748962): We only have LOCK and UNLOCK MSDS sounds in the system right now.
     static {
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.FAILURE_HIGH_EMPHASIS, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.FAILURE, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.SUCCESS, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.START, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.PAUSE, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.STOP, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.CANCEL, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.SWITCH_ON, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.SWITCH_OFF, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.UNLOCK, Settings.Global.UNLOCK_SOUND);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.LOCK, Settings.Global.LOCK_SOUND);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.LONG_PRESS, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.SWIPE_INDICATOR_THRESHOLD_LIMIT, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.TAP_HIGH_EMPHASIS, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.TAP_MEDIUM_EMPHASIS, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.DRAG_INDICATOR_THRESHOLD_LIMIT, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.DRAG_INDICATOR_CONTINUOUS, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.DRAG_INDICATOR_DISCRETE, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.TAP_LOW_EMPHASIS, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.KEYPRESS_STANDARD, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.KEYPRESS_SPACEBAR, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.KEYPRESS_RETURN, null);
-        TOKEN_SOUND_NAMES.put(MultisensoryToken.KEYPRESS_DELETE, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_FAILURE_HIGH_EMPHASIS, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_FAILURE, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_SUCCESS, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_START, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_PAUSE, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_STOP, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_CANCEL, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_SWITCH_ON, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_SWITCH_OFF, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_UNLOCK, Settings.Global.UNLOCK_SOUND);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_LOCK, Settings.Global.LOCK_SOUND);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_LONG_PRESS, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_SWIPE_INDICATOR_THRESHOLD_LIMIT, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_TAP_HIGH_EMPHASIS, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_TAP_MEDIUM_EMPHASIS, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_DRAG_INDICATOR_THRESHOLD_LIMIT, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_DRAG_INDICATOR_CONTINUOUS, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_DRAG_INDICATOR_DISCRETE, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_TAP_LOW_EMPHASIS, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_KEYPRESS_STANDARD, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_KEYPRESS_SPACEBAR, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_KEYPRESS_RETURN, null);
+        TOKEN_SOUND_NAMES.put(MultisensoryManager.TOKEN_KEYPRESS_DELETE, null);
     }
 }

@@ -17,7 +17,7 @@
 package com.android.server.multisensory.logging;
 
 import android.icu.text.SimpleDateFormat;
-import android.os.multisensory.MultisensoryToken;
+import android.os.multisensory.MultisensoryManager;
 
 import com.android.server.multisensory.MultisensoryService;
 
@@ -40,11 +40,13 @@ public class MultisensoryPlaybackRecord {
     }
 
     private final long mTimeStampMillis;
-    private final @MultisensoryToken.Token int mTokenPlayed;
+    private final @MultisensoryManager.Token int mTokenPlayed;
     private final PlayerType mPlayerUsed;
 
     public MultisensoryPlaybackRecord(
-            @MultisensoryToken.Token int tokenPlayed, PlayerType playerUsed, long timeStampMillis) {
+            @MultisensoryManager.Token int tokenPlayed,
+            PlayerType playerUsed,
+            long timeStampMillis) {
         mTokenPlayed = tokenPlayed;
         mPlayerUsed = playerUsed;
         mTimeStampMillis = timeStampMillis;

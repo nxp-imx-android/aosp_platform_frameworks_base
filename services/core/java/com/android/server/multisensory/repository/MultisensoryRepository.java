@@ -19,7 +19,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.ContentResolver;
 import android.os.Vibrator;
-import android.os.multisensory.MultisensoryToken;
+import android.os.multisensory.MultisensoryManager;
 import android.provider.Settings;
 import android.util.SparseArray;
 
@@ -34,32 +34,6 @@ import com.android.server.multisensory.repository.sound.MultisensorySoundData;
  */
 public class MultisensoryRepository {
 
-    public static final @MultisensoryToken.Token int[] MULTISENSORY_TOKENS = {
-        MultisensoryToken.FAILURE_HIGH_EMPHASIS,
-        MultisensoryToken.FAILURE,
-        MultisensoryToken.SUCCESS,
-        MultisensoryToken.START,
-        MultisensoryToken.PAUSE,
-        MultisensoryToken.STOP,
-        MultisensoryToken.CANCEL,
-        MultisensoryToken.SWITCH_ON,
-        MultisensoryToken.SWITCH_OFF,
-        MultisensoryToken.UNLOCK,
-        MultisensoryToken.LOCK,
-        MultisensoryToken.LONG_PRESS,
-        MultisensoryToken.SWIPE_INDICATOR_THRESHOLD_LIMIT,
-        MultisensoryToken.TAP_HIGH_EMPHASIS,
-        MultisensoryToken.TAP_MEDIUM_EMPHASIS,
-        MultisensoryToken.DRAG_INDICATOR_THRESHOLD_LIMIT,
-        MultisensoryToken.DRAG_INDICATOR_CONTINUOUS,
-        MultisensoryToken.DRAG_INDICATOR_DISCRETE,
-        MultisensoryToken.TAP_LOW_EMPHASIS,
-        MultisensoryToken.KEYPRESS_STANDARD,
-        MultisensoryToken.KEYPRESS_SPACEBAR,
-        MultisensoryToken.KEYPRESS_RETURN,
-        MultisensoryToken.KEYPRESS_DELETE
-    };
-
     private final SparseArray<MultisensoryHapticEffect> mHapticEffects = new SparseArray<>();
     private final SparseArray<String> mSoundEffects = new SparseArray<>();
 
@@ -73,7 +47,8 @@ public class MultisensoryRepository {
             @NonNull Vibrator deviceVibrator, @NonNull ContentResolver contentResolver) {
 
         // Generate all data and store in memory for fast retrieval using token constants as ids.
-        for (int token : MULTISENSORY_TOKENS) {
+        int[] tokens = MultisensoryManager.getMultisensoryTokens();
+        for (int token : tokens) {
             mHapticEffects.put(
                     token,
                     MultisensoryComposedEffect.createHapticEffect(
@@ -92,12 +67,12 @@ public class MultisensoryRepository {
     }
 
     /** Get the haptic effect for a given token */
-    public @NonNull MultisensoryHapticEffect getHapticEffect(@MultisensoryToken.Token int token) {
+    public @NonNull MultisensoryHapticEffect getHapticEffect(@MultisensoryManager.Token int token) {
         return mHapticEffects.get(token);
     }
 
     /** Get the audio resource for a given token */
-    public @Nullable String getSoundEffect(@MultisensoryToken.Token int token) {
+    public @Nullable String getSoundEffect(@MultisensoryManager.Token int token) {
         return mSoundEffects.get(token);
     }
 }

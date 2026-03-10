@@ -21,7 +21,7 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorInfo;
 import android.os.multisensory.MultisensoryContinuousEffect;
-import android.os.multisensory.MultisensoryToken;
+import android.os.multisensory.MultisensoryManager;
 import android.os.multisensory.MultisensoryVibrationControlPoint;
 import android.os.vibrator.VibratorEnvelopeEffectInfo;
 import android.util.Slog;
@@ -67,14 +67,14 @@ public class MultisensoryComposedEffect implements MultisensoryHapticEffect {
      * @return A {@link MultisensoryHapticEffect} associated with the token.
      */
     public static @android.annotation.NonNull MultisensoryHapticEffect createHapticEffect(
-            @MultisensoryToken.Token int token,
+            @MultisensoryManager.Token int token,
             VibratorInfo vibratorInfo,
             VibratorEnvelopeEffectInfo vibratorEnvelopeEffectInfo) {
 
         MultisensoryComposedEffect.Builder builder =
                 new MultisensoryComposedEffect.Builder(vibratorInfo, vibratorEnvelopeEffectInfo);
         switch (token) {
-            case MultisensoryToken.FAILURE_HIGH_EMPHASIS ->
+            case MultisensoryManager.TOKEN_FAILURE_HIGH_EMPHASIS ->
                     builder.addPrimitiveEffect(
                                     VibrationEffect.Composition.PRIMITIVE_SPIN, /*scale*/
                                     1f, /*delayMillis*/
@@ -92,7 +92,7 @@ public class MultisensoryComposedEffect implements MultisensoryHapticEffect {
                                             SPIN_WAVEFORM_TIMINGS,
                                             SPIN_WAVEFORM_AMPLITUDES, /*repeat*/
                                             -1));
-            case MultisensoryToken.FAILURE ->
+            case MultisensoryManager.TOKEN_FAILURE ->
                     builder.addPrimitiveEffect(
                                     VibrationEffect.Composition.PRIMITIVE_CLICK, /*scale*/
                                     1f, /*delayMillis*/
@@ -112,7 +112,7 @@ public class MultisensoryComposedEffect implements MultisensoryHapticEffect {
                                             },
                                             new int[] {10, 255, 20, 0, 10, 255, 20, 0, 10, 255, 20},
                                             /*repeat*/ -1));
-            case MultisensoryToken.SUCCESS ->
+            case MultisensoryManager.TOKEN_SUCCESS ->
                     builder.addPrimitiveEffect(
                                     VibrationEffect.Composition.PRIMITIVE_CLICK, /*scale*/
                                     1f, /*delayMillis*/
@@ -126,10 +126,10 @@ public class MultisensoryComposedEffect implements MultisensoryHapticEffect {
                                             new long[] {10, 10, 10, 114, 10, 10, 10},
                                             new int[] {10, 255, 20, 0, 10, 255, 20}, /*repeat*/
                                             -1));
-            case MultisensoryToken.STOP,
-                    MultisensoryToken.CANCEL,
-                    MultisensoryToken.SWITCH_ON,
-                    MultisensoryToken.SWITCH_OFF ->
+            case MultisensoryManager.TOKEN_STOP,
+                    MultisensoryManager.TOKEN_CANCEL,
+                    MultisensoryManager.TOKEN_SWITCH_ON,
+                    MultisensoryManager.TOKEN_SWITCH_OFF ->
                     builder.addPrimitiveEffect(
                                     VibrationEffect.Composition.PRIMITIVE_CLICK, /*scale*/
                                     1f, /*delayMillis*/
@@ -143,7 +143,7 @@ public class MultisensoryComposedEffect implements MultisensoryHapticEffect {
                                             new long[] {10, 10, 10, 52, 10, 10, 10},
                                             new int[] {10, 255, 20, 0, 10, 255, 20},
                                             /*repeat*/ -1));
-            case MultisensoryToken.UNLOCK, MultisensoryToken.LOCK ->
+            case MultisensoryManager.TOKEN_UNLOCK, MultisensoryManager.TOKEN_LOCK ->
                     builder.addPrimitiveEffect(
                                     VibrationEffect.Composition.PRIMITIVE_TICK, /*scale*/
                                     1f, /*delayMillis*/
@@ -157,7 +157,7 @@ public class MultisensoryComposedEffect implements MultisensoryHapticEffect {
                                             new long[] {5, 52, 10, 10, 10},
                                             new int[] {100, 0, 10, 255, 20},
                                             /*repeat*/ -1));
-            case MultisensoryToken.START ->
+            case MultisensoryManager.TOKEN_START ->
                     builder.addPrimitiveEffect(
                                     VibrationEffect.Composition.PRIMITIVE_THUD, /*scale*/
                                     1f, /*delayMillis*/
@@ -167,34 +167,35 @@ public class MultisensoryComposedEffect implements MultisensoryHapticEffect {
                                             new long[] {50, 100, 100, 50},
                                             new int[] {5, 50, 20, 10}, /*repeat*/
                                             -1));
-            case MultisensoryToken.PAUSE,
-                    MultisensoryToken.LONG_PRESS,
-                    MultisensoryToken.KEYPRESS_DELETE,
-                    MultisensoryToken.DRAG_INDICATOR_THRESHOLD_LIMIT ->
+            case MultisensoryManager.TOKEN_PAUSE,
+                    MultisensoryManager.TOKEN_LONG_PRESS,
+                    MultisensoryManager.TOKEN_KEYPRESS_DELETE,
+                    MultisensoryManager.TOKEN_DRAG_INDICATOR_THRESHOLD_LIMIT ->
                     builder.addPrimitiveEffect(
                                     VibrationEffect.Composition.PRIMITIVE_CLICK, /*scale*/
                                     1f, /*delayMillis*/
                                     0)
                             .addAmplitudeControlFallbackEffect(
                                     VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
-            case MultisensoryToken.SWIPE_INDICATOR_THRESHOLD_LIMIT,
-                    MultisensoryToken.TAP_HIGH_EMPHASIS,
-                    MultisensoryToken.KEYPRESS_SPACEBAR,
-                    MultisensoryToken.KEYPRESS_RETURN ->
+            case MultisensoryManager.TOKEN_SWIPE_INDICATOR_THRESHOLD_LIMIT,
+                    MultisensoryManager.TOKEN_TAP_HIGH_EMPHASIS,
+                    MultisensoryManager.TOKEN_KEYPRESS_SPACEBAR,
+                    MultisensoryManager.TOKEN_KEYPRESS_RETURN ->
                     builder.addPrimitiveEffect(
                                     VibrationEffect.Composition.PRIMITIVE_CLICK, /*scale*/
                                     0.7f, /*delayMillis*/
                                     0)
                             .addAmplitudeControlFallbackEffect(
                                     VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
-            case MultisensoryToken.TAP_MEDIUM_EMPHASIS, MultisensoryToken.KEYPRESS_STANDARD ->
+            case MultisensoryManager.TOKEN_TAP_MEDIUM_EMPHASIS,
+                    MultisensoryManager.TOKEN_KEYPRESS_STANDARD ->
                     builder.addPrimitiveEffect(
                                     VibrationEffect.Composition.PRIMITIVE_CLICK, /*scale*/
                                     0.5f, /*delayMillis*/
                                     0)
                             .addAmplitudeControlFallbackEffect(
                                     VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
-            case MultisensoryToken.DRAG_INDICATOR_CONTINUOUS -> {
+            case MultisensoryManager.TOKEN_DRAG_INDICATOR_CONTINUOUS -> {
                 for (int i = 0; i < 5; i++) {
                     builder.addPrimitiveEffect(
                             VibrationEffect.Composition.PRIMITIVE_LOW_TICK, /*cale*/
@@ -209,7 +210,7 @@ public class MultisensoryComposedEffect implements MultisensoryHapticEffect {
                         // TODO(b/462734796): Clarify the parameters of base envelopes
                         .addEnvelopeEffect(/*baseScale*/ 0.2f, /*baseFrequency*/ 100f);
             }
-            case MultisensoryToken.DRAG_INDICATOR_DISCRETE ->
+            case MultisensoryManager.TOKEN_DRAG_INDICATOR_DISCRETE ->
                     builder.addPrimitiveEffect(
                                     VibrationEffect.Composition.PRIMITIVE_TICK, /*scale*/
                                     0.5f, /*delayMillis*/
@@ -218,7 +219,7 @@ public class MultisensoryComposedEffect implements MultisensoryHapticEffect {
                                     VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK))
                             // TODO(b/462734796): Clarify the parameters of base envelopes
                             .addEnvelopeEffect(/*baseScale*/ 0.01f, /*baseFrequency*/ 100f);
-            case MultisensoryToken.TAP_LOW_EMPHASIS ->
+            case MultisensoryManager.TOKEN_TAP_LOW_EMPHASIS ->
                     builder.addPrimitiveEffect(
                                     VibrationEffect.Composition.PRIMITIVE_CLICK, /*scale*/
                                     0.3f, /*delayMillis*/

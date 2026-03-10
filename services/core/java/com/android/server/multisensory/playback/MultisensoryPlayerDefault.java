@@ -19,7 +19,7 @@ import android.annotation.NonNull;
 import android.os.Binder;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
-import android.os.multisensory.MultisensoryToken;
+import android.os.multisensory.MultisensoryManager;
 import android.util.Slog;
 
 import com.android.server.LocalServices;
@@ -49,7 +49,7 @@ public final class MultisensoryPlayerDefault {
 
     /** Vibrates the device for a given multisensory token without performing permission checks. */
     public void play(
-            @MultisensoryToken.Token int tokenConstant,
+            @MultisensoryManager.Token int tokenConstant,
             @NonNull VibrationEffect effect,
             @NonNull VibrationAttributes attributes) {
         if (android.os.vibrator.Flags.enableTrustedCallers() && mLocalService != null) {
