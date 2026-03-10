@@ -173,6 +173,7 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun availability_flagEnabledDataSupportedMainUser_isTrue() =
         kosmos.runTest {
             assertThat(QsSplitInternetTile.isEnabled).isTrue()
@@ -194,6 +195,7 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun availability_dataNotSupported_isFalse() =
         kosmos.runTest {
             assertThat(QsSplitInternetTile.isEnabled).isTrue()
@@ -206,6 +208,7 @@ class MobileDataTileDataInteractorTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun availability_notMainUser_isFalse() =
         kosmos.runTest {
             assertThat(QsSplitInternetTile.isEnabled).isTrue()

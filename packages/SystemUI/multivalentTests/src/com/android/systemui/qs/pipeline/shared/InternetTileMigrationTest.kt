@@ -48,6 +48,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun largeInternetTile_toSmallWifiAndCellNextToEachOther() =
         kosmos.runTest {
             val currentTiles =
@@ -81,6 +82,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun smallInternetTile_toSmallWifi() =
         kosmos.runTest {
             val currentTiles =
@@ -113,6 +115,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun noInternetTile_noChanges() =
         kosmos.runTest {
             val currentTiles =
@@ -130,6 +133,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun largeInternet_noMobileDataCapability_largeWifi() =
         kosmos.runTest {
             connectivityConstants.fake.hasDataCapabilities = false
@@ -154,6 +158,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun largeInternet_noMainUser_largeWifi() =
         kosmos.runTest {
             val currentTiles =
@@ -176,6 +181,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun smallInternet_noMobileDataCapability_smallWifi() =
         kosmos.runTest {
             connectivityConstants.fake.hasDataCapabilities = false
@@ -200,6 +206,7 @@ class InternetTileMigrationTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun smallInternet_noMainUser_smallWifi() =
         kosmos.runTest {
             connectivityConstants.fake.hasDataCapabilities = false

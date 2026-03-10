@@ -183,6 +183,7 @@ class WifiTileDataInteractorTest(flags: FlagsParameterization) : SysuiTestCase()
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun availability_flagEnabled_isTrue() =
         kosmos.runTest {
             assertThat(QsSplitInternetTile.isEnabled).isTrue()

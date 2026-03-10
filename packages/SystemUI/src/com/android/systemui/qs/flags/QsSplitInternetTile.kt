@@ -26,6 +26,8 @@ object QsSplitInternetTile {
     /** The aconfig flag name */
     const val FLAG_NAME = Flags.FLAG_QS_SPLIT_INTERNET_TILE_RW
 
+    const val SUPPRESSION_FLAG_NAME = Flags.FLAG_QS_SPLIT_INTERNET_TILE_SUPPRESSION
+
     /** A token used for dependency declaration */
     val token: FlagToken
         get() = FlagToken(FLAG_NAME, isEnabled)
@@ -33,7 +35,7 @@ object QsSplitInternetTile {
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.qsSplitInternetTileRw()
+        get() = Flags.qsSplitInternetTileRw() && !Flags.qsSplitInternetTileSuppression()
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the

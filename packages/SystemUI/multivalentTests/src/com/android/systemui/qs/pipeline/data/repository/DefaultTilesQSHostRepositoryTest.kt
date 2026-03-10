@@ -53,6 +53,7 @@ class DefaultTilesQSHostRepositoryTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun flagEnabled_hasWifi_noInternet() =
         kosmos.runTest {
             assertThat(underTest.getDefaultTiles(false)).contains(wifiTileSpec)
@@ -96,6 +97,7 @@ class DefaultTilesQSHostRepositoryTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(QsSplitInternetTile.FLAG_NAME)
+    @DisableFlags(QsSplitInternetTile.SUPPRESSION_FLAG_NAME)
     fun getDefaultTiles_headlessSystemUser_withInternetTile_flagEnabled_hasWifiInstead() =
         kosmos.runTest {
             overrideDefaultTilesResource(CUSTOM_DEFAULT_TILES)
