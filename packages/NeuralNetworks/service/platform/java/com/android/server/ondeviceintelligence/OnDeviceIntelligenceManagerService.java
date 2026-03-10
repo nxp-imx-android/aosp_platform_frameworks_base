@@ -281,7 +281,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
         mTemporaryServiceNames = new String[0];
         mInferenceInfoStore = new InferenceInfoStore(MAX_AGE_MS);
         mServiceThread = new ServiceThread("odi-service-thread",
-                Process.THREAD_PRIORITY_URGENT_DISPLAY, /* allowIo */ false);
+                Process.THREAD_PRIORITY_DEFAULT, /* allowIo */ false);
         mServiceThread.start();
     }
 
