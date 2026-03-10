@@ -34,6 +34,7 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import static com.android.internal.util.Preconditions.checkArgument;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static java.util.Objects.requireNonNull;
 
 import android.annotation.ColorInt;
@@ -123,6 +124,7 @@ import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
 import android.view.contentcapture.ContentCaptureContext;
+import android.widget.ChronometerAdaptiveFormat;
 import android.widget.ProgressBar;
 import android.widget.RemoteViews;
 
@@ -132,6 +134,7 @@ import com.android.internal.graphics.ColorUtils;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.util.NotificationBigTextNormalizer;
+import com.android.internal.util.Preconditions;
 import com.android.internal.widget.NotificationProgressModel;
 import com.android.internal.widget.NotificationRowIconView;
 
@@ -3616,6 +3619,45 @@ public class Notification implements Parcelable
     }
 
     /**
+     * Returns the title for the Notification History.
+     * @hide
+     */
+    public String getHistoryTitle(@NonNull Context context) {
+        Preconditions.checkNotNull(context);
+        CharSequence title = null;
+        if (extras != null) {
+            title = extras.getCharSequence(Notification.EXTRA_TITLE);
+            if (title == null) {
+                title = extras.getCharSequence(EXTRA_TITLE_BIG);
+            }
+        }
+
+        return TextUtils.isEmpty(title) ? context.getString(
+                R.string.notification_history_title_placeholder)
+                : String.valueOf(title);
+    }
+
+    /**
+     * Returns the appropriate substring for this notification based on the style of notification.
+     * This is going to be shown on the Notification History.
+     * @hide
+     */
+    public String getHistoryText(@NonNull Context context) {
+        Preconditions.checkNotNull(context);
+        final Style style =  Notification.Builder.recoverStyle(this);
+        CharSequence text = null;
+        if (style != null) {
+            text = style.getHistoryText(context);
+        }
+
+        if (TextUtils.isEmpty(text)) {
+            text = extras.getCharSequence(EXTRA_TEXT);
+        }
+
+        return text == null ? null : String.valueOf(text);
+    }
+
+    /**
      * @hide
      */
     public boolean containsCustomViews() {
@@ -3728,6 +3770,11 @@ public class Notification implements Parcelable
                 if (TvExtender.EXTRA_TV_EXTENDER.equals(key)) {
                     continue;
                 }
+
+                if (EXTRA_METRICS.equals(key)) {
+                    continue;
+                }
+
                 final Object obj = extras.get(key);
                 if (obj != null &&
                     (  obj instanceof Parcelable
@@ -5120,29 +5167,39 @@ public class Notification implements Parcelable
                     setLargeIcon(mN.largeIcon);
                 }
 
-                String templateClass = mN.extras.getString(EXTRA_TEMPLATE);
-                if (!TextUtils.isEmpty(templateClass)) {
-                    final Class<? extends Style> styleClass
-                            = getNotificationStyleClass(templateClass);
-                    if (styleClass == null) {
-                        Log.d(TAG, "Unknown style class: " + templateClass);
-                    } else {
-                        try {
-                            final Constructor<? extends Style> ctor =
-                                    styleClass.getDeclaredConstructor();
-                            ctor.setAccessible(true);
-                            final Style style = ctor.newInstance();
-                            style.restoreFromExtras(mN.extras);
+                final Style style = recoverStyle(mN);
+                if (style != null) {
+                    setStyle(style);
+                }
+            }
+        }
 
-                            if (style != null) {
-                                setStyle(style);
-                            }
-                        } catch (Throwable t) {
-                            Log.e(TAG, "Could not create Style", t);
-                        }
+        /**
+         * Recover Style from the given notification.
+         * @hide
+         */
+        public static Style recoverStyle(Notification n) {
+            String templateClass = n.extras.getString(EXTRA_TEMPLATE);
+            if (!TextUtils.isEmpty(templateClass)) {
+                final Class<? extends Style> styleClass = getNotificationStyleClass(templateClass);
+                if (styleClass == null) {
+                    Log.d(TAG, "Unknown style class: " + templateClass);
+                    return null;
+                } else {
+                    try {
+                        final Constructor<? extends Style> ctor =
+                                styleClass.getDeclaredConstructor();
+                        ctor.setAccessible(true);
+                        final Style style = ctor.newInstance();
+                        style.restoreFromExtras(n.extras);
+                        return style;
+                    } catch (Throwable t) {
+                        Log.e(TAG, "Could not create Style", t);
+                        return null;
                     }
                 }
             }
+            return null;
         }
 
         /**
@@ -9498,6 +9555,15 @@ public class Notification implements Parcelable
         public CharSequence getHeadsUpStatusBarText() {
             return null;
         }
+
+        /**
+         * @return the text that should be displayed in the notification history.
+         * If {@code null} is returned, the default implementation will be used.
+         * @hide
+         */
+        public CharSequence getHistoryText(@NonNull Context context) {
+            return null;
+        }
     }
 
     /**
@@ -9953,6 +10019,13 @@ public class Notification implements Parcelable
             return !Objects.equals(String.valueOf(getBigText()), String.valueOf(newS.getBigText()));
         }
 
+        /**
+         * @hide
+         */
+        @Override
+        public CharSequence getHistoryText(@NonNull Context unused) {
+            return mBigText;
+        }
     }
 
     /**
@@ -10856,6 +10929,19 @@ public class Notification implements Parcelable
 
             reduceMessagesIconSizes(mMessages, maxAvatarSize);
             reduceMessagesIconSizes(mHistoricMessages, maxAvatarSize);
+        }
+
+        /**
+         * @hide
+         */
+        @Override
+        public CharSequence getHistoryText(@NonNull Context unused) {
+            final List<MessagingStyle.Message> messages = getMessages();
+            if (messages != null && messages.size() > 0) {
+                return messages.get(messages.size() - 1).getText();
+            }
+
+            return null;
         }
 
         /**
@@ -12478,6 +12564,40 @@ public class Notification implements Parcelable
             return true;
         }
 
+        /**
+         * @hide
+         */
+        @Override
+        public CharSequence getHistoryText(@NonNull Context context) {
+            final StringBuilder buffer = new StringBuilder();
+            final String separator = context.getString(R.string.notification_header_divider_symbol);
+            for (int i = 0; i < mMetrics.size(); i++) {
+                final Metric metric = mMetrics.get(i);
+                if (i > 0) {
+                    buffer.append(" ");
+                    buffer.append(separator);
+                    buffer.append(" ");
+                }
+                final Notification.Metric.MetricValue metricValue = metric.getValue();
+                final Notification.Metric.MetricValue.ValueString valueString =
+                        metricValue.toValueString(context);
+                final String unit = valueString.subtext();
+                CharSequence value = valueString.textVariants.getFirst();
+                final CharSequence label;
+                if (TextUtils.isEmpty(unit)) {
+                    label = metric.getLabel();
+                } else {
+                    label = context.getString(
+                            R.string.notification_metric_label_unit,
+                            metric.getLabel(), unit);
+                }
+                buffer.append(context.getString(R.string.notification_history_metric_subtext,
+                        label, value));
+            }
+
+            return buffer.toString();
+        }
+
         /** @hide */
         @Override
         public RemoteViews makeContentView() {
@@ -13233,8 +13353,32 @@ public class Notification implements Parcelable
             @Override
             @NonNull
             public ValueString toValueString(Context context) {
-                // Not used; Chronometer view will take charge of formatting.
-                return ValueString.EMPTY;
+                Duration pausedDuration = getPausedDuration();
+                String value;
+                if (pausedDuration == null) {
+                    value = context.getString(
+                            isTimer() ? R.string.notification_metric_running_timer :
+                                    R.string.notification_metric_running_stopwatch
+                    );
+                } else {
+                    // ms are ignored and we don't want -0:00
+                    pausedDuration = pausedDuration.truncatedTo(SECONDS);
+                    final boolean isNegative = pausedDuration.isNegative();
+                    pausedDuration = pausedDuration.abs();
+                    final boolean isAdaptive = getFormat()
+                            ==  Notification.Metric.TimeDifference.FORMAT_ADAPTIVE;
+
+                    if (isAdaptive) {
+                        value = ChronometerAdaptiveFormat.format(pausedDuration);
+                    } else {
+                        value = DateUtils.formatElapsedTime(new StringBuilder(),
+                                pausedDuration.toSeconds());
+                    }
+                    if (isNegative) {
+                        value = context.getString(R.string.negative_duration, value);
+                    }
+                }
+                return new ValueString(value);
             }
         }
 
@@ -13444,7 +13588,7 @@ public class Notification implements Parcelable
              * Creates a {@link FixedTime} with the specified {@link LocalTime}.
              */
             public FixedTime(@NonNull LocalTime value) {
-                mValue = requireNonNull(value).truncatedTo(ChronoUnit.SECONDS);
+                mValue = requireNonNull(value).truncatedTo(SECONDS);
             }
 
             @Nullable

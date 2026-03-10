@@ -4224,8 +4224,8 @@ public class NotificationManagerService extends SystemService {
                             .setUserId(r.getSbn().getNormalizedUserId())
                             .setChannelId(channelId)
                             .setPostedTimeMs(System.currentTimeMillis())
-                            .setTitle(getHistoryTitle(r.getNotification()))
-                            .setText(getHistoryText(r.getNotification()))
+                            .setTitle(r.getNotification().getHistoryTitle(getContext()))
+                            .setText(r.getNotification().getHistoryText(getContext()))
                             .setIcon(r.getNotification().getSmallIcon());
                     mHistoryManager.addNotification(builder.build());
                 }
@@ -4250,45 +4250,6 @@ public class NotificationManagerService extends SystemService {
             reportForegroundServiceUpdate(shown, sbn.getNotification(), sbn.getId(),
                     sbn.getPackageName(), sbn.getUser().getIdentifier());
         }
-    }
-
-    private String getHistoryTitle(Notification n) {
-        CharSequence title = null;
-        if (n.extras != null) {
-            title = n.extras.getCharSequence(EXTRA_TITLE);
-            if (title == null) {
-                title = n.extras.getCharSequence(EXTRA_TITLE_BIG);
-            }
-        }
-        return title == null ? getContext().getResources().getString(
-            com.android.internal.R.string.notification_history_title_placeholder)
-            : String.valueOf(title);
-    }
-
-    /**
-     * Returns the appropriate substring for this notification based on the style of notification.
-     */
-    private String getHistoryText(Notification n) {
-        CharSequence text = null;
-        if (n.extras != null) {
-            text = n.extras.getCharSequence(EXTRA_TEXT);
-            Notification.Builder nb = Notification.Builder.recoverBuilder(getContext(), n);
-
-            if (nb.getStyle() instanceof Notification.BigTextStyle) {
-                text = ((Notification.BigTextStyle) nb.getStyle()).getBigText();
-            } else if (nb.getStyle() instanceof MessagingStyle) {
-                MessagingStyle ms = (MessagingStyle) nb.getStyle();
-                final List<MessagingStyle.Message> messages = ms.getMessages();
-                if (messages != null && messages.size() > 0) {
-                    text = messages.get(messages.size() - 1).getText();
-                }
-            }
-
-            if (TextUtils.isEmpty(text)) {
-                text = n.extras.getCharSequence(EXTRA_TEXT);
-            }
-        }
-        return text == null ? null : String.valueOf(text);
     }
 
     protected void maybeRegisterMessageSent(NotificationRecord r) {

@@ -5826,6 +5826,13 @@
     <!-- Template for Notification.MetricStyle to join Metric label with a separator e.g.: "Speed:". -->
     <string name="notification_metric_label_separator"><xliff:g id="metric_label" example="Steps">%1$s</xliff:g>:</string>
 
+    <!-- Template for Notification.MetricStyle to join a metric label and value for Notification History [CHAR LIMIT=NONE] -->
+    <string name="notification_history_metric_subtext"><xliff:g id="metric_label" example="Speed">%1$s</xliff:g>: <xliff:g id="metric value" example="4.1">%2$s</xliff:g></string>
+    <!-- Text for Notification.MetricStyle to show running timer in Notification History [CHAR LIMIT=20] -->
+    <string name="notification_metric_running_timer">Running Timer</string>
+    <!-- Text for Notification.MetricStyle to show running stopwatch in Notification History [CHAR LIMIT=20] -->
+    <string name="notification_metric_running_stopwatch">Running Stopwatch</string>
+
     <!-- Action text to be displayed for the "answer" action of an incoming call [CHAR LIMIT=13] -->
     <string name="call_notification_answer_action">Answer</string>
     <!-- Action text to be displayed for the "answer" action of an incoming VIDEO call [CHAR LIMIT=13] -->
