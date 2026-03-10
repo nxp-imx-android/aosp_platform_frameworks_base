@@ -176,5 +176,26 @@ object Utils {
         }
     }
 
+    /**
+     * Returns the boolean value of the given resource name.
+     *
+     * @param resName the name of the resource to retrieve
+     * @return the boolean value of the resource, or null if the resource is not found
+     */
+    fun getBooleanConfig(resName: String): Boolean? {
+        val resources = instrumentation.context.resources
+        val identifier = resources.getIdentifier(resName, "bool", "android")
+        if (identifier == 0) {
+            Log.w("TestUtils", "Boolean resource not found for '$resName'.")
+            return null
+        }
+        return try {
+            return resources.getBoolean(identifier)
+        } catch (e: android.content.res.Resources.NotFoundException) {
+            Log.w("TestUtils", "Boolean resource not found for '$resName'.", e)
+            null
+        }
+    }
+
     private const val SETTINGS_PACKAGE_NAME = "com.android.settings"
 }
