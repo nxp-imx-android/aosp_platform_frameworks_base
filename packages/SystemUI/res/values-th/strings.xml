@@ -987,12 +987,7 @@
     <string name="inline_done_button" msgid="6043094985588909584">"เสร็จสิ้น"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ใช้"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ปิดการแจ้งเตือน"</string>
-    <string name="bridged_device_type_unknown" msgid="8435318668271946936">"อุปกรณ์"</string>
-    <string name="bridged_device_type_phone" msgid="7971199513068521770">"โทรศัพท์"</string>
-    <string name="bridged_device_type_tablet" msgid="7403330807933649592">"แท็บเล็ต"</string>
-    <string name="bridged_device_type_laptop" msgid="8027976360936787349">"แล็ปท็อป"</string>
-    <string name="bridged_device_type_watch" msgid="2634106046119813073">"นาฬิกา"</string>
-    <string name="bridged_device_type_tv" msgid="5471822369478942796">"ทีวี"</string>
+    <string name="bridged_source_device" msgid="2233591993331607836">"อุปกรณ์ต้นทาง"</string>
     <string name="inline_bridged_open_associated_device_settings" msgid="6885442224230065508">"เปิดการตั้งค่า<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"ปิดเสียง"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ค่าเริ่มต้น"</string>
@@ -1229,10 +1224,8 @@
     <string name="accessibility_quick_settings_open_settings" msgid="536838345505030893">"เปิดการตั้งค่า <xliff:g id="ID_1">%s</xliff:g>"</string>
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"แก้ไขลำดับของการตั้งค่าด่วน"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"เมนูเปิด/ปิด"</string>
-    <!-- no translation found for accessibility_quick_settings_power_menu_expanded (4665161431290201722) -->
-    <skip />
-    <!-- no translation found for accessibility_quick_settings_power_menu_collapsed (5800930916550853776) -->
-    <skip />
+    <string name="accessibility_quick_settings_power_menu_expanded" msgid="4665161431290201722">"ขยายแล้ว"</string>
+    <string name="accessibility_quick_settings_power_menu_collapsed" msgid="5800930916550853776">"ยุบแล้ว"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"หน้า <xliff:g id="ID_1">%1$d</xliff:g> จาก <xliff:g id="ID_2">%2$d</xliff:g>"</string>
     <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"ต้องการเปิด <xliff:g id="ID_1">%1$s</xliff:g> ใช่ไหม"</string>
     <string name="accessibility_key_gesture_dialog_content" msgid="2409946187069273612"><annotation id="action_key_icon">"ไอคอน"</annotation>" <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> + <xliff:g id="ID_3">^3</xliff:g> คือแป้นพิมพ์ลัดเพื่อใช้ <xliff:g id="ID_4">^4</xliff:g> <xliff:g id="ID_5">^5</xliff:g>"</string>
@@ -1495,8 +1488,10 @@
     <string name="media_output_dialog_accessibility_title" msgid="4681741064190167888">"อุปกรณ์ที่พร้อมใช้งานสำหรับเอาต์พุตเสียง"</string>
     <string name="media_output_dialog_accessibility_seekbar" msgid="5332843993805568978">"ระดับเสียง"</string>
     <string name="media_output_dialog_volume_percentage" msgid="1613984910585111798">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
-    <string name="media_output_dialog_missing_permissions_warning" msgid="1279351363821022727">"อุปกรณ์บางเครื่องไม่แสดง อัปเดตสิทธิ์ของแอป"</string>
-    <string name="media_output_dialog_warning_button_fix" msgid="3324600211761037516">"แก้ไข"</string>
+    <!-- no translation found for media_output_dialog_missing_permissions_warning (4312830846174995199) -->
+    <skip />
+    <!-- no translation found for media_output_dialog_warning_button_fix (3650735180540135181) -->
+    <skip />
     <string name="media_output_group_title_connected_speakers" msgid="3413876972919684479">"ลำโพงที่เชื่อมต่อ"</string>
     <string name="media_output_group_title_speakers_and_displays" msgid="7169712332365659820">"ลำโพงและจอแสดงผล"</string>
     <string name="media_output_group_title_suggested" msgid="5097061363820410332">"แนะนำ"</string>
@@ -1606,8 +1601,7 @@
     <string name="clipboard_image_preview" msgid="2156475174343538128">"ตัวอย่างรูปภาพ"</string>
     <string name="clipboard_edit" msgid="4500155216174011640">"แก้ไข"</string>
     <string name="add" msgid="81036585205287996">"เพิ่ม"</string>
-    <!-- no translation found for remove (7031760447233505700) -->
-    <skip />
+    <string name="remove" msgid="7031760447233505700">"นำออก"</string>
     <string name="manage_users" msgid="1823875311934643849">"จัดการผู้ใช้"</string>
     <string name="drag_split_not_supported" msgid="7173481676120546121">"การแจ้งเตือนนี้ไม่รองรับการลากเพื่อแยกหน้าจอ"</string>
     <string name="dream_overlay_location_active" msgid="6484763493158166618">"ตำแหน่งที่ใช้งานอยู่"</string>
