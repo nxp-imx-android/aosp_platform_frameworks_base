@@ -307,6 +307,20 @@ public class BrightnessClamperController {
     }
 
     /**
+     * Returns the thermal throttling status of the brightness thermal modifier.
+     */
+    public @PowerManager.ThermalStatus int getBrightnessThermalThrottlingStatus() {
+        if (!mModifiers.isEmpty()) {
+            for (BrightnessStateModifier modifier : mModifiers) {
+                if (modifier instanceof BrightnessThermalModifier) {
+                    return ((BrightnessThermalModifier) modifier).getThermalStatus();
+                }
+            }
+        }
+        return PowerManager.THERMAL_STATUS_NONE;
+    }
+
+    /**
      * Clampers change listener
      */
     public interface ClamperChangeListener {

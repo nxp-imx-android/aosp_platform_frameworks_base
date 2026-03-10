@@ -86,6 +86,9 @@ public final class BrightnessEvent {
     private int mAutoBrightnessMode;
     private boolean mSlowChange;
     private float mRampSpeed;
+    private float mAmbientColorTemperature;
+    @PowerManager.ThermalStatus
+    private int mThermalStatus;
 
     public BrightnessEvent(BrightnessEvent that) {
         copyFrom(that);
@@ -141,6 +144,8 @@ public final class BrightnessEvent {
         mAutoBrightnessMode = that.mAutoBrightnessMode;
         mSlowChange = that.mSlowChange;
         mRampSpeed = that.mRampSpeed;
+        mAmbientColorTemperature = that.mAmbientColorTemperature;
+        mThermalStatus = that.mThermalStatus;
     }
 
     /**
@@ -185,6 +190,8 @@ public final class BrightnessEvent {
         mAutoBrightnessMode = AUTO_BRIGHTNESS_MODE_DEFAULT;
         mSlowChange = false;
         mRampSpeed = 0;
+        mAmbientColorTemperature = PowerManager.BRIGHTNESS_INVALID_FLOAT;
+        mThermalStatus = PowerManager.THERMAL_STATUS_NONE;
     }
 
     /**
@@ -288,7 +295,9 @@ public final class BrightnessEvent {
                 + ", physDisp=" + mPhysicalDisplayName + "(" + mPhysicalDisplayId + ")"
                 + ", logicalId=" + mDisplayId
                 + ", slowChange=" + mSlowChange
-                + ", rampSpeed=" + mRampSpeed;
+                + ", rampSpeed=" + mRampSpeed
+                + ", colorTemp=" + mAmbientColorTemperature
+                + ", thermalStatus=" + thermalStatusToString(mThermalStatus);
     }
 
     @Override
@@ -346,6 +355,14 @@ public final class BrightnessEvent {
 
     public void setDisplayPolicy(int policy) {
         mDisplayPolicy = policy;
+    }
+
+    public @Display.StateReason int getDisplayStateReason() {
+        return mDisplayStateReason;
+    }
+
+    public int getDisplayPolicy() {
+        return mDisplayPolicy;
     }
 
     public float getLux() {
@@ -559,6 +576,22 @@ public final class BrightnessEvent {
         mRampSpeed = rampSpeed;
     }
 
+    public void setAmbientColorTemperature(float ambientColorTemperature) {
+        mAmbientColorTemperature = ambientColorTemperature;
+    }
+
+    public float getAmbientColorTemperature() {
+        return mAmbientColorTemperature;
+    }
+
+    public void setThermalStatus(@PowerManager.ThermalStatus int thermalStatus) {
+        mThermalStatus = thermalStatus;
+    }
+
+    public @PowerManager.ThermalStatus int getThermalStatus() {
+        return mThermalStatus;
+    }
+
     /**
      * A utility to stringify flags from a BrightnessEvent
      * @return Stringified flags from BrightnessEvent
@@ -571,5 +604,31 @@ public final class BrightnessEvent {
                 + ((mFlags & FLAG_DOZE_SCALE) != 0 ? "doze_scale " : "")
                 + ((mFlags & FLAG_LOW_POWER_MODE) != 0 ? "low_power_mode " : "")
                 + ((mFlags & FLAG_EVEN_DIMMER) != 0 ? "even_dimmer " : "");
+    }
+
+    /**
+     * A utility to stringify thermal status
+     * @return Stringified thermal status
+     */
+    @VisibleForTesting
+    public static String thermalStatusToString(@PowerManager.ThermalStatus int thermalStatus) {
+        switch (thermalStatus) {
+            case PowerManager.THERMAL_STATUS_NONE:
+                return "none";
+            case PowerManager.THERMAL_STATUS_LIGHT:
+                return "light";
+            case PowerManager.THERMAL_STATUS_MODERATE:
+                return "moderate";
+            case PowerManager.THERMAL_STATUS_SEVERE:
+                return "severe";
+            case PowerManager.THERMAL_STATUS_CRITICAL:
+                return "critical";
+            case PowerManager.THERMAL_STATUS_EMERGENCY:
+                return "emergency";
+            case PowerManager.THERMAL_STATUS_SHUTDOWN:
+                return "shutdown";
+            default:
+                return String.valueOf(thermalStatus);
+        }
     }
 }

@@ -1700,6 +1700,13 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 displayBrightnessState.getShouldUseAutoBrightness());
         mTempBrightnessEvent.setSlowChange(slowChange);
         mTempBrightnessEvent.setRampSpeed(rampSpeed);
+        if (mDisplayWhiteBalanceController != null) {
+            mTempBrightnessEvent.setAmbientColorTemperature(
+                    mDisplayWhiteBalanceController.getAmbientColorTemperature());
+        }
+        mTempBrightnessEvent.setThermalStatus(
+                mBrightnessClamperController.getBrightnessThermalThrottlingStatus());
+
         // Temporary is what we use during slider interactions. We avoid logging those so that
         // we don't spam logcat when the slider is being used.
         boolean tempToTempTransition =
@@ -2823,6 +2830,21 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         return FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_3000_INF;
     }
 
+    private int convertDisplayPolicyToStatsEnum(int policy) {
+        return switch(policy) {
+            case DisplayPowerRequest.POLICY_OFF ->
+                FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__DISPLAY_POLICY__DISPLAY_POLICY_OFF;
+            case DisplayPowerRequest.POLICY_DOZE ->
+                FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__DISPLAY_POLICY__DISPLAY_POLICY_DOZE;
+            case DisplayPowerRequest.POLICY_DIM ->
+                FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__DISPLAY_POLICY__DISPLAY_POLICY_DIM;
+            case DisplayPowerRequest.POLICY_BRIGHT ->
+                FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__DISPLAY_POLICY__DISPLAY_POLICY_BRIGHT;
+            default ->
+            FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__DISPLAY_POLICY__DISPLAY_POLICY_UNKNOWN;
+        };
+    }
+
     private int convertBrightnessReasonToStatsEnum(int brightnessReason) {
         switch(brightnessReason) {
             case BrightnessReason.REASON_UNKNOWN:
@@ -2979,7 +3001,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                     event.getAutoBrightnessMode() == AUTO_BRIGHTNESS_MODE_IDLE,
                     (flags & BrightnessEvent.FLAG_LOW_POWER_MODE) > 0,
                     luxBucket,
-                    brightnessAdjustmentDirection);
+                    brightnessAdjustmentDirection,
+                    event.getAmbientColorTemperature(),
+                    event.getThermalStatus(),
+                    event.getDisplayStateReason(),
+                    convertDisplayPolicyToStatsEnum(event.getDisplayPolicy()));
         }
     }
 
