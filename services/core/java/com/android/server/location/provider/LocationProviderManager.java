@@ -1842,16 +1842,34 @@ public class LocationProviderManager extends
 
         if (location != null) {
             // lastly - note app ops
-            int op =
-                    (Flags.enableLocationBypass()
-                            && !mLocationPermissionsHelper.hasLocationPermissions(
-                                    permissionLevel, identity)
-                            && mEmergencyHelper.isInEmergency(0)
-                            && mContext.checkPermission(
-                                    LOCATION_BYPASS, identity.getPid(), identity.getUid())
-                            == PERMISSION_GRANTED)
-                            ? AppOpsManager.OP_EMERGENCY_LOCATION
-                            : LocationPermissions.asAppOp(permissionLevel);
+            int op;
+            if (Flags.checkBypassPermissionBeforeEmergencyMode()) {
+                op =
+                        (Flags.enableLocationBypass()
+                                        && !mLocationPermissionsHelper.hasLocationPermissions(
+                                                permissionLevel, identity)
+                                        && mContext.checkPermission(
+                                                        LOCATION_BYPASS,
+                                                        identity.getPid(),
+                                                        identity.getUid())
+                                                == PERMISSION_GRANTED
+                                        && mEmergencyHelper.isInEmergency(0))
+                                ? AppOpsManager.OP_EMERGENCY_LOCATION
+                                : LocationPermissions.asAppOp(permissionLevel);
+            } else {
+                op =
+                        (Flags.enableLocationBypass()
+                                        && !mLocationPermissionsHelper.hasLocationPermissions(
+                                                permissionLevel, identity)
+                                        && mEmergencyHelper.isInEmergency(0)
+                                        && mContext.checkPermission(
+                                                        LOCATION_BYPASS,
+                                                        identity.getPid(),
+                                                        identity.getUid())
+                                                == PERMISSION_GRANTED)
+                                ? AppOpsManager.OP_EMERGENCY_LOCATION
+                                : LocationPermissions.asAppOp(permissionLevel);
+            }
             if (!mAppOpsHelper.noteOpNoThrow(op, identity)) {
                 return null;
             }
