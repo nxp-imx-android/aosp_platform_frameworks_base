@@ -23,6 +23,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import android.util.TypedValue
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.res.R
@@ -32,17 +35,34 @@ import com.android.systemui.res.R
  * replaced by the fully composable [Clock].
  */
 @Composable
-fun ClockLegacy(textColor: Color, onClick: (() -> Unit)?, modifier: Modifier = Modifier) {
+fun ClockLegacy(
+    textColor: Color,
+    onClick: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+    textStyle: TextStyle? = null,
+) {
     val intColor = remember(textColor) { textColor.toArgb() }
+    val density = LocalDensity.current
+    val textPx = remember(textStyle, density) {
+        textStyle?.let { with(density) { it.fontSize.toPx() } }
+    }
 
     AndroidView(
         factory = { context ->
-            com.android.systemui.statusbar.policy.Clock(
+            val clock = com.android.systemui.statusbar.policy.Clock(
                 ContextThemeWrapper(context, R.style.Theme_SystemUI_DesktopStatusBar),
                 null,
             )
+            // Desktop status bar handles its own padding.
+            clock.setShouldApplyPadding(false)
+            clock
         },
-        update = { view -> view.setTextColor(intColor) },
+        update = { view ->
+            view.setTextColor(intColor)
+            textPx?.let {
+                view.setTextSize(TypedValue.COMPLEX_UNIT_PX, it)
+            }
+        },
         modifier = modifier.thenIf(onClick != null) { Modifier.clickable { onClick?.invoke() } },
     )
 }
