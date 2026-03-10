@@ -415,8 +415,7 @@ public class RestrictedPreferenceHelper {
         PolicyEnforcementInfo policyEnforcementInfo = dpm.getEnforcingAdminsForPolicy(
                 restriction.getDevicePolicyIdentifier(),
                 userId);
-        // Don't set it disabled by admin if only system is enforcing a restriction.
-        if (policyEnforcementInfo.isOnlyEnforcedBySystem()) {
+        if (!policyEnforcementInfo.shouldShowEnforcingAdminDetails()) {
             return null;
         }
         return policyEnforcementInfo.getMostImportantEnforcingAdmin();

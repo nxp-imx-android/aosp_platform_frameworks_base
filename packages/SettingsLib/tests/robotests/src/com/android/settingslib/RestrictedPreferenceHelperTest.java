@@ -42,6 +42,7 @@ import android.app.admin.RoleAuthority;
 import android.app.admin.SystemAuthority;
 import android.app.admin.UnknownAuthority;
 import android.app.admin.flags.Flags;
+import android.app.supervision.SupervisionManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -94,6 +95,10 @@ public class RestrictedPreferenceHelperTest {
     private final ComponentName mAdmin = new ComponentName("admin", "adminclass");
     private final Authority mAdvancedProtectionAuthority = new SystemAuthority(
             ADVANCED_PROTECTION_SYSTEM_ENTITY);
+
+    private final EnforcingAdmin mSupervisionAdmin = new EnforcingAdmin("package.test",
+            new SystemAuthority(SupervisionManager.SUPERVISION_SYSTEM_ENTITY),
+            UserHandle.of(UserHandle.myUserId()), mAdmin);
 
     private PreferenceViewHolder mViewHolder;
     private RestrictedPreferenceHelper mHelper;
@@ -357,6 +362,20 @@ public class RestrictedPreferenceHelperTest {
         mHelper.setAdminPolicyRestriction(restriction);
 
         assertThat(mHelper.checkAdminRestrictionEnforced()).isEqualTo(admin);
+        assertThat(mHelper.isDisabledByAdmin()).isTrue();
+    }
+
+    @EnableFlags(Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
+    @Test
+    public void checkAdminRestrictionEnforced_userRestriction_disabledBySupervision() {
+        final String restriction = "restriction";
+        final PolicyEnforcementInfo policyEnforcementInfo = new PolicyEnforcementInfo(
+                List.of(mSupervisionAdmin));
+        when(mDevicePolicyManager.getEnforcingAdminsForPolicy(restriction,
+                UserHandle.myUserId())).thenReturn(policyEnforcementInfo);
+        mHelper.setAdminPolicyRestriction(restriction);
+
+        assertThat(mHelper.checkAdminRestrictionEnforced()).isEqualTo(mSupervisionAdmin);
         assertThat(mHelper.isDisabledByAdmin()).isTrue();
     }
 
