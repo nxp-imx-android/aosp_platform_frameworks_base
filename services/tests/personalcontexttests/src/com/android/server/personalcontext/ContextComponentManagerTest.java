@@ -33,7 +33,6 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.personalcontext.Flags;
 
@@ -166,37 +165,6 @@ public class ContextComponentManagerTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
-    public void testRegisterAndUnregisterPackageComponentsIntent() {
-        final String packageName = "com.whatever";
-        final Context context = mock(Context.class);
-        final PackageManager pm = mock(PackageManager.class);
-        final UserHandle userHandle = mock(UserHandle.class);
-        final ResolveInfo resolve = new ResolveInfo();
-        resolve.serviceInfo = new ServiceInfo();
-        resolve.serviceInfo.packageName = packageName;
-        resolve.serviceInfo.name = "WhateverService";
-
-        when(context.getPackageManager()).thenReturn(pm);
-        when(pm.queryIntentServices(any(), anyInt())).thenReturn(List.of(resolve));
-
-        final ContextComponentManager manager = new ContextComponentManager(context, userHandle,
-                mAccessController);
-        manager.registerComponentsForAllPackages();
-
-        // The above code reports the same service for all requested service types. Because
-        // understanders are modeled as refiners this looks like 2 refiners, but 1 of all others.
-        assertThat(manager.getRefiners().size()).isEqualTo(2);
-        assertThat(manager.getRenderers().size()).isEqualTo(1);
-
-        manager.unregisterComponentsForPackage(packageName);
-
-        assertThat(manager.getRefiners()).isEmpty();
-        assertThat(manager.getRenderers()).isEmpty();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENFORCE_PERSONAL_CONTEXT_ALLOWLIST_ACCESS_CONTROL)
     public void testRegisterPackageComponentsIntentWithAccessControl() {
         final String packageName = "com.whatever";
         final Context context = mock(Context.class);
@@ -217,17 +185,31 @@ public class ContextComponentManagerTest {
         assertThat(manager.getRefiners()).isEmpty();
         assertThat(manager.getRenderers()).isEmpty();
 
-        when(mAccessController.hasAccess(eq(packageName), eq(AccessController.ACCESS_RECEIVE_HINTS
-                | AccessController.ACCESS_PUBLISH_HINTS))).thenReturn(true);
-        when(mAccessController.hasAccess(eq(packageName), eq(AccessController.ACCESS_RECEIVE_HINTS
-                | AccessController.ACCESS_PUBLISH_INSIGHTS))).thenReturn(true);
+        when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
+                AccessController.ACCESS_PCC
+                        | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
+                        | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION)))
+                .thenReturn(true);
+
+        when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
+                AccessController.ACCESS_PCC
+                        | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
+                        | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION
+                        | AccessController.ACCESS_PUBLISH_INSIGHTS_ALLOWLIST
+                        | AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION)))
+                .thenReturn(true);
+
+        when(mAccessController.isClientAllowed(any(), anyInt())).thenReturn(false);
         manager.registerComponentsForAllPackages();
 
         assertThat(manager.getRefiners()).hasSize(2);
         assertThat(manager.getRenderers()).isEmpty();
 
-        when(mAccessController.hasAccess(eq(packageName),
-                eq(AccessController.ACCESS_RECEIVE_INSIGHTS))).thenReturn(true);
+        when(mAccessController.isServiceAllowed(eq(resolve.serviceInfo), eq(
+                AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST
+                        | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION)))
+                .thenReturn(true);
+
         manager.registerComponentsForAllPackages();
 
         assertThat(manager.getRenderers()).hasSize(1);

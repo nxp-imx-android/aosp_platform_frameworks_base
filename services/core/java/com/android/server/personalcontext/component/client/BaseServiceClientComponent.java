@@ -35,6 +35,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.Slog;
 
+import com.android.server.personalcontext.AccessController;
 import com.android.server.personalcontext.component.Component;
 
 import java.lang.ref.WeakReference;
@@ -60,6 +61,8 @@ public abstract class BaseServiceClientComponent<C> implements Component {
     private final UserHandle mUserHandle;
 
     protected final Context mContext;
+    private final AccessController mAccessController;
+    private final ServiceInfo mServiceInfo;
     private final UUID mComponentId;
     private final Intent mServiceIntent;
     private final ComponentName mComponentName;
@@ -163,6 +166,8 @@ public abstract class BaseServiceClientComponent<C> implements Component {
             UserHandle userHandle, Executor executor, Handler handler) {
         mExecutor = executor;
         mContext = context;
+        mAccessController = new AccessController(context, userHandle);
+        mServiceInfo = serviceInfo;
         mUserHandle = userHandle;
         mComponentId = componentId;
         mComponentName = new ComponentName(serviceInfo.packageName, serviceInfo.name);
@@ -182,6 +187,10 @@ public abstract class BaseServiceClientComponent<C> implements Component {
 
     public ComponentName getComponentName() {
         return mComponentName;
+    }
+
+    public ServiceInfo getServiceInfo() {
+        return mServiceInfo;
     }
 
     @Override
@@ -278,6 +287,10 @@ public abstract class BaseServiceClientComponent<C> implements Component {
     protected abstract C getServiceWrapper(IBinder binder);
 
     protected abstract void initializeClient(C client) throws RemoteException;
+
+    protected final boolean isAllowed(int accessFlags) {
+        return mAccessController.isClientAllowed(this, accessFlags);
+    }
 
     /**
      * Callback interface for calls made on a client.

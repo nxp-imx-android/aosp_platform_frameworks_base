@@ -244,8 +244,8 @@ public class VisualizerRegistryTest {
         when(packageManager.queryIntentServices(any(Intent.class), anyInt()))
                 .thenReturn(List.of(resolveInfo));
 
-        when(mAccessController.hasAccess(
-                any(String.class), eq(AccessController.ACCESS_REGISTER_VISUALIZER)))
+        when(mAccessController.isServiceAllowed(
+                any(), eq(AccessController.ACCESS_REGISTER_VISUALIZER)))
                 .thenReturn(hasAccess);
 
         final VisualizerRegistry.DefaultInjector injector =

@@ -25,7 +25,6 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.os.UserHandle;
-import android.service.personalcontext.Flags;
 import android.service.personalcontext.RenderToken;
 import android.service.personalcontext.embedded.InsightSurfaceClientInfo;
 import android.service.personalcontext.embedded.InsightSurfaceVisualizerService;
@@ -156,9 +155,8 @@ public class VisualizerRegistry {
                     continue;
                 }
 
-                if (Flags.enforcePersonalContextAllowlistAccessControl()
-                        && !mAccessController.hasAccess(
-                                resolveInfo.serviceInfo.packageName,
+                if (!mAccessController.isServiceAllowed(
+                                resolveInfo.serviceInfo,
                                 AccessController.ACCESS_REGISTER_VISUALIZER)) {
                     Slog.w(TAG, resolveInfo.serviceInfo.packageName
                             + " does not have access to register a visualizer.");

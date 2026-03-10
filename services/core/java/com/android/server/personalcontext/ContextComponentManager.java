@@ -22,7 +22,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.os.UserHandle;
-import android.service.personalcontext.Flags;
 import android.service.personalcontext.renderer.InsightRendererService;
 import android.text.TextUtils;
 import android.util.Log;
@@ -107,26 +106,31 @@ class ContextComponentManager
     /** Looks for all components in a single package installed on the device and registers each. */
     public void registerComponentsForPackage(String packageName) {
         for (ServiceInfo serviceInfo : getServiceInfo(ACTION_REFINER_SERVICE, packageName)) {
-            if (Flags.enforcePersonalContextAllowlistAccessControl()
-                    && !mAccessController.hasAccess(serviceInfo.packageName,
-                    AccessController.ACCESS_RECEIVE_HINTS
-                            | AccessController.ACCESS_PUBLISH_HINTS)) {
+            // Refiners must be PCC and be allowed to receive hints.
+            if (!mAccessController.isServiceAllowed(
+                    serviceInfo,
+                    AccessController.ACCESS_PCC
+                            | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
+                            | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION)) {
                 continue;
             }
 
             registerComponent(
-                    new ServiceClientRefiner(mContext, UUID.randomUUID(), serviceInfo,
-                            mUserHandle),
+                    new ServiceClientRefiner(mContext, UUID.randomUUID(), serviceInfo, mUserHandle),
                     mRefiners,
                     serviceInfo.packageName,
                     mRefinersByPackage);
         }
 
         for (ServiceInfo serviceInfo : getServiceInfo(ACTION_UNDERSTANDER_SERVICE, packageName)) {
-            if (Flags.enforcePersonalContextAllowlistAccessControl()
-                    && !mAccessController.hasAccess(serviceInfo.packageName,
-                    AccessController.ACCESS_RECEIVE_HINTS
-                            | AccessController.ACCESS_PUBLISH_INSIGHTS)) {
+            // Understanders must be PCC, and be allowed to receive hints and to publish insights.
+            if (!mAccessController.isServiceAllowed(
+                    serviceInfo,
+                    AccessController.ACCESS_PCC
+                            | AccessController.ACCESS_RECEIVE_HINTS_ALLOWLIST
+                            | AccessController.ACCESS_RECEIVE_HINTS_PERMISSION
+                            | AccessController.ACCESS_PUBLISH_INSIGHTS_ALLOWLIST
+                            | AccessController.ACCESS_PUBLISH_INSIGHTS_PERMISSION)) {
                 continue;
             }
 
@@ -140,15 +144,19 @@ class ContextComponentManager
 
         for (ServiceInfo serviceInfo :
                 getServiceInfo(InsightRendererService.SERVICE_INTERFACE, packageName)) {
-            if (Flags.enforcePersonalContextAllowlistAccessControl()
-                    && !mAccessController.hasAccess(serviceInfo.packageName,
-                    AccessController.ACCESS_RECEIVE_INSIGHTS)) {
+            // Renderers must be allowed to receive insights. They must be PCC or hold the
+            // automotive companion app role, but that can change, so we check that during insight
+            // delivery.
+            if (!mAccessController.isServiceAllowed(
+                    serviceInfo,
+                    AccessController.ACCESS_RECEIVE_INSIGHTS_ALLOWLIST
+                            | AccessController.ACCESS_RECEIVE_INSIGHTS_PERMISSION)) {
                 continue;
             }
 
             registerComponent(
-                    new ServiceClientRenderer(mContext, UUID.randomUUID(), serviceInfo,
-                            mUserHandle),
+                    new ServiceClientRenderer(
+                            mContext, UUID.randomUUID(), serviceInfo, mUserHandle),
                     mRenderers,
                     serviceInfo.packageName,
                     mRenderersByPackage);

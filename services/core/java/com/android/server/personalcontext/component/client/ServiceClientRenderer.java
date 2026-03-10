@@ -18,7 +18,6 @@ package com.android.server.personalcontext.component.client;
 
 import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
 
-import android.Manifest;
 import android.annotation.PermissionManuallyEnforced;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -38,6 +37,7 @@ import android.util.Slog;
 
 import androidx.annotation.NonNull;
 
+import com.android.server.personalcontext.AccessController;
 import com.android.server.personalcontext.component.Renderer;
 
 import java.util.UUID;
@@ -87,19 +87,23 @@ public class ServiceClientRenderer
 
         mProperties = properties;
 
-        runWithScopedBinder((binder, callback) -> {
-            try {
-                binder.getFilter(getParcelComponentId(), new IGetFilterCallback.Stub() {
-                    @PermissionManuallyEnforced
-                    @Override
-                    public void updateFilter(InsightFilter filter) {
-                        mFilter = filter;
-                    }
-                }, callback);
-            } catch (RemoteException e) {
-                Slog.e(TAG, "Failed to get renderer filter", e);
-            }
-        });
+        if (isAllowed(AccessController.ACCESS_FILTER_INSIGHTS_ALLOWLIST)) {
+            runWithScopedBinder((binder, callback) -> {
+                try {
+                    binder.getFilter(getParcelComponentId(), new IGetFilterCallback.Stub() {
+                        @PermissionManuallyEnforced
+                        @Override
+                        public void updateFilter(InsightFilter filter) {
+                            mFilter = filter;
+                        }
+                    }, callback);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Failed to get renderer filter", e);
+                }
+            });
+        } else {
+            Slog.d(TAG, getComponentName() + " is not allowed to filter for insights.");
+        }
     }
 
     @Override
@@ -124,16 +128,12 @@ public class ServiceClientRenderer
     @Override
     public void render(@NonNull PublishedContextInsight publishedContextInsight,
             RenderToken renderToken) {
-        if (android.service.personalcontext.Flags.enforcePersonalContextPermissions()
-                && !checkPermission(Manifest.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS)) {
-            Slog.w(
-                    TAG,
-                    "Service "
-                            + getComponentName()
-                            + " missing permission "
-                            + Manifest.permission.PERSONAL_CONTEXT_RECEIVE_INSIGHTS);
+        // Do the delivery time check that renderer has PCC or automotive companion role.
+        if (!isAllowed(AccessController.ACCESS_PCC_OR_AUTO_COMPANION_ROLE)) {
+            Slog.w(TAG, getComponentName() + " is not allowed to receive insights.");
             return;
         }
+
         runWithScopedBinder((binder, opCallback) -> {
             try {
                 binder.render(getParcelComponentId(),
