@@ -119,7 +119,15 @@ constructor(
             accessibilityInteractor.isEnabledFiltered,
             pointerDeviceInteractor.isAnyPointerDeviceConnected,
         ) { isDocked, isAccessibilityEnabled, isPointerDeviceConnected ->
-            !isDocked && !isAccessibilityEnabled && !isPointerDeviceConnected
+            !isDocked &&
+                !isPointerDeviceConnected &&
+                if (SceneContainerFlag.isEnabled) {
+                    // Quick Affordance activation for a11y when SceneContainer is enabled is
+                    // handled directly in the KeyguardShortcut Composable.
+                    true
+                } else {
+                    !isAccessibilityEnabled
+                }
         }
 
     /** Returns an observable for the quick affordance at the given position. */
