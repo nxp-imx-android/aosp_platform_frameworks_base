@@ -25,6 +25,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.hardware.flags.Flags.suspendSensorEventDeliveryOnFrozenPid;
 
 import android.companion.virtual.VirtualDeviceManager;
+import android.companion.virtual.VirtualDeviceParams;
 import android.compat.Compatibility;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
@@ -1241,9 +1242,10 @@ public class SystemSensorManager extends SensorManager {
                 parameter.type, parameter.floatValues, parameter.intValues) == 0;
     }
 
+    @VirtualDeviceParams.DevicePolicy
     private int getSensorPolicy(int deviceId) {
         if (deviceId == DEVICE_ID_DEFAULT) {
-            return DEVICE_ID_DEFAULT;
+            return DEVICE_POLICY_DEFAULT;
         }
         if (mVdm == null) {
             mVdm = mContext.getSystemService(VirtualDeviceManager.class);
