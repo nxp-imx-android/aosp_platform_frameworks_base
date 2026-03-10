@@ -15156,7 +15156,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.security.Flags.FLAG_APP_LOCK_CORE)
+    @EnableFlags({android.security.Flags.FLAG_APP_LOCK_APIS,
+            android.security.Flags.FLAG_APP_LOCK_CORE})
     public void testMakeRankingUpdate_forLockedApp_redactsSmartRepliesAndActions()
             throws Exception {
         mService.onBootPhase(SystemService.PHASE_ACTIVITY_MANAGER_READY);
