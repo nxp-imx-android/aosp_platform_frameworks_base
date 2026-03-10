@@ -76,7 +76,7 @@ public abstract class PersistableBundleStore {
     @NonNull
     public PersistableBundle readData(@UserIdInt int userId) {
         synchronized (mLock) {
-            return readDataFromCache(userId).deepCopy();
+            return readDataFromCacheLocked(userId).deepCopy();
         }
     }
 
@@ -124,7 +124,7 @@ public abstract class PersistableBundleStore {
 
     @GuardedBy("mLock")
     @NonNull
-    private PersistableBundle readDataFromCache(@UserIdInt int userId) {
+    private PersistableBundle readDataFromCacheLocked(@UserIdInt int userId) {
         PersistableBundle cachedMetadata = mCachedPerUser.get(userId);
         if (cachedMetadata == null) {
             Future<PersistableBundle> future =
@@ -166,7 +166,6 @@ public abstract class PersistableBundleStore {
         }
     }
 
-    @GuardedBy("mLock")
     private void writeDataToDisk(@UserIdInt int userId, @NonNull PersistableBundle data) {
         final AtomicFile file = getStorageFileForUser(userId);
         Slog.d(getTag(), "Writing data for user " + userId + " to file="
