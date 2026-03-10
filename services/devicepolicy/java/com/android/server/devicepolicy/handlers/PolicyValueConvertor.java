@@ -20,12 +20,15 @@ import android.annotation.NonNull;
 import android.app.admin.IntegerPolicyValue;
 import android.app.admin.ListOfStringPolicyValue;
 import android.app.admin.LongPolicyValue;
+import android.app.admin.PackageIdentifier;
+import android.app.admin.PackagePolicyValue;
 import android.app.admin.PolicyValue;
 import android.app.admin.StringPolicyValue;
 import android.app.admin.metadata.EnumPolicyMetadata;
 import android.app.admin.metadata.IntegerPolicyMetadata;
 import android.app.admin.metadata.ListPolicyMetadata;
 import android.app.admin.metadata.LongPolicyMetadata;
+import android.app.admin.metadata.PackagePolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.StringPolicyMetadata;
 
@@ -63,6 +66,15 @@ public abstract class PolicyValueConvertor<T> {
                 }
             };
 
+    private static final PolicyValueConvertor<PackageIdentifier> PACKAGE_POLICY_VALUE_CONVERTOR =
+            new PolicyValueConvertor<>() {
+                @Override
+                public @NonNull PolicyValue<PackageIdentifier> toPolicyValue(
+                        @NonNull PackageIdentifier value) {
+                    return new PackagePolicyValue(value);
+                }
+            };
+
     private static final PolicyValueConvertor<List<String>> LIST_OF_STRING_POLICY_VALUE_CONVERTOR =
             new PolicyValueConvertor<>() {
                 @Override
@@ -88,6 +100,7 @@ public abstract class PolicyValueConvertor<T> {
                     case IntegerPolicyMetadata i -> INTEGER_POLICY_VALUE_CONVERTOR;
                     case StringPolicyMetadata e -> STRING_POLICY_VALUE_CONVERTOR;
                     case LongPolicyMetadata e -> LONG_POLICY_VALUE_CONVERTOR;
+                    case PackagePolicyMetadata e -> PACKAGE_POLICY_VALUE_CONVERTOR;
                     case ListPolicyMetadata l -> getListInstance(l);
                     default ->
                             throw new UnsupportedOperationException(

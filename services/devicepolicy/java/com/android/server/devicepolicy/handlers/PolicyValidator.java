@@ -17,10 +17,13 @@
 package com.android.server.devicepolicy.handlers;
 
 import android.annotation.NonNull;
+import android.app.admin.PackageIdentifier;
+import android.app.admin.PolicySizeVerifier;
 import android.app.admin.metadata.EnumPolicyMetadata;
 import android.app.admin.metadata.IntegerPolicyMetadata;
 import android.app.admin.metadata.ListPolicyMetadata;
 import android.app.admin.metadata.LongPolicyMetadata;
+import android.app.admin.metadata.PackagePolicyMetadata;
 import android.app.admin.metadata.PolicyMetadata;
 import android.app.admin.metadata.StringPolicyMetadata;
 
@@ -116,6 +119,24 @@ public abstract class PolicyValidator<T> {
                 }
             };
 
+    private static final PolicyValidator<PackageIdentifier> PACKAGE_POLICY_VALIDATOR =
+            new PolicyValidator<>() {
+                @Override
+                public void validate(
+                        @NonNull PackageIdentifier value,
+                        @NonNull PolicyMetadata<PackageIdentifier> policy) {
+                    String packageName = value.getPackageName();
+                    if (packageName.isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "Package name is empty for policy " + policy.getId());
+                    }
+
+                    PolicySizeVerifier.enforceMaxPackageNameLength(packageName);
+
+                    // TODO(b/475749429): Add package name pattern validation.
+                }
+            };
+
     /** Returns a validator that can handle values of the given policy. */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static <T> PolicyValidator<T> getInstance(PolicyMetadata<T> policy) {
@@ -125,6 +146,7 @@ public abstract class PolicyValidator<T> {
                     case IntegerPolicyMetadata i -> INTEGER_POLICY_VALIDATOR;
                     case StringPolicyMetadata s -> STRING_POLICY_VALIDATOR;
                     case LongPolicyMetadata l -> LONG_POLICY_VALIDATOR;
+                    case PackagePolicyMetadata p -> PACKAGE_POLICY_VALIDATOR;
                     // Need to use a raw type here since we can't extract the element E of
                     // T=List<E>.
                     case ListPolicyMetadata l -> getListInstance(l);
