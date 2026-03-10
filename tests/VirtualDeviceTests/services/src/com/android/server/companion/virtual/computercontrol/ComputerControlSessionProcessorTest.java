@@ -78,12 +78,11 @@ import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
-import com.android.server.appop.AppOpsManagerLocal;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.pm.UserManagerInternal;
+import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
@@ -143,7 +142,7 @@ public class ComputerControlSessionProcessorTest {
     @Mock
     private AppOpsManager mAppOpsManager;
     @Mock
-    private AppOpsManagerLocal mAppOpsManagerLocal;
+    private ActivityTaskManagerInternal mActivityTaskManagerInternal;
     @Mock
     private WindowManagerInternal mWindowManagerInternal;
     @Mock
@@ -207,8 +206,8 @@ public class ComputerControlSessionProcessorTest {
         LocalServices.removeServiceForTest(InputManagerInternal.class);
         LocalServices.addService(InputManagerInternal.class, mInputManagerInternal);
 
-        LocalManagerRegistry.removeManagerForTesting(AppOpsManagerLocal.class);
-        LocalManagerRegistry.addManager(AppOpsManagerLocal.class, mAppOpsManagerLocal);
+        LocalServices.removeServiceForTest(ActivityTaskManagerInternal.class);
+        LocalServices.addService(ActivityTaskManagerInternal.class, mActivityTaskManagerInternal);
 
         Context context = spy(new ContextWrapper(
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
@@ -232,7 +231,7 @@ public class ComputerControlSessionProcessorTest {
 
         when(mAppOpsManager.noteOpNoThrow(eq(AppOpsManager.OP_COMPUTER_CONTROL), any(), any()))
                 .thenReturn(AppOpsManager.MODE_ALLOWED);
-        when(mAppOpsManagerLocal.isUidInForeground(anyInt())).thenReturn(true);
+        when(mActivityTaskManagerInternal.isUidForeground(anyInt())).thenReturn(true);
 
         when(mVirtualDeviceFactory.createVirtualDevice(any(), any(), any()))
                 .thenReturn(mVirtualDevice);
@@ -393,8 +392,9 @@ public class ComputerControlSessionProcessorTest {
     }
 
     @Test
-    public void callerNotInForeground_sessionNotCreated() throws Exception {
-        when(mAppOpsManagerLocal.isUidInForeground(ATTRIBUTION_SOURCE.getUid())).thenReturn(false);
+    public void callerWithoutVisibleWindow_sessionNotCreated() throws Exception {
+        when(mActivityTaskManagerInternal.isUidForeground(ATTRIBUTION_SOURCE.getUid()))
+                .thenReturn(false);
 
         mProcessor.processNewSessionRequest(
                 mAppThread, ATTRIBUTION_SOURCE, PARAMS, mComputerControlSessionCallback);
