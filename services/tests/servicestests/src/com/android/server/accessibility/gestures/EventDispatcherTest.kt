@@ -17,7 +17,6 @@ package com.android.server.accessibility.gestures
 
 import android.content.Context
 import android.os.SystemClock
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
@@ -29,7 +28,6 @@ import android.view.MotionEvent.ACTION_UP
 import android.view.accessibility.AccessibilityEvent
 import com.android.server.accessibility.AccessibilityManagerService
 import com.android.server.accessibility.EventStreamTransformation
-import com.android.server.accessibility.Flags
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -144,7 +142,6 @@ class EventDispatcherTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_STATE_FOR_ACTION_UP_INJECTION)
     fun sendUpForInjectedDownPointers_stateMismatch_sendsCorrectActionUp() {
         // [Scenario]: Braille Keyboard / TalkBack Drag Bug
         // Situation: The user has 2 fingers on screen (Prototype), but TalkBack
@@ -180,7 +177,6 @@ class EventDispatcherTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_USE_STATE_FOR_ACTION_UP_INJECTION)
     fun sendUpForInjectedDownPointers_withFourPointers_sendsCorrectSequence() {
         // [Scenario]: Normal multi-touch lift
         // Verifies the loop behavior: 4 pointers down -> 3x ACTION_POINTER_UP -> 1x ACTION_UP

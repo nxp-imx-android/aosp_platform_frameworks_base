@@ -143,16 +143,6 @@ flag {
 }
 
 flag {
-    name: "handle_multi_device_input"
-    namespace: "accessibility"
-    description: "Select a single active device when a multi-device stream is received by AccessibilityInputFilter"
-    bug: "310014874"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "ignore_input_events_from_display_without_handler"
     namespace: "accessibility"
     description: "Fixes a bug in AccessibilityInputFilter so that input events from a display without an EventHandler are immediately passed through"
@@ -234,14 +224,4 @@ flag {
     namespace: "accessibility"
     description: "Allow global dispatch for TYPE_SPEECH_STATE_CHANGE"
     bug: "444032233"
-}
-
-flag {
-    name: "use_state_for_action_up_injection"
-    namespace: "accessibility"
-    description: "Uses the current injected pointer state from mState as the source of truth for the pointer bitmask when sending ACTION_UP, preventing injection failures."
-    bug: "445338326"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
