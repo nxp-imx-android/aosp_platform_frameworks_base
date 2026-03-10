@@ -465,45 +465,7 @@ public class UsbHostManager {
                 // immediately send new device attached broadcast.
                 if (!mUsingAuthorization) {
                     usbDeviceAuthorizedInternal(deviceAddress, newDevice);
-                }
-
-                mUsbAlsaManager.usbDeviceAdded(deviceAddress, newDevice, parser);
-
-                if (mHasMidiFeature) {
-                    // Use a 3 digit code to associate MIDI devices with one another.
-                    // Each MIDI device already has mId for uniqueness. mId is generated
-                    // sequentially. For clarity, this code is not generated sequentially.
-                    String uniqueUsbDeviceIdentifier = generateNewUsbDeviceIdentifier();
-
-                    ArrayList<UsbDirectMidiDevice> midiDevices =
-                            new ArrayList<UsbDirectMidiDevice>();
-                    if (parser.containsUniversalMidiDeviceEndpoint()) {
-                        UsbDirectMidiDevice midiDevice = UsbDirectMidiDevice.create(mContext,
-                                newDevice, parser, true, uniqueUsbDeviceIdentifier);
-                        if (midiDevice != null) {
-                            midiDevices.add(midiDevice);
-                        } else {
-                            Slog.e(TAG, "Universal Midi Device is null.");
-                        }
-
-                        // Use UsbDirectMidiDevice only if this supports MIDI 2.0 as well.
-                        // ALSA removes the audio sound card if MIDI interfaces are removed.
-                        // This means that as long as ALSA is used for audio, MIDI 1.0 USB
-                        // devices should use the ALSA path for MIDI.
-                        if (parser.containsLegacyMidiDeviceEndpoint()) {
-                            midiDevice = UsbDirectMidiDevice.create(mContext,
-                                    newDevice, parser, false, uniqueUsbDeviceIdentifier);
-                            if (midiDevice != null) {
-                                midiDevices.add(midiDevice);
-                            } else {
-                                Slog.e(TAG, "Legacy Midi Device is null.");
-                            }
-                        }
-                    }
-
-                    if (!midiDevices.isEmpty()) {
-                        mMidiDevices.put(deviceAddress, midiDevices);
-                    }
+                    addUsbAlsaDeviceAndMidiDevices(deviceAddress, newDevice, parser);
                 }
 
                 // Tracking
@@ -588,6 +550,17 @@ public class UsbHostManager {
         // Mark the device as authorized.
         mAuthorizedDevices.add(deviceAddress);
 
+        if (mUsingAuthorization) {
+            ConnectionRecord current = mConnected.get(deviceAddress);
+            if (current != null) {
+                UsbDescriptorParser parser = new UsbDescriptorParser(deviceAddress,
+                        current.mDescriptors);
+                addUsbAlsaDeviceAndMidiDevices(deviceAddress, newDevice, parser);
+            } else {
+                Slog.e(TAG, "Cannot find descriptors for authorized device: " + deviceAddress);
+            }
+        }
+
         // It is fine to call this only for the current user as all broadcasts are
         // sent to all profiles of the user and the dialogs should only show once.
         ComponentName usbDeviceConnectionHandler = getUsbDeviceConnectionHandler();
@@ -617,25 +590,7 @@ public class UsbHostManager {
             }
 
             if (device != null) {
-                Slog.d(TAG, "Removed device at " + deviceAddress + ": " + device.getProductName());
-                mUsbAlsaManager.usbDeviceRemoved(deviceAddress);
-                mPermissionManager.usbDeviceRemoved(device);
-
-                // MIDI
-                ArrayList<UsbDirectMidiDevice> midiDevices =
-                        mMidiDevices.remove(deviceAddress);
-                if (midiDevices != null) {
-                    for (UsbDirectMidiDevice midiDevice : midiDevices) {
-                        if (midiDevice != null) {
-                            IoUtils.closeQuietly(midiDevice);
-                        }
-                    }
-                    Slog.i(TAG, "USB MIDI Devices Removed: " + deviceAddress);
-                }
-
-                if (!mUsingAuthorization) {
-                    usbDeviceDeauthorizedInternal(deviceAddress, device);
-                }
+                usbDeviceDeauthorizedInternal(deviceAddress, device);
 
                 ConnectionRecord current = mConnected.get(deviceAddress);
                 // Tracking
@@ -697,6 +652,22 @@ public class UsbHostManager {
 
         // Broadcast device removal to apps.
         if (wasRemoved) {
+            Slog.d(TAG, "Removed device at " + deviceAddress + ": " + device.getProductName());
+            mUsbAlsaManager.usbDeviceRemoved(deviceAddress);
+            mPermissionManager.usbDeviceRemoved(device);
+
+            // MIDI
+            ArrayList<UsbDirectMidiDevice> midiDevices =
+                    mMidiDevices.remove(deviceAddress);
+            if (midiDevices != null) {
+                for (UsbDirectMidiDevice midiDevice : midiDevices) {
+                    if (midiDevice != null) {
+                        IoUtils.closeQuietly(midiDevice);
+                    }
+                }
+                Slog.i(TAG, "USB MIDI Devices Removed: " + deviceAddress);
+            }
+
             getCurrentUserSettings().usbDeviceRemoved(device);
         }
 
@@ -823,6 +794,49 @@ public class UsbHostManager {
             }
         } else {
             pw.println("No USB Devices have been connected.");
+        }
+    }
+
+    @GuardedBy("mLock")
+    private void addUsbAlsaDeviceAndMidiDevices(String deviceAddress, UsbDevice device,
+            UsbDescriptorParser parser) {
+        mUsbAlsaManager.usbDeviceAdded(deviceAddress, device, parser);
+
+        if (mHasMidiFeature) {
+            // Use a 3 digit code to associate MIDI devices with one another.
+            // Each MIDI device already has mId for uniqueness. mId is generated
+            // sequentially. For clarity, this code is not generated sequentially.
+            String uniqueUsbDeviceIdentifier = generateNewUsbDeviceIdentifier();
+
+            ArrayList<UsbDirectMidiDevice> midiDevices =
+                    new ArrayList<UsbDirectMidiDevice>();
+            if (parser.containsUniversalMidiDeviceEndpoint()) {
+                UsbDirectMidiDevice midiDevice = UsbDirectMidiDevice.create(mContext,
+                        device, parser, true, uniqueUsbDeviceIdentifier);
+                if (midiDevice != null) {
+                    midiDevices.add(midiDevice);
+                } else {
+                    Slog.e(TAG, "Universal Midi Device is null.");
+                }
+
+                // Use UsbDirectMidiDevice only if this supports MIDI 2.0 as well.
+                // ALSA removes the audio sound card if MIDI interfaces are removed.
+                // This means that as long as ALSA is used for audio, MIDI 1.0 USB
+                // devices should use the ALSA path for MIDI.
+                if (parser.containsLegacyMidiDeviceEndpoint()) {
+                    midiDevice = UsbDirectMidiDevice.create(mContext,
+                            device, parser, false, uniqueUsbDeviceIdentifier);
+                    if (midiDevice != null) {
+                        midiDevices.add(midiDevice);
+                    } else {
+                        Slog.e(TAG, "Legacy Midi Device is null.");
+                    }
+                }
+            }
+
+            if (!midiDevices.isEmpty()) {
+                mMidiDevices.put(deviceAddress, midiDevices);
+            }
         }
     }
 
