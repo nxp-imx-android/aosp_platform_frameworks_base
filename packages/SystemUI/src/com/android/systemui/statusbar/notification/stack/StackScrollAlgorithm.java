@@ -40,6 +40,7 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
+import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling;
 
 import java.util.ArrayList;
@@ -538,6 +539,8 @@ public class StackScrollAlgorithm {
                         - mPaddingBetweenElements;
                 if (currentY >= shelfStart
                         && !(view instanceof FooterView)
+                        && (!SceneContainerFlag.isEnabled()
+                            || !(view instanceof StackScrollerDecorView))
                         && state.firstViewInShelf == null) {
                     state.firstViewInShelf = view;
                 }
