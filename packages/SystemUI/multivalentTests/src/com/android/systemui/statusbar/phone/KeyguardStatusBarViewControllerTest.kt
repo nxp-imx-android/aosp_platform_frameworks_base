@@ -192,8 +192,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             keyguardStatusBarView,
             carrierTextController,
             { configurationController },
-            { configurationController },
-            { animationScheduler },
             userInfoController,
             statusBarIconController,
             iconManagerFactory,
@@ -236,7 +234,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         Mockito.verify(userManager).isUserSwitcherEnabled(ArgumentMatchers.anyBoolean())
     }
 
-
     @Test
     fun onConfigurationChanged_updateUserSwitcherFlagEnabled_updatesUserSwitcherVisibility() {
         controller.onViewAttached()
@@ -251,7 +248,6 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         Mockito.verify(userManager).isUserSwitcherEnabled(ArgumentMatchers.anyBoolean())
         Mockito.verify(keyguardStatusBarView).setUserSwitcherEnabled(ArgumentMatchers.anyBoolean())
     }
-
 
     @Test
     fun onKeyguardVisibilityChanged_userSwitcherFlagEnabled_updatesUserSwitcherVisibility() {

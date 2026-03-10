@@ -25,6 +25,8 @@ import android.provider.DeviceConfig.NAMESPACE_PRIVACY
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.Flags
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
@@ -35,37 +37,29 @@ import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.util.time.SystemClock
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 /**
  * Listens for system events (battery, privacy, connectivity) and allows listeners to show status
  * bar animations when they happen
  */
+@PerDisplaySingleton
 class SystemEventCoordinator
-@AssistedInject
+@Inject
 constructor(
     private val systemClock: SystemClock,
     private val batteryController: BatteryController,
     private val privacyController: PrivacyItemController,
-    @Assisted private val context: Context,
-    @Assisted private val scope: CoroutineScope,
+    @DisplayAware private val context: Context,
+    @DisplayAware private val scope: CoroutineScope,
     connectedDisplayInteractor: ConnectedDisplayInteractor,
     @SystemEventCoordinatorLog private val logBuffer: LogBuffer,
     @Main private val mainCoroutineContext: CoroutineContext,
 ) {
-
-    @AssistedFactory
-    fun interface Factory {
-        fun create(context: Context, scope: CoroutineScope): SystemEventCoordinator
-    }
 
     private val tag = "SystemEventCoordinator(displayId=${context.displayId})"
 
@@ -119,37 +113,16 @@ constructor(
                 contentDescription = context.getString(R.string.connected_display_icon_desc)
             }
         connectedDisplayCollectionJob =
-            if (Flags.systemStatusAnimationPerDisplay()) {
-                scope.launch(mainCoroutineContext) {
-                    onDisplayConnectedFlow.collect {
-                        scheduler.onStatusEvent(connectedDisplayEvent)
-                    }
-                }
-            } else {
-                onDisplayConnectedFlow
-                    .onEach { scheduler.onStatusEvent(connectedDisplayEvent) }
-                    .launchIn(scope)
+            scope.launch(mainCoroutineContext) {
+                onDisplayConnectedFlow.collect { scheduler.onStatusEvent(connectedDisplayEvent) }
             }
     }
 
     private val batteryStateListener =
         object : BatteryController.BatteryStateChangeCallback {
-            private var plugged =
-                if (Flags.systemStatusAnimationPerDisplay()) {
-                    batteryController.isPluggedIn
-                } else {
-                    false
-                }
-            private var stateKnown = false
+            private var plugged = batteryController.isPluggedIn
 
             override fun onBatteryLevelChanged(level: Int, pluggedIn: Boolean, charging: Boolean) {
-                if (!stateKnown && !Flags.systemStatusAnimationPerDisplay()) {
-                    stateKnown = true
-                    plugged = pluggedIn
-                    notifyListeners(level)
-                    return
-                }
-
                 if (plugged != pluggedIn) {
                     plugged = pluggedIn
                     notifyListeners(level)

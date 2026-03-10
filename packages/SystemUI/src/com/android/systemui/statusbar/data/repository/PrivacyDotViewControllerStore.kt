@@ -18,18 +18,14 @@ package com.android.systemui.statusbar.data.repository
 
 import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.statusbar.events.PrivacyDotViewController
 import com.android.systemui.statusbar.events.PrivacyDotViewControllerImpl
-import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler
 import dagger.Binds
-import dagger.Lazy
 import dagger.Module
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
@@ -48,7 +44,6 @@ constructor(
     private val factory: PrivacyDotViewControllerImpl.Factory,
     private val displayScopeRepository: PerDisplayRepository<CoroutineScope>,
     private val perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
-    @Default private val defaultStatusAnimationSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
 ) :
     PrivacyDotViewControllerStore,
     StatusBarPerDisplayStoreImpl<PrivacyDotViewController>(
@@ -59,18 +54,12 @@ constructor(
     override fun createInstanceForDisplay(displayId: Int): PrivacyDotViewController? {
         val displaySubcomponent = perDisplaySubcomponentRepo[displayId] ?: return null
         val displayScope = displayScopeRepository[displayId] ?: return null
-        val animationScheduler =
-            if (Flags.systemStatusAnimationPerDisplay()) {
-                displaySubcomponent.systemStatusAnimationScheduler
-            } else {
-                defaultStatusAnimationSchedulerLazy.get()
-            }
         return factory.create(
             displayScope,
             displaySubcomponent.statusBarConfigurationController,
             displaySubcomponent.statusBarContentInsetsProvider,
             displayId,
-            animationScheduler,
+            displaySubcomponent.systemStatusAnimationScheduler,
             displaySubcomponent.avControlsChipInteractor,
         )
     }

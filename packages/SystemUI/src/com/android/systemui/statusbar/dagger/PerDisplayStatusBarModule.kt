@@ -24,9 +24,7 @@ import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR
 import com.android.systemui.Flags
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.ConfigurationStateImpl
-import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAwareStatusBar
@@ -59,10 +57,10 @@ import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvContro
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.AvControlsChipInteractorImpl
 import com.android.systemui.statusbar.quickactions.av.domain.interactor.NoOpAvControlsChipInteractor
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
+import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import dagger.Binds
-import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
@@ -148,99 +146,44 @@ interface PerDisplayStatusBarModule {
         impl: StatusBarModePerDisplayRepositoryImpl
     ): SystemUIDisplaySubcomponent.LifecycleListener
 
+    @Binds
+    @DisplayAware
+    fun systemStatusEventAnimationInteractor(
+        interactor: SystemStatusEventAnimationInteractor
+    ): SystemStatusEventAnimationInteractor
+
+    @Binds
+    @DisplayAware
+    fun systemStatusEventAnimationRepository(
+        impl: SystemStatusEventAnimationRepositoryImpl
+    ): SystemStatusEventAnimationRepository
+
+    @Binds
+    @DisplayAware
+    fun systemStatusAnimationScheduler(
+        impl: SystemStatusAnimationSchedulerImpl
+    ): SystemStatusAnimationScheduler
+
+    @Binds
+    @DisplayAware
+    fun systemEventCoordinator(impl: SystemEventCoordinator): SystemEventCoordinator
+
+    @Binds
+    @DisplayAware
+    fun systemEventChipAnimationController(
+        impl: SystemEventChipAnimationControllerImpl
+    ): SystemEventChipAnimationController
+
     companion object {
 
         @Provides
         @PerDisplaySingleton
         @DisplayAware
-        fun systemStatusEventAnimationInteractor(
-            factory: SystemStatusEventAnimationInteractor.Factory,
-            @DisplayAware repoLazy: Lazy<SystemStatusEventAnimationRepository>,
-            @DisplayAware configurationInteractorLazy: Lazy<ConfigurationInteractor>,
-            @DisplayAware scopeLazy: Lazy<CoroutineScope>,
-            @Default defaultInteractorLazy: Lazy<SystemStatusEventAnimationInteractor>,
-        ): SystemStatusEventAnimationInteractor {
-            return if (Flags.systemStatusAnimationPerDisplay()) {
-                factory.create(repoLazy.get(), configurationInteractorLazy.get(), scopeLazy.get())
-            } else {
-                defaultInteractorLazy.get()
-            }
-        }
-
-        @Provides
-        @PerDisplaySingleton
-        @DisplayAware
-        fun systemStatusEventAnimationRepository(
-            @DisplayAware schedulerLazy: Lazy<SystemStatusAnimationScheduler>,
-            factory: SystemStatusEventAnimationRepositoryImpl.Factory,
-            @Default defaultRepositoryLazy: Lazy<SystemStatusEventAnimationRepository>,
-        ): SystemStatusEventAnimationRepository {
-            return if (Flags.systemStatusAnimationPerDisplay()) {
-                return factory.create(schedulerLazy.get())
-            } else {
-                defaultRepositoryLazy.get()
-            }
-        }
-
-        @Provides
-        @PerDisplaySingleton
-        @DisplayAware
-        fun systemStatusAnimationScheduler(
-            factory: SystemStatusAnimationSchedulerImpl.Factory,
-            @DisplayAware coordinatorLazy: Lazy<SystemEventCoordinator>,
-            @DisplayAware chipAnimationControllerLazy: Lazy<SystemEventChipAnimationController>,
-            @DisplayAware displayIdLazy: Lazy<Int>,
-            @DisplayAware coroutineScopeLazy: Lazy<CoroutineScope>,
-            @Default defaultSchedulerLazy: Lazy<SystemStatusAnimationScheduler>,
-        ): SystemStatusAnimationScheduler {
-            return if (Flags.systemStatusAnimationPerDisplay()) {
-                factory.create(
-                    coordinatorLazy.get(),
-                    chipAnimationControllerLazy.get(),
-                    displayIdLazy.get(),
-                    coroutineScopeLazy.get(),
-                )
-            } else {
-                defaultSchedulerLazy.get()
-            }
-        }
-
-        @Provides
-        @PerDisplaySingleton
-        @DisplayAware
-        fun systemEventCoordinator(
-            @Default defaultCoordinatorLazy: Lazy<SystemEventCoordinator>,
-            factory: SystemEventCoordinator.Factory,
-            @DisplayAware contextLazy: Lazy<Context>,
-            @DisplayAware scopeLazy: Lazy<CoroutineScope>,
-        ): SystemEventCoordinator {
-            return if (Flags.systemStatusAnimationPerDisplay()) {
-                factory.create(contextLazy.get(), scopeLazy.get())
-            } else {
-                defaultCoordinatorLazy.get()
-            }
-        }
-
-        @Provides
-        @PerDisplaySingleton
-        @DisplayAware
-        fun systemEventChipAnimationController(
-            defaultControllerLazy: Lazy<SystemEventChipAnimationController>,
-            factory: SystemEventChipAnimationControllerImpl.Factory,
-            @DisplayAware displayIdLazy: Lazy<Int>,
-            @DisplayAware contextLazy: Lazy<Context>,
-            statusBarWindowControllerStoreLazy: Lazy<StatusBarWindowControllerStore>,
-            @DisplayAware contentInsetsProviderLazy: Lazy<StatusBarContentInsetsProvider>,
-        ): SystemEventChipAnimationController {
-            return if (Flags.systemStatusAnimationPerDisplay()) {
-                factory.create(
-                    contextLazy.get(),
-                    statusBarWindowControllerStoreLazy.get().forDisplay(displayIdLazy.get()),
-                    contentInsetsProviderLazy.get(),
-                )
-            } else {
-                defaultControllerLazy.get()
-            }
+        fun statusBarWindowController(
+            @DisplayAware displayId: Int,
+            store: StatusBarWindowControllerStore,
+        ): StatusBarWindowController? {
+            return store.forDisplay(displayId)
         }
 
         @Provides

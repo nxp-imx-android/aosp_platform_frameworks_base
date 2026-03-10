@@ -1779,16 +1779,6 @@ flag {
 }
 
 flag {
-   name: "system_status_animation_per_display"
-   namespace: "systemui"
-   description: "Make system status events / animations per display"
-   bug: "378578911"
-   metadata {
-       purpose: PURPOSE_BUGFIX
-   }
-}
-
-flag {
     name: "sysui_teamfood"
     namespace: "systemui"
     description: "Enables all the sysui classic flags that are marked as being in teamfood"

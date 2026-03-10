@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.events
 import android.content.Context
 import android.graphics.Rect
 import android.view.ContextThemeWrapper
-import android.view.Display
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -31,23 +30,15 @@ import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.AnimatorSet
 import androidx.core.animation.ValueAnimator
-import com.android.app.displaylib.PerDisplayRepository
 import com.android.internal.annotations.VisibleForTesting
-import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Default
-import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsChangedListener
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
 import com.android.systemui.statusbar.window.StatusBarWindowController
-import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
 import com.android.systemui.util.animation.AnimationUtil.Companion.frames
-import dagger.Binds
-import dagger.Module
-import dagger.Provides
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import javax.inject.Inject
 import kotlin.math.roundToInt
 
 /** Controls the view for system event animations. */
@@ -71,12 +62,13 @@ interface SystemEventChipAnimationController : SystemStatusAnimationCallback {
     override fun onSystemEventAnimationFinish(hasPersistentDot: Boolean): Animator
 }
 
+@PerDisplaySingleton
 class SystemEventChipAnimationControllerImpl
-@AssistedInject
+@Inject
 constructor(
-    @Assisted private val context: Context,
-    @Assisted private val statusBarWindowController: StatusBarWindowController?,
-    @Assisted private val contentInsetsProvider: StatusBarContentInsetsProvider,
+    @DisplayAware private val context: Context,
+    @DisplayAware private val statusBarWindowController: StatusBarWindowController?,
+    @DisplayAware private val contentInsetsProvider: StatusBarContentInsetsProvider,
 ) : SystemEventChipAnimationController {
 
     private lateinit var animationWindowView: FrameLayout
@@ -447,15 +439,6 @@ constructor(
             animRect.bottom,
         )
     }
-
-    @AssistedFactory
-    fun interface Factory {
-        fun create(
-            context: Context,
-            statusBarWindowController: StatusBarWindowController?,
-            contentInsetsProvider: StatusBarContentInsetsProvider,
-        ): SystemEventChipAnimationControllerImpl
-    }
 }
 
 /** Chips should provide a view that can be animated with something better than a fade-in */
@@ -475,32 +458,3 @@ interface BackgroundAnimatableView {
 // Animation directions
 private const val LEFT = 1
 private const val RIGHT = 2
-
-@Module
-interface SystemEventChipAnimationControllerModule {
-
-    @Binds
-    @SysUISingleton
-    fun controller(
-        multiDisplay: MultiDisplaySystemEventChipAnimationController
-    ): SystemEventChipAnimationController
-
-    companion object {
-        @Provides
-        @Default
-        @SysUISingleton
-        fun defaultController(
-            factory: SystemEventChipAnimationControllerImpl.Factory,
-            context: Context,
-            statusBarWindowControllerStore: StatusBarWindowControllerStore,
-            perDisplaySubcomponentRepo: PerDisplayRepository<SystemUIDisplaySubcomponent>,
-        ): SystemEventChipAnimationController {
-            val displaySubcomponent = perDisplaySubcomponentRepo[Display.DEFAULT_DISPLAY]!!
-            return factory.create(
-                context,
-                statusBarWindowControllerStore.defaultDisplay,
-                displaySubcomponent.statusBarContentInsetsProvider,
-            )
-        }
-    }
-}
