@@ -888,12 +888,16 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
 
         @Override
         public synchronized void onStrongAuthRequiredChanged(int userId) {
+            if (mUserManagerInternal.getProfileParentId(userId) != userId) {
+                Slog.d(TAG, "Ignoring strong auth change for user ID " + userId);
+                return;
+            }
             if (secureLockDevice() && isSecureLockDeviceEnabled()
                     && containsFlag(getStrongAuthForUser(userId),
                     PRIMARY_AUTH_REQUIRED_FOR_SECURE_LOCK_DEVICE)
             ) {
                 Slog.d(TAG, "Primary auth is required for secure lock device; reset pending "
-                        + "biometric auth success state.");
+                        + "biometric auth success state for user id " + userId);
                 synchronized (mDisableStateLock) {
                     mUserAuthenticatedWithStrongBiometric = null;
                 }
