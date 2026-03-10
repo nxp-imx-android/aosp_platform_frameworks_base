@@ -38,6 +38,9 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import android.annotation.NonNull;
 import android.app.KeyguardManager;
+import android.app.role.RoleManager;
+import android.companion.virtual.VirtualDeviceManager;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -49,7 +52,10 @@ import android.content.pm.SigningInfo;
 import android.content.res.Resources;
 import android.os.Process;
 import android.os.SystemClock;
+import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.DeviceConfig;
 import android.util.ArrayMap;
 import android.util.PackageUtils;
@@ -66,6 +72,7 @@ import junitparams.Parameters;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -86,6 +93,7 @@ public class ComputerControlAllowlistControllerTest {
     private static final Random RANDOM = new Random();
     private static final String SUPER_AGENT_PACKAGE = "com.super.agent";
     private static final String PERMISSION_CONTROLLER_PACKAGE = "permission.controller.package";
+    private static final UserHandle USER_HANDLE = new UserHandle(0);
 
     @Mock
     private PackageManager mPackageManager;
@@ -97,6 +105,11 @@ public class ComputerControlAllowlistControllerTest {
     private ComputerControlSessionImpl mSession;
     @Mock
     private Resources mResources;
+    @Mock
+    private RoleManager mRoleManager;
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private AutoCloseable mMockitoSession;
     private ComputerControlAllowlistController mAllowlistController;
@@ -114,6 +127,7 @@ public class ComputerControlAllowlistControllerTest {
         mSpyContext = spy(new ContextWrapper(mContext));
         when(mSpyContext.getResources()).thenReturn(mResources);
         doNothing().when(mSpyContext).enforceCallingOrSelfPermission(anyString(), anyString());
+        when(mSpyContext.getSystemService(RoleManager.class)).thenReturn(mRoleManager);
 
         final Signature signature = generateSignature((byte) 42);
         final String superAgentCertificateDigest = preparePackage(SUPER_AGENT_PACKAGE, signature);
@@ -153,7 +167,9 @@ public class ComputerControlAllowlistControllerTest {
 
     @Test
     public void isPackageAllowedToCreateSession_nullPackageName_returnsFalse() {
-        assertFalse(mAllowlistController.isPackageAllowedToCreateSession(null, mPackageManager));
+        assertFalse(mAllowlistController
+                .isPackageAllowedToCreateSession(null, mPackageManager,
+                        USER_HANDLE, VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
@@ -177,7 +193,8 @@ public class ComputerControlAllowlistControllerTest {
         SystemClock.sleep(TIMEOUT_MILLIS);
 
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager));
+                packageName, mPackageManager, USER_HANDLE,
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
@@ -202,9 +219,11 @@ public class ComputerControlAllowlistControllerTest {
         SystemClock.sleep(TIMEOUT_MILLIS);
 
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName1, mPackageManager));
+                packageName1, mPackageManager, USER_HANDLE,
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName2, mPackageManager));
+                packageName2, mPackageManager, USER_HANDLE,
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
@@ -221,7 +240,8 @@ public class ComputerControlAllowlistControllerTest {
         SystemClock.sleep(TIMEOUT_MILLIS);
 
         assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager));
+                packageName, mPackageManager, USER_HANDLE,
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
@@ -235,7 +255,48 @@ public class ComputerControlAllowlistControllerTest {
                 .thenReturn(Process.myUid());
 
         assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager));
+                packageName, mPackageManager, USER_HANDLE,
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ROLE_ASSISTANT_REQUIREMENT)
+    public void isPackageAllowedToCreateSession_isNotAssistant_returnsFalse()
+            throws Exception {
+        final String packageName = "com.hello.app1";
+        final Signature signature = generateSignature((byte) 1);
+        final String certificateDigest = preparePackage(packageName, signature);
+        // Make PackageManager infer that the given package is associated with the calling uid.
+        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+                .thenReturn(Process.myUid());
+        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        SystemClock.sleep(TIMEOUT_MILLIS);
+        when(mRoleManager.getRoleHoldersAsUser(eq(RoleManager.ROLE_ASSISTANT), any()))
+                .thenReturn(List.of("com.another.app"));
+
+        assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
+                packageName, mPackageManager, USER_HANDLE,
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ROLE_ASSISTANT_REQUIREMENT)
+    public void isPackageAllowedToCreateSession_isAssistant_returnsTrue()
+            throws Exception {
+        final String packageName = "com.hello.app1";
+        final Signature signature = generateSignature((byte) 1);
+        final String certificateDigest = preparePackage(packageName, signature);
+        // Make PackageManager infer that the given package is associated with the calling uid.
+        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+                .thenReturn(Process.myUid());
+        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        SystemClock.sleep(TIMEOUT_MILLIS);
+        when(mRoleManager.getRoleHoldersAsUser(eq(RoleManager.ROLE_ASSISTANT), any()))
+                .thenReturn(List.of(packageName));
+
+        assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
+                packageName, mPackageManager, USER_HANDLE,
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
@@ -249,7 +310,8 @@ public class ComputerControlAllowlistControllerTest {
                 .thenReturn(Process.myUid());
 
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                SUPER_AGENT_PACKAGE, mPackageManager));
+                SUPER_AGENT_PACKAGE, mPackageManager,
+                USER_HANDLE, VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
@@ -265,7 +327,8 @@ public class ComputerControlAllowlistControllerTest {
 
         assertThrows(SecurityException.class, () ->
                 mAllowlistController.isPackageAllowedToCreateSession(
-                        SUPER_AGENT_PACKAGE, mPackageManager));
+                        SUPER_AGENT_PACKAGE, mPackageManager,
+                        USER_HANDLE, VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
@@ -281,8 +344,9 @@ public class ComputerControlAllowlistControllerTest {
                 eq(Process.myUid()), eq(ACCESS_COMPUTER_CONTROL), any()))
                 .thenReturn(PackageManager.PERMISSION_DENIED);
 
-        assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager));
+        assertTrue(
+                mAllowlistController.isPackageAllowedToCreateSession(packageName, mPackageManager,
+                        USER_HANDLE, VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
@@ -299,7 +363,8 @@ public class ComputerControlAllowlistControllerTest {
                 .thenReturn(PackageManager.PERMISSION_DENIED);
 
         assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager));
+                packageName, mPackageManager, USER_HANDLE,
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
@@ -579,7 +644,8 @@ public class ComputerControlAllowlistControllerTest {
         final String expectedFileContent = packageName + ":" + certificateDigest;
         assertEquals(expectedFileContent, Files.readString(filePath));
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager));
+                packageName, mPackageManager, USER_HANDLE,
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
 
         // Write malformed value via DeviceConfig.
         mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_SESSION_OWNER_ALLOWLIST_KEY,
@@ -589,7 +655,8 @@ public class ComputerControlAllowlistControllerTest {
         // Verify that the package is still allowlisted, based on the last persisted allowlist.
         assertEquals(expectedFileContent, Files.readString(filePath));
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager));
+                packageName, mPackageManager, USER_HANDLE,
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
@@ -609,8 +676,9 @@ public class ComputerControlAllowlistControllerTest {
         final Path filePath = Paths.get(mSessionOwnerAllowlistFile.getAbsolutePath());
         final String expectedFileContent = packageName + ":" + certificateDigest;
         assertEquals(expectedFileContent, Files.readString(filePath));
-        assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager));
+        assertTrue(
+                mAllowlistController.isPackageAllowedToCreateSession(packageName, mPackageManager,
+                        USER_HANDLE, VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
 
         // Write empty value via DeviceConfig.
         mDeviceConfigWriter.writeValue(COMPUTER_CONTROL_SESSION_OWNER_ALLOWLIST_KEY, "");
@@ -619,7 +687,8 @@ public class ComputerControlAllowlistControllerTest {
         // Verify that the allowlist is cleared.
         assertEquals("", Files.readString(filePath));
         assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager));
+                packageName, mPackageManager, USER_HANDLE,
+                VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Parameters(method = "getMalformedValues")

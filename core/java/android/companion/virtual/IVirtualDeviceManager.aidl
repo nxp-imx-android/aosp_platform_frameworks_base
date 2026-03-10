@@ -101,7 +101,8 @@ interface IVirtualDeviceManager {
     /**
      * Returns whether the computer control functionality is available for the caller.
      */
-    boolean isComputerControlAvailable(in AttributionSource attributionSource);
+    boolean isComputerControlAvailable(in AttributionSource attributionSource,
+            int targetComputerControlVersion);
 
     /**
      * Returns the ID of the device which owns the display with the given ID.
