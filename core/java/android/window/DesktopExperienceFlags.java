@@ -120,8 +120,6 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_NESTED_TASKS_WITH_INDEPENDENT_BOUNDS_BUGFIX),
     ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX(Flags::enableNonDefaultDisplaySplitBugfix, false,
             Flags.FLAG_ENABLE_NON_DEFAULT_DISPLAY_SPLIT_BUGFIX),
-    ENABLE_NO_WINDOW_DECORATION_FOR_DESKS(Flags::enableNoWindowDecorationForDesks, true,
-        Flags.FLAG_ENABLE_NO_WINDOW_DECORATION_FOR_DESKS),
     ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY(Flags::enablePerDisplayDesktopWallpaperActivity,
             true, Flags.FLAG_ENABLE_PER_DISPLAY_DESKTOP_WALLPAPER_ACTIVITY),
     ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE(Flags::enableProjectedDisplayDesktopMode, true,

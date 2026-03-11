@@ -162,8 +162,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
         }
 
         // Skip desk changes so that window decorations are not added to desk root tasks
-        if (DesktopExperienceFlags.ENABLE_NO_WINDOW_DECORATION_FOR_DESKS.isTrue()
-                && mDesksOrganizer.isDeskChange(change)) {
+        if (mDesksOrganizer.isDeskChange(change)) {
             return true;
         }
 
