@@ -48,16 +48,6 @@ flag {
 }
 
 flag {
-    name: "fix_bubbles_long_press_nav_handle"
-    namespace: "multitasking"
-    description: "Allows handling of long-press on nav handle when bubbles are expanded"
-    bug: "324910035"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_optional_bubble_overflow"
     namespace: "multitasking"
     description: "Hides the bubble overflow if there aren't any overflowed bubbles"
