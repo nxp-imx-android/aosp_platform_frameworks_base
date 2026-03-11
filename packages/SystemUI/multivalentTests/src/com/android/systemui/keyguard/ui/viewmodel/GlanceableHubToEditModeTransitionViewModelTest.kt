@@ -57,10 +57,10 @@ class GlanceableHubToEditModeTransitionViewModelTest : SysuiTestCase() {
                 assertThat(windowBlurRadius).isNull()
 
                 setEditModeState(EditModeState.STARTING)
-                assertThat(windowBlurRadius).isNull()
+                assertThat(windowBlurRadius).isEqualTo(100f)
 
                 setEditModeState(EditModeState.CREATED)
-                assertThat(windowBlurRadius).isNull()
+                assertThat(windowBlurRadius).isEqualTo(100f)
 
                 setEditModeState(EditModeState.READY_TO_SHOW)
                 assertThat(windowBlurRadius).isEqualTo(0f)
@@ -76,7 +76,7 @@ class GlanceableHubToEditModeTransitionViewModelTest : SysuiTestCase() {
                 setEditModeState(EditModeState.SHOWING)
 
                 setEditModeState(null)
-                assertThat(windowBlurRadius).isEqualTo(100f)
+                assertThat(windowBlurRadius).isNull()
 
                 setEditModeState(EditModeState.STARTING)
                 assertThat(windowBlurRadius).isEqualTo(100f)
@@ -92,7 +92,7 @@ class GlanceableHubToEditModeTransitionViewModelTest : SysuiTestCase() {
                 assertThat(windowBlurRadius).isEqualTo(0f)
 
                 setEditModeState(null)
-                assertThat(windowBlurRadius).isEqualTo(100f)
+                assertThat(windowBlurRadius).isEqualTo(0f)
             }
         }
 
