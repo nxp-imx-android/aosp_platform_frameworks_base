@@ -242,6 +242,28 @@ public class VisualizerConnectionTest {
                 .isEqualTo(InsightSurfaceVisualizerService.SERVICE_INTERFACE);
     }
 
+    @Test
+    public void testOnServiceDisconnected_doesNotCallDisconnectFromService()
+            throws RemoteException {
+        createVisualizationForClient(createClient(), true);
+        ServiceConnection serviceConnection = mTestInjector.getServiceConnection();
+        assertThat(serviceConnection).isNotNull();
+
+        serviceConnection.onServiceDisconnected(mComponentName);
+        assertThat(mTestInjector.getServiceConnection()).isNotNull();
+    }
+
+    @Test
+    public void testOnBindingDied_doesNotCallDisconnectFromService()
+            throws RemoteException {
+        createVisualizationForClient(createClient(), true);
+        ServiceConnection serviceConnection = mTestInjector.getServiceConnection();
+        assertThat(serviceConnection).isNotNull();
+
+        serviceConnection.onServiceDisconnected(mComponentName);
+        assertThat(mTestInjector.getServiceConnection()).isNotNull();
+    }
+
     private InsightSurfaceClientInfo createClient() {
         final InsightSurfaceClientInfo client = mock(InsightSurfaceClientInfo.class);
         when(client.getId()).thenReturn(UUID.randomUUID());

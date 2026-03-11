@@ -86,12 +86,20 @@ public class VisualizerConnection {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mInjector.executeAction(() -> teardownVisualizer(name, "service disconnected"));
+            mInjector.executeAction(() -> {
+                // Set mBound to false so we don't try to unbind (the service is already unbound).
+                mBound = false;
+                teardownVisualizer(name, "service disconnected");
+            });
         }
 
         @Override
         public void onBindingDied(ComponentName name) {
-            mInjector.executeAction(() -> teardownVisualizer(name, "binding died"));
+            mInjector.executeAction(() -> {
+                // Set mBound to false so we don't try to unbind (the service is already unbound).
+                mBound = false;
+                teardownVisualizer(name, "binding died");
+            });
         }
     };
 
