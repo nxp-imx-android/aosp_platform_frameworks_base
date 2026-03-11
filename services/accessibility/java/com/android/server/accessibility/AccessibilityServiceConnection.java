@@ -199,6 +199,7 @@ class AccessibilityServiceConnection extends AbstractAccessibilityServiceConnect
                     && mContext.bindServiceAsUser(
                             mIntent, this, flags, new UserHandle(userState.mUserId))) {
                 userState.getBindingServicesLocked().add(mComponentName);
+                userState.addServiceConnectionLocked(this);
             }
         } finally {
             Binder.restoreCallingIdentity(identity);
@@ -224,6 +225,7 @@ class AccessibilityServiceConnection extends AbstractAccessibilityServiceConnect
         AccessibilityUserState userState = mUserStateWeakReference.get();
         if (userState == null) return;
         userState.removeServiceLocked(this);
+        userState.removeServiceConnectionLocked(this);
         mSystemSupport.getMagnificationProcessor().resetAllIfNeeded(mId);
         mActivityTaskManagerService.setAllowAppSwitches(mComponentName.flattenToString(), -1,
                 userState.mUserId);
