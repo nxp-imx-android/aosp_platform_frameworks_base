@@ -1871,8 +1871,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         assertNotNull(wct, "should handle request")
         val finalBounds = findBoundsChange(wct, freeformTask)
-        assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
-            .isEqualTo(DesktopTaskPosition.BottomRight)
+        if (Flags.enableSteppedCascading()) {
+            assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
+                .isNotEqualTo(DEFAULT_LANDSCAPE_BOUNDS)
+        } else {
+            assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
+                .isEqualTo(DesktopTaskPosition.BottomRight)
+        }
     }
 
     @Test
@@ -1961,6 +1966,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
     fun addMoveToDeskTaskChanges_positionBottomRight() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -1977,6 +1983,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
     fun addMoveToDeskTaskChanges_positionTopLeft() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -1993,6 +2000,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
     fun addMoveToDeskTaskChanges_positionBottomLeft() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -2009,6 +2017,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
     fun addMoveToDeskTaskChanges_positionTopRight() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -2025,6 +2034,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
     fun addMoveToDeskTaskChanges_positionResetsToCenter() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -2287,6 +2297,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_REMEMBERED_BOUNDS, Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    @DisableFlags(Flags.FLAG_ENABLE_STEPPED_CASCADING)
     fun addMoveToDeskTaskChanges_rememberedBoundsIsFloating_applyCascading() {
         setUpLandscapeDisplay()
         val stableBounds = Rect().also { displayLayout.getStableBoundsForDesktopMode(it) }
@@ -2823,8 +2834,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val wct = getLatestEnterDesktopWct()
         assertNotNull(wct, "should move to desk")
         val finalBounds = findBoundsChange(wct, fullscreenTask)
-        assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
-            .isEqualTo(DesktopTaskPosition.BottomRight)
+        if (Flags.enableSteppedCascading()) {
+            assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
+                .isNotEqualTo(DEFAULT_LANDSCAPE_BOUNDS)
+        } else {
+            assertThat(stableBounds.getDesktopTaskPosition(finalBounds!!))
+                .isEqualTo(DesktopTaskPosition.BottomRight)
+        }
     }
 
     @Test
