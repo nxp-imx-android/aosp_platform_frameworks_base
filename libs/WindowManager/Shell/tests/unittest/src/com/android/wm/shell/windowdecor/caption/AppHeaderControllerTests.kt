@@ -54,6 +54,7 @@ import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestWindowDec
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.createOpaqueAppHeaderTask
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.caption.CaptionController.CaptionType
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import kotlinx.coroutines.Dispatchers
@@ -331,6 +332,7 @@ class AppHeaderControllerTests : ShellTestCase() {
             onCaptionGenericMotionListener = mock(),
             syncQueue = mock(),
             focusTransitionObserver = mock(),
+            decorThemeUtilFactory = DecorThemeUtil.Factory(),
         )
 
     private fun AppHeaderController.relayout(taskInfo: RunningTaskInfo) {

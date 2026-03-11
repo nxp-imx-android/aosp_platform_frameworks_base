@@ -218,6 +218,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final FocusTransitionObserver mFocusTransitionObserver;
     private final PinnedLayerController mPinnedLayerController;
     private final DesktopTasksController mDesktopTasksController;
+    private final DecorThemeUtil.Factory mDecorThemeUtilFactory;
 
     // Hover state for the layout menu and button. The menu will remain open as long as either of
     // these is true. See {@link #onMaximizeHoverStateChanged()}.
@@ -287,7 +288,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             LockTaskChangeListener lockTaskChangeListener,
             FocusTransitionObserver focusTransitionObserver,
             PinnedLayerController pinnedLayerController,
-            DesktopTasksController desktopTasksController) {
+            DesktopTasksController desktopTasksController,
+            DecorThemeUtil.Factory decorThemeUtilFactory) {
         this (context, userContext, displayController, taskResourceLoader, splitScreenController,
                 desktopUserRepositories, taskOrganizer, taskInfo, taskSurface, handler,
                 mainExecutor, mainDispatcher, mainScope, bgExecutor, transitions,
@@ -303,7 +305,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 windowDecorCaptionRepository, desktopModeEventLogger,
                 desktopModeUiEventLogger, desktopModeCompatPolicy,
                 desktopState, desktopConfig, windowDecorationActions, lockTaskChangeListener,
-                focusTransitionObserver, pinnedLayerController, desktopTasksController);
+                focusTransitionObserver, pinnedLayerController, desktopTasksController,
+                decorThemeUtilFactory);
     }
 
     DesktopModeWindowDecoration(
@@ -349,7 +352,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             LockTaskChangeListener lockTaskChangeListener,
             FocusTransitionObserver focusTransitionObserver,
             PinnedLayerController pinnedLayerController,
-            DesktopTasksController desktopTasksController) {
+            DesktopTasksController desktopTasksController,
+            DecorThemeUtil.Factory decorThemeUtilFactory) {
         super(context, handler, transitions, userContext, displayController, taskOrganizer,
                 taskInfo, taskSurface, surfaceControlBuilderSupplier,
                 surfaceControlTransactionSupplier, windowContainerTransactionSupplier,
@@ -385,6 +389,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mFocusTransitionObserver = focusTransitionObserver;
         mPinnedLayerController = pinnedLayerController;
         mDesktopTasksController = desktopTasksController;
+        mDecorThemeUtilFactory = decorThemeUtilFactory;
     }
 
     /** Returns the last valid drag area of the task or null if the task cannot be dragged. */
@@ -1044,7 +1049,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mDesktopModeUiEventLogger,
                     /* dimensions= */ new LargeHeaderDimensions(
                             mDecorWindowContext.getResources()),
-                    mFocusTransitionObserver
+                    mFocusTransitionObserver,
+                    mDecorThemeUtilFactory
                     );
         }
         throw new IllegalArgumentException("Unexpected layout resource id");

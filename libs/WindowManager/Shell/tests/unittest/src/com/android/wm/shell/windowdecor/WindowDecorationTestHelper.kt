@@ -56,6 +56,7 @@ import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.WindowDecorationTestHelper.TestHeaderDimensions.Companion.CUSTOMIZABLE_REGION_MARGIN_START
 import com.android.wm.shell.windowdecor.common.CaptionVisibilityHelper
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.DrawableInsets
 import com.android.wm.shell.windowdecor.common.InputPilferer
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
@@ -179,6 +180,7 @@ object WindowDecorationTestHelper {
                 focusTransitionObserver = mock<FocusTransitionObserver>(),
                 recentsTransitionStateListener = recentsTransitionStateListener,
                 desktopTasksController = mock(),
+                decorThemeUtilFactory = DecorThemeUtil.Factory(),
             )
         val wrapped = decoration.wrapped()
         val positioner =
@@ -369,6 +371,7 @@ object WindowDecorationTestHelper {
             desktopModeUiEventLogger: DesktopModeUiEventLogger,
             dimensions: HeaderDimensions,
             focusTransitionObserver: FocusTransitionObserver,
+            decorThemeUtilFactory: DecorThemeUtil.Factory,
         ): AppHeaderViewHolder {
             return AppHeaderViewHolder(
                 rootView,
@@ -381,6 +384,7 @@ object WindowDecorationTestHelper {
                 desktopModeUiEventLogger,
                 overrideDimensions,
                 focusTransitionObserver,
+                decorThemeUtilFactory,
             )
         }
     }

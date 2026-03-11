@@ -73,6 +73,7 @@ import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
 import com.android.wm.shell.windowdecor.WindowDecorationActions
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
@@ -131,6 +132,7 @@ class AppHeaderController(
     private val surfaceControlTransactionSupplier: () -> SurfaceControl.Transaction = {
         SurfaceControl.Transaction()
     },
+    private val decorThemeUtilFactory: DecorThemeUtil.Factory,
 ) :
     CaptionController<WindowDecorLinearLayout>(
         taskInfo,
@@ -622,6 +624,7 @@ class AppHeaderController(
                 desktopModeUiEventLogger = desktopModeUiEventLogger,
                 dimensions = dimensions,
                 focusTransitionObserver = focusTransitionObserver,
+                decorThemeUtilFactory = decorThemeUtilFactory,
             )
 
         loadAppInfoJob =
