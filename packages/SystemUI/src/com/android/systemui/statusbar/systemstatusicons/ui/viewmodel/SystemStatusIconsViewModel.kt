@@ -20,6 +20,7 @@ import android.content.Context
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.airplane.ui.viewmodel.AirplaneModeIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.alarm.ui.viewmodel.NextAlarmIconViewModel
@@ -61,7 +62,10 @@ interface SystemStatusIconsViewModel {
     val iconViewModels: List<SystemStatusIconViewModel>
 
     interface Factory {
-        fun create(context: Context): SystemStatusIconsViewModel
+        fun create(
+            context: Context,
+            systemStatusIconBlocklistInteractor: SystemStatusIconBlocklistInteractor,
+        ): SystemStatusIconsViewModel
     }
 }
 
@@ -69,6 +73,7 @@ class SystemStatusIconsViewModelImpl
 @AssistedInject
 constructor(
     @Assisted context: Context,
+    @Assisted val systemStatusIconBlocklistInteractor: SystemStatusIconBlocklistInteractor,
     orderedIconSlotNamesInteractor: OrderedIconSlotNamesInteractor,
     externalSystemStatusIconInteractor: ExternalSystemStatusIconInteractor,
     airplaneModeIconViewModelFactory: AirplaneModeIconViewModel.Factory,
@@ -156,8 +161,11 @@ constructor(
     }
 
     private val internalIconViewModels: Flow<List<SystemStatusIconViewModel>> =
-        orderedIconSlotNamesInteractor.orderedIconSlotNames.map { slotNames ->
-            sortViewModelsBySlotNames(slotNames.toSet())
+        combine(
+            orderedIconSlotNamesInteractor.orderedIconSlotNames,
+            systemStatusIconBlocklistInteractor.blockedIconSlots,
+        ) { slotNames, blockedSlots ->
+            sortViewModelsBySlotNames(slotNames.toSet()).filterNot { it.slotName in blockedSlots }
         }
 
     override val iconViewModels by
@@ -213,6 +221,9 @@ constructor(
 
     @AssistedFactory
     interface Factory : SystemStatusIconsViewModel.Factory {
-        override fun create(context: Context): SystemStatusIconsViewModelImpl
+        override fun create(
+            context: Context,
+            systemStatusIconBlocklistInteractor: SystemStatusIconBlocklistInteractor,
+        ): SystemStatusIconsViewModelImpl
     }
 }

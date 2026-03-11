@@ -30,6 +30,7 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.systemstatusicons.domain.interactor.SystemStatusIconBlocklistInteractor
 import com.android.systemui.statusbar.systemstatusicons.data.repository.statusBarConfigIconSlotNames
 import com.android.systemui.statusbar.systemstatusicons.flags.EnableSystemStatusIconsInCompose
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.hideAirplaneMode
@@ -52,6 +53,9 @@ import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatu
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModelHelper.showZenMode
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -63,11 +67,17 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
+    private val iconBlockList: MutableStateFlow<List<String>> = MutableStateFlow(emptyList())
+    private val mFakeSystemStatusIconBlocklistInteractor =
+        object : SystemStatusIconBlocklistInteractor {
+            override val blockedIconSlots: Flow<Set<String>> = iconBlockList.map { it.toSet() }
+        }
+
     private val Kosmos.underTest by
         Kosmos.Fixture {
-            kosmos.systemStatusIconsViewModelFactory.create(kosmos.testableContext).apply {
-                activateIn(kosmos.testScope)
-            }
+            kosmos.systemStatusIconsViewModelFactory
+                .create(kosmos.testableContext, mFakeSystemStatusIconBlocklistInteractor)
+                .apply { activateIn(kosmos.testScope) }
         }
 
     private lateinit var slotAirplane: String
@@ -293,6 +303,91 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
                     slotZen,
                 )
                 .inOrder()
+        }
+
+    @Test
+    fun iconViewModels_iconInBlockList_isNotShown() =
+        kosmos.runTest {
+            showAirplaneMode()
+            assertThat(underTest.activeSlotNames).containsExactly(slotAirplane)
+
+            iconBlockList.value = listOf(slotAirplane)
+
+            assertThat(underTest.activeSlotNames).isEmpty()
+        }
+
+    @Test
+    fun iconViewModels_multipleIconsActive_oneInBlockList_othersShown() =
+        kosmos.runTest {
+            showAirplaneMode()
+            showBluetooth()
+            assertThat(underTest.activeSlotNames).containsExactly(slotAirplane, slotBluetooth)
+
+            iconBlockList.value = listOf(slotAirplane)
+
+            assertThat(underTest.activeSlotNames).containsExactly(slotBluetooth)
+        }
+
+    @Test
+    fun iconViewModels_iconRemovedFromBlockList_isShownIfActive() =
+        kosmos.runTest {
+            showAirplaneMode()
+            iconBlockList.value = listOf(slotAirplane)
+            assertThat(underTest.activeSlotNames).isEmpty()
+
+            iconBlockList.value = emptyList()
+
+            assertThat(underTest.activeSlotNames).containsExactly(slotAirplane)
+        }
+
+    @Test
+    fun iconViewModels_blockListedIcon_doesNotAffectOrderOfOtherIcons() =
+        kosmos.runTest {
+            val customOrder = arrayOf(slotBluetooth, slotZen, slotAirplane)
+            statusBarConfigIconSlotNames = customOrder
+
+            showZenMode()
+            showBluetooth()
+            showAirplaneMode()
+
+            iconBlockList.value = listOf(slotZen)
+
+            assertThat(underTest.activeSlotNames)
+                .containsExactly(slotBluetooth, slotAirplane)
+                .inOrder()
+        }
+
+    @Test
+    fun iconViewModels_allIconsActiveAndBlockListed_showsNoIcons() =
+        kosmos.runTest {
+            showAirplaneMode()
+            showBluetooth()
+            showZenMode()
+
+            iconBlockList.value = listOf(slotAirplane, slotBluetooth, slotZen)
+
+            assertThat(underTest.activeSlotNames).isEmpty()
+        }
+
+    @Test
+    fun iconViewModels_blockListingNonActiveIcon_hasNoEffect() =
+        kosmos.runTest {
+            showAirplaneMode()
+            assertThat(underTest.activeSlotNames).containsExactly(slotAirplane)
+
+            iconBlockList.value = listOf(slotBluetooth)
+
+            assertThat(underTest.activeSlotNames).containsExactly(slotAirplane)
+        }
+
+    @Test
+    fun iconViewModels_emptyBlockList_showsAllActiveIcons() =
+        kosmos.runTest {
+            showAirplaneMode()
+            showBluetooth()
+            iconBlockList.value = emptyList()
+
+            assertThat(underTest.activeSlotNames).containsExactly(slotAirplane, slotBluetooth)
         }
 
     private val SystemStatusIconsViewModel.activeSlotNames: List<String>

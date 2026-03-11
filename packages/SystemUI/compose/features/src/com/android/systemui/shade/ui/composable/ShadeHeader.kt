@@ -804,6 +804,7 @@ private fun ContentScope.StatusIcons(
     if (SystemStatusIconsInCompose.isEnabled) {
         SystemStatusIcons(
             viewModelFactory = viewModel.systemStatusIconsViewModelFactory,
+            systemStatusIconBlocklistInteractor = viewModel.systemStatusIconsBlockListInteractor,
             tint = Color(foregroundColor),
         )
     } else {

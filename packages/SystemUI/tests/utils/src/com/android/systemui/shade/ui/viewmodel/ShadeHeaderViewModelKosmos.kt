@@ -27,6 +27,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.privacyChipInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.statusbar.domain.interactor.emptySystemStatusIconBlockListInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.shadeDarkIconInteractor
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.batteryViewModelAlwaysShowPercentFactory
@@ -62,6 +63,7 @@ val Kosmos.shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory by
                     desktopInteractor = desktopInteractor,
                     systemStatusIconsViewModelFactory = systemStatusIconsViewModelFactory,
                     systemBarUtilsState = systemBarUtilsState,
+                    systemStatusIconsBlockListInteractor = emptySystemStatusIconBlockListInteractor,
                     ignoreTestHarness = true,
                 )
             }
