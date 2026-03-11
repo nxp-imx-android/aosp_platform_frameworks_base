@@ -96,6 +96,7 @@ public class ComputerControlAllowlistControllerTest {
 
     private static final long TIMEOUT_MILLIS = 1000L;
     private static final Random RANDOM = new Random();
+    private static final String AGENT_PACKAGE = "com.normal.agent";
     private static final String SUPER_AGENT_PACKAGE = "com.super.agent";
     private static final String PERMISSION_CONTROLLER_PACKAGE = "permission.controller.package";
     private static final UserHandle USER_HANDLE = new UserHandle(0);
@@ -158,6 +159,8 @@ public class ComputerControlAllowlistControllerTest {
 
         when(mPermissionManager.checkUidPermission(anyInt(), eq(ACCESS_COMPUTER_CONTROL), any()))
                 .thenReturn(PackageManager.PERMISSION_GRANTED);
+        when(mRoleManager.getRoleHoldersAsUser(eq(RoleManager.ROLE_ASSISTANT), any()))
+                .thenReturn(List.of(AGENT_PACKAGE));
     }
 
     @After
@@ -187,44 +190,44 @@ public class ComputerControlAllowlistControllerTest {
     @Test
     public void isPackageAllowedToCreateSession_allowlistedSessionOwner_sameUid_returnsTrue()
             throws Exception {
-        final String packageName = "com.hello.app2";
         final Signature signature = generateSignature((byte) 1);
-        final String certificateDigest = preparePackage(packageName, signature);
+        final String certificateDigest = preparePackage(AGENT_PACKAGE, signature);
         // Make PackageManager infer that the given package is associated with the calling uid.
-        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+        when(mPackageManager.getPackageUidAsUser(eq(AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid());
 
-        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        mDeviceConfigWriter.allowlistSessionOwner(AGENT_PACKAGE, certificateDigest);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager, USER_HANDLE,
+                AGENT_PACKAGE, mPackageManager, USER_HANDLE,
                 VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
     public void isPackageAllowedToCreateSession_allowlistedSessionOwners_sameUid_returnsTrue()
             throws Exception {
-        final String packageName1 = "com.hello.appp1";
         final Signature signature1 = generateSignature((byte) 1);
-        final String certificateDigest1 = preparePackage(packageName1, signature1);
+        final String certificateDigest1 = preparePackage(AGENT_PACKAGE, signature1);
         final String packageName2 = "com.hello.appp2";
         final Signature signature2 = generateSignature((byte) 2);
         final String certificateDigest2 = preparePackage(packageName2, signature2);
         final List<ComputerControlAllowlistController.SignedPackage> sessionOwners = List.of(
                 new ComputerControlAllowlistController.SignedPackage(
-                        packageName1, certificateDigest1),
+                        AGENT_PACKAGE, certificateDigest1),
                 new ComputerControlAllowlistController.SignedPackage(
                         packageName2, certificateDigest2));
         // Make PackageManager infer that any package is associated with the calling uid.
         when(mPackageManager.getPackageUidAsUser(any(), anyInt()))
                 .thenReturn(Process.myUid());
+        when(mRoleManager.getRoleHoldersAsUser(eq(RoleManager.ROLE_ASSISTANT), any()))
+                .thenReturn(List.of(AGENT_PACKAGE, packageName2));
 
         mDeviceConfigWriter.allowlistSessionOwners(sessionOwners);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName1, mPackageManager, USER_HANDLE,
+                AGENT_PACKAGE, mPackageManager, USER_HANDLE,
                 VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
                 packageName2, mPackageManager, USER_HANDLE,
@@ -234,33 +237,31 @@ public class ComputerControlAllowlistControllerTest {
     @Test
     public void isPackageAllowedToCreateSession_allowlistedSessionOwner_differentUid_returnsFalse()
             throws Exception {
-        final String packageName = "com.hello.app3";
         final Signature signature = generateSignature((byte) 2);
-        final String certificateDigest = preparePackage(packageName, signature);
+        final String certificateDigest = preparePackage(AGENT_PACKAGE, signature);
         // Make PackageManager infer that the given package is not associated with the calling uid.
-        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+        when(mPackageManager.getPackageUidAsUser(eq(AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid() + 1);
 
-        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        mDeviceConfigWriter.allowlistSessionOwner(AGENT_PACKAGE, certificateDigest);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
         assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager, USER_HANDLE,
+                AGENT_PACKAGE, mPackageManager, USER_HANDLE,
                 VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
     public void isPackageAllowedToCreateSession_notAllowlistedSessionOwner_sameUid_returnsFalse()
             throws Exception {
-        final String packageName = "com.hello.app1";
         final Signature signature = generateSignature((byte) 1);
-        preparePackage(packageName, signature);
+        preparePackage(AGENT_PACKAGE, signature);
         // Make PackageManager infer that the given package is associated with the calling uid.
-        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+        when(mPackageManager.getPackageUidAsUser(eq(AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid());
 
         assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager, USER_HANDLE,
+                AGENT_PACKAGE, mPackageManager, USER_HANDLE,
                 VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
@@ -268,39 +269,37 @@ public class ComputerControlAllowlistControllerTest {
     @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ROLE_ASSISTANT_REQUIREMENT)
     public void isPackageAllowedToCreateSession_isNotAssistant_returnsFalse()
             throws Exception {
-        final String packageName = "com.hello.app1";
         final Signature signature = generateSignature((byte) 1);
-        final String certificateDigest = preparePackage(packageName, signature);
+        final String certificateDigest = preparePackage(AGENT_PACKAGE, signature);
         // Make PackageManager infer that the given package is associated with the calling uid.
-        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+        when(mPackageManager.getPackageUidAsUser(eq(AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid());
-        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        mDeviceConfigWriter.allowlistSessionOwner(AGENT_PACKAGE, certificateDigest);
         SystemClock.sleep(TIMEOUT_MILLIS);
         when(mRoleManager.getRoleHoldersAsUser(eq(RoleManager.ROLE_ASSISTANT), any()))
                 .thenReturn(List.of("com.another.app"));
 
         assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager, USER_HANDLE,
+                AGENT_PACKAGE, mPackageManager, USER_HANDLE,
                 VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_COMPUTER_CONTROL_ROLE_ASSISTANT_REQUIREMENT)
-    public void isPackageAllowedToCreateSession_isAssistant_returnsTrue()
+    @DisableFlags(Flags.FLAG_COMPUTER_CONTROL_ROLE_ASSISTANT_REQUIREMENT)
+    public void isPackageAllowedToCreateSession_isNotAssistant_returnsTrue()
             throws Exception {
-        final String packageName = "com.hello.app1";
         final Signature signature = generateSignature((byte) 1);
-        final String certificateDigest = preparePackage(packageName, signature);
+        final String certificateDigest = preparePackage(AGENT_PACKAGE, signature);
         // Make PackageManager infer that the given package is associated with the calling uid.
-        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+        when(mPackageManager.getPackageUidAsUser(eq(AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid());
-        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        mDeviceConfigWriter.allowlistSessionOwner(AGENT_PACKAGE, certificateDigest);
         SystemClock.sleep(TIMEOUT_MILLIS);
         when(mRoleManager.getRoleHoldersAsUser(eq(RoleManager.ROLE_ASSISTANT), any()))
-                .thenReturn(List.of(packageName));
+                .thenReturn(List.of("com.another.app"));
 
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager, USER_HANDLE,
+                AGENT_PACKAGE, mPackageManager, USER_HANDLE,
                 VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
@@ -339,36 +338,34 @@ public class ComputerControlAllowlistControllerTest {
     @Test
     public void isPackageAllowedToCreateSession_noPermission_testOnly_returnsTrue()
             throws Exception {
-        final String packageName = "com.hello.cts";
         final Signature signature = generateSignature((byte) 1);
-        preparePackage(packageName, signature, /* preinstalled= */ false, /* testOnly= */ true);
+        preparePackage(AGENT_PACKAGE, signature, /* preinstalled= */ false, /* testOnly= */ true);
         // Make PackageManager infer that the given package is associated with the calling uid.
-        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+        when(mPackageManager.getPackageUidAsUser(eq(AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid());
         when(mPermissionManager.checkUidPermission(
                 eq(Process.myUid()), eq(ACCESS_COMPUTER_CONTROL), any()))
                 .thenReturn(PackageManager.PERMISSION_DENIED);
 
         assertTrue(
-                mAllowlistController.isPackageAllowedToCreateSession(packageName, mPackageManager,
+                mAllowlistController.isPackageAllowedToCreateSession(AGENT_PACKAGE, mPackageManager,
                         USER_HANDLE, VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
     public void isPackageAllowedToCreateSession_noPermission_nonTestOnly_returnsFalse()
             throws Exception {
-        final String packageName = "com.hello.cts";
         final Signature signature = generateSignature((byte) 1);
-        preparePackage(packageName, signature);
+        preparePackage(AGENT_PACKAGE, signature);
         // Make PackageManager infer that the given package is associated with the calling uid.
-        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+        when(mPackageManager.getPackageUidAsUser(eq(AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid());
         when(mPermissionManager.checkUidPermission(
                 eq(Process.myUid()), eq(ACCESS_COMPUTER_CONTROL), any()))
                 .thenReturn(PackageManager.PERMISSION_DENIED);
 
         assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager, USER_HANDLE,
+                AGENT_PACKAGE, mPackageManager, USER_HANDLE,
                 VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
@@ -633,23 +630,22 @@ public class ComputerControlAllowlistControllerTest {
     @Parameters(method = "getMalformedValues")
     public void deviceConfigMalformedValue_sessionOwnerAllowlist_usesLastPersistedValue(
             String malformedValue) throws Exception {
-        final String packageName = "com.hello.app4";
         final Signature signature = generateSignature((byte) 9);
-        final String certificateDigest = preparePackage(packageName, signature);
+        final String certificateDigest = preparePackage(AGENT_PACKAGE, signature);
         // Make PackageManager infer that the given package is associated with the calling uid.
-        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+        when(mPackageManager.getPackageUidAsUser(eq(AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid());
 
         // Allowlist the package via DeviceConfig.
-        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        mDeviceConfigWriter.allowlistSessionOwner(AGENT_PACKAGE, certificateDigest);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
         // Verify that the package is actually allowlisted and the allowlist is persisted to disk.
         final Path filePath = Paths.get(mSessionOwnerAllowlistFile.getAbsolutePath());
-        final String expectedFileContent = packageName + ":" + certificateDigest;
+        final String expectedFileContent = AGENT_PACKAGE + ":" + certificateDigest;
         assertEquals(expectedFileContent, Files.readString(filePath));
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager, USER_HANDLE,
+                AGENT_PACKAGE, mPackageManager, USER_HANDLE,
                 VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
 
         // Write malformed value via DeviceConfig.
@@ -660,29 +656,28 @@ public class ComputerControlAllowlistControllerTest {
         // Verify that the package is still allowlisted, based on the last persisted allowlist.
         assertEquals(expectedFileContent, Files.readString(filePath));
         assertTrue(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager, USER_HANDLE,
+                AGENT_PACKAGE, mPackageManager, USER_HANDLE,
                 VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
     @Test
     public void deviceConfigEmptyString_clearsSessionOwnerAllowlist() throws Exception {
-        final String packageName = "com.hello.app4";
         final Signature signature = generateSignature((byte) 9);
-        final String certificateDigest = preparePackage(packageName, signature);
+        final String certificateDigest = preparePackage(AGENT_PACKAGE, signature);
         // Make PackageManager infer that the given package is associated with the calling uid.
-        when(mPackageManager.getPackageUidAsUser(eq(packageName), anyInt()))
+        when(mPackageManager.getPackageUidAsUser(eq(AGENT_PACKAGE), anyInt()))
                 .thenReturn(Process.myUid());
 
         // Allowlist the package via DeviceConfig.
-        mDeviceConfigWriter.allowlistSessionOwner(packageName, certificateDigest);
+        mDeviceConfigWriter.allowlistSessionOwner(AGENT_PACKAGE, certificateDigest);
         SystemClock.sleep(TIMEOUT_MILLIS);
 
         // Verify that the package is actually allowlisted and the allowlist is persisted to disk.
         final Path filePath = Paths.get(mSessionOwnerAllowlistFile.getAbsolutePath());
-        final String expectedFileContent = packageName + ":" + certificateDigest;
+        final String expectedFileContent = AGENT_PACKAGE + ":" + certificateDigest;
         assertEquals(expectedFileContent, Files.readString(filePath));
         assertTrue(
-                mAllowlistController.isPackageAllowedToCreateSession(packageName, mPackageManager,
+                mAllowlistController.isPackageAllowedToCreateSession(AGENT_PACKAGE, mPackageManager,
                         USER_HANDLE, VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
 
         // Write empty value via DeviceConfig.
@@ -692,7 +687,7 @@ public class ComputerControlAllowlistControllerTest {
         // Verify that the allowlist is cleared.
         assertEquals("", Files.readString(filePath));
         assertFalse(mAllowlistController.isPackageAllowedToCreateSession(
-                packageName, mPackageManager, USER_HANDLE,
+                AGENT_PACKAGE, mPackageManager, USER_HANDLE,
                 VirtualDeviceManager.COMPUTER_CONTROL_VERSION));
     }
 
