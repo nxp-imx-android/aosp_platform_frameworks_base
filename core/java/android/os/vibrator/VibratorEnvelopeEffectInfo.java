@@ -133,7 +133,7 @@ public final class VibratorEnvelopeEffectInfo implements Parcelable {
      * Retrieves the maximum duration supported for an envelope effect, in milliseconds.
      *
      * <p>If the device supports envelope effects
-     * (check {@link android.os.VibratorInfo#areEnvelopeEffectsSupported}), this value will be
+     * (check {@link android.os.Vibrator#areEnvelopeEffectsSupported()}), this value will be
      * positive. Devices with envelope effects capabilities guarantees a maximum duration
      * equivalent to the product of {@link #getMaxSize()} and
      * {@link #getMaxControlPointDurationMillis()}. If the device does not support
@@ -150,7 +150,7 @@ public final class VibratorEnvelopeEffectInfo implements Parcelable {
      * Retrieves the maximum number of control points supported for an envelope effect.
      *
      * <p>If the device supports envelope effects
-     * (check {@link android.os.VibratorInfo#areEnvelopeEffectsSupported}), this value will be
+     * (check {@link android.os.Vibrator#areEnvelopeEffectsSupported()}), this value will be
      * positive. Devices with envelope effects capabilities guarantee support for a minimum of
      * 16 control points. If the device does not support envelope effects, this method will
      * return 0.
@@ -167,7 +167,7 @@ public final class VibratorEnvelopeEffectInfo implements Parcelable {
      * effect, in milliseconds.
      *
      * <p>If the device supports envelope effects
-     * (check {@link android.os.VibratorInfo#areEnvelopeEffectsSupported}), this value will be
+     * (check {@link android.os.Vibrator#areEnvelopeEffectsSupported()}), this value will be
      * positive. Devices with envelope effects capabilities guarantee support for durations down
      * to at least 20 milliseconds. If the device does not support envelope effects,
      * this method will return 0.
@@ -184,7 +184,7 @@ public final class VibratorEnvelopeEffectInfo implements Parcelable {
      * effect, in milliseconds.
      *
      * <p>If the device supports envelope effects
-     * (check {@link android.os.VibratorInfo#areEnvelopeEffectsSupported}), this value will be
+     * (check {@link android.os.Vibrator#areEnvelopeEffectsSupported()}), this value will be
      * positive. Devices with envelope effects capabilities guarantee support for durations up to
      * at least 1 second. If the device does not support envelope effects, this method
      * will return 0.
