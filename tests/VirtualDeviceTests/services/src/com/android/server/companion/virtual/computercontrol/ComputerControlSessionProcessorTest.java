@@ -71,7 +71,6 @@ import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.security.authenticationpolicy.IAuthenticationPolicyService;
-import android.util.ArraySet;
 import android.view.Display;
 import android.view.Surface;
 
@@ -96,7 +95,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
-import java.util.Set;
 
 @Presubmit
 @RunWith(AndroidJUnit4.class)
@@ -353,9 +351,9 @@ public class ComputerControlSessionProcessorTest {
     @Test
     @EnableFlags(android.companion.Flags.FLAG_SUPPORT_AI_AGENT)
     public void sessionCreation_passesCompanionDeviceIdToPolicy() throws Exception {
-        when(mVirtualDeviceManagerInternal.getDeviceIdsForUid(ATTRIBUTION_SOURCE.getUid()))
-                .thenReturn(
-                        new ArraySet<>(Set.of(Context.DEVICE_ID_DEFAULT, NON_DEFAULT_DEVICE_ID)));
+        when(mVirtualDeviceManagerInternal.isDeviceIdAssociationValid(
+                ATTRIBUTION_SOURCE.getUid(), NON_DEFAULT_DEVICE_ID))
+                .thenReturn(true);
 
         mProcessor.processNewSessionRequest(
                 mAppThread, ATTRIBUTION_SOURCE.withDeviceId(NON_DEFAULT_DEVICE_ID), PARAMS,
