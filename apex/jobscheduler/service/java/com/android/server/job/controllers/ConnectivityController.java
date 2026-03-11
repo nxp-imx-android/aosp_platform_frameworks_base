@@ -31,6 +31,8 @@ import static com.android.server.job.JobSchedulerService.sElapsedRealtimeClock;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.app.ActivityManager.ProcessCapability;
+import android.app.ActivityManager.ProcessState;
 import android.app.job.JobInfo;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -789,8 +791,8 @@ public final class ConnectivityController extends RestrictingController implemen
         }
 
         final int uid = jobStatus.getSourceUid();
-        final int procState = mService.getUidProcState(uid);
-        final int capabilities = mService.getUidCapabilities(uid);
+        final @ProcessState int procState = mService.getUidProcState(uid);
+        final @ProcessCapability int capabilities = mService.getUidCapabilities(uid);
         // Jobs don't raise the proc state to anything better than IMPORTANT_FOREGROUND.
         // If the app is in a better state, see if it has the capability to use the metered network.
         final boolean currentStateAllows = procState != ActivityManager.PROCESS_STATE_UNKNOWN
@@ -831,8 +833,9 @@ public final class ConnectivityController extends RestrictingController implemen
             // With user-initiated jobs, JobScheduler will request that the process
             // run at IMPORTANT_FOREGROUND process state
             // and get the USER_RESTRICTED_NETWORK process capability.
-            final int expectedProcState = ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND;
-            final int mergedCapabilities = capabilities
+            final @ProcessState int expectedProcState =
+                    ActivityManager.PROCESS_STATE_IMPORTANT_FOREGROUND;
+            final @ProcessCapability int mergedCapabilities = capabilities
                     | ActivityManager.PROCESS_CAPABILITY_USER_RESTRICTED_NETWORK
                     | NetworkPolicyManager.getDefaultProcessNetworkCapabilities(expectedProcState);
             final boolean wouldBeAllowed =
