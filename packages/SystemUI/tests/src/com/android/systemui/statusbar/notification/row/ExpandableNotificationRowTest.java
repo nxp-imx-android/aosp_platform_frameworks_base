@@ -565,6 +565,20 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
+    public void testDoLongClickCallback_invokesLongPressListener() throws Exception {
+        ExpandableNotificationRow row = mKosmos.createRow();
+
+        ExpandableNotificationRow.LongPressListener listener =
+                mock(ExpandableNotificationRow.LongPressListener.class);
+        row.setLongPressListener(listener);
+
+        row.doLongClickCallback(10, 20);
+
+        verify(listener, times(1)).onLongPress(eq(row), eq(10), eq(20),
+                any());
+    }
+
+    @Test
     public void testSetDismissed_longPressListenerRemoved() throws Exception {
         ExpandableNotificationRow group = mKosmos.createRowGroup();
 

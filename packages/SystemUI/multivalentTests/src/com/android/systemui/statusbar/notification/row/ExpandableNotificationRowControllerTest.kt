@@ -19,6 +19,8 @@ package com.android.systemui.statusbar.notification.row
 
 import android.net.Uri
 import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper.RunWithLooper
 import android.view.View
@@ -27,6 +29,7 @@ import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
 import com.android.internal.logging.UiEventLogger
 import com.android.internal.statusbar.IStatusBarService
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.log.logcatLogBuffer
@@ -129,7 +132,8 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
     }
 
     private fun initController(
-        row: ExpandableNotificationRow
+        row: ExpandableNotificationRow,
+        allowLongPress: Boolean = false,
     ): ExpandableNotificationRowController {
         return ExpandableNotificationRowController(
             row,
@@ -154,7 +158,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
             onExpandClickListener,
             statusBarStateController,
             gutsManager,
-            /*allowLongPress=*/ false,
+            allowLongPress,
             onUserInteractionCallback,
             falsingManager,
             featureFlags,
@@ -318,5 +322,43 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
 
         controllerUser.mSettingsListener.onSettingChanged(BUBBLES_SETTING_URI, 1, "0")
         verify(childView).setBubblesEnabledForUser(false)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INLINE_NOTIFICATION_SETTINGS_ACCESS)
+    fun contextClickListener_inlineSettingsAccessEnabled_invokesLongClickCallback() {
+        val row: ExpandableNotificationRow = mock()
+        val entryLegacy: NotificationEntry = mock()
+        val rowWidth = 100
+        val rowHeight = 200
+
+        whenever(row.width).thenReturn(rowWidth)
+        whenever(row.height).thenReturn(rowHeight)
+
+        controller = initController(row, allowLongPress = true)
+        controller.init(entryLegacy)
+
+        val captor = ArgumentCaptor.forClass(View.OnContextClickListener::class.java)
+        verify(row).setOnContextClickListener(captor.capture())
+
+        val listener = captor.value
+        val result = listener.onContextClick(row)
+
+        // Verify that the context click triggers the long click callback with the center
+        // coordinates of the view.
+        verify(row).doLongClickCallback(rowWidth / 2, rowHeight / 2)
+        assertThat(result).isTrue()
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_INLINE_NOTIFICATION_SETTINGS_ACCESS)
+    fun contextClickListener_inlineSettingsAccessDisabled_doesNotSetContextClickListener() {
+        val row: ExpandableNotificationRow = mock()
+        val entryLegacy: NotificationEntry = mock()
+
+        controller = initController(row, allowLongPress = true)
+        controller.init(entryLegacy)
+
+        verify(row, never()).setOnContextClickListener(any())
     }
 }
