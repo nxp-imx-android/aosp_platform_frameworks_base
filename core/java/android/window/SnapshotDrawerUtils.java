@@ -162,14 +162,13 @@ public class SnapshotDrawerUtils {
                         .setCallsite("TaskSnapshotWindow.drawSizeMismatchSnapshot")
                         .setFormat(mSnapshot.getHardwareBufferFormat());
                 childSurfaceControl = builder.build();
+                // Show the surface here as it will still be hidden as the parent is still hidden.
+                mTransaction.show(childSurfaceControl);
             }
 
             final Rect letterboxInsets = mSnapshot.getLetterboxInsets();
             float offsetX = letterboxInsets.left;
             float offsetY = letterboxInsets.top;
-            // We can just show the surface here as it will still be hidden as the parent is
-            // still hidden.
-            mTransaction.show(childSurfaceControl);
 
             // Align the snapshot with content area.
             if (offsetX != 0f || offsetY != 0f) {
