@@ -274,7 +274,7 @@ flag {
      name: "dont_show_other_users_apps_to_admin"
      namespace: "multiuser"
      description: "Disables showing other user apps to admin"
-     bug: "424786870"
+     bug: "474361080"
 }
 
 flag {
@@ -320,7 +320,7 @@ flag {
      name: "hsu_allowlist_activities"
      namespace: "multiuser"
      description: "Adds an allowlist mechanism to decide which activities can be launched when the current user is the headless system user"
-     bug: "412177078"
+     bug: "442776393"
 }
 
 flag {
@@ -350,7 +350,6 @@ flag {
      description: "Refactored some getUsers() methods to use a UserFilter object"
      bug: "419086491"
 }
-
 
 flag {
      name: "user_removal_minor_apis_2026"
