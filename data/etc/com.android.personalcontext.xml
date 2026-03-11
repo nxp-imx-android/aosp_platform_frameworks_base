@@ -20,7 +20,6 @@
         <permission name="android.permission.PERSONAL_CONTEXT_PUBLISH_INSIGHTS"/>
         <permission name="android.permission.PERSONAL_CONTEXT_READ_SETTINGS"/>
         <permission name="android.permission.PERSONAL_CONTEXT_RECEIVE_HINTS"/>
-        <permission name="android.permission.READ_GLOBAL_APP_SEARCH_DATA"/>
         <permission name="android.permission.USE_ON_DEVICE_INTELLIGENCE"/>
     </privapp-permissions>
 </permissions>
