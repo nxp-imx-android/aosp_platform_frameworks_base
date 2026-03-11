@@ -438,6 +438,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
             } else {
                 // The process is inactive.
                 mAtm.mVisibleActivityProcessTracker.removeProcess(this);
+                mAtm.removeProcessFromStoppingMap(getPackageList(), mPid);
             }
         }
     }
