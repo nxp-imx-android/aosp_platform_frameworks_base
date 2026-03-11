@@ -2156,8 +2156,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND})
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testInMultiDesk_requestFullscreen_returnDone() {
         setupDesktopModeLaunchParamsModifier();
 

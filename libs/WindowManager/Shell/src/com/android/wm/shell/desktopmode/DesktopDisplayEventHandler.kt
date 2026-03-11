@@ -107,21 +107,19 @@ class DesktopDisplayEventHandler(
     private fun onInit() {
         displayController.addDisplayWindowListener(this)
 
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desktopTasksController.onDeskRemovedListener = this
-            shellController.addUserChangeListener(
-                object : UserChangeListener {
-                    override fun onUserChanged(newUserId: Int, userContext: Context) {
-                        val displayIds = rootTaskDisplayAreaOrganizer.displayIds.toSet()
-                        logV("onUserChanged newUserId=%d displays=%s", newUserId, displayIds)
-                        createDefaultDesksIfNeeded(displayIds, newUserId)
-                    }
+        desktopTasksController.onDeskRemovedListener = this
+        shellController.addUserChangeListener(
+            object : UserChangeListener {
+                override fun onUserChanged(newUserId: Int, userContext: Context) {
+                    val displayIds = rootTaskDisplayAreaOrganizer.displayIds.toSet()
+                    logV("onUserChanged newUserId=%d displays=%s", newUserId, displayIds)
+                    createDefaultDesksIfNeeded(displayIds, newUserId)
                 }
-            )
-            if (DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) {
-                desktopTasksController.preserveDisplayRequestHandler = this
-                shellController.addKeyguardChangeListener(this)
             }
+        )
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) {
+            desktopTasksController.preserveDisplayRequestHandler = this
+            shellController.addKeyguardChangeListener(this)
         }
     }
 
@@ -255,12 +253,10 @@ class DesktopDisplayEventHandler(
             Trace.TRACE_TAG_WINDOW_MANAGER,
             "DesktopDisplayEventHandler#onDisplayAdded: $displayId",
         ) {
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                rootTaskDisplayAreaOrganizer.registerListener(
-                    displayId,
-                    onDisplayAreaChangeListener,
-                )
-            }
+            rootTaskDisplayAreaOrganizer.registerListener(
+                displayId,
+                onDisplayAreaChangeListener,
+            )
             if (displayId != DEFAULT_DISPLAY) {
                 desktopDisplayModeController.updateExternalDisplayWindowingMode(displayId)
             }
@@ -280,12 +276,10 @@ class DesktopDisplayEventHandler(
             Trace.TRACE_TAG_WINDOW_MANAGER,
             "DesktopDisplayEventHandler#onDisplayRemoved: $displayId",
         ) {
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                rootTaskDisplayAreaOrganizer.unregisterListener(
-                    displayId,
-                    onDisplayAreaChangeListener,
-                )
-            }
+            rootTaskDisplayAreaOrganizer.unregisterListener(
+                displayId,
+                onDisplayAreaChangeListener,
+            )
             if (displayId != DEFAULT_DISPLAY) {
                 desktopDisplayModeController.updateDefaultDisplayWindowingMode()
             }
@@ -413,7 +407,6 @@ class DesktopDisplayEventHandler(
         userId: Int,
         onlyDeskInDisplay: Boolean,
     ) {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         logV(
             "onDeskRemoved deskId=%d displayId=%d userId=%d onlyDeskInDisplay=%b",
             deskId,
@@ -427,7 +420,6 @@ class DesktopDisplayEventHandler(
     }
 
     private fun createDefaultDesksIfNeeded(displayIds: Collection<Int>, userId: Int?) {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
         logV("createDefaultDesksIfNeeded displays=%s userId=%d", displayIds, userId)
         if (userId != null && !isUserDesktopEligible(userId)) {
             logW("createDefaultDesksIfNeeded ignoring attempt for ineligible user")

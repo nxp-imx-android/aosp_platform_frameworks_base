@@ -164,7 +164,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_removeDesk_removesFromRepository() {
         val transition = Binder()
         val deskId = 5
@@ -192,7 +191,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_removeLastDeskInDisplay_invokesOnRemoveListener() {
 
         val transition = Binder()
@@ -221,7 +219,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_removeDeskInDisplayWithOthersRemaining_invokesOnRemoveListener() {
 
         val transition = Binder()
@@ -252,7 +249,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_removeInactiveDeskInDisplay_doesNotLogSessionExit() {
         val transition = Binder()
         val removeListener = TestOnDeskRemovedListener()
@@ -281,7 +277,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_removeDesk_invokesRemovalCallback() {
         val transition = Binder()
         val callback: () -> Unit = mock()
@@ -308,7 +303,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_activateDesk_updatesRepository() {
         val transition = Binder()
         val change = Change(mock(), mock())
@@ -337,7 +331,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_activateDesk_noDoubleActivation() {
         val transition = Binder()
         val change = Change(mock(), mock())
@@ -366,7 +359,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_activateDesk_runsActivationCallback() {
         val transition = Binder()
         val change = Change(mock(), mock())
@@ -393,7 +385,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_activateDeskWithTask_updatesRepository() =
         testScope.runTest {
             val deskId = 5
@@ -427,7 +418,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_activateDeskWithTask_trampolineTask_updatesRepositoryForDesk() =
         testScope.runTest {
             val deskId = 5
@@ -466,7 +456,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_activateDeskWithTask_runsActivationCallback() =
         testScope.runTest {
             val deskId = 5
@@ -497,7 +486,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_activateDesk_noTransitChange_updatesRepository() {
         val transition = Binder()
         val deskId = 5
@@ -524,7 +512,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_deactivateDesk_updatesRepository() {
         val transition = Binder()
         val deskChange = Change(mock(), mock())
@@ -555,7 +542,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_deactivateDesk_userSwitch_keepsDeskActiveInRepo() {
         val transition = Binder()
         val deskChange = Change(mock(), mock())
@@ -583,7 +569,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_deactivateDesk_noDoubleDeactivation() {
         val transition = Binder()
         val deskChange = Change(mock(), mock())
@@ -612,7 +597,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_deactivateDesk_deactivationCallbackInvoked() {
         val transition = Binder()
         val deskChange = Change(mock(), mock())
@@ -641,7 +625,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_deactivateDeskWithExitingTask_doesNotUpdateRepository() {
         val transition = Binder()
         val exitingTask = createFreeformTask(DEFAULT_DISPLAY)
@@ -683,7 +666,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_deactivateDeskWithoutVisibleChange_updatesRepository() {
         val transition = Binder()
         val deskId = 5
@@ -712,7 +694,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_addTaskToDesk_restoresMinimizedTask() {
         val transition = Binder()
         repository.addDesk(SECOND_DISPLAY_ID, deskId = 5)
@@ -738,7 +719,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_addTaskToDesk_restoresNonMinimizedTask() {
         val transition = Binder()
         repository.addDesk(SECOND_DISPLAY_ID, deskId = 5)
@@ -764,7 +744,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionFinish_deactivateDesk_updatesRepository() {
         val transition = Binder()
         val deskId = 5
@@ -790,7 +769,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionMergedAndFinished_deactivateDesk_updatesRepository() {
         val transition = Binder()
         val deskId = 5
@@ -818,7 +796,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_twoPendingTransitions_handlesBoth() {
         val transition = Binder()
         // Active one desk and deactivate another in different displays, such as in some
@@ -861,7 +838,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_changeDeskDisplay_updatesRepository() {
         val transition = Binder()
         val deskChange = Change(mock(), mock())
@@ -888,7 +864,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_changeDeskDisplay_updatesAllRepositories() {
         desktopUserRepositories.onUserChanged(USER_ID_1, mock())
         desktopUserRepositories.getProfile(USER_ID_1)
@@ -923,7 +898,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_removeDisplay_updatesRepository() {
         val transition = Binder()
         val changeDisplayTransition =
@@ -945,7 +919,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_deskToFront_activatesSkippingReorder() =
         testScope.runTest {
             val deskId = 5
@@ -976,7 +949,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_deskToTop_modeIsChangeWithTopFlag_activatesSkippingReorder() =
         testScope.runTest {
             val deskId = 5
@@ -1009,7 +981,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
     )
     fun independentDeskTransition_deskToBack_deactivatesSkippingReorder() =
@@ -1050,7 +1021,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_SKIP_DEACTIVATION_OF_DESK_WITH_NOTHING_IN_FRONT,
     )
     fun independentDeskTransition_deskToBack_deskWithNonCurrentUserId_deactivatesCurrentUserDesk() =
@@ -1086,7 +1056,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_wallpaperOverActiveDesk_reactivatesDeskWithOrder() =
         testScope.runTest {
             val deskId = 5
@@ -1119,7 +1088,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_wallpaperOverInactiveDesk_dismissesDesktopWallpaper() =
         testScope.runTest {
             val deskId = 5
@@ -1154,7 +1122,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_wallpaperOverInactiveDesk_differentUser_dismissesDesktopWallpaper() =
         testScope.runTest {
             val deskId = 5
@@ -1199,7 +1166,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_wallpaperToBackWithoutDesk_deactivatesDeskWithoutOrder() =
         testScope.runTest {
             val deskId = 5
@@ -1234,7 +1200,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_wallpaperToBackWithoutDeskWhileKeyguardAppears_keepsDeskActive() =
         testScope.runTest {
             val deskId = 5
@@ -1270,7 +1235,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_desktopWallpaperMovingToBackWithoutDesk_differentUser_deactivates() =
         testScope.runTest {
             val deskId = 5
@@ -1299,7 +1263,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_wallpaperToBackWithoutDeskAndEnteringFullImmersive_keepsDeskAsLaunchRootAndActive() =
         testScope.runTest {
             val deskId = 5
@@ -1334,7 +1297,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_closingLastDeskTask_deactivatesDeskWithoutOrderAndKeepsRepoActive() =
         testScope.runTest {
             val deskId = 5
@@ -1379,7 +1341,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun independentDeskTransition_nullContainerChange_notTreatedAsWallpaperChange() =
         testScope.runTest {
             val displayId = DEFAULT_DISPLAY
@@ -1406,7 +1367,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun findDeskToDeskTransition_noRunningTransition_returnsNull() {
         val transition = Binder()
         val result = observer.findDeskToDeskTransition(transition)
@@ -1414,7 +1374,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun findDeskToDeskTransition_multipleUsers_returnsNull() {
         val transition = Binder()
         val repo1 = desktopUserRepositories.getProfile(USER_ID_1)
@@ -1457,7 +1416,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun findDeskToDeskTransition_noFromDesk_returnsNull() {
         val transition = Binder()
         val repository = desktopUserRepositories.getProfile(USER_ID_1)
@@ -1483,7 +1441,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun findDeskToDeskTransition_noToDesk_returnsNull() {
         val transition = Binder()
         val repository = desktopUserRepositories.getProfile(USER_ID_1)
@@ -1511,7 +1468,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun findDeskToDeskTransition_sameFromAndToDesk_returnsNull() {
         val transition = Binder()
         repository.addDesk(DEFAULT_DISPLAY, deskId = 1)
@@ -1550,7 +1506,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun findDeskToDeskTransition_validTransition_returnsDeskToDeskTransition() {
         val transition = Binder()
         val repository = desktopUserRepositories.getProfile(USER_ID_1)
@@ -1595,7 +1550,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun findDeskToDeskTransition_validTransitionWithActivateTask_returnsDeskToDeskTransition() {
         val transition = Binder()
         val repository = desktopUserRepositories.getProfile(USER_ID_1)
@@ -1688,7 +1642,6 @@ class DesksTransitionObserverTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun findDeskToDeskTransition_multiDisplay_returnsCorrectTransition() {
         val transition = Binder()
         val repository = desktopUserRepositories.getProfile(USER_ID_1)

@@ -961,10 +961,6 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
     }
 
     private fun verifyTaskAddedAndEnterLogging(enterReason: EnterReason, taskUpdate: TaskUpdate) {
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            assertTrue(transitionObserver.isSessionActive)
-            verify(desktopModeEventLogger, times(1)).logSessionEnter(eq(enterReason))
-        }
         verify(desktopModeEventLogger, times(1)).logTaskAdded(eq(taskUpdate), any())
         ExtendedMockito.verify {
             Trace.setCounter(
@@ -985,10 +981,6 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
 
     private fun verifyTaskRemovedAndExitLogging(exitReason: ExitReason, taskUpdate: TaskUpdate) {
         verify(desktopModeEventLogger, times(1)).logTaskRemoved(eq(taskUpdate), any())
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            assertFalse(transitionObserver.isSessionActive)
-            verify(desktopModeEventLogger, times(1)).logSessionExit(eq(exitReason))
-        }
         verify(desktopModeEventLogger, times(1)).logSessionExitIfNeeded()
         verifyNoMoreInteractions(desktopModeEventLogger)
     }

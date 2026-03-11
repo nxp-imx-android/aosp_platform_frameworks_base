@@ -102,7 +102,6 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
     @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
     fun handleRequest_noReparentDisplay_doesNotPerformDisconnect() {
         val displayChange = TransitionRequestInfo.DisplayChange(SECOND_DISPLAY)
@@ -137,7 +136,6 @@ class DisplayDisconnectTransitionHandlerTest() : ShellTestCase() {
     @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
     fun handleRequest_validReparentDisplay_performsDisconnect() {
         val displayChange = TransitionRequestInfo.DisplayChange(SECOND_DISPLAY)

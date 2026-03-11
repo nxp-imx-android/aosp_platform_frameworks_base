@@ -1430,9 +1430,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             // start of the transition, we don't end up going through
                             // TransitionUtil#createLeash(), which normally resets the position of
                             // the task within the leash, so we have to do it manually here
-                            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-                                startT.setPosition(change.getLeash(), /* x= */ 0, /* y= */ 0);
-                            }
+                            startT.setPosition(change.getLeash(), /* x= */ 0, /* y= */ 0);
                         }
                         final TaskState pausingTask = mPausingTasks.remove(pausingIdx);
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
@@ -1468,21 +1466,14 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             startT.hide(target.leash);
                         }
                         mOpeningTasks.add(updateTaskState(change, target.leash));
-                        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                    "  opening new leaf taskId=%d wasClosing=%b",
-                                    target.taskId, wasClosing);
+                        final boolean childOfOpeningPausedDesk = openingPausedDeskId != -1
+                                && mDesksOrganizer.getDeskAtEnd(change) == openingPausedDeskId;
+                        ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                                "  opening new leaf taskId=%d wasClosing=%b "
+                                        + "childOfOpeningPausedDesk=%b",
+                                target.taskId, wasClosing, childOfOpeningPausedDesk);
+                        if (!childOfOpeningPausedDesk) {
                             onlyOpeningPausedTasksOrPausedDesk = false;
-                        } else {
-                            final boolean childOfOpeningPausedDesk = openingPausedDeskId != -1
-                                    && mDesksOrganizer.getDeskAtEnd(change) == openingPausedDeskId;
-                            ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
-                                    "  opening new leaf taskId=%d wasClosing=%b "
-                                            + "childOfOpeningPausedDesk=%b",
-                                    target.taskId, wasClosing, childOfOpeningPausedDesk);
-                            if (!childOfOpeningPausedDesk) {
-                                onlyOpeningPausedTasksOrPausedDesk = false;
-                            }
                         }
                     } else {
                         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
@@ -1724,14 +1715,12 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 // recents, so end the transition by moving the app(s) back to the top (and also
                 // re-showing their tasks).
                 final List<TaskState> tasksToShowFrontToBack = new ArrayList<>();
-                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-                    // Opening tasks can also exist in a |returningToApp| case, such as when
-                    // returning to the desk tile by clicking on one of the exploded view tasks.
-                    // These are really "pausing" tasks that became "opening" because they were
-                    // re-brought to front. They should be on top of pausing tasks, so insert them
-                    // first.
-                    tasksToShowFrontToBack.addAll(mOpeningTasks);
-                }
+                // Opening tasks can also exist in a |returningToApp| case, such as when
+                // returning to the desk tile by clicking on one of the exploded view tasks.
+                // These are really "pausing" tasks that became "opening" because they were
+                // re-brought to front. They should be on top of pausing tasks, so insert them
+                // first.
+                tasksToShowFrontToBack.addAll(mOpeningTasks);
                 // The remaining pausing tasks should also be moved back to top, but below the
                 // opening ones.
                 tasksToShowFrontToBack.addAll(mPausingTasks);

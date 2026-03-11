@@ -99,16 +99,12 @@ class DesktopMinimizationTransitionHandler(
         animations +=
             info.changes
                 .filter {
-                    checkChangeMode(it) &&
-                        (it.taskInfo?.windowingMode == WINDOWING_MODE_FREEFORM ||
-                            // Minimizing desktop tasks can be fullscreen too, such as
-                            // in some back-nav cases where the task is reparented out
-                            // into a touch-first TDA before being forcibly put back into
-                            // a desk as a minimized task by
-                            // [DesktopBackBavTransitionObserver].
-                            // Also, fullscreen-in-desktop tasks for immersive or
-                            // fullscreen app requests.
-                            DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue)
+                    // Check change mode without windowing mode freeform checks because minimizing
+                    // desktop tasks can be fullscreen too, such as in some back-nav cases where
+                    // the task is reparented out into a touch-first TDA before being forcibly put
+                    // back into a desk as a minimized task by [DesktopBackBavTransitionObserver].
+                    // Also, fullscreen-in-desktop tasks for immersive or fullscreen app requests.
+                    checkChangeMode(it)
                 }
                 .mapNotNull {
                     createMinimizeAnimation(it, finishTransaction, onAnimFinish, startAnimDelay)

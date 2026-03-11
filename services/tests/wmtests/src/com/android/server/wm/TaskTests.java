@@ -197,7 +197,6 @@ public class TaskTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testRemoveOnlyChildNestedTask_removesFocusFromRoot() {
         // A created-by-organizer root task at the bottom.
         final Task bottomRootTask = createTask(mDisplayContent);

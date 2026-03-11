@@ -94,18 +94,6 @@ class ShellCrashHandlerTest : ShellTestCase() {
             )
     }
 
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun init_freeformTaskExists_sendsHomeIntent() {
-        val wctCaptor = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
-        val task = createTaskInfo(1)
-        whenever(shellTaskOrganizer.getRunningTasks()).thenReturn(arrayListOf(task))
-
-        shellInit.init()
-
-        verify(shellTaskOrganizer).applyTransaction(wctCaptor.capture())
-        wctCaptor.value.assertPendingIntentAt(0, launchHomeIntent(DEFAULT_DISPLAY))
-    }
 
     @Test
     fun init_bubbleTaskExists_convertsToUndefined() {

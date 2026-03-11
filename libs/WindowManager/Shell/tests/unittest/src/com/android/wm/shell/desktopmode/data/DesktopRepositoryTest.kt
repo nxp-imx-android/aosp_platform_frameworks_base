@@ -22,6 +22,7 @@ import android.graphics.Region
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
+import android.testing.AndroidTestingRunner
 import android.util.ArrayMap
 import android.util.ArraySet
 import android.view.Display.DEFAULT_DISPLAY
@@ -80,9 +81,9 @@ import platform.test.runner.parameterized.Parameters
  * Build/Install/Run: atest WMShellUnitTests:DesktopRepositoryTest
  */
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4::class)
+@RunWith(AndroidTestingRunner::class)
 @ExperimentalCoroutinesApi
-class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
+class DesktopRepositoryTest : ShellTestCase() {
 
     private lateinit var repo: DesktopRepository
     private lateinit var shellInit: ShellInit
@@ -92,10 +93,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     @Mock private lateinit var persistentRepository: DesktopPersistentRepository
 
     private val desktopConfig = FakeDesktopConfig()
-
-    init {
-        mSetFlagsRule.setFlagsParameterization(flags)
-    }
 
     @Before
     fun setUp() {
@@ -229,7 +226,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addTask_deskDoesNotExist_throws() {
         repo.removeDesk(deskId = 0)
 
@@ -244,7 +240,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addTaskToDesk_deskDoesNotExist_throws() {
         repo.removeDesk(deskId = 2)
 
@@ -260,7 +255,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addTaskToDesk_addsToZOrderList() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 2)
         repo.addDesk(DEFAULT_DISPLAY, deskId = 3)
@@ -300,7 +294,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addTaskToDesk_visible_addsToVisible() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 2)
 
@@ -316,7 +309,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addTaskToDesk_removesFromAllOtherDesks() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 2)
         repo.addDesk(DEFAULT_DISPLAY, deskId = 3)
@@ -340,7 +332,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addTaskToDesk_notifiesTaskAppearingInDeskListener() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 5)
         val listener = TestDeskChangeListener()
@@ -408,7 +399,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeActiveTask_excludingDesk_leavesTaskInDesk() {
         repo.addDesk(displayId = 2, deskId = 11)
         repo.addDesk(displayId = 3, deskId = 12)
@@ -1532,7 +1522,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setTaskInFullImmersiveState_inDesk_savedAsInImmersiveState() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addTaskToDesk(
@@ -1550,7 +1539,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskInFullImmersiveState_inDesk_removedAsInImmersiveState() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addTaskToDesk(
@@ -1627,7 +1615,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeDesk_multipleDesks_active_removes() {
         repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
         repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
@@ -1640,7 +1627,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeDesk_multipleDesks_active_marksInactiveInDisplay() {
         repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
         repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
@@ -1652,7 +1638,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeDesk_multipleDesks_inactive_removes() {
         repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
         repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
@@ -1665,7 +1650,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeDesk_multipleDesks_inactive_keepsOtherDeskActiveInDisplay() {
         repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
         repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 3)
@@ -1677,10 +1661,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
-    )
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
     fun removeDesk_repositoryBasedPersistenceEnabled_removesFromPersistence() =
         runTest(StandardTestDispatcher()) {
             repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
@@ -1719,24 +1700,9 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(repo.getRememberedBoundsRatio(packageName)).isEqualTo(bounds)
     }
 
-    @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun addTask_deskDoesNotExists_createsDesk() {
-        repo.addTask(displayId = 999, taskId = 6, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
 
-        assertThat(repo.getActiveTaskIdsInDesk(999)).contains(6)
-    }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun getDisplayForDesk() {
-        repo.addDesk(SECOND_DISPLAY, SECOND_DISPLAY)
-
-        assertEquals(SECOND_DISPLAY, repo.getDisplayForDesk(deskId = SECOND_DISPLAY))
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun getDisplayForDesk_multipleDesks() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addDesk(DEFAULT_DISPLAY, deskId = 7)
@@ -1748,29 +1714,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION)
-    fun testRemoveDisplay_singleDesk_removesDesk() {
-        val listener = TestDeskChangeListener()
-        val executor = TestShellExecutor()
-        repo.addDeskChangeListener(listener, executor)
-        repo.addDesk(DEFAULT_DISPLAY, deskId = DEFAULT_DISPLAY)
-        repo.addDesk(SECOND_DISPLAY, deskId = SECOND_DISPLAY)
-
-        repo.removeDisplay(SECOND_DISPLAY)
-        executor.flushAll()
-
-        assertEquals(repo.getDeskIds(SECOND_DISPLAY), emptySet())
-        assertEquals(repo.getDeskIds(DEFAULT_DISPLAY), setOf(DEFAULT_DISPLAY))
-        verify(repo, times(1)).notifyVisibleTaskListeners(SECOND_DISPLAY, visibleTasksCount = 0)
-        val lastRemoval = assertNotNull(listener.lastRemoval)
-        assertThat(lastRemoval.displayId).isEqualTo(SECOND_DISPLAY)
-        assertThat(lastRemoval.deskId).isEqualTo(SECOND_DISPLAY)
-    }
-
-    @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
     )
     fun testRemoveDisplay_multiDesk_removesAllDesksOnDisplay() {
@@ -1795,7 +1739,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
     )
     fun testOnDeskDisplayChanged_movesDeskToNewDisplay_invokesCallbacks() {
@@ -1829,7 +1772,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     @EnableFlags(
-        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
         Flags.FLAG_ENABLE_DISPLAY_RECONNECT_INTERACTION,
         Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
     )
@@ -1909,7 +1851,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setDeskActive() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
 
@@ -1919,7 +1860,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setDeskInactive() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.setActiveDesk(DEFAULT_DISPLAY, deskId = 6)
@@ -1930,7 +1870,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun getDeskIdForTask() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addTaskToDesk(
@@ -1945,7 +1884,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_clearsBoundsBeforeMaximize() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addTaskToDesk(
@@ -1963,7 +1901,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_clearsBoundsBeforeImmersive() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addTaskToDesk(
@@ -1981,7 +1918,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_removesFromZOrderList() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addTaskToDesk(
@@ -1998,7 +1934,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_removesFromMinimized() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addTaskToDesk(
@@ -2016,7 +1951,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_removesFromImmersive() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addTaskToDesk(
@@ -2034,7 +1968,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_removesFromActiveTasks() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addTaskToDesk(
@@ -2051,7 +1984,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeTaskFromDesk_removesFromVisibleTasks() {
         repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
         repo.addTaskToDesk(
@@ -2068,7 +2000,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addDesk_updatesListener() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2083,7 +2014,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addDesk_atDeskLimit_updatesCanCreateDeskListener() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2101,7 +2031,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeDesk_updatesListener() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2118,7 +2047,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeDesk_belowDeskLimit_updatesCanCreateDeskListener() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2138,7 +2066,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeDesk_didNotExist_doesNotUpdateListener() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2153,7 +2080,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeDesk_wasActive_updatesActiveChangeListener() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2172,7 +2098,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setDeskActive_fromNoActive_updatesListener() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2189,7 +2114,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setDeskActive_fromOtherActive_updatesListener() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2208,7 +2132,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setDeskActive_alreadyActive_doesNotUpdateListenerTwice() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2227,7 +2150,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun setDeskInactive_updatesListener() {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2245,7 +2167,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun getPreviousDeskId() {
         repo.addDesk(displayId = 5, deskId = 1)
         repo.addDesk(displayId = 5, deskId = 2)
@@ -2257,7 +2178,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun getNextDeskId() {
         repo.addDesk(displayId = 5, deskId = 1)
         repo.addDesk(displayId = 5, deskId = 2)
@@ -2269,7 +2189,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addDesk_transientDesk_persistentRepoNotUpdated() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2290,7 +2209,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addTiledTasks_toTransientDesk_persistentRepoNotUpdated() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2313,7 +2231,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addActiveTask_toTransientDesk_persistentRepoNotUpdated() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2341,7 +2258,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addTaskToDesk_transientDesk_doesNotRemoveFromOtherDesks() {
         // Create non-transient desk with task, then transient desk.
         repo.addDesk(DEFAULT_DISPLAY, deskId = 1)
@@ -2369,7 +2285,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeActiveTask_fromTransientDesk_listenersNotUpdated() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2399,7 +2314,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun preserveDesk_activeDesk_deskPreservedAsActive() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2424,7 +2338,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun preserveDesk_inactiveDesk_preservedActiveDeskIsNull() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2449,7 +2362,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun minimizeTask_inTransientDesk_persistentRepoNotUpdated() = runTest {
         val listener = TestDeskChangeListener()
         val executor = TestShellExecutor()
@@ -2497,7 +2409,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun removeDesk_lastDeskOnDisplay_persistsEmptyList() = runTest {
         repo.addDesk(displayId = SECOND_DISPLAY, deskId = 1, uniqueDisplayId = "unique_id_1")
         clearInvocations(persistentRepository)
@@ -2817,10 +2728,5 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         private const val UNIQUE_DISPLAY_ID = "uniqueDisplayId"
         private const val UNIQUE_DISPLAY_ID2 = "uniqueDisplayId2"
         private val TEST_TASK_BOUNDS = Rect(100, 100, 200, 200)
-
-        @JvmStatic
-        @Parameters(name = "{0}")
-        fun getParams(): List<FlagsParameterization> =
-            FlagsParameterization.allCombinationsOf(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     }
 }

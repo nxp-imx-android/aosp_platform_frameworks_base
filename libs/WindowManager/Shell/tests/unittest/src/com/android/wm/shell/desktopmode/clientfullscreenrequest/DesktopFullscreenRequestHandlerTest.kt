@@ -28,7 +28,6 @@ import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
-import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.TestShellExecutor
@@ -71,7 +70,6 @@ import org.mockito.kotlin.whenever
  */
 @SmallTest
 @RunWith(JUnit4::class)
-@EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
 class DesktopFullscreenRequestHandlerTest : ShellTestCase() {
     private val shellInit = ShellInit(TestShellExecutor())
     private val desktopUserRepositories = mock<DesktopUserRepositories>()

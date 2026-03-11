@@ -713,13 +713,6 @@ flag {
 }
 
 flag {
-    name: "enable_multiple_desktops_backend"
-    namespace: "lse_desktop_experience"
-    description: "Enable multiple desktop sessions for desktop windowing (backend)."
-    bug: "362720497"
-}
-
-flag {
     name: "enable_multiple_desktops_default_activation_in_desktop_first_displays"
     namespace: "lse_desktop_experience"
     description: "Activate a default desk in desktop-first displays, with multiple desks enabled"

@@ -1951,17 +1951,11 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         removeRootTasksInWindowingModes(WINDOWING_MODE_PINNED);
         final IntArray visibleRootTasks = new IntArray();
         forAllRootTasks(rootTask -> {
-            final boolean restoreTask;
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-                // If the task is visible, it should have activities that are visible to
-                // the current user, so don't check for task's user id since it is
-                // redundant and might accidentally exclude a non-leaf tasks that
-                // aren't associated with one particular user.
-                restoreTask = rootTask.isVisible();
-            } else {
-                restoreTask = (mCurrentUser == rootTask.mUserId || rootTask.showForAllUsers())
-                        && rootTask.isVisible();
-            }
+            // If the task is visible, it should have activities that are visible to
+            // the current user, so don't check for task's user id since it is
+            // redundant and might accidentally exclude a non-leaf tasks that
+            // aren't associated with one particular user.
+            final boolean restoreTask = rootTask.isVisible();
             if (restoreTask) {
                 visibleRootTasks.add(rootTask.getRootTaskId());
             }

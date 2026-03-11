@@ -309,19 +309,10 @@ class DesktopRepositoryInitializerImpl(
         userId: Int,
     ): Set<Desktop> {
         // TODO: b/365873835 - what about desks that won't be restored?
-        //  - invalid desk ids from multi-desk -> single-desk switching can be ignored / deleted.
-        val limitToSingleDeskPerDisplay =
-            !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         return state.desktopMap.keys
-            .mapNotNull { deskId ->
-                persistentRepository.readDesktop(userId, deskId)?.takeIf { desk ->
-                    // Do not restore invalid desks when multi-desks is disabled. This is
-                    // possible if the feature is disabled after having created multiple desks.
-                    val isValidSingleDesk = desk.desktopId == desk.displayId
-                    (!limitToSingleDeskPerDisplay || isValidSingleDesk)
-                }
+            .mapNotNullTo(mutableSetOf()) { deskId ->
+                persistentRepository.readDesktop(userId, deskId)
             }
-            .toMutableSet()
     }
 
     private suspend fun getPreservedDesksToRestore(state: DesktopRepositoryState): Set<Desktop> {
