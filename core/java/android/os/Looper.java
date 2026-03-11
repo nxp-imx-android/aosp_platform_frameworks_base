@@ -233,20 +233,23 @@ public final class Looper {
             return false;
         }
 
-        if (android.os.Flags.perfettoSdkTracingV3() && PerfettoCategories.MQ_CATEGORY.isEnabled()) {
+        if (PerfettoTrace.isMQCategoryEnabled()) {
             final long messageDelayMs = Math.max(0L, msg.when - SystemClock.uptimeMillis());
-            com.android.internal.dev.perfetto.sdk.PerfettoTrace
-                    .begin(PerfettoCategories.MQ_CATEGORY, "message_queue_receive")
-                    .beginProto()
-                    .beginNested(MESSAGE_QUEUE)
-                    .addField(SENDING_THREAD_NAME, msg.sendingThreadName)
-                    .addField(RECEIVING_THREAD_NAME, Thread.currentThread().getName())
-                    .addField(MESSAGE_CODE, msg.what)
-                    .addField(MESSAGE_DELAY_MS, messageDelayMs)
-                    .endNested()
-                    .endProto()
-                    .setTerminatingFlow(msg.eventId)
-                    .emit();
+            if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
+                com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                        .begin(PerfettoCategories.MQ_CATEGORY, "message_queue_receive")
+                        .beginProto()
+                        .beginNested(MESSAGE_QUEUE)
+                        .addField(SENDING_THREAD_NAME, msg.sendingThreadName)
+                        .addField(RECEIVING_THREAD_NAME,
+                                    Thread.currentThread().getName())
+                        .addField(MESSAGE_CODE, msg.what)
+                        .addField(MESSAGE_DELAY_MS, messageDelayMs)
+                        .endNested()
+                        .endProto()
+                        .setTerminatingFlow(msg.eventId)
+                        .emit();
+            }
         }
 
         // This must be in a local variabe, in case a UI event sets the logger
@@ -343,9 +346,12 @@ public final class Looper {
                     + msg.target.getClass().getName() + " "
                     + msg.callback + " what=" + msg.what);
         }
-        if (android.os.Flags.perfettoSdkTracingV3() && PerfettoCategories.MQ_CATEGORY.isEnabled()) {
-            com.android.internal.dev.perfetto.sdk.PerfettoTrace.end(PerfettoCategories.MQ_CATEGORY)
-                    .emit();
+        if (PerfettoTrace.isMQCategoryEnabled()) {
+            if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
+                com.android.internal.dev.perfetto.sdk.PerfettoTrace
+                        .end(PerfettoCategories.MQ_CATEGORY)
+                        .emit();
+            }
         }
 
         msg.recycleUnchecked();
