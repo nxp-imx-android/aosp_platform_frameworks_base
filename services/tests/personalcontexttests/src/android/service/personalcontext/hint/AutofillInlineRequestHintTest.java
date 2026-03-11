@@ -106,14 +106,15 @@ public class AutofillInlineRequestHintTest {
         final FillEventHistory fillEventHistory = getFillEventHistory(focusedId, sessionId);
 
         final AutofillInlineRequestHint hint =
-                new AutofillInlineRequestHint.Builder(sessionId,
-                        taskId,
-                        requestTimestamp,
-                        activityComponent,
-                        focusedId,
-                        autofillValue,
-                        inlineSuggestionsRequest,
-                        mFakeBinder)
+                new AutofillInlineRequestHint.Builder(
+                                sessionId,
+                                taskId,
+                                requestTimestamp,
+                                activityComponent,
+                                focusedId,
+                                autofillValue,
+                                inlineSuggestionsRequest,
+                                mFakeBinder)
                         .setFillEventHistory(fillEventHistory)
                         .build();
 
@@ -131,9 +132,7 @@ public class AutofillInlineRequestHintTest {
                 .isEqualTo(inlineSuggestionsRequest);
         assertThat(outputAutofillHint.getAugmentedAutofillProxy().asBinder())
                 .isEqualTo(mFakeBinder);
-        // FillEventHistory.Event does not implement equals, compare strings instead.
-        assertThat(outputAutofillHint.getFillEventHistory().getEvents().getFirst().toString())
-                .isEqualTo(fillEventHistory.getEvents().getFirst().toString());
+        assertThat(outputAutofillHint.getFillEventHistory()).isEqualTo(fillEventHistory);
 
         assertThat(outputAutofillHint).isEqualTo(hint);
         assertThat(outputAutofillHint.hashCode()).isEqualTo(hint.hashCode());
@@ -152,14 +151,15 @@ public class AutofillInlineRequestHintTest {
         final FillEventHistory fillEventHistory = getFillEventHistory(focusedId, sessionId);
 
         final AutofillInlineRequestHint hint =
-                new AutofillInlineRequestHint.Builder(sessionId,
-                        taskId,
-                        requestTimestamp,
-                        activityComponent,
-                        focusedId,
-                        autofillValue,
-                        inlineSuggestionsRequest,
-                        mFakeBinder)
+                new AutofillInlineRequestHint.Builder(
+                                sessionId,
+                                taskId,
+                                requestTimestamp,
+                                activityComponent,
+                                focusedId,
+                                autofillValue,
+                                inlineSuggestionsRequest,
+                                mFakeBinder)
                         .setFillEventHistory(fillEventHistory)
                         .build();
 
