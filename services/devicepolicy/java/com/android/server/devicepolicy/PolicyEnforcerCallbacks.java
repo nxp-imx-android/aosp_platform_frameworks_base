@@ -95,11 +95,12 @@ public final class PolicyEnforcerCallbacks {
                     policy == DevicePolicyManager.AUTO_TIME_ZONE_NOT_CONTROLLED_BY_POLICY) {
                 return AndroidFuture.completedFuture(false);
             }
-            int enabled = policy != null &&
-                    policy == DevicePolicyManager.AUTO_TIME_ZONE_ENABLED ? 1 : 0;
-            return AndroidFuture.completedFuture(Settings.Global.putInt(
-                    context.getContentResolver(), Settings.Global.AUTO_TIME_ZONE,
-                    enabled));
+            boolean enabled = isAutoTimeZoneEnabled(policy);
+            return AndroidFuture.completedFuture(
+                    Settings.Global.putInt(
+                            context.getContentResolver(),
+                            Settings.Global.AUTO_TIME_ZONE,
+                            enabled ? 1 : 0));
         });
     }
 
@@ -222,19 +223,12 @@ public final class PolicyEnforcerCallbacks {
                     && policy == DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY) {
                 return AndroidFuture.completedFuture(false);
             }
-            int enabled;
-            if(!Flags.policyStreamliningAutoTime()) {
-                enabled =
-                    (policy != null && policy == DevicePolicyManager.AUTO_TIME_ENABLED ? 1 : 0);
-            } else {
-                enabled = policy != null &&
-                        (policy == DevicePolicyManager.AUTO_TIME_ENABLED ||
-                        policy == PolicyIdentifier.AUTO_TIME_ENABLED_UNENFORCED ||
-                        policy == PolicyIdentifier.AUTO_TIME_ENABLED) ? 1 : 0;
-            }
-            return AndroidFuture.completedFuture(
-                    Settings.Global.putInt(
-                            context.getContentResolver(), Settings.Global.AUTO_TIME,  enabled));
+            boolean enabled = isAutoTimeEnabled(policy);
+                    return AndroidFuture.completedFuture(
+                            Settings.Global.putInt(
+                                    context.getContentResolver(),
+                                    Settings.Global.AUTO_TIME,
+                                    enabled ? 1 : 0));
         });
     }
 
@@ -307,6 +301,36 @@ public final class PolicyEnforcerCallbacks {
                 DevicePolicyManagerService.setBgUsageAppOp(appOpsManager, appInfo);
             }
         }
+    }
+
+    private static boolean isAutoTimeEnabled(Integer policy) {
+        if (policy == null) {
+            return false;
+        }
+        if (Flags.policyStreamliningAutoTime()) {
+            // TODO(444381293): Make sure AUTO_TIME_ENABLED_UNENFORCED is declared with
+            // DPM.AUTO_TIME_ENABLED and remove this redundant check.
+            return policy == DevicePolicyManager.AUTO_TIME_ENABLED
+                    || policy == PolicyIdentifier.AUTO_TIME_ENABLED_UNENFORCED
+                    || policy == PolicyIdentifier.AUTO_TIME_ENABLED;
+        }
+
+        return policy == DevicePolicyManager.AUTO_TIME_ENABLED;
+    }
+
+    private static boolean isAutoTimeZoneEnabled(Integer policy) {
+        if (policy == null) {
+            return false;
+        }
+        if (Flags.policyStreamliningAutoTimeZone()) {
+            // TODO(444381293): Make sure AUTO_TIME_ZONE_ENABLED_UNENFORCED is declared with
+            // DPM.AUTO_TIME_ZONE_ENABLED and remove this redundant check.
+            return policy == DevicePolicyManager.AUTO_TIME_ZONE_ENABLED
+                    || policy == PolicyIdentifier.AUTO_TIME_ZONE_ENABLED_UNENFORCED
+                    || policy == PolicyIdentifier.AUTO_TIME_ZONE_ENABLED;
+        }
+
+        return policy == DevicePolicyManager.AUTO_TIME_ZONE_ENABLED;
     }
 
     static CompletableFuture<Boolean> addPersistentPreferredActivity(
