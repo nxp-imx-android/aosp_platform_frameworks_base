@@ -80,6 +80,7 @@ import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STA
 import static com.android.server.stats.Flags.addAdaptiveSuspendStatsPuller;
 import static com.android.server.stats.Flags.addMemcgMemoryInformationPuller;
 import static com.android.server.stats.Flags.addMobileBytesTransferByProcStatePuller;
+import static com.android.server.stats.Flags.addWebviewPinQuotaPuller;
 import static com.android.server.stats.pull.netstats.NetworkStatsUtils.fromPublicNetworkStats;
 import static com.android.server.stats.pull.netstats.NetworkStatsUtils.isAddEntriesSupported;
 import static com.android.server.stats.pull.netstats.NetworkStatsUtils.isTransportTypeSupported;
@@ -488,6 +489,9 @@ public class StatsPullAtomService extends SystemService {
     private static final boolean ENABLE_ADAPTIVE_SUSPEND_STATS_PULLER =
                 addAdaptiveSuspendStatsPuller();
 
+    private static final boolean ENABLE_WEBVIEW_PIN_QUOTA_PULLER =
+                addWebviewPinQuotaPuller();
+
     private static final ArrayMap<String, Integer> mPreviousThermalThrottlingStatus =
             new ArrayMap<>();
     // Puller locks
@@ -861,6 +865,8 @@ public class StatsPullAtomService extends SystemService {
                         return pullMediaCapabilitiesStats(atomTag, data);
                     case FrameworkStatsLog.PINNED_FILE_SIZES_PER_PACKAGE:
                         return pullSystemServerPinnerStats(atomTag, data);
+                    case FrameworkStatsLog.WEBVIEW_PIN_QUOTA:
+                        return pullWebViewPinQuota(atomTag, data);
                     case FrameworkStatsLog.PENDING_INTENTS_PER_PACKAGE:
                         return pullPendingIntentsPerPackage(atomTag, data);
                     case FrameworkStatsLog.HDR_CAPABILITIES:
@@ -1074,6 +1080,9 @@ public class StatsPullAtomService extends SystemService {
         registerMediaCapabilitiesStats();
         registerPendingIntentsPerPackagePuller();
         registerPinnerServiceStats();
+        if (ENABLE_WEBVIEW_PIN_QUOTA_PULLER) {
+            registerWebViewPinQuota();
+        }
         registerHdrCapabilitiesPuller();
         registerCachedAppsHighWatermarkPuller();
         registerPressureStallInformation();
@@ -5286,6 +5295,16 @@ public class StatsPullAtomService extends SystemService {
         );
     }
 
+    private void registerWebViewPinQuota() {
+        int tagId = FrameworkStatsLog.WEBVIEW_PIN_QUOTA;
+        mStatsManager.setPullAtomCallback(
+                tagId,
+                null, // use default PullAtomMetadata values
+                DIRECT_EXECUTOR,
+                mStatsCallbackImpl
+        );
+    }
+
     private void registerHdrCapabilitiesPuller() {
         int tagId = FrameworkStatsLog.HDR_CAPABILITIES;
         mStatsManager.setPullAtomCallback(
@@ -5516,6 +5535,16 @@ public class StatsPullAtomService extends SystemService {
             pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag,
                     pfstats.uid, pfstats.filename, pfstats.sizeKb));
         }
+        return StatsManager.PULL_SUCCESS;
+    }
+
+    private int pullWebViewPinQuota(int atomTag, List<StatsEvent> pulledData) {
+        PinnerService pinnerService = LocalServices.getService(PinnerService.class);
+        if (pinnerService == null) {
+            return StatsManager.PULL_SKIP;
+        }
+        int quota = pinnerService.getWebviewPinQuota();
+        pulledData.add(FrameworkStatsLog.buildStatsEvent(atomTag, quota));
         return StatsManager.PULL_SUCCESS;
     }
 
